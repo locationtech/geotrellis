@@ -38,8 +38,8 @@ import scala.concurrent.ExecutionContext
 import scala.reflect._
 
 class S3RDDWriter(
-  val getClient: () => S3Client,
-  val defaultThreadCount: Int
+  val getClient: () => S3Client = S3ClientProducer.get,
+  val defaultThreadCount: Int = S3Config.threads.rdd.writeThreads
 ) {
 
   def write[K: AvroRecordCodec: ClassTag, V: AvroRecordCodec: ClassTag](
@@ -66,7 +66,7 @@ class S3RDDWriter(
 
     implicit val sc = rdd.sparkContext
 
-    val _getS3Client = getClient
+    val _getClient = getClient
     val _codec = codec
 
     val pathsToTiles =
@@ -81,8 +81,8 @@ class S3RDDWriter(
     pathsToTiles.foreachPartition { partition: Iterator[(String, Iterable[(K, V)])] =>
       if(partition.nonEmpty) {
         import geotrellis.spark.util.TaskUtils._
-        val getS3Client = _getS3Client
-        val s3Client: S3Client = getS3Client()
+        val getClient = _getClient
+        val s3Client: S3Client = getClient()
         val schema = kwWriterSchema.value.getOrElse(_recordCodec.schema)
 
         val pool = Executors.newFixedThreadPool(threads)

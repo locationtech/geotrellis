@@ -39,10 +39,10 @@ import scala.reflect.ClassTag
  */
 class S3CollectionLayerReader(
   val attributeStore: AttributeStore,
-  getS3Client: () => S3Client = S3ClientProducer.get
+  val getClient: () => S3Client = S3ClientProducer.get
 ) extends CollectionLayerReader[LayerId] {
 
-  def collectionReader: S3CollectionReader = S3CollectionReader(getS3Client)
+  def collectionReader: S3CollectionReader = new S3CollectionReader(getClient)
 
   def read[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
@@ -76,6 +76,6 @@ object S3CollectionLayerReader {
   def apply(attributeStore: AttributeStore): S3CollectionLayerReader =
     new S3CollectionLayerReader(attributeStore, S3ClientProducer.get)
 
-  def apply(bucket: String, prefix: String, getS3Client: () => S3Client = S3ClientProducer.get): S3CollectionLayerReader =
-    apply(new S3AttributeStore(bucket, prefix, getS3Client))
+  def apply(bucket: String, prefix: String, getClient: () => S3Client = S3ClientProducer.get): S3CollectionLayerReader =
+    apply(new S3AttributeStore(bucket, prefix, getClient))
 }

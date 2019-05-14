@@ -57,8 +57,8 @@ class S3SpaceTimeSpec
   lazy val attributeStore = new S3AttributeStore(bucket, prefix, getS3Client)
   lazy val threadCount = 2
 
-  lazy val rddReader = S3RDDReader(getS3Client, threadCount)
-  lazy val rddWriter = S3RDDWriter(getS3Client, threadCount)
+  lazy val rddReader = new S3RDDReader(getS3Client, threadCount)
+  lazy val rddWriter = new S3RDDWriter(getS3Client, threadCount)
 
   lazy val reader = new S3LayerReader(attributeStore, getS3Client, threadCount)
   lazy val creader = new S3CollectionLayerReader(attributeStore, getS3Client)

@@ -32,10 +32,10 @@ import spray.json.JsonFormat
 
 import scala.reflect.ClassTag
 
-class S3LayerManager(attributeStore: S3AttributeStore, getS3Client: () => S3Client)(implicit sc: SparkContext)
+class S3LayerManager(attributeStore: S3AttributeStore, getClient: () => S3Client = S3ClientProducer.get)(implicit sc: SparkContext)
     extends LayerManager[LayerId] {
   def delete(id: LayerId): Unit =
-    S3LayerDeleter(attributeStore, getS3Client).delete(id)
+    S3LayerDeleter(attributeStore, getClient).delete(id)
 
   def copy[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,

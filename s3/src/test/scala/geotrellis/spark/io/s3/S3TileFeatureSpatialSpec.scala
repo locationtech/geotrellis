@@ -47,8 +47,8 @@ class S3TileFeatureSpatialSpec
   lazy val getS3Client = () => MockS3Client()
   lazy val attributeStore = new S3AttributeStore(bucket, prefix, getS3Client)
 
-  lazy val rddReader = S3RDDReader(getS3Client, threads)
-  lazy val rddWriter = S3RDDWriter(getS3Client, threads)
+  lazy val rddReader = new S3RDDReader(getS3Client, threads)
+  lazy val rddWriter = new S3RDDWriter(getS3Client, threads)
 
   lazy val reader = new S3LayerReader(attributeStore, getS3Client, threads)
   lazy val writer = new S3LayerWriter(attributeStore, bucket, prefix, identity, getS3Client, threads)

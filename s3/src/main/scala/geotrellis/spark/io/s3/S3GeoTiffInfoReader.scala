@@ -34,11 +34,14 @@ import scala.collection.JavaConverters._
 case class S3GeoTiffInfoReader(
   bucket: String,
   prefix: String,
-  getS3Client: () => S3Client = S3ClientProducer.get,
+  getClient: () => S3Client = S3ClientProducer.get,
   delimiter: Option[String] = None,
   streaming: Boolean = true,
   tiffExtensions: Seq[String] = S3GeoTiffRDD.Options.DEFAULT.tiffExtensions
 ) extends GeoTiffInfoReader {
+
+  @transient
+  lazy val client = getClient()
 
   /** Returns RDD of URIs to tiffs as GeoTiffInfo is not serializable. */
   def geoTiffInfoRDD(implicit sc: SparkContext): RDD[String] = {
@@ -58,7 +61,7 @@ case class S3GeoTiffInfoReader(
       }
 
     val s3objects =
-      getS3Client()
+      client
         .listObjectsV2(listObjectsRequest)
         .contents
         .asScala
@@ -73,10 +76,10 @@ case class S3GeoTiffInfoReader(
     val key = s3Uri.getKey()
     val ovrKey = s"${s3Uri.getKey}.ovr"
     val ovrReader: Option[ByteReader] =
-      if (s3ObjectExists(bucket, ovrKey, getS3Client())) Some(S3RangeReader(bucket, ovrKey, getS3Client()))
+      if (client.objectExists(bucket, ovrKey)) Some(S3RangeReader(bucket, ovrKey, client))
       else None
 
-    val s3rr = S3RangeReader(bucket, key, getS3Client())
+    val s3rr = S3RangeReader(bucket, key, client)
     GeoTiffReader.readGeoTiffInfo(s3rr, streaming, true, ovrReader)
   }
 }
@@ -87,5 +90,5 @@ object S3GeoTiffInfoReader {
     prefix: String,
     options: S3GeoTiffRDD.Options
   ): S3GeoTiffInfoReader =
-    S3GeoTiffInfoReader(bucket, prefix, options.getS3Client, options.delimiter, tiffExtensions = options.tiffExtensions)
+    S3GeoTiffInfoReader(bucket, prefix, options.getClient, options.delimiter, tiffExtensions = options.tiffExtensions)
 }

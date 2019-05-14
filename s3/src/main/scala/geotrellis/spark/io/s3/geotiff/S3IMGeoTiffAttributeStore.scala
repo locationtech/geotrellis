@@ -39,22 +39,26 @@ import java.net.URI
     uri: URI,
     pattern: String,
     recursive: Boolean = true,
-    getS3Client: () => S3Client = S3ClientProducer.get
-  ): InMemoryGeoTiffAttributeStore =
-    apply(() => S3GeoTiffInput.list(name, uri, pattern, recursive, getS3Client), getS3Client)
+    getClient: () => S3Client = S3ClientProducer.get
+  ): InMemoryGeoTiffAttributeStore = {
+    val getInput = () => S3GeoTiffInput.list(name, uri, pattern, recursive, getClient)
+    apply(getInput, getClient)
+  }
 
   def apply(getDataFunction: () => List[GeoTiffMetadata]): InMemoryGeoTiffAttributeStore =
     apply(getDataFunction, S3ClientProducer.get)
 
   def apply(
     getDataFunction: () => List[GeoTiffMetadata],
-    getS3Client: () => S3Client
+    getClient: () => S3Client
   ): InMemoryGeoTiffAttributeStore =
     new InMemoryGeoTiffAttributeStore {
       lazy val metadataList = getDataFunction()
       def persist(uri: URI): Unit = {
+
         @transient
-        lazy val s3Client = getS3Client()
+        lazy val s3Client = getClient()
+
         val s3Path = new AmazonS3URI(uri)
         val data = metadataList
 

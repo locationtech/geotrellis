@@ -35,7 +35,7 @@ import java.net.URI
 class S3COGLayerProvider extends AttributeStoreProvider
     with COGLayerReaderProvider with COGLayerWriterProvider with COGValueReaderProvider with COGCollectionLayerReaderProvider {
 
-  val getS3Client = S3ClientProducer.get
+  val getClient = S3ClientProducer.get
 
   def canProcess(uri: URI): Boolean = uri.getScheme match {
     case str: String => if (str.toLowerCase == "s3") true else false
@@ -51,11 +51,11 @@ class S3COGLayerProvider extends AttributeStoreProvider
         case Some(s) => s
         case None => ""
       }
-    new S3AttributeStore(bucket = s3Uri.getBucket(), prefix = prefix, getS3Client)
+    new S3AttributeStore(bucket = s3Uri.getBucket(), prefix = prefix, getClient)
   }
 
   def layerReader(uri: URI, store: AttributeStore, sc: SparkContext): COGLayerReader[LayerId] = {
-    new S3COGLayerReader(store, getS3Client)(sc)
+    new S3COGLayerReader(store, getClient)(sc)
   }
 
   def layerWriter(uri: URI, store: AttributeStore): COGLayerWriter = {
@@ -65,7 +65,7 @@ class S3COGLayerProvider extends AttributeStoreProvider
   }
 
   def valueReader(uri: URI, store: AttributeStore): COGValueReader[LayerId] = {
-    new S3COGValueReader(store, getS3Client)
+    new S3COGValueReader(store, getClient)
   }
 
   def collectionLayerReader(uri: URI, store: AttributeStore): COGCollectionLayerReader[LayerId] = {

@@ -29,9 +29,9 @@ import software.amazon.awssdk.services.s3.S3Client
 import org.apache.avro.Schema
 import org.apache.commons.io.IOUtils
 
-trait S3CollectionReader {
-
-  def getS3Client: () => S3Client
+class S3CollectionReader(
+  val getClient: () => S3Client = S3ClientProducer.get
+) {
 
   def read[
     K: AvroRecordCodec: Boundable,
@@ -43,7 +43,7 @@ trait S3CollectionReader {
      decomposeBounds: KeyBounds[K] => Seq[(BigInt, BigInt)],
      filterIndexOnly: Boolean,
      writerSchema: Option[Schema] = None,
-     threads: Int = S3CollectionReader.defaultThreadCount
+     threads: Int = S3Config.threads.rdd.readThreads
    ): Seq[(K, V)] = {
     if (queryKeyBounds.isEmpty) return Seq.empty[(K, V)]
 
@@ -53,7 +53,7 @@ trait S3CollectionReader {
       queryKeyBounds.flatMap(decomposeBounds)
 
     val recordCodec = KeyValueRecordCodec[K, V]
-    val s3client = getS3Client()
+    val s3client = getClient()
 
     LayerReader.njoin[K, V](ranges.toIterator, threads){ index: BigInt =>
       try {
@@ -74,11 +74,3 @@ trait S3CollectionReader {
   }
 }
 
-object S3CollectionReader {
-  val defaultThreadCount = S3Config.threads.collection.readThreads
-
-  def apply(getClient: () => S3Client = S3ClientProducer.get) =
-    new S3CollectionReader {
-      def getS3Client: () => S3Client = getClient
-    }
-}

@@ -10,6 +10,7 @@ object LandsatMultibandRDDExample {
     import geotrellis.spark.io.s3._
     import geotrellis.vector._
 
+    import software.amazon.awssdk.services.s3.S3Client
     import org.apache.spark.SparkContext
     import org.apache.spark.rdd._
 
@@ -23,7 +24,7 @@ object LandsatMultibandRDDExample {
 
       val options =
         S3GeoTiffRDD.Options(
-          getS3Client = () => S3Client.ANONYMOUS,
+          getClient = () => S3Client.create(),
           maxTileSize = Some(512),
           numPartitions = Some(100)
         )

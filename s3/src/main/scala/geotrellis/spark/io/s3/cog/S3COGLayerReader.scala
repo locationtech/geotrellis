@@ -55,7 +55,7 @@ class S3COGLayerReader(
   implicit def getByteReader(uri: URI): ByteReader = byteReader(uri, client)
 
   def pathExists(path: String): Boolean =
-    s3ObjectExists(path, client)
+    client.objectExists(path)
 
   def fullPath(path: String): URI =
     new URI(s"s3://$path")

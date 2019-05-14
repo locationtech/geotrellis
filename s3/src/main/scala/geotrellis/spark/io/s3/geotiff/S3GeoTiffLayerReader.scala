@@ -38,10 +38,10 @@ import java.net.URI
   layoutScheme: ZoomedLayoutScheme,
   resampleMethod: ResampleMethod = NearestNeighbor,
   strategy: OverviewStrategy = AutoHigherResolution,
-  getS3Client: () => S3Client = S3ClientProducer.get,
+  getClient: () => S3Client = S3ClientProducer.get,
   defaultThreads: Int = S3GeoTiffLayerReader.defaultThreadCount
 ) extends GeoTiffLayerReader[M] {
-  implicit def getByteReader(uri: URI): ByteReader = byteReader(uri, getS3Client())
+  implicit def getByteReader(uri: URI): ByteReader = byteReader(uri, getClient())
 }
 
 /**

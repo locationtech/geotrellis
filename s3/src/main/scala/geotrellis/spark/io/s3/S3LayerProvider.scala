@@ -37,10 +37,8 @@ class S3LayerProvider()
      with ValueReaderProvider
      with CollectionLayerReaderProvider {
 
-  // Class loading makes this more difficult to parameterize than it otherwise would be
-  // TODO: Think about alternative strategies for customizing s3 clients
   @transient
-  lazy val getS3Client = S3ClientProducer.get
+  lazy val getClient = S3ClientProducer.get
 
   def canProcess(uri: URI): Boolean = uri.getScheme match {
     case str: String => if (str.toLowerCase == "s3") true else false
@@ -54,21 +52,21 @@ class S3LayerProvider()
         case Some(s) => s
         case None => ""
       }
-    new S3AttributeStore(bucket = s3Uri.getBucket(), prefix = prefix, getS3Client)
+    new S3AttributeStore(bucket = s3Uri.getBucket(), prefix = prefix, getClient)
   }
 
   def layerReader(uri: URI, store: AttributeStore, sc: SparkContext): FilteringLayerReader[LayerId] = {
-    new S3LayerReader(store, getS3Client)(sc)
+    new S3LayerReader(store, getClient)(sc)
   }
 
   def layerWriter(uri: URI, store: AttributeStore): LayerWriter[LayerId] = {
     // TODO: encoder ACL changes in putObjectModifier
     val s3Uri = new AmazonS3URI(uri)
-    new S3LayerWriter(store, bucket = s3Uri.getBucket(), keyPrefix = s3Uri.getKey(), identity, getS3Client)
+    new S3LayerWriter(store, bucket = s3Uri.getBucket(), keyPrefix = s3Uri.getKey(), identity, getClient)
   }
 
   def valueReader(uri: URI, store: AttributeStore): ValueReader[LayerId] = {
-    new S3ValueReader(store, getS3Client)
+    new S3ValueReader(store, getClient)
   }
 
   def collectionLayerReader(uri: URI, store: AttributeStore): CollectionLayerReader[LayerId] = {

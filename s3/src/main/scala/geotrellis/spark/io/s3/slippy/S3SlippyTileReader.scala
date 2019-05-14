@@ -38,12 +38,12 @@ import java.io.File
 
 class S3SlippyTileReader[T](
   uri: String,
-  getS3Client: () => S3Client = S3ClientProducer.get
+  val getClient: () => S3Client = S3ClientProducer.get
 )(fromBytes: (SpatialKey, Array[Byte]) => T) extends SlippyTileReader[T] {
   import SlippyTileReader.TilePath
 
   @transient
-  lazy val client = getS3Client()
+  lazy val client = getClient()
 
   val parsed = new java.net.URI(uri)
   val bucket = parsed.getHost
@@ -103,7 +103,7 @@ class S3SlippyTileReader[T](
     sc.parallelize(s3keys)
       .partitionBy(new HashPartitioner(numPartitions))
       .mapPartitions({ partition =>
-        val client = getS3Client()
+        val client = getClient()
 
         partition.map { case (spatialKey, s3Key) =>
           val getRequest = GetObjectRequest.builder()

@@ -20,8 +20,8 @@ object S3ClientProducer {
   /**
     * Set an alternative default function for summoning S3Clients
     */
-  def set(getS3Client: () => S3Client): Unit =
-    summonClient = getS3Client
+  def set(getClient: () => S3Client): Unit =
+    summonClient = getClient
 
   /**
     * Get the current function registered as default for summong S3Clients

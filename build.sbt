@@ -28,7 +28,8 @@ lazy val commonSettings = Seq(
     "-language:existentials",
     "-language:experimental.macros",
     "-feature",
-    "-Ypartial-unification" // Required by Cats
+    "-Ypartial-unification", // Required by Cats
+    "-target:jvm-1.8"
   ),
   publishMavenStyle := true,
   publishArtifact in Test := false,

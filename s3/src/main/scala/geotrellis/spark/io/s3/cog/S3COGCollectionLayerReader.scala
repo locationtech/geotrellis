@@ -47,8 +47,9 @@ class S3COGCollectionLayerReader(
 ) extends COGCollectionLayerReader[LayerId] with LazyLogging {
 
   @transient
-  lazy val s3Client = getClient()
-  implicit def getByteReader(uri: URI): ByteReader = byteReader(uri, s3Client)
+  lazy val client = getClient()
+
+  implicit def getByteReader(uri: URI): ByteReader = byteReader(uri, client)
 
   def read[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
@@ -76,7 +77,7 @@ class S3COGCollectionLayerReader(
       id              = id,
       tileQuery       = rasterQuery,
       getKeyPath      = getKeyPath,
-      pathExists      = { s3ObjectExists(_, s3Client) },
+      pathExists      = { client.objectExists(_) },
       fullPath        = { path => new URI(s"s3://$path") },
       defaultThreads  = defaultThreads
     )

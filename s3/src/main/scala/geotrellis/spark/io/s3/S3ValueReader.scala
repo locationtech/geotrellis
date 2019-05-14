@@ -36,10 +36,10 @@ import scala.reflect.ClassTag
 
 class S3ValueReader(
   val attributeStore: AttributeStore,
-  val getS3Client: () => S3Client
+  val getClient: () => S3Client
 ) extends OverzoomingValueReader {
 
-  val s3Client: S3Client = getS3Client()
+  val s3Client: S3Client = getClient()
 
   def reader[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec](layerId: LayerId): Reader[K, V] = new Reader[K, V] {
     val header = attributeStore.readHeader[S3LayerHeader](layerId)
@@ -80,23 +80,23 @@ object S3ValueReader {
   def apply[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec](
     attributeStore: AttributeStore,
     layerId: LayerId,
-    getS3Client: () => S3Client
+    getClient: () => S3Client
   ): Reader[K, V] =
-    new S3ValueReader(attributeStore, getS3Client).reader[K, V](layerId)
+    new S3ValueReader(attributeStore, getClient).reader[K, V](layerId)
 
   def apply[K: AvroRecordCodec: JsonFormat: SpatialComponent: ClassTag, V <: CellGrid[Int]: AvroRecordCodec: ? => TileResampleMethods[V]](
     attributeStore: AttributeStore,
     layerId: LayerId,
     resampleMethod: ResampleMethod,
-    getS3Client: () => S3Client
+    getClient: () => S3Client
   ): Reader[K, V] =
-    new S3ValueReader(attributeStore, getS3Client).overzoomingReader[K, V](layerId, resampleMethod)
+    new S3ValueReader(attributeStore, getClient).overzoomingReader[K, V](layerId, resampleMethod)
 
-  def apply(bucket: String, root: String, getS3Client: () => S3Client): S3ValueReader = {
-    val attStore = new S3AttributeStore(bucket, root, getS3Client)
-    new S3ValueReader(attStore, getS3Client)
+  def apply(bucket: String, root: String, getClient: () => S3Client): S3ValueReader = {
+    val attStore = new S3AttributeStore(bucket, root, getClient)
+    new S3ValueReader(attStore, getClient)
   }
 
-  def apply(bucket: String, getS3Client: () => S3Client): S3ValueReader =
-    apply(bucket, "", getS3Client)
+  def apply(bucket: String, getClient: () => S3Client): S3ValueReader =
+    apply(bucket, "", getClient)
 }
