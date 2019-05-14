@@ -33,7 +33,7 @@ object MockS3Client {
     val cred = AwsBasicCredentials.create("minio", "password")
     val credProvider = StaticCredentialsProvider.create(cred)
     S3Client.builder()
-      .endpointOverride(new URI("http://localhost:9000"))
+      .endpointOverride(new URI("http://localhost:9091"))
       .credentialsProvider(credProvider)
       .region(Region.US_EAST_1)
       .build()
