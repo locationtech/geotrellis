@@ -44,16 +44,18 @@ import scala.reflect.ClassTag
  */
 class S3COGLayerReader(
   val attributeStore: AttributeStore,
-  val getS3Client: () => S3Client = () => S3Client.create(),
+  val getS3Client: () => S3Client = S3ClientProducer.get,
   val defaultThreads: Int = S3COGLayerReader.defaultThreadCount
 )(@transient implicit val sc: SparkContext) extends COGLayerReader[LayerId] with LazyLogging {
 
   val defaultNumPartitions: Int = sc.defaultParallelism
 
-  implicit def getByteReader(uri: URI): ByteReader = byteReader(uri, getS3Client())
+  lazy val client = getS3Client()
+
+  implicit def getByteReader(uri: URI): ByteReader = byteReader(uri, client)
 
   def pathExists(path: String): Boolean =
-    s3ObjectExists(path, getS3Client())
+    s3ObjectExists(path, client)
 
   def fullPath(path: String): URI =
     new URI(s"s3://$path")
@@ -105,6 +107,6 @@ object S3COGLayerReader {
   def apply(attributeStore: S3AttributeStore)(implicit sc: SparkContext): S3COGLayerReader =
     new S3COGLayerReader(
       attributeStore,
-      () => attributeStore.s3Client
+      attributeStore.getS3Client
     )
 }

@@ -37,12 +37,9 @@ import scala.reflect.ClassTag
 class S3LayerCopier(
   val attributeStore: AttributeStore,
   destBucket: String,
-  destKeyPrefix: String
+  destKeyPrefix: String,
+  getS3Client: () => S3Client
 ) extends LayerCopier[LayerId] {
-
-  def getS3Client: () => S3Client = () =>
-    // https://github.com/aws/aws-sdk-java-v2/blob/master/docs/BestPractices.md#reuse-sdk-client-if-possible
-    S3Client.create()
 
   // Not necessary if this isn't recursive any longer due to the iterator handling *all* objects
   // @tailrec
@@ -102,15 +99,19 @@ class S3LayerCopier(
 }
 
 object S3LayerCopier {
-  def apply(attributeStore: AttributeStore, destBucket: String, destKeyPrefix: String): S3LayerCopier =
-    new S3LayerCopier(attributeStore, destBucket, destKeyPrefix)
+  def apply(attributeStore: AttributeStore, destBucket: String, destKeyPrefix: String, getS3Client: () => S3Client): S3LayerCopier =
+    new S3LayerCopier(attributeStore, destBucket, destKeyPrefix, getS3Client)
 
-  def apply(bucket: String, keyPrefix: String, destBucket: String, destKeyPrefix: String): S3LayerCopier =
-    apply(S3AttributeStore(bucket, keyPrefix), destBucket, destKeyPrefix)
+  def apply(bucket: String, keyPrefix: String, destBucket: String, destKeyPrefix: String, getS3Client: () => S3Client): S3LayerCopier = {
+    val attStore = S3AttributeStore(bucket, keyPrefix, getS3Client)
+    apply(attStore, destBucket, destKeyPrefix, getS3Client)
+  }
 
-  def apply(bucket: String, keyPrefix: String): S3LayerCopier =
-    apply(S3AttributeStore(bucket, keyPrefix), bucket, keyPrefix)
+  def apply(bucket: String, keyPrefix: String, getS3Client: () => S3Client): S3LayerCopier = {
+    val attStore = S3AttributeStore(bucket, keyPrefix, getS3Client)
+    apply(attStore)
+  }
 
   def apply(attributeStore: S3AttributeStore): S3LayerCopier =
-    apply(attributeStore, attributeStore.bucket, attributeStore.prefix)
+    apply(attributeStore, attributeStore.bucket, attributeStore.prefix, attributeStore.getS3Client)
 }

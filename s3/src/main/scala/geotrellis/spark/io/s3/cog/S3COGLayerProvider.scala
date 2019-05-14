@@ -23,6 +23,7 @@ import geotrellis.spark.io.s3._
 
 import org.apache.spark._
 import com.amazonaws.services.s3.AmazonS3URI
+import software.amazon.awssdk.services.s3.S3Client
 
 import java.net.URI
 
@@ -33,6 +34,8 @@ import java.net.URI
  */
 class S3COGLayerProvider extends AttributeStoreProvider
     with COGLayerReaderProvider with COGLayerWriterProvider with COGValueReaderProvider with COGCollectionLayerReaderProvider {
+
+  val getS3Client = S3ClientProducer.get
 
   def canProcess(uri: URI): Boolean = uri.getScheme match {
     case str: String => if (str.toLowerCase == "s3") true else false
@@ -48,11 +51,11 @@ class S3COGLayerProvider extends AttributeStoreProvider
         case Some(s) => s
         case None => ""
       }
-    new S3AttributeStore(bucket = s3Uri.getBucket(), prefix = prefix)
+    new S3AttributeStore(bucket = s3Uri.getBucket(), prefix = prefix, getS3Client)
   }
 
   def layerReader(uri: URI, store: AttributeStore, sc: SparkContext): COGLayerReader[LayerId] = {
-    new S3COGLayerReader(store)(sc)
+    new S3COGLayerReader(store, getS3Client)(sc)
   }
 
   def layerWriter(uri: URI, store: AttributeStore): COGLayerWriter = {
@@ -62,7 +65,7 @@ class S3COGLayerProvider extends AttributeStoreProvider
   }
 
   def valueReader(uri: URI, store: AttributeStore): COGValueReader[LayerId] = {
-    new S3COGValueReader(store)
+    new S3COGValueReader(store, getS3Client)
   }
 
   def collectionLayerReader(uri: URI, store: AttributeStore): COGCollectionLayerReader[LayerId] = {

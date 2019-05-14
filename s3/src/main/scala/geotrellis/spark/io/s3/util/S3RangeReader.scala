@@ -70,7 +70,7 @@ object S3RangeReader {
 
   // https://github.com/aws/aws-sdk-java-v2/blob/master/docs/BestPractices.md#reuse-sdk-client-if-possible
   def apply(uri: URI): S3RangeReader =
-    apply(uri, S3Client.create())
+    apply(uri, S3ClientProducer.get())
 
   def apply(uri: URI, client: S3Client): S3RangeReader = {
     val s3Uri = new AmazonS3URI(uri)

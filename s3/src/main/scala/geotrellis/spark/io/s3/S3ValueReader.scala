@@ -35,13 +35,11 @@ import spray.json.DefaultJsonProtocol._
 import scala.reflect.ClassTag
 
 class S3ValueReader(
-  val attributeStore: AttributeStore
+  val attributeStore: AttributeStore,
+  val getS3Client: () => S3Client
 ) extends OverzoomingValueReader {
 
-  @transient
-  lazy val s3Client: S3Client =
-    // https://github.com/aws/aws-sdk-java-v2/blob/master/docs/BestPractices.md#reuse-sdk-client-if-possible
-    S3Client.create()
+  val s3Client: S3Client = getS3Client()
 
   def reader[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec](layerId: LayerId): Reader[K, V] = new Reader[K, V] {
     val header = attributeStore.readHeader[S3LayerHeader](layerId)
@@ -81,20 +79,24 @@ class S3ValueReader(
 object S3ValueReader {
   def apply[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec](
     attributeStore: AttributeStore,
-    layerId: LayerId
+    layerId: LayerId,
+    getS3Client: () => S3Client
   ): Reader[K, V] =
-    new S3ValueReader(attributeStore).reader[K, V](layerId)
+    new S3ValueReader(attributeStore, getS3Client).reader[K, V](layerId)
 
   def apply[K: AvroRecordCodec: JsonFormat: SpatialComponent: ClassTag, V <: CellGrid[Int]: AvroRecordCodec: ? => TileResampleMethods[V]](
     attributeStore: AttributeStore,
     layerId: LayerId,
-    resampleMethod: ResampleMethod
+    resampleMethod: ResampleMethod,
+    getS3Client: () => S3Client
   ): Reader[K, V] =
-    new S3ValueReader(attributeStore).overzoomingReader[K, V](layerId, resampleMethod)
+    new S3ValueReader(attributeStore, getS3Client).overzoomingReader[K, V](layerId, resampleMethod)
 
-  def apply(bucket: String, root: String): S3ValueReader =
-    new S3ValueReader(new S3AttributeStore(bucket, root))
+  def apply(bucket: String, root: String, getS3Client: () => S3Client): S3ValueReader = {
+    val attStore = new S3AttributeStore(bucket, root, getS3Client)
+    new S3ValueReader(attStore, getS3Client)
+  }
 
-  def apply(bucket: String): S3ValueReader =
-    apply(bucket, "")
+  def apply(bucket: String, getS3Client: () => S3Client): S3ValueReader =
+    apply(bucket, "", getS3Client)
 }

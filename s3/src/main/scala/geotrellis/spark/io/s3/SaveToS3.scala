@@ -63,9 +63,7 @@ object SaveToS3 {
     rdd: RDD[(K, Array[Byte])],
     keyToUri: K => String,
     putObjectModifier: PutObjectRequest => PutObjectRequest = { p => p },
-    s3Maker: () => S3Client = () =>
-      // https://github.com/aws/aws-sdk-java-v2/blob/master/docs/BestPractices.md#reuse-sdk-client-if-possible
-      S3Client.create(),
+    s3Maker: () => S3Client = S3ClientProducer.get,
     threads: Int = defaultThreadCount
   ): Unit = {
     val keyToPrefix: K => (String, String) = key => {

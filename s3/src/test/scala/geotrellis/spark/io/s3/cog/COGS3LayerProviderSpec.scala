@@ -29,6 +29,10 @@ class COGS3LayerProviderSpec extends FunSpec with TestEnvironment {
   S3TestUtils.cleanBucket(client, "fake-bucket")
   val uri = new java.net.URI("s3://fake-bucket/some-prefix")
 
+  // The provider uses defaults which must be registered to avoid using the normal
+  //  aws credential resolution mechanisms
+  S3ClientProducer.set(() => MockS3Client())
+
   it("construct S3COGLayerReader from URI") {
     val reader = COGLayerReader(uri)
     assert(reader.isInstanceOf[S3COGLayerReader])
@@ -46,7 +50,7 @@ class COGS3LayerProviderSpec extends FunSpec with TestEnvironment {
 
   it("should not be able to process a URI without a scheme") {
     val badURI = new java.net.URI("//fake-bucket/some-prefix")
-    val provider = new S3COGLayerProvider
+    val provider = new S3COGLayerProvider()
 
     provider.canProcess(badURI) should be (false)
   }

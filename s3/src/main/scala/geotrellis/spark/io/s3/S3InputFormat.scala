@@ -233,7 +233,7 @@ object S3InputFormat {
               .region(region)
               .build()
           case None =>
-            S3Client.create()
+            S3ClientProducer.get()
         }
     }
   }

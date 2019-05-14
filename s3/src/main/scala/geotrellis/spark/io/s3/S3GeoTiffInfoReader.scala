@@ -34,9 +34,7 @@ import scala.collection.JavaConverters._
 case class S3GeoTiffInfoReader(
   bucket: String,
   prefix: String,
-  getS3Client: () => S3Client = () =>
-    // https://github.com/aws/aws-sdk-java-v2/blob/master/docs/BestPractices.md#reuse-sdk-client-if-possible
-    S3Client.create(),
+  getS3Client: () => S3Client = S3ClientProducer.get,
   delimiter: Option[String] = None,
   streaming: Boolean = true,
   tiffExtensions: Seq[String] = S3GeoTiffRDD.Options.DEFAULT.tiffExtensions

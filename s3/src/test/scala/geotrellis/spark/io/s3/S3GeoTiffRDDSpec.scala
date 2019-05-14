@@ -45,7 +45,7 @@ class S3GeoTiffRDDSpec
     with BeforeAndAfterEach {
 
   override def afterEach() {
-    try super.afterEach()
+    super.afterEach()
   }
 
   implicit def toOption[T](t: T): Option[T] = Option(t)

@@ -74,7 +74,11 @@ trait S3CollectionReader {
   }
 }
 
-object S3CollectionReader extends S3CollectionReader {
+object S3CollectionReader {
   val defaultThreadCount = S3Config.threads.collection.readThreads
-  def getS3Client: () => S3Client = () => S3Client.create()
+
+  def apply(getClient: () => S3Client = S3ClientProducer.get) =
+    new S3CollectionReader {
+      def getS3Client: () => S3Client = getClient
+    }
 }

@@ -77,9 +77,7 @@ object S3GeoTiffRDD extends LazyLogging {
     partitionBytes: Option[Long] = Some(DefaultPartitionBytes),
     chunkSize: Option[Int] = None,
     delimiter: Option[String] = None,
-    getS3Client: () => S3Client = () =>
-      // https://github.com/aws/aws-sdk-java-v2/blob/master/docs/BestPractices.md#reuse-sdk-client-if-possible
-      S3Client.create()
+    getS3Client: () => S3Client = S3ClientProducer.get
   ) extends RasterReader.Options
 
   private val DefaultMaxTileSize = 256

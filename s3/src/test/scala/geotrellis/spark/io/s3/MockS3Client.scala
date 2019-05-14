@@ -16,23 +16,26 @@
 
 package geotrellis.spark.io.s3.testkit
 
-import geotrellis.spark._
-import geotrellis.spark.io._
 import geotrellis.spark.io.s3._
-import geotrellis.spark.io.json._
 
+import software.amazon.awssdk.http.AbortableInputStream
+import software.amazon.awssdk.core.ResponseInputStream
+import software.amazon.awssdk.auth.credentials.{AwsBasicCredentials, StaticCredentialsProvider}
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.regions.Region
-import org.apache.spark._
-import spray.json._
+import cats._
+import cats.implicits._
 
 import java.net.URI
 
-class MockS3LayerReader(
-  attributeStore: AttributeStore
-)(implicit sc: SparkContext) extends S3LayerReader(attributeStore) {
-  override def rddReader =
-    new S3RDDReader {
-      def getS3Client = () => MockS3Client()
-    }
+object MockS3Client {
+  def apply() = {
+    val cred = AwsBasicCredentials.create("minio", "password")
+    val credProvider = StaticCredentialsProvider.create(cred)
+    S3Client.builder()
+      .endpointOverride(new URI("http://localhost:9000"))
+      .credentialsProvider(credProvider)
+      .region(Region.US_EAST_1)
+      .build()
+  }
 }

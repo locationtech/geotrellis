@@ -42,13 +42,13 @@ import scala.reflect.ClassTag
  */
 class S3COGCollectionLayerReader(
   val attributeStore: AttributeStore,
-  val getS3Client: () => S3Client = () =>
-    // https://github.com/aws/aws-sdk-java-v2/blob/master/docs/BestPractices.md#reuse-sdk-client-if-possible
-    S3Client.create(),
+  val getS3Client: () => S3Client = S3ClientProducer.get,
   val defaultThreads: Int = S3COGCollectionLayerReader.defaultThreadCount
 ) extends COGCollectionLayerReader[LayerId] with LazyLogging {
 
-  implicit def getByteReader(uri: URI): ByteReader = byteReader(uri, getS3Client())
+  @transient
+  lazy val s3Client = getS3Client()
+  implicit def getByteReader(uri: URI): ByteReader = byteReader(uri, s3Client)
 
   def read[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
@@ -76,7 +76,7 @@ class S3COGCollectionLayerReader(
       id              = id,
       tileQuery       = rasterQuery,
       getKeyPath      = getKeyPath,
-      pathExists      = { s3ObjectExists(_, getS3Client()) },
+      pathExists      = { s3ObjectExists(_, s3Client) },
       fullPath        = { path => new URI(s"s3://$path") },
       defaultThreads  = defaultThreads
     )
@@ -89,9 +89,9 @@ object S3COGCollectionLayerReader {
   def apply(attributeStore: S3AttributeStore): S3COGCollectionLayerReader =
     new S3COGCollectionLayerReader(
       attributeStore,
-      () => attributeStore.s3Client
+      attributeStore.getS3Client
     )
 
-  def apply(bucket: String, prefix: String): S3COGCollectionLayerReader =
-    apply(S3AttributeStore(bucket, prefix))
+  def apply(bucket: String, prefix: String, getS3Client: () => S3Client = S3ClientProducer.get): S3COGCollectionLayerReader =
+    apply(S3AttributeStore(bucket, prefix, getS3Client))
 }

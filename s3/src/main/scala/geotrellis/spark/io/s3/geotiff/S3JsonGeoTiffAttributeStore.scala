@@ -16,6 +16,7 @@
 
 package geotrellis.spark.io.s3.geotiff
 
+import geotrellis.spark.io.s3.S3ClientProducer
 import geotrellis.spark.io.hadoop.geotiff._
 import geotrellis.util.annotations.experimental
 
@@ -35,9 +36,7 @@ import scala.io.Source
   * @define experimental <span class="badge badge-red" style="float: right;">EXPERIMENTAL</span>@experimental
   */
 @experimental object S3JsonGeoTiffAttributeStore {
-  @experimental def readData(uri: URI, getS3Client: () => S3Client = () =>
-      // https://github.com/aws/aws-sdk-java-v2/blob/master/docs/BestPractices.md#reuse-sdk-client-if-possible
-      S3Client.create()): List[GeoTiffMetadata] = {
+  @experimental def readData(uri: URI, getS3Client: () => S3Client = S3ClientProducer.get): List[GeoTiffMetadata] = {
     @transient
     lazy val s3Client = getS3Client()
     val s3Uri = new AmazonS3URI(uri)
@@ -60,12 +59,15 @@ import scala.io.Source
       .convertTo[List[GeoTiffMetadata]]
   }
 
-  @experimental def readDataAsTree(uri: URI, getS3Client: () => S3Client): GeoTiffMetadataTree[GeoTiffMetadata] =
+  @experimental def readDataAsTree(uri: URI, getS3Client: () => S3Client = S3ClientProducer.get): GeoTiffMetadataTree[GeoTiffMetadata] =
     GeoTiffMetadataTree.fromGeoTiffMetadataSeq(readData(uri, getS3Client))
 
-  def apply(uri: URI): JsonGeoTiffAttributeStore = {
+  def apply(
+    uri: URI,
+    getS3Client: () => S3Client
+  ): JsonGeoTiffAttributeStore = {
     // https://github.com/aws/aws-sdk-java-v2/blob/master/docs/BestPractices.md#reuse-sdk-client-if-possible
-    JsonGeoTiffAttributeStore(uri, readDataAsTree(_, () => S3Client.create()))
+    JsonGeoTiffAttributeStore(uri, readDataAsTree(_, getS3Client))
   }
 
   def apply(
@@ -74,9 +76,7 @@ import scala.io.Source
     uri: URI,
     pattern: String,
     recursive: Boolean = true,
-    getS3Client: () => S3Client = () =>
-      // https://github.com/aws/aws-sdk-java-v2/blob/master/docs/BestPractices.md#reuse-sdk-client-if-possible
-      S3Client.create()
+    getS3Client: () => S3Client = S3ClientProducer.get
   ): JsonGeoTiffAttributeStore = {
     val s3Uri = new AmazonS3URI(path)
     val data = S3GeoTiffInput.list(name, uri, pattern, recursive)

@@ -16,6 +16,7 @@
 
 package geotrellis.spark.io.s3.geotiff
 
+import geotrellis.spark.io.s3.S3ClientProducer
 import geotrellis.spark.io.hadoop.geotiff._
 import geotrellis.util.annotations.experimental
 
@@ -37,23 +38,13 @@ import java.net.URI
     name: String,
     uri: URI,
     pattern: String,
-    recursive: Boolean,
-    getS3Client: () => S3Client
+    recursive: Boolean = true,
+    getS3Client: () => S3Client = S3ClientProducer.get
   ): InMemoryGeoTiffAttributeStore =
     apply(() => S3GeoTiffInput.list(name, uri, pattern, recursive, getS3Client), getS3Client)
 
-  def apply(
-    name: String,
-    uri: URI,
-    pattern: String
-  ): InMemoryGeoTiffAttributeStore = apply(name, uri, pattern, true, () =>
-    // https://github.com/aws/aws-sdk-java-v2/blob/master/docs/BestPractices.md#reuse-sdk-client-if-possible
-    S3Client.create())
-
   def apply(getDataFunction: () => List[GeoTiffMetadata]): InMemoryGeoTiffAttributeStore =
-    apply(getDataFunction, () =>
-        // https://github.com/aws/aws-sdk-java-v2/blob/master/docs/BestPractices.md#reuse-sdk-client-if-possible
-        S3Client.create())
+    apply(getDataFunction, S3ClientProducer.get)
 
   def apply(
     getDataFunction: () => List[GeoTiffMetadata],

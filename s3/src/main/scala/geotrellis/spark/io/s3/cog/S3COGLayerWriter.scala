@@ -24,7 +24,8 @@ import geotrellis.tiling.SpatialComponent
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.index.{Index, KeyIndex}
-import geotrellis.spark.io.s3.{S3AttributeStore, S3LayerHeader, S3RDDWriter, makePath}
+import geotrellis.spark.io.s3.{S3AttributeStore, S3LayerHeader, S3RDDWriter, makePath, S3ClientProducer}
+import geotrellis.spark.io.s3.conf.S3Config
 import geotrellis.spark.io.cog._
 import geotrellis.spark.io.cog.vrt.VRT
 import geotrellis.spark.io.cog.vrt.VRT.IndexedSimpleSource
@@ -43,10 +44,8 @@ class S3COGLayerWriter(
   val attributeStore: AttributeStore,
   bucket: String,
   keyPrefix: String,
-  getS3Client: () => S3Client = () =>
-    // https://github.com/aws/aws-sdk-java-v2/blob/master/docs/BestPractices.md#reuse-sdk-client-if-possible
-    S3Client.create(),
-  threads: Int = S3RDDWriter.defaultThreadCount
+  getS3Client: () => S3Client = S3ClientProducer.get,
+  threads: Int = S3Config.threads.rdd.writeThreads
 ) extends COGLayerWriter {
 
   def writeCOGLayer[
@@ -133,7 +132,7 @@ class S3COGLayerWriter(
 
 object S3COGLayerWriter {
   def apply(attributeStore: S3AttributeStore): S3COGLayerWriter =
-    new S3COGLayerWriter(attributeStore, attributeStore.bucket, attributeStore.prefix, () => attributeStore.s3Client)
+    new S3COGLayerWriter(attributeStore, attributeStore.bucket, attributeStore.prefix, attributeStore.getS3Client)
 }
 
 

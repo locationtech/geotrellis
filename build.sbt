@@ -115,7 +115,6 @@ lazy val root = Project("geotrellis", file(".")).
     raster,
     `raster-testkit`,
     s3,
-    `s3-testkit`,
     shapefile,
     spark,
     `spark-etl`,
@@ -205,14 +204,6 @@ lazy val s3 = project
   )
   .settings(commonSettings)
   .settings(Settings.s3)
-  .settings(
-    unmanagedClasspath in Test ++= (fullClasspath in (LocalProject("s3-testkit"), Compile)).value
-  )
-
-lazy val `s3-testkit` = project
-  .dependsOn(s3, spark)
-  .settings(commonSettings)
-  .settings(Settings.`s3-testkit`)
 
 lazy val accumulo = project
   .dependsOn(

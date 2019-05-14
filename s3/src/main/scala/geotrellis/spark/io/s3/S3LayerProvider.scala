@@ -21,6 +21,7 @@ import geotrellis.spark.io._
 
 import org.apache.spark._
 import com.amazonaws.services.s3.AmazonS3URI
+import software.amazon.awssdk.services.s3.S3Client
 
 import java.net.URI
 
@@ -29,8 +30,17 @@ import java.net.URI
  * The uri represents S3 bucket an prefix of catalog root.
  *  ex: `s3://<bucket>/<prefix-to-catalog>`
  */
-class S3LayerProvider extends AttributeStoreProvider
-    with LayerReaderProvider with LayerWriterProvider with ValueReaderProvider with CollectionLayerReaderProvider {
+class S3LayerProvider()
+  extends AttributeStoreProvider
+     with LayerReaderProvider
+     with LayerWriterProvider
+     with ValueReaderProvider
+     with CollectionLayerReaderProvider {
+
+  // Class loading makes this more difficult to parameterize than it otherwise would be
+  // TODO: Think about alternative strategies for customizing s3 clients
+  @transient
+  lazy val getS3Client = S3ClientProducer.get
 
   def canProcess(uri: URI): Boolean = uri.getScheme match {
     case str: String => if (str.toLowerCase == "s3") true else false
@@ -44,21 +54,21 @@ class S3LayerProvider extends AttributeStoreProvider
         case Some(s) => s
         case None => ""
       }
-    new S3AttributeStore(bucket = s3Uri.getBucket(), prefix = prefix)
+    new S3AttributeStore(bucket = s3Uri.getBucket(), prefix = prefix, getS3Client)
   }
 
   def layerReader(uri: URI, store: AttributeStore, sc: SparkContext): FilteringLayerReader[LayerId] = {
-    new S3LayerReader(store)(sc)
+    new S3LayerReader(store, getS3Client)(sc)
   }
 
   def layerWriter(uri: URI, store: AttributeStore): LayerWriter[LayerId] = {
     // TODO: encoder ACL changes in putObjectModifier
     val s3Uri = new AmazonS3URI(uri)
-    new S3LayerWriter(store, bucket = s3Uri.getBucket(), keyPrefix = s3Uri.getKey())
+    new S3LayerWriter(store, bucket = s3Uri.getBucket(), keyPrefix = s3Uri.getKey(), identity, getS3Client)
   }
 
   def valueReader(uri: URI, store: AttributeStore): ValueReader[LayerId] = {
-    new S3ValueReader(store)
+    new S3ValueReader(store, getS3Client)
   }
 
   def collectionLayerReader(uri: URI, store: AttributeStore): CollectionLayerReader[LayerId] = {

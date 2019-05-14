@@ -36,14 +36,14 @@ import scala.collection.JavaConverters._
 import java.io.File
 
 
-class S3SlippyTileReader[T](uri: String)(fromBytes: (SpatialKey, Array[Byte]) => T) extends SlippyTileReader[T] {
+class S3SlippyTileReader[T](
+  uri: String,
+  getS3Client: () => S3Client = S3ClientProducer.get
+)(fromBytes: (SpatialKey, Array[Byte]) => T) extends SlippyTileReader[T] {
   import SlippyTileReader.TilePath
 
-  // https://github.com/aws/aws-sdk-java-v2/blob/master/docs/BestPractices.md#reuse-sdk-client-if-possible
-  val getClient = () => S3Client.create()
-
   @transient
-  lazy val client = getClient()
+  lazy val client = getS3Client()
 
   val parsed = new java.net.URI(uri)
   val bucket = parsed.getHost
@@ -103,7 +103,7 @@ class S3SlippyTileReader[T](uri: String)(fromBytes: (SpatialKey, Array[Byte]) =>
     sc.parallelize(s3keys)
       .partitionBy(new HashPartitioner(numPartitions))
       .mapPartitions({ partition =>
-        val client = getClient()
+        val client = getS3Client()
 
         partition.map { case (spatialKey, s3Key) =>
           val getRequest = GetObjectRequest.builder()

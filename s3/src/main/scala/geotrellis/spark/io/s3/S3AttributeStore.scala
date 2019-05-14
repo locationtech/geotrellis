@@ -37,10 +37,11 @@ import java.io.ByteArrayInputStream
  * @param bucket    S3 bucket to use for attribute store
  * @param prefix    path in the bucket for given LayerId
  */
-class S3AttributeStore(val bucket: String, val prefix: String) extends BlobLayerAttributeStore {
-
-  // https://github.com/aws/aws-sdk-java-v2/blob/master/docs/BestPractices.md#reuse-sdk-client-if-possible
-  def s3Client: S3Client = S3Client.create()
+class S3AttributeStore(
+  val bucket: String,
+  val prefix: String,
+  val getS3Client: () => S3Client = S3ClientProducer.get
+) extends BlobLayerAttributeStore {
   import S3AttributeStore._
 
   /** NOTE:
@@ -66,7 +67,7 @@ class S3AttributeStore(val bucket: String, val prefix: String) extends BlobLayer
       .bucket(bucket)
       .key(key)
       .build()
-    val s3objStream = s3Client.getObject(getRequest)
+    val s3objStream = getS3Client().getObject(getRequest)
     val json =
       try {
         Source.fromInputStream(s3objStream)(Charset.forName("UTF-8")).mkString
@@ -90,7 +91,7 @@ class S3AttributeStore(val bucket: String, val prefix: String) extends BlobLayer
       .bucket(bucket)
       .prefix(attributePrefix(attributeName))
       .build()
-    s3Client
+    getS3Client()
       .listObjectsV2Paginator(listRequest)
       .contents
       .asScala
@@ -113,7 +114,7 @@ class S3AttributeStore(val bucket: String, val prefix: String) extends BlobLayer
       .key(key)
       .build()
     val requestBody = RequestBody.fromBytes(str.getBytes("UTF-8"))
-    s3Client.putObject(putRequest, requestBody)
+    getS3Client().putObject(putRequest, requestBody)
     //AmazonServiceException possible
   }
 
@@ -122,7 +123,7 @@ class S3AttributeStore(val bucket: String, val prefix: String) extends BlobLayer
       .bucket(bucket)
       .prefix(path(prefix, "_attributes"))
       .build()
-    s3Client
+    getS3Client()
       .listObjectsV2Paginator(listRequest)
       .contents
       .asScala
@@ -134,7 +135,7 @@ class S3AttributeStore(val bucket: String, val prefix: String) extends BlobLayer
       .bucket(bucket)
       .key(attributePath(layerId, attributeName))
       .build()
-    s3Client.deleteObject(deleteRequest)
+    getS3Client().deleteObject(deleteRequest)
     clearCache(layerId, attributeName)
   }
 
@@ -143,7 +144,7 @@ class S3AttributeStore(val bucket: String, val prefix: String) extends BlobLayer
       .bucket(bucket)
       .prefix(path(prefix, "_attributes"))
       .build()
-    s3Client
+    getS3Client()
       .listObjectsV2Paginator(listRequest)
       .contents
       .asScala
@@ -162,7 +163,7 @@ class S3AttributeStore(val bucket: String, val prefix: String) extends BlobLayer
       .bucket(bucket)
       .delete(deleteDefinition)
       .build()
-    s3Client.deleteObjects(deleteRequest)
+    getS3Client().deleteObjects(deleteRequest)
     clearCache(layerId)
   }
 
@@ -171,7 +172,7 @@ class S3AttributeStore(val bucket: String, val prefix: String) extends BlobLayer
       .bucket(bucket)
       .prefix(path(prefix, "_attributes/metadata"))
       .build()
-    s3Client
+    getS3Client()
       .listObjectsV2Paginator(listRequest)
       .contents
       .asScala
@@ -194,7 +195,7 @@ class S3AttributeStore(val bucket: String, val prefix: String) extends BlobLayer
       .bucket(bucket)
       .prefix(path(prefix, s"_attributes/metadata${SEP}${layerName}"))
       .build()
-    s3Client
+    getS3Client()
       .listObjectsV2Paginator(listRequest)
       .contents
       .asScala
@@ -213,9 +214,9 @@ class S3AttributeStore(val bucket: String, val prefix: String) extends BlobLayer
 object S3AttributeStore {
   final val SEP = "__"
 
-  def apply(bucket: String, root: String) =
-    new S3AttributeStore(bucket, root)
+  def apply(bucket: String, root: String, getS3Client: () => S3Client = S3ClientProducer.get) =
+    new S3AttributeStore(bucket, root, getS3Client)
 
-  def apply(bucket: String): S3AttributeStore =
-    apply(bucket, "")
+  def apply(bucket: String, getS3Client: () => S3Client): S3AttributeStore =
+    apply(bucket, "", getS3Client)
 }

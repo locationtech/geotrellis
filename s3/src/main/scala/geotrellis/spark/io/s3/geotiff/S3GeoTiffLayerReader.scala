@@ -18,6 +18,7 @@ package geotrellis.spark.io.s3.geotiff
 
 import geotrellis.spark.io.s3.cog.byteReader
 import geotrellis.spark.io.s3.conf.S3Config
+import geotrellis.spark.io.s3.S3ClientProducer
 import geotrellis.raster.resample.{NearestNeighbor, ResampleMethod}
 import geotrellis.raster.io.geotiff.{AutoHigherResolution, OverviewStrategy}
 import geotrellis.tiling.ZoomedLayoutScheme
@@ -37,7 +38,7 @@ import java.net.URI
   layoutScheme: ZoomedLayoutScheme,
   resampleMethod: ResampleMethod = NearestNeighbor,
   strategy: OverviewStrategy = AutoHigherResolution,
-  getS3Client: () => S3Client = () => S3Client.create(),
+  getS3Client: () => S3Client = S3ClientProducer.get,
   defaultThreads: Int = S3GeoTiffLayerReader.defaultThreadCount
 ) extends GeoTiffLayerReader[M] {
   implicit def getByteReader(uri: URI): ByteReader = byteReader(uri, getS3Client())

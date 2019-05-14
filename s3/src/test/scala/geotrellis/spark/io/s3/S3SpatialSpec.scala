@@ -42,27 +42,22 @@ class S3SpatialSpec
     S3TestUtils.cleanBucket(client, bucket)
   }
 
-  lazy val attributeStore = new S3AttributeStore(bucket, prefix) {
-    override lazy val s3Client = MockS3Client()
-  }
+  // We need to register the mock client for SPI loaded classes
+  S3ClientProducer.set(() => MockS3Client())
 
-  lazy val rddReader =
-    new S3RDDReader {
-      def getS3Client = () => MockS3Client()
-    }
+  lazy val getS3Client = () => MockS3Client()
+  lazy val attributeStore = new S3AttributeStore(bucket, prefix, getS3Client)
 
-  lazy val rddWriter =
-    new S3RDDWriter {
-      def getS3Client = () => MockS3Client()
-    }
+  lazy val rddReader = S3RDDReader(getS3Client)
+  lazy val rddWriter = S3RDDWriter(getS3Client)
 
-  lazy val reader = new MockS3LayerReader(attributeStore)
-  lazy val creader = new MockS3CollectionLayerReader(attributeStore)
-  lazy val writer = new MockS3LayerWriter(attributeStore, bucket, prefix)
-  lazy val deleter = new S3LayerDeleter(attributeStore) { override val getS3Client = () => MockS3Client() }
-  lazy val copier  = new S3LayerCopier(attributeStore, bucket, prefix) { override val getS3Client = () => MockS3Client() }
+  lazy val reader = new S3LayerReader(attributeStore, getS3Client)
+  lazy val creader = new S3CollectionLayerReader(attributeStore)
+  lazy val writer = new S3LayerWriter(attributeStore, bucket, prefix, identity, getS3Client)
+  lazy val deleter = new S3LayerDeleter(attributeStore, getS3Client)
+  lazy val copier  = new S3LayerCopier(attributeStore, bucket, prefix, getS3Client)
   lazy val reindexer = GenericLayerReindexer[S3LayerHeader](attributeStore, reader, writer, deleter, copier)
   lazy val mover = GenericLayerMover(copier, deleter)
-  lazy val tiles = new S3ValueReader(attributeStore) { override lazy val s3Client = MockS3Client() }
+  lazy val tiles = new S3ValueReader(attributeStore, getS3Client)
   lazy val sample = AllOnesTestFile
 }

@@ -34,7 +34,7 @@ import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
 trait S3RDDReader {
-  final val defaultThreadCount = S3Config.threads.rdd.readThreads
+  def defaultThreadCount: Int
 
   def getS3Client: () => S3Client
 
@@ -94,6 +94,13 @@ trait S3RDDReader {
   }
 }
 
-object S3RDDReader extends S3RDDReader {
-  def getS3Client: () => S3Client = () => S3Client.create()
+object S3RDDReader {
+  def apply(
+    getClient: () => S3Client = S3ClientProducer.get,
+    threadCount: Int = S3Config.threads.rdd.readThreads
+  ): S3RDDReader =
+    new S3RDDReader {
+      final val defaultThreadCount: Int = threadCount
+      final val getS3Client: () => S3Client = getClient
+    }
 }

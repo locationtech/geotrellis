@@ -26,21 +26,24 @@ import geotrellis.util._
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import spray.json.JsonFormat
+import software.amazon.awssdk.services.s3.S3Client
 
 import scala.reflect.ClassTag
 
 object S3LayerReindexer {
   def apply(attributeStore: S3AttributeStore)(implicit sc: SparkContext): LayerReindexer[LayerId] = {
-    val layerReader  = S3LayerReader(attributeStore)
+    val layerReader  = S3LayerReader(attributeStore, attributeStore.getS3Client)
     val layerWriter  = S3LayerWriter(attributeStore)
-    val layerDeleter = S3LayerDeleter(attributeStore)
+    val layerDeleter = S3LayerDeleter(attributeStore, attributeStore.getS3Client)
     val layerCopier  = S3LayerCopier(attributeStore)
 
     GenericLayerReindexer[S3LayerHeader](attributeStore, layerReader, layerWriter, layerDeleter, layerCopier)
   }
+
   def apply(
     bucket: String,
-    prefix: String
+    prefix: String,
+    getS3Client: () => S3Client
   )(implicit sc: SparkContext): LayerReindexer[LayerId] =
-    apply(S3AttributeStore(bucket, prefix))
+    apply(S3AttributeStore(bucket, prefix, getS3Client))
 }

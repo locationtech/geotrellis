@@ -23,7 +23,7 @@ import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.cog._
 import geotrellis.spark.io.index._
-import geotrellis.spark.io.s3.{S3AttributeStore, S3LayerHeader}
+import geotrellis.spark.io.s3.{S3AttributeStore, S3LayerHeader, S3ClientProducer}
 import geotrellis.util._
 
 import software.amazon.awssdk.services.s3.model._
@@ -34,11 +34,12 @@ import scala.reflect.ClassTag
 import java.net.URI
 
 class S3COGValueReader(
-  val attributeStore: AttributeStore
+  val attributeStore: AttributeStore,
+  val getS3Client: () => S3Client = S3ClientProducer.get
 ) extends OverzoomingCOGValueReader {
 
-  // https://github.com/aws/aws-sdk-java-v2/blob/master/docs/BestPractices.md#reuse-sdk-client-if-possible
-  def s3Client: S3Client = S3Client.create()
+  @transient
+  lazy val s3Client: S3Client = getS3Client()
 
   implicit def getByteReader(uri: URI): ByteReader = byteReader(uri, s3Client)
 
@@ -73,7 +74,5 @@ class S3COGValueReader(
 
 object S3COGValueReader {
   def apply(s3attributeStore: S3AttributeStore): S3COGValueReader =
-    new S3COGValueReader(s3attributeStore) {
-      override def s3Client: S3Client = s3attributeStore.s3Client
-    }
+    new S3COGValueReader(s3attributeStore, s3attributeStore.getS3Client)
 }

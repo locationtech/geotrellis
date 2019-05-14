@@ -38,9 +38,7 @@ class MockS3InputFormat extends S3InputFormat[ProjectedExtent, Array[Byte]] {
     }
 }
 
-class S3InputFormatSpec extends FunSpec with Matchers
-{
-
+class S3InputFormatSpec extends FunSpec with Matchers {
   describe("S3 InputFormat") {
 
     it("should parse the s3 url containing bucket name with dash") {

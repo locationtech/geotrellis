@@ -25,11 +25,10 @@ import com.typesafe.scalalogging.LazyLogging
 
 import scala.collection.JavaConverters._
 
-class S3LayerDeleter(val attributeStore: AttributeStore) extends LazyLogging with LayerDeleter[LayerId] {
-
-  def getS3Client: () => S3Client = () =>
-    // https://github.com/aws/aws-sdk-java-v2/blob/master/docs/BestPractices.md#reuse-sdk-client-if-possible
-    S3Client.create()
+class S3LayerDeleter(
+  val attributeStore: AttributeStore,
+  val getS3Client: () => S3Client
+) extends LazyLogging with LayerDeleter[LayerId] {
 
   def delete(id: LayerId): Unit = {
     try {
@@ -49,14 +48,20 @@ class S3LayerDeleter(val attributeStore: AttributeStore) extends LazyLogging wit
 
       if (iter.size == 0) throw new LayerDeleteError(id)
 
-      iter.foreach { s3obj =>
-          val deleteRequest = DeleteObjectRequest.builder()
-            .bucket(bucket)
-            .key(s3obj.key)
-            .build()
-          s3Client.deleteObject(deleteRequest)
-        }
-
+      val objIdentifiers =
+        iter
+          .map { s3obj => ObjectIdentifier.builder.key(s3obj.key).build() }
+          .toList
+      val deleteDefinition =
+        Delete.builder()
+          .objects(objIdentifiers:_*)
+          .build()
+      val deleteRequest =
+        DeleteObjectsRequest.builder()
+          .bucket(bucket)
+          .delete(deleteDefinition)
+          .build()
+      s3Client.deleteObjects(deleteRequest)
       attributeStore.delete(id)
     } catch {
       case e: AttributeNotFoundError =>
@@ -70,7 +75,11 @@ class S3LayerDeleter(val attributeStore: AttributeStore) extends LazyLogging wit
 }
 
 object S3LayerDeleter {
-  def apply(attributeStore: AttributeStore): S3LayerDeleter = new S3LayerDeleter(attributeStore)
+  def apply(attributeStore: AttributeStore, getS3Client: () => S3Client): S3LayerDeleter =
+    new S3LayerDeleter(attributeStore, getS3Client)
 
-  def apply(bucket: String, prefix: String): S3LayerDeleter = apply(S3AttributeStore(bucket, prefix))
+  def apply(bucket: String, prefix: String, getS3Client: () => S3Client): S3LayerDeleter = {
+    val attStore = S3AttributeStore(bucket, prefix, getS3Client)
+    apply(attStore, getS3Client)
+  }
 }

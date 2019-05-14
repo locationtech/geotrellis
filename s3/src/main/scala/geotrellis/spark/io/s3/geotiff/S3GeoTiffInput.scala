@@ -16,6 +16,7 @@
 
 package geotrellis.spark.io.s3.geotiff
 
+import geotrellis.spark.io.s3.S3ClientProducer
 import geotrellis.raster.io.geotiff.reader.TiffTagsReader
 import geotrellis.spark.io.hadoop.geotiff.GeoTiffMetadata
 import geotrellis.spark.io.s3.util.S3RangeReader
@@ -42,11 +43,12 @@ import java.net.URI
     uri: URI,
     pattern: String,
     recursive: Boolean = true,
-    getS3Client: () => S3Client = () =>
-      // https://github.com/aws/aws-sdk-java-v2/blob/master/docs/BestPractices.md#reuse-sdk-client-if-possible
-      S3Client.create()): List[GeoTiffMetadata] = {
+    getS3Client: () => S3Client = S3ClientProducer.get
+  ): List[GeoTiffMetadata] = {
+
     @transient
     lazy val s3Client = getS3Client()
+
     val s3Uri = new AmazonS3URI(uri)
     val regexp = pattern.r
 
@@ -76,7 +78,7 @@ import java.net.URI
           S3RangeReader(
             bucket = bucketAndKey._1,
             key = bucketAndKey._2,
-            client = getS3Client()
+            client = s3Client
           )
         ))
 
