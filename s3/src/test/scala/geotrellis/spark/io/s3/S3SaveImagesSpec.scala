@@ -33,6 +33,8 @@ import org.scalatest._
 class S3SaveImagesSpec extends FunSpec with TestEnvironment with Matchers {
   lazy val sample = TestFiles.generateSpatial("all-ones")
   val  mockClient = MockS3Client()
+  S3TestUtils.cleanBucket(mockClient, "mock-bucket")
+  S3ClientProducer.set(() => MockS3Client())
 
   describe("Saving of Rendered Tiles to S3") {
     it("should work with PNGs") {

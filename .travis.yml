@@ -27,6 +27,7 @@ before_script:
   - sudo fallocate -l 5G /swapfile && sudo chmod 600 /swapfile && sudo mkswap /swapfile && sudo swapon /swapfile
   - .travis/before-script.sh
   - docker run -d --restart=always -p 8081:80 -v $(pwd)/spark/src/test/resources:/usr/share/nginx/html:ro nginx:stable
+  - docker run -d --restart=always -p 9000:9000 -m 1G -e MINIO_ACCESS_KEY=minio -e MINIO_SECRET_KEY=password minio/minio:latest server /data
   - .travis/unzip-rasters.sh
 
 jdk:
