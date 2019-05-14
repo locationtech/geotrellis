@@ -46,6 +46,7 @@ case class COGLayerMetadata[K: SpatialComponent](
         .groupBy(_._1)
         .map { case (key, bounds) => key -> bounds.map(_._2).reduce(_ combine _) }
         .toVector
+        .sortBy(_._1)
 
     val combinedExtent = extent.combine(other.extent)
 
@@ -68,14 +69,14 @@ case class COGLayerMetadata[K: SpatialComponent](
     zoomRangeInfoFor(zoom)._1
 
   def zoomRangeInfoFor(zoom: Int): (ZoomRange, KeyBounds[K]) = {
-    val i = java.util.Arrays.binarySearch(maxZooms, zoom)
+    val i = java.util.Arrays.binarySearch(maxZooms.sorted, zoom)
     val idx =
       if(i >= 0) { i }
       else {
         ~i //- 1
       }
 
-    zoomRangeInfos(idx)
+    zoomRangeInfos.sortBy(_._1).apply(idx)
   }
 
 
@@ -357,7 +358,7 @@ object COGLayerMetadata {
       def write(metadata: COGLayerMetadata[K]) =
         JsObject(
           "cellType" -> metadata.cellType.toJson,
-          "zoomRangesInfos" -> metadata.zoomRangeInfos.toJson,
+          "zoomRangesInfos" -> metadata.zoomRangeInfos.sortBy(_._1).toJson,
           "layoutScheme" -> metadata.layoutScheme.toJson,
           "extent" -> metadata.extent.toJson,
           "crs" -> metadata.crs.toJson
@@ -368,7 +369,7 @@ object COGLayerMetadata {
           case Seq(cellType, JsArray(zoomRanges), layoutScheme, extent, crs) =>
             COGLayerMetadata(
               cellType.convertTo[CellType],
-              zoomRanges.map(_.convertTo[(ZoomRange, KeyBounds[K])]),
+              zoomRanges.map(_.convertTo[(ZoomRange, KeyBounds[K])]).sortBy(_._1).toVector,
               layoutScheme.convertTo[ZoomedLayoutScheme],
               extent.convertTo[Extent],
               crs.convertTo[CRS]
