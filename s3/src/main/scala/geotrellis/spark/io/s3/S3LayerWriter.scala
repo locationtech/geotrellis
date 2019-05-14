@@ -51,11 +51,11 @@ class S3LayerWriter(
   bucket: String,
   keyPrefix: String,
   putObjectModifier: PutObjectRequest => PutObjectRequest = identity,
-  getS3Client: () => S3Client = S3ClientProducer.get,
+  getClient: () => S3Client = S3ClientProducer.get,
   threadCount: Int = S3Config.threads.rdd.writeThreads
 ) extends LayerWriter[LayerId] with LazyLogging {
 
-  def rddWriter: S3RDDWriter = S3RDDWriter(getS3Client, threadCount)
+  def rddWriter: S3RDDWriter = new S3RDDWriter(getClient, threadCount)
 
   // Layer Updating
   def overwrite[
@@ -139,28 +139,32 @@ object S3LayerWriter {
     bucket: String,
     prefix: String,
     putObjectModifier: PutObjectRequest => PutObjectRequest,
-    getS3Client: () => S3Client = S3ClientProducer.get
+    getClient: () => S3Client = S3ClientProducer.get
   ): S3LayerWriter =
     new S3LayerWriter(attributeStore, bucket, prefix, putObjectModifier)
 
-  def apply(attributeStore: AttributeStore, bucket: String, prefix: String, getS3Client: () => S3Client): S3LayerWriter =
-    new S3LayerWriter(attributeStore, bucket, prefix, identity, getS3Client)
+  def apply(attributeStore: AttributeStore, bucket: String, prefix: String, getClient: () => S3Client): S3LayerWriter =
+    new S3LayerWriter(attributeStore, bucket, prefix, identity, getClient)
 
   def apply(attributeStore: S3AttributeStore): S3LayerWriter =
-    apply(attributeStore, attributeStore.bucket, attributeStore.prefix, attributeStore.getS3Client)
+    apply(attributeStore, attributeStore.bucket, attributeStore.prefix, attributeStore.getClient)
 
   def apply(attributeStore: S3AttributeStore, putObjectModifier: PutObjectRequest => PutObjectRequest): S3LayerWriter =
-    apply(attributeStore, attributeStore.bucket, attributeStore.prefix, putObjectModifier, attributeStore.getS3Client)
+    apply(attributeStore, attributeStore.bucket, attributeStore.prefix, putObjectModifier, attributeStore.getClient)
 
-  def apply(bucket: String, prefix: String, getS3Client: () => S3Client): S3LayerWriter =
-    apply(S3AttributeStore(bucket, prefix, getS3Client))
+  def apply(bucket: String, prefix: String, getClient: () => S3Client): S3LayerWriter = {
+    val attStore = S3AttributeStore(bucket, prefix, getClient)
+    apply(attStore)
+  }
 
   def apply(
     bucket: String,
     prefix: String,
     putObjectModifier: PutObjectRequest => PutObjectRequest,
-    getS3Client: () => S3Client
-  ): S3LayerWriter =
-    apply(S3AttributeStore(bucket, prefix, getS3Client), putObjectModifier)
+    getClient: () => S3Client
+  ): S3LayerWriter = {
+    val attStore = S3AttributeStore(bucket, prefix, getClient)
+    apply(attStore, putObjectModifier)
+  }
 
 }

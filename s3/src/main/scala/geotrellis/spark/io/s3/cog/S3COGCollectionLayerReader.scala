@@ -42,12 +42,12 @@ import scala.reflect.ClassTag
  */
 class S3COGCollectionLayerReader(
   val attributeStore: AttributeStore,
-  val getS3Client: () => S3Client = S3ClientProducer.get,
-  val defaultThreads: Int = S3COGCollectionLayerReader.defaultThreadCount
+  val getClient: () => S3Client = S3ClientProducer.get,
+  val defaultThreads: Int = S3Config.threads.collection.readThreads
 ) extends COGCollectionLayerReader[LayerId] with LazyLogging {
 
   @transient
-  lazy val s3Client = getS3Client()
+  lazy val s3Client = getClient()
   implicit def getByteReader(uri: URI): ByteReader = byteReader(uri, s3Client)
 
   def read[
@@ -84,14 +84,14 @@ class S3COGCollectionLayerReader(
 }
 
 object S3COGCollectionLayerReader {
-  lazy val defaultThreadCount: Int = S3Config.threads.collection.readThreads
-
   def apply(attributeStore: S3AttributeStore): S3COGCollectionLayerReader =
     new S3COGCollectionLayerReader(
       attributeStore,
-      attributeStore.getS3Client
+      attributeStore.getClient
     )
 
-  def apply(bucket: String, prefix: String, getS3Client: () => S3Client = S3ClientProducer.get): S3COGCollectionLayerReader =
-    apply(S3AttributeStore(bucket, prefix, getS3Client))
+  def apply(bucket: String, prefix: String, getClient: () => S3Client = S3ClientProducer.get): S3COGCollectionLayerReader = {
+    val attStore = S3AttributeStore(bucket, prefix, getClient)
+    apply(attStore)
+  }
 }

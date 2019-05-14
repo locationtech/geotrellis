@@ -27,7 +27,7 @@ import scala.collection.JavaConverters._
 
 class S3LayerDeleter(
   val attributeStore: AttributeStore,
-  val getS3Client: () => S3Client
+  val getClient: () => S3Client
 ) extends LazyLogging with LayerDeleter[LayerId] {
 
   def delete(id: LayerId): Unit = {
@@ -35,7 +35,7 @@ class S3LayerDeleter(
       val header = attributeStore.readHeader[S3LayerHeader](id)
       val bucket = header.bucket
       val prefix = header.key + "/"
-      val s3Client = getS3Client()
+      val s3Client = getClient()
       val listRequest = ListObjectsV2Request.builder()
         .bucket(bucket)
         .prefix(prefix)
@@ -75,11 +75,11 @@ class S3LayerDeleter(
 }
 
 object S3LayerDeleter {
-  def apply(attributeStore: AttributeStore, getS3Client: () => S3Client): S3LayerDeleter =
-    new S3LayerDeleter(attributeStore, getS3Client)
+  def apply(attributeStore: AttributeStore, getClient: () => S3Client): S3LayerDeleter =
+    new S3LayerDeleter(attributeStore, getClient)
 
-  def apply(bucket: String, prefix: String, getS3Client: () => S3Client): S3LayerDeleter = {
-    val attStore = S3AttributeStore(bucket, prefix, getS3Client)
-    apply(attStore, getS3Client)
+  def apply(bucket: String, prefix: String, getClient: () => S3Client): S3LayerDeleter = {
+    val attStore = S3AttributeStore(bucket, prefix, getClient)
+    apply(attStore, getClient)
   }
 }

@@ -38,7 +38,7 @@ class S3LayerCopier(
   val attributeStore: AttributeStore,
   destBucket: String,
   destKeyPrefix: String,
-  getS3Client: () => S3Client
+  val getClient: () => S3Client = S3ClientProducer.get
 ) extends LayerCopier[LayerId] {
 
   // Not necessary if this isn't recursive any longer due to the iterator handling *all* objects
@@ -75,7 +75,7 @@ class S3LayerCopier(
 
     val bucket = header.bucket
     val prefix = header.key
-    val s3Client = getS3Client()
+    val s3Client = getClient()
 
     val listRequest =
       ListObjectsV2Request.builder()
@@ -99,19 +99,19 @@ class S3LayerCopier(
 }
 
 object S3LayerCopier {
-  def apply(attributeStore: AttributeStore, destBucket: String, destKeyPrefix: String, getS3Client: () => S3Client): S3LayerCopier =
-    new S3LayerCopier(attributeStore, destBucket, destKeyPrefix, getS3Client)
+  def apply(attributeStore: AttributeStore, destBucket: String, destKeyPrefix: String, getClient: () => S3Client): S3LayerCopier =
+    new S3LayerCopier(attributeStore, destBucket, destKeyPrefix, getClient)
 
-  def apply(bucket: String, keyPrefix: String, destBucket: String, destKeyPrefix: String, getS3Client: () => S3Client): S3LayerCopier = {
-    val attStore = S3AttributeStore(bucket, keyPrefix, getS3Client)
-    apply(attStore, destBucket, destKeyPrefix, getS3Client)
+  def apply(bucket: String, keyPrefix: String, destBucket: String, destKeyPrefix: String, getClient: () => S3Client): S3LayerCopier = {
+    val attStore = S3AttributeStore(bucket, keyPrefix, getClient)
+    apply(attStore, destBucket, destKeyPrefix, getClient)
   }
 
-  def apply(bucket: String, keyPrefix: String, getS3Client: () => S3Client): S3LayerCopier = {
-    val attStore = S3AttributeStore(bucket, keyPrefix, getS3Client)
+  def apply(bucket: String, keyPrefix: String, getClient: () => S3Client): S3LayerCopier = {
+    val attStore = S3AttributeStore(bucket, keyPrefix, getClient)
     apply(attStore)
   }
 
   def apply(attributeStore: S3AttributeStore): S3LayerCopier =
-    apply(attributeStore, attributeStore.bucket, attributeStore.prefix, attributeStore.getS3Client)
+    apply(attributeStore, attributeStore.bucket, attributeStore.prefix, attributeStore.getClient)
 }

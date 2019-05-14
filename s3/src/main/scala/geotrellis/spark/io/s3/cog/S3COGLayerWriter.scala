@@ -44,8 +44,8 @@ class S3COGLayerWriter(
   val attributeStore: AttributeStore,
   bucket: String,
   keyPrefix: String,
-  getS3Client: () => S3Client = S3ClientProducer.get,
-  threads: Int = S3Config.threads.rdd.writeThreads
+  val getClient: () => S3Client = S3ClientProducer.get,
+  val defaultThreadCount: Int = S3Config.threads.rdd.writeThreads
 ) extends COGLayerWriter {
 
   def writeCOGLayer[
@@ -74,10 +74,10 @@ class S3COGLayerWriter(
     attributeStore.writeCOGLayerAttributes(layerId0, header, storageMetadata)
 
     @transient
-    lazy val s3Client = getS3Client() // for saving VRT from Accumulator
+    lazy val s3Client = getClient() // for saving VRT from Accumulator
 
     // Make S3COGAsyncWriter
-    val asyncWriter = new S3COGAsyncWriter[V](bucket, 32, p => p)
+    val asyncWriter = new S3COGAsyncWriter[V](bucket, defaultThreadCount, p => p)
 
     val retryCheck: Throwable => Boolean = {
       case e: S3Exception if e.statusCode == 503 => true
@@ -105,7 +105,7 @@ class S3COGLayerWriter(
 
           (s"${keyPath(key)}.${Extension}", cog)
         }
-        .foreachPartition { partition => asyncWriter.write(getS3Client(), partition, mergeFunc, Some(retryCheck)) }
+        .foreachPartition { partition => asyncWriter.write(getClient(), partition, mergeFunc, Some(retryCheck)) }
 
       // Save Accumulator
       val bytes =
@@ -132,7 +132,7 @@ class S3COGLayerWriter(
 
 object S3COGLayerWriter {
   def apply(attributeStore: S3AttributeStore): S3COGLayerWriter =
-    new S3COGLayerWriter(attributeStore, attributeStore.bucket, attributeStore.prefix, attributeStore.getS3Client)
+    new S3COGLayerWriter(attributeStore, attributeStore.bucket, attributeStore.prefix, attributeStore.getClient)
 }
 
 

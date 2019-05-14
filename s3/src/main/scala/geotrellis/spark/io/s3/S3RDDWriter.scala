@@ -37,10 +37,10 @@ import java.util.concurrent.Executors
 import scala.concurrent.ExecutionContext
 import scala.reflect._
 
-trait S3RDDWriter {
-  def defaultThreadCount: Int
-
-  def getS3Client: () => S3Client
+class S3RDDWriter(
+  val getClient: () => S3Client,
+  val defaultThreadCount: Int
+) {
 
   def write[K: AvroRecordCodec: ClassTag, V: AvroRecordCodec: ClassTag](
     rdd: RDD[(K, V)],
@@ -66,7 +66,7 @@ trait S3RDDWriter {
 
     implicit val sc = rdd.sparkContext
 
-    val _getS3Client = getS3Client
+    val _getS3Client = getClient
     val _codec = codec
 
     val pathsToTiles =
@@ -158,13 +158,3 @@ trait S3RDDWriter {
   }
 }
 
-object S3RDDWriter {
-  def apply(
-    getClient: () => S3Client = S3ClientProducer.get,
-    threadCount: Int = S3Config.threads.rdd.writeThreads
-  ) =
-    new S3RDDWriter {
-      final val defaultThreadCount: Int = threadCount
-      final val getS3Client: () => S3Client = getClient
-    }
-}

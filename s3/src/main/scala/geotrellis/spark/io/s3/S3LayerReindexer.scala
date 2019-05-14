@@ -32,9 +32,9 @@ import scala.reflect.ClassTag
 
 object S3LayerReindexer {
   def apply(attributeStore: S3AttributeStore)(implicit sc: SparkContext): LayerReindexer[LayerId] = {
-    val layerReader  = S3LayerReader(attributeStore, attributeStore.getS3Client)
+    val layerReader  = S3LayerReader(attributeStore, attributeStore.getClient)
     val layerWriter  = S3LayerWriter(attributeStore)
-    val layerDeleter = S3LayerDeleter(attributeStore, attributeStore.getS3Client)
+    val layerDeleter = S3LayerDeleter(attributeStore, attributeStore.getClient)
     val layerCopier  = S3LayerCopier(attributeStore)
 
     GenericLayerReindexer[S3LayerHeader](attributeStore, layerReader, layerWriter, layerDeleter, layerCopier)
@@ -43,7 +43,7 @@ object S3LayerReindexer {
   def apply(
     bucket: String,
     prefix: String,
-    getS3Client: () => S3Client
+    getClient: () => S3Client
   )(implicit sc: SparkContext): LayerReindexer[LayerId] =
-    apply(S3AttributeStore(bucket, prefix, getS3Client))
+    apply(S3AttributeStore(bucket, prefix, getClient))
 }

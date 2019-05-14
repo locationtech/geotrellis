@@ -40,7 +40,7 @@ import java.io.ByteArrayInputStream
 class S3AttributeStore(
   val bucket: String,
   val prefix: String,
-  val getS3Client: () => S3Client = S3ClientProducer.get
+  val getClient: () => S3Client = S3ClientProducer.get
 ) extends BlobLayerAttributeStore {
   import S3AttributeStore._
 
@@ -67,7 +67,7 @@ class S3AttributeStore(
       .bucket(bucket)
       .key(key)
       .build()
-    val s3objStream = getS3Client().getObject(getRequest)
+    val s3objStream = getClient().getObject(getRequest)
     val json =
       try {
         Source.fromInputStream(s3objStream)(Charset.forName("UTF-8")).mkString
@@ -91,7 +91,7 @@ class S3AttributeStore(
       .bucket(bucket)
       .prefix(attributePrefix(attributeName))
       .build()
-    getS3Client()
+    getClient()
       .listObjectsV2Paginator(listRequest)
       .contents
       .asScala
@@ -114,7 +114,7 @@ class S3AttributeStore(
       .key(key)
       .build()
     val requestBody = RequestBody.fromBytes(str.getBytes("UTF-8"))
-    getS3Client().putObject(putRequest, requestBody)
+    getClient().putObject(putRequest, requestBody)
     //AmazonServiceException possible
   }
 
@@ -123,7 +123,7 @@ class S3AttributeStore(
       .bucket(bucket)
       .prefix(path(prefix, "_attributes"))
       .build()
-    getS3Client()
+    getClient()
       .listObjectsV2Paginator(listRequest)
       .contents
       .asScala
@@ -135,7 +135,7 @@ class S3AttributeStore(
       .bucket(bucket)
       .key(attributePath(layerId, attributeName))
       .build()
-    getS3Client().deleteObject(deleteRequest)
+    getClient().deleteObject(deleteRequest)
     clearCache(layerId, attributeName)
   }
 
@@ -144,7 +144,7 @@ class S3AttributeStore(
       .bucket(bucket)
       .prefix(path(prefix, "_attributes"))
       .build()
-    getS3Client()
+    getClient()
       .listObjectsV2Paginator(listRequest)
       .contents
       .asScala
@@ -163,7 +163,7 @@ class S3AttributeStore(
       .bucket(bucket)
       .delete(deleteDefinition)
       .build()
-    getS3Client().deleteObjects(deleteRequest)
+    getClient().deleteObjects(deleteRequest)
     clearCache(layerId)
   }
 
@@ -172,7 +172,7 @@ class S3AttributeStore(
       .bucket(bucket)
       .prefix(path(prefix, "_attributes/metadata"))
       .build()
-    getS3Client()
+    getClient()
       .listObjectsV2Paginator(listRequest)
       .contents
       .asScala
@@ -195,7 +195,7 @@ class S3AttributeStore(
       .bucket(bucket)
       .prefix(path(prefix, s"_attributes/metadata${SEP}${layerName}"))
       .build()
-    getS3Client()
+    getClient()
       .listObjectsV2Paginator(listRequest)
       .contents
       .asScala
@@ -214,9 +214,9 @@ class S3AttributeStore(
 object S3AttributeStore {
   final val SEP = "__"
 
-  def apply(bucket: String, root: String, getS3Client: () => S3Client = S3ClientProducer.get) =
-    new S3AttributeStore(bucket, root, getS3Client)
+  def apply(bucket: String, root: String, getClient: () => S3Client = S3ClientProducer.get) =
+    new S3AttributeStore(bucket, root, getClient)
 
-  def apply(bucket: String, getS3Client: () => S3Client): S3AttributeStore =
-    apply(bucket, "", getS3Client)
+  def apply(bucket: String, getClient: () => S3Client): S3AttributeStore =
+    apply(bucket, "", getClient)
 }

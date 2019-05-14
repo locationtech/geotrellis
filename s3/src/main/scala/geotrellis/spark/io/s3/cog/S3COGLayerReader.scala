@@ -44,13 +44,13 @@ import scala.reflect.ClassTag
  */
 class S3COGLayerReader(
   val attributeStore: AttributeStore,
-  val getS3Client: () => S3Client = S3ClientProducer.get,
+  val getClient: () => S3Client = S3ClientProducer.get,
   val defaultThreads: Int = S3COGLayerReader.defaultThreadCount
 )(@transient implicit val sc: SparkContext) extends COGLayerReader[LayerId] with LazyLogging {
 
   val defaultNumPartitions: Int = sc.defaultParallelism
 
-  lazy val client = getS3Client()
+  lazy val client = getClient()
 
   implicit def getByteReader(uri: URI): ByteReader = byteReader(uri, client)
 
@@ -107,6 +107,6 @@ object S3COGLayerReader {
   def apply(attributeStore: S3AttributeStore)(implicit sc: SparkContext): S3COGLayerReader =
     new S3COGLayerReader(
       attributeStore,
-      attributeStore.getS3Client
+      attributeStore.getClient
     )
 }

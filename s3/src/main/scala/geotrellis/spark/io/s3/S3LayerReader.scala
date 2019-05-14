@@ -42,14 +42,14 @@ import scala.reflect.ClassTag
  */
 class S3LayerReader(
   val attributeStore: AttributeStore,
-  getS3Client: () => S3Client = S3ClientProducer.get,
-  threadCount: Int = S3Config.threads.rdd.readThreads
+  val getClient: () => S3Client = S3ClientProducer.get,
+  val threadCount: Int = S3Config.threads.rdd.readThreads
 )(implicit sc: SparkContext)
   extends FilteringLayerReader[LayerId] with LazyLogging {
 
   val defaultNumPartitions = sc.defaultParallelism
 
-  def rddReader: S3RDDReader = S3RDDReader(getS3Client, threadCount)
+  def rddReader: S3RDDReader = new S3RDDReader(getClient, threadCount)
 
   def read[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
@@ -80,11 +80,11 @@ class S3LayerReader(
 }
 
 object S3LayerReader {
-  def apply(attributeStore: AttributeStore, getS3Client: () => S3Client)(implicit sc: SparkContext): S3LayerReader =
-    new S3LayerReader(attributeStore, getS3Client)
+  def apply(attributeStore: AttributeStore, getClient: () => S3Client)(implicit sc: SparkContext): S3LayerReader =
+    new S3LayerReader(attributeStore, getClient)
 
-  def apply(bucket: String, prefix: String, getS3Client: () => S3Client)(implicit sc: SparkContext): S3LayerReader = {
-    val attStore = new S3AttributeStore(bucket, prefix, getS3Client)
-    apply(attStore, getS3Client)
+  def apply(bucket: String, prefix: String, getClient: () => S3Client)(implicit sc: SparkContext): S3LayerReader = {
+    val attStore = new S3AttributeStore(bucket, prefix, getClient)
+    apply(attStore, getClient)
   }
 }

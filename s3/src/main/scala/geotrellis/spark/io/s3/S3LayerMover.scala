@@ -30,11 +30,11 @@ object S3LayerMover {
     attributeStore: AttributeStore,
     bucket: String,
     keyPrefix: String,
-    getS3Client: () => S3Client = S3ClientProducer.get
+    getClient: () => S3Client = S3ClientProducer.get
   ): LayerMover[LayerId] =
     new GenericLayerMover[LayerId](
-      layerCopier  = S3LayerCopier(attributeStore, bucket, keyPrefix, getS3Client),
-      layerDeleter = S3LayerDeleter(attributeStore, getS3Client)
+      layerCopier  = S3LayerCopier(attributeStore, bucket, keyPrefix, getClient),
+      layerDeleter = S3LayerDeleter(attributeStore, getClient)
     )
 
   def apply(
@@ -42,30 +42,30 @@ object S3LayerMover {
     keyPrefix: String,
     destBucket: String,
     destKeyPrefix: String,
-    getS3Client: () => S3Client
+    getClient: () => S3Client
   ): LayerMover[LayerId] = {
-    val attributeStore = S3AttributeStore(bucket, keyPrefix, getS3Client)
+    val attributeStore = S3AttributeStore(bucket, keyPrefix, getClient)
     new GenericLayerMover[LayerId](
-      layerCopier  = S3LayerCopier(attributeStore, destBucket, destKeyPrefix, getS3Client),
-      layerDeleter = S3LayerDeleter(attributeStore, getS3Client)
+      layerCopier  = S3LayerCopier(attributeStore, destBucket, destKeyPrefix, getClient),
+      layerDeleter = S3LayerDeleter(attributeStore, getClient)
     )
   }
 
   def apply(
     bucket: String,
     keyPrefix: String,
-    getS3Client: () => S3Client
+    getClient: () => S3Client
   ): LayerMover[LayerId] = {
-    val attributeStore = S3AttributeStore(bucket, keyPrefix, getS3Client)
+    val attributeStore = S3AttributeStore(bucket, keyPrefix, getClient)
     new GenericLayerMover[LayerId](
-      layerCopier    = S3LayerCopier(attributeStore, bucket, keyPrefix, getS3Client),
-      layerDeleter   = S3LayerDeleter(attributeStore, getS3Client)
+      layerCopier    = S3LayerCopier(attributeStore, bucket, keyPrefix, getClient),
+      layerDeleter   = S3LayerDeleter(attributeStore, getClient)
     )
   }
 
   def apply(attributeStore: S3AttributeStore): LayerMover[LayerId] =
     new GenericLayerMover[LayerId](
       layerCopier    = S3LayerCopier(attributeStore),
-      layerDeleter   = S3LayerDeleter(attributeStore, attributeStore.getS3Client)
+      layerDeleter   = S3LayerDeleter(attributeStore, attributeStore.getClient)
     )
 }

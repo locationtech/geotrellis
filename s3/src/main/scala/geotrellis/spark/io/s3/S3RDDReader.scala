@@ -33,10 +33,10 @@ import org.apache.commons.io.IOUtils
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
-trait S3RDDReader {
-  def defaultThreadCount: Int
-
-  def getS3Client: () => S3Client
+class S3RDDReader(
+  val getClient: () => S3Client,
+  val defaultThreadCount: Int
+) {
 
   def read[
     K: AvroRecordCodec: Boundable,
@@ -62,7 +62,7 @@ trait S3RDDReader {
 
     val includeKey = (key: K) => queryKeyBounds.includeKey(key)
     val _recordCodec = KeyValueRecordCodec[K, V]
-    val _getS3Client = getS3Client
+    val _getS3Client = getClient
     val kwWriterSchema = KryoWrapper(writerSchema) //Avro Schema is not Serializable
 
     sc.parallelize(bins, bins.size)
@@ -94,13 +94,3 @@ trait S3RDDReader {
   }
 }
 
-object S3RDDReader {
-  def apply(
-    getClient: () => S3Client = S3ClientProducer.get,
-    threadCount: Int = S3Config.threads.rdd.readThreads
-  ): S3RDDReader =
-    new S3RDDReader {
-      final val defaultThreadCount: Int = threadCount
-      final val getS3Client: () => S3Client = getClient
-    }
-}

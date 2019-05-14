@@ -35,13 +35,10 @@ import java.net.URI
 
 class S3COGValueReader(
   val attributeStore: AttributeStore,
-  val getS3Client: () => S3Client = S3ClientProducer.get
+  val getClient: () => S3Client = S3ClientProducer.get
 ) extends OverzoomingCOGValueReader {
 
-  @transient
-  lazy val s3Client: S3Client = getS3Client()
-
-  implicit def getByteReader(uri: URI): ByteReader = byteReader(uri, s3Client)
+  implicit def getByteReader(uri: URI): ByteReader = byteReader(uri, getClient())
 
   def reader[
     K: JsonFormat: SpatialComponent : ClassTag,
@@ -74,5 +71,5 @@ class S3COGValueReader(
 
 object S3COGValueReader {
   def apply(s3attributeStore: S3AttributeStore): S3COGValueReader =
-    new S3COGValueReader(s3attributeStore, s3attributeStore.getS3Client)
+    new S3COGValueReader(s3attributeStore, s3attributeStore.getClient)
 }
