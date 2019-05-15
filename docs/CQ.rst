@@ -1,7 +1,7 @@
 Create a Contribution Questionnaire
 ===================================
 
-All the new dependencies and all the dependencies updates should be submited as a new CQ into the
+Any dependency changes made to GeoTrellis should be submited as a new CQ into the
 `ECLIPSE IP Zilla <https://dev.eclipse.org/ipzilla/query.cgi>`__.
 
 Submitting a CQ
@@ -18,14 +18,14 @@ On the right, in the ``COMMITTER TOOLS`` side bar, you can find a link `Create a
 .. figure:: img/geotrellis-cq.png
    :alt: Create a Contribution Questionnaire page
 
-Next, we need to create a Third-Party Code Request usually. All the next steps would be based on a particular library example.
-Let's create a CQ for ``pureconfig v0.10.2``:
+Next, we need to create a Third-Party Code Quest. For this example, we'll be creating a CQ for ``pureconfig v0.10.2``:
 
 .. figure:: img/pb-cq.png
    :alt: A "piggyback" CQ
 
-If your library of your version is here, then select it. It is the easiest result and it means that somebody have already sent a request to
-the ``Eclipse IP`` team and the dependency (probably) had been validated. It means that this dep can be approved automatically.
+When typing in the name/version of the dependency, it may sometimes already appear.
+If that's the case, then that means someone else has already sent this dependency to Eclipse's IP team.
+In that case, the CR could be instantly approved if the IP team has already approved of the given dependency.
 
 Let's create a CQ for ``pureconfig v0.11.0``. There is no such a library, so we'll have to fill the page manually:
 
@@ -37,15 +37,19 @@ The next step would be to full fill the information about it:
 .. figure:: img/npb-cq.png
    :alt: A new CQ Step 1
 
-The question is - how to do it? If this library but of a previous version was already submitted, we can use it as an example to fill
-the page. In our case we can use `Pureconfig Version 0.10.2 <https://dev.eclipse.org/ipzilla/show_bug.cgi?id=19572>`__
+If the library was already submitted but a new version is being requested, one can look at what was already submitted for that library to use as an example.
+In our case we can use a `Pureconfig Version 0.10.2 <https://dev.eclipse.org/ipzilla/show_bug.cgi?id=19572>`__
 
-Go into the CQ page and submit all the ``sources`` related to this CQ (for this particular example I used ``pureconfig v0.10.2``):
+If it is a completely new dependency and it was never validated by the IP team - then it is still required to fill all the fields,
+but without any help.
+
+Next, you'll need to go the CQ page and submit any source code released to this CQ (``pureconfig v0.10.2`` for this example):
 
 .. figure:: img/ipzilla-cq.png
    :alt: Add sources to the CQ
 
-How to get sources? For these purposes it is possible to use `Maven Central search <https://search.maven.org/search?q=a:pureconfig_2.11>`__:
+One can find source code for their target library in a number of different locations.
+The first and probably best place to check is `Maven Central search <https://search.maven.org/search?q=a:pureconfig_2.11>`__:
 
 .. figure:: img/cq-sources-mavencentral.png
    :alt: Download sources
@@ -53,7 +57,7 @@ How to get sources? For these purposes it is possible to use `Maven Central sear
 You may upload multiple sources, in case they are all in the same repository.
 The example of such a CQ is `AWS SDK CQ <https://dev.eclipse.org/ipzilla/show_bug.cgi?id=19560>`__.
 
-After you uploaded all ``sources``, the next step would be to submit a PMC approval request. To do it, you need to subscribe for the
-`Technology PMC mailing list <https://dev.locationtech.org/mailman/listinfo/technology-pmc>`__ and to send a request here.
+Affter you uploaded all ``sources``, the next step would be to submit a PMC approval request.
+To do it, you need to subscribe for the `Technology PMC mailing list <https://dev.locationtech.org/mailman/listinfo/technology-pmc>`__ and to send a request.
 The example of such a request can be found in the `Technology PMC mailing list archive <https://dev.locationtech.org/mhonarc/lists/technology-pmc/msg01954.html>`__.
-If things are not moving, you can try to leave your request in a `Locationtech Gitter lobby channel <https://gitter.im/locationtech/discuss>`__
+If things are not moving, you can try to leave your request in a `Locationtech Gitter lobby channel <https://gitter.im/locationtech/discuss>`__.
