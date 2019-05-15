@@ -99,6 +99,7 @@ Ready? `Setup a GeoTrellis development environment. <tutorials/setup.html>`__
 
    Changelog <CHANGELOG>
    Contributing <CONTRIBUTING>
+   Create a Contribution Questionnaire <CQ>
 
 .. toctree::
    :maxdepth: 3
