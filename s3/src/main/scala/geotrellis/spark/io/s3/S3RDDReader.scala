@@ -77,7 +77,7 @@ trait S3RDDReader {
               case e: AmazonS3Exception if e.getStatusCode == 404 => Vector.empty
             }
           }) (backOffPredicate = {
-            case e: AmazonS3Exception if e.getStatusCode == 503 => true
+            case e: AmazonS3Exception if e.getStatusCode == 503  || e.getStatusCode == 500 => true
             case _ => false
           })
         }
