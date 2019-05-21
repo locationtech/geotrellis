@@ -25,13 +25,10 @@ import cats.Semigroup
 abstract class TileFeatureMergeMethods[
   T <: CellGrid[Int]: (? => TileMergeMethods[T]),
   D: Semigroup
-] extends TileMergeMethods[TileFeature[T, D]] {
+](val self: TileFeature[T, D]) extends TileMergeMethods[TileFeature[T, D]] {
   def merge(other: TileFeature[T, D], baseCol: Int, baseRow: Int): TileFeature[T, D] =
     TileFeature(self.tile.merge(other.tile, baseCol, baseRow), Semigroup[D].combine(self.data, other.data))
 
   def merge(extent: Extent, otherExtent: Extent, other: TileFeature[T, D], method: ResampleMethod): TileFeature[T, D] =
     TileFeature(self.tile.merge(extent, otherExtent, other.tile, method), Semigroup[D].combine(self.data, other.data))
 }
-
-abstract class SinglebandTileFeatureMergeMethods[D: Semigroup] extends TileFeatureMergeMethods[Tile, D]
-abstract class MultibandTileFeatureMergeMethods[D: Semigroup] extends TileFeatureMergeMethods[MultibandTile, D]

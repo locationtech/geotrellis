@@ -26,7 +26,7 @@ import cats.Semigroup
 abstract class RasterTileFeatureMergeMethods[
   T <: CellGrid[Int] : (? => TileMergeMethods[T]),
   D : Semigroup
-](implicit ev0: Raster[T] => RasterMergeMethods[T]) extends MethodExtensions[TileFeature[Raster[T], D]] {
+](val self: TileFeature[Raster[T], D])(implicit ev0: Raster[T] => RasterMergeMethods[T]) extends MethodExtensions[TileFeature[Raster[T], D]] {
   import Implicits._
 
   def merge(other: TileFeature[Raster[T], D]): TileFeature[Raster[T], D] =
@@ -35,6 +35,3 @@ abstract class RasterTileFeatureMergeMethods[
   def merge(other: TileFeature[Raster[T], D], method: ResampleMethod): TileFeature[Raster[T], D] =
     TileFeature(self.tile.merge(other.tile, method), Semigroup[D].combine(self.data, other.data))
 }
-
-abstract class SinglebandRasterTileFeatureMergeMethods[D: Semigroup] extends RasterTileFeatureMergeMethods[Tile, D]
-abstract class MultibandRasterTileFeatureMergeMethods[D: Semigroup] extends RasterTileFeatureMergeMethods[MultibandTile, D]
