@@ -24,7 +24,7 @@ import geotrellis.util.MethodExtensions
 abstract class TileFeatureReprojectMethods[
   T <: CellGrid[Int]: (? => TileReprojectMethods[T]),
   D
-] extends TileReprojectMethods[TileFeature[T, D]] {
+](val self: TileFeature[T, D]) extends TileReprojectMethods[TileFeature[T, D]] {
   import Reproject.Options
 
   def reproject(
@@ -59,6 +59,3 @@ abstract class TileFeatureReprojectMethods[
     Raster(TileFeature(tile, self.data), extent)
   }
 }
-
-trait SinglebandTileFeatureReprojectMethods[D] extends TileFeatureReprojectMethods[Tile, D]
-trait MultibandTileFeatureReprojectMethods[D] extends TileFeatureReprojectMethods[MultibandTile, D]
