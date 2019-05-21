@@ -26,12 +26,12 @@ trait Implicits {
   implicit class withSinglebandTileMaskMethods(val self: Tile) extends SinglebandTileMaskMethods
   implicit class withMultibandTileMaskMethods(val self: MultibandTile) extends MultibandTileMaskMethods
 
-  implicit class withSinglebandRasterMaskMethods(val self: Raster[Tile]) extends SinglebandRasterMaskMethods
-  implicit class withMultibandRasterMaskMethods(val self: Raster[MultibandTile]) extends MultibandRasterMaskMethods
+  implicit class withSinglebandRasterMaskMethods(self: Raster[Tile]) extends RasterMaskMethods[Tile](self)
+  implicit class withMultibandRasterMaskMethods(self: Raster[MultibandTile]) extends RasterMaskMethods[MultibandTile](self)
 
-  implicit class withSinglebandTileFeatureMaskMethods[D](val self: TileFeature[Tile, D]) extends SinglebandTileFeatureMaskMethods[D]
-  implicit class withMultibandTileFeatureMaskMethods[D](val self: TileFeature[MultibandTile, D]) extends MultibandTileFeatureMaskMethods[D]
+  implicit class withSinglebandTileFeatureMaskMethods[D](self: TileFeature[Tile, D]) extends TileFeatureMaskMethods[Tile, D](self)
+  implicit class withMultibandTileFeatureMaskMethods[D](self: TileFeature[MultibandTile, D]) extends TileFeatureMaskMethods[MultibandTile, D](self)
 
-  implicit class withSinglebandRasterTileFeatureMaskMethods[D](val self: TileFeature[Raster[Tile], D]) extends SinglebandRasterTileFeatureMaskMethods[D]
-  implicit class withMultibandRasterTileFeatureMaskMethods[D](val self: TileFeature[Raster[MultibandTile], D]) extends MultibandRasterTileFeatureMaskMethods[D]
+  implicit class withSinglebandRasterTileFeatureMaskMethods[D](self: TileFeature[Raster[Tile], D]) extends RasterTileFeatureMaskMethods[Tile, D](self)
+  implicit class withMultibandRasterTileFeatureMaskMethods[D](self: TileFeature[Raster[MultibandTile], D]) extends RasterTileFeatureMaskMethods[MultibandTile, D](self)
 }

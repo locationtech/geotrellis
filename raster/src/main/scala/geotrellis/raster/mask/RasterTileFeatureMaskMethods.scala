@@ -25,7 +25,7 @@ import geotrellis.vector._
 abstract class RasterTileFeatureMaskMethods[
   T <: CellGrid[Int]: (? => TileMaskMethods[T]),
   D
-](implicit val ev: Raster[T] => RasterMaskMethods[T]) extends MethodExtensions[TileFeature[Raster[T], D]] {
+](val self: TileFeature[Raster[T], D])(implicit val ev: Raster[T] => RasterMaskMethods[T]) extends MethodExtensions[TileFeature[Raster[T], D]] {
   def mask(geom: Geometry): TileFeature[Raster[T], D] =
     TileFeature(self.tile.mask(geom), self.data)
 
@@ -38,6 +38,3 @@ abstract class RasterTileFeatureMaskMethods[
   def mask(geoms: Traversable[Geometry], options: Rasterizer.Options): TileFeature[Raster[T], D] =
     TileFeature(self.tile.mask(geoms, options), self.data)
 }
-
-abstract class SinglebandRasterTileFeatureMaskMethods[D] extends RasterTileFeatureMaskMethods[Tile, D]
-abstract class MultibandRasterTileFeatureMaskMethods[D] extends RasterTileFeatureMaskMethods[MultibandTile, D]
