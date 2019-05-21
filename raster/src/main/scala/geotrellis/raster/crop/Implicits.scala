@@ -28,19 +28,15 @@ object Implicits extends Implicits
   * cropping to [[CellGrid]].
   */
 trait Implicits {
-  implicit class withTileRasterCropMethods(val self: Raster[Tile]) extends RasterCropMethods[Tile]
-
-  implicit class withMultibandTileRasterCropMethods(val self: Raster[MultibandTile]) extends RasterCropMethods[MultibandTile]
-
-  implicit class withTileFeatureCropMethods[D](val self: TileFeature[Tile, D]) extends SinglebandTileFeatureCropMethods[D]
-
-  implicit class withSinglebandRasterTileFeatureCropMethods[D](val self: TileFeature[Raster[Tile], D]) extends SinglebandRasterTileFeatureCropMethods[D]
-
-  implicit class withMultibandTileFeatureCropMethods[D](val self: TileFeature[MultibandTile, D]) extends MultibandTileFeatureCropMethods[D]
-
-  implicit class withMultibandRasterTileFeatureCropMethods[D](val self: TileFeature[Raster[MultibandTile], D]) extends MultibandRasterTileFeatureCropMethods[D]
-
-  implicit class withTileCropMethods(val self: Tile) extends SinglebandTileCropMethods
-
+  implicit class withSinglebandTileCropMethods(val self: Tile) extends SinglebandTileCropMethods
   implicit class withMultibandTileCropMethods(val self: MultibandTile) extends MultibandTileCropMethods
+
+  implicit class withSinglebandTileRasterCropMethods(val self: Raster[Tile]) extends RasterCropMethods[Tile](self)
+  implicit class withMultibandTileRasterCropMethods(val self: Raster[MultibandTile]) extends RasterCropMethods[MultibandTile](self)
+
+  implicit class withSinglebandTileFeatureCropMethods[D](self: TileFeature[Tile, D]) extends TileFeatureCropMethods[Tile, D](self)
+  implicit class withMultibandTileFeatureCropMethods[D](self: TileFeature[MultibandTile, D]) extends TileFeatureCropMethods[MultibandTile, D](self)
+
+  implicit class withSinglebandRasterTileFeatureCropMethods[D](self: TileFeature[Raster[Tile], D]) extends RasterTileFeatureCropMethods[Tile, D](self)
+  implicit class withMultibandRasterTileFeatureCropMethods[D](self: TileFeature[Raster[MultibandTile], D]) extends RasterTileFeatureCropMethods[MultibandTile, D](self)
 }

@@ -20,10 +20,11 @@ import geotrellis.raster._
 import geotrellis.vector._
 import geotrellis.util.MethodExtensions
 
+
 abstract class RasterTileFeatureCropMethods[
   T <: CellGrid[Int]: (? => TileCropMethods[T]),
   D
-](implicit val ev: Raster[T] => RasterCropMethods[T]) extends CropMethods[TileFeature[Raster[T], D]] {
+](val self: TileFeature[Raster[T], D])(implicit val ev: Raster[T] => RasterCropMethods[T]) extends CropMethods[TileFeature[Raster[T], D]] {
   import Crop.Options
 
   def crop(extent: Extent, options: Options): TileFeature[Raster[T], D] = {
@@ -41,7 +42,3 @@ abstract class RasterTileFeatureCropMethods[
     TileFeature(self.tile.crop(gb, options), self.data)
   }
 }
-
-
-abstract class SinglebandRasterTileFeatureCropMethods[D] extends RasterTileFeatureCropMethods[Tile, D]
-abstract class MultibandRasterTileFeatureCropMethods[D] extends RasterTileFeatureCropMethods[MultibandTile, D]
