@@ -17,7 +17,7 @@
 package geotrellis.vector.io.wkb
 
 import geotrellis.util.MethodExtensions
-import geotrellis.vector._
+import org.locationtech.jts.geom.Geometry
 
 object Implicits extends Implicits
 

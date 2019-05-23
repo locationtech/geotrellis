@@ -19,7 +19,8 @@ package geotrellis.vector.voronoi
 import org.locationtech.jts.geom.Coordinate
 
 import geotrellis.util.MethodExtensions
-import geotrellis.vector.{Extent, MultiPoint, Point}
+import geotrellis.vector.Extent
+import org.locationtech.jts.geom.{MultiPoint, Point}
 
 trait VoronoiDiagramCoordinateMethods extends MethodExtensions[Traversable[Coordinate]] {
   def voronoiDiagram(extent: Extent): VoronoiDiagram = { VoronoiDiagram(self.toArray, extent) }

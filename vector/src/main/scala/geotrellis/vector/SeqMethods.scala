@@ -18,18 +18,28 @@ package geotrellis.vector
 
 import scala.collection.JavaConverters._
 
+import org.locationtech.jts.geom._
 import org.locationtech.jts.operation.union.CascadedPolygonUnion
 
 trait SeqMethods {
 
-  implicit class SeqLineExtensions(val lines: Traversable[Line]) {
+  implicit class SeqLineStringExtensions(val lines: Traversable[LineString]) {
 
-    val ml: MultiLine = MultiLine(lines)
+    val ml: MultiLineString = MultiLineString(lines)
 
-    def unionGeometries() = ml.union
-    def intersectionGeometries() = ml.intersection
-    def differenceGeometries() = ml.difference
-    def symDifferenceGeometries() = ml.symDifference
+    def unionGeometries = ml.union
+    def intersectionGeometries: MultiLineStringMultiLineStringIntersectionResult =
+    lines.reduce[Geometry] {
+      _.intersection(_)
+    }
+    def differenceGeometries: MultiLineStringMultiLineStringDifferenceResult =
+    lines.reduce[Geometry] {
+      _.difference(_)
+    }
+    def symDifferenceGeometries: MultiLineStringMultiLineStringSymDifferenceResult =
+    lines.reduce[Geometry] {
+      _.symDifference(_)
+    }
 
     def toMultiLine = ml
   }
@@ -61,9 +71,9 @@ trait SeqMethods {
     def toMultiPolygon() = mp
   }
 
-  implicit class SeqMultiLineExtensions(val multilines: Traversable[MultiLine]) {
+  implicit class SeqMultiLineStringExtensions(val multilines: Traversable[MultiLineString]) {
 
-    val ml: MultiLine = MultiLine(multilines.map(_.lines).flatten)
+    val ml: MultiLineString = MultiLineString(multilines.map(_.lines).flatten)
 
     def unionGeometries() = ml.union
     def intersectionGeometries() = ml.intersection

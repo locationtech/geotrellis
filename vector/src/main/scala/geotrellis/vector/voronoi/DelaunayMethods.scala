@@ -18,7 +18,7 @@ package geotrellis.vector.voronoi
 
 import geotrellis.vector.triangulation._
 import geotrellis.vector.mesh._
-import geotrellis.vector.Point
+import org.locationtech.jts.geom.Point
 import geotrellis.util.MethodExtensions
 
 import org.locationtech.jts.geom.Coordinate

@@ -16,10 +16,11 @@
 
 package geotrellis.vector.io.wkb
 
-import geotrellis.vector._
+import geotrellis.vector.GeomFactory
 
 import com.typesafe.scalalogging.LazyLogging
-import org.locationtech.jts.io.WKBReader
+import org.locationtech.jts.geom._
+import org.locationtech.jts.io.{WKBReader, WKBWriter}
 
 
 /** A thread-safe wrapper for the [https://en.wikipedia.org/wiki/Well-known_text#Well-known_binary WKB]
@@ -33,14 +34,14 @@ object WKB extends LazyLogging {
   def read(value: Array[Byte]): Geometry = {
     logger.debug(s"Reading WKB from bytes: ${value.toList}")
     if (readerBox.get == null) readerBox.set(new WKBReader(GeomFactory.factory))
-    Geometry(readerBox.get.read(value))
+    readerBox.get.read(value)
   }
 
   /** Convert Well Known Binary to Geometry */
   def read(hex: String): Geometry = {
     logger.debug(s"Reading WKB from hex: ${hex}")
     if (readerBox.get == null) readerBox.set(new WKBReader(GeomFactory.factory))
-    Geometry(readerBox.get.read(WKBReader.hexToBytes(hex)))
+    readerBox.get.read(WKBReader.hexToBytes(hex))
   }
 
   /** Convert Geometry to Well Known Binary */

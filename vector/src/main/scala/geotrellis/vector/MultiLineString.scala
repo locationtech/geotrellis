@@ -14,23 +14,30 @@
  * limitations under the License.
  */
 
-package geotrellis.vector.densify
+package geotrellis.vector
 
-import geotrellis.util.MethodExtensions
-import geotrellis.vector._
+import geotrellis.vector.GeomFactory._
 
 import org.locationtech.jts.{geom => jts}
+import spire.syntax.cfor._
 
-/** Trait used to implicitly extend [[Geometry]] instances with densifying methods */
-trait DensifyMethods[G <: Geometry] extends MethodExtensions[G] {
+/** Companion object to [[MultiLine]] */
+object MultiLineString {
+  lazy val EMPTY = apply(Seq[jts.LineString]())
 
-  /** Add vertices along the line segments contained with a geometry
-    *
-    * @param tolerance  the upper bound on line segment lengths after densification
-    */
-  def densify(tolerance: Double): G =
-    org.locationtech.jts.densify.Densifier.densify(self.jtsGeom, tolerance) match {
-      case g: jts.Geometry if g.isEmpty => self
-      case g => Geometry(g).asInstanceOf[G]
+  def apply(ls: jts.LineString*): jts.MultiLineString =
+    apply(ls)
+
+  def apply(ls: Traversable[jts.LineString]): jts.MultiLineString =
+    factory.createMultiLineString(ls.toArray)
+
+  def apply(ls: Array[jts.LineString]): jts.MultiLineString = {
+    val len = ls.length
+    val arr = Array.ofDim[jts.LineString](len)
+    cfor(0)(_ < len, _ + 1) { i =>
+      arr(i) = ls(i)
     }
+
+    factory.createMultiLineString(arr)
+  }
 }

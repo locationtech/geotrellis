@@ -22,7 +22,6 @@ import cats.syntax.either._
 import io.circe.parser.{parse => circeParse}
 
 import geotrellis.vector._
-
 import scala.reflect.runtime.universe.TypeTag
 import scala.util.{Try, Success, Failure}
 

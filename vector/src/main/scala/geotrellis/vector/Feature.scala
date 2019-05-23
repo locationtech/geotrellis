@@ -16,6 +16,8 @@
 
 package geotrellis.vector
 
+import org.locationtech.jts.geom._
+
 /** A case class which represents a geometry with some metadata
   *
   * @tparam G A subtype of Geometry
@@ -56,10 +58,10 @@ object PointFeature {
 
 /** LineFeature companion object */
 object LineFeature {
-  def apply[D](geom: Line, data: D): Feature[Line, D] =
+  def apply[D](geom: LineString, data: D): Feature[LineString, D] =
     Feature(geom, data)
 
-  def unapply[D](feature: Feature[Line, D]) =
+  def unapply[D](feature: Feature[LineString, D]) =
     Some(feature.geom -> feature.data)
 }
 
@@ -83,10 +85,10 @@ object MultiPointFeature {
 
 /** MultiLineFeature companion object */
 object MultiLineFeature {
-  def apply[D](geom: MultiLine, data: D): Feature[MultiLine, D] =
+  def apply[D](geom: MultiLineString, data: D): Feature[MultiLineString, D] =
     Feature(geom, data)
 
-  def unapply[D](feature: Feature[MultiLine, D]) =
+  def unapply[D](feature: Feature[MultiLineString, D]) =
     Some(feature.geom -> feature.data)
 }
 
