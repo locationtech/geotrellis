@@ -30,7 +30,7 @@ import scala.reflect.ClassTag
 object Implicits extends Implicits
 
 trait Implicits {
-  implicit class withTileRDDMergeMethods[K: ClassTag, V: ClassTag: ? => TileMergeMethods[V]](self: RDD[(K, V)])
+  implicit class withTileRDDMergeMethods[K: ClassTag, V <: CellGrid[Int]: ClassTag: ? => TileMergeMethods[V]](self: RDD[(K, V)])
     extends TileRDDMergeMethods[K, V](self)
 
   implicit class withRDDLayoutMergeMethods[

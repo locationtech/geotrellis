@@ -17,7 +17,6 @@
 package geotrellis.raster.io.json
 
 import geotrellis.raster._
-import geotrellis.raster.histogram._
 
 import spray.json._
 

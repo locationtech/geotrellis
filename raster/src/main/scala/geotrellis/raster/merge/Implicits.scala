@@ -26,15 +26,15 @@ object Implicits extends Implicits
   * methods available.
   */
 trait Implicits {
-  implicit class withRasterMergeMethods[T <: CellGrid[Int]: ? => TileMergeMethods[T]](self: Raster[T]) extends RasterMergeMethods[T](self)
+  implicit class withSinglebandMergeMethods(val self: Tile) extends SinglebandTileMergeMethods
+  implicit class withMultibandMergeMethods(val self: MultibandTile) extends MultibandTileMergeMethods
 
-  implicit class withTileFeatureMergeMethods[
-    T <: CellGrid[Int]: ? => TileMergeMethods[T],
-    D: Semigroup
-  ](self: TileFeature[T, D]) extends TileFeatureMergeMethods[T,D](self)
+  implicit class withSinglebandRasterMergeMethod(self: Raster[Tile]) extends RasterMergeMethods[Tile](self)
+  implicit class withMultibandRasterMergeMethod(self: Raster[MultibandTile]) extends RasterMergeMethods[MultibandTile](self)
 
-  implicit class withRasterTileFeatureMergeMethods[
-    T <: CellGrid[Int]: ? => TileMergeMethods[T],
-    D: Semigroup
-  ](self: TileFeature[Raster[T], D]) extends RasterTileFeatureMergeMethods[T,D](self)
+  implicit class withSinglebandTileFeatureMergeMethods[D: Semigroup](self: TileFeature[Tile, D]) extends TileFeatureMergeMethods[Tile, D](self)
+  implicit class withMultibandTileFeatureMergeMethods[D: Semigroup](self: TileFeature[MultibandTile, D]) extends TileFeatureMergeMethods[MultibandTile, D](self)
+
+  implicit class withSinglebandRasterTileFeatureMergeMethods[D: Semigroup](self: TileFeature[Raster[Tile], D]) extends RasterTileFeatureMergeMethods[Tile, D](self)
+  implicit class withMultibandRasterTileFeatureMergeMethods[D: Semigroup](self: TileFeature[Raster[MultibandTile], D]) extends RasterTileFeatureMergeMethods[MultibandTile, D](self)
 }

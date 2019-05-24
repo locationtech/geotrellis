@@ -17,7 +17,7 @@
 package geotrellis.raster.render
 
 import geotrellis.raster._
-import geotrellis.raster.render.png._
+import geotrellis.raster.render.png.{Settings, PaethFilter, PngEncoder, RgbaPngEncoding, PngColorEncoding}
 import geotrellis.raster.histogram.Histogram
 import geotrellis.util.MethodExtensions
 

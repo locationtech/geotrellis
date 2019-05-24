@@ -17,7 +17,6 @@
 package geotrellis.raster.summary
 
 import geotrellis.raster._
-import geotrellis.raster.histogram._
 import geotrellis.util.MethodExtensions
 
 

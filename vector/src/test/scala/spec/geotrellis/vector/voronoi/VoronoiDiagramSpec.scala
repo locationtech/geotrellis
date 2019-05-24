@@ -5,7 +5,6 @@ import org.apache.commons.math3.linear._
 
 import geotrellis.raster._
 import geotrellis.raster.rasterize._
-import geotrellis.raster.render._
 import geotrellis.vector._
 import geotrellis.vector.io._
 import geotrellis.vector.io.json._

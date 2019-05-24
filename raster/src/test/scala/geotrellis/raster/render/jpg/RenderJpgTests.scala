@@ -17,7 +17,7 @@
 package geotrellis.raster.render.jpg
 
 import geotrellis.raster._
-import geotrellis.raster.render._
+import geotrellis.raster.render.Jpg
 import geotrellis.raster.testkit._
 
 import spire.syntax.cfor._

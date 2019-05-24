@@ -17,7 +17,6 @@
 package geotrellis.spark.summary
 
 import geotrellis.raster._
-import geotrellis.raster.histogram._
 import geotrellis.util.MethodExtensions
 
 trait StatsTileCollectionMethods[K] extends MethodExtensions[Seq[(K, Tile)]] {

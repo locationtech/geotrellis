@@ -17,7 +17,8 @@
 package geotrellis.spark.mapalgebra.focal
 
 import geotrellis.raster._
-import geotrellis.raster.mapalgebra.focal._
+import geotrellis.raster.Neighborhoods.Square
+import geotrellis.raster.mapalgebra.focal.{Kernel, Aspect, Sum, Max, Min, Mean, Median, Mode, StandardDeviation, Convolve, Slope}
 
 trait FocalTileLayerCollectionMethods[K] extends CollectionFocalOperation[K] {
 

@@ -18,7 +18,7 @@ package geotrellis.spark.mapalgebra.focal
 
 import geotrellis.spark._
 import geotrellis.spark.testkit._
-import geotrellis.raster.mapalgebra.focal._
+import geotrellis.raster.Neighborhoods.{Square, Circle}
 import geotrellis.raster._
 
 import org.scalatest.FunSpec

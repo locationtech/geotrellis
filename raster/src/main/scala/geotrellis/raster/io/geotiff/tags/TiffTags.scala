@@ -19,7 +19,7 @@ package geotrellis.raster.io.geotiff.tags
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff._
 import geotrellis.raster.io.geotiff.tags.codes._
-import geotrellis.raster.io.geotiff.reader._
+import geotrellis.raster.io.geotiff.reader.{MalformedGeoTiffException, GeoTiffCSParser}
 import geotrellis.raster.io.geotiff.util._
 import geotrellis.util.ByteReader
 import ModelTypes._

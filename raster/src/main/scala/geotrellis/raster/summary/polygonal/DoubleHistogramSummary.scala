@@ -19,7 +19,6 @@ package geotrellis.raster.summary.polygonal
 import geotrellis.raster._
 import geotrellis.vector._
 import geotrellis.raster.rasterize._
-import geotrellis.raster.histogram._
 
 object DoubleHistogramSummary extends TilePolygonalSummaryHandler[Histogram[Double]] {
   def handlePartialTile(raster: Raster[Tile], polygon: Polygon): Histogram[Double] = {

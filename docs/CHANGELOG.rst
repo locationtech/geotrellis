@@ -41,6 +41,13 @@ API Changes & Project structure changes
     - ``ZoomedLayoutScheme``
     - ``MapKeyTransform``
 
+- ``geotrellis.raster``
+
+  - **Change:** The implicit/package structure of the ``raster`` package has changed such that it's now possible to import almost
+    all features/extensions with a single line (`#2891 <https://github.com/locationtech/geotrellis/pull/2891>`_):
+
+    ``import geotrellis.raster._``
+
 Fixes & Updates
 ^^^^^^^^^^^^^^^
 

@@ -18,7 +18,7 @@ package geotrellis.spark.mapalgebra.focal
 
 import geotrellis.vector.Extent
 import geotrellis.raster._
-import geotrellis.raster.mapalgebra.focal._
+import geotrellis.raster.Neighborhoods.{Square, Circle}
 
 import geotrellis.spark._
 import geotrellis.spark.mapalgebra.focal._

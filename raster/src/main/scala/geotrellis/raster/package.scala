@@ -16,136 +16,14 @@
 
 package geotrellis
 
-import geotrellis.vector.Point
-import geotrellis.macros.{ NoDataMacros, TypeConversionMacros }
-import geotrellis.vector.{Geometry, Feature}
-import geotrellis.util.MethodExtensions
+import geotrellis.macros.{NoDataMacros, TypeConversionMacros}
 import spire.math.Integral
 
-package object raster
-    extends crop.Implicits
-    with distance.Implicits
-    with density.Implicits
-    with geotrellis.raster.mapalgebra.focal.hillshade.Implicits
-    with interpolation.Implicits
-    with mask.Implicits
-    with merge.Implicits
-    with prototype.Implicits
-    with reproject.Implicits
-    with split.Implicits
-    with summary.polygonal.Implicits
-    with transform.Implicits {
+
+package object raster extends Implicits {
   type CellType = DataType with NoDataHandling
   type SinglebandRaster = Raster[Tile]
   type MultibandRaster = Raster[MultibandTile]
-
-  // Implicit method extension for core types
-
-  implicit class withRasterExtentRasterizeMethods(val self: RasterExtent) extends MethodExtensions[RasterExtent]
-      with rasterize.RasterExtentRasterizeMethods[RasterExtent]
-
-  implicit class withGeometryRasterizeMethods(val self : Geometry) extends MethodExtensions[Geometry]
-      with rasterize.GeometryRasterizeMethods
-
-  implicit class withFeatureIntRasterizeMethods(val self : Feature[Geometry, Int]) extends MethodExtensions[Feature[Geometry, Int]]
-      with rasterize.FeatureIntRasterizeMethods[Geometry]
-
-  implicit class withFeatureDoubleRasterizeMethods(val self : Feature[Geometry, Double]) extends MethodExtensions[Feature[Geometry, Double]]
-      with rasterize.FeatureDoubleRasterizeMethods[Geometry]
-
-  implicit class withTileMethods(val self: Tile) extends MethodExtensions[Tile]
-      with DelayedConversionTileMethods
-      with costdistance.CostDistanceMethods
-      with crop.SinglebandTileCropMethods
-      with equalization.SinglebandEqualizationMethods
-      with hydrology.HydrologyMethods
-      with mapalgebra.focal.FocalMethods
-      with mapalgebra.focal.hillshade.HillshadeMethods
-      with mapalgebra.local.LocalMethods
-      with mapalgebra.zonal.ZonalMethods
-      with mask.SinglebandTileMaskMethods
-      with matching.SinglebandMatchingMethods
-      with merge.SinglebandTileMergeMethods
-      with prototype.SinglebandTilePrototypeMethods
-      with regiongroup.RegionGroupMethods
-      with render.ColorMethods
-      with render.JpgRenderMethods
-      with render.PngRenderMethods
-      with render.AsciiRenderMethods
-      with reproject.SinglebandTileReprojectMethods
-      with resample.SinglebandTileResampleMethods
-      with sigmoidal.SinglebandSigmoidalMethods
-      with split.SinglebandTileSplitMethods
-      //with summary.polygonal.PolygonalSummaryMethods
-      with summary.SinglebandTileSummaryMethods
-      with vectorize.VectorizeMethods
-      with viewshed.ViewshedMethods
-
-  implicit class withMultibandTileMethods(val self: MultibandTile) extends MethodExtensions[MultibandTile]
-      with DelayedConversionMultibandTileMethods
-      with crop.MultibandTileCropMethods
-      with equalization.MultibandEqualizationMethods
-      with mask.MultibandTileMaskMethods
-      with matching.MultibandMatchingMethods
-      with merge.MultibandTileMergeMethods
-      with prototype.MultibandTilePrototypeMethods
-      with render.MultibandColorMethods
-      with render.MultibandJpgRenderMethods
-      with render.MultibandPngRenderMethods
-      with reproject.MultibandTileReprojectMethods
-      with resample.MultibandTileResampleMethods
-      with sigmoidal.MultibandSigmoidalMethods
-      with split.MultibandTileSplitMethods
-      with summary.MultibandTileSummaryMethods
-
-  implicit class withSinglebandRasterMethods(val self: SinglebandRaster) extends MethodExtensions[SinglebandRaster]
-      with reproject.SinglebandRasterReprojectMethods
-      with resample.SinglebandRasterResampleMethods
-      with vectorize.SinglebandRasterVectorizeMethods
-
-  implicit class withMultibandRasterMethods(val self: MultibandRaster) extends MethodExtensions[MultibandRaster]
-      with reproject.MultibandRasterReprojectMethods
-      with resample.MultibandRasterResampleMethods
-
-  implicit class withTileSeqMethods(val self: Traversable[Tile]) extends MethodExtensions[Traversable[Tile]]
-      with mapalgebra.local.LocalSeqMethods
-
-  implicit class SinglebandRasterAnyRefMethods(val self: SinglebandRaster) extends AnyRef {
-    def getValueAtPoint(point: Point): Int =
-      getValueAtPoint(point.x, point.y)
-
-    def getValueAtPoint(x: Double, y: Double): Int =
-      self.tile.get(
-        self.rasterExtent.mapXToGrid(x),
-        self.rasterExtent.mapYToGrid(y)
-      )
-
-    def getDoubleValueAtPoint(point: Point): Double =
-      getDoubleValueAtPoint(point.x, point.y)
-
-    def getDoubleValueAtPoint(x: Double, y: Double): Double =
-      self.tile.getDouble(
-        self.rasterExtent.mapXToGrid(x),
-        self.rasterExtent.mapYToGrid(y)
-      )
-  }
-
-  implicit class TraversableTileExtensions(rs: Traversable[Tile]) {
-    def assertEqualDimensions(): Unit =
-      if(Set(rs.map(_.dimensions)).size != 1) {
-        val dimensions = rs.map(_.dimensions).toSeq
-        throw new GeoAttrsError("Cannot combine tiles with different dimensions." +
-          s"$dimensions are not all equal")
-      }
-  }
-
-  implicit class TileTupleExtensions(t: (Tile, Tile)) {
-    def assertEqualDimensions(): Unit =
-      if(t._1.dimensions != t._2.dimensions) {
-        throw new GeoAttrsError("Cannot combine rasters with different dimensions." +
-          s"${t._1.dimensions} does not match ${t._2.dimensions}")
-      }
-  }
 
   type DI = DummyImplicit
 
@@ -153,6 +31,73 @@ package object raster
   type DoubleTileMapper = macros.DoubleTileMapper
   type IntTileVisitor = macros.IntTileVisitor
   type DoubleTileVisitor = macros.DoubleTileVisitor
+
+  val CropOptions = crop.Crop.Options
+  val RasterizerOptions = rasterize.Rasterizer.Options
+  val ColorMapOptions = render.ColorMap.Options
+  val SplitOptions = split.Split.Options
+
+  val IntHistogram = histogram.IntHistogram
+  val DoubleHistogram = histogram.DoubleHistogram
+
+  type FastMapHistogram = histogram.FastMapHistogram
+  val FastMapHistogram = histogram.FastMapHistogram
+
+  // Is @specialized required here?
+  type Histogram[@specialized (Int, Double) T <: AnyVal] = histogram.Histogram[T]
+
+  type MutableHistogram[@specialized (Int, Double) T <: AnyVal] = histogram.MutableHistogram[T]
+
+  type StreamingHistogram = histogram.StreamingHistogram
+  val StreamingHistogram = histogram.StreamingHistogram
+
+  val CellValue = rasterize.CellValue
+
+  type ColorMap = render.ColorMap
+  val ColorMap = render.ColorMap
+  val ColorMaps = render.ColorMaps
+
+  val ColorRamp = render.ColorRamp
+  val ColorRamps = render.ColorRamps
+
+  val JpgSettings = render.jpg.Settings
+  val PngSettings = render.png.Settings
+  val PngColorEncoding = render.png.PngColorEncoding
+
+  val RGB = render.RGB
+  val RGBA = render.RGBA
+
+  type ResampleMethod = resample.ResampleMethod
+
+  object ResampleMethods {
+    val NearestNeighbor = resample.NearestNeighbor
+    val Bilinear = resample.Bilinear
+    val CubicConvolution = resample.CubicConvolution
+    val CubcSpline = resample.CubicSpline
+    val Lanczos = resample.Lanczos
+
+    val Average = resample.Average
+    val Mode = resample.Mode
+    val Median = resample.Median
+    val Max = resample.Max
+    val Min = resample.Min
+    val Sum = resample.Sum
+  }
+
+  type Neighborhood = mapalgebra.focal.Neighborhood
+
+  type TargetCell = mapalgebra.focal.TargetCell
+  val TargetCell = mapalgebra.focal.TargetCell
+
+  object Neighborhoods {
+    val Square = mapalgebra.focal.Square
+    val Circle = mapalgebra.focal.Circle
+    val Nesw = mapalgebra.focal.Nesw
+    val Wedge = mapalgebra.focal.Wedge
+    val Annulus = mapalgebra.focal.Annulus
+  }
+
+  val Stitcher = stitch.Stitcher
 
   // Keep constant values in sync with macro functions
   @inline final val byteNODATA = Byte.MinValue

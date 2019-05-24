@@ -17,7 +17,6 @@
 package geotrellis.raster.equalization
 
 import geotrellis.raster._
-import geotrellis.raster.histogram._
 
 import org.scalatest._
 
