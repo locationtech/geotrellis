@@ -14,24 +14,25 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.io.cassandra
+package geotrellis.layers.cassandra
 
+import geotrellis.tiling.SpatialComponent
 import geotrellis.raster._
 import geotrellis.raster.resample._
-import geotrellis.tiling.SpatialComponent
-import geotrellis.spark.io._
-import geotrellis.layers.io.avro.codecs.KeyValueRecordCodec
-import geotrellis.layers.io.avro.{AvroEncoder, AvroRecordCodec}
+import geotrellis.layers._
+import geotrellis.layers.avro.codecs.KeyValueRecordCodec
+import geotrellis.layers.avro.{AvroEncoder, AvroRecordCodec}
+
 import com.datastax.driver.core.querybuilder.QueryBuilder
 import com.datastax.driver.core.querybuilder.QueryBuilder.{eq => eqs}
+
 import spray.json._
 
 import scala.collection.JavaConverters._
 import scala.reflect.ClassTag
+
 import java.math.BigInteger
 
-import geotrellis.layers.LayerId
-import geotrellis.layers.io.{OverzoomingValueReader, Reader}
 
 class CassandraValueReader(
   instance: CassandraInstance,

@@ -16,9 +16,10 @@
 
 package geotrellis.spark.io.cassandra
 
-import geotrellis.layers.LayerId
-import geotrellis.spark._
+import geotrellis.layers._
+import geotrellis.layers.cassandra._
 import geotrellis.spark.io._
+
 import org.apache.spark.SparkContext
 
 object CassandraLayerMover {

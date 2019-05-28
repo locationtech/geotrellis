@@ -119,6 +119,29 @@ object Settings {
       """
   ) ++ noForkInTests
 
+  lazy val `layers-cassandra` = Seq(
+    name := "geotrellis-layers-cassandra",
+    libraryDependencies ++= Seq(
+      cassandraDriverCore
+        excludeAll(
+        ExclusionRule("org.jboss.netty"), ExclusionRule("io.netty"),
+        ExclusionRule("org.slf4j"), ExclusionRule("io.spray"), ExclusionRule("com.typesafe.akka")
+      ) exclude("org.apache.hadoop", "hadoop-client"),
+      spire,
+      scalatest % Test
+    ),
+    initialCommands in console :=
+      """
+      import geotrellis.proj4._
+      import geotrellis.vector._
+      import geotrellis.tiling._
+      import geotrellis.raster._
+      import geotrellis.layers._
+      import geotrellis.layers.util._
+      import geotrellis.layers.cassandra._
+      """
+  ) ++ noForkInTests
+
   lazy val `doc-examples` = Seq(
     name := "geotrellis-doc-examples",
     publish / skip := true,

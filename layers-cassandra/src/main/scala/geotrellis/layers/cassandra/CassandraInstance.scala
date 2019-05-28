@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.io.cassandra
+package geotrellis.layers.cassandra
 
-import geotrellis.spark.io.cassandra.conf.CassandraConfig
+import geotrellis.layers.cassandra.conf.CassandraConfig
 
 import com.datastax.driver.core.policies.{DCAwareRoundRobinPolicy, TokenAwarePolicy}
 import com.datastax.driver.core.{Cluster, Session}
