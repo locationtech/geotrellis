@@ -16,12 +16,13 @@
 
 package geotrellis.spark.io.accumulo
 
-import geotrellis.layers.TileLayerMetadata
-import geotrellis.raster.Tile
 import geotrellis.tiling.SpaceTimeKey
+import geotrellis.raster.Tile
+import geotrellis.layers.TileLayerMetadata
+import geotrellis.layers.accumulo._
 import geotrellis.spark._
 import geotrellis.spark.io._
-import geotrellis.layers.io.index._
+import geotrellis.layers.index._
 import geotrellis.spark.testkit.io._
 import geotrellis.spark.testkit.testfiles.TestFiles
 import geotrellis.spark.testkit.TestEnvironment
