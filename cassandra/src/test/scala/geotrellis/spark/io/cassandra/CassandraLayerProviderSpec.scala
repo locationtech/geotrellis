@@ -16,6 +16,8 @@
 
 package geotrellis.spark.io.cassandra
 
+import geotrellis.layers._
+import geotrellis.layers.cassandra._
 import geotrellis.spark.io._
 import geotrellis.spark.CassandraTestEnvironment
 import geotrellis.spark.testkit.TestEnvironment
@@ -45,7 +47,7 @@ class CassandraLayerProviderSpec extends FunSpec with CassandraTestEnvironment {
 
   it("should not be able to process a URI without a scheme") {
     val badURI = new java.net.URI("//127.0.0.1/geotrellis?attributes=attributes&layers=tiles")
-    val provider = new CassandraLayerProvider
+    val provider = new CassandraSparkLayerProvider
 
     provider.canProcess(badURI) should be (false)
   }

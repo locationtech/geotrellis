@@ -16,6 +16,7 @@
 
 package geotrellis.spark.io.cassandra
 
+import geotrellis.layers.cassandra._
 import geotrellis.spark.CassandraTestEnvironment
 import geotrellis.spark.io.AttributeStoreSpec
 
