@@ -1,1 +1,1 @@
-geotrellis.spark.io.cassandra.CassandraLayerProvider
+geotrellis.spark.io.cassandra.CassandraSparkLayerProvider

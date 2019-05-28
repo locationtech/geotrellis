@@ -105,6 +105,7 @@ lazy val root = Project("geotrellis", file(".")).
     accumulo,
     `layers-accumulo`,
     cassandra,
+    `layers-cassandra`,
     `doc-examples`,
     geomesa,
     geotools,
@@ -219,8 +220,14 @@ lazy val `layers-accumulo` = project
   .settings(commonSettings)
   .settings(Settings.`layers-accumulo`)
 
+lazy val `layers-cassandra` = project
+  .dependsOn(layers)
+  .settings(commonSettings)
+  .settings(Settings.`layers-cassandra`)
+
 lazy val cassandra = project
   .dependsOn(
+    `layers-cassandra`,
     spark % "compile->compile;test->test", // <-- spark-testkit update should simplify this
     `spark-testkit` % Test
   )

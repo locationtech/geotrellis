@@ -16,7 +16,7 @@
 
 package geotrellis.spark
 
-import geotrellis.spark.io.cassandra.BaseCassandraInstance
+import geotrellis.layers.cassandra.BaseCassandraInstance
 import geotrellis.spark.io.kryo.KryoRegistrator
 import geotrellis.spark.testkit.TestEnvironment
 

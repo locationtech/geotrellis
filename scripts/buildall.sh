@@ -3,6 +3,7 @@
 ./sbt -J-Xmx2G "project accumulo" test  || { exit 1; }
 ./sbt -J-Xmx2G "project layers-accumulo" test  || { exit 1; }
 ./sbt -J-Xmx2G "project cassandra" test  || { exit 1; }
+./sbt -J-Xmx2G "project layers-cassandra" test  || { exit 1; }
 ./sbt -J-Xmx2G "project doc-examples" compile || { exit 1; }
 ./sbt -J-Xmx2G "project geomesa" test || { exit 1; }
 ./sbt -J-Xmx2G "project geotools" test || { exit 1; }

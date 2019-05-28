@@ -2,6 +2,7 @@
 
 ./sbt "project accumulo" publish \
       "project layers-accumulo" publish \
+      "project layers-cassandra" publish \
       "project cassandra" publish \
       "project geomesa" publish \
       "project geotools" publish \
@@ -12,7 +13,6 @@
       "project raster" publish \
       "project raster-testkit" publish \
       "project s3" publish \
-      "project cassandra" publish \
       "project hbase" publish \
       "project shapefile" publish \
       "project spark" publish \

@@ -17,23 +17,28 @@
 package geotrellis.spark.io.cassandra
 
 import geotrellis.tiling.{Boundable, KeyBounds}
+import geotrellis.layers._
+import geotrellis.layers.cassandra._
+import geotrellis.layers.cassandra.conf.CassandraConfig
+import geotrellis.layers.avro.codecs.KeyValueRecordCodec
+import geotrellis.layers.avro.{AvroEncoder, AvroRecordCodec}
+import geotrellis.layers.index.{IndexRanges, MergeQueue}
+import geotrellis.layers.util.IOUtils
 import geotrellis.spark.io._
-import geotrellis.layers.io.avro.codecs.KeyValueRecordCodec
-import geotrellis.layers.io.avro.{AvroEncoder, AvroRecordCodec}
-import geotrellis.layers.io.index.{IndexRanges, MergeQueue}
-import geotrellis.spark.io.cassandra.conf.CassandraConfig
 import geotrellis.spark.util.KryoWrapper
+
 import com.datastax.driver.core.querybuilder.QueryBuilder
 import com.datastax.driver.core.querybuilder.QueryBuilder.{eq => eqs}
+
 import org.apache.avro.Schema
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
 import scala.collection.JavaConverters._
 import scala.reflect.ClassTag
+
 import java.math.BigInteger
 
-import geotrellis.layers.LayerId
 
 object CassandraRDDReader {
   final val defaultThreadCount = CassandraConfig.threads.rdd.readThreads
@@ -76,7 +81,7 @@ object CassandraRDDReader {
           val statement = session.prepare(query)
 
           val result = partition map { seq =>
-            LayerReader.njoin[K, V](seq.iterator, threads) { index: BigInt =>
+            IOUtils.parJoin[K, V](seq.iterator, threads) { index: BigInt =>
               val row = session.execute(statement.bind(index: BigInteger))
               if (row.asScala.nonEmpty) {
                 val bytes = row.one().getBytes("value").array()
