@@ -17,17 +17,19 @@
 package geotrellis.spark.io
 
 import geotrellis.proj4.LatLng
+import geotrellis.vector._
+import geotrellis.tiling._
 import geotrellis.raster._
 import geotrellis.raster.testkit._
-import geotrellis.tiling._
+import geotrellis.layers.{TileLayerMetadata, LayerOutOfKeyBoundsError}
 import geotrellis.spark._
 import geotrellis.spark.util._
 import geotrellis.util._
-import geotrellis.vector._
 import geotrellis.spark.testkit._
 import geotrellis.spark.testkit.io._
 
 import java.time.{ZoneOffset, ZonedDateTime}
+
 
 trait LayerUpdateSpaceTimeTileFeatureSpec
     extends TileLayerRDDBuilders

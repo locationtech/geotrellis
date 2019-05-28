@@ -22,11 +22,12 @@ import geotrellis.tiling.TemporalProjectedExtent
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff._
 import geotrellis.vector._
-
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.mapreduce._
 import java.time.{ZoneOffset, ZonedDateTime}
 import java.time.format.DateTimeFormatter
+
+import geotrellis.layers.hadoop.formats.BinaryFileInputFormat
 
 @deprecated("TemporalGeoTiffInputFormat is deprecated, use HadoopGeoTiffRDD instead", "1.0.0")
 object TemporalGeoTiffInputFormat {

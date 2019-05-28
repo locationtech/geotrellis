@@ -16,12 +16,11 @@
 
 package geotrellis.spark.io.hbase
 
+import geotrellis.layers.LayerId
 import geotrellis.spark.io.LayerWriter
-import geotrellis.spark.io.avro._
-import geotrellis.spark.io.avro.codecs._
-import geotrellis.spark.LayerId
+import geotrellis.layers.io.avro._
+import geotrellis.layers.io.avro.codecs._
 import geotrellis.spark.util.KryoWrapper
-
 import org.apache.avro.Schema
 import org.apache.hadoop.hbase.client._
 import org.apache.hadoop.hbase.filter._

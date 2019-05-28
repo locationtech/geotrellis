@@ -17,10 +17,11 @@
 package geotrellis.spark.mapalgebra.focal
 
 import geotrellis.raster._
+import geotrellis.raster.io.geotiff._
 import geotrellis.tiling._
+import geotrellis.layers.TileLayerCollection
 import geotrellis.spark._
 import geotrellis.spark.testkit._
-import geotrellis.raster.io.geotiff._
 
 import org.scalatest.FunSpec
 import java.io._

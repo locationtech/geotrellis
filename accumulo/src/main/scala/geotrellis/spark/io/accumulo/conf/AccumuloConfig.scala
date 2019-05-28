@@ -16,7 +16,7 @@
 
 package geotrellis.spark.io.accumulo.conf
 
-import geotrellis.spark.io.hadoop.conf.CamelCaseConfig
+import geotrellis.layers.io.hadoop.conf.CamelCaseConfig
 import geotrellis.spark.util.threadsFromString
 import pureconfig.generic.auto._
 

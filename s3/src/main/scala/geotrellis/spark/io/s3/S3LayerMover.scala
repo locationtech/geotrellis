@@ -16,12 +16,12 @@
 
 package geotrellis.spark.io.s3
 
-import geotrellis.spark.LayerId
+import geotrellis.layers.LayerId
 import geotrellis.spark.io._
 import geotrellis.util._
-
 import org.apache.spark.rdd.RDD
 import spray.json.JsonFormat
+
 import scala.reflect.ClassTag
 
 object S3LayerMover {

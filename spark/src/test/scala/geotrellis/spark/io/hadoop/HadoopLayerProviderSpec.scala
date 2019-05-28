@@ -16,8 +16,12 @@
 
 package geotrellis.spark.io.hadoop
 
+import geotrellis.layers.{AttributeStore, ValueReader}
+import geotrellis.layers.hadoop._
 import geotrellis.spark.io._
+import geotrellis.spark.io.hadoop._
 import geotrellis.spark.testkit.TestEnvironment
+
 import org.scalatest._
 
 class HadoopLayerProviderSpec extends FunSpec with TestEnvironment {
@@ -44,7 +48,7 @@ class HadoopLayerProviderSpec extends FunSpec with TestEnvironment {
 
   it("should not be able to process a URI without a scheme") {
     val badURI = new java.net.URI("/tmp/catalog")
-    val provider = new HadoopLayerProvider
+    val provider = new HadoopSparkLayerProvider
 
     provider.canProcess(badURI) should be (false)
   }

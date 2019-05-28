@@ -21,8 +21,10 @@ import geotrellis.spark.io._
 import geotrellis.spark.io.accumulo.conf.AccumuloConfig
 import geotrellis.util.UriUtils
 import org.apache.spark.SparkContext
-
 import java.net.URI
+
+import geotrellis.layers.LayerId
+import geotrellis.layers.io.{ValueReader, ValueReaderProvider}
 
 /**
  * Provides [[AccumuloAttributeStore]] instance for URI with `accumulo` scheme.

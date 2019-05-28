@@ -16,15 +16,15 @@
 
 package geotrellis.spark.timeseries
 
+import geotrellis.vector._
+import geotrellis.tiling.SpaceTimeKey
 import geotrellis.raster._
 import geotrellis.raster.histogram._
 import geotrellis.raster.summary.polygonal._
-import geotrellis.tiling.SpaceTimeKey
+import geotrellis.layers.mask.Mask.Options
 import geotrellis.spark._
-import geotrellis.spark.mask.Mask.Options
 import geotrellis.util.annotations.experimental
 import geotrellis.util.MethodExtensions
-import geotrellis.vector._
 
 import java.time.ZonedDateTime
 

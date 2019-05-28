@@ -16,6 +16,7 @@
 
 package geotrellis.spark.io.hadoop
 
+import geotrellis.layers.hadoop.HadoopAttributeStore
 import geotrellis.spark._
 import geotrellis.spark.io._
 

@@ -19,14 +19,15 @@ package geotrellis.spark.io.cassandra
 import geotrellis.tiling.{Boundable, Bounds}
 import geotrellis.spark._
 import geotrellis.spark.io._
-import geotrellis.spark.io.avro._
-import geotrellis.spark.io.index._
+import geotrellis.layers.io.avro._
+import geotrellis.layers.io.index._
 import geotrellis.util._
-
 import org.apache.spark.SparkContext
 import spray.json.JsonFormat
-
 import java.time.ZonedDateTime
+
+import geotrellis.layers.LayerId
+
 import scala.reflect.ClassTag
 
 object CassandraLayerReindexer {

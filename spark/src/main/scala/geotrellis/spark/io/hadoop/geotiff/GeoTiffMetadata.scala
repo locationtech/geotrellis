@@ -20,6 +20,7 @@ import geotrellis.proj4.CRS
 import geotrellis.vector._
 import geotrellis.vector.io._
 import geotrellis.tiling.TemporalProjectedExtent
+import geotrellis.layers._
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.util.annotations.experimental

@@ -1,20 +1,20 @@
 package geotrellis.spark.io
 
-import org.apache.commons.io.FileUtils
-
 import geotrellis.proj4.WebMercator
+import geotrellis.tiling._
 import geotrellis.raster._
 import geotrellis.raster.resample._
 import geotrellis.raster.testkit._
-import geotrellis.tiling._
+import geotrellis.layers._
+import geotrellis.layers.index.rowmajor._
 import geotrellis.spark._
 import geotrellis.spark.io._
-import geotrellis.spark.io.index.rowmajor._
 import geotrellis.spark.testkit._
-
 import java.io.File
 
-import org.scalatest.{ FunSpec, Matchers }
+
+import org.apache.commons.io.FileUtils
+import org.scalatest.{FunSpec, Matchers}
 
 class OverzoomingValueReaderSpec 
   extends FunSpec 

@@ -16,6 +16,8 @@
 
 package geotrellis.spark.io.file.cog
 
+import geotrellis.layers.cog.COGValueReader
+import geotrellis.layers.file.cog.FileCOGValueReader
 import geotrellis.spark.io._
 import geotrellis.spark.io.cog._
 import geotrellis.spark.io.file._
@@ -42,7 +44,7 @@ class FileCOGLayerProviderSpec extends FunSpec with TestEnvironment {
 
   it("should be able to process a URI without a scheme") {
     val badURI = new java.net.URI("/tmp/catalog")
-    val provider = new FileCOGLayerProvider
+    val provider = new FileCOGSparkLayerProvider
 
     provider.canProcess(badURI) should be (true)
   }

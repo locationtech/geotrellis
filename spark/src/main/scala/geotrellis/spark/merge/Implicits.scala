@@ -16,13 +16,13 @@
 
 package geotrellis.spark.merge
 
+import geotrellis.layers._
 import geotrellis.raster._
 import geotrellis.raster.merge._
 import geotrellis.raster.prototype._
 import geotrellis.tiling._
 import geotrellis.spark._
 import geotrellis.util._
-
 import org.apache.spark.rdd.RDD
 
 import scala.reflect.ClassTag
@@ -38,9 +38,4 @@ trait Implicits {
     V <: CellGrid[Int]: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V],
     M: (? => LayoutDefinition)
   ](self: RDD[(K, V)] with Metadata[M]) extends RDDLayoutMergeMethods[K, V, M](self)
-
-  implicit class withMergableMethods[T: Mergable](val self: T) extends MethodExtensions[T] {
-    def merge(other: T): T =
-      implicitly[Mergable[T]].merge(self, other)
-  }
 }

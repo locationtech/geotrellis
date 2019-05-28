@@ -16,13 +16,13 @@
 
 package geotrellis.spark.io.s3
 
+import geotrellis.layers.{ContextCollection, LayerId}
 import geotrellis.tiling._
 import geotrellis.spark._
 import geotrellis.spark.io._
-import geotrellis.spark.io.avro._
-import geotrellis.spark.io.index._
+import geotrellis.layers.io.avro._
+import geotrellis.layers.io.index._
 import geotrellis.util._
-
 import spray.json.JsonFormat
 
 import scala.reflect.ClassTag

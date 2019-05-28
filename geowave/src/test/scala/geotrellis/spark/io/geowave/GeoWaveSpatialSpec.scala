@@ -16,14 +16,14 @@
 
 package geotrellis.spark.io.geowave
 
-import geotrellis.raster.Tile
 import geotrellis.tiling.SpatialKey
+import geotrellis.raster.Tile
+import geotrellis.layers.{LayerId, TileLayerMetadata}
+import geotrellis.layers.io.index.ZCurveKeyIndexMethod
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.accumulo.SocketWriteStrategy
-import geotrellis.spark.io.index.ZCurveKeyIndexMethod
 import geotrellis.spark.testkit.testfiles.TestFiles
-
 import mil.nga.giat.geowave.adapter.raster.adapter.RasterDataAdapter
 import mil.nga.giat.geowave.core.geotime.ingest._
 import mil.nga.giat.geowave.core.store._
@@ -32,7 +32,6 @@ import org.geotools.coverage.grid._
 import org.geotools.gce.geotiff._
 import org.opengis.coverage.grid.GridCoverage
 import org.opengis.parameter.GeneralParameterValue
-
 import org.scalatest._
 
 class GeoWaveSpatialSpec

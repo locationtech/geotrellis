@@ -16,6 +16,7 @@
 
 package geotrellis.spark.density
 
+import geotrellis.layers.{Metadata, TileLayerMetadata}
 import geotrellis.proj4.CRS
 import geotrellis.raster._
 import geotrellis.raster.mapalgebra.focal.Kernel
@@ -23,7 +24,6 @@ import geotrellis.tiling._
 import geotrellis.spark._
 import geotrellis.util.MethodExtensions
 import geotrellis.vector._
-
 import org.apache.spark.rdd.RDD
 
 trait RDDDoubleKernelDensityMethods extends MethodExtensions[RDD[PointFeature[Double]]] {

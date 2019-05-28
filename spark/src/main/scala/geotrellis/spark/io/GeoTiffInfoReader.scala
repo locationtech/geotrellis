@@ -101,3 +101,4 @@ private [geotrellis] trait GeoTiffInfoReader extends LazyLogging {
     result
   }
 }
+

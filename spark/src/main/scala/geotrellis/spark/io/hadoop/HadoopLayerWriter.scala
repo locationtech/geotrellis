@@ -17,22 +17,25 @@
 package geotrellis.spark.io.hadoop
 
 import geotrellis.tiling._
-import geotrellis.spark._
+import geotrellis.layers.{LayerId, Metadata}
+import geotrellis.layers._
+import geotrellis.layers.hadoop.{HadoopAttributeStore, HadoopLayerHeader}
+import geotrellis.layers.avro._
+import geotrellis.layers.avro.codecs._
+import geotrellis.layers.index.KeyIndex
+import geotrellis.layers.merge.Mergable
 import geotrellis.spark.io._
-import geotrellis.spark.io.avro._
-import geotrellis.spark.io.avro.codecs._
-import geotrellis.spark.io.index.KeyIndex
-import geotrellis.spark.merge._
 import geotrellis.util._
 
 import com.typesafe.scalalogging.LazyLogging
+
 import org.apache.hadoop.fs.Path
 import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkContext
-
 import spray.json._
 
 import scala.reflect._
+
 
 class HadoopLayerWriter(
   rootPath: Path,

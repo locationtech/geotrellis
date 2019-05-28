@@ -16,11 +16,13 @@
 
 package geotrellis.spark.io.hadoop
 
-import geotrellis.raster.{Tile, TileFeature}
 import geotrellis.tiling._
+import geotrellis.raster.{Tile, TileFeature}
+import geotrellis.layers.TileLayerMetadata
+import geotrellis.layers.hadoop._
 import geotrellis.spark._
 import geotrellis.spark.io._
-import geotrellis.spark.io.index._
+import geotrellis.layers.index._
 import geotrellis.spark.testkit._
 import geotrellis.spark.testkit.io._
 import geotrellis.spark.testkit.testfiles.TestTileFeatureFiles

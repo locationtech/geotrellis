@@ -16,8 +16,10 @@
 
 package geotrellis.spark.io.cog
 
-import geotrellis.spark.io._
+import geotrellis.layers.AttributeStore
+
 import java.net.URI
+
 
 trait COGLayerWriterProvider {
   def canProcess(uri: URI): Boolean

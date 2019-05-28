@@ -16,16 +16,17 @@
 
 package geotrellis.spark.pipeline.ast
 
+import geotrellis.layers.{Metadata, TileLayerMetadata}
 import geotrellis.raster.crop.CropMethods
 import geotrellis.raster.merge.TileMergeMethods
 import geotrellis.raster.prototype.TilePrototypeMethods
 import geotrellis.raster.reproject.Reproject.{Options => RasterReprojectOptions}
-import geotrellis.raster.reproject.{TileReprojectMethods, RasterRegionReproject}
+import geotrellis.raster.reproject.{RasterRegionReproject, TileReprojectMethods}
 import geotrellis.raster.stitch.Stitcher
 import geotrellis.raster.CellGrid
 import geotrellis.raster.resample.ResampleMethod
 import geotrellis.tiling._
-import geotrellis.spark.io.avro.AvroRecordCodec
+import geotrellis.layers.io.avro.AvroRecordCodec
 import geotrellis.spark.tiling.TilerKeyMethods
 import geotrellis.spark._
 import geotrellis.spark.io._
@@ -34,7 +35,6 @@ import geotrellis.spark.pipeline.json.transform._
 import geotrellis.spark.pyramid.Pyramid
 import geotrellis.vector.ProjectedExtent
 import geotrellis.util._
-
 import org.apache.spark.HashPartitioner
 import org.apache.spark.rdd.RDD
 import spray.json.JsonFormat

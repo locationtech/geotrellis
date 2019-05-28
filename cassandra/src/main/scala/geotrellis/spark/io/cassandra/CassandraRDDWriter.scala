@@ -17,12 +17,10 @@
 package geotrellis.spark.io.cassandra
 
 import geotrellis.spark.io._
-import geotrellis.spark.io.avro._
-import geotrellis.spark.io.avro.codecs._
+import geotrellis.layers.io.avro._
+import geotrellis.layers.io.avro.codecs._
 import geotrellis.spark.io.cassandra.conf.CassandraConfig
-import geotrellis.spark.LayerId
 import geotrellis.spark.util.KryoWrapper
-
 import com.datastax.driver.core.DataType._
 import com.datastax.driver.core.querybuilder.QueryBuilder
 import com.datastax.driver.core.querybuilder.QueryBuilder.{eq => eqs}
@@ -32,10 +30,11 @@ import cats.effect.IO
 import cats.syntax.apply._
 import org.apache.avro.Schema
 import org.apache.spark.rdd.RDD
-
 import java.nio.ByteBuffer
 import java.util.concurrent.Executors
 import java.math.BigInteger
+
+import geotrellis.layers.LayerId
 
 import scala.concurrent.ExecutionContext
 import scala.collection.JavaConverters._

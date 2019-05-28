@@ -18,6 +18,7 @@ package geotrellis.spark.mapalgebra.focal
 
 import geotrellis.raster._
 import geotrellis.raster.mapalgebra.focal._
+import geotrellis.spark._
 import org.apache.spark.Partitioner
 
 

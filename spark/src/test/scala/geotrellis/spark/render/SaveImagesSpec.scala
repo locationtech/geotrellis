@@ -24,12 +24,13 @@ import geotrellis.spark.render._
 import geotrellis.spark.testkit.testfiles.TestFiles
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.testkit._
-
 import org.scalatest._
 import org.apache.hadoop.fs._
 import org.apache.hadoop.conf._
 import org.apache.commons.io.IOUtils
 import java.net.URI
+
+import geotrellis.layers.LayerId
 
 class SaveImagesSpec extends FunSpec with TestEnvironment {
   lazy val sample = TestFiles.generateSpatial("all-ones")

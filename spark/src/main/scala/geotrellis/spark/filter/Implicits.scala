@@ -19,8 +19,8 @@ package geotrellis.spark.filter
 import geotrellis.tiling._
 import geotrellis.spark._
 import geotrellis.util._
-
 import cats.Functor
+import geotrellis.layers.Metadata
 import org.apache.spark.rdd._
 
 import scala.reflect.ClassTag

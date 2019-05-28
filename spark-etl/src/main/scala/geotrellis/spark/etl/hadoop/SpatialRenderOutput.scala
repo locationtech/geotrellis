@@ -18,12 +18,12 @@ package geotrellis.spark.etl.hadoop
 
 import java.math.BigInteger
 
+import geotrellis.tiling._
 import geotrellis.raster.Tile
 import geotrellis.raster.render._
-import geotrellis.tiling._
+import geotrellis.layers.{LayerId, Metadata, TileLayerMetadata}
+import geotrellis.layers.io.index.KeyIndexMethod
 import geotrellis.spark.etl.OutputPlugin
-
-import geotrellis.spark.io.index.KeyIndexMethod
 import geotrellis.spark._
 import geotrellis.spark.etl.Etl
 import geotrellis.spark.etl.config.{Backend, EtlConf, HadoopPath, UserDefinedPath}
@@ -31,7 +31,6 @@ import geotrellis.spark.render._
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.io.s3._
 import org.apache.hadoop.conf.ConfServlet.BadFormatException
-
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 

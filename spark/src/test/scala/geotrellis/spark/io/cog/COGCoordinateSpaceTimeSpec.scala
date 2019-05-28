@@ -18,12 +18,14 @@ package geotrellis.spark.io.cog
 
 import geotrellis.tiling._
 import geotrellis.raster.{GridBounds, Tile}
+import geotrellis.layers._
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.testkit.io._
 import geotrellis.spark.testkit.io.cog._
 
 import java.time.{ZoneOffset, ZonedDateTime}
+
 
 trait COGCoordinateSpaceTimeSpec { self: COGPersistenceSpec[SpaceTimeKey, Tile] =>
   val dates = Vector( // all the dates in the layer

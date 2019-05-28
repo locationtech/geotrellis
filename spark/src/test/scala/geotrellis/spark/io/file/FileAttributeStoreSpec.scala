@@ -16,6 +16,7 @@
 
 package geotrellis.spark.io.file
 
+import geotrellis.layers.file.FileAttributeStore
 import geotrellis.spark._
 import geotrellis.spark.io._
 

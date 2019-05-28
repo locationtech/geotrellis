@@ -16,6 +16,7 @@
 
 package geotrellis.spark.testkit.io.cog
 
+import geotrellis.tiling._
 import geotrellis.raster.{CellGrid, MultibandTile}
 import geotrellis.raster.crop.TileCropMethods
 import geotrellis.raster.merge.TileMergeMethods
@@ -24,18 +25,20 @@ import geotrellis.raster.io.geotiff.compression.NoCompression
 import geotrellis.raster.io.geotiff._
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.raster.prototype.TilePrototypeMethods
-import geotrellis.tiling._
+import geotrellis.layers._
+import geotrellis.layers.cog.{COGCollectionLayerReader, COGValueReader}
+import geotrellis.layers.index._
+import geotrellis.layers.json._
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.cog._
-import geotrellis.spark.io.index._
-import geotrellis.spark.io.json._
 import geotrellis.spark.testkit.io._
 import geotrellis.spark.testkit.testfiles.cog.COGTestFiles
 import geotrellis.util._
 
 import org.apache.spark.rdd.RDD
 import org.scalatest._
+
 import spray.json._
 import spray.json.DefaultJsonProtocol._
 

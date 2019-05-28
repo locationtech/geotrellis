@@ -516,6 +516,7 @@ object Settings {
     name := "geotrellis-util",
     libraryDependencies ++= Seq(
       logging,
+      pureconfig,
       scalatest % Test
     )
   )
@@ -564,6 +565,35 @@ object Settings {
       import geotrellis.raster._
       import geotrellis.vector._
       import geotrellis.proj4._
+      """
+  )
+
+  lazy val layers = Seq(
+    name := "geotrellis-layers",
+    libraryDependencies ++= Seq(
+      hadoopClient % Provided,
+      apacheIO,
+      avro,
+      spire,
+      monocleCore,
+      monocleMacro,
+      chronoscala,
+      catsEffect,
+      spire,
+      fs2Core,
+      fs2Io,
+      logging,
+      scaffeine,
+      uzaygezenCore,
+      pureconfig,
+      scalatest % Test
+    ),
+    initialCommands in console :=
+      """
+      import geotrellis.raster._
+      import geotrellis.vector._
+      import geotrellis.proj4._
+      import geotrellis.tiling._
       """
   )
 }

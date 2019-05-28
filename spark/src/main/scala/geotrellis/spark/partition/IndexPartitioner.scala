@@ -18,8 +18,8 @@ package geotrellis.spark.partition
 
 import geotrellis.tiling.Bounds
 import geotrellis.spark._
-import geotrellis.spark.io.index._
-import geotrellis.spark.io.index.zcurve.{Z3, Z2, ZSpatialKeyIndex}
+import geotrellis.layers.index._
+import geotrellis.layers.index.zcurve.{Z3, Z2, ZSpatialKeyIndex}
 import geotrellis.util._
 
 import org.apache.spark._
