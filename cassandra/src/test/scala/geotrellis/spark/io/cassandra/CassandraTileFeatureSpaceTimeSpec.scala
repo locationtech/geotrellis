@@ -16,9 +16,10 @@
 
 package geotrellis.spark.io.cassandra
 
-import geotrellis.layers.TileLayerMetadata
-import geotrellis.raster.{Tile, TileFeature}
 import geotrellis.tiling.SpaceTimeKey
+import geotrellis.raster.{Tile, TileFeature}
+import geotrellis.layers._
+import geotrellis.layers.cassandra._
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.testkit.io._
