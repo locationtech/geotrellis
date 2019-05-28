@@ -16,17 +16,20 @@
 
 package geotrellis.spark.io.accumulo
 
-import geotrellis.layers.LayerId
 import geotrellis.tiling.{Boundable, Bounds}
+import geotrellis.layers._
+import geotrellis.layers.AttributeStore.Fields
+import geotrellis.layers.accumulo._
+import geotrellis.layers.avro.AvroRecordCodec
+import geotrellis.layers.index._
+import geotrellis.layers.json._
 import geotrellis.spark._
 import geotrellis.spark.io._
-import geotrellis.spark.io.AttributeStore.Fields
-import geotrellis.layers.io.avro.AvroRecordCodec
-import geotrellis.layers.io.index._
-import geotrellis.layers.io.json._
 import geotrellis.util._
+
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
+
 import spray.json.JsonFormat
 
 import scala.reflect.ClassTag

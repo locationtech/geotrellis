@@ -16,10 +16,11 @@
 
 package geotrellis.spark.io.accumulo
 
+import geotrellis.layers.accumulo._
+import geotrellis.layers.accumulo.conf.AccumuloConfig
+import geotrellis.layers.hadoop._
 import geotrellis.spark.util._
 import geotrellis.spark.io._
-import geotrellis.spark.io.hadoop._
-import geotrellis.spark.io.accumulo.conf.AccumuloConfig
 
 import org.apache.hadoop.mapreduce.Job
 import org.apache.hadoop.fs.Path
@@ -27,10 +28,12 @@ import org.apache.spark.rdd.RDD
 import org.apache.accumulo.core.data.{Key, Mutation, Value}
 import org.apache.accumulo.core.client.mapreduce.AccumuloFileOutputFormat
 import org.apache.accumulo.core.client.BatchWriterConfig
+
 import cats.effect.IO
 import cats.syntax.apply._
 
 import scala.concurrent.ExecutionContext
+
 import java.util.UUID
 import java.util.concurrent.Executors
 

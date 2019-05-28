@@ -16,15 +16,17 @@
 
 package geotrellis.spark.io.accumulo
 
-import geotrellis.layers.LayerId
-import geotrellis.spark._
+import geotrellis.layers._
+import geotrellis.layers.accumulo._
+import geotrellis.layers.avro._
+import geotrellis.layers.index._
+import geotrellis.layers.json._
 import geotrellis.spark.io._
-import geotrellis.layers.io.avro._
-import geotrellis.layers.io.index._
-import geotrellis.layers.io.json._
 import geotrellis.util._
+
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
+
 import spray.json.JsonFormat
 
 import scala.reflect.ClassTag

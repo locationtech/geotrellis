@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.io.accumulo
+package geotrellis.layers.accumulo
 
-import geotrellis.spark.io.{LayerHeader, LayerType, AvroLayerType}
+import geotrellis.layers.{LayerHeader, LayerType, AvroLayerType}
 
 import spray.json._
 
