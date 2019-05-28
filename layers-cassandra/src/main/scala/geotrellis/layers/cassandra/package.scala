@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.io
+package geotrellis.layers
 
 import java.math.BigInteger
 
