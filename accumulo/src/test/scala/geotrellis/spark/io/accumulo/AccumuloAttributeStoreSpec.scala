@@ -16,7 +16,8 @@
 
 package geotrellis.spark.io.accumulo
 
-import geotrellis.layers.LayerId
+import geotrellis.layers.{LayerId, LayerHeader}
+import geotrellis.layers.accumulo._
 import geotrellis.spark._
 import geotrellis.spark.io._
 import org.apache.accumulo.core.client.security.tokens.PasswordToken

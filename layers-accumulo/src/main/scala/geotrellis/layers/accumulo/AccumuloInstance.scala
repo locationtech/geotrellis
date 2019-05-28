@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.io.accumulo
+package geotrellis.layers.accumulo
 
 import org.apache.accumulo.core.client._
 import org.apache.accumulo.core.client.mapreduce.{AbstractInputFormat => AIF, AccumuloOutputFormat => AOF}
@@ -25,6 +25,7 @@ import org.apache.hadoop.mapreduce.Job
 
 import scala.collection.JavaConverters._
 import java.net.URI
+
 
 trait AccumuloInstance  extends Serializable {
   def connector: Connector

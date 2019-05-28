@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.io.accumulo
+package geotrellis.layers.accumulo
 
 import geotrellis.layers.LayerId
-import geotrellis.spark._
+
 import org.apache.accumulo.core.data.Key
 import org.apache.hadoop.io.Text
+
 
 object AccumuloKeyEncoder {
   final def long2Bytes(x: BigInt): Array[Byte] = {
