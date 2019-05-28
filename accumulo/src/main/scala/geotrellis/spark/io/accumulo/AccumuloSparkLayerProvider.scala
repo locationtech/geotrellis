@@ -16,15 +16,16 @@
 
 package geotrellis.spark.io.accumulo
 
-import geotrellis.spark._
+import geotrellis.layers._
+import geotrellis.layers.accumulo._
+import geotrellis.layers.accumulo.conf.AccumuloConfig
 import geotrellis.spark.io._
-import geotrellis.spark.io.accumulo.conf.AccumuloConfig
 import geotrellis.util.UriUtils
+
 import org.apache.spark.SparkContext
+
 import java.net.URI
 
-import geotrellis.layers.LayerId
-import geotrellis.layers.io.{ValueReader, ValueReaderProvider}
 
 /**
  * Provides [[AccumuloAttributeStore]] instance for URI with `accumulo` scheme.
@@ -33,21 +34,7 @@ import geotrellis.layers.io.{ValueReader, ValueReaderProvider}
  * Attributes table name is optional, not provided default value will be used.
  * Layers table name is required to instantiate a [[LayerWriter]]
  */
-class AccumuloLayerProvider extends AttributeStoreProvider
-    with LayerReaderProvider with LayerWriterProvider with ValueReaderProvider with CollectionLayerReaderProvider {
-
-  def canProcess(uri: URI): Boolean = uri.getScheme match {
-    case str: String => if (str.toLowerCase == "accumulo") true else false
-    case null => false
-  }
-
-  def attributeStore(uri: URI): AttributeStore = {
-    val instance = AccumuloInstance(uri)
-    val params = UriUtils.getParams(uri)
-    val attributeTable = params.getOrElse("attributes", AccumuloConfig.catalog)
-    AccumuloAttributeStore(instance, attributeTable)
-  }
-
+class AccumuloSparkLayerProvider extends AccumuloCollectionLayerProvider with LayerReaderProvider with LayerWriterProvider {
   def layerReader(uri: URI, store: AttributeStore, sc: SparkContext): FilteringLayerReader[LayerId] = {
     val instance = AccumuloInstance(uri)
 
@@ -62,15 +49,4 @@ class AccumuloLayerProvider extends AttributeStoreProvider
 
     AccumuloLayerWriter(instance, store, table)
   }
-
-  def valueReader(uri: URI, store: AttributeStore): ValueReader[LayerId] = {
-    val instance = AccumuloInstance(uri)
-    new AccumuloValueReader(instance, store)
-  }
-
-  def collectionLayerReader(uri: URI, store: AttributeStore): CollectionLayerReader[LayerId] = {
-    val instance = AccumuloInstance(uri)
-    new AccumuloCollectionLayerReader(store)(instance)
-  }
-
 }

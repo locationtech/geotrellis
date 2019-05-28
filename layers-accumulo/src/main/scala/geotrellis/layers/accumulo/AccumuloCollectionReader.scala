@@ -14,18 +14,19 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.io.accumulo
+package geotrellis.layers.accumulo
 
-import geotrellis.spark.io._
-import geotrellis.spark.io.accumulo.conf.AccumuloConfig
-import geotrellis.layers.io.avro.codecs.KeyValueRecordCodec
-import geotrellis.layers.io.avro.{AvroEncoder, AvroRecordCodec}
 import geotrellis.tiling.{Boundable, KeyBounds}
+import geotrellis.layers._
+import geotrellis.layers.accumulo.conf.AccumuloConfig
+import geotrellis.layers.avro.codecs.KeyValueRecordCodec
+import geotrellis.layers.avro.{AvroEncoder, AvroRecordCodec}
 
 import org.apache.accumulo.core.data.{Range => AccumuloRange}
 import org.apache.accumulo.core.security.Authorizations
 import org.apache.avro.Schema
 import org.apache.hadoop.io.Text
+
 import cats.effect._
 import cats.syntax.apply._
 
@@ -34,6 +35,7 @@ import scala.collection.JavaConverters._
 import scala.reflect.ClassTag
 
 import java.util.concurrent.Executors
+
 
 object AccumuloCollectionReader {
   val defaultThreadCount: Int = AccumuloConfig.threads.collection.readThreads

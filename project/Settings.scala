@@ -65,6 +65,27 @@ object Settings {
       """
   ) ++ noForkInTests
 
+  lazy val `layers-accumulo` = Seq(
+    name := "geotrellis-layers-accumulo",
+    libraryDependencies ++= Seq(
+      accumuloCore
+        exclude("org.jboss.netty", "netty")
+        exclude("org.apache.hadoop", "hadoop-client"),
+      spire,
+      scalatest % Test,
+      hadoopClient % Provided
+    ),
+    initialCommands in console :=
+      """
+      import geotrellis.proj4._
+      import geotrellis.vector._
+      import geotrellis.raster._
+      import geotrellis.tiling._
+      import geotrellis.layers._
+      import geotrellis.layers.accumulo._
+      """
+  ) ++ noForkInTests
+
   lazy val bench = Seq(
     libraryDependencies += sl4jnop,
     jmhIterations := Some(5),

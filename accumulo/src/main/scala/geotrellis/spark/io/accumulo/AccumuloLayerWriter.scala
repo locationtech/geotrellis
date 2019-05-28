@@ -17,17 +17,20 @@
 package geotrellis.spark.io.accumulo
 
 import geotrellis.tiling.{Boundable, Bounds}
-import geotrellis.spark._
+import geotrellis.layers._
+import geotrellis.layers.accumulo._
+import geotrellis.layers.avro._
+import geotrellis.layers.avro.codecs._
+import geotrellis.layers.index._
+import geotrellis.layers.merge.Mergable
 import geotrellis.spark.io._
-import geotrellis.layers.io.avro._
-import geotrellis.layers.io.avro.codecs._
-import geotrellis.layers.io.index._
 import geotrellis.spark.merge._
 import geotrellis.util._
+
 import com.typesafe.scalalogging.LazyLogging
-import geotrellis.layers.merge.Mergable
-import geotrellis.layers.{LayerId, Metadata}
+
 import org.apache.spark.rdd.RDD
+
 import spray.json._
 
 import scala.reflect._

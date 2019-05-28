@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.io.accumulo.conf
+package geotrellis.layers.accumulo.conf
 
-import geotrellis.layers.io.hadoop.conf.CamelCaseConfig
-import geotrellis.spark.util.threadsFromString
+import geotrellis.layers.util.threadsFromString
+import geotrellis.util.CamelCaseConfig
+
 import pureconfig.generic.auto._
 
 case class AccumuloCollectionConfig(read: String = "default") {

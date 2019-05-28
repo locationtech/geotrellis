@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.io.accumulo
+package geotrellis.layers.accumulo
 
-import geotrellis.layers.LayerId
-import geotrellis.spark._
-import geotrellis.spark.io._
-import geotrellis.spark.io.accumulo.conf.AccumuloConfig
+import geotrellis.layers._
+import geotrellis.layers.accumulo.conf.AccumuloConfig
+
 import spray.json._
 import spray.json.DefaultJsonProtocol._
+
 import org.apache.accumulo.core.client.{BatchWriterConfig, Connector}
 import org.apache.accumulo.core.security.Authorizations
 import org.apache.accumulo.core.data._
@@ -30,6 +30,7 @@ import org.apache.accumulo.core.iterators.user.RegExFilter
 import org.apache.hadoop.io.Text
 
 import scala.collection.JavaConverters._
+
 
 object AccumuloAttributeStore {
   def apply(connector: Connector, attributeTable: String): AccumuloAttributeStore =

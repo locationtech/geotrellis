@@ -14,15 +14,14 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.io.accumulo
+package geotrellis.layers.accumulo
 
 import geotrellis.tiling.{Bounds, Boundable, KeyBounds, EmptyBounds}
-import geotrellis.spark.io.accumulo._
-import geotrellis.layers.io.index.{KeyIndexMethod, KeyIndex}
+import geotrellis.layers.accumulo._
+import geotrellis.layers.index.{KeyIndexMethod, KeyIndex}
 
 import org.apache.accumulo.core.data.Key
 import org.apache.hadoop.io.Text
-import org.apache.spark.rdd.RDD
 
 import scala.collection.JavaConverters._
 

@@ -206,11 +206,17 @@ lazy val s3 = project
 
 lazy val accumulo = project
   .dependsOn(
+    `layers-accumulo`,
     spark % "compile->compile;test->test", // <-- spark-testkit update should simplify this
     `spark-testkit` % Test
   )
   .settings(commonSettings)
   .settings(Settings.accumulo)
+
+lazy val `layers-accumulo` = project
+  .dependsOn(layers)
+  .settings(commonSettings)
+  .settings(Settings.`layers-accumulo`)
 
 lazy val cassandra = project
   .dependsOn(

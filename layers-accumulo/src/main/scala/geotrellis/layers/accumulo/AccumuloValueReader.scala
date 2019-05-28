@@ -14,19 +14,19 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.io.accumulo
+package geotrellis.layers.accumulo
 
-import geotrellis.layers.LayerId
-import geotrellis.layers.io.{OverzoomingValueReader, Reader}
+import geotrellis.tiling.SpatialComponent
 import geotrellis.raster._
 import geotrellis.raster.resample._
-import geotrellis.tiling.SpatialComponent
-import geotrellis.spark.io._
-import geotrellis.layers.io.avro.{AvroEncoder, AvroRecordCodec}
-import geotrellis.layers.io.avro.codecs.KeyValueRecordCodec
+import geotrellis.layers._
+import geotrellis.layers.avro.{AvroEncoder, AvroRecordCodec}
+import geotrellis.layers.avro.codecs.KeyValueRecordCodec
+
 import org.apache.accumulo.core.data.{Range => ARange}
 import org.apache.accumulo.core.security.Authorizations
 import org.apache.hadoop.io.Text
+
 import spray.json._
 
 import scala.collection.JavaConverters._
