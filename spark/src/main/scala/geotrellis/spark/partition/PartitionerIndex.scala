@@ -18,8 +18,8 @@ package geotrellis.spark.partition
 
 import geotrellis.tiling.{SpatialKey, SpaceTimeKey}
 import geotrellis.spark._
-import geotrellis.spark.io.index.KeyIndex
-import geotrellis.spark.io.index.zcurve.{Z3, Z2, ZSpatialKeyIndex}
+import geotrellis.layers.index.KeyIndex
+import geotrellis.layers.index.zcurve.{Z3, Z2, ZSpatialKeyIndex}
 
 /** Coarse KeyIndex to be used for partitioning of RDDs.
   * Coarseness means that multiple keys will be mapped to a single SFC value.

@@ -16,13 +16,13 @@
 
 package geotrellis.spark.resample
 
+import geotrellis.layers.{Metadata, TileLayerMetadata}
 import geotrellis.raster._
 import geotrellis.raster.resample._
 import geotrellis.tiling._
 import geotrellis.spark._
 import geotrellis.util._
 import geotrellis.vector.Extent
-
 import org.apache.spark.rdd.RDD
 import spire.implicits._
 

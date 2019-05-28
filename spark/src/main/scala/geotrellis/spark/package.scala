@@ -16,19 +16,16 @@
 
 package geotrellis
 
+import geotrellis.layers.{Metadata, TileLayerMetadata}
 import geotrellis.raster._
 import geotrellis.tiling._
 import geotrellis.util._
-
 import org.apache.spark.rdd._
 
 package object spark extends Implicits {
   /** GeoTiff Layer */
   type RasterRDD[M] = RDD[Raster[Tile]] with Metadata[M]
   type MultibandRasterRDD[M] = RDD[Raster[MultibandTile]] with Metadata[M]
-
-  type RasterCollection[M] = Seq[Raster[Tile]] with Metadata[M]
-  type MultibandRasterCollection[M] = Seq[Raster[MultibandTile]] with Metadata[M]
   /** ------------- */
 
   type TileLayerRDD[K] = RDD[(K, Tile)] with Metadata[TileLayerMetadata[K]]
@@ -37,21 +34,9 @@ package object spark extends Implicits {
       new ContextRDD(rdd, metadata)
   }
 
-  type TileLayerCollection[K] = Seq[(K, Tile)] with Metadata[TileLayerMetadata[K]]
-  object TileLayerCollection {
-    def apply[K](seq: Seq[(K, Tile)], metadata: TileLayerMetadata[K]): TileLayerCollection[K] =
-      new ContextCollection(seq, metadata)
-  }
-
   type MultibandTileLayerRDD[K] = RDD[(K, MultibandTile)] with Metadata[TileLayerMetadata[K]]
   object MultibandTileLayerRDD {
     def apply[K](rdd: RDD[(K, MultibandTile)], metadata: TileLayerMetadata[K]): MultibandTileLayerRDD[K] =
       new ContextRDD(rdd, metadata)
-  }
-
-  type MultibandTileLayerCollection[K] = Seq[(K, MultibandTile)] with Metadata[TileLayerMetadata[K]]
-  object MultibandTileLayerCollection {
-    def apply[K](seq: Seq[(K, MultibandTile)], metadata: TileLayerMetadata[K]): MultibandTileLayerCollection[K] =
-      new ContextCollection(seq, metadata)
   }
 }

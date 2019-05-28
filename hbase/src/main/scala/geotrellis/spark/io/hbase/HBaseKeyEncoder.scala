@@ -16,6 +16,7 @@
 
 package geotrellis.spark.io.hbase
 
+import geotrellis.layers.LayerId
 import geotrellis.spark._
 
 object HBaseKeyEncoder {

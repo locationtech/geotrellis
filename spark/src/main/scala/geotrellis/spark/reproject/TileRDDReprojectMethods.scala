@@ -16,6 +16,7 @@
 
 package geotrellis.spark.reproject
 
+import geotrellis.layers.{Metadata, TileLayerMetadata}
 import geotrellis.raster._
 import geotrellis.raster.crop._
 import geotrellis.raster.merge._
@@ -24,10 +25,10 @@ import geotrellis.raster.reproject._
 import geotrellis.raster.stitch._
 import geotrellis.tiling._
 import geotrellis.spark._
+import geotrellis.spark.buffer._
 import geotrellis.spark.ingest._
 import geotrellis.proj4._
 import geotrellis.util.MethodExtensions
-
 import org.apache.spark._
 import org.apache.spark.rdd._
 

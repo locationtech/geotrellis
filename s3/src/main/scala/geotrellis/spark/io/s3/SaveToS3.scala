@@ -17,21 +17,25 @@
 package geotrellis.spark.io.s3
 
 import geotrellis.tiling.SpatialKey
-import geotrellis.spark.LayerId
 import geotrellis.spark.io.s3.conf.S3Config
 
 import software.amazon.awssdk.services.s3.model.{PutObjectRequest, PutObjectResponse, S3Exception}
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.core.sync.RequestBody
+
+import com.amazonaws.services.s3.model.{ObjectMetadata, PutObjectRequest, PutObjectResult}
+import com.amazonaws.services.s3.model.AmazonS3Exception
+
 import org.apache.spark.rdd.RDD
 import cats.effect.{IO, Timer}
 import cats.syntax.apply._
 
 import scala.concurrent.ExecutionContext
-
 import java.io.ByteArrayInputStream
 import java.util.concurrent.Executors
 import java.net.URI
+
+import geotrellis.layers.LayerId
 
 object SaveToS3 {
   final val defaultThreadCount = S3Config.threads.rdd.writeThreads
@@ -96,7 +100,7 @@ object SaveToS3 {
       implicit val timer: Timer[IO] = IO.timer(ec)
       implicit val cs = IO.contextShift(ec)
 
-      import geotrellis.spark.util.TaskUtils._
+      import geotrellis.layers.utils.TaskUtils._
       val write: (PutObjectRequest, RequestBody) => fs2.Stream[IO, PutObjectResponse] =
         (request, requestBody) => {
           fs2.Stream eval IO.shift(ec) *> IO {

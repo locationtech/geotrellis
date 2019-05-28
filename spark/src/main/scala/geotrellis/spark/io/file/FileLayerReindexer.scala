@@ -16,12 +16,15 @@
 
 package geotrellis.spark.io.file
 
-import geotrellis.spark._
-import geotrellis.spark.io._
-import geotrellis.spark.io.avro._
-import geotrellis.spark.io.index._
+import geotrellis.layers.LayerId
+import geotrellis.layers.avro._
+import geotrellis.layers.LayerReindexer
+import geotrellis.layers.file._
+import geotrellis.layers.index._
+import geotrellis.spark.io.GenericLayerReindexer
 
 import org.apache.spark.SparkContext
+
 import spray.json.JsonFormat
 
 import scala.reflect.ClassTag

@@ -16,9 +16,9 @@
 
 package geotrellis.spark.render
 
+import geotrellis.layers.LayerId
 import geotrellis.raster.{Tile, TileLayout}
 import geotrellis.tiling.SpatialKey
-import geotrellis.spark.LayerId
 import geotrellis.spark.testkit.TestEnvironment
 import geotrellis.spark.render._
 import geotrellis.spark.testkit.testfiles.TestFiles
@@ -28,6 +28,7 @@ import geotrellis.spark.io.s3.SaveToS3
 
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.model._
+
 import org.scalatest._
 
 class S3SaveImagesSpec extends FunSpec with TestEnvironment with Matchers {

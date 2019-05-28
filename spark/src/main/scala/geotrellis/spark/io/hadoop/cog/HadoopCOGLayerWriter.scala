@@ -16,27 +16,31 @@
 
 package geotrellis.spark.io.hadoop.cog
 
+
+import geotrellis.tiling.SpatialComponent
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff.GeoTiff
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.raster.io.geotiff.writer.GeoTiffWriter
-import geotrellis.tiling.{SpatialComponent, Boundable}
-import geotrellis.spark._
-import geotrellis.spark.io.{InvalidLayerIdError, AttributeStore, COGLayerType}
+import geotrellis.layers.LayerId
+import geotrellis.layers.{AttributeStore, COGLayerType, InvalidLayerIdError}
+import geotrellis.layers.cog.{COGLayerStorageMetadata, ZoomRange, _}
+import geotrellis.layers.cog.vrt.VRT
+import geotrellis.layers.cog.vrt.VRT.IndexedSimpleSource
+import geotrellis.layers.hadoop.{HadoopLayerHeader, HdfsUtils, SerializableConfiguration, HadoopAttributeStore}
+import geotrellis.layers.hadoop.cog.byteReader
+import geotrellis.layers.index._
 import geotrellis.spark.io.cog._
-import geotrellis.spark.io.cog.vrt.VRT
-import geotrellis.spark.io.cog.vrt.VRT.IndexedSimpleSource
-import geotrellis.spark.io.hadoop.{HadoopAttributeStore, HadoopLayerHeader, HdfsUtils, SerializableConfiguration}
-import geotrellis.spark.io.index._
+import geotrellis.spark.io.hadoop._
 import geotrellis.util.ByteReader
 
 import org.apache.hadoop.fs.Path
 import org.apache.spark.SparkContext
 import spray.json.JsonFormat
 
-import scala.reflect.{ClassTag, classTag}
-
 import java.net.URI
+
+import scala.reflect.{ClassTag, classTag}
 
 class HadoopCOGLayerWriter(
   rootPath: String,

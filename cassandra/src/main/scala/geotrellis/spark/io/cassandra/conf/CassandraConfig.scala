@@ -16,7 +16,7 @@
 
 package geotrellis.spark.io.cassandra.conf
 
-import geotrellis.spark.io.hadoop.conf.CamelCaseConfig
+import geotrellis.layers.io.hadoop.conf.CamelCaseConfig
 import geotrellis.spark.util._
 import pureconfig.generic.auto._
 

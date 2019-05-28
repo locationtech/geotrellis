@@ -16,10 +16,10 @@
 
 package geotrellis.spark.io.accumulo
 
+import geotrellis.layers.LayerId
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.accumulo.conf.AccumuloConfig
-
 import spray.json._
 import spray.json.DefaultJsonProtocol._
 import org.apache.accumulo.core.client.{BatchWriterConfig, Connector}

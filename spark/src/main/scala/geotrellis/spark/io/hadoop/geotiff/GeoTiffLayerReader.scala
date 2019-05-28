@@ -20,7 +20,6 @@ import geotrellis.raster.io.geotiff._
 import geotrellis.raster.{CellGrid, Raster, RasterExtent}
 import geotrellis.raster.resample.{RasterResampleMethods, ResampleMethod}
 import geotrellis.tiling.{SpatialKey, ZoomedLayoutScheme}
-import geotrellis.spark.LayerId
 import geotrellis.vector.{Extent, ProjectedExtent}
 import geotrellis.raster.crop.Crop
 import geotrellis.raster.reproject.Reproject.{Options => ReprojectOptions}
@@ -29,12 +28,12 @@ import geotrellis.raster.reproject.RasterReprojectMethods
 import geotrellis.raster.merge.RasterMergeMethods
 import geotrellis.util.ByteReader
 import geotrellis.util.annotations.experimental
-
 import cats.effect.IO
 import cats.syntax.apply._
-
 import java.net.URI
 import java.util.concurrent.{ExecutorService, Executors}
+
+import geotrellis.layers.LayerId
 
 import scala.concurrent.ExecutionContext
 import scala.reflect.ClassTag

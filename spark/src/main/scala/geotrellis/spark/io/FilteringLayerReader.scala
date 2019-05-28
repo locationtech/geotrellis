@@ -17,15 +17,17 @@
 package geotrellis.spark.io
 
 import geotrellis.tiling._
+import geotrellis.layers.Metadata
+import geotrellis.layers.{LayerQuery, BoundLayerQuery}
+import geotrellis.layers.avro._
+import geotrellis.layers.json._
 import geotrellis.spark._
-import geotrellis.spark.io.avro._
-import geotrellis.spark.io.json._
 import geotrellis.util._
-
 import org.apache.spark.rdd._
 import spray.json._
 
 import scala.reflect._
+
 
 abstract class FilteringLayerReader[ID] extends LayerReader[ID] {
 

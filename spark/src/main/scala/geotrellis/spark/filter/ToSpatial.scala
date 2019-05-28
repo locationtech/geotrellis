@@ -19,9 +19,9 @@ package geotrellis.spark.filter
 import geotrellis.tiling._
 import geotrellis.spark._
 import geotrellis.util._
-
 import cats.Functor
 import cats.implicits._
+import geotrellis.layers.Metadata
 import org.apache.spark.Partitioner
 import org.apache.spark.rdd._
 

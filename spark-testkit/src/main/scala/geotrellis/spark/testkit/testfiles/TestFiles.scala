@@ -17,16 +17,16 @@
 package geotrellis.spark.testkit.testfiles
 
 import geotrellis.proj4._
-import geotrellis.raster.{GridBounds, TileLayout, FloatConstantNoDataCellType}
+import geotrellis.raster.{FloatConstantNoDataCellType, GridBounds, TileLayout}
 import geotrellis.tiling._
 import geotrellis.spark._
 import geotrellis.spark.tiling._
 import geotrellis.spark.testkit._
-
 import org.apache.spark._
 import jp.ne.opt.chronoscala.Imports._
-
 import java.time.{ZoneOffset, ZonedDateTime}
+
+import geotrellis.layers.TileLayerMetadata
 
 object TestFiles {
   val ZOOM_LEVEL = 8

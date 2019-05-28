@@ -16,10 +16,10 @@
 
 package geotrellis.spark.viewshed
 
+import geotrellis.layers.{Metadata, TileLayerMetadata}
 import geotrellis.spark._
 import geotrellis.tiling.SpatialKey
 import geotrellis.raster.Tile
-
 import org.apache.spark.rdd.RDD
 
 import scala.reflect.ClassTag

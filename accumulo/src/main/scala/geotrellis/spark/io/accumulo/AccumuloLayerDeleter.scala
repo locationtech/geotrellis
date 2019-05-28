@@ -16,10 +16,9 @@
 
 package geotrellis.spark.io.accumulo
 
-import geotrellis.spark.LayerId
 import geotrellis.spark.io._
-
 import com.typesafe.scalalogging.LazyLogging
+import geotrellis.layers.LayerId
 import org.apache.accumulo.core.client.{BatchWriterConfig, Connector}
 import org.apache.accumulo.core.security.Authorizations
 import org.apache.accumulo.core.data.{Range => AccumuloRange}

@@ -20,7 +20,6 @@ import geotrellis.proj4._
 import geotrellis.raster._
 import geotrellis.tiling._
 import geotrellis.spark._
-import geotrellis.spark.io.RasterReader
 import geotrellis.vector._
 
 import software.amazon.awssdk.services.s3.S3Client
@@ -28,9 +27,10 @@ import com.typesafe.scalalogging.LazyLogging
 import org.apache.hadoop.conf.Configuration
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
-
 import java.net.URI
 import java.nio.ByteBuffer
+
+import geotrellis.layers.io.RasterReader
 
 /**
  * The S3GeoTiffRDD object allows for the creation of whole or windowed RDD[(K, V)]s from files on S3.

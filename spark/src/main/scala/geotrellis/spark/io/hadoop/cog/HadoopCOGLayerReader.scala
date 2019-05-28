@@ -18,16 +18,20 @@ package geotrellis.spark.io.hadoop.cog
 
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
-import geotrellis.tiling.{SpatialComponent, Boundable}
-import geotrellis.spark._
-import geotrellis.spark.io._
+import geotrellis.tiling.{Boundable, SpatialComponent}
+import geotrellis.layers.{LayerId, TileLayerMetadata}
+import geotrellis.layers._
+import geotrellis.layers.cog.{ZoomRange, Extension}
+import geotrellis.layers.hadoop.conf.HadoopConfig
+import geotrellis.layers.hadoop._
+import geotrellis.layers.hadoop.cog.byteReader
+import geotrellis.layers.index.Index
 import geotrellis.spark.io.cog._
-import geotrellis.spark.io.index.Index
 import geotrellis.spark.io.hadoop._
-import geotrellis.spark.io.hadoop.conf.HadoopConfig
 import geotrellis.util._
 
 import com.typesafe.scalalogging.LazyLogging
+
 import org.apache.hadoop.fs.Path
 import org.apache.spark.SparkContext
 import spray.json.JsonFormat

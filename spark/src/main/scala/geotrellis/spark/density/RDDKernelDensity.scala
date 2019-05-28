@@ -16,6 +16,7 @@
 
 package geotrellis.spark.density
 
+import geotrellis.layers.{Metadata, TileLayerMetadata}
 import geotrellis.proj4._
 import geotrellis.raster._
 import geotrellis.raster.density._
@@ -24,7 +25,6 @@ import geotrellis.raster.mapalgebra.local._
 import geotrellis.tiling._
 import geotrellis.spark._
 import geotrellis.vector._
-
 import org.apache.spark.rdd.RDD
 
 object RDDKernelDensity {

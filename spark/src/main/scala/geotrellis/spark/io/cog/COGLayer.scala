@@ -16,6 +16,8 @@
 
 package geotrellis.spark.io.cog
 
+import geotrellis.vector._
+import geotrellis.tiling._
 import geotrellis.raster._
 import geotrellis.raster.crop._
 import geotrellis.raster.io.geotiff._
@@ -24,24 +26,26 @@ import geotrellis.raster.io.geotiff.compression.Compression
 import geotrellis.raster.merge._
 import geotrellis.raster.prototype._
 import geotrellis.raster.resample.ResampleMethod
-import geotrellis.tiling._
+import geotrellis.layers.{Metadata, TileLayerMetadata}
+import geotrellis.layers.cog.{COGLayerMetadata, ZoomRange}
+import geotrellis.layers.hadoop.{SerializableConfiguration, HdfsUtils}
+import geotrellis.layers.index.KeyIndex
+
 import geotrellis.spark._
-import geotrellis.spark.io.hadoop._
-import geotrellis.spark.io.index.KeyIndex
+import geotrellis.spark.pyramid.Pyramid
 import geotrellis.spark.tiling._
 import geotrellis.spark.util._
 import geotrellis.util._
-import geotrellis.vector._
-import geotrellis.spark.pyramid.Pyramid
 
 import org.apache.hadoop.fs.Path
 import org.apache.spark._
 import org.apache.spark.rdd._
+
 import spray.json._
 
+import scala.reflect._
 import java.net.URI
 
-import scala.reflect._
 
 case class COGLayer[K, T <: CellGrid[Int]](
   layers: Map[ZoomRange, RDD[(K, GeoTiff[T])]], // Construct lower zoom levels off of higher zoom levels

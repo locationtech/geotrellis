@@ -16,6 +16,7 @@
 
 package geotrellis.spark.io.cog
 
+import geotrellis.tiling._
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.raster.merge._
@@ -24,19 +25,23 @@ import geotrellis.raster.resample._
 import geotrellis.raster.crop._
 import geotrellis.raster.io.geotiff._
 import geotrellis.raster.io.geotiff.compression.{Compression, NoCompression}
-import geotrellis.tiling._
+import geotrellis.layers.{LayerId, Metadata, TileLayerMetadata}
+import geotrellis.layers._
+import geotrellis.layers.cog.{COGLayerStorageMetadata, ZoomRange}
+import geotrellis.layers.index._
 import geotrellis.spark._
-import geotrellis.spark.io.{AttributeNotFoundError, AttributeStore, LayerNotFoundError, LayerOutOfKeyBoundsError, Writer}
-import geotrellis.spark.io.index._
 
 import com.typesafe.scalalogging.LazyLogging
+
 import org.apache.spark.rdd.RDD
+
 import spray.json._
 
 import java.net.URI
 import java.util.ServiceLoader
 
 import scala.reflect._
+
 
 trait COGLayerWriter extends LazyLogging with Serializable {
   import COGLayerWriter.Options

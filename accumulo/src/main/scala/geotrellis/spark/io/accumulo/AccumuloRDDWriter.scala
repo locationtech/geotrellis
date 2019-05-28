@@ -17,8 +17,8 @@
 package geotrellis.spark.io.accumulo
 
 import geotrellis.spark.io.LayerWriter
-import geotrellis.spark.io.avro._
-import geotrellis.spark.io.avro.codecs._
+import geotrellis.layers.io.avro._
+import geotrellis.layers.io.avro.codecs._
 import geotrellis.spark.util.KryoWrapper
 
 import org.apache.accumulo.core.data.{Key, Range, Value}

@@ -16,6 +16,7 @@
 
 package geotrellis.spark.io.s3
 
+import geotrellis.layers.TileLayerMetadata
 import geotrellis.raster.{Tile, TileFeature}
 import geotrellis.tiling.SpatialKey
 import geotrellis.spark._
@@ -24,7 +25,6 @@ import geotrellis.spark.io.s3.testkit._
 import geotrellis.spark.testkit.io._
 import geotrellis.spark.testkit.testfiles.TestTileFeatureFiles
 import geotrellis.spark.testkit.TestEnvironment
-
 import org.scalatest._
 
 class S3TileFeatureSpatialSpec

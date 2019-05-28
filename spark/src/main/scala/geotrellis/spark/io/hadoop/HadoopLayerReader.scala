@@ -16,13 +16,17 @@
 
 package geotrellis.spark.io.hadoop
 
-import geotrellis.tiling.{Bounds, Boundable, EmptyBounds, KeyBounds}
+import geotrellis.tiling.{Boundable, Bounds, EmptyBounds, KeyBounds}
 import geotrellis.spark._
 import geotrellis.spark.io._
-import geotrellis.spark.io.avro._
+import geotrellis.layers.{LayerId, Metadata}
+import geotrellis.layers._
+import geotrellis.layers.avro._
+import geotrellis.layers.hadoop.{HadoopAttributeStore, HadoopLayerHeader}
 import geotrellis.util._
 
 import com.typesafe.scalalogging.LazyLogging
+
 import org.apache.hadoop.fs.Path
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD

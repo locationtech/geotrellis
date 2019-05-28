@@ -16,11 +16,10 @@
 
 package geotrellis.spark.io
 
-import geotrellis.spark.LayerId
+import geotrellis.layers.LayerId
 import org.apache.hadoop.io.Text
-
-import org.apache.accumulo.core.client.{Scanner, BatchWriterConfig, Connector}
-import org.apache.accumulo.core.data.{Mutation, Key, Value}
+import org.apache.accumulo.core.client.{BatchWriterConfig, Connector, Scanner}
+import org.apache.accumulo.core.data.{Key, Mutation, Value}
 
 package object accumulo {
   implicit def stringToText(s: String): Text = new Text(s)

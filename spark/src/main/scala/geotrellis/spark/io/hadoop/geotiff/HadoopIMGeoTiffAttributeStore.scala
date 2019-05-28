@@ -16,12 +16,14 @@
 
 package geotrellis.spark.io.hadoop.geotiff
 
-import geotrellis.spark.io.hadoop.HdfsUtils
+import geotrellis.layers.hadoop.HdfsUtils
+import geotrellis.spark.io.hadoop._
 import geotrellis.util.annotations.experimental
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.commons.io.IOUtils
 import org.apache.hadoop.fs.Path
+
 import spray.json._
 import spray.json.DefaultJsonProtocol._
 

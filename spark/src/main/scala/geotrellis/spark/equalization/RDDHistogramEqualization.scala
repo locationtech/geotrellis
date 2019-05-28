@@ -16,12 +16,12 @@
 
 package geotrellis.spark.equalization
 
+import geotrellis.layers.Metadata
 import geotrellis.raster._
 import geotrellis.raster.equalization.HistogramEqualization
 import geotrellis.raster.histogram.Histogram
 import geotrellis.raster.histogram.StreamingHistogram
 import geotrellis.spark._
-
 import org.apache.spark.rdd.RDD
 
 import scala.reflect._

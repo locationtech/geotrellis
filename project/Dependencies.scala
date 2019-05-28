@@ -34,6 +34,7 @@ object Dependencies {
 
   val sprayJson           = "io.spray"                   %% "spray-json"               % Version.sprayJson
 
+  val apacheIO            = "commons-io"                  % "commons-io"               % "2.6"
   val apacheMath          = "org.apache.commons"          % "commons-math3"            % "3.6.1"
 
   val chronoscala         = "jp.ne.opt"                  %% "chronoscala"              % "0.3.0"

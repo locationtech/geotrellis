@@ -16,11 +16,11 @@
 
 package geotrellis.spark.equalization
 
+import geotrellis.layers.Metadata
 import geotrellis.raster._
 import geotrellis.raster.histogram.Histogram
 import geotrellis.spark._
 import geotrellis.util.MethodExtensions
-
 import org.apache.spark.rdd.RDD
 
 

@@ -17,24 +17,29 @@
 package geotrellis.spark.io.hadoop
 
 import geotrellis.tiling._
+import geotrellis.layers.LayerId
+import geotrellis.layers.AttributeStore.Fields
+import geotrellis.layers.LayerManager
+import geotrellis.layers.avro.AvroRecordCodec
+import geotrellis.layers.hadoop._
+import geotrellis.layers.index._
+import geotrellis.layers.json._
 import geotrellis.spark._
 import geotrellis.spark.io._
-import geotrellis.spark.io.AttributeStore.Fields
-import geotrellis.spark.io.avro.AvroRecordCodec
-import geotrellis.spark.io.index._
-import geotrellis.spark.io.json._
 import geotrellis.util._
 
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
+
 import spray.json.JsonFormat
 
 import scala.reflect.ClassTag
 
+
 class HadoopLayerManager(attributeStore: HadoopAttributeStore)(implicit sc: SparkContext)
     extends LayerManager[LayerId] {
   def delete(id: LayerId): Unit =
-    HadoopLayerDeleter(attributeStore).delete(id)
+    HadoopLayerDeleter(attributeStore, attributeStore.conf).delete(id)
 
   def copy[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,

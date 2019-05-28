@@ -16,7 +16,7 @@
 
 package geotrellis.spark.io.hbase.conf
 
-import geotrellis.spark.io.hadoop.conf.CamelCaseConfig
+import geotrellis.layers.io.hadoop.conf.CamelCaseConfig
 import pureconfig.generic.auto._
 
 case class HBaseConfig(catalog: String)

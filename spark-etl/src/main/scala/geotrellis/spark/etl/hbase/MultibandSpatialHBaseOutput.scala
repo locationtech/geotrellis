@@ -16,13 +16,13 @@
 
 package geotrellis.spark.etl.hbase
 
+import geotrellis.layers.TileLayerMetadata
 import geotrellis.raster.MultibandTile
 import geotrellis.tiling._
 import geotrellis.spark._
 import geotrellis.spark.etl.config.EtlConf
 import geotrellis.spark.io._
 import geotrellis.spark.io.hbase.HBaseLayerWriter
-
 import org.apache.spark.SparkContext
 
 class MultibandSpatialHBaseOutput extends HBaseOutput[SpatialKey, MultibandTile, TileLayerMetadata[SpatialKey]] {

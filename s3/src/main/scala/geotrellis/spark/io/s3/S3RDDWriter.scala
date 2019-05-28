@@ -17,8 +17,8 @@
 package geotrellis.spark.io.s3
 
 import geotrellis.spark.io._
-import geotrellis.spark.io.avro._
-import geotrellis.spark.io.avro.codecs.KeyValueRecordCodec
+import geotrellis.layers.io.avro._
+import geotrellis.layers.io.avro.codecs.KeyValueRecordCodec
 import geotrellis.spark.util.KryoWrapper
 import geotrellis.spark.io.s3.conf.S3Config
 
@@ -80,7 +80,7 @@ class S3RDDWriter(
 
     pathsToTiles.foreachPartition { partition: Iterator[(String, Iterable[(K, V)])] =>
       if(partition.nonEmpty) {
-        import geotrellis.spark.util.TaskUtils._
+        import geotrellis.layers.utils.TaskUtils._
         val getClient = _getClient
         val s3Client: S3Client = getClient()
         val schema = kwWriterSchema.value.getOrElse(_recordCodec.schema)

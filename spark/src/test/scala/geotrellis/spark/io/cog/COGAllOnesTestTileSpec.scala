@@ -17,12 +17,13 @@
 package geotrellis.spark.io.cog
 
 import geotrellis.raster.{GridBounds, Tile}
+import geotrellis.vector.Extent
 import geotrellis.tiling._
+import geotrellis.layers._
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.testkit.io._
 import geotrellis.spark.testkit.io.cog._
-import geotrellis.vector.Extent
 
 trait COGAllOnesTestTileSpec { self: COGPersistenceSpec[SpatialKey, Tile] =>
 
