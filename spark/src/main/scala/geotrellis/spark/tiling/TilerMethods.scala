@@ -16,6 +16,7 @@
 
 package geotrellis.spark.tiling
 
+import geotrellis.layers.{Metadata, TileLayerMetadata}
 import geotrellis.vector.Extent
 import geotrellis.raster._
 import geotrellis.raster.merge._
@@ -24,7 +25,6 @@ import geotrellis.raster.resample._
 import geotrellis.tiling._
 import geotrellis.spark._
 import geotrellis.util.MethodExtensions
-
 import org.apache.spark.rdd._
 
 import scala.reflect.ClassTag

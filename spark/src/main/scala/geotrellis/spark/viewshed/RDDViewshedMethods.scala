@@ -16,12 +16,12 @@
 
 package geotrellis.spark.viewshed
 
-import geotrellis.raster.{Tile, DoubleArrayTile}
+import geotrellis.layers.{Metadata, TileLayerMetadata}
+import geotrellis.raster.{DoubleArrayTile, Tile}
 import geotrellis.raster.viewshed.R2Viewshed._
 import geotrellis.tiling._
 import geotrellis.spark._
 import geotrellis.util.MethodExtensions
-
 import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkContext
 

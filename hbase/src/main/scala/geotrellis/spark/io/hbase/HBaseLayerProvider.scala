@@ -20,9 +20,11 @@ import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.hbase.conf.HBaseConfig
 import geotrellis.util.UriUtils
-
 import org.apache.spark.SparkContext
 import java.net.URI
+
+import geotrellis.layers.LayerId
+import geotrellis.layers.io.{ValueReader, ValueReaderProvider}
 
 /**
  * Provides [[HBaseAttributeStore]] instance for URI with `hbase` scheme.

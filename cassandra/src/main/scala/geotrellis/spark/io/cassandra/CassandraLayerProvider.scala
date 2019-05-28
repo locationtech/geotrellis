@@ -20,10 +20,11 @@ import geotrellis.spark.io.cassandra.conf.CassandraConfig
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.util.UriUtils
-
 import org.apache.spark.SparkContext
-
 import java.net.URI
+
+import geotrellis.layers.LayerId
+import geotrellis.layers.io.{ValueReader, ValueReaderProvider}
 
 /**
  * Provides [[CassandraAttributeStore]] instance for URI with `cassandra` scheme.

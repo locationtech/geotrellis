@@ -16,13 +16,12 @@
 
 package geotrellis.spark.io.s3
 
+import geotrellis.layers.LayerId
 import geotrellis.tiling.Boundable
-import geotrellis.spark.LayerId
-import geotrellis.spark.io.avro._
-import geotrellis.spark.io.index.KeyIndexMethod
+import geotrellis.layers.io.avro._
+import geotrellis.layers.io.index.KeyIndexMethod
 import geotrellis.spark.io._
 import geotrellis.util._
-
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import spray.json.JsonFormat

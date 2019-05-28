@@ -32,8 +32,9 @@ import geotrellis.spark.pyramid._
 import geotrellis.util._
 import geotrellis.vector._
 import geotrellis.spark.etl.config._
-
 import com.typesafe.scalalogging.LazyLogging
+import geotrellis.layers.io.Writer
+import geotrellis.layers.{LayerId, Metadata, TileLayerMetadata}
 import org.apache.spark._
 import org.apache.spark.rdd.RDD
 

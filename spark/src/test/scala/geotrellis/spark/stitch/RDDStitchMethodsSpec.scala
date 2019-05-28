@@ -16,6 +16,7 @@
 
 package geotrellis.spark.stitch
 
+import geotrellis.layers.TileLayerMetadata
 import geotrellis.proj4.LatLng
 import geotrellis.raster._
 import geotrellis.raster.testkit._

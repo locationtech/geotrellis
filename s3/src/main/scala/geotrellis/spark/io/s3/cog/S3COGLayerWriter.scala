@@ -21,22 +21,27 @@ import geotrellis.raster.io.geotiff.GeoTiff
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.raster.io.geotiff.writer.GeoTiffWriter
 import geotrellis.tiling.SpatialComponent
+import geotrellis.layers.LayerId
+import geotrellis.layers.io.cog.{COGLayerStorageMetadata, ZoomRange}
+import geotrellis.layers.io.cog.vrt.VRT
+import geotrellis.layers.io.cog.vrt.VRT.IndexedSimpleSource
+import geotrellis.layers.io.index.{Index, KeyIndex}
 import geotrellis.spark._
 import geotrellis.spark.io._
-import geotrellis.spark.io.index.{Index, KeyIndex}
-import geotrellis.spark.io.s3.{S3AttributeStore, S3LayerHeader, S3RDDWriter, makePath, S3ClientProducer}
+import geotrellis.spark.io.s3._
 import geotrellis.spark.io.s3.conf.S3Config
+import geotrellis.spark.io.s3.{S3AttributeStore, S3Client, S3LayerHeader, S3RDDWriter, makePath}
 import geotrellis.spark.io.cog._
-import geotrellis.spark.io.cog.vrt.VRT
-import geotrellis.spark.io.cog.vrt.VRT.IndexedSimpleSource
 
 import software.amazon.awssdk.services.s3.model.{S3Exception, PutObjectRequest, GetObjectRequest}
 import software.amazon.awssdk.services.s3._
 import software.amazon.awssdk.core.sync.RequestBody
+
 import spray.json.JsonFormat
 import org.apache.commons.io.IOUtils
 
 import java.io.ByteArrayInputStream
+
 import scala.util.Try
 import scala.reflect.{ClassTag, classTag}
 

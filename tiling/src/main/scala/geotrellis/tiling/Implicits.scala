@@ -21,6 +21,6 @@ import java.time.Instant
 
 object Implicits extends Implicits
 
-trait Implicits {
+trait Implicits extends json.Implicits{
   implicit def longToInstant(millis: Long): Instant = Instant.ofEpochMilli(millis)
 }

@@ -17,15 +17,19 @@
 package geotrellis.spark.io.s3
 
 import geotrellis.tiling.{Boundable, Bounds}
+import geotrellis.layers.LayerId
 import geotrellis.spark._
 import geotrellis.spark.io._
-import geotrellis.spark.io.avro.AvroRecordCodec
-import geotrellis.spark.io.index.KeyIndex
-import geotrellis.spark.io.json._
+import geotrellis.layers.io.avro.AvroRecordCodec
+import geotrellis.layers.io.index.KeyIndex
+import geotrellis.layers.io.json._
 import geotrellis.util._
 
 import software.amazon.awssdk.services.s3.model._
 import software.amazon.awssdk.services.s3.S3Client
+
+import com.amazonaws.services.s3.model.ObjectListing
+
 import org.apache.avro.Schema
 import org.apache.spark.rdd.RDD
 import spray.json.JsonFormat

@@ -16,12 +16,13 @@
 
 package geotrellis.spark.io.s3
 
-import geotrellis.spark.LayerId
 import geotrellis.spark.io._
 
 import software.amazon.awssdk.services.s3.model._
 import software.amazon.awssdk.services.s3.S3Client
+
 import com.typesafe.scalalogging.LazyLogging
+import geotrellis.layers.LayerId
 
 import scala.collection.JavaConverters._
 

@@ -16,22 +16,29 @@
 
 package geotrellis.spark.io.file.cog
 
+import geotrellis.tiling._
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
-import geotrellis.tiling._
+import geotrellis.layers.{LayerId, TileLayerMetadata}
+import geotrellis.layers._
+import geotrellis.layers.cog.{ZoomRange, Extension}
+import geotrellis.layers.file.{FileAttributeStore, FileLayerHeader, KeyPathGenerator}
+import geotrellis.layers.file.conf.FileConfig
+import geotrellis.layers.file.cog.byteReader
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.cog._
-import geotrellis.spark.io.file.{FileAttributeStore, FileLayerHeader, KeyPathGenerator}
-import geotrellis.spark.io.file.conf.FileConfig
 import geotrellis.util._
 
 import com.typesafe.scalalogging.LazyLogging
+
 import org.apache.spark.SparkContext
+
 import spray.json.JsonFormat
 
 import java.net.URI
 import java.io.File
+
 
 import scala.reflect.ClassTag
 

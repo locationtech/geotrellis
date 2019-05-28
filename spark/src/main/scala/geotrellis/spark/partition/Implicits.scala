@@ -16,10 +16,10 @@
 
 package geotrellis.spark.partition
 
+import geotrellis.layers.Metadata
 import geotrellis.tiling.{Boundable, Bounds}
 import geotrellis.spark._
 import geotrellis.util._
-
 import org.apache.spark.rdd._
 
 import scala.reflect._

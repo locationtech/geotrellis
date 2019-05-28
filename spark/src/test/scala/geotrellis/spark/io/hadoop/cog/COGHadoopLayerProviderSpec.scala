@@ -16,9 +16,12 @@
 
 package geotrellis.spark.io.hadoop.cog
 
+import geotrellis.layers.cog.COGValueReader
+import geotrellis.layers.hadoop.cog.HadoopCOGValueReader
 import geotrellis.spark.io._
 import geotrellis.spark.io.cog._
 import geotrellis.spark.testkit.TestEnvironment
+
 import org.scalatest._
 
 class COGHadoopLayerProviderSpec extends FunSpec with TestEnvironment {
@@ -41,7 +44,7 @@ class COGHadoopLayerProviderSpec extends FunSpec with TestEnvironment {
 
   it("should not be able to process a URI without a scheme") {
     val badURI = new java.net.URI("/tmp/catalog")
-    val provider = new HadoopCOGLayerProvider
+    val provider = new HadoopCOGSparkLayerProvider
 
     provider.canProcess(badURI) should be (false)
   }

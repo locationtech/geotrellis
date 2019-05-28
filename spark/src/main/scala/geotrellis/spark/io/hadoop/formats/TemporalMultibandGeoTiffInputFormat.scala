@@ -22,10 +22,10 @@ import geotrellis.spark.ingest._
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff._
 import geotrellis.vector._
-
 import org.apache.hadoop.mapreduce._
-
 import java.time.ZonedDateTime
+
+import geotrellis.layers.hadoop.formats.BinaryFileInputFormat
 
 /** Read multiband GeoTiff with a timestamp
   *

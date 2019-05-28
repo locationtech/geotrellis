@@ -17,16 +17,19 @@
 package geotrellis.spark.io.cog
 
 import geotrellis.tiling._
-import geotrellis.spark._
-import geotrellis.spark.io._
-import geotrellis.spark.io.index._
-import geotrellis.spark.testkit.testfiles.cog._
-import geotrellis.spark.summary._
 import geotrellis.raster.io._
 import geotrellis.raster.histogram._
+import geotrellis.layers._
+import geotrellis.layers.cog.COGLayerStorageMetadata
+import geotrellis.layers.index._
+import geotrellis.spark._
+import geotrellis.spark.io._
+import geotrellis.spark.testkit.testfiles.cog._
+import geotrellis.spark.summary._
 import geotrellis.spark.testkit._
 
 import org.scalatest._
+
 import spray.json._
 import spray.json.DefaultJsonProtocol._
 

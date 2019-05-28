@@ -16,6 +16,7 @@
 
 package geotrellis.spark.io.s3
 
+import geotrellis.layers.TileLayerMetadata
 import geotrellis.raster.{Tile, TileFeature}
 import geotrellis.tiling.SpaceTimeKey
 import geotrellis.spark.io._
@@ -25,7 +26,6 @@ import geotrellis.spark._
 import geotrellis.spark.testkit.io._
 import geotrellis.spark.testkit.testfiles.TestTileFeatureFiles
 import geotrellis.spark.testkit.TestEnvironment
-
 import org.scalatest._
 
 class S3TileFeatureSpaceTimeSpec

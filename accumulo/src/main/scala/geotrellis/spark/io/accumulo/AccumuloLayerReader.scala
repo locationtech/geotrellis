@@ -16,12 +16,12 @@
 
 package geotrellis.spark.io.accumulo
 
-import geotrellis.tiling.{Bounds, Boundable, EmptyBounds, KeyBounds}
+import geotrellis.layers.LayerId
+import geotrellis.tiling.{Boundable, Bounds, EmptyBounds, KeyBounds}
 import geotrellis.spark._
 import geotrellis.spark.io._
-import geotrellis.spark.io.avro._
+import geotrellis.layers.io.avro._
 import geotrellis.util._
-
 import org.apache.hadoop.io.Text
 import org.apache.spark.SparkContext
 import org.apache.accumulo.core.data.{Range => AccumuloRange}

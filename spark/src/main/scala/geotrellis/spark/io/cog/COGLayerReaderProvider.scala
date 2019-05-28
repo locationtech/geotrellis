@@ -16,10 +16,13 @@
 
 package geotrellis.spark.io.cog
 
-import geotrellis.spark._
-import geotrellis.spark.io._
-import org.apache.spark._
+import geotrellis.layers.LayerId
+import geotrellis.layers.AttributeStore
+
+import org.apache.spark.SparkContext
+
 import java.net.URI
+
 
 trait COGLayerReaderProvider {
   def canProcess(uri: URI): Boolean

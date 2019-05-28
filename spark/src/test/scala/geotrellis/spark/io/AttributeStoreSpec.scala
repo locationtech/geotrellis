@@ -16,16 +16,19 @@
 
 package geotrellis.spark.io
 
+import geotrellis.raster.io._
+import geotrellis.raster.histogram._
+import geotrellis.layers.{LayerId, AttributeStore}
 import geotrellis.spark._
 import geotrellis.spark.testkit.testfiles._
 import geotrellis.spark.summary._
-import geotrellis.raster.io._
-import geotrellis.raster.histogram._
 import geotrellis.spark.testkit._
 
 import org.scalatest._
+
 import spray.json._
 import spray.json.DefaultJsonProtocol._
+
 
 abstract class AttributeStoreSpec
     extends FunSpec

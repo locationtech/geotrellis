@@ -16,12 +16,11 @@
 
 package geotrellis.spark.io.cassandra
 
-import geotrellis.spark.LayerId
 import geotrellis.spark.io._
-
 import com.typesafe.scalalogging.LazyLogging
 import com.datastax.driver.core.querybuilder.QueryBuilder
 import com.datastax.driver.core.querybuilder.QueryBuilder.{eq => eqs}
+import geotrellis.layers.LayerId
 
 import scala.collection.JavaConverters._
 

@@ -1,0 +1,2 @@
+geotrellis.layers.file.FileCollectionLayerProvider
+geotrellis.layers.hadoop.HadoopCollectionLayerProvider

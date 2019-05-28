@@ -17,8 +17,8 @@
 package geotrellis.spark.io.file
 
 import geotrellis.spark.io.LayerWriter
-import geotrellis.spark.io.avro.{AvroRecordCodec, AvroEncoder}
-import geotrellis.spark.io.avro.codecs.KeyValueRecordCodec
+import geotrellis.layers.avro.{AvroRecordCodec, AvroEncoder}
+import geotrellis.layers.avro.codecs.KeyValueRecordCodec
 import geotrellis.spark.util.KryoWrapper
 import geotrellis.util.Filesystem
 

@@ -19,6 +19,8 @@ package geotrellis.spark.io.hadoop
 import geotrellis.raster.io.geotiff._
 import geotrellis.raster.testkit._
 import geotrellis.raster.{IntCellType, MultibandTile}
+import geotrellis.layers._
+import geotrellis.layers.hadoop._
 import geotrellis.spark.io.hadoop
 import geotrellis.spark.testkit.TestEnvironment
 

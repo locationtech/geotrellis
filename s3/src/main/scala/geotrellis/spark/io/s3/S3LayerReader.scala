@@ -17,16 +17,20 @@
 package geotrellis.spark.io.s3
 
 import geotrellis.tiling._
+import geotrellis.layers.LayerId
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.s3.conf.S3Config
-import geotrellis.spark.io.avro._
-import geotrellis.spark.io.index._
+import geotrellis.layers.io.avro._
+import geotrellis.layers.io.index._
 import geotrellis.util._
 
 import com.typesafe.scalalogging.LazyLogging
+
 import org.apache.spark.SparkContext
+
 import spray.json.JsonFormat
+
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.model._
 

@@ -17,14 +17,19 @@
 package geotrellis.spark.io.file
 
 import geotrellis.tiling._
+import geotrellis.layers.LayerId
+import geotrellis.layers._
+import geotrellis.layers.file.{FileAttributeStore, FileLayerHeader, KeyPathGenerator}
+import geotrellis.layers.avro._
+import geotrellis.layers.index._
 import geotrellis.spark._
-import geotrellis.spark.io._
-import geotrellis.spark.io.avro._
-import geotrellis.spark.io.index._
+import geotrellis.spark.io.FilteringLayerReader
 import geotrellis.util._
 
 import com.typesafe.scalalogging.LazyLogging
+
 import org.apache.spark.SparkContext
+
 import spray.json.JsonFormat
 
 import scala.reflect.ClassTag

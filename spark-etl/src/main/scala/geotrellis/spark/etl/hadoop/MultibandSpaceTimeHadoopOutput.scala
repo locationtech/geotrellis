@@ -16,13 +16,13 @@
 
 package geotrellis.spark.etl.hadoop
 
+import geotrellis.layers.TileLayerMetadata
 import geotrellis.raster._
 import geotrellis.tiling._
 import geotrellis.spark._
 import geotrellis.spark.etl.config.EtlConf
 import geotrellis.spark.io._
 import geotrellis.spark.io.hadoop._
-
 import org.apache.spark.SparkContext
 
 class MultibandSpaceTimeHadoopOutput extends HadoopOutput[SpaceTimeKey, MultibandTile, TileLayerMetadata[SpaceTimeKey]] {

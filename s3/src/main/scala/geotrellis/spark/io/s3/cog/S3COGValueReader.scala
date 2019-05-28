@@ -19,11 +19,13 @@ package geotrellis.spark.io.s3.cog
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.tiling.SpatialComponent
+import geotrellis.layers.io.index._
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.cog._
 import geotrellis.spark.io.index._
-import geotrellis.spark.io.s3.{S3AttributeStore, S3LayerHeader, S3ClientProducer}
+import geotrellis.spark.io.s3._
+import geotrellis.spark.io.s3.{S3AttributeStore, S3Client, S3LayerHeader}
 import geotrellis.util._
 
 import software.amazon.awssdk.services.s3.model._
@@ -32,6 +34,9 @@ import spray.json._
 
 import scala.reflect.ClassTag
 import java.net.URI
+
+import geotrellis.layers.LayerId
+import geotrellis.layers.io.cog.{COGReader, OverzoomingCOGValueReader, ZoomRange}
 
 class S3COGValueReader(
   val attributeStore: AttributeStore,

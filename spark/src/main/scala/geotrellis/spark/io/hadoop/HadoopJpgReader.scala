@@ -17,11 +17,13 @@
 package geotrellis.spark.io.hadoop
 
 import geotrellis.raster.render.Jpg
+import geotrellis.layers.hadoop.HdfsUtils
 
 import org.apache.commons.io.IOUtils
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import org.apache.spark.SparkContext
+
 
 object HadoopJpgReader {
   def read(path: Path)(implicit sc: SparkContext): Jpg = read(path, sc.hadoopConfiguration)

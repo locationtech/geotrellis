@@ -16,8 +16,9 @@
 
 package geotrellis.spark.buffer
 
-import geotrellis.spark._
 import geotrellis.tiling.SpatialComponent
+import geotrellis.raster.buffer.Direction
+import geotrellis.spark._
 import geotrellis.util.MethodExtensions
 
 import org.apache.spark.rdd.RDD

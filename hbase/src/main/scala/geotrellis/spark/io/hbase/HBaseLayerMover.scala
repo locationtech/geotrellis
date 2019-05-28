@@ -16,9 +16,9 @@
 
 package geotrellis.spark.io.hbase
 
+import geotrellis.layers.LayerId
 import geotrellis.spark._
 import geotrellis.spark.io._
-
 import org.apache.spark.SparkContext
 
 object HBaseLayerMover {

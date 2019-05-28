@@ -16,6 +16,7 @@
 
 package geotrellis.spark.io.s3
 
+import geotrellis.layers.TileLayerMetadata
 import geotrellis.raster.Tile
 import geotrellis.tiling.SpaceTimeKey
 import geotrellis.spark.io._
@@ -30,6 +31,7 @@ import software.amazon.awssdk.http.AbortableInputStream
 import software.amazon.awssdk.core.ResponseInputStream
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.regions.Region
+
 import org.scalatest._
 
 import java.net.URI

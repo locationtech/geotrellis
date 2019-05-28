@@ -14,11 +14,10 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.io.hadoop
-
-import geotrellis.spark._
+package geotrellis.layers.hadoop
 
 import org.apache.spark.Partitioner
+
 
 object KeyPartitioner {
   def apply[K: Ordering](splits: Array[K]): KeyPartitioner[K] = 

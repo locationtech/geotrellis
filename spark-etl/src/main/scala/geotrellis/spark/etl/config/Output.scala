@@ -20,7 +20,7 @@ import geotrellis.proj4.CRS
 import geotrellis.raster.resample.PointResampleMethod
 import geotrellis.raster.{CellSize, CellType, RasterExtent, TileLayout}
 import geotrellis.tiling._
-import geotrellis.spark.io.index.{HilbertKeyIndexMethod, KeyIndexMethod, RowMajorKeyIndexMethod, ZCurveKeyIndexMethod}
+import geotrellis.layers.io.index.{HilbertKeyIndexMethod, KeyIndexMethod, RowMajorKeyIndexMethod, ZCurveKeyIndexMethod}
 import geotrellis.spark.pyramid.Pyramid
 import geotrellis.vector.Extent
 import org.apache.spark.HashPartitioner

@@ -18,7 +18,7 @@ package geotrellis.spark.io.accumulo
 
 import geotrellis.tiling.{Bounds, Boundable, KeyBounds, EmptyBounds}
 import geotrellis.spark.io.accumulo._
-import geotrellis.spark.io.index.{KeyIndexMethod, KeyIndex}
+import geotrellis.layers.io.index.{KeyIndexMethod, KeyIndex}
 
 import org.apache.accumulo.core.data.Key
 import org.apache.hadoop.io.Text

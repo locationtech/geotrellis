@@ -181,7 +181,7 @@ lazy val `raster-testkit` = project
   .settings(Settings.`raster-testkit`)
 
 lazy val spark = project
-  .dependsOn(util, raster, `raster-testkit` % Test, `vector-testkit` % Test, tiling)
+  .dependsOn(util, raster, `raster-testkit` % Test, `vector-testkit` % Test, tiling, layers)
   .settings(commonSettings)
   .settings(Settings.spark)
   .settings(
@@ -284,3 +284,8 @@ lazy val tiling = project
   .dependsOn(raster, vector, proj4, util)
   .settings(commonSettings)
   .settings(Settings.tiling)
+
+lazy val layers = project
+  .dependsOn(tiling)
+  .settings(commonSettings)
+  .settings(Settings.layers)

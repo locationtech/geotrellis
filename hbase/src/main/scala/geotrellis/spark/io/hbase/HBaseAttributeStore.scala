@@ -16,15 +16,14 @@
 
 package geotrellis.spark.io.hbase
 
+import geotrellis.layers.LayerId
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.hbase.conf.HBaseConfig
-
 import org.apache.hadoop.hbase._
 import org.apache.hadoop.hbase.client._
 import org.apache.hadoop.hbase.filter.{FilterList, RegexStringComparator, RowFilter}
 import org.apache.hadoop.hbase.util.Bytes
-
 import spray.json._
 import spray.json.DefaultJsonProtocol._
 
