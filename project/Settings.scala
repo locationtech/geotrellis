@@ -42,8 +42,29 @@ object Settings {
     parallelExecution in Test := false
   )
 
-  lazy val accumulo = Seq(
-    name := "geotrellis-accumulo",
+  lazy val `accumulo-store` = Seq(
+    name := "geotrellis-accumulo-store",
+    libraryDependencies ++= Seq(
+      accumuloCore
+        exclude("org.jboss.netty", "netty")
+        exclude("org.apache.hadoop", "hadoop-client"),
+      spire,
+      scalatest % Test,
+      hadoopClient % Provided
+    ),
+    initialCommands in console :=
+      """
+      import geotrellis.proj4._
+      import geotrellis.vector._
+      import geotrellis.raster._
+      import geotrellis.tiling._
+      import geotrellis.layers._
+      import geotrellis.store.accumulo._
+      """
+  ) ++ noForkInTests
+
+  lazy val `accumulo-spark` = Seq(
+    name := "geotrellis-accumulo-spark",
     libraryDependencies ++= Seq(
       accumuloCore
         exclude("org.jboss.netty", "netty")
@@ -59,9 +80,10 @@ object Settings {
       import geotrellis.vector._
       import geotrellis.proj4._
       import geotrellis.tiling._
+      import geotrellis.layers._
+      import geotrellis.store.accumulo._
       import geotrellis.spark._
-      import geotrellis.spark.util._
-      import geotrellis.spark.io.accumulo._
+      import geotrellis.spark.store.accumulo._
       """
   ) ++ noForkInTests
 
@@ -73,8 +95,31 @@ object Settings {
     // jmhExtraOptions := Some("-jvmArgsAppend -prof geotrellis.bench.GeotrellisFlightRecordingProfiler")
   )
 
-  lazy val cassandra = Seq(
-    name := "geotrellis-cassandra",
+  lazy val `cassandra-store` = Seq(
+    name := "geotrellis-cassandra-store",
+    libraryDependencies ++= Seq(
+      cassandraDriverCore
+        excludeAll(
+        ExclusionRule("org.jboss.netty"), ExclusionRule("io.netty"),
+        ExclusionRule("org.slf4j"), ExclusionRule("io.spray"), ExclusionRule("com.typesafe.akka")
+      ) exclude("org.apache.hadoop", "hadoop-client"),
+      spire,
+      scalatest % Test
+    ),
+    initialCommands in console :=
+      """
+      import geotrellis.proj4._
+      import geotrellis.vector._
+      import geotrellis.tiling._
+      import geotrellis.raster._
+      import geotrellis.layers._
+      import geotrellis.layers.util._
+      import geotrellis.store.cassandra._
+      """
+  ) ++ noForkInTests
+
+  lazy val `cassandra-spark` = Seq(
+    name := "geotrellis-cassandra-spark",
     libraryDependencies ++= Seq(
       cassandraDriverCore
         excludeAll(
@@ -92,11 +137,14 @@ object Settings {
       import geotrellis.vector._
       import geotrellis.proj4._
       import geotrellis.tiling._
+      import geotrellis.layers._
+      import geotrellis.store.cassandra._
       import geotrellis.spark._
       import geotrellis.spark.util._
-      import geotrellis.spark.io.cassandra._
+      import geotrellis.spark.store.cassandra._
       """
   ) ++ noForkInTests
+
 
   lazy val `doc-examples` = Seq(
     name := "geotrellis-doc-examples",
@@ -252,8 +300,50 @@ object Settings {
       """
   ) ++ noForkInTests
 
-  lazy val hbase = Seq(
-    name := "geotrellis-hbase",
+  lazy val `hbase-store` = Seq(
+    name := "geotrellis-hbase-store",
+    libraryDependencies ++= Seq(
+      hbaseCommon exclude("javax.servlet", "servlet-api"),
+      hbaseClient exclude("javax.servlet", "servlet-api"),
+      hbaseMapReduce exclude("javax.servlet", "servlet-api"),
+      hbaseServer exclude("org.mortbay.jetty", "servlet-api-2.5"),
+      hbaseHadoopCompact exclude("javax.servlet", "servlet-api"),
+      hbaseHadoop2Compact exclude("javax.servlet", "servlet-api"),
+      hbaseMetrics exclude("javax.servlet", "servlet-api"),
+      hbaseMetricsApi exclude("javax.servlet", "servlet-api"),
+      hbaseZooKeeper exclude("javax.servlet", "servlet-api"),
+      jacksonCoreAsl,
+      spire,
+      sparkSQL % Test,
+      scalatest % Test
+    ),
+    /** https://github.com/lucidworks/spark-solr/issues/179 */
+    dependencyOverrides ++= {
+      val deps = Seq(
+        "com.fasterxml.jackson.core" % "jackson-core" % "2.6.7",
+        "com.fasterxml.jackson.core" % "jackson-databind" % "2.6.7",
+        "com.fasterxml.jackson.core" % "jackson-annotations" % "2.6.7"
+      )
+      CrossVersion.partialVersion(scalaVersion.value) match {
+        // if Scala 2.12+ is used
+        case Some((2, scalaMajor)) if scalaMajor >= 12 => deps
+        case _ => deps :+ "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.6.7"
+      }
+    },
+    initialCommands in console :=
+      """
+      import geotrellis.raster._
+      import geotrellis.vector._
+      import geotrellis.proj4._
+      import geotrellis.tiling._
+      import geotrellis.layers._
+      import geotrellis.layers.util._
+      import geotrellis.store.hbase._
+      """
+  ) ++ noForkInTests
+
+  lazy val `hbase-spark` = Seq(
+    name := "geotrellis-hbase-spark",
     libraryDependencies ++= Seq(
       hbaseCommon exclude("javax.servlet", "servlet-api"),
       hbaseClient exclude("javax.servlet", "servlet-api"),
@@ -288,10 +378,12 @@ object Settings {
       import geotrellis.raster._
       import geotrellis.vector._
       import geotrellis.proj4._
-      mimport geotrellis.tiling._
+      import geotrellis.tiling._
+      import geotrellis.layers._
+      import geotrellis.layers.util._
       import geotrellis.spark._
-      import geotrellis.spark.util._
-      import geotrellis.spark.io.hbase._
+      import geotrellis.spark.store.hbase._
+      import geotrellis.store.hbase._
       """
   ) ++ noForkInTests
 
@@ -358,8 +450,42 @@ object Settings {
     libraryDependencies += scalatest
   )
 
-  lazy val s3 = Seq(
-    name := "geotrellis-s3",
+  lazy val `s3-store` = Seq(
+    name := "geotrellis-store-s3",
+    libraryDependencies ++= Seq(
+      awsSdkS3,
+      spire,
+      scaffeine,
+      scalatest % Test
+    ),
+    dependencyOverrides ++= {
+      val deps = Seq(
+        "com.fasterxml.jackson.core" % "jackson-core" % "2.6.7",
+        "com.fasterxml.jackson.core" % "jackson-databind" % "2.6.7",
+        "com.fasterxml.jackson.core" % "jackson-annotations" % "2.6.7"
+      )
+      CrossVersion.partialVersion(scalaVersion.value) match {
+        // if Scala 2.12+ is used
+        case Some((2, scalaMajor)) if scalaMajor >= 12 => deps
+        case _ => deps :+ "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.6.7"
+      }
+    },
+    mimaPreviousArtifacts := Set(
+      "org.locationtech.geotrellis" %% "geotrellis-store-s3" % Version.previousVersion
+    ),
+    initialCommands in console :=
+      """
+      import geotrellis.raster._
+      import geotrellis.vector._
+      import geotrellis.proj4._
+      import geotrellis.tiling._
+      import geotrellis.layers._
+      import geotrellis.store.s3._
+      """
+  ) ++ noForkInTests
+
+  lazy val `s3-spark` = Seq(
+    name := "geotrellis-s3-spark",
     libraryDependencies ++= Seq(
       sparkCore % Provided,
       awsSdkS3,
@@ -389,8 +515,11 @@ object Settings {
       import geotrellis.vector._
       import geotrellis.proj4._
       import geotrellis.tiling._
+      import geotrellis.layers._
+      import geotrellis.store.s3._
+      import geotrellis.layers.util._
       import geotrellis.spark._
-      import geotrellis.spark.util._
+      import geotrellis.spark.store.s3._
       """
   ) ++ noForkInTests
 
@@ -518,6 +647,7 @@ object Settings {
     name := "geotrellis-util",
     libraryDependencies ++= Seq(
       logging,
+      pureconfig,
       scalatest % Test
     )
   )
@@ -566,6 +696,35 @@ object Settings {
       import geotrellis.raster._
       import geotrellis.vector._
       import geotrellis.proj4._
+      """
+  )
+
+  lazy val layers = Seq(
+    name := "geotrellis-layers",
+    libraryDependencies ++= Seq(
+      hadoopClient % Provided,
+      apacheIO,
+      avro,
+      spire,
+      monocleCore,
+      monocleMacro,
+      chronoscala,
+      catsEffect,
+      spire,
+      fs2Core,
+      fs2Io,
+      logging,
+      scaffeine,
+      uzaygezenCore,
+      pureconfig,
+      scalatest % Test
+    ),
+    initialCommands in console :=
+      """
+      import geotrellis.raster._
+      import geotrellis.vector._
+      import geotrellis.proj4._
+      import geotrellis.tiling._
       """
   )
 }

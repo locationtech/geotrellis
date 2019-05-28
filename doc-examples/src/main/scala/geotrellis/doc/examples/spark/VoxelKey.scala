@@ -18,10 +18,10 @@ package geotrellis.doc.examples.spark
 
 import geotrellis.tiling.{KeyBounds, SpatialKey, Boundable}
 import geotrellis.spark._
-import geotrellis.spark.io._
-import geotrellis.spark.io.index._
-import geotrellis.spark.io.index.zcurve._
-import geotrellis.spark.io.json._
+import geotrellis.spark.store._
+import geotrellis.layers.index._
+import geotrellis.layers.index.zcurve._
+import geotrellis.layers.json._
 import geotrellis.util._
 
 import spray.json._

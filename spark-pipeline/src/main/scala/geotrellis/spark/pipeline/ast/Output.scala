@@ -21,12 +21,12 @@ import geotrellis.raster.CellGrid
 import geotrellis.raster.merge.TileMergeMethods
 import geotrellis.raster.prototype.TilePrototypeMethods
 import geotrellis.spark._
-import geotrellis.spark.io.LayerWriter
-import geotrellis.spark.io.avro.AvroRecordCodec
-import geotrellis.tiling.{SpatialComponent, Bounds, LayoutDefinition}
+import geotrellis.spark.store.LayerWriter
+import geotrellis.layers.avro.AvroRecordCodec
+import geotrellis.tiling.{Bounds, LayoutDefinition, SpatialComponent}
 import geotrellis.util.{Component, GetComponent}
-
 import com.typesafe.scalalogging.LazyLogging
+import geotrellis.layers.{LayerId, Metadata}
 import org.apache.spark.rdd.RDD
 import spray.json.JsonFormat
 

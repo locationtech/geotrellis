@@ -16,9 +16,10 @@
 
 package geotrellis.spark.testkit
 
-import geotrellis.spark.io.hadoop.HdfsUtils
+import geotrellis.layers._
+import geotrellis.layers.hadoop.HdfsUtils
 import geotrellis.spark.util.SparkUtils
-import geotrellis.spark.io.kryo.KryoRegistrator
+import geotrellis.spark.store.kryo.KryoRegistrator
 
 import org.apache.hadoop.fs.FileSystem
 import org.apache.hadoop.fs.FileUtil

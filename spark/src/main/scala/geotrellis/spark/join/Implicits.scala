@@ -16,6 +16,7 @@
 
 package geotrellis.spark.join
 
+import geotrellis.layers.Metadata
 import geotrellis.tiling._
 import geotrellis.spark._
 import geotrellis.spark.partition._

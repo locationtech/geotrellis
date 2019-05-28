@@ -16,6 +16,7 @@
 
 package geotrellis.spark.etl.s3
 
+import geotrellis.layers.TileLayerMetadata
 import geotrellis.raster.MultibandTile
 import geotrellis.tiling._
 import geotrellis.spark._

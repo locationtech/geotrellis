@@ -19,7 +19,7 @@ package geotrellis.spark.ingest
 import geotrellis.vector._
 import geotrellis.tiling._
 import geotrellis.spark._
-import geotrellis.spark.io.hadoop._
+import geotrellis.spark.store.hadoop._
 import geotrellis.proj4._
 import geotrellis.spark.testkit._
 

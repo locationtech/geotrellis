@@ -16,6 +16,7 @@
 
 package geotrellis.spark.summary.polygonal
 
+import geotrellis.layers.Metadata
 import geotrellis.raster._
 import geotrellis.raster.summary.polygonal._
 import geotrellis.tiling._

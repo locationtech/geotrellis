@@ -22,14 +22,15 @@ import geotrellis.vector._
 import geotrellis.proj4._
 import geotrellis.util._
 import geotrellis.tiling._
+import geotrellis.layers.{CellGridLayoutCollectionMethods, ContextCollection, Metadata, TileLayerCollectionMethods, TileLayerMetadata}
 import geotrellis.spark.ingest._
 import geotrellis.spark.crop._
 import geotrellis.spark.filter._
 import geotrellis.spark.tiling._
 import org.apache.spark.{Partitioner, SparkContext}
 import org.apache.spark.rdd._
-
 import cats.Functor
+
 import scala.reflect.ClassTag
 import java.time.Instant
 
@@ -77,25 +78,12 @@ trait Implicits
   implicit def partitionerToOption(partitioner: Partitioner): Option[Partitioner] =
     Some(partitioner)
 
-  implicit def longToInstant(millis: Long): Instant = Instant.ofEpochMilli(millis)
-
-  /** Necessary for Contains.forPoint query */
-  implicit def tileLayerMetadataToMapKeyTransform[K](tm: TileLayerMetadata[K]): MapKeyTransform = tm.mapTransform
-
   implicit class WithContextWrapper[K, V, M](val rdd: RDD[(K, V)] with Metadata[M]) {
     def withContext[K2, V2](f: RDD[(K, V)] => RDD[(K2, V2)]) =
       new ContextRDD(f(rdd), rdd.metadata)
 
     def mapContext[M2](f: M => M2) =
       new ContextRDD(rdd, f(rdd.metadata))
-  }
-
-  implicit class WithContextCollectionWrapper[K, V, M](val seq: Seq[(K, V)] with Metadata[M]) {
-    def withContext[K2, V2](f: Seq[(K, V)] => Seq[(K2, V2)]) =
-      new ContextCollection(f(seq), seq.metadata)
-
-    def mapContext[M2](f: M => M2) =
-      new ContextCollection(seq, f(seq.metadata))
   }
 
   implicit def tupleToRDDWithMetadata[K, V, M](tup: (RDD[(K, V)], M)): RDD[(K, V)] with Metadata[M] =
@@ -135,9 +123,6 @@ trait Implicits
     }
   }
 
-  implicit class withTileLayerCollectionMethods[K: SpatialComponent](val self: TileLayerCollection[K])
-    extends TileLayerCollectionMethods[K]
-
   implicit class withMultibandTileLayerRDDMethods[K: SpatialComponent: ClassTag](val self: MultibandTileLayerRDD[K])
     extends MultibandTileLayerRDDMethods[K] {
 
@@ -158,9 +143,6 @@ trait Implicits
 
   implicit class withCellGridLayoutRDDMethods[K: SpatialComponent: ClassTag, V <: CellGrid[Int], M: GetComponent[?, LayoutDefinition]](val self: RDD[(K, V)] with Metadata[M])
       extends CellGridLayoutRDDMethods[K, V, M]
-
-  implicit class withCellGridLayoutCollectionMethods[K: SpatialComponent, V <: CellGrid[Int], M: GetComponent[?, LayoutDefinition]](val self: Seq[(K, V)] with Metadata[M])
-    extends CellGridLayoutCollectionMethods[K, V, M]
 
   implicit class withProjectedExtentRDDMethods[K: Component[?, ProjectedExtent], V <: CellGrid[Int]](val rdd: RDD[(K, V)]) {
     def toRasters: RDD[(K, Raster[V])] =
@@ -243,29 +225,29 @@ trait Implicits
     /** The `Int` is the zoom level if ingested with the produced Metadata. */
     def collectMetadata[K2: Boundable: SpatialComponent](crs: CRS, layoutScheme: LayoutScheme)
         (implicit ev: K1 => TilerKeyMethods[K1, K2]): (Int, TileLayerMetadata[K2]) = {
-      TileLayerMetadata.fromRDD[K1, V, K2](rdd, crs, layoutScheme)
+      CollectTileLayerMetadata.fromRDD[K1, V, K2](rdd, crs, layoutScheme)
     }
 
     def collectMetadata[K2: Boundable: SpatialComponent](crs: CRS, layout: LayoutDefinition)
         (implicit ev: K1 => TilerKeyMethods[K1, K2]): TileLayerMetadata[K2] = {
-      TileLayerMetadata.fromRDD[K1, V, K2](rdd, crs, layout)
+      CollectTileLayerMetadata.fromRDD[K1, V, K2](rdd, crs, layout)
     }
 
     /** The `Int` is the zoom level if ingested with the produced Metadata. */
     def collectMetadata[K2: Boundable: SpatialComponent](layoutScheme: LayoutScheme)
         (implicit ev: K1 => TilerKeyMethods[K1, K2], ev1: GetComponent[K1, ProjectedExtent]): (Int, TileLayerMetadata[K2]) = {
-      TileLayerMetadata.fromRDD[K1, V, K2](rdd, layoutScheme)
+      CollectTileLayerMetadata.fromRDD[K1, V, K2](rdd, layoutScheme)
     }
 
     /** The `Int` is the zoom level if ingested with the produced Metadata. */
     def collectMetadata[K2: Boundable: SpatialComponent](crs: CRS, size: Int, zoom: Int)
         (implicit ev: K1 => TilerKeyMethods[K1, K2], ev1: GetComponent[K1, ProjectedExtent]): (Int, TileLayerMetadata[K2]) = {
-      TileLayerMetadata.fromRDD[K1, V, K2](rdd, ZoomedLayoutScheme(crs, size), zoom)
+      CollectTileLayerMetadata.fromRDD[K1, V, K2](rdd, ZoomedLayoutScheme(crs, size), zoom)
     }
 
     def collectMetadata[K2: Boundable: SpatialComponent](layout: LayoutDefinition)
         (implicit ev: K1 => TilerKeyMethods[K1, K2], ev1: GetComponent[K1, ProjectedExtent]): TileLayerMetadata[K2] = {
-      TileLayerMetadata.fromRDD[K1, V, K2](rdd, layout)
+      CollectTileLayerMetadata.fromRDD[K1, V, K2](rdd, layout)
     }
   }
 

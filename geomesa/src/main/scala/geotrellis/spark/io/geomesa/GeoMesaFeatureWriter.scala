@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.io.geomesa
+package geotrellis.spark.store.geomesa
 
 import geotrellis.geomesa.geotools._
 import geotrellis.spark._
 import geotrellis.util.annotations.experimental
 import geotrellis.vector._
-
 import com.typesafe.scalalogging.LazyLogging
+import geotrellis.layers.LayerId
 import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkContext
 import org.geotools.data.Transaction

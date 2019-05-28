@@ -16,6 +16,7 @@
 
 package geotrellis.spark.viewshed
 
+import geotrellis.layers.TileLayerMetadata
 import geotrellis.proj4.LatLng
 import geotrellis.raster._
 import geotrellis.raster.viewshed.R2Viewshed._
@@ -25,9 +26,7 @@ import geotrellis.spark.testkit.TestEnvironment
 import geotrellis.vector._
 
 import scala.collection.mutable
-
-import org.locationtech.jts.{ geom => jts }
-
+import org.locationtech.jts.{geom => jts}
 import org.scalatest._
 
 

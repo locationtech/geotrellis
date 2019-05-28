@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.io.geomesa.conf
+package geotrellis.spark.store.geomesa.conf
 
 import pureconfig.generic.auto._
 

@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.io.geowave
+package geotrellis.spark.store.geowave
 
-import geotrellis.spark.io.AttributeStoreSpec
+import geotrellis.spark.store.AttributeStoreSpec
 import org.scalatest.BeforeAndAfter
 
 class GeoWaveAttributeStoreSpec

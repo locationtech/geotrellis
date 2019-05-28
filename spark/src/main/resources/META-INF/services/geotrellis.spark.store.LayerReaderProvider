@@ -1,0 +1,2 @@
+geotrellis.spark.store.file.FileSparkLayerProvider
+geotrellis.spark.store.hadoop.HadoopSparkLayerProvider

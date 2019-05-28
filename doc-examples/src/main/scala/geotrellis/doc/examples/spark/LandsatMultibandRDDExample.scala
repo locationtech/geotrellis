@@ -7,7 +7,7 @@ object LandsatMultibandRDDExample {
   def `Generate an RDD of multiband tiles from landsat on S3`: Unit = {
     import geotrellis.raster._
     import geotrellis.spark._
-    import geotrellis.spark.io.s3._
+    import geotrellis.spark.store.s3._
     import geotrellis.vector._
 
     import software.amazon.awssdk.services.s3.S3Client

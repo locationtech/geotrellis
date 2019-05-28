@@ -14,12 +14,11 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.io.geomesa
+package geotrellis.spark.store.geomesa
 
-import geotrellis.spark.LayerId
 import geotrellis.util.annotations.experimental
-
 import com.typesafe.scalalogging.LazyLogging
+import geotrellis.layers.LayerId
 import org.geotools.data.DataStoreFinder
 import org.locationtech.geomesa.accumulo.data.AccumuloDataStore
 

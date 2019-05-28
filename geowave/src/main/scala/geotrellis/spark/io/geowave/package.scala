@@ -1,4 +1,4 @@
-package geotrellis.spark.io
+package geotrellis.spark.store
 
 import org.locationtech.jts.{geom => jts}
 import org.locationtech.jts.io.WKTWriter

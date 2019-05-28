@@ -16,13 +16,13 @@
 
 package geotrellis.spark.etl.hadoop
 
+import geotrellis.layers.TileLayerMetadata
 import geotrellis.raster.Tile
 import geotrellis.tiling._
 import geotrellis.spark._
 import geotrellis.spark.etl.config.EtlConf
 import geotrellis.spark.io._
 import geotrellis.spark.io.hadoop._
-
 import org.apache.spark.SparkContext
 
 class SpatialHadoopOutput extends HadoopOutput[SpatialKey, Tile, TileLayerMetadata[SpatialKey]] {

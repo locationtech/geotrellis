@@ -16,10 +16,11 @@
 
 package geotrellis.spark.testkit
 
-import geotrellis.spark._
 import geotrellis.tiling.SpatialKey
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff._
+import geotrellis.layers._
+import geotrellis.spark._
 
 import org.apache.spark._
 
@@ -65,7 +66,7 @@ trait OpAsserter { self: TestEnvironment =>
     sparkOp: TileLayerRDD[SpatialKey] => TileLayerRDD[SpatialKey],
     asserter: (Tile, Tile) => Unit = tilesEqual
   ) = {
-    val (tile, rasterRDD) = 
+    val (tile, rasterRDD) =
       createTileLayerRDD(
         input,
         layoutCols,

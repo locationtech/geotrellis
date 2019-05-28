@@ -16,6 +16,8 @@
 
 package geotrellis.doc.examples.spark
 
+import geotrellis.layers._
+
 object SparkExamples {
   def `Using a SpaceTimeKey -> SpatialKey transformation to get summary information about tiles overlapping an area`: Unit = {
     import geotrellis.raster._
@@ -44,7 +46,7 @@ object SparkExamples {
     import geotrellis.raster.resample._
     import geotrellis.tiling.{SpatialKey, SpaceTimeKey, FloatingLayoutScheme}
     import geotrellis.spark._
-    import geotrellis.spark.io._
+    import geotrellis.spark.store._
     import geotrellis.spark.tiling.Tiler
     import geotrellis.vector._
     import org.apache.spark.HashPartitioner
@@ -132,7 +134,7 @@ object SparkExamples {
     import geotrellis.raster.io.geotiff._
     import geotrellis.tiling.{SpatialKey, SpaceTimeKey}
     import geotrellis.spark._
-    import geotrellis.spark.io._
+    import geotrellis.spark.store._
     import geotrellis.util._
     import geotrellis.vector._
     import java.time.{ZonedDateTime, ZoneOffset}
