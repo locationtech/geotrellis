@@ -16,7 +16,6 @@
 
 package geotrellis.store.hbase
 
-import geotrellis.store.hbase.HBaseTestEnvironment
 import geotrellis.spark.io.AttributeStoreSpec
 
 class HBaseAttributeStoreSpec extends AttributeStoreSpec with HBaseTestEnvironment {
