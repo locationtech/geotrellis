@@ -18,8 +18,8 @@ package geotrellis.spark.io.geowave
 
 import geotrellis.tiling.SpatialKey
 import geotrellis.raster.Tile
-import geotrellis.layers.{LayerId, TileLayerMetadata}
-import geotrellis.layers.io.index.ZCurveKeyIndexMethod
+import geotrellis.layers._
+import geotrellis.layers.index.ZCurveKeyIndexMethod
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.accumulo.SocketWriteStrategy
