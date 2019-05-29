@@ -14,10 +14,20 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.io
+package geotrellis.store
+
+import geotrellis.layers.LayerId
 
 import org.apache.hadoop.hbase.TableName
 import org.apache.hadoop.hbase.util.Bytes
 
 package object hbase {
+  val hbaseTileColumnFamily = "tiles"
+  val hbaseSEP = "__.__"
+  def hbaseLayerIdString(layerId: LayerId): String = s"${layerId.name}${hbaseSEP}${layerId.zoom}|"
+
+  implicit def stringToTableName(str: String): TableName = TableName.valueOf(str)
+  implicit def stringToBytes(str: String): Array[Byte] = Bytes.toBytes(str)
+  implicit def intToBytes(i: Int): Array[Byte] = Bytes.toBytes(i)
+  implicit def longToBytes(l: Long): Array[Byte] = Bytes.toBytes(l)
 }

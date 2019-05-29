@@ -15,7 +15,7 @@
  */
 
 object Version {
-  val geotrellis  = "3.0.1-SNAPSHOT"
+  val geotrellis  = "3.0.1-LOCAL"
   val scala       = "2.11.12"
   val crossScala  = Seq(scala, "2.12.7")
   val geotools    = "21.0"

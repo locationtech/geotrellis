@@ -14,10 +14,17 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.io
+package geotrellis.store.hbase
 
-import org.apache.hadoop.hbase.TableName
-import org.apache.hadoop.hbase.util.Bytes
+import geotrellis.layers.LayerId
+import geotrellis.spark._
 
-package object hbase {
+object HBaseKeyEncoder {
+  def encode(id: LayerId, index: BigInt, trailingByte: Boolean = false): Array[Byte] = {
+    val bytes3 = (index.toByteArray: Array[Byte])
+    val bytes2: Array[Byte] = Stream.continually(0.toByte).take(8 - bytes3.length).toArray
+    val bytes1 = (s"${hbaseLayerIdString(id)}": Array[Byte])
+    val result: Array[Byte] = bytes1 ++ bytes2 ++ bytes3
+    if(trailingByte) result :+ 0.toByte else result
+  }
 }

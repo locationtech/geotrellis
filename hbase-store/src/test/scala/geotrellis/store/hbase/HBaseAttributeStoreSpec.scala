@@ -14,10 +14,12 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.io
+package geotrellis.store.hbase
 
-import org.apache.hadoop.hbase.TableName
-import org.apache.hadoop.hbase.util.Bytes
+import geotrellis.store.hbase.HBaseTestEnvironment
+import geotrellis.spark.io.AttributeStoreSpec
 
-package object hbase {
+class HBaseAttributeStoreSpec extends AttributeStoreSpec with HBaseTestEnvironment {
+  lazy val instance       = HBaseInstance(Seq("localhost"), "localhost")
+  lazy val attributeStore = HBaseAttributeStore(instance, "attributes")
 }

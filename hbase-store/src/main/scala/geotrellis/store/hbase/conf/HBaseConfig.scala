@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Azavea
+ * Copyright 2018 Azavea
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,10 +14,15 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.io
+package geotrellis.store.hbase.conf
 
-import org.apache.hadoop.hbase.TableName
-import org.apache.hadoop.hbase.util.Bytes
+import geotrellis.util.CamelCaseConfig
 
-package object hbase {
+import pureconfig.generic.auto._
+
+case class HBaseConfig(catalog: String)
+
+object HBaseConfig extends CamelCaseConfig {
+  lazy val conf: HBaseConfig = pureconfig.loadConfigOrThrow[HBaseConfig]("geotrellis.hbase")
+  implicit def hbaseConfigToClass(obj: HBaseConfig.type): HBaseConfig = conf
 }
