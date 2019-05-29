@@ -23,7 +23,7 @@ import geotrellis.util.annotations.experimental
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.core.sync.RequestBody
 import software.amazon.awssdk.services.s3.model.{GetObjectRequest, PutObjectRequest}
-import com.amazonaws.services.s3.AmazonS3URI
+import geotrellis.spark.io.s3.AmazonS3URI
 import spray.json._
 import spray.json.DefaultJsonProtocol._
 

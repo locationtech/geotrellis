@@ -25,7 +25,7 @@ import geotrellis.util.ByteReader
 
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.model.ListObjectsV2Request
-import com.amazonaws.services.s3.AmazonS3URI
+import geotrellis.spark.io.s3.AmazonS3URI
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 

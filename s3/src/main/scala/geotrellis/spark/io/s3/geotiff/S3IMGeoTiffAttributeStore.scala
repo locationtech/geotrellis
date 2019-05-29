@@ -25,7 +25,7 @@ import spray.json.DefaultJsonProtocol._
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.core.sync.RequestBody
 import software.amazon.awssdk.services.s3.model.PutObjectRequest
-import com.amazonaws.services.s3.AmazonS3URI
+import geotrellis.spark.io.s3.AmazonS3URI
 
 import java.io.ByteArrayInputStream
 import java.net.URI

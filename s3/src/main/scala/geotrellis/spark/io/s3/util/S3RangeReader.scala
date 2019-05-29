@@ -21,7 +21,7 @@ import geotrellis.util.RangeReader
 
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.model._
-import com.amazonaws.services.s3.AmazonS3URI
+import geotrellis.spark.io.s3.AmazonS3URI
 import org.apache.commons.io.IOUtils
 
 import java.net.URI

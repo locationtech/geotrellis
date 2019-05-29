@@ -24,9 +24,9 @@ import DefaultJsonProtocol._
 import software.amazon.awssdk.core.sync.RequestBody
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.model._
+import org.apache.commons.io.IOUtils
 
 import scala.util.matching.Regex
-import scala.io.Source
 import scala.collection.JavaConverters._
 import java.nio.charset.Charset
 import java.io.ByteArrayInputStream
@@ -70,7 +70,7 @@ class S3AttributeStore(
     val s3objStream = getClient().getObject(getRequest)
     val json =
       try {
-        Source.fromInputStream(s3objStream)(Charset.forName("UTF-8")).mkString
+        IOUtils.toString(s3objStream, Charset.forName("UTF-8"))
       } finally {
         s3objStream.close()
       }

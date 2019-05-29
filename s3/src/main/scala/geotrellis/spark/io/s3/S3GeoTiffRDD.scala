@@ -77,7 +77,7 @@ object S3GeoTiffRDD extends LazyLogging {
     partitionBytes: Option[Long] = Some(DefaultPartitionBytes),
     chunkSize: Option[Int] = None,
     delimiter: Option[String] = None,
-    val getClient: () => S3Client = S3ClientProducer.get
+    getClient: () => S3Client = S3ClientProducer.get
   ) extends RasterReader.Options
 
   private val DefaultMaxTileSize = 256

@@ -86,6 +86,7 @@ class S3RDDReader(
               case e: S3Exception if e.statusCode == 404 => Vector.empty
             }
           })({
+            case e: S3Exception if e.statusCode == 500 => true
             case e: S3Exception if e.statusCode == 503 => true
             case _ => false
           })
