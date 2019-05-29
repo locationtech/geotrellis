@@ -50,36 +50,36 @@ geotrellis.raster
 These implicit methods can be used on ``Tile``\s, ``MultibandTile``\s,
 ``TileFeature[T, D]``\s, ``Raster[T]``\s, or ``TileFeature[Raster[T], D]``\s.
 
-**Implicits:**
-  - ``crop``
-  - ``io.json``
-  - ``mask``
-  - ``merge``
-  - ``prototype``
-  - ``reproject``
-  - ``split``
-  - ``transform``
+  **Implicits:**
+    - ``crop``
+    - ``io.json``
+    - ``mask``
+    - ``merge``
+    - ``prototype``
+    - ``reproject``
+    - ``split``
+    - ``transform``
 
 The following types and objects are now directly available at the
 ``geotrellis.raster`` level.
 
-**Types:**
-  - ``histogram.Histogram[T]``
-  - ``histogram.MutableHistogram[T]``
-  - ``histogram.StreamingHistogram``
-  - ``histogram.IntHistogram``
-  - ``histogram.DoubleHistogram``
-  - ``rasterize.CellValue``
-  - ``render.ColorMap``
-  - ``render.ColorMaps``
-  - ``render.ColorRamp``
-  - ``render.ColorRamps``
-  - ``render.RGB``
-  - ``render.RGBA``
-  - ``resample.ResampleMethod``
-  - ``mapalgebra.focal.Neighborhood``
-  - ``mapalgebra.focal.TargetCell``
-  - ``stitch.Stitcher``
+  **Types:**
+    - ``histogram.Histogram[T]``
+    - ``histogram.MutableHistogram[T]``
+    - ``histogram.StreamingHistogram``
+    - ``histogram.IntHistogram``
+    - ``histogram.DoubleHistogram``
+    - ``rasterize.CellValue``
+    - ``render.ColorMap``
+    - ``render.ColorMaps``
+    - ``render.ColorRamp``
+    - ``render.ColorRamps``
+    - ``render.RGB``
+    - ``render.RGBA``
+    - ``resample.ResampleMethod``
+    - ``mapalgebra.focal.Neighborhood``
+    - ``mapalgebra.focal.TargetCell``
+    - ``stitch.Stitcher``
 
 In addition to the moved types and objects, new objects have been created to
 allow for easier access of certain types.
