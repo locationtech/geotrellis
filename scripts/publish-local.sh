@@ -18,6 +18,7 @@
 ./sbt "project spark-etl" publishLocal && \
 ./sbt "project accumulo" publishLocal && \
 ./sbt "project layers-accumulo" publishLocal && \
+./sbt "project layers-cassandra" publishLocal && \
 ./sbt "project cassandra" publishLocal && \
 ./sbt "project geomesa" publishLocal && \
 ./sbt "project geotools" publishLocal && \
