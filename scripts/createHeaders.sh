@@ -1,6 +1,7 @@
 #!/bin/bash
 
 ./sbt "project accumulo" createHeaders test:createHeaders \
+      "project layers-accumulo" createHeaders test:createHeaders \
       "project cassandra" createHeaders test:createHeaders \
       "project doc-examples" createHeaders test:createHeaders \
       "project geomesa" createHeaders test:createHeaders \
