@@ -1,6 +1,13 @@
 package geotrellis.spark.io.s3
 
 import software.amazon.awssdk.services.s3.S3Client
+import software.amazon.awssdk.core.retry.backoff.FullJitterBackoffStrategy
+import software.amazon.awssdk.core.retry.conditions.{OrRetryCondition, RetryCondition}
+import software.amazon.awssdk.awscore.retry.conditions.RetryOnErrorCodeCondition
+import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration
+import software.amazon.awssdk.core.retry.RetryPolicy
+
+import java.time.Duration
 
 /**
   *  Singleton which can be used to customize the default S3 client used throughout geotrellis
@@ -12,10 +19,36 @@ import software.amazon.awssdk.services.s3.S3Client
   */
 object S3ClientProducer {
   @transient
-  private lazy val client = S3Client.create()
+  private lazy val client = {
+    val retryCondition =
+      OrRetryCondition.create(
+        RetryCondition.defaultRetryCondition(),
+        RetryOnErrorCodeCondition.create("RequestTimeout")
+      )
+    val backoffStrategy =
+      FullJitterBackoffStrategy.builder()
+        .baseDelay(Duration.ofMillis(50))
+        .maxBackoffTime(Duration.ofMillis(15))
+        .build()
+    val retryPolicy =
+      RetryPolicy.defaultRetryPolicy()
+        .toBuilder()
+        .retryCondition(retryCondition)
+        .backoffStrategy(backoffStrategy)
+        .build()
+    val overrideConfig =
+      ClientOverrideConfiguration.builder()
+        .retryPolicy(retryPolicy)
+        .build()
 
-  private var summonClient: () => S3Client =
+    S3Client.builder()
+      .overrideConfiguration(overrideConfig)
+      .build()
+  }
+
+  private var summonClient: () => S3Client = {
     () => client
+  }
 
   /**
     * Set an alternative default function for summoning S3Clients

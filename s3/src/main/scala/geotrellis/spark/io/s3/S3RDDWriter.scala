@@ -131,17 +131,8 @@ class S3RDDWriter(
           })
         }
 
-        def retire(request: PutObjectRequest, requestBody: RequestBody): fs2.Stream[IO, PutObjectResponse] = {
-          fs2.Stream eval IO.shift(ec) *> IO ({
-            // No longer necessary?
-            // TODO: Verify the new behavior isn't susceptible to stream state issues
-            //request.getInputStream.reset() // reset in case of retransmission to avoid 400 error
-            s3Client.putObject(request, requestBody)
-          }).retryEBO {
-            case e: S3Exception if e.statusCode == 503 => true
-            case _ => false
-          }
-        }
+        def retire(request: PutObjectRequest, requestBody: RequestBody): fs2.Stream[IO, PutObjectResponse] =
+          fs2.Stream eval IO.shift(ec) *> IO { s3Client.putObject(request, requestBody) }
 
         rows
           .flatMap(elaborateRow)
