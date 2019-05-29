@@ -16,18 +16,21 @@
 
 package geotrellis.spark.io.geowave
 
+import geotrellis.vector.Extent
 import geotrellis.geotools._
 import geotrellis.proj4.LatLng
 import geotrellis.raster._
+import geotrellis.layers._
+import geotrellis.layers.accumulo.AccumuloAttributeStore
 import geotrellis.spark._
 import geotrellis.spark.io._
-import geotrellis.spark.io.accumulo.AccumuloAttributeStore
 import geotrellis.util._
 import geotrellis.util.annotations.experimental
-import geotrellis.vector.Extent
+
 import com.typesafe.scalalogging.LazyLogging
-import geotrellis.layers.LayerId
+
 import org.locationtech.jts.geom._
+
 import mil.nga.giat.geowave.adapter.raster.adapter.RasterDataAdapter
 import mil.nga.giat.geowave.core.geotime.ingest._
 import mil.nga.giat.geowave.core.geotime.store.statistics.BoundingBoxDataStatistics
@@ -43,6 +46,7 @@ import mil.nga.giat.geowave.datastore.accumulo.index.secondary.AccumuloSecondary
 import mil.nga.giat.geowave.datastore.accumulo.metadata._
 import mil.nga.giat.geowave.datastore.accumulo.operations.config.AccumuloRequiredOptions
 import mil.nga.giat.geowave.mapreduce.input.{GeoWaveInputFormat, GeoWaveInputKey}
+
 import org.apache.accumulo.core.client.security.tokens.PasswordToken
 import org.apache.accumulo.core.client.{TableNotFoundException, ZooKeeperInstance}
 import org.apache.hadoop.mapreduce.Job
@@ -55,6 +59,7 @@ import org.opengis.parameter.GeneralParameterValue
 
 import scala.collection.JavaConverters._
 import scala.util.Try
+
 import spray.json._
 import spray.json.DefaultJsonProtocol._
 
