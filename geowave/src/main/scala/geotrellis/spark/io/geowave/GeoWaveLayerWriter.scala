@@ -16,19 +16,22 @@
 
 package geotrellis.spark.io.geowave
 
-import geotrellis.geotools._
 import geotrellis.proj4.LatLng
+import geotrellis.vector.Extent
+import geotrellis.geotools._
 import geotrellis.raster._
 import geotrellis.tiling._
+import geotrellis.layers._
+import geotrellis.layers.accumulo.AccumuloInstance
+import geotrellis.layers.avro._
+import geotrellis.layers.index.KeyIndex
 import geotrellis.spark._
-import geotrellis.spark.io._
-import geotrellis.spark.io.accumulo._
-import geotrellis.layers.io.avro._
-import geotrellis.layers.io.index.KeyIndex
+import geotrellis.spark.io.accumulo.AccumuloWriteStrategy
 import geotrellis.util._
 import geotrellis.util.annotations.experimental
-import geotrellis.vector.Extent
+
 import com.typesafe.scalalogging.LazyLogging
+
 import mil.nga.giat.geowave.adapter.raster.adapter.merge.RasterTileRowTransform
 import mil.nga.giat.geowave.adapter.raster.adapter.RasterDataAdapter
 import mil.nga.giat.geowave.core.geotime.index.dimension._
@@ -37,36 +40,42 @@ import mil.nga.giat.geowave.core.index.sfc.SFCDimensionDefinition
 import mil.nga.giat.geowave.core.index.sfc.SFCFactory.SFCType
 import mil.nga.giat.geowave.core.index.sfc.tiered.TieredSFCIndexFactory
 import mil.nga.giat.geowave.core.store._
+import mil.nga.giat.geowave.core.store.operations.remote.options.DataStorePluginOptions
+import mil.nga.giat.geowave.core.store.adapter.statistics.StatsCompositionTool
+import mil.nga.giat.geowave.core.store.data.VisibilityWriter
+import mil.nga.giat.geowave.core.store.util.DataStoreUtils
 import mil.nga.giat.geowave.datastore.accumulo._
 import mil.nga.giat.geowave.datastore.accumulo.metadata._
 import mil.nga.giat.geowave.datastore.accumulo.operations.config.AccumuloOptions
 import mil.nga.giat.geowave.datastore.accumulo.util._
 import mil.nga.giat.geowave.datastore.accumulo.util.AccumuloUtils
+
 import org.apache.accumulo.core.client.security.tokens.PasswordToken
 import org.apache.accumulo.core.data.{Key, Value}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkContext
+
 import org.geotools.coverage.grid.GridCoverage2D
 import org.geotools.coverage.processing.CoverageProcessor
 import org.geotools.util.factory.{GeoTools, Hints}
+
 import org.opengis.coverage.grid.GridCoverage
 import org.opengis.parameter.ParameterValueGroup
+
 import java.io.{DataInputStream, DataOutputStream, File}
 import java.util.UUID
 
-import geotrellis.layers.{LayerId, Metadata, TileLayerMetadata}
 import javax.imageio.ImageIO
 import javax.media.jai.{ImageLayout, JAI}
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable.ListBuffer
 import scala.reflect._
-import mil.nga.giat.geowave.core.store.util.DataStoreUtils
+
 import resource._
+
 import spray.json._
-import mil.nga.giat.geowave.core.store.operations.remote.options.DataStorePluginOptions
-import mil.nga.giat.geowave.core.store.adapter.statistics.StatsCompositionTool
-import mil.nga.giat.geowave.core.store.data.VisibilityWriter
+
 
 /**
   * @define experimental <span class="badge badge-red" style="float: right;">EXPERIMENTAL</span>@experimental
