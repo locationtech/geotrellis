@@ -39,8 +39,6 @@ import geotrellis.layers.LayerId
 object CassandraCollectionReader {
   final val defaultThreadCount = CassandraConfig.threads.collection.readThreads
 
-  private case class SchemaWrapper(value: Option[Schema]) extends Serializable
-
   def read[K: Boundable : AvroRecordCodec : ClassTag, V: AvroRecordCodec : ClassTag](
     instance: CassandraInstance,
     keyspace: String,
@@ -56,7 +54,6 @@ object CassandraCollectionReader {
 
     val includeKey = (key: K) => queryKeyBounds.includeKey(key)
     val _recordCodec = KeyValueRecordCodec[K, V]
-    val swWriterSchema = SchemaWrapper(writerSchema) //Avro Schema is not Serializable
 
     val ranges = if (queryKeyBounds.length > 1)
       MergeQueue(queryKeyBounds.flatMap(decomposeBounds))
@@ -77,7 +74,7 @@ object CassandraCollectionReader {
         val row = session.execute(statement.bind(index: BigInteger))
         if (row.asScala.nonEmpty) {
           val bytes = row.one().getBytes("value").array()
-          val recs = AvroEncoder.fromBinary(swWriterSchema.value.getOrElse(_recordCodec.schema), bytes)(_recordCodec)
+          val recs = AvroEncoder.fromBinary(writerSchema.getOrElse(_recordCodec.schema), bytes)(_recordCodec)
           if (filterIndexOnly) recs
           else recs.filter { row => includeKey(row._1) }
         } else Vector.empty
