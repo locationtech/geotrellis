@@ -104,6 +104,7 @@ lazy val root = Project("geotrellis", file(".")).
     accumulo,
     `layers-accumulo`,
     cassandra,
+    `layers-cassandra`,
     `doc-examples`,
     geomesa,
     geotools,
