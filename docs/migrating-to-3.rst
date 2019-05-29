@@ -84,12 +84,12 @@ The following types and objects are now directly available at the
 In addition to the moved types and objects, new objects have been created to
 allow for easier access of certain types.
 
-  - ``CropOptions`` alias of ``crop.Crop.Options``
-  - ``RasterizerOptions`` alias of ``rasterize.Rasterizer.Options``
-  - ``ColorMapOptions`` alias of ``render.ColorMap.Options``
-  - ``SplitOptions`` alias of ``split.Split.Options``
+- ``CropOptions`` alias of ``crop.Crop.Options``
+- ``RasterizerOptions`` alias of ``rasterize.Rasterizer.Options``
+- ``ColorMapOptions`` alias of ``render.ColorMap.Options``
+- ``SplitOptions`` alias of ``split.Split.Options``
 
 Two enum objects have also been created in ``geotrellis.raster``.
 
-  - ``ResampleMethods`` object that contains all of the resample methods.
-  - ``Neighborhoods`` object that contains all of the neighborhoods.
+- ``ResampleMethods`` object that contains all of the resample methods.
+- ``Neighborhoods`` object that contains all of the neighborhoods.
