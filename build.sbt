@@ -102,6 +102,7 @@ lazy val commonSettings = Seq(
 lazy val root = Project("geotrellis", file(".")).
   aggregate(
     accumulo,
+    `layers-accumulo`,
     cassandra,
     `doc-examples`,
     geomesa,
