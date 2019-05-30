@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.store.hbase
+package geotrellis.store.hbase
 
 import geotrellis.layers._
 import geotrellis.store.hbase.conf.HBaseConfig
@@ -33,8 +33,10 @@ import java.net.URI
  * Metadata table name is optional, not provided default value will be used.
  * Layers table name is required to instantiate a [[LayerWriter]]
  */
-class HBaseLayerProvider extends HBaseCollectionLayerProvider
-    with LayerReaderProvider with LayerWriterProvider {
+class HBaseCollectionLayerProvider
+  extends AttributeStoreProvider
+     with ValueReaderProvider
+     with CollectionLayerReaderProvider {
 
   def canProcess(uri: URI): Boolean = uri.getScheme match {
     case str: String => if (str.toLowerCase == "hbase") true else false
@@ -48,19 +50,6 @@ class HBaseLayerProvider extends HBaseCollectionLayerProvider
     HBaseAttributeStore(instance, attributeTable)
   }
 
-  def layerReader(uri: URI, store: AttributeStore, sc: SparkContext): FilteringLayerReader[LayerId] = {
-    val instance = HBaseInstance(uri)
-    new HBaseLayerReader(store, instance)(sc)
-  }
-
-  def layerWriter(uri: URI, store: AttributeStore): LayerWriter[LayerId] = {
-    val instance = HBaseInstance(uri)
-    val params = UriUtils.getParams(uri)
-    val table = params.getOrElse("layers",
-      throw new IllegalArgumentException("Missing required URI parameter: layers"))
-    new HBaseLayerWriter(store, instance, table)
-  }
-
   def valueReader(uri: URI, store: AttributeStore): ValueReader[LayerId] = {
     val instance = HBaseInstance(uri)
     new HBaseValueReader(instance, store)
@@ -70,5 +59,4 @@ class HBaseLayerProvider extends HBaseCollectionLayerProvider
     val instance = HBaseInstance(uri)
     new HBaseCollectionLayerReader(store, instance)
   }
-
 }
