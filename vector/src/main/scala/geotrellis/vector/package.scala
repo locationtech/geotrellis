@@ -18,9 +18,8 @@ package geotrellis
 
 import geotrellis.util.MethodExtensions
 
-import org.locationtech.jts.geom._
-
-import scala.reflect._
+import org.locationtech.jts.{geom => jts}
+import simulacrum._
 
 package object vector extends SeqMethods
     with reproject.Implicits
@@ -28,7 +27,17 @@ package object vector extends SeqMethods
     with voronoi.Implicits
     with io.json.Implicits
     with io.wkt.Implicits
-    with io.wkb.Implicits {
+    with io.wkb.Implicits
+    with methods.Implicits {
+
+  type Point = jts.Point
+  type LineString = jts.LineString
+  type Polygon = jts.Polygon
+  type MultiPoint = jts.MultiPoint
+  type MultiLineString = jts.MultiLineString
+  type MultiPolygon = jts.MultiPolygon
+  type Geometry = jts.Geometry
+  type GeometryCollection = jts.GeometryCollection
 
   type PointFeature[+D] = Feature[Point, D]
   type LineStringFeature[+D] = Feature[LineString, D]
@@ -43,32 +52,15 @@ package object vector extends SeqMethods
     def withSRID(srid: Int) = Projected(g, srid)
   }
 
-  implicit class withExtraPointMethods(val self: Point) extends MethodExtensions[Point] {
-    def x(): Double = self.getCoordinate.getX
-    def y(): Double = self.getCoordinate.getY
-  }
+  @typeclass trait MultiGeometry[G]
+  implicit val multiPointIsMultiGeometry: MultiGeometry[MultiPoint] = new MultiGeometry[MultiPoint] {}
+  implicit val multiLineStringIsMultiGeometry: MultiGeometry[MultiLineString] = new MultiGeometry[MultiLineString] {}
+  implicit val multiPolygonIsMultiGeometry: MultiGeometry[MultiPolygon] = new MultiGeometry[MultiPolygon] {}
 
-  implicit class withExtraLineStringMethods(val self: LineString) extends MethodExtensions[LineString] {
-    def closed(): LineString = {
-      val arr = Array.ofDim[Point](self.getNumPoints + 1)
-
-      cfor(0)(_ < arr.length, _ + 1) { i =>
-        arr(i) = self.getCoordinateN(i)
-      }
-      arr(self.getNumPoints) = self.getCoordinateN(0)
-
-      factory.createLineString(arr)
-    }
-  }
-
-  implicit class withExtraGometryCollectionMethods(val self: GeometryCollection) extends MethodExtensions[GeometryCollection] {
-    def getAll[G <: Geometry : ClassTag]: Seq[G] = {
-      val lb = scala.collection.mutable.ListBuffer.empty[G]
-      cfor(0)(_ < self.getNumGeometries, _ + 1){ i =>
-        if (classTag[G].runtimeClass.isInstance(self.getGeometryN(i)))
-          lb += self.getGeometryN(i).asInstanceOf[G]
-      }
-      lb.toSeq
-    }
-  }
+  implicit val pointIsZeroDimensional: ZeroDimensional[Point] = new ZeroDimensional[Point] {}
+  implicit val multiPointIsZeroDimensional: ZeroDimensional[MultiPoint] = new ZeroDimensional[MultiPoint] {}
+  implicit val lineStringIsOneDimensional: OneDimensional[LineString] = new OneDimensional[LineString] {}
+  implicit val multiLineStringIsOneDimensional: OneDimensional[MultiLineString] = new OneDimensional[MultiLineString] {}
+  implicit val polygonIsTwoDimensional: TwoDimensional[Polygon] = new TwoDimensional[Polygon] {}
+  implicit val multiPolygonIsTwoDimensional: TwoDimensional[MultiPolygon] = new TwoDimensional[MultiPolygon] {}
 }

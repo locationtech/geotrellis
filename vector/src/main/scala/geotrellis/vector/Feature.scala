@@ -57,7 +57,7 @@ object PointFeature {
 }
 
 /** LineFeature companion object */
-object LineFeature {
+object LineStringFeature {
   def apply[D](geom: LineString, data: D): Feature[LineString, D] =
     Feature(geom, data)
 
@@ -84,7 +84,7 @@ object MultiPointFeature {
 }
 
 /** MultiLineFeature companion object */
-object MultiLineFeature {
+object MultiLineStringFeature {
   def apply[D](geom: MultiLineString, data: D): Feature[MultiLineString, D] =
     Feature(geom, data)
 

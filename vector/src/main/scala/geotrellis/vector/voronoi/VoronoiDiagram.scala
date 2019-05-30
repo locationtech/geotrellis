@@ -185,7 +185,7 @@ object VoronoiDiagram {
       None
     } else {
       clippedCorners += clippedCorners.head
-      val poly = Polygon(clippedCorners.map(Point.jtsCoord2Point(_)))
+      val poly = Polygon(clippedCorners.map(Point(_)))
       Some(poly)
     }
   }

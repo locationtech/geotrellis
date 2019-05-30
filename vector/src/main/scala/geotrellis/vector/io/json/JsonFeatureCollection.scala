@@ -102,25 +102,26 @@ class JsonFeatureCollection(features: List[Json] = Nil) {
   def getAllFeatures[F <: Feature[_, _] :Decoder]: Vector[F] =
     getAll[F]
 
-  def getAllPointFeatures[D: Decoder]()         = getAll[PointFeature[D]]
-  def getAllLineFeatures[D: Decoder]()          = getAll[LineFeature[D]]
-  def getAllPolygonFeatures[D: Decoder]()       = getAll[PolygonFeature[D]]
-  def getAllMultiPointFeatures[D: Decoder]()    = getAll[MultiPointFeature[D]]
-  def getAllMultiLineFeatures[D: Decoder]()     = getAll[MultiLineFeature[D]]
-  def getAllMultiPolygonFeatures[D: Decoder]()  = getAll[MultiPolygonFeature[D]]
+  def getAllPointFeatures[D: Decoder]()           = getAll[PointFeature[D]]
+  def getAllLineStringFeatures[D: Decoder]()      = getAll[LineStringFeature[D]]
+  def getAllPolygonFeatures[D: Decoder]()         = getAll[PolygonFeature[D]]
+  def getAllMultiPointFeatures[D: Decoder]()      = getAll[MultiPointFeature[D]]
+  def getAllMultiLineStringFeatures[D: Decoder]() = getAll[MultiLineStringFeature[D]]
+  def getAllMultiPolygonFeatures[D: Decoder]()    = getAll[MultiPolygonFeature[D]]
 
-  def getAllPoints()         = getAll[Point]
-  def getAllLines()          = getAll[Line]
-  def getAllPolygons()       = getAll[Polygon]
-  def getAllMultiPoints()    = getAll[MultiPoint]
-  def getAllMultiLines()     = getAll[MultiLine]
-  def getAllMultiPolygons()  = getAll[MultiPolygon]
+  def getAllPoints()           = getAll[Point]
+  def getAllLineStrings()      = getAll[LineString]
+  def getAllPolygons()         = getAll[Polygon]
+  def getAllMultiPoints()      = getAll[MultiPoint]
+  def getAllMultiLineStrings() = getAll[MultiLineString]
+  def getAllMultiPolygons()    = getAll[MultiPolygon]
+
   def getAllGeometries(): Vector[Geometry] =
     getAllPoints() ++
-      getAllLines() ++
+      getAllLineStrings() ++
       getAllPolygons() ++
       getAllMultiPoints() ++
-      getAllMultiLines() ++
+      getAllMultiLineStrings() ++
       getAllMultiPolygons()
 
 }

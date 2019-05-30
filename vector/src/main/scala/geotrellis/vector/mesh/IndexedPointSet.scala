@@ -39,7 +39,7 @@ trait IndexedPointSet extends Serializable {
    * Returns the coordinate at index `i`.
    */
   def getCoordinate(i: Int): Coordinate = new Coordinate(getX(i), getY(i), getZ(i))
-  def getPoint(i: Int): Point = Point.jtsCoord2Point(getCoordinate(i))
+  def getPoint(i: Int): Point = Point(getCoordinate(i))
   def apply(i: Int): Coordinate = getCoordinate(i)
   def distance(i1: Int, i2: Int): Double = {
     val dx = getX(i1) - getX(i2)

@@ -18,7 +18,6 @@ package geotrellis.vector
 
 import geotrellis.proj4.CRS
 import geotrellis.vector.reproject.Reproject
-import org.locationtech.jts.geom.Geometry
 
 object Projected {
   implicit def toGeometry[G <: Geometry](p: Projected[G]) = p.geom

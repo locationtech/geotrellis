@@ -625,6 +625,7 @@ object Settings {
       circeGenericExtras,
       circeParser,
       apacheMath,
+      simulacrum,
       spire,
       scalatest % Test,
       scalacheck % Test

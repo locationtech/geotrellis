@@ -60,6 +60,8 @@ object Dependencies {
 
   val scaffeine           = "com.github.blemale"         %% "scaffeine"                % "2.6.0"
 
+  val simulacrum          = "com.github.mpilquist"       %% "simulacrum"               % "0.17.0"
+
   val circeCore           = "io.circe"                   %% "circe-core"               % Version.circe
   val circeGeneric        = "io.circe"                   %% "circe-generic"            % Version.circe
   val circeGenericExtras  = "io.circe"                   %% "circe-generic-extras"     % Version.circe

@@ -17,7 +17,6 @@
 package geotrellis.vector
 
 import org.locationtech.jts.{geom => jts}
-import geotrellis.vector.GeomFactory._
 import spire.syntax.cfor._
 
 object LineString {
@@ -31,8 +30,14 @@ object LineString {
   def apply(points: jts.Point*): jts.LineString =
     apply(points.toList)
 
+  def apply(coords: jts.Coordinate*): jts.LineString =
+    apply(GeomFactory.factory.getCoordinateSequenceFactory.create(coords.toArray))
+
+  def apply(coords: Traversable[jts.Coordinate]): jts.LineString =
+    apply(GeomFactory.factory.getCoordinateSequenceFactory.create(coords.toArray))
+
   def apply(coords: jts.CoordinateSequence): jts.LineString =
-    factory.createLineString(coords)
+    GeomFactory.factory.createLineString(coords)
 
   def apply(points: Traversable[jts.Point]): jts.LineString = {
     if (points.size < 2) {
@@ -45,6 +50,6 @@ object LineString {
       coords(i) = pointArray(i).getCoordinate
     }
 
-    factory.createLineString(coords)
+    GeomFactory.factory.createLineString(coords)
   }
 }

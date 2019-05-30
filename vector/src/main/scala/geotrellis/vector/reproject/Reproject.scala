@@ -18,7 +18,6 @@ package geotrellis.vector.reproject
 
 import geotrellis.proj4._
 import geotrellis.vector._
-import org.locationtech.jts.geom._
 
 /** This object contains various overloads for performing reprojections over geometries */
 object Reproject {
@@ -32,7 +31,7 @@ object Reproject {
     apply(p, Transform(src, dest))
 
   def apply(p: Point, transform: Transform): Point =
-    transform(p.x, p.y)
+    Point(transform(p.x, p.y))
 
   // For features, name explicitly, or else type erasure kicks in.
   def pointFeature[D](pf: PointFeature[D], src: CRS, dest: CRS): PointFeature[D] =
@@ -70,6 +69,9 @@ object Reproject {
     */
   def apply(extent: Extent, src: CRS, dest: CRS): Extent =
     apply(extent.toPolygon, src, dest).envelope
+
+  def apply(extent: Extent, transform: Transform): Extent =
+    apply(extent.toPolygon, transform).envelope
 
   /** Performs adaptive refinement to produce a Polygon representation of the projected region.
     *
@@ -194,7 +196,6 @@ object Reproject {
       case p: Point => apply(p, transform)
       case l: LineString => apply(l, transform)
       case p: Polygon => apply(p, transform)
-      case e: Extent => apply(e, transform)
       case mp: MultiPoint => apply(mp, transform)
       case ml: MultiLineString => apply(ml, transform)
       case mp: MultiPolygon => apply(mp, transform)

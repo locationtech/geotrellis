@@ -26,7 +26,7 @@ import org.locationtech.jts.geom.Coordinate
 
 trait DelaunayTriangulationPointMethods extends MethodExtensions[Traversable[Point]] {
   def delaunayTriangulation(): DelaunayTriangulation = {
-    val ips = IndexedPointSet(self.map({ _.jtsGeom.getCoordinate }).toArray)
+    val ips = IndexedPointSet(self.map({ _.getCoordinate }).toArray)
     DelaunayTriangulation(ips)
   }
 }
@@ -40,7 +40,7 @@ trait DelaunayTriangulationCoordinateMethods extends MethodExtensions[Traversabl
 
 trait DelaunayTriangulationArrayMethods extends MethodExtensions[Array[Point]] {
   def delaunayTriangulation(): DelaunayTriangulation = {
-    val ips = IndexedPointSet(self.map({ _.jtsGeom.getCoordinate }))
+    val ips = IndexedPointSet(self.map({ _.getCoordinate }))
     DelaunayTriangulation(ips)
   }
 }

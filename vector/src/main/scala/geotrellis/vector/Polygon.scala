@@ -24,25 +24,31 @@ import scala.collection.GenTraversable
 import scala.collection.JavaConverters._
 
 object Polygon {
-  def apply(exterior: jts.Point*)(implicit d: DummyImplicit): jts.Polygon =
+  def apply(exterior: Point*)(implicit d: DummyImplicit): Polygon =
     apply(LineString(exterior), Set())
 
-  def apply(exterior: Seq[jts.Point]): jts.Polygon =
+  def apply(exterior: Seq[Point]): Polygon =
     apply(LineString(exterior), Set())
 
-  def apply(exterior: jts.LineString): jts.Polygon =
+  def apply(exterior: jts.Coordinate*)(implicit d: DummyImplicit): Polygon =
+    apply(LineString(exterior), Set())
+
+  def apply(exterior: Seq[jts.Coordinate]): Polygon =
+    apply(LineString(exterior), Set())
+
+  def apply(exterior: LineString): Polygon =
     apply(exterior, Set())
 
-  def apply(exterior: jts.CoordinateSequence): jts.Polygon =
+  def apply(exterior: jts.CoordinateSequence): Polygon =
     factory.createPolygon(exterior)
 
-  def apply(exterior: jts.LineString, holes: jts.LineString*): jts.Polygon =
+  def apply(exterior: LineString, holes: LineString*): Polygon =
     apply(exterior, holes)
 
-  def apply(exterior: jts.CoordinateSequence, holes: GenTraversable[jts.CoordinateSequence]): jts.Polygon =
+  def apply(exterior: jts.CoordinateSequence, holes: GenTraversable[jts.CoordinateSequence]): Polygon =
     apply(factory.createLinearRing(exterior), holes.map(factory.createLinearRing))
 
-  def apply(exterior: jts.LineString, holes: GenTraversable[jts.LineString]): jts.Polygon = {
+  def apply(exterior: LineString, holes: GenTraversable[LineString]): Polygon = {
     if(!exterior.isClosed) {
       sys.error(s"Cannot create a polygon with unclosed exterior: $exterior")
     }
@@ -69,6 +75,6 @@ object Polygon {
     apply(extGeom, holeGeoms)
   }
 
-  def apply(exterior: jts.LinearRing, holes: GenTraversable[jts.LinearRing]): jts.Polygon =
+  def apply(exterior: jts.LinearRing, holes: GenTraversable[jts.LinearRing]): Polygon =
     factory.createPolygon(exterior, holes.toArray)
 }

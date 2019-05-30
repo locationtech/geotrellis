@@ -181,7 +181,7 @@ trait GeometryFormats {
           obj.getAll[LineString].map(_.asJson),
           obj.getAll[Polygon].map(_.asJson),
           obj.getAll[MultiPoint].map(_.asJson),
-          obj.getAll[MultiLine].map(_.asJson),
+          obj.getAll[MultiLineString].map(_.asJson),
           obj.getAll[MultiPolygon].map(_.asJson),
           obj.getAll[GeometryCollection].map(_.asJson)
         ).flatten.asJson

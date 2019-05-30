@@ -16,21 +16,19 @@
 
 package geotrellis.vector
 
-import org.locationtech.jts.{geom => jts}
+import simulacrum._
 
-sealed trait Dimensions {
-  private[vector] val jtsGeom: jts.Geometry
-}
+@typeclass trait Dimension[G <: Geometry]
 
-trait AtLeastOneDimension extends Dimensions
-trait AtMostOneDimension extends Dimensions
+@typeclass trait AtLeastOneDimension[G] extends Dimension[G]
+@typeclass trait AtMostOneDimension[G] extends Dimension[G]
 
-trait ZeroDimensions extends Dimensions
-                        with AtMostOneDimension
+@typeclass trait ZeroDimensional[G] extends Dimension[G]
+                                    with AtMostOneDimension[G]
 
-trait OneDimension extends Dimensions
-                       with AtMostOneDimension
-                       with AtLeastOneDimension
+@typeclass trait OneDimensional[G] extends Dimension[G]
+                                   with AtMostOneDimension[G]
+                                   with AtLeastOneDimension[G]
 
-trait TwoDimensions extends Dimensions
-                       with AtLeastOneDimension
+@typeclass trait TwoDimensional[G] extends Dimension[G]
+                                   with AtLeastOneDimension[G]

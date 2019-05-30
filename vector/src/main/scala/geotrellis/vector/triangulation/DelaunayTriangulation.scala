@@ -322,13 +322,13 @@ case class DelaunayTriangulation(
 
   private def triangulateHole(inner: HalfEdge[Int, Int], tris: Map[(Int, Int, Int), HalfEdge[Int, Int]]): Unit = {
     val bps = ListBuffer.empty[Point]
-    bps += Point.jtsCoord2Point(pointSet.getCoordinate(inner.src))
+    bps += Point(pointSet.getCoordinate(inner.src))
 
     var n = 0
     var e = inner
     do {
       n += 1
-      bps += Point.jtsCoord2Point(pointSet.getCoordinate(e.vert))
+      bps += Point(pointSet.getCoordinate(e.vert))
       e = e.next
     } while (e != inner)
 
@@ -405,7 +405,7 @@ case class DelaunayTriangulation(
 
   private def retriangulateBoundaryPoint(vi: Int): (HalfEdge[Int, Int], Int, Map[(Int, Int, Int), HalfEdge[Int, Int]]) = {
 
-    val c2p = { i: Int => Point.jtsCoord2Point(pointSet.getCoordinate(i)) }
+    val c2p = { i: Int => Point(pointSet.getCoordinate(i)) }
     val tris = Map.empty[(Int, Int, Int), HalfEdge[Int, Int]]
 
     // Find the ends of the bounding path
@@ -484,14 +484,14 @@ case class DelaunayTriangulation(
       e = rotCWSrc(e)
     } while (e != e0)
     do {
-      Point.jtsCoord2Point(pointSet.getCoordinate(getDest(e))) +=: pts
+      Point(pointSet.getCoordinate(getDest(e))) +=: pts
       setNext(getPrev(getFlip(e)), getNext(e))
       val b = getFlip(getNext(e))
       setIncidentEdge(getDest(e), b)
       toKill += e
       e = rotCWSrc(e)
     } while (e != e0)
-    val region = Line(pts)
+    val region = LineString(pts)
 
     toKill.foreach{ e => {
       killEdge(getFlip(e))

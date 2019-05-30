@@ -16,8 +16,7 @@
 
 package geotrellis.vector.mesh
 
-import org.locationtech.jts.geom.{LineString, Point, Polygon}
-import geotrellis.vector.{LineString, Point, Polygon}
+import geotrellis.vector._
 
 class HalfEdge[V,F](val vert: V, var flip: HalfEdge[V,F], var next: HalfEdge[V,F], var face: Option[F]) extends Serializable {
 
