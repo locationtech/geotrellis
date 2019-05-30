@@ -42,6 +42,17 @@ class GridExtent[@specialized(Int, Long) N: Integral](
     rows == Integral[N].fromDouble(math.round(extent.height / cellheight)),
     s"$extent at $cellSize does not match $dimensions")
 
+  /**
+    * The same logic is used in QGIS: https://github.com/qgis/QGIS/blob/607664c5a6b47c559ed39892e736322b64b3faa4/src/analysis/raster/qgsalignraster.cpp#L38
+    * The search query: https://github.com/qgis/QGIS/search?p=2&q=floor&type=&utf8=%E2%9C%93
+    *
+    * GDAL uses smth like that, however it was a bit hard to track it down:
+    * https://github.com/OSGeo/gdal/blob/7601a637dfd204948d00f4691c08f02eb7584de5/gdal/frmts/vrt/vrtsources.cpp#L215
+    * */
+  def floorWithTolerance(value: Double): Double =
+    if (math.abs(value - math.round(value)) < GridExtent.epsilon) math.round(value)
+    else math.floor(value)
+
   def this(extent: Extent, cols: N, rows: N) =
     this(extent, (extent.width / cols.toDouble), (extent.height / rows.toDouble), cols, rows)
 
@@ -79,15 +90,15 @@ class GridExtent[@specialized(Int, Long) N: Integral](
   final def mapYToGridDouble(y: Double): Double = (extent.ymax - y ) / cellheight
 
   /** Convert map coordinate x to grid coordinate column. */
-  final def mapXToGrid(x: Double): N = Integral[N].fromDouble(math.floor(mapXToGridDouble(x)))
+  final def mapXToGrid(x: Double): N = Integral[N].fromDouble(floorWithTolerance(mapXToGridDouble(x)))
 
   /** Convert map coordinate y to grid coordinate row. */
-  final def mapYToGrid(y: Double): N = Integral[N].fromDouble(math.floor(mapYToGridDouble(y)))
+  final def mapYToGrid(y: Double): N = Integral[N].fromDouble(floorWithTolerance(mapYToGridDouble(y)))
 
   /** Convert map coordinates (x, y) to grid coordinates (col, row). */
   final def mapToGrid(x: Double, y: Double): (N, N) = {
-    val col = math.floor((x - extent.xmin) / cellwidth).toInt
-    val row = math.floor((extent.ymax - y) / cellheight).toInt
+    val col = floorWithTolerance((x - extent.xmin) / cellwidth).toInt
+    val row = floorWithTolerance((extent.ymax - y) / cellheight).toInt
     (col, row)
   }
 
@@ -168,19 +179,19 @@ class GridExtent[@specialized(Int, Long) N: Integral](
     // what is to the West and\or North of the point. However if the border point
     // is not directly on a grid division, include the whole row and/or column that
     // contains the point.
-    val colMax: N = Integral[N].fromLong{
+    val colMax: N = Integral[N].fromLong {
       val colMaxDouble = mapXToGridDouble(subExtent.xmax)
 
-      if (math.abs(colMaxDouble - math.floor(colMaxDouble)) < GridExtent.epsilon)
+      if (math.abs(colMaxDouble - floorWithTolerance(colMaxDouble)) < GridExtent.epsilon)
         colMaxDouble.toLong - 1L
       else
         colMaxDouble.toLong
     }
 
-    val rowMax: N = Integral[N].fromLong{
+    val rowMax: N = Integral[N].fromLong {
       val rowMaxDouble = mapYToGridDouble(subExtent.ymin)
 
-      if (math.abs(rowMaxDouble - math.floor(rowMaxDouble)) < GridExtent.epsilon)
+      if (math.abs(rowMaxDouble - floorWithTolerance(rowMaxDouble)) < GridExtent.epsilon)
         rowMaxDouble.toLong - 1L
       else
         rowMaxDouble.toLong
