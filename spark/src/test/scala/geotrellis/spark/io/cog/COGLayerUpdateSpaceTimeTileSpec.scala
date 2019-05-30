@@ -203,6 +203,22 @@ trait COGLayerUpdateSpaceTimeTileSpec
         writer.write[SpaceTimeKey, Tile](tmpLayer, sampleHighZoom, maxZoom, keyIndexMethod, mergeFunc = mergeFunc, options = options)
         writer.update[SpaceTimeKey, Tile](tmpLayer, sampleHighZoom, maxZoom, mergeFunc = mergeFunc, options = options)
       }
+
+      it("should successfully update, using zoom ranges that are currently present in the layer") {
+        /**
+          * We will use two distinct COGLayerWriter.Options
+          * that would normally (in case of writing to a new layer) generate two different sets of ZoomRanges.
+          * This test checks that update uses the same ZoomRanges as create and doesn't fail on ZoomRanges mismatch.
+          */
+        import COGLayerWriter.Options.DEFAULT
+        val createOptions = DEFAULT.copy(maxTileSize = sample.metadata.tileCols) //suggests one ZoomRange per each zoom
+        val updateOptions = DEFAULT.copy(maxTileSize = sample.metadata.tileCols * 2) //suggests one ZoomRange per two zooms
+
+        val tmpLayerId = layerId.createTemporaryId.name
+
+        writer.write[SpaceTimeKey, Tile](tmpLayerId, sample, layerId.zoom, keyIndexMethod, mergeFunc = mergeFunc, options = createOptions)
+        writer.update[SpaceTimeKey, Tile](tmpLayerId, sample, layerId.zoom, mergeFunc = mergeFunc, options = updateOptions)
+      }
     }
   }
 }

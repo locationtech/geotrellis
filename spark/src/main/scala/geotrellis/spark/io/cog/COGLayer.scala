@@ -82,6 +82,74 @@ object COGLayer {
       }
     }
 
+    val constructMetadata =
+      (layoutScheme: ZoomedLayoutScheme, keyBounds: KeyBounds[K]) => COGLayerMetadata(
+        rdd.metadata.cellType,
+        rdd.metadata.extent,
+        rdd.metadata.crs,
+        keyBounds,
+        layoutScheme,
+        baseZoom,
+        minZoom.getOrElse(0),
+        options.maxTileSize
+      )
+
+    buildCOGLayer(rdd, baseZoom, constructMetadata, options)
+  }
+
+  /**
+    * Builds [[COGLayer]] pyramid using predefined zoom ranges.
+    *
+    * @param rdd             Base layer, at highest resolution
+    * @param baseZoom        Zoom level of the base layer, assumes [[ZoomedLayoutScheme]]
+    * @param zoomRanges      ZoomRanges for this COG layer.
+    * @param options         [[COGLayerWriter.Options]] that contains information on the maxTileSize,
+    *                        resampleMethod, and compression of the written layer.
+    */
+  def fromLayerRDD[
+    K: SpatialComponent: Ordering: JsonFormat: ClassTag,
+    V <: CellGrid[Int]: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]: ? => TileCropMethods[V]: GeoTiffBuilder
+  ](
+     rdd: RDD[(K, V)] with Metadata[TileLayerMetadata[K]],
+     baseZoom: Int,
+     zoomRanges: Vector[ZoomRange],
+     options: COGLayerWriter.Options
+   ): COGLayer[K, V] = {
+
+    if (zoomRanges.exists(_ != baseZoom)) {
+      if(rdd.metadata.layout.tileCols != rdd.metadata.layout.tileRows) {
+        sys.error("Cannot create Pyramided COG layer for non-square tiles.")
+      }
+
+      if(!isPowerOfTwo(rdd.metadata.layout.tileCols)) {
+        sys.error("Cannot create Pyramided COG layer for tile sizes that are not power-of-two.")
+      }
+    }
+
+    val constructMetadata =
+      (layoutScheme: ZoomedLayoutScheme, keyBounds: KeyBounds[K]) => COGLayerMetadata(
+        rdd.metadata.cellType,
+        rdd.metadata.extent,
+        rdd.metadata.crs,
+        keyBounds,
+        baseZoom,
+        layoutScheme,
+        zoomRanges
+      )
+
+    buildCOGLayer(rdd, baseZoom, constructMetadata, options)
+  }
+
+  private def buildCOGLayer[
+    K: SpatialComponent: Ordering: JsonFormat: ClassTag,
+    V <: CellGrid[Int]: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]: ? => TileCropMethods[V]: GeoTiffBuilder
+  ](
+     rdd: RDD[(K, V)] with Metadata[TileLayerMetadata[K]],
+     baseZoom: Int,
+     constructMetadata: (ZoomedLayoutScheme, KeyBounds[K]) => COGLayerMetadata[K],
+     options: COGLayerWriter.Options
+   ): COGLayer[K, V] = {
+
     val layoutScheme =
       ZoomedLayoutScheme(rdd.metadata.crs, rdd.metadata.layout.tileCols)
 
@@ -95,17 +163,7 @@ object COGLayer {
         case _ => sys.error(s"Cannot create COGLayer with empty Bounds")
       }
 
-    val cogLayerMetadata: COGLayerMetadata[K] =
-      COGLayerMetadata(
-        rdd.metadata.cellType,
-        rdd.metadata.extent,
-        rdd.metadata.crs,
-        keyBounds,
-        layoutScheme,
-        baseZoom,
-        minZoom.getOrElse(0),
-        options.maxTileSize
-      )
+    val cogLayerMetadata = constructMetadata(layoutScheme, keyBounds)
 
     val compression = options.compression
     val resampleMethod = options.resampleMethod

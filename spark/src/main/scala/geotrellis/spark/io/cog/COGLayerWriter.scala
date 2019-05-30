@@ -199,7 +199,7 @@ trait COGLayerWriter extends LazyLogging with Serializable {
         if(!indexKeyBounds.contains(keyBounds) && !metadata.keyBoundsForZoom(tileZoom).contains(keyBounds))
           throw new LayerOutOfKeyBoundsError(LayerId(layerName, tileZoom), indexKeyBounds)
 
-        val cogLayer = COGLayer.fromLayerRDD(tiles, tileZoom, options = options)
+        val cogLayer = COGLayer.fromLayerRDD(tiles, tileZoom, metadata.zoomRanges, options = options)
         val ucogLayer = cogLayer.copy(metadata = cogLayer.metadata.combine(metadata))
 
         writeCOGLayer(layerName, ucogLayer, keyIndexes, mergeFunc)
