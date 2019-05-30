@@ -24,7 +24,7 @@ import geotrellis.store.hbase.HBaseTestEnvironment
 import geotrellis.spark.testkit.TestEnvironment
 import org.scalatest._
 
-class HBaseLayerProviderSpec extends FunSpec with HBaseTestEnvironment {
+class HBaseSparkLayerProviderSpec extends FunSpec with HBaseTestEnvironment {
   val uri = new java.net.URI("hbase://localhost?master=localhost&attributes=attributes&layers=tiles")
   it("construct HBaseAttributeStore from URI"){
     val store = AttributeStore(uri)
@@ -48,7 +48,7 @@ class HBaseLayerProviderSpec extends FunSpec with HBaseTestEnvironment {
 
   it("should not be able to process a URI without a scheme") {
     val badURI = new java.net.URI("//localhost?master=localhost&attributes=attributes&layers=tiles")
-    val provider = new HBaseLayerProvider
+    val provider = new HBaseSparkLayerProvider
 
     provider.canProcess(badURI) should be (false)
   }
