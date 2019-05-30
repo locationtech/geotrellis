@@ -36,18 +36,6 @@ import java.net.URI
 class HBaseLayerProvider extends HBaseCollectionLayerProvider
     with LayerReaderProvider with LayerWriterProvider {
 
-  def canProcess(uri: URI): Boolean = uri.getScheme match {
-    case str: String => if (str.toLowerCase == "hbase") true else false
-    case null => false
-  }
-
-  def attributeStore(uri: URI): AttributeStore = {
-    val instance = HBaseInstance(uri)
-    val params = UriUtils.getParams(uri)
-    val attributeTable = params.getOrElse("attributes", HBaseConfig.catalog)
-    HBaseAttributeStore(instance, attributeTable)
-  }
-
   def layerReader(uri: URI, store: AttributeStore, sc: SparkContext): FilteringLayerReader[LayerId] = {
     val instance = HBaseInstance(uri)
     new HBaseLayerReader(store, instance)(sc)
@@ -60,15 +48,4 @@ class HBaseLayerProvider extends HBaseCollectionLayerProvider
       throw new IllegalArgumentException("Missing required URI parameter: layers"))
     new HBaseLayerWriter(store, instance, table)
   }
-
-  def valueReader(uri: URI, store: AttributeStore): ValueReader[LayerId] = {
-    val instance = HBaseInstance(uri)
-    new HBaseValueReader(instance, store)
-  }
-
-  def collectionLayerReader(uri: URI, store: AttributeStore): CollectionLayerReader[LayerId] = {
-    val instance = HBaseInstance(uri)
-    new HBaseCollectionLayerReader(store, instance)
-  }
-
 }

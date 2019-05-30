@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.store.hbase
+package geotrellis.store.hbase
 
 import geotrellis.layers._
 import geotrellis.store.hbase._
