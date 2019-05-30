@@ -18,8 +18,8 @@ package geotrellis.spark.io.geowave
 
 import geotrellis.geotools._
 import geotrellis.spark._
-import geotrellis.layers.io.avro._
-import geotrellis.layers.io.avro.codecs._
+import geotrellis.layers.avro._
+import geotrellis.layers.avro.codecs._
 import geotrellis.spark.io.hadoop.formats._
 import geotrellis.spark.util.KryoWrapper
 import geotrellis.util.annotations._

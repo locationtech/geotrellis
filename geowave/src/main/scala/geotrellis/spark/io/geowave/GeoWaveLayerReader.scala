@@ -16,20 +16,22 @@
 
 package geotrellis.spark.io.geowave
 
-import geotrellis.geotools._
 import geotrellis.proj4.LatLng
-import geotrellis.raster._
+import geotrellis.vector.Extent
 import geotrellis.tiling._
-import geotrellis.spark._
-import geotrellis.spark.io._
-import geotrellis.layers.io.avro._
-import geotrellis.layers.io.index.KeyIndex
+import geotrellis.geotools._
+import geotrellis.raster._
+import geotrellis.layers._
+import geotrellis.layers.avro._
+import geotrellis.layers.index.KeyIndex
+import geotrellis.spark.ContextRDD
 import geotrellis.util._
 import geotrellis.util.annotations.experimental
-import geotrellis.vector.Extent
+
 import com.typesafe.scalalogging.LazyLogging
-import geotrellis.layers.{LayerId, Metadata, TileLayerMetadata}
+
 import org.locationtech.jts.geom._
+
 import mil.nga.giat.geowave.adapter.raster.adapter.RasterDataAdapter
 import mil.nga.giat.geowave.core.geotime.ingest._
 import mil.nga.giat.geowave.core.geotime.store.query.IndexOnlySpatialQuery
@@ -41,12 +43,15 @@ import mil.nga.giat.geowave.core.store.query.QueryOptions
 import mil.nga.giat.geowave.datastore.accumulo._
 import mil.nga.giat.geowave.datastore.accumulo.metadata._
 import mil.nga.giat.geowave.mapreduce.input.{GeoWaveInputFormat, GeoWaveInputKey}
+
 import org.apache.avro.Schema
 import org.apache.hadoop.io.Text
 import org.apache.hadoop.mapreduce.Job
 import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkContext
+
 import org.geotools.coverage.grid._
+
 import spray.json._
 
 import scala.reflect._
