@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.io.accumulo
+package geotrellis.layers.accumulo
 
-import geotrellis.spark.io._
+import geotrellis.layers._
+
 import com.typesafe.scalalogging.LazyLogging
-import geotrellis.layers.LayerId
+
 import org.apache.accumulo.core.client.{BatchWriterConfig, Connector}
 import org.apache.accumulo.core.security.Authorizations
 import org.apache.accumulo.core.data.{Range => AccumuloRange}

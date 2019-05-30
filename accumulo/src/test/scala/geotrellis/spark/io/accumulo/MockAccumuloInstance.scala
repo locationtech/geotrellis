@@ -16,6 +16,7 @@
 
 package geotrellis.spark.io.accumulo
 
+import geotrellis.layers.accumulo._
 import org.apache.accumulo.core.client._
 import org.apache.accumulo.core.client.mock.MockInstance
 import org.apache.accumulo.core.client.security.tokens.PasswordToken

@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.io
+package geotrellis.layers
 
-import geotrellis.layers.LayerId
 import org.apache.hadoop.io.Text
 import org.apache.accumulo.core.client.{BatchWriterConfig, Connector, Scanner}
 import org.apache.accumulo.core.data.{Key, Mutation, Value}
+
 
 package object accumulo {
   implicit def stringToText(s: String): Text = new Text(s)

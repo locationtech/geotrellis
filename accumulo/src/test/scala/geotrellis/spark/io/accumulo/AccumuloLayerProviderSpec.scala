@@ -16,6 +16,8 @@
 
 package geotrellis.spark.io.accumulo
 
+import geotrellis.layers._
+import geotrellis.layers.accumulo._
 import geotrellis.spark.io._
 import geotrellis.spark.testkit.TestEnvironment
 import org.scalatest._
@@ -44,7 +46,7 @@ class AccumuloLayerProviderSpec extends FunSpec with TestEnvironment {
 
   it("should not be able to process a URI without a scheme") {
     val badURI = new java.net.URI("//root:@localhost/fake?attributes=attributes&layers=tiles")
-    val provider = new AccumuloLayerProvider
+    val provider = new AccumuloSparkLayerProvider
 
     provider.canProcess(badURI) should be (false)
   }

@@ -7,6 +7,23 @@ Changelog
 API Changes & Project structure changes
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+- ``geotrellis.accumulo``
+
+  - **Remove:** The following types have been moved from ``geotrellis.accumulo`` to the ``geotrellis.layers.accumulo`` package:
+    - ``AccumuloAttributeStore``
+    - ``AccumuloCollectionLayerReader``
+    - ``AccumuloCollectionReader``
+    - ``AccumuloInstance``
+    - ``AccumuloKeyEncoder``
+    - ``AccumuloLayerDeleter``
+    - ``AccumuloLayerHeader``
+    - ``AccumuloUtils``
+    - ``AccumuloValueReader``
+
+- ``geotrellis.layers.accumulo``
+
+  - **New:** ``geotrellis.layers.accumulo`` is a new package where non-Spark related Accumulo API will be contained.
+
 - ``geotrellis.slick``
 
   - **Remove:**  ``geotrellis.slick`` has been removed. Slick support will now reside in `geotrellis-contrib` (`#2902 <https://github.com/locationtech/geotrellis/pull/2902>`_).
