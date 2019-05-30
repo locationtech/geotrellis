@@ -14,15 +14,17 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.io.cassandra
+package geotrellis.layers.cassandra
 
-import geotrellis.spark.io._
+import geotrellis.layers._
+
 import com.typesafe.scalalogging.LazyLogging
+
 import com.datastax.driver.core.querybuilder.QueryBuilder
 import com.datastax.driver.core.querybuilder.QueryBuilder.{eq => eqs}
-import geotrellis.layers.LayerId
 
 import scala.collection.JavaConverters._
+
 
 class CassandraLayerDeleter(val attributeStore: AttributeStore, instance: CassandraInstance) extends LazyLogging with LayerDeleter[LayerId] {
 

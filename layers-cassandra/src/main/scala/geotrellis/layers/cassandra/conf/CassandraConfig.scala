@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.io.cassandra.conf
+package geotrellis.layers.cassandra.conf
 
-import geotrellis.layers.io.hadoop.conf.CamelCaseConfig
-import geotrellis.spark.util._
+import geotrellis.util.CamelCaseConfig
+import geotrellis.layers.util._
+
 import pureconfig.generic.auto._
 
 case class CassandraCollectionConfig(read: String = "default") {

@@ -1,4 +1,4 @@
-package geotrellis.spark.io.cassandra;
+package geotrellis.layers.cassandra;
 
 import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.exceptions.InvalidTypeException;

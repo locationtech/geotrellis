@@ -14,21 +14,24 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.io.cassandra
+package geotrellis.layers.cassandra
 
 import geotrellis.tiling.{Boundable, KeyBounds}
-import geotrellis.spark.io._
-import geotrellis.layers.io.avro.codecs.KeyValueRecordCodec
-import geotrellis.layers.io.avro.{AvroEncoder, AvroRecordCodec}
-import geotrellis.spark.io.cassandra.conf.CassandraConfig
-import geotrellis.layers.io.index.MergeQueue
-import geotrellis.spark.util.KryoWrapper
+import geotrellis.layers._
+import geotrellis.layers.util.IOUtils
+import geotrellis.layers.avro.codecs.KeyValueRecordCodec
+import geotrellis.layers.avro.{AvroEncoder, AvroRecordCodec}
+import geotrellis.layers.cassandra.conf.CassandraConfig
+import geotrellis.layers.index.MergeQueue
+
 import org.apache.avro.Schema
+
 import com.datastax.driver.core.querybuilder.QueryBuilder
 import com.datastax.driver.core.querybuilder.QueryBuilder.{eq => eqs}
 
 import scala.collection.JavaConverters._
 import scala.reflect.ClassTag
+
 import java.math.BigInteger
 
 import geotrellis.layers.LayerId
@@ -51,7 +54,6 @@ object CassandraCollectionReader {
 
     val includeKey = (key: K) => queryKeyBounds.includeKey(key)
     val _recordCodec = KeyValueRecordCodec[K, V]
-    val kwWriterSchema = KryoWrapper(writerSchema) //Avro Schema is not Serializable
 
     val ranges = if (queryKeyBounds.length > 1)
       MergeQueue(queryKeyBounds.flatMap(decomposeBounds))
@@ -68,11 +70,11 @@ object CassandraCollectionReader {
     instance.withSessionDo { session =>
       val statement = session.prepare(query)
 
-      LayerReader.njoin[K, V](ranges.toIterator, threads){ index: BigInt =>
+      IOUtils.parJoin[K, V](ranges.toIterator, threads){ index: BigInt =>
         val row = session.execute(statement.bind(index: BigInteger))
         if (row.asScala.nonEmpty) {
           val bytes = row.one().getBytes("value").array()
-          val recs = AvroEncoder.fromBinary(kwWriterSchema.value.getOrElse(_recordCodec.schema), bytes)(_recordCodec)
+          val recs = AvroEncoder.fromBinary(writerSchema.getOrElse(_recordCodec.schema), bytes)(_recordCodec)
           if (filterIndexOnly) recs
           else recs.filter { row => includeKey(row._1) }
         } else Vector.empty

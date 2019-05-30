@@ -17,16 +17,18 @@
 package geotrellis.spark.io.cassandra
 
 import geotrellis.tiling.{Boundable, Bounds}
-import geotrellis.spark._
+import geotrellis.layers._
+import geotrellis.layers.avro._
+import geotrellis.layers.cassandra._
+import geotrellis.layers.index._
 import geotrellis.spark.io._
-import geotrellis.layers.io.avro._
-import geotrellis.layers.io.index._
 import geotrellis.util._
-import org.apache.spark.SparkContext
-import spray.json.JsonFormat
-import java.time.ZonedDateTime
 
-import geotrellis.layers.LayerId
+import org.apache.spark.SparkContext
+
+import spray.json.JsonFormat
+
+import java.time.ZonedDateTime
 
 import scala.reflect.ClassTag
 

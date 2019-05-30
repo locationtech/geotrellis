@@ -2,6 +2,7 @@
 
 ./sbt "project accumulo" +publishM2 \
       "project layers-accumulo" +publishM2 \
+      "project layers-cassandra" +publishM2 \
       "project cassandra" +publishM2 \
       "project geomesa" +publishM2 \
       "project geotools" +publishM2 \

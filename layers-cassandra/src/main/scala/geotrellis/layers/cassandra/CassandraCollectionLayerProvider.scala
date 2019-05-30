@@ -14,17 +14,14 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.io.cassandra
+package geotrellis.layers.cassandra
 
-import geotrellis.spark.io.cassandra.conf.CassandraConfig
-import geotrellis.spark._
-import geotrellis.spark.io._
+import geotrellis.layers._
+import geotrellis.layers.cassandra.conf.CassandraConfig
 import geotrellis.util.UriUtils
-import org.apache.spark.SparkContext
+
 import java.net.URI
 
-import geotrellis.layers.LayerId
-import geotrellis.layers.io.{ValueReader, ValueReaderProvider}
 
 /**
  * Provides [[CassandraAttributeStore]] instance for URI with `cassandra` scheme.
@@ -33,9 +30,7 @@ import geotrellis.layers.io.{ValueReader, ValueReaderProvider}
  * Metadata table name is optional, not provided default value will be used.
  * Layers table name is required to instantiate a [[LayerWriter]]
  */
-class CassandraLayerProvider extends AttributeStoreProvider
-    with LayerReaderProvider with LayerWriterProvider with ValueReaderProvider with CollectionLayerReaderProvider {
-
+class CassandraCollectionLayerProvider extends AttributeStoreProvider with ValueReaderProvider with CollectionLayerReaderProvider {
   def canProcess(uri: URI): Boolean = uri.getScheme match {
     case str: String => if (str.toLowerCase == "cassandra") true else false
     case null => false
@@ -47,21 +42,6 @@ class CassandraLayerProvider extends AttributeStoreProvider
     val attributeTable = params.getOrElse("attributes", CassandraConfig.catalog)
     val keyspace = Option(uri.getPath.drop(1)).getOrElse(CassandraConfig.keyspace)
     CassandraAttributeStore(instance, keyspace, attributeTable)
-  }
-
-  def layerReader(uri: URI, store: AttributeStore, sc: SparkContext): FilteringLayerReader[LayerId] = {
-    val instance = CassandraInstance(uri)
-    new CassandraLayerReader(store, instance)(sc)
-  }
-
-  def layerWriter(uri: URI, store: AttributeStore): LayerWriter[LayerId] = {
-    val instance = CassandraInstance(uri)
-    val keyspace = Option(uri.getPath.drop(1)).getOrElse(CassandraConfig.keyspace)
-    val params = UriUtils.getParams(uri)
-    val table = params.getOrElse("layers",
-      throw new IllegalArgumentException("Missing required URI parameter: layers"))
-
-    new CassandraLayerWriter(store, instance, keyspace, table)
   }
 
   def valueReader(uri: URI, store: AttributeStore): ValueReader[LayerId] = {
