@@ -21,11 +21,13 @@ import geotrellis.spark.io._
 
 import spray.json._
 import DefaultJsonProtocol._
-import com.amazonaws.services.s3.model.{ObjectMetadata, AmazonS3Exception}
-import com.amazonaws.services.s3.model.DeleteObjectsRequest.KeyVersion
+import software.amazon.awssdk.core.sync.RequestBody
+import software.amazon.awssdk.services.s3.S3Client
+import software.amazon.awssdk.services.s3.model._
+import org.apache.commons.io.IOUtils
 
 import scala.util.matching.Regex
-import scala.io.Source
+import scala.collection.JavaConverters._
 import java.nio.charset.Charset
 import java.io.ByteArrayInputStream
 
@@ -35,9 +37,11 @@ import java.io.ByteArrayInputStream
  * @param bucket    S3 bucket to use for attribute store
  * @param prefix    path in the bucket for given LayerId
  */
-class S3AttributeStore(val bucket: String, val prefix: String) extends BlobLayerAttributeStore {
-
-  def s3Client: S3Client = S3Client.DEFAULT
+class S3AttributeStore(
+  val bucket: String,
+  val prefix: String,
+  val getClient: () => S3Client = S3ClientProducer.get
+) extends BlobLayerAttributeStore {
   import S3AttributeStore._
 
   /** NOTE:
@@ -59,12 +63,16 @@ class S3AttributeStore(val bucket: String, val prefix: String) extends BlobLayer
     path(prefix, "_attributes", s"${attributeName}${SEP}")
 
   private def readKey[T: JsonFormat](key: String): (LayerId, T) = {
-    val is = s3Client.getObject(bucket, key).getObjectContent
+    val getRequest = GetObjectRequest.builder()
+      .bucket(bucket)
+      .key(key)
+      .build()
+    val s3objStream = getClient().getObject(getRequest)
     val json =
       try {
-        Source.fromInputStream(is)(Charset.forName("UTF-8")).mkString
+        IOUtils.toString(s3objStream, Charset.forName("UTF-8"))
       } finally {
-        is.close()
+        s3objStream.close()
       }
 
     json.parseJson.convertTo[(LayerId, T)]
@@ -74,64 +82,107 @@ class S3AttributeStore(val bucket: String, val prefix: String) extends BlobLayer
     try {
       readKey[T](attributePath(layerId, attributeName))._2
     } catch {
-      case e: AmazonS3Exception =>
+      case e: S3Exception =>
         throw new AttributeNotFoundError(attributeName, layerId).initCause(e)
     }
 
-  def readAll[T: JsonFormat](attributeName: String): Map[LayerId, T] =
-    s3Client
-      .listObjectsIterator(bucket, attributePrefix(attributeName))
-      .map{ os =>
+  def readAll[T: JsonFormat](attributeName: String): Map[LayerId, T] = {
+    val listRequest = ListObjectsV2Request.builder()
+      .bucket(bucket)
+      .prefix(attributePrefix(attributeName))
+      .build()
+    getClient()
+      .listObjectsV2Paginator(listRequest)
+      .contents
+      .asScala
+      .map{ s3obj =>
         try {
-          readKey[T](os.getKey)
+          readKey[T](s3obj.key)
         } catch {
-          case e: AmazonS3Exception =>
-            throw new LayerIOError(s"Unable to list $attributeName attributes from $bucket/${os.getKey}").initCause(e)
+          case e: S3Exception =>
+            throw new LayerIOError(s"Unable to list $attributeName attributes from $bucket/${s3obj.key}").initCause(e)
         }
       }
       .toMap
+  }
 
   def write[T: JsonFormat](layerId: LayerId, attributeName: String, value: T): Unit = {
     val key = attributePath(layerId, attributeName)
     val str = (layerId, value).toJson.compactPrint
-    val is = new ByteArrayInputStream(str.getBytes("UTF-8"))
-    s3Client.putObject(bucket, key, is, new ObjectMetadata())
+    val putRequest = PutObjectRequest.builder()
+      .bucket(bucket)
+      .key(key)
+      .build()
+    val requestBody = RequestBody.fromBytes(str.getBytes("UTF-8"))
+    getClient().putObject(putRequest, requestBody)
     //AmazonServiceException possible
   }
 
-  def layerExists(layerId: LayerId): Boolean =
-    s3Client
-      .listObjectsIterator(bucket, path(prefix, "_attributes"))
-      .exists(_.getKey.endsWith(s"${AttributeStore.Fields.metadata}${SEP}${layerId.name}${SEP}${layerId.zoom}.json"))
+  def layerExists(layerId: LayerId): Boolean = {
+    val listRequest = ListObjectsV2Request.builder()
+      .bucket(bucket)
+      .prefix(path(prefix, "_attributes"))
+      .build()
+    getClient()
+      .listObjectsV2Paginator(listRequest)
+      .contents
+      .asScala
+      .exists(_.key.endsWith(s"${AttributeStore.Fields.metadata}${SEP}${layerId.name}${SEP}${layerId.zoom}.json"))
+  }
 
   def delete(layerId: LayerId, attributeName: String): Unit = {
-    s3Client.deleteObject(bucket, attributePath(layerId, attributeName))
+    val deleteRequest = DeleteObjectRequest.builder()
+      .bucket(bucket)
+      .key(attributePath(layerId, attributeName))
+      .build()
+    getClient().deleteObject(deleteRequest)
     clearCache(layerId, attributeName)
   }
 
   private def layerKeys(layerId: LayerId): Seq[String] = {
-    s3Client
-      .listObjectsIterator(bucket, path(prefix, "_attributes"))
-      .map { _.getKey }
+    val listRequest = ListObjectsV2Request.builder()
+      .bucket(bucket)
+      .prefix(path(prefix, "_attributes"))
+      .build()
+    getClient()
+      .listObjectsV2Paginator(listRequest)
+      .contents
+      .asScala
+      .map { _.key }
       .filter { _.contains(s"${SEP}${layerId.name}${SEP}${layerId.zoom}.json") }
-      .toVector
+      .toSeq
   }
 
   def delete(layerId: LayerId): Unit = {
-    val keys = layerKeys(layerId).map(new KeyVersion(_)).toList
-    s3Client.deleteObjects(bucket, keys)
+    val identifiers =
+      layerKeys(layerId).map { key => ObjectIdentifier.builder().key(key).build() }
+    val deleteDefinition = Delete.builder()
+      .objects(identifiers:_*)
+      .build()
+    val deleteRequest = DeleteObjectsRequest.builder()
+      .bucket(bucket)
+      .delete(deleteDefinition)
+      .build()
+    getClient().deleteObjects(deleteRequest)
     clearCache(layerId)
   }
 
-  def layerIds: Seq[LayerId] =
-    s3Client
-      .listObjectsIterator(bucket, path(prefix, "_attributes/metadata"))
-      .toList
-      .map { os =>
-        val List(zoomStr, name) = new java.io.File(os.getKey).getName.split(SEP).reverse.take(2).toList
+  def layerIds: Seq[LayerId] = {
+    val listRequest = ListObjectsV2Request.builder()
+      .bucket(bucket)
+      .prefix(path(prefix, "_attributes/metadata"))
+      .build()
+    getClient()
+      .listObjectsV2Paginator(listRequest)
+      .contents
+      .asScala
+      .map { s3obj =>
+        val List(zoomStr, name) = new java.io.File(s3obj.key).getName.split(SEP).reverse.take(2).toList
         LayerId(name, zoomStr.replace(".json", "").toInt)
       }
+      .toSeq
       .distinct
+  }
 
   def availableAttributes(layerId: LayerId): Seq[String] = {
     layerKeys(layerId).map { key =>
@@ -140,16 +191,22 @@ class S3AttributeStore(val bucket: String, val prefix: String) extends BlobLayer
   }
 
   override def availableZoomLevels(layerName: String): Seq[Int] = {
-    s3Client
-      .listObjectsIterator(bucket, path(prefix, s"_attributes/metadata${SEP}${layerName}"))
-      .toList
-      .flatMap { os =>
-        val List(zoomStr, foundName) = new java.io.File(os.getKey).getName.split(SEP).reverse.take(2).toList
+    val listRequest = ListObjectsV2Request.builder()
+      .bucket(bucket)
+      .prefix(path(prefix, s"_attributes/metadata${SEP}${layerName}"))
+      .build()
+    getClient()
+      .listObjectsV2Paginator(listRequest)
+      .contents
+      .asScala
+      .flatMap { s3obj =>
+        val List(zoomStr, foundName) = new java.io.File(s3obj.key).getName.split(SEP).reverse.take(2).toList
         if (foundName == layerName)
           Some(zoomStr.replace(".json", "").toInt)
         else
           None
       }
+      .toSeq
       .distinct
   }
 }
@@ -157,9 +214,9 @@ class S3AttributeStore(val bucket: String, val prefix: String) extends BlobLayer
 object S3AttributeStore {
   final val SEP = "__"
 
-  def apply(bucket: String, root: String) =
-    new S3AttributeStore(bucket, root)
+  def apply(bucket: String, root: String, getClient: () => S3Client = S3ClientProducer.get) =
+    new S3AttributeStore(bucket, root, getClient)
 
-  def apply(bucket: String): S3AttributeStore =
-    apply(bucket, "")
+  def apply(bucket: String, getClient: () => S3Client): S3AttributeStore =
+    apply(bucket, "", getClient)
 }

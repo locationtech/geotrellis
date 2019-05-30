@@ -23,24 +23,34 @@ import geotrellis.spark.io.s3._
 import geotrellis.spark.io.s3.testkit._
 import spire.syntax.cfor._
 
-import com.amazonaws.services.s3.model._
+import software.amazon.awssdk.core.sync.RequestBody
+import software.amazon.awssdk.services.s3.model._
 import org.apache.commons.io.IOUtils
 
 import org.scalatest._
 
 class S3RangeReaderSpec extends FunSpec with Matchers {
+  val bucket = this.getClass.getSimpleName.toLowerCase
+  val mockClient = MockS3Client()
+  S3TestUtils.cleanBucket(mockClient, bucket)
 
   describe("S3RangeReader") {
-    val mockClient = new MockS3Client
     val testGeoTiffPath = "spark/src/test/resources/all-ones.tif"
     val geoTiffBytes = Files.readAllBytes(Paths.get(testGeoTiffPath))
 
-    mockClient.putObject(this.getClass.getSimpleName,
-      "geotiff/all-ones.tif",
-      geoTiffBytes)
+    val putReq = PutObjectRequest.builder()
+      .bucket(bucket)
+      .key("geotiff/all-ones.tif")
+      .build()
+    val putBody = RequestBody.fromBytes(geoTiffBytes)
+    mockClient.putObject(putReq, putBody)
 
     val chunkSize = 20000
-    val request = new GetObjectRequest(this.getClass.getSimpleName, "geotiff/all-ones.tif")
+    val request =
+      GetObjectRequest.builder()
+        .bucket(bucket)
+        .key("geotiff/all-ones.tif")
+        .build()
     val rangeReader = S3RangeReader(request, mockClient)
 
     val local = ByteBuffer.wrap(geoTiffBytes)

@@ -27,9 +27,12 @@ import geotrellis.spark.io.cog._
 import geotrellis.spark.io.index._
 import geotrellis.util._
 
+import software.amazon.awssdk.services.s3._
+import software.amazon.awssdk.services.s3.model._
 import com.typesafe.scalalogging.LazyLogging
 import org.apache.spark.SparkContext
 import spray.json.JsonFormat
+
 import java.net.URI
 
 import scala.reflect.ClassTag
@@ -41,16 +44,18 @@ import scala.reflect.ClassTag
  */
 class S3COGLayerReader(
   val attributeStore: AttributeStore,
-  val getS3Client: () => S3Client = () => S3Client.DEFAULT,
+  val getClient: () => S3Client = S3ClientProducer.get,
   val defaultThreads: Int = S3COGLayerReader.defaultThreadCount
 )(@transient implicit val sc: SparkContext) extends COGLayerReader[LayerId] with LazyLogging {
 
   val defaultNumPartitions: Int = sc.defaultParallelism
 
-  implicit def getByteReader(uri: URI): ByteReader = byteReader(uri, getS3Client())
+  lazy val client = getClient()
+
+  implicit def getByteReader(uri: URI): ByteReader = byteReader(uri, client)
 
   def pathExists(path: String): Boolean =
-    s3PathExists(path, getS3Client())
+    client.objectExists(path)
 
   def fullPath(path: String): URI =
     new URI(s"s3://$path")
@@ -61,6 +66,7 @@ class S3COGLayerReader(
     } catch {
       // to follow GeoTrellis Layer Readers logic
       case e: AttributeNotFoundError => throw new LayerNotFoundError(id).initCause(e)
+      case e: NoSuchBucketException => throw new LayerNotFoundError(id).initCause(e)
     }
 
   def produceGetKeyPath(id: LayerId): (ZoomRange, Int) => BigInt => String = {
@@ -101,6 +107,6 @@ object S3COGLayerReader {
   def apply(attributeStore: S3AttributeStore)(implicit sc: SparkContext): S3COGLayerReader =
     new S3COGLayerReader(
       attributeStore,
-      () => attributeStore.s3Client
+      attributeStore.getClient
     )
 }

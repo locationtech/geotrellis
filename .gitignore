@@ -28,6 +28,7 @@ _SUCCESS
 .settings
 .history
 .idea
+*.bloop
 .DS_Store
 *.iml
 *.swp

@@ -25,16 +25,17 @@ import geotrellis.spark.io.index._
 import geotrellis.spark.io.json._
 import geotrellis.util._
 
+import software.amazon.awssdk.services.s3.S3Client
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd._
 import spray.json.JsonFormat
 
 import scala.reflect.ClassTag
 
-class S3LayerManager(attributeStore: S3AttributeStore)(implicit sc: SparkContext)
+class S3LayerManager(attributeStore: S3AttributeStore, getClient: () => S3Client = S3ClientProducer.get)(implicit sc: SparkContext)
     extends LayerManager[LayerId] {
   def delete(id: LayerId): Unit =
-    S3LayerDeleter(attributeStore).delete(id)
+    S3LayerDeleter(attributeStore, getClient).delete(id)
 
   def copy[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,

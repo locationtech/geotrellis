@@ -16,14 +16,16 @@
 
 package geotrellis.spark.io.s3.geotiff
 
+import geotrellis.spark.io.s3.S3ClientProducer
 import geotrellis.spark.io.hadoop.geotiff._
-import geotrellis.spark.io.s3.S3Client
 import geotrellis.util.annotations.experimental
 
 import spray.json._
 import spray.json.DefaultJsonProtocol._
-import com.amazonaws.services.s3.AmazonS3URI
-import com.amazonaws.services.s3.model.ObjectMetadata
+import software.amazon.awssdk.services.s3.S3Client
+import software.amazon.awssdk.core.sync.RequestBody
+import software.amazon.awssdk.services.s3.model.PutObjectRequest
+import geotrellis.spark.io.s3.AmazonS3URI
 
 import java.io.ByteArrayInputStream
 import java.net.URI
@@ -36,34 +38,36 @@ import java.net.URI
     name: String,
     uri: URI,
     pattern: String,
-    recursive: Boolean,
-    getS3Client: () => S3Client
-  ): InMemoryGeoTiffAttributeStore =
-    apply(() => S3GeoTiffInput.list(name, uri, pattern, recursive, getS3Client), getS3Client)
-
-  def apply(
-    name: String,
-    uri: URI,
-    pattern: String
-  ): InMemoryGeoTiffAttributeStore = apply(name, uri, pattern, true, () => S3Client.DEFAULT)
+    recursive: Boolean = true,
+    getClient: () => S3Client = S3ClientProducer.get
+  ): InMemoryGeoTiffAttributeStore = {
+    val getInput = () => S3GeoTiffInput.list(name, uri, pattern, recursive, getClient)
+    apply(getInput, getClient)
+  }
 
   def apply(getDataFunction: () => List[GeoTiffMetadata]): InMemoryGeoTiffAttributeStore =
-    apply(getDataFunction, () => S3Client.DEFAULT)
+    apply(getDataFunction, S3ClientProducer.get)
 
   def apply(
     getDataFunction: () => List[GeoTiffMetadata],
-    getS3Client: () => S3Client
+    getClient: () => S3Client
   ): InMemoryGeoTiffAttributeStore =
     new InMemoryGeoTiffAttributeStore {
       lazy val metadataList = getDataFunction()
       def persist(uri: URI): Unit = {
-        val s3Client = getS3Client()
+
+        @transient
+        lazy val s3Client = getClient()
+
         val s3Path = new AmazonS3URI(uri)
         val data = metadataList
 
         val str = data.toJson.compactPrint
-        val is = new ByteArrayInputStream(str.getBytes("UTF-8"))
-        s3Client.putObject(s3Path.getBucket, s3Path.getKey, is, new ObjectMetadata())
+        val request = PutObjectRequest.builder()
+          .bucket(s3Path.getBucket())
+          .key(s3Path.getKey())
+          .build()
+        s3Client.putObject(request, RequestBody.fromBytes(str.getBytes("UTF-8")))
       }
     }
 }

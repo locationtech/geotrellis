@@ -24,6 +24,8 @@ import geotrellis.proj4.CRS
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.mapreduce._
+import software.amazon.awssdk.services.s3.S3Client
+
 import java.time.{ZoneOffset, ZonedDateTime}
 import java.time.format.DateTimeFormatter
 

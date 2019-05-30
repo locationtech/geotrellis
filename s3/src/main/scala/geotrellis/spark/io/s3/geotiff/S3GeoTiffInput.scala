@@ -16,16 +16,18 @@
 
 package geotrellis.spark.io.s3.geotiff
 
+import geotrellis.spark.io.s3.S3ClientProducer
 import geotrellis.raster.io.geotiff.reader.TiffTagsReader
 import geotrellis.spark.io.hadoop.geotiff.GeoTiffMetadata
-import geotrellis.spark.io.s3.S3Client
 import geotrellis.spark.io.s3.util.S3RangeReader
 import geotrellis.util.StreamingByteReader
 import geotrellis.util.annotations.experimental
 
-import com.amazonaws.services.s3.AmazonS3URI
-import com.amazonaws.services.s3.model.ListObjectsRequest
+import geotrellis.spark.io.s3.AmazonS3URI
+import software.amazon.awssdk.services.s3.S3Client
+import software.amazon.awssdk.services.s3.model.ListObjectsV2Request
 
+import scala.collection.JavaConverters._
 import java.net.URI
 
 /**
@@ -41,36 +43,48 @@ import java.net.URI
     uri: URI,
     pattern: String,
     recursive: Boolean = true,
-    getS3Client: () => S3Client = () => S3Client.DEFAULT): List[GeoTiffMetadata] = {
-    val s3Client = getS3Client()
+    getClient: () => S3Client = S3ClientProducer.get
+  ): List[GeoTiffMetadata] = {
+
+    @transient
+    lazy val s3Client = getClient()
+
     val s3Uri = new AmazonS3URI(uri)
     val regexp = pattern.r
 
-    val objectRequest = (new ListObjectsRequest)
-      .withBucketName(s3Uri.getBucket)
-      .withPrefix(s3Uri.getKey)
+    val objectRequest = if (recursive) {
+      ListObjectsV2Request.builder()
+        .bucket(s3Uri.getBucket())
+        .prefix(s3Uri.getKey())
+        .build()
+    } else {
+      ListObjectsV2Request.builder()
+        .bucket(s3Uri.getBucket())
+        .prefix(s3Uri.getKey())
+        .delimiter("/")
+        .build()
+    }
 
-    // Avoid digging into a deeper directory
-    if (!recursive) objectRequest.withDelimiter("/")
-
-    s3Client.listKeys(objectRequest)
-      .flatMap { key =>
-        key match {
-          case regexp(_*) => Some(new AmazonS3URI(s"s3://${s3Uri.getBucket}/${key}"))
+    s3Client.listObjectsV2Paginator(objectRequest)
+      .contents
+      .asScala
+      .flatMap({ s3obj =>
+        s3obj.key match {
+          case regexp(_*) => Some((s3Uri.getBucket(), s3obj.key))
           case _ => None
         }
-      }
-      .map { auri =>
+      }).map({ bucketAndKey: (String, String) =>
         val tiffTags = TiffTagsReader.read(StreamingByteReader(
           S3RangeReader(
-            bucket = auri.getBucket,
-            key = auri.getKey,
-            client = getS3Client()
+            bucket = bucketAndKey._1,
+            key = bucketAndKey._2,
+            client = s3Client
           )
         ))
 
-        GeoTiffMetadata(tiffTags.extent, tiffTags.crs, name, new URI(auri.toString))
-      }
+        val uri = new AmazonS3URI(s"s3://${bucketAndKey._1}/${bucketAndKey._2}").getURI()
+        GeoTiffMetadata(tiffTags.extent, tiffTags.crs, name, uri)
+      })
       .toList
   }
 }

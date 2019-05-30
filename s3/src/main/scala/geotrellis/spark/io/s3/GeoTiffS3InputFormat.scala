@@ -21,6 +21,8 @@ import geotrellis.raster._
 import geotrellis.raster.io.geotiff._
 import geotrellis.spark.io.hadoop._
 import geotrellis.vector._
+
+import software.amazon.awssdk.services.s3.S3Client
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.mapreduce._
 

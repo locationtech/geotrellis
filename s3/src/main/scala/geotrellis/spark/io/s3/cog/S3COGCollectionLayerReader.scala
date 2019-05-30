@@ -27,6 +27,8 @@ import geotrellis.spark.io.s3._
 import geotrellis.spark.io.s3.conf.S3Config
 import geotrellis.util._
 
+import software.amazon.awssdk.services.s3.S3Client
+import software.amazon.awssdk.services.s3.model._
 import com.typesafe.scalalogging.LazyLogging
 import spray.json.JsonFormat
 import java.net.URI
@@ -40,11 +42,14 @@ import scala.reflect.ClassTag
  */
 class S3COGCollectionLayerReader(
   val attributeStore: AttributeStore,
-  val getS3Client: () => S3Client = () => S3Client.DEFAULT,
-  val defaultThreads: Int = S3COGCollectionLayerReader.defaultThreadCount
+  val getClient: () => S3Client = S3ClientProducer.get,
+  val defaultThreads: Int = S3Config.threads.collection.readThreads
 ) extends COGCollectionLayerReader[LayerId] with LazyLogging {
 
-  implicit def getByteReader(uri: URI): ByteReader = byteReader(uri, getS3Client())
+  @transient
+  lazy val client = getClient()
+
+  implicit def getByteReader(uri: URI): ByteReader = byteReader(uri, client)
 
   def read[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
@@ -56,6 +61,7 @@ class S3COGCollectionLayerReader(
       } catch {
         // to follow GeoTrellis Layer Readers logic
         case e: AttributeNotFoundError => throw new LayerNotFoundError(id).initCause(e)
+        case e: NoSuchBucketException => throw new LayerNotFoundError(id).initCause(e)
       }
 
     val bucket = header.bucket
@@ -71,7 +77,7 @@ class S3COGCollectionLayerReader(
       id              = id,
       tileQuery       = rasterQuery,
       getKeyPath      = getKeyPath,
-      pathExists      = { s3PathExists(_, getS3Client()) },
+      pathExists      = { client.objectExists(_) },
       fullPath        = { path => new URI(s"s3://$path") },
       defaultThreads  = defaultThreads
     )
@@ -79,14 +85,14 @@ class S3COGCollectionLayerReader(
 }
 
 object S3COGCollectionLayerReader {
-  lazy val defaultThreadCount: Int = S3Config.threads.collection.readThreads
-
   def apply(attributeStore: S3AttributeStore): S3COGCollectionLayerReader =
     new S3COGCollectionLayerReader(
       attributeStore,
-      () => attributeStore.s3Client
+      attributeStore.getClient
     )
 
-  def apply(bucket: String, prefix: String): S3COGCollectionLayerReader =
-    apply(S3AttributeStore(bucket, prefix))
+  def apply(bucket: String, prefix: String, getClient: () => S3Client = S3ClientProducer.get): S3COGCollectionLayerReader = {
+    val attStore = S3AttributeStore(bucket, prefix, getClient)
+    apply(attStore)
+  }
 }

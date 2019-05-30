@@ -18,7 +18,7 @@ package geotrellis.spark.io.s3
 
 import geotrellis.util.MethodExtensions
 
-import com.amazonaws.services.s3.model.PutObjectRequest
+import software.amazon.awssdk.services.s3.model.PutObjectRequest
 import org.apache.spark.rdd.RDD
 
 

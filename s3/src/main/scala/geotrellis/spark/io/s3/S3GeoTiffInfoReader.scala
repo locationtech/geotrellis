@@ -23,37 +23,64 @@ import geotrellis.spark.io._
 import geotrellis.spark.io.s3.util.S3RangeReader
 import geotrellis.util.ByteReader
 
-import com.amazonaws.services.s3.AmazonS3URI
-import com.amazonaws.services.s3.model.ListObjectsRequest
+import software.amazon.awssdk.services.s3.S3Client
+import software.amazon.awssdk.services.s3.model.ListObjectsV2Request
+import geotrellis.spark.io.s3.AmazonS3URI
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
+
+import scala.collection.JavaConverters._
 
 case class S3GeoTiffInfoReader(
   bucket: String,
   prefix: String,
-  getS3Client: () => S3Client = () => S3Client.DEFAULT,
+  getClient: () => S3Client = S3ClientProducer.get,
   delimiter: Option[String] = None,
   streaming: Boolean = true,
   tiffExtensions: Seq[String] = S3GeoTiffRDD.Options.DEFAULT.tiffExtensions
 ) extends GeoTiffInfoReader {
 
+  @transient
+  lazy val client = getClient()
+
   /** Returns RDD of URIs to tiffs as GeoTiffInfo is not serializable. */
   def geoTiffInfoRDD(implicit sc: SparkContext): RDD[String] = {
     val listObjectsRequest =
-      delimiter
-        .fold(new ListObjectsRequest(bucket, prefix, null, null, null))(new ListObjectsRequest(bucket, prefix, null, _, null))
+      delimiter match {
+        case Some(d) =>
+          ListObjectsV2Request.builder()
+            .bucket(bucket)
+            .prefix(prefix)
+            .delimiter(d)
+            .build()
+        case None =>
+          ListObjectsV2Request.builder()
+            .bucket(bucket)
+            .prefix(prefix)
+            .build()
+      }
 
-    sc.parallelize(getS3Client().listKeys(listObjectsRequest))
+    val s3objects =
+      client
+        .listObjectsV2(listObjectsRequest)
+        .contents
+        .asScala
+    val s3keys = s3objects.map(_.key)
+    sc.parallelize(s3keys)
       .flatMap(key => if(tiffExtensions.exists(key.endsWith)) Some(s"s3://$bucket/$key") else None)
   }
 
   def getGeoTiffInfo(uri: String): GeoTiffInfo = {
     val s3Uri = new AmazonS3URI(uri)
+    val bucket = s3Uri.getBucket()
+    val key = s3Uri.getKey()
     val ovrKey = s"${s3Uri.getKey}.ovr"
     val ovrReader: Option[ByteReader] =
-      if (getS3Client().doesObjectExist(bucket, ovrKey)) Some(S3RangeReader(bucket, ovrKey, getS3Client())) else None
+      if (client.objectExists(bucket, ovrKey)) Some(S3RangeReader(bucket, ovrKey, client))
+      else None
 
-    GeoTiffReader.readGeoTiffInfo(S3RangeReader(s3Uri.getBucket, s3Uri.getKey, getS3Client()), streaming, true, ovrReader)
+    val s3rr = S3RangeReader(bucket, key, client)
+    GeoTiffReader.readGeoTiffInfo(s3rr, streaming, true, ovrReader)
   }
 }
 
@@ -62,5 +89,6 @@ object S3GeoTiffInfoReader {
     bucket: String,
     prefix: String,
     options: S3GeoTiffRDD.Options
-  ): S3GeoTiffInfoReader = S3GeoTiffInfoReader(bucket, prefix, options.getS3Client, options.delimiter, tiffExtensions = options.tiffExtensions)
+  ): S3GeoTiffInfoReader =
+    S3GeoTiffInfoReader(bucket, prefix, options.getClient, options.delimiter, tiffExtensions = options.tiffExtensions)
 }

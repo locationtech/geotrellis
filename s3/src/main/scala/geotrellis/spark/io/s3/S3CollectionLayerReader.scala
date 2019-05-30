@@ -23,6 +23,8 @@ import geotrellis.spark.io.avro._
 import geotrellis.spark.io.index._
 import geotrellis.util._
 
+import software.amazon.awssdk.services.s3.model._
+import software.amazon.awssdk.services.s3.S3Client
 import spray.json.JsonFormat
 
 import scala.reflect.ClassTag
@@ -35,9 +37,12 @@ import scala.reflect.ClassTag
  * @tparam V              Type of RDD Value (ex: Tile or MultibandTile )
  * @tparam M              Type of Metadata associated with the RDD[(K,V)]
  */
-class S3CollectionLayerReader(val attributeStore: AttributeStore) extends CollectionLayerReader[LayerId] {
+class S3CollectionLayerReader(
+  val attributeStore: AttributeStore,
+  val getClient: () => S3Client = S3ClientProducer.get
+) extends CollectionLayerReader[LayerId] {
 
-  def collectionReader: S3CollectionReader = S3CollectionReader
+  def collectionReader: S3CollectionReader = new S3CollectionReader(getClient)
 
   def read[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
@@ -50,6 +55,7 @@ class S3CollectionLayerReader(val attributeStore: AttributeStore) extends Collec
       attributeStore.readLayerAttributes[S3LayerHeader, M, K](id)
     } catch {
       case e: AttributeNotFoundError => throw new LayerReadError(id).initCause(e)
+      case e: NoSuchBucketException => throw new LayerReadError(id).initCause(e)
     }
 
     val bucket = header.bucket
@@ -68,8 +74,8 @@ class S3CollectionLayerReader(val attributeStore: AttributeStore) extends Collec
 
 object S3CollectionLayerReader {
   def apply(attributeStore: AttributeStore): S3CollectionLayerReader =
-    new S3CollectionLayerReader(attributeStore)
+    new S3CollectionLayerReader(attributeStore, S3ClientProducer.get)
 
-  def apply(bucket: String, prefix: String): S3CollectionLayerReader =
-    apply(new S3AttributeStore(bucket, prefix))
+  def apply(bucket: String, prefix: String, getClient: () => S3Client = S3ClientProducer.get): S3CollectionLayerReader =
+    apply(new S3AttributeStore(bucket, prefix, getClient))
 }

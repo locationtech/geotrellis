@@ -19,6 +19,7 @@ package geotrellis.spark.io.s3
 import geotrellis.tiling._
 import geotrellis.spark._
 import geotrellis.spark.io._
+import geotrellis.spark.io.s3.conf.S3Config
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.avro.codecs._
 import geotrellis.spark.io.index._
@@ -27,7 +28,8 @@ import geotrellis.util._
 
 import com.typesafe.scalalogging.LazyLogging
 import org.apache.spark.rdd.RDD
-import com.amazonaws.services.s3.model.PutObjectRequest
+import software.amazon.awssdk.services.s3.model.PutObjectRequest
+import software.amazon.awssdk.services.s3.S3Client
 import spray.json._
 
 import scala.reflect._
@@ -48,10 +50,12 @@ class S3LayerWriter(
   val attributeStore: AttributeStore,
   bucket: String,
   keyPrefix: String,
-  putObjectModifier: PutObjectRequest => PutObjectRequest = { p => p }
+  putObjectModifier: PutObjectRequest => PutObjectRequest = identity,
+  getClient: () => S3Client = S3ClientProducer.get,
+  threadCount: Int = S3Config.threads.rdd.writeThreads
 ) extends LayerWriter[LayerId] with LazyLogging {
 
-  def rddWriter: S3RDDWriter = S3RDDWriter
+  def rddWriter: S3RDDWriter = new S3RDDWriter(getClient, threadCount)
 
   // Layer Updating
   def overwrite[
@@ -130,22 +134,37 @@ class S3LayerWriter(
 }
 
 object S3LayerWriter {
-  def apply(attributeStore: AttributeStore, bucket: String, prefix: String, putObjectModifier: PutObjectRequest => PutObjectRequest): S3LayerWriter =
+  def apply(
+    attributeStore: AttributeStore,
+    bucket: String,
+    prefix: String,
+    putObjectModifier: PutObjectRequest => PutObjectRequest,
+    getClient: () => S3Client = S3ClientProducer.get
+  ): S3LayerWriter =
     new S3LayerWriter(attributeStore, bucket, prefix, putObjectModifier)
 
-  def apply(attributeStore: AttributeStore, bucket: String, prefix: String): S3LayerWriter =
-    new S3LayerWriter(attributeStore, bucket, prefix)
+  def apply(attributeStore: AttributeStore, bucket: String, prefix: String, getClient: () => S3Client): S3LayerWriter =
+    new S3LayerWriter(attributeStore, bucket, prefix, identity, getClient)
 
   def apply(attributeStore: S3AttributeStore): S3LayerWriter =
-    apply(attributeStore, attributeStore.bucket, attributeStore.prefix)
+    apply(attributeStore, attributeStore.bucket, attributeStore.prefix, attributeStore.getClient)
 
   def apply(attributeStore: S3AttributeStore, putObjectModifier: PutObjectRequest => PutObjectRequest): S3LayerWriter =
-    apply(attributeStore, attributeStore.bucket, attributeStore.prefix, putObjectModifier)
+    apply(attributeStore, attributeStore.bucket, attributeStore.prefix, putObjectModifier, attributeStore.getClient)
 
-  def apply(bucket: String, prefix: String): S3LayerWriter =
-    apply(S3AttributeStore(bucket, prefix))
+  def apply(bucket: String, prefix: String, getClient: () => S3Client): S3LayerWriter = {
+    val attStore = S3AttributeStore(bucket, prefix, getClient)
+    apply(attStore)
+  }
 
-  def apply(bucket: String, prefix: String, putObjectModifier: PutObjectRequest => PutObjectRequest): S3LayerWriter =
-    apply(S3AttributeStore(bucket, prefix), putObjectModifier)
+  def apply(
+    bucket: String,
+    prefix: String,
+    putObjectModifier: PutObjectRequest => PutObjectRequest,
+    getClient: () => S3Client
+  ): S3LayerWriter = {
+    val attStore = S3AttributeStore(bucket, prefix, getClient)
+    apply(attStore, putObjectModifier)
+  }
 
 }

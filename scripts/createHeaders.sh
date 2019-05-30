@@ -11,7 +11,6 @@
       "project raster" createHeaders test:createHeaders \
       "project raster-testkit" createHeaders test:createHeaders \
       "project s3" createHeaders test:createHeaders  \
-      "project s3-testkit" createHeaders test:createHeaders  \
       "project shapefile" createHeaders test:createHeaders \
       "project spark" createHeaders test:createHeaders  \
       "project spark-etl" createHeaders test:createHeaders  \

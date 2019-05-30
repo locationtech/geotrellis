@@ -28,7 +28,8 @@ lazy val commonSettings = Seq(
     "-language:existentials",
     "-language:experimental.macros",
     "-feature",
-    "-Ypartial-unification" // Required by Cats
+    "-Ypartial-unification", // Required by Cats
+    "-target:jvm-1.8"
   ),
   publishMavenStyle := true,
   publishArtifact in Test := false,
@@ -113,7 +114,6 @@ lazy val root = Project("geotrellis", file(".")).
     raster,
     `raster-testkit`,
     s3,
-    `s3-testkit`,
     shapefile,
     spark,
     `spark-etl`,
@@ -203,14 +203,6 @@ lazy val s3 = project
   )
   .settings(commonSettings)
   .settings(Settings.s3)
-  .settings(
-    unmanagedClasspath in Test ++= (fullClasspath in (LocalProject("s3-testkit"), Compile)).value
-  )
-
-lazy val `s3-testkit` = project
-  .dependsOn(s3, spark)
-  .settings(commonSettings)
-  .settings(Settings.`s3-testkit`)
 
 lazy val accumulo = project
   .dependsOn(

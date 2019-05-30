@@ -23,21 +23,22 @@ import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.cog._
 import geotrellis.spark.io.index._
-import geotrellis.spark.io.s3.{S3AttributeStore, S3Client, S3LayerHeader}
+import geotrellis.spark.io.s3.{S3AttributeStore, S3LayerHeader, S3ClientProducer}
 import geotrellis.util._
+
+import software.amazon.awssdk.services.s3.model._
+import software.amazon.awssdk.services.s3.S3Client
 import spray.json._
-import com.amazonaws.services.s3.model.AmazonS3Exception
 
 import scala.reflect.ClassTag
 import java.net.URI
 
 class S3COGValueReader(
-  val attributeStore: AttributeStore
+  val attributeStore: AttributeStore,
+  val getClient: () => S3Client = S3ClientProducer.get
 ) extends OverzoomingCOGValueReader {
 
-  def s3Client: S3Client = S3Client.DEFAULT
-
-  implicit def getByteReader(uri: URI): ByteReader = byteReader(uri, s3Client)
+  implicit def getByteReader(uri: URI): ByteReader = byteReader(uri, getClient())
 
   def reader[
     K: JsonFormat: SpatialComponent : ClassTag,
@@ -48,6 +49,7 @@ class S3COGValueReader(
         attributeStore.readHeader[S3LayerHeader](LayerId(layerId.name, 0))
       } catch {
         case e: AttributeNotFoundError => throw new LayerNotFoundError(layerId).initCause(e)
+        case e: NoSuchBucketException => throw new LayerNotFoundError(layerId).initCause(e)
       }
 
     def keyPath(key: K, maxWidth: Int, baseKeyIndex: KeyIndex[K], zoomRange: ZoomRange): String =
@@ -60,7 +62,7 @@ class S3COGValueReader(
       keyPath,
       path => new URI(s"s3://${path}"),
       key => {
-        case e: AmazonS3Exception if e.getStatusCode == 404 =>
+        case e: S3Exception if e.statusCode == 404 =>
           throw new ValueNotFoundError(key, layerId)
       }
     )
@@ -69,7 +71,5 @@ class S3COGValueReader(
 
 object S3COGValueReader {
   def apply(s3attributeStore: S3AttributeStore): S3COGValueReader =
-    new S3COGValueReader(s3attributeStore) {
-      override def s3Client: S3Client = s3attributeStore.s3Client
-    }
+    new S3COGValueReader(s3attributeStore, s3attributeStore.getClient)
 }

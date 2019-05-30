@@ -25,9 +25,9 @@ import geotrellis.spark.io.s3.testkit._
 class COGS3AttributeStoreSpec extends COGAttributeStoreSpec {
   val bucket = "attribute-store-test-mock-bucket"
   val prefix = "catalog"
+  val client = MockS3Client()
+  S3TestUtils.cleanBucket(client, bucket)
 
   lazy val header = S3LayerHeader("geotrellis.spark.SpatialKey", "geotrellis.raster.Tile", bucket, prefix, COGLayerType)
-  lazy val attributeStore: AttributeStore = new S3AttributeStore(bucket, prefix) {
-    override val s3Client = new MockS3Client()
-  }
+  lazy val attributeStore: AttributeStore = new S3AttributeStore(bucket, prefix, () => MockS3Client())
 }

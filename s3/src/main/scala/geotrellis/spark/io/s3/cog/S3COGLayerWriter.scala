@@ -24,15 +24,19 @@ import geotrellis.tiling.SpatialComponent
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.index.{Index, KeyIndex}
-import geotrellis.spark.io.s3.{S3AttributeStore, S3Client, S3LayerHeader, S3RDDWriter, makePath}
+import geotrellis.spark.io.s3.{S3AttributeStore, S3LayerHeader, S3RDDWriter, makePath, S3ClientProducer}
+import geotrellis.spark.io.s3.conf.S3Config
 import geotrellis.spark.io.cog._
 import geotrellis.spark.io.cog.vrt.VRT
 import geotrellis.spark.io.cog.vrt.VRT.IndexedSimpleSource
 
+import software.amazon.awssdk.services.s3.model.{S3Exception, PutObjectRequest, GetObjectRequest}
+import software.amazon.awssdk.services.s3._
+import software.amazon.awssdk.core.sync.RequestBody
 import spray.json.JsonFormat
-import com.amazonaws.services.s3.model.{AmazonS3Exception, ObjectMetadata, PutObjectRequest}
-import java.io.ByteArrayInputStream
+import org.apache.commons.io.IOUtils
 
+import java.io.ByteArrayInputStream
 import scala.util.Try
 import scala.reflect.{ClassTag, classTag}
 
@@ -40,8 +44,8 @@ class S3COGLayerWriter(
   val attributeStore: AttributeStore,
   bucket: String,
   keyPrefix: String,
-  getS3Client: () => S3Client = () => S3Client.DEFAULT,
-  threads: Int = S3RDDWriter.defaultThreadCount
+  val getClient: () => S3Client = S3ClientProducer.get,
+  val defaultThreadCount: Int = S3Config.threads.rdd.writeThreads
 ) extends COGLayerWriter {
 
   def writeCOGLayer[
@@ -69,13 +73,14 @@ class S3COGLayerWriter(
 
     attributeStore.writeCOGLayerAttributes(layerId0, header, storageMetadata)
 
-    val s3Client = getS3Client() // for saving VRT from Accumulator
+    @transient
+    lazy val s3Client = getClient() // for saving VRT from Accumulator
 
     // Make S3COGAsyncWriter
-    val asyncWriter = new S3COGAsyncWriter[V](bucket, 32, p => p)
+    val asyncWriter = new S3COGAsyncWriter[V](bucket, defaultThreadCount, p => p)
 
     val retryCheck: Throwable => Boolean = {
-      case e: AmazonS3Exception if e.getStatusCode == 503 => true
+      case e: S3Exception if e.statusCode == 503 => true
       case _ => false
     }
 
@@ -100,7 +105,7 @@ class S3COGLayerWriter(
 
           (s"${keyPath(key)}.${Extension}", cog)
         }
-        .foreachPartition { partition => asyncWriter.write(getS3Client(), partition, mergeFunc, Some(retryCheck)) }
+        .foreachPartition { partition => asyncWriter.write(getClient(), partition, mergeFunc, Some(retryCheck)) }
 
       // Save Accumulator
       val bytes =
@@ -109,15 +114,17 @@ class S3COGLayerWriter(
           .outputStream
           .toByteArray
 
-      val objectMetadata = new ObjectMetadata()
-      objectMetadata.setContentLength(bytes.length.toLong)
+      val request =
+        PutObjectRequest.builder()
+          .bucket(bucket)
+          .key(makePath(prefix, "vrt.xml"))
+          .contentLength(bytes.length)
+          .build()
 
-      val request = new PutObjectRequest(
-        bucket, makePath(prefix, "vrt.xml"),
-        new ByteArrayInputStream(bytes),
-        objectMetadata
-      )
-      s3Client.putObject(request)
+      val requestBody =
+        RequestBody.fromBytes(bytes)
+
+      s3Client.putObject(request, requestBody)
       samplesAccumulator.reset
     }
   }
@@ -125,7 +132,7 @@ class S3COGLayerWriter(
 
 object S3COGLayerWriter {
   def apply(attributeStore: S3AttributeStore): S3COGLayerWriter =
-    new S3COGLayerWriter(attributeStore, attributeStore.bucket, attributeStore.prefix, () => attributeStore.s3Client)
+    new S3COGLayerWriter(attributeStore, attributeStore.bucket, attributeStore.prefix, attributeStore.getClient)
 }
 
 
@@ -133,33 +140,44 @@ class S3COGAsyncWriter[V <: CellGrid[Int]: GeoTiffReader](
   bucket: String,
   threads: Int,
   putObjectModifier: PutObjectRequest => PutObjectRequest
-) extends  AsyncWriter[S3Client, GeoTiff[V], PutObjectRequest](threads) {
+) extends  AsyncWriter[S3Client, GeoTiff[V], (PutObjectRequest, RequestBody)](threads) {
 
   def readRecord(
     client: S3Client,
     key: String
   ): Try[GeoTiff[V]] = Try {
-    val is = client.getObject(bucket, key).getObjectContent
-    val bytes = sun.misc.IOUtils.readFully(is, Int.MaxValue, true)
+    val request = GetObjectRequest.builder()
+      .bucket(bucket)
+      .key(key)
+      .build()
+    val is = client.getObject(request)
+    val bytes = IOUtils.toByteArray(is)
+    is.close()
     GeoTiffReader[V].read(bytes)
   }
 
-  def encodeRecord(key: String, value: GeoTiff[V]): PutObjectRequest = {
+  def encodeRecord(key: String, value: GeoTiff[V]): (PutObjectRequest, RequestBody) = {
     val bytes: Array[Byte] = GeoTiffWriter.write(value, true)
-    val is = new ByteArrayInputStream(bytes)
 
-    val metadata = new ObjectMetadata()
-    metadata.setContentLength(bytes.length.toLong)
-    putObjectModifier(new PutObjectRequest(bucket, key, is, metadata))
+    val request =
+      PutObjectRequest.builder()
+        .bucket(bucket)
+        .key(key)
+        .contentLength(bytes.length)
+        .build()
+
+    val requestBody =
+      RequestBody.fromBytes(bytes)
+
+    (putObjectModifier(request), requestBody)
   }
 
   def writeRecord(
     client: S3Client,
     key: String,
-    encoded: PutObjectRequest
+    encodedRequest: (PutObjectRequest, RequestBody)
   ): Try[Long] = Try {
-    encoded.getInputStream.reset() // required if this is a retry
-    client.putObject(encoded)
-    encoded.getMetadata.getContentLength()
+    client.putObject(encodedRequest._1, encodedRequest._2)
+    encodedRequest._1.contentLength
   }
 }

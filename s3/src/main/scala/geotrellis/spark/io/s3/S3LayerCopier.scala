@@ -24,7 +24,8 @@ import geotrellis.spark.io.index.KeyIndex
 import geotrellis.spark.io.json._
 import geotrellis.util._
 
-import com.amazonaws.services.s3.model.ObjectListing
+import software.amazon.awssdk.services.s3.model._
+import software.amazon.awssdk.services.s3.S3Client
 import org.apache.avro.Schema
 import org.apache.spark.rdd.RDD
 import spray.json.JsonFormat
@@ -36,18 +37,25 @@ import scala.reflect.ClassTag
 class S3LayerCopier(
   val attributeStore: AttributeStore,
   destBucket: String,
-  destKeyPrefix: String
+  destKeyPrefix: String,
+  val getClient: () => S3Client = S3ClientProducer.get
 ) extends LayerCopier[LayerId] {
 
-  def getS3Client: () => S3Client = () => S3Client.DEFAULT
+  // Not necessary if this isn't recursive any longer due to the iterator handling *all* objects
+  // @tailrec
+  final def copyListing(s3Client: S3Client, bucket: String, listing: Iterable[S3Object], from: LayerId, to: LayerId): Unit = {
+    listing.foreach { s3obj =>
+      val request =
+        CopyObjectRequest.builder()
+          .copySource(bucket + "/" + s3obj.key)
+          .bucket(bucket)
+          .key(s3obj.key.replace(s"${from.name}/${from.zoom}", s"${to.name}/${to.zoom}"))
+          .build()
 
-  @tailrec
-  final def copyListing(s3Client: S3Client, bucket: String, listing: ObjectListing, from: LayerId, to: LayerId): Unit = {
-    listing.getObjectSummaries.asScala.foreach { os =>
-      val key = os.getKey
-      s3Client.copyObject(bucket, key, destBucket, key.replace(s"${from.name}/${from.zoom}", s"${to.name}/${to.zoom}"))
+      s3Client.copyObject(request)
     }
-    if (listing.isTruncated) copyListing(s3Client, bucket, s3Client.listNextBatchOfObjects(listing), from, to)
+    // Appears to no longer be necessary; TODO: remove
+    // if (listing.isTruncated) copyListing(s3Client, bucket, s3Client.listNextBatchOfObjects(listing), from, to)
   }
 
   def copy[
@@ -62,13 +70,24 @@ class S3LayerCopier(
       attributeStore.readLayerAttributes[S3LayerHeader, M, K](from)
     } catch {
       case e: AttributeNotFoundError => throw new LayerReadError(from).initCause(e)
+      case e: NoSuchBucketException => throw new LayerReadError(from).initCause(e)
     }
 
     val bucket = header.bucket
     val prefix = header.key
-    val s3Client = getS3Client()
+    val s3Client = getClient()
 
-    copyListing(s3Client, bucket, s3Client.listObjects(bucket, prefix), from, to)
+    val listRequest =
+      ListObjectsV2Request.builder()
+        .bucket(bucket)
+        .prefix(prefix)
+        .build()
+    val objIter =
+      s3Client
+        .listObjectsV2Paginator(listRequest)
+        .contents
+        .asScala
+    copyListing(s3Client, bucket, objIter, from, to)
     attributeStore.copy(from, to)
     attributeStore.writeLayerAttributes(
       to, header.copy(
@@ -80,15 +99,19 @@ class S3LayerCopier(
 }
 
 object S3LayerCopier {
-  def apply(attributeStore: AttributeStore, destBucket: String, destKeyPrefix: String): S3LayerCopier =
-    new S3LayerCopier(attributeStore, destBucket, destKeyPrefix)
+  def apply(attributeStore: AttributeStore, destBucket: String, destKeyPrefix: String, getClient: () => S3Client): S3LayerCopier =
+    new S3LayerCopier(attributeStore, destBucket, destKeyPrefix, getClient)
 
-  def apply(bucket: String, keyPrefix: String, destBucket: String, destKeyPrefix: String): S3LayerCopier =
-    apply(S3AttributeStore(bucket, keyPrefix), destBucket, destKeyPrefix)
+  def apply(bucket: String, keyPrefix: String, destBucket: String, destKeyPrefix: String, getClient: () => S3Client): S3LayerCopier = {
+    val attStore = S3AttributeStore(bucket, keyPrefix, getClient)
+    apply(attStore, destBucket, destKeyPrefix, getClient)
+  }
 
-  def apply(bucket: String, keyPrefix: String): S3LayerCopier =
-    apply(S3AttributeStore(bucket, keyPrefix), bucket, keyPrefix)
+  def apply(bucket: String, keyPrefix: String, getClient: () => S3Client): S3LayerCopier = {
+    val attStore = S3AttributeStore(bucket, keyPrefix, getClient)
+    apply(attStore)
+  }
 
   def apply(attributeStore: S3AttributeStore): S3LayerCopier =
-    apply(attributeStore, attributeStore.bucket, attributeStore.prefix)
+    apply(attributeStore, attributeStore.bucket, attributeStore.prefix, attributeStore.getClient)
 }

@@ -24,7 +24,9 @@ import geotrellis.spark.io.s3.conf.S3Config
 
 import cats.effect.{IO, Timer}
 import cats.syntax.apply._
-import com.amazonaws.services.s3.model.{AmazonS3Exception, ObjectMetadata, PutObjectRequest, PutObjectResult}
+import software.amazon.awssdk.services.s3.model.{S3Exception, PutObjectRequest, PutObjectResponse, GetObjectRequest}
+import software.amazon.awssdk.services.s3.S3Client
+import software.amazon.awssdk.core.sync.RequestBody
 import org.apache.avro.Schema
 import org.apache.commons.io.IOUtils
 import org.apache.spark.rdd.RDD
@@ -35,10 +37,10 @@ import java.util.concurrent.Executors
 import scala.concurrent.ExecutionContext
 import scala.reflect._
 
-trait S3RDDWriter {
-  final val defaultThreadCount = S3Config.threads.rdd.writeThreads
-
-  def getS3Client: () => S3Client
+class S3RDDWriter(
+  val getClient: () => S3Client = S3ClientProducer.get,
+  val defaultThreadCount: Int = S3Config.threads.rdd.writeThreads
+) {
 
   def write[K: AvroRecordCodec: ClassTag, V: AvroRecordCodec: ClassTag](
     rdd: RDD[(K, V)],
@@ -64,7 +66,7 @@ trait S3RDDWriter {
 
     implicit val sc = rdd.sparkContext
 
-    val _getS3Client = getS3Client
+    val _getClient = getClient
     val _codec = codec
 
     val pathsToTiles =
@@ -79,8 +81,8 @@ trait S3RDDWriter {
     pathsToTiles.foreachPartition { partition: Iterator[(String, Iterable[(K, V)])] =>
       if(partition.nonEmpty) {
         import geotrellis.spark.util.TaskUtils._
-        val getS3Client = _getS3Client
-        val s3client: S3Client = getS3Client()
+        val getClient = _getClient
+        val s3Client: S3Client = getClient()
         val schema = kwWriterSchema.value.getOrElse(_recordCodec.schema)
 
         val pool = Executors.newFixedThreadPool(threads)
@@ -98,41 +100,44 @@ trait S3RDDWriter {
             val (key, current) = row
             val updated = LayerWriter.updateRecords(mergeFunc, current, existing = {
               try {
-                val bytes = IOUtils.toByteArray(s3client.getObject(bucket, key).getObjectContent)
+                val request = GetObjectRequest.builder()
+                  .bucket(bucket)
+                  .key(key)
+                  .build()
+
+                val is = s3Client.getObject(request)
+                val bytes = IOUtils.toByteArray(is)
                 AvroEncoder.fromBinary(schema, bytes)(_recordCodec)
               } catch {
-                case e: AmazonS3Exception if e.getStatusCode == 404 => Vector.empty
+                case e: S3Exception if e.statusCode == 404 => Vector.empty
               }
             })
             (key, updated)
           })
         }
 
-        def rowToRequest(row: (String, Vector[(K,V)])): fs2.Stream[IO, PutObjectRequest] = {
+        def rowToRequest(row: (String, Vector[(K,V)])): fs2.Stream[IO, (PutObjectRequest, RequestBody)] = {
           fs2.Stream eval IO.shift(ec) *> IO ({
             val (key, kvs) = row
-            val bytes = AvroEncoder.toBinary(kvs)(_codec)
-            val metadata = new ObjectMetadata()
-            metadata.setContentLength(bytes.length)
-            val is = new ByteArrayInputStream(bytes)
-            putObjectModifier(new PutObjectRequest(bucket, key, is, metadata))
+            val contentBytes = AvroEncoder.toBinary(kvs)(_codec)
+            val request = PutObjectRequest.builder()
+              .bucket(bucket)
+              .key(key)
+              .contentLength(contentBytes.length)
+              .build()
+            val requestBody = RequestBody.fromBytes(contentBytes)
+
+            (putObjectModifier(request), requestBody)
           })
         }
 
-        def retire(request: PutObjectRequest): fs2.Stream[IO, PutObjectResult] = {
-          fs2.Stream eval IO.shift(ec) *> IO ({
-            request.getInputStream.reset() // reset in case of retransmission to avoid 400 error
-            s3client.putObject(request)
-          }).retryEBO {
-            case e: AmazonS3Exception if e.getStatusCode == 503 => true
-            case _ => false
-          }
-        }
+        def retire(request: PutObjectRequest, requestBody: RequestBody): fs2.Stream[IO, PutObjectResponse] =
+          fs2.Stream eval IO.shift(ec) *> IO { s3Client.putObject(request, requestBody) }
 
         rows
           .flatMap(elaborateRow)
           .flatMap(rowToRequest)
-          .map(retire)
+          .map(Function.tupled(retire))
           .parJoin(threads)
           .compile
           .drain
@@ -144,6 +149,3 @@ trait S3RDDWriter {
   }
 }
 
-object S3RDDWriter extends S3RDDWriter {
-  def getS3Client: () => S3Client = () => S3Client.DEFAULT
-}

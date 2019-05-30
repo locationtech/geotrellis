@@ -25,7 +25,6 @@ rm -r proj4/target
 rm -r raster/target
 rm -r raster-testkit/target
 rm -r s3/target
-rm -r s3-testkit/target
 rm -r shapefile/target
 rm -r spark-testkit/target
 rm -r spark/target

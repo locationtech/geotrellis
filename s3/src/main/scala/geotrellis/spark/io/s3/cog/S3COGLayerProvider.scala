@@ -20,8 +20,11 @@ import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.cog._
 import geotrellis.spark.io.s3._
+
 import org.apache.spark._
-import com.amazonaws.services.s3.AmazonS3URI
+import geotrellis.spark.io.s3.AmazonS3URI
+import software.amazon.awssdk.services.s3.S3Client
+
 import java.net.URI
 
 /**
@@ -32,33 +35,37 @@ import java.net.URI
 class S3COGLayerProvider extends AttributeStoreProvider
     with COGLayerReaderProvider with COGLayerWriterProvider with COGValueReaderProvider with COGCollectionLayerReaderProvider {
 
+  val getClient = S3ClientProducer.get
+
   def canProcess(uri: URI): Boolean = uri.getScheme match {
     case str: String => if (str.toLowerCase == "s3") true else false
     case null => false
   }
 
   def attributeStore(uri: URI): AttributeStore = {
+    // Need to use an alternative to AmazonS3URI
+    // https://github.com/aws/aws-sdk-java-v2/issues/860
     val s3Uri = new AmazonS3URI(uri)
     val prefix =
-      Option(s3Uri.getKey) match {
+      Option(s3Uri.getKey()) match {
         case Some(s) => s
         case None => ""
       }
-    new S3AttributeStore(bucket = s3Uri.getBucket, prefix = prefix)
+    new S3AttributeStore(bucket = s3Uri.getBucket(), prefix = prefix, getClient)
   }
 
   def layerReader(uri: URI, store: AttributeStore, sc: SparkContext): COGLayerReader[LayerId] = {
-    new S3COGLayerReader(store)(sc)
+    new S3COGLayerReader(store, getClient)(sc)
   }
 
   def layerWriter(uri: URI, store: AttributeStore): COGLayerWriter = {
     // TODO: encoder ACL changes in putObjectModifier
     val s3Uri = new AmazonS3URI(uri)
-    new S3COGLayerWriter(store, bucket = s3Uri.getBucket, keyPrefix = s3Uri.getKey)
+    new S3COGLayerWriter(store, bucket = s3Uri.getBucket(), keyPrefix = s3Uri.getKey())
   }
 
   def valueReader(uri: URI, store: AttributeStore): COGValueReader[LayerId] = {
-    new S3COGValueReader(store)
+    new S3COGValueReader(store, getClient)
   }
 
   def collectionLayerReader(uri: URI, store: AttributeStore): COGCollectionLayerReader[LayerId] = {

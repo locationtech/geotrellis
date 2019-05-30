@@ -22,5 +22,4 @@
 ./sbt "project geotools" publishLocal && \
 ./sbt "project geowave" publishLocal && \
 ./sbt "project hbase" publishLocal && \
-./sbt "project s3" publishLocal && \
-./sbt "project s3-testkit" publishLocal
+./sbt "project s3" publishLocal

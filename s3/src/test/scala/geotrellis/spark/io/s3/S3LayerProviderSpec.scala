@@ -18,10 +18,15 @@ package geotrellis.spark.io.s3
 
 import geotrellis.spark.io._
 import geotrellis.spark.testkit.TestEnvironment
+import geotrellis.spark.io.s3.testkit._
+
 import org.scalatest._
 
 class S3LayerProviderSpec extends FunSpec with TestEnvironment {
   val uri = new java.net.URI("s3://fake-bucket/some-prefix")
+  val client = MockS3Client()
+  lazy val getS3Client = () => MockS3Client()
+  S3TestUtils.cleanBucket(client, "fake-bucket")
   it("construct S3AttributeStore from URI"){
     val store = AttributeStore(uri)
     assert(store.isInstanceOf[S3AttributeStore])
@@ -51,7 +56,7 @@ class S3LayerProviderSpec extends FunSpec with TestEnvironment {
 
   it("should not be able to process a URI without a scheme") {
     val badURI = new java.net.URI("//fake-bucket/some-prefix")
-    val provider = new S3LayerProvider
+    val provider = new S3LayerProvider()
 
     provider.canProcess(badURI) should be (false)
   }

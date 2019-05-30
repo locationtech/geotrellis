@@ -25,16 +25,18 @@ import geotrellis.spark.io.index.{IndexRanges, MergeQueue}
 import geotrellis.spark.io.avro.{AvroEncoder, AvroRecordCodec}
 import geotrellis.spark.util.KryoWrapper
 
-import com.amazonaws.services.s3.model.AmazonS3Exception
+import software.amazon.awssdk.services.s3.model.{S3Exception, GetObjectRequest}
+import software.amazon.awssdk.services.s3.S3Client
+
 import org.apache.avro.Schema
 import org.apache.commons.io.IOUtils
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
-trait S3RDDReader {
-  final val defaultThreadCount = S3Config.threads.rdd.readThreads
-
-  def getS3Client: () => S3Client
+class S3RDDReader(
+  val getClient: () => S3Client = S3ClientProducer.get,
+  val defaultThreadCount: Int = S3Config.threads.rdd.readThreads
+) {
 
   def read[
     K: AvroRecordCodec: Boundable,
@@ -60,25 +62,32 @@ trait S3RDDReader {
 
     val includeKey = (key: K) => queryKeyBounds.includeKey(key)
     val _recordCodec = KeyValueRecordCodec[K, V]
-    val _getS3Client = getS3Client
+    val _getS3Client = getClient
     val kwWriterSchema = KryoWrapper(writerSchema) //Avro Schema is not Serializable
 
     sc.parallelize(bins, bins.size)
       .mapPartitions { partition: Iterator[Seq[(BigInt, BigInt)]] =>
-        val s3client = _getS3Client()
+        val s3Client = _getS3Client()
         val writerSchema = kwWriterSchema.value.getOrElse(_recordCodec.schema)
         partition flatMap { seq =>
           LayerReader.njoinEBO[K, V](seq.toIterator, threads)({ index: BigInt =>
             try {
-              val bytes = IOUtils.toByteArray(s3client.getObject(bucket, keyPath(index)).getObjectContent)
+              val request = GetObjectRequest.builder()
+                .bucket(bucket)
+                .key(keyPath(index))
+                .build()
+              val is = s3Client.getObject(request)
+              val bytes = IOUtils.toByteArray(is)
+              is.close()
               val recs = AvroEncoder.fromBinary(writerSchema, bytes)(_recordCodec)
               if (filterIndexOnly) recs
               else recs.filter { row => includeKey(row._1) }
             } catch {
-              case e: AmazonS3Exception if e.getStatusCode == 404 => Vector.empty
+              case e: S3Exception if e.statusCode == 404 => Vector.empty
             }
-          }) (backOffPredicate = {
-            case e: AmazonS3Exception if e.getStatusCode == 503 => true
+          })({
+            case e: S3Exception if e.statusCode == 500 => true
+            case e: S3Exception if e.statusCode == 503 => true
             case _ => false
           })
         }
@@ -86,6 +95,3 @@ trait S3RDDReader {
   }
 }
 
-object S3RDDReader extends S3RDDReader {
-  def getS3Client: () => S3Client = () => S3Client.DEFAULT
-}

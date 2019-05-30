@@ -24,13 +24,14 @@ import geotrellis.spark.io.index.MergeQueue
 import geotrellis.spark.io.avro.{AvroEncoder, AvroRecordCodec}
 import geotrellis.spark.io.s3.conf.S3Config
 
-import com.amazonaws.services.s3.model.AmazonS3Exception
+import software.amazon.awssdk.services.s3.model._
+import software.amazon.awssdk.services.s3.S3Client
 import org.apache.avro.Schema
 import org.apache.commons.io.IOUtils
 
-trait S3CollectionReader {
-
-  def getS3Client: () => S3Client
+class S3CollectionReader(
+  val getClient: () => S3Client = S3ClientProducer.get
+) {
 
   def read[
     K: AvroRecordCodec: Boundable,
@@ -42,7 +43,7 @@ trait S3CollectionReader {
      decomposeBounds: KeyBounds[K] => Seq[(BigInt, BigInt)],
      filterIndexOnly: Boolean,
      writerSchema: Option[Schema] = None,
-     threads: Int = S3CollectionReader.defaultThreadCount
+     threads: Int = S3Config.threads.rdd.readThreads
    ): Seq[(K, V)] = {
     if (queryKeyBounds.isEmpty) return Seq.empty[(K, V)]
 
@@ -52,22 +53,24 @@ trait S3CollectionReader {
       queryKeyBounds.flatMap(decomposeBounds)
 
     val recordCodec = KeyValueRecordCodec[K, V]
-    val s3client = getS3Client()
+    val s3client = getClient()
 
     LayerReader.njoin[K, V](ranges.toIterator, threads){ index: BigInt =>
       try {
-        val bytes = IOUtils.toByteArray(s3client.getObject(bucket, keyPath(index)).getObjectContent)
+        val getRequest = GetObjectRequest.builder()
+          .bucket(bucket)
+          .key(keyPath(index))
+          .build()
+        val s3obj = s3client.getObject(getRequest)
+        val bytes = IOUtils.toByteArray(s3obj)
+        s3obj.close()
         val recs = AvroEncoder.fromBinary(writerSchema.getOrElse(recordCodec.schema), bytes)(recordCodec)
         if (filterIndexOnly) recs
         else recs.filter { row => queryKeyBounds.includeKey(row._1) }
       } catch {
-        case e: AmazonS3Exception if e.getStatusCode == 404 => Vector.empty
+        case e: S3Exception if e.statusCode == 404 => Vector.empty
       }
     }: Seq[(K, V)]
   }
 }
 
-object S3CollectionReader extends S3CollectionReader {
-  val defaultThreadCount = S3Config.threads.collection.readThreads
-  def getS3Client: () => S3Client = () => S3Client.DEFAULT
-}

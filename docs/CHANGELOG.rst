@@ -7,6 +7,17 @@ Changelog
 API Changes & Project structure changes
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+- ``geotrellis.s3``
+
+  - **Change**  Use the AWS S3 SDK v2 instead of v1 (`#2911 <https://github.com/locationtech/geotrellis/pull/2911>`_).
+  - **Change**  The S3 client wrapper that was used to support AWS SDK v1 has been removed in favor of directly using `S3Client` (`#2911 <https://github.com/locationtech/geotrellis/pull/2911>`_).
+  - **Change**  Classes and functions that will require an `S3Client` to be created now provide parameters to customize `S3Client` creation. (`#2911 <https://github.com/locationtech/geotrellis/pull/2911>`_).
+  - **Change**  s3-testkit is no longer used; testing now depends on an external min.io server which mocks the S3 API. (`#2911 <https://github.com/locationtech/geotrellis/pull/2911>`_).
+
+- ``geotrellis.s3-testkit``
+
+  - **Remove:**  ``geotrellis.s3-testkit`` has been removed. (`#2911 <https://github.com/locationtech/geotrellis/pull/2911>`_).
+
 - ``geotrellis.slick``
 
   - **Remove:**  ``geotrellis.slick`` has been removed. Slick support will now reside in `geotrellis-contrib` (`#2902 <https://github.com/locationtech/geotrellis/pull/2902>`_).

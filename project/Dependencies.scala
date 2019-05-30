@@ -38,7 +38,7 @@ object Dependencies {
 
   val chronoscala         = "jp.ne.opt"                  %% "chronoscala"              % "0.3.0"
 
-  val awsSdkS3            = "com.amazonaws"               % "aws-java-sdk-s3"          % "1.11.535"
+  val awsSdkS3            = "software.amazon.awssdk"      % "s3"                       % "2.5.29"
 
   val catsCore            = "org.typelevel"              %% "cats-core"                % "1.6.0"
   val catsEffect          = "org.typelevel"              %% "cats-effect"              % "1.2.0"

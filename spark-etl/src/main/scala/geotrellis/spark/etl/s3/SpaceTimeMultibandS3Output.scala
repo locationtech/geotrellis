@@ -28,6 +28,6 @@ import org.apache.spark.SparkContext
 class SpaceTimeMultibandS3Output extends S3Output[SpaceTimeKey, MultibandTile, TileLayerMetadata[SpaceTimeKey]] {
   def writer(conf: EtlConf)(implicit sc: SparkContext) = {
     val path = getPath(conf.output.backend)
-    S3LayerWriter(path.bucket, path.prefix).writer[SpaceTimeKey, MultibandTile, TileLayerMetadata[SpaceTimeKey]](conf.output.getKeyIndexMethod[SpaceTimeKey])
+    S3LayerWriter(path.bucket, path.prefix, S3ClientProducer.get).writer[SpaceTimeKey, MultibandTile, TileLayerMetadata[SpaceTimeKey]](conf.output.getKeyIndexMethod[SpaceTimeKey])
   }
 }

@@ -25,7 +25,8 @@ import geotrellis.spark.io.avro._
 import geotrellis.spark.io.avro.codecs.KeyValueRecordCodec
 import geotrellis.spark.io.index._
 
-import com.amazonaws.services.s3.model.AmazonS3Exception
+import software.amazon.awssdk.services.s3.model.{S3Exception, GetObjectRequest}
+import software.amazon.awssdk.services.s3.S3Client
 import org.apache.avro.Schema
 import org.apache.commons.io.IOUtils
 import spray.json._
@@ -34,10 +35,11 @@ import spray.json.DefaultJsonProtocol._
 import scala.reflect.ClassTag
 
 class S3ValueReader(
-  val attributeStore: AttributeStore
+  val attributeStore: AttributeStore,
+  val getClient: () => S3Client
 ) extends OverzoomingValueReader {
 
-  def s3Client: S3Client = S3Client.DEFAULT
+  val s3Client: S3Client = getClient()
 
   def reader[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec](layerId: LayerId): Reader[K, V] = new Reader[K, V] {
     val header = attributeStore.readHeader[S3LayerHeader](layerId)
@@ -51,13 +53,19 @@ class S3ValueReader(
 
       val is =
         try {
-          s3Client.getObject(header.bucket, path).getObjectContent
+          val request = GetObjectRequest.builder()
+            .bucket(header.bucket)
+            .key(path)
+            .build()
+
+          s3Client.getObject(request)
         } catch {
-          case e: AmazonS3Exception if e.getStatusCode == 404 =>
+          case e: S3Exception if e.statusCode == 404 =>
             throw new ValueNotFoundError(key, layerId)
         }
 
       val bytes = IOUtils.toByteArray(is)
+      is.close()
       val recs = AvroEncoder.fromBinary(writerSchema, bytes)(KeyValueRecordCodec[K, V])
 
       recs
@@ -71,20 +79,24 @@ class S3ValueReader(
 object S3ValueReader {
   def apply[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec](
     attributeStore: AttributeStore,
-    layerId: LayerId
+    layerId: LayerId,
+    getClient: () => S3Client
   ): Reader[K, V] =
-    new S3ValueReader(attributeStore).reader[K, V](layerId)
+    new S3ValueReader(attributeStore, getClient).reader[K, V](layerId)
 
   def apply[K: AvroRecordCodec: JsonFormat: SpatialComponent: ClassTag, V <: CellGrid[Int]: AvroRecordCodec: ? => TileResampleMethods[V]](
     attributeStore: AttributeStore,
     layerId: LayerId,
-    resampleMethod: ResampleMethod
+    resampleMethod: ResampleMethod,
+    getClient: () => S3Client
   ): Reader[K, V] =
-    new S3ValueReader(attributeStore).overzoomingReader[K, V](layerId, resampleMethod)
+    new S3ValueReader(attributeStore, getClient).overzoomingReader[K, V](layerId, resampleMethod)
 
-  def apply(bucket: String, root: String): S3ValueReader =
-    new S3ValueReader(new S3AttributeStore(bucket, root))
+  def apply(bucket: String, root: String, getClient: () => S3Client): S3ValueReader = {
+    val attStore = new S3AttributeStore(bucket, root, getClient)
+    new S3ValueReader(attStore, getClient)
+  }
 
-  def apply(bucket: String): S3ValueReader =
-    apply(bucket, "")
+  def apply(bucket: String, getClient: () => S3Client): S3ValueReader =
+    apply(bucket, "", getClient)
 }
