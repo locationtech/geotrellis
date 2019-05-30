@@ -489,6 +489,7 @@ class RasterExtentSpec extends FunSpec with Matchers
       val rasterExtent = RasterExtent(extent, 0.00025, 0.00025, 40000, 40000)
 
       val internalExtent = Extent(-51.6, -26.5, -51.5, -26.4)
+      val internalExtent2 = Extent(-51.4, -26.3, -51.3, -26.2)
       val bounds = rasterExtent.gridBoundsFor(internalExtent)
 
       val height = (bounds.rowMin to bounds.rowMax).length
@@ -496,6 +497,9 @@ class RasterExtentSpec extends FunSpec with Matchers
 
       height shouldBe 400
       width shouldBe 400
+
+      rasterExtent.mapXToGrid(internalExtent2.xmin) shouldBe 34400
+      rasterExtent.mapYToGrid(internalExtent2.ymax) shouldBe 24800
     }
   }
 }

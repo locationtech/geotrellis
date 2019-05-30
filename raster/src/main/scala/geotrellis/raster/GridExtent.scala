@@ -34,24 +34,16 @@ class GridExtent[@specialized(Int, Long) N: Integral](
   val cols: N,
   val rows: N
 ) extends Grid[N] with Serializable {
+  import GridExtent._
+
   if (cols <= 0) throw GeoAttrsError(s"invalid cols: $cols")
   if (rows <= 0) throw GeoAttrsError(s"invalid rows: $rows")
 
   require(
     cols == Integral[N].fromDouble(math.round(extent.width / cellwidth)) &&
     rows == Integral[N].fromDouble(math.round(extent.height / cellheight)),
-    s"$extent at $cellSize does not match $dimensions")
-
-  /**
-    * The same logic is used in QGIS: https://github.com/qgis/QGIS/blob/607664c5a6b47c559ed39892e736322b64b3faa4/src/analysis/raster/qgsalignraster.cpp#L38
-    * The search query: https://github.com/qgis/QGIS/search?p=2&q=floor&type=&utf8=%E2%9C%93
-    *
-    * GDAL uses smth like that, however it was a bit hard to track it down:
-    * https://github.com/OSGeo/gdal/blob/7601a637dfd204948d00f4691c08f02eb7584de5/gdal/frmts/vrt/vrtsources.cpp#L215
-    * */
-  def floorWithTolerance(value: Double): Double =
-    if (math.abs(value - math.round(value)) < GridExtent.epsilon) math.round(value)
-    else math.floor(value)
+    s"$extent at $cellSize does not match $dimensions"
+  )
 
   def this(extent: Extent, cols: N, rows: N) =
     this(extent, (extent.width / cols.toDouble), (extent.height / rows.toDouble), cols, rows)
@@ -386,4 +378,17 @@ object GridExtent {
    * Implicit conversions are evil, but this one is always safe and saves typing.
    */
   implicit def gridBoundsIntToLong(bounds: GridBounds[Int]): GridBounds[Long] = bounds.toGridType[Long]
+
+  /**
+    * The same logic is used in QGIS: https://github.com/qgis/QGIS/blob/607664c5a6b47c559ed39892e736322b64b3faa4/src/analysis/raster/qgsalignraster.cpp#L38
+    * The search query: https://github.com/qgis/QGIS/search?p=2&q=floor&type=&utf8=%E2%9C%93
+    *
+    * GDAL uses smth like that, however it was a bit hard to track it down:
+    * https://github.com/OSGeo/gdal/blob/7601a637dfd204948d00f4691c08f02eb7584de5/gdal/frmts/vrt/vrtsources.cpp#L215
+    * */
+  def floorWithTolerance(value: Double): Double = {
+    val roundedValue = math.round(value)
+    if (math.abs(value - roundedValue) < GridExtent.epsilon) roundedValue
+    else math.floor(value)
+  }
 }
