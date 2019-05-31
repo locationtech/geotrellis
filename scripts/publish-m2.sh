@@ -16,6 +16,7 @@
       "project spark" +publishM2 \
       "project spark-etl" +publishM2 \
       "project spark-testkit" +publishM2 \
+      "project tiling" +publishM2 \
       "project util" +publishM2 \
       "project vector" +publishM2 \
       "project vector-testkit" +publishM2 \

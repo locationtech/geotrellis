@@ -16,6 +16,7 @@
    && ./sbt "project geomesa" publish -no-colors \
    && ./sbt "project geotools" publish -no-colors \
    && ./sbt "project shapefile" publish -no-colors \
+   && ./sbt "project tiling" publish -no-colors \
    && ./sbt "project util" publish -no-colors \
    && ./sbt "project vectortile" publish -no-colors \
    && ./sbt "project raster-testkit" publish -no-colors \

@@ -4,6 +4,7 @@
 # Ordered roughly by dependency graph, which is easier on the compilation process
 
 ./sbt "project util" publishLocal && \
+./sbt "project tiling" publishLocal && \
 ./sbt "project macros" publishLocal && \
 ./sbt "project proj4" publishLocal && \
 ./sbt "project vector" publishLocal && \
