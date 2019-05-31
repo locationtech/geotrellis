@@ -4,6 +4,7 @@
   "project proj4" test \
   "project geotools" test \
   "project shapefile" test \
+  "project tiling" test \
   "project vector" test \
   "project vectortile" test \
   "project hbase" test \

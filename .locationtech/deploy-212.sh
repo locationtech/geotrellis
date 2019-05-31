@@ -16,6 +16,7 @@
    && ./sbt -212 "project spark-etl" publish -no-colors \
    && ./sbt -212 "project geotools" publish -no-colors \
    && ./sbt -212 "project shapefile" publish -no-colors \
+   && ./sbt -212 "project tiling" publish -no-colors \
    && ./sbt -212 "project util" publish -no-colors \
    && ./sbt -212 "project vectortile" publish -no-colors \
    && ./sbt -212 "project raster-testkit" publish -no-colors \
