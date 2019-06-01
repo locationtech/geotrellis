@@ -40,12 +40,15 @@ case class COGLayerMetadata[K: SpatialComponent](
   extent: Extent,
   crs: CRS
 ) {
+  val zoomRangesInfosSorted: Vector[(ZoomRange, KeyBounds[K])] = zoomRangeInfos.sortBy(_._1)
+
   def combine(other: COGLayerMetadata[K])(implicit ev: Boundable[K]): COGLayerMetadata[K] = {
     val combinedZoomRangeInfos =
       (zoomRangeInfos ++ other.zoomRangeInfos)
         .groupBy(_._1)
         .map { case (key, bounds) => key -> bounds.map(_._2).reduce(_ combine _) }
         .toVector
+        .sortBy(_._1)
 
     val combinedExtent = extent.combine(other.extent)
 
@@ -59,10 +62,10 @@ case class COGLayerMetadata[K: SpatialComponent](
   }
 
   private val maxZooms =
-    zoomRangeInfos.map(_._1.maxZoom).toArray
+    zoomRangesInfosSorted.map(_._1.maxZoom).toArray
 
   def zoomRanges: Vector[ZoomRange] =
-    zoomRangeInfos.map(_._1)
+    zoomRangesInfosSorted.map(_._1)
 
   def zoomRangeFor(zoom: Int): ZoomRange =
     zoomRangeInfoFor(zoom)._1
@@ -75,7 +78,7 @@ case class COGLayerMetadata[K: SpatialComponent](
         ~i //- 1
       }
 
-    zoomRangeInfos(idx)
+    zoomRangesInfosSorted(idx)
   }
 
 
@@ -345,7 +348,7 @@ object COGLayerMetadata {
 
     COGLayerMetadata(
       cellType,
-      zoomRanges.toVector,
+      zoomRanges.toVector.sortBy(_._1),
       layoutScheme,
       extent,
       crs
@@ -357,7 +360,7 @@ object COGLayerMetadata {
       def write(metadata: COGLayerMetadata[K]) =
         JsObject(
           "cellType" -> metadata.cellType.toJson,
-          "zoomRangesInfos" -> metadata.zoomRangeInfos.toJson,
+          "zoomRangesInfos" -> metadata.zoomRangesInfosSorted.toJson,
           "layoutScheme" -> metadata.layoutScheme.toJson,
           "extent" -> metadata.extent.toJson,
           "crs" -> metadata.crs.toJson
@@ -368,13 +371,13 @@ object COGLayerMetadata {
           case Seq(cellType, JsArray(zoomRanges), layoutScheme, extent, crs) =>
             COGLayerMetadata(
               cellType.convertTo[CellType],
-              zoomRanges.map(_.convertTo[(ZoomRange, KeyBounds[K])]),
+              zoomRanges.map(_.convertTo[(ZoomRange, KeyBounds[K])]).sortBy(_._1),
               layoutScheme.convertTo[ZoomedLayoutScheme],
               extent.convertTo[Extent],
               crs.convertTo[CRS]
             )
           case v =>
-            throw new DeserializationException(s"COGLayerMetadata expected, got $v")
+            throw DeserializationException(s"COGLayerMetadata expected, got $v")
         }
     }
 }

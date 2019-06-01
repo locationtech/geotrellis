@@ -183,6 +183,26 @@ trait COGLayerUpdateSpaceTimeTileSpec
         assertEqual(readTiles(2)._2, Array(3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3))
         assertEqual(readTiles(3)._2, Array(5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5))
       }
+
+      it("should update a layer with numerous zoom ranges") {
+        val maxZoom = 4
+        val md = sample.metadata
+
+        // for this test we need a layer with a zoom high enough
+        val layout = ZoomedLayoutScheme(md.crs, maxZoom).levelForZoom(maxZoom).layout
+        val minKey = md.bounds.get._1
+        val maxKey = md.bounds.get._2.copy(col = layout.layoutCols, row = layout.layoutRows)
+        val mdHighZoom = sample.metadata.copy(layout = layout, bounds = KeyBounds(minKey, maxKey))
+        val sampleHighZoom = new ContextRDD(sample, mdHighZoom)
+
+        // this will force multiple zoom ranges to be created
+        val options = COGLayerWriter.Options.DEFAULT.copy(maxTileSize = mdHighZoom.tileCols)
+
+        val tmpLayer = layerId.createTemporaryId.name
+
+        writer.write[SpaceTimeKey, Tile](tmpLayer, sampleHighZoom, maxZoom, keyIndexMethod, mergeFunc = mergeFunc, options = options)
+        writer.update[SpaceTimeKey, Tile](tmpLayer, sampleHighZoom, maxZoom, mergeFunc = mergeFunc, options = options)
+      }
     }
   }
 }
