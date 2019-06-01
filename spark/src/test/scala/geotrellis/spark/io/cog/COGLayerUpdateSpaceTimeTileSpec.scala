@@ -16,7 +16,7 @@
 
 package geotrellis.spark.io.cog
 
-import geotrellis.proj4.{LatLng, WebMercator}
+import geotrellis.proj4.LatLng
 import geotrellis.raster._
 import geotrellis.raster.testkit._
 import geotrellis.raster.io.geotiff.GeoTiff
@@ -28,9 +28,8 @@ import geotrellis.spark.testkit.io._
 import geotrellis.spark.testkit.io.cog._
 import geotrellis.util._
 import geotrellis.vector._
-import java.time._
 
-import geotrellis.spark.io.index.KeyIndex
+import java.time._
 
 trait COGLayerUpdateSpaceTimeTileSpec
     extends TileLayerRDDBuilders
@@ -189,14 +188,14 @@ trait COGLayerUpdateSpaceTimeTileSpec
         val maxZoom = 4
         val md = sample.metadata
 
-        //for this test we need a layer with a zoom high enough
+        // for this test we need a layer with a zoom high enough
         val layout = ZoomedLayoutScheme(md.crs, maxZoom).levelForZoom(maxZoom).layout
         val minKey = md.bounds.get._1
         val maxKey = md.bounds.get._2.copy(col = layout.layoutCols, row = layout.layoutRows)
         val mdHighZoom = sample.metadata.copy(layout = layout, bounds = KeyBounds(minKey, maxKey))
         val sampleHighZoom = new ContextRDD(sample, mdHighZoom)
 
-        //this will force multiple zoom ranges to be created
+        // this will force multiple zoom ranges to be created
         val options = COGLayerWriter.Options.DEFAULT.copy(maxTileSize = mdHighZoom.tileCols)
 
         val tmpLayer = layerId.createTemporaryId.name

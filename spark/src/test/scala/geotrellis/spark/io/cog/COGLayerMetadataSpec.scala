@@ -3,13 +3,9 @@ package geotrellis.spark.io.cog
 import geotrellis.proj4._
 import geotrellis.raster._
 import geotrellis.tiling._
-import geotrellis.spark._
-import geotrellis.spark.io._
-import geotrellis.spark.tiling._
 import geotrellis.vector._
 
 import org.scalatest._
-import spray.json._
 
 class COGLayerMetadataSpec extends FunSpec with Matchers {
   def generateLCMetadata(maxZoom: Int = 13, minZoom: Int = 0): COGLayerMetadata[SpatialKey] = {

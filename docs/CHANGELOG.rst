@@ -67,6 +67,7 @@ Fixes & Updates
 - Bump ScalaPB version up with some API enhancements (`#2898 <https://github.com/locationtech/geotrellis/pull/2898>`_).
 - Artifacts in Viewshed have been addressed, the pixels/meter calculation has also been improved (`#2917 <https://github.com/locationtech/geotrellis/pull/2917>`_).
 - Fix map{X|Y}ToGrid function behavior that could give a bit incorrect results (`#2953 <https://github.com/locationtech/geotrellis/pull/2953>`_).
+- Fix COG layer update bug related to COGLayerMetadata zoomRanges ordering (`#2922 <https://github.com/locationtech/geotrellis/pull/2922>`_).
 
 2.3.0
 -----
