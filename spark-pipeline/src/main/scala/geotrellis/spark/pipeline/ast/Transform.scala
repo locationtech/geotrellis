@@ -26,7 +26,7 @@ import geotrellis.raster.stitch.Stitcher
 import geotrellis.raster.CellGrid
 import geotrellis.raster.resample.ResampleMethod
 import geotrellis.tiling._
-import geotrellis.layers.io.avro.AvroRecordCodec
+import geotrellis.layers.avro.AvroRecordCodec
 import geotrellis.spark.tiling.TilerKeyMethods
 import geotrellis.spark._
 import geotrellis.spark.io._

@@ -23,7 +23,7 @@ import geotrellis.spark.io.s3.S3GeoTiffRDD
 import geotrellis.spark.pipeline.json.read._
 import geotrellis.vector.ProjectedExtent
 
-import geotrellis.spark.io.s3.AmazonS3URI
+import geotrellis.store.s3.AmazonS3URI
 import org.apache.hadoop.fs.Path
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
