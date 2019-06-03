@@ -16,7 +16,7 @@
 
 package geotrellis.doc.examples.spark
 
-import geotrellis.layers.{LayerId, TileLayerMetadata}
+import geotrellis.layers._
 
 object SparkExamples {
   def `Using a SpaceTimeKey -> SpatialKey transformation to get summary information about tiles overlapping an area`: Unit = {
