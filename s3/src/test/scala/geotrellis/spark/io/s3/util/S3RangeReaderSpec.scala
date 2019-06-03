@@ -18,6 +18,7 @@ package geotrellis.spark.io.s3.util
 
 import java.nio.file.{ Paths, Files }
 import java.nio.ByteBuffer
+import geotrellis.store.s3.util._
 import geotrellis.util._
 import geotrellis.spark.io.s3._
 import geotrellis.spark.io.s3.testkit._

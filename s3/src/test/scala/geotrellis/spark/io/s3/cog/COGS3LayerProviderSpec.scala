@@ -16,6 +16,10 @@
 
 package geotrellis.spark.io.s3.cog
 
+import geotrellis.layers._
+import geotrellis.layers.cog._
+import geotrellis.store.s3._
+import geotrellis.store.s3.cog._
 import geotrellis.spark.io._
 import geotrellis.spark.io.s3._
 import geotrellis.spark.io.cog._
@@ -50,7 +54,7 @@ class COGS3LayerProviderSpec extends FunSpec with TestEnvironment {
 
   it("should not be able to process a URI without a scheme") {
     val badURI = new java.net.URI("//fake-bucket/some-prefix")
-    val provider = new S3COGLayerProvider()
+    val provider = new S3COGSparkLayerProvider()
 
     provider.canProcess(badURI) should be (false)
   }

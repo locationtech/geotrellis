@@ -14,23 +14,25 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.io.s3
+package geotrellis.store.s3
 
-import geotrellis.spark._
-import geotrellis.spark.io._
+import geotrellis.layers._
+
 import spray.json._
 import DefaultJsonProtocol._
+
 import software.amazon.awssdk.core.sync.RequestBody
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.model._
+
 import org.apache.commons.io.IOUtils
 
 import scala.util.matching.Regex
 import scala.collection.JavaConverters._
+
 import java.nio.charset.Charset
 import java.io.ByteArrayInputStream
 
-import geotrellis.layers.LayerId
 
 /**
  * Stores and retrieves layer attributes in an S3 bucket in JSON format

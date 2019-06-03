@@ -16,14 +16,14 @@
 
 package geotrellis.spark.io.s3.geotiff
 
-import geotrellis.spark.io.s3.S3ClientProducer
+import geotrellis.store.s3.{AmazonS3URI, S3ClientProducer}
 import geotrellis.spark.io.hadoop.geotiff._
 import geotrellis.util.annotations.experimental
 
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.core.sync.RequestBody
 import software.amazon.awssdk.services.s3.model.{GetObjectRequest, PutObjectRequest}
-import geotrellis.spark.io.s3.AmazonS3URI
+
 import spray.json._
 import spray.json.DefaultJsonProtocol._
 

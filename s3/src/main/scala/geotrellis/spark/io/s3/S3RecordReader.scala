@@ -16,7 +16,7 @@
 
 package geotrellis.spark.io.s3
 
-import geotrellis.spark.io.s3.util.S3RangeReader
+import geotrellis.store.s3.util.S3RangeReader
 import geotrellis.util._
 
 import com.typesafe.scalalogging.LazyLogging

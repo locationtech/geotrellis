@@ -14,29 +14,24 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.io.s3.cog
+package geotrellis.store.s3.cog
 
-import geotrellis.spark._
-import geotrellis.spark.io._
-import geotrellis.spark.io.cog._
-import geotrellis.spark.io.s3._
+import geotrellis.layers._
+import geotrellis.layers.cog.{COGCollectionLayerReader, COGCollectionLayerReaderProvider, COGValueReader, COGValueReaderProvider}
+import geotrellis.store.s3._
 
-import org.apache.spark._
-import geotrellis.spark.io.s3.AmazonS3URI
 import software.amazon.awssdk.services.s3.S3Client
 
 import java.net.URI
 
-import geotrellis.layers.LayerId
-import geotrellis.layers.io.cog.{COGCollectionLayerReader, COGCollectionLayerReaderProvider, COGValueReader, COGValueReaderProvider}
 
 /**
  * Provides [[S3LayerReader]] instance for URI with `s3` scheme.
  * The uri represents S3 bucket an prefix of catalog root.
  *  ex: `s3://<bucket>/<prefix-to-catalog>`
  */
-class S3COGLayerProvider extends AttributeStoreProvider
-    with COGLayerReaderProvider with COGLayerWriterProvider with COGValueReaderProvider with COGCollectionLayerReaderProvider {
+class S3COGCollectionLayerProvider extends AttributeStoreProvider
+    with COGValueReaderProvider with COGCollectionLayerReaderProvider {
 
   val getClient = S3ClientProducer.get
 
@@ -55,16 +50,6 @@ class S3COGLayerProvider extends AttributeStoreProvider
         case None => ""
       }
     new S3AttributeStore(bucket = s3Uri.getBucket(), prefix = prefix, getClient)
-  }
-
-  def layerReader(uri: URI, store: AttributeStore, sc: SparkContext): COGLayerReader[LayerId] = {
-    new S3COGLayerReader(store, getClient)(sc)
-  }
-
-  def layerWriter(uri: URI, store: AttributeStore): COGLayerWriter = {
-    // TODO: encoder ACL changes in putObjectModifier
-    val s3Uri = new AmazonS3URI(uri)
-    new S3COGLayerWriter(store, bucket = s3Uri.getBucket(), keyPrefix = s3Uri.getKey())
   }
 
   def valueReader(uri: URI, store: AttributeStore): COGValueReader[LayerId] = {

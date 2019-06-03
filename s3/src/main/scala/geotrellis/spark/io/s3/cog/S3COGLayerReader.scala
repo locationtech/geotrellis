@@ -19,12 +19,16 @@ package geotrellis.spark.io.s3.cog
 import geotrellis.raster.CellGrid
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.tiling.{Boundable, SpatialComponent}
+import geotrellis.layers._
+import geotrellis.layers.cog._
+import geotrellis.layers.index._
+import geotrellis.store.s3._
+import geotrellis.store.s3.cog._
+import geotrellis.store.s3.conf.S3Config
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.s3._
-import geotrellis.spark.io.s3.conf.S3Config
 import geotrellis.spark.io.cog._
-import geotrellis.layers.io.index._
 import geotrellis.util._
 
 import software.amazon.awssdk.services.s3._
@@ -35,9 +39,6 @@ import org.apache.spark.SparkContext
 import spray.json.JsonFormat
 
 import java.net.URI
-
-import geotrellis.layers.io.cog.ZoomRange
-import geotrellis.layers.{LayerId, TileLayerMetadata}
 
 import scala.reflect.ClassTag
 

@@ -14,25 +14,22 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.io.s3
+package geotrellis.store.s3
 
 import geotrellis.raster._
 import geotrellis.raster.resample._
 import geotrellis.tiling.SpatialComponent
-import geotrellis.spark._
-import geotrellis.spark.io._
+import geotrellis.layers._
+import geotrellis.layers.avro._
+import geotrellis.layers.avro.codecs.KeyValueRecordCodec
+import geotrellis.layers.index._
 
 import software.amazon.awssdk.services.s3.model.{S3Exception, GetObjectRequest}
 import software.amazon.awssdk.services.s3.S3Client
 
-import geotrellis.layers.io.avro._
-import geotrellis.layers.io.avro.codecs.KeyValueRecordCodec
-import geotrellis.layers.io.index._
-import com.amazonaws.services.s3.model.AmazonS3Exception
-import geotrellis.layers.LayerId
-import geotrellis.layers.io.{OverzoomingValueReader, Reader}
 import org.apache.avro.Schema
 import org.apache.commons.io.IOUtils
+
 import spray.json._
 import spray.json.DefaultJsonProtocol._
 

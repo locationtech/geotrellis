@@ -1,4 +1,4 @@
-package geotrellis.spark.io.s3
+package geotrellis.store.s3
 
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.core.retry.backoff.FullJitterBackoffStrategy

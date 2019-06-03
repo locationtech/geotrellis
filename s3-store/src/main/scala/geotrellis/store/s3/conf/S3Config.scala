@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.io.s3.conf
+package geotrellis.store.s3.conf
 
-import geotrellis.layers.io.hadoop.conf.CamelCaseConfig
-import geotrellis.spark.util.threadsFromString
+import geotrellis.layers.util._
+import geotrellis.util.CamelCaseConfig
+
 import pureconfig.generic.auto._
 
 case class S3CollectionConfig(read: String = "default") {

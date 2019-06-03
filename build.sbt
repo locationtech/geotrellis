@@ -199,9 +199,15 @@ lazy val `spark-testkit` = project
   .settings(commonSettings)
   .settings(Settings.`spark-testkit`)
 
+lazy val `s3-store` = project
+  .dependsOn(layers)
+  .settings(commonSettings)
+  .settings(Settings.`s3-store`)
+
 lazy val s3 = project
   .dependsOn(
     spark % "compile->compile;test->test",  // <-- spark-testkit update should simplify this
+    `s3-store`,
     `spark-testkit` % Test
   )
   .settings(commonSettings)

@@ -16,12 +16,12 @@
 
 package geotrellis.spark.io.s3.geotiff
 
-import geotrellis.spark.io.s3.cog.byteReader
-import geotrellis.spark.io.s3.conf.S3Config
-import geotrellis.spark.io.s3.S3ClientProducer
+import geotrellis.tiling.ZoomedLayoutScheme
 import geotrellis.raster.resample.{NearestNeighbor, ResampleMethod}
 import geotrellis.raster.io.geotiff.{AutoHigherResolution, OverviewStrategy}
-import geotrellis.tiling.ZoomedLayoutScheme
+import geotrellis.store.s3.cog.byteReader
+import geotrellis.store.s3.conf.S3Config
+import geotrellis.store.s3.S3ClientProducer
 import geotrellis.spark.io.hadoop.geotiff.{AttributeStore, GeoTiffLayerReader, GeoTiffMetadata}
 import geotrellis.util.ByteReader
 import geotrellis.util.annotations.experimental

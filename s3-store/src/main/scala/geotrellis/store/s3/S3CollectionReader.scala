@@ -14,18 +14,18 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.io.s3
+package geotrellis.store.s3
 
 import geotrellis.tiling._
-import geotrellis.spark._
-import geotrellis.spark.io._
-import geotrellis.layers.io.avro.codecs.KeyValueRecordCodec
-import geotrellis.layers.io.index.MergeQueue
-import geotrellis.layers.io.avro.{AvroEncoder, AvroRecordCodec}
-import geotrellis.spark.io.s3.conf.S3Config
+import geotrellis.layers.avro.codecs.KeyValueRecordCodec
+import geotrellis.layers.index.MergeQueue
+import geotrellis.layers.avro.{AvroEncoder, AvroRecordCodec}
+import geotrellis.layers.util.{IOUtils => GTIOUtils}
+import geotrellis.store.s3.conf.S3Config
 
 import software.amazon.awssdk.services.s3.model._
 import software.amazon.awssdk.services.s3.S3Client
+
 import org.apache.avro.Schema
 import org.apache.commons.io.IOUtils
 
@@ -55,7 +55,7 @@ class S3CollectionReader(
     val recordCodec = KeyValueRecordCodec[K, V]
     val s3client = getClient()
 
-    LayerReader.njoin[K, V](ranges.toIterator, threads){ index: BigInt =>
+    GTIOUtils.parJoin[K, V](ranges.toIterator, threads){ index: BigInt =>
       try {
         val getRequest = GetObjectRequest.builder()
           .bucket(bucket)

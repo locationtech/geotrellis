@@ -16,12 +16,15 @@
 
 package geotrellis.spark.io.s3
 
+import geotrellis.store.s3.S3ClientProducer
 import geotrellis.spark.io.hadoop._
 
 import com.typesafe.scalalogging.LazyLogging
+
 import software.amazon.awssdk.regions._
 import software.amazon.awssdk.services.s3.model.{ListObjectsV2Request, S3Object}
 import software.amazon.awssdk.services.s3.S3Client
+
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.mapreduce.{InputFormat, InputSplit, Job, JobContext}
 

@@ -18,6 +18,9 @@ package geotrellis.spark.io.s3.cog
 
 import geotrellis.raster.Tile
 import geotrellis.tiling.SpaceTimeKey
+import geotrellis.layers._
+import geotrellis.store.s3._
+import geotrellis.store.s3.cog._
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.cog._

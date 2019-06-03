@@ -402,6 +402,40 @@ object Settings {
     libraryDependencies += scalatest
   )
 
+  lazy val `s3-store` = Seq(
+    name := "geotrellis-store-s3",
+    libraryDependencies ++= Seq(
+      awsSdkS3,
+      spire,
+      scaffeine,
+      scalatest % Test
+    ),
+    dependencyOverrides ++= {
+      val deps = Seq(
+        "com.fasterxml.jackson.core" % "jackson-core" % "2.6.7",
+        "com.fasterxml.jackson.core" % "jackson-databind" % "2.6.7",
+        "com.fasterxml.jackson.core" % "jackson-annotations" % "2.6.7"
+      )
+      CrossVersion.partialVersion(scalaVersion.value) match {
+        // if Scala 2.12+ is used
+        case Some((2, scalaMajor)) if scalaMajor >= 12 => deps
+        case _ => deps :+ "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.6.7"
+      }
+    },
+    mimaPreviousArtifacts := Set(
+      "org.locationtech.geotrellis" %% "geotrellis-store-s3" % Version.previousVersion
+    ),
+    initialCommands in console :=
+      """
+      import geotrellis.raster._
+      import geotrellis.vector._
+      import geotrellis.proj4._
+      import geotrellis.tiling._
+      import geotrellis.layers._
+      import geotrellis.store.s3._
+      """
+  ) ++ noForkInTests
+
   lazy val s3 = Seq(
     name := "geotrellis-s3",
     libraryDependencies ++= Seq(

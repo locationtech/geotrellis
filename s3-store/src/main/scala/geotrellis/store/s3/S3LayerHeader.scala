@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.io.s3
+package geotrellis.store.s3
 
 import geotrellis.raster.Tile
-import geotrellis.spark.io.{LayerHeader, LayerType, AvroLayerType}
+import geotrellis.layers.{LayerHeader, LayerType, AvroLayerType}
 
 import spray.json._
 

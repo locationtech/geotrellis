@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.io.s3.util
+package geotrellis.store.s3.util
 
-import geotrellis.spark.io.s3._
+import geotrellis.store.s3._
 import geotrellis.util.RangeReader
 
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.model._
-import geotrellis.spark.io.s3.AmazonS3URI
+
 import org.apache.commons.io.IOUtils
 
 import java.net.URI

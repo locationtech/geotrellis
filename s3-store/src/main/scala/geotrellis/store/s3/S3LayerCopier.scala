@@ -14,21 +14,20 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.io.s3
+package geotrellis.store.s3
 
 import geotrellis.tiling.{Boundable, Bounds}
-import geotrellis.spark._
-import geotrellis.spark.io._
-import geotrellis.layers.io.avro.AvroRecordCodec
-import geotrellis.layers.io.index.KeyIndex
-import geotrellis.layers.io.json._
+import geotrellis.layers._
+import geotrellis.layers.avro.AvroRecordCodec
+import geotrellis.layers.index.KeyIndex
+import geotrellis.layers.json._
 import geotrellis.util._
 
 import software.amazon.awssdk.services.s3.model._
 import software.amazon.awssdk.services.s3.S3Client
-import geotrellis.layers.LayerId
+
 import org.apache.avro.Schema
-import org.apache.spark.rdd.RDD
+
 import spray.json.JsonFormat
 
 import scala.annotation.tailrec

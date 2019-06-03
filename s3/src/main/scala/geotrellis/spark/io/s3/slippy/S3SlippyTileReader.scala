@@ -20,12 +20,14 @@ import geotrellis.vector._
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff._
 import geotrellis.tiling.SpatialKey
+import geotrellis.store.s3._
 import geotrellis.spark._
 import geotrellis.spark.io.s3._
 import geotrellis.util.Filesystem
 
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.model.{GetObjectRequest, ListObjectsV2Request, S3Object}
+
 import org.apache.commons.io.FileUtils
 import org.apache.commons.io.filefilter._
 import org.apache.spark._

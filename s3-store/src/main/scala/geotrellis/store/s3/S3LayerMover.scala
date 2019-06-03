@@ -14,14 +14,13 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.io.s3
+package geotrellis.store.s3
 
-import geotrellis.layers.LayerId
-import geotrellis.spark.io._
+import geotrellis.layers._
 import geotrellis.util._
 
 import software.amazon.awssdk.services.s3.S3Client
-import org.apache.spark.rdd.RDD
+
 import spray.json.JsonFormat
 
 import scala.reflect.ClassTag
