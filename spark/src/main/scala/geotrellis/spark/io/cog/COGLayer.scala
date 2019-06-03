@@ -28,7 +28,6 @@ import geotrellis.tiling._
 import geotrellis.spark._
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.io.index.KeyIndex
-import geotrellis.spark.tiling._
 import geotrellis.spark.util._
 import geotrellis.util._
 import geotrellis.vector._
@@ -70,8 +69,8 @@ object COGLayer {
      minZoom: Option[Int] = None,
      options: COGLayerWriter.Options = COGLayerWriter.Options.DEFAULT
    ): COGLayer[K, V] = {
-    // TODO: Clean up conditional checks, figure out how to bake into type system, or report errors better.
 
+    // TODO: Clean up conditional checks, figure out how to bake into type system, or report errors better.
     if(minZoom.getOrElse(Double.NaN) != baseZoom.toDouble) {
       if(rdd.metadata.layout.tileCols != rdd.metadata.layout.tileRows) {
         sys.error("Cannot create Pyramided COG layer for non-square tiles.")
@@ -82,8 +81,8 @@ object COGLayer {
       }
     }
 
-    val constructMetadata =
-      (layoutScheme: ZoomedLayoutScheme, keyBounds: KeyBounds[K]) => COGLayerMetadata(
+    def constructMetadata(layoutScheme: ZoomedLayoutScheme, keyBounds: KeyBounds[K]) =
+      COGLayerMetadata(
         rdd.metadata.cellType,
         rdd.metadata.extent,
         rdd.metadata.crs,
@@ -116,7 +115,8 @@ object COGLayer {
      options: COGLayerWriter.Options
    ): COGLayer[K, V] = {
 
-    if (zoomRanges.exists(_ != baseZoom)) {
+    // TODO: Clean up conditional checks, figure out how to bake into type system, or report errors better.
+    if (zoomRanges.exists(_.maxZoom != baseZoom)) {
       if(rdd.metadata.layout.tileCols != rdd.metadata.layout.tileRows) {
         sys.error("Cannot create Pyramided COG layer for non-square tiles.")
       }
@@ -126,8 +126,8 @@ object COGLayer {
       }
     }
 
-    val constructMetadata =
-      (layoutScheme: ZoomedLayoutScheme, keyBounds: KeyBounds[K]) => COGLayerMetadata(
+    def constructMetadata(layoutScheme: ZoomedLayoutScheme, keyBounds: KeyBounds[K]) =
+      COGLayerMetadata(
         rdd.metadata.cellType,
         rdd.metadata.extent,
         rdd.metadata.crs,

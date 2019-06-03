@@ -211,8 +211,8 @@ trait COGLayerUpdateSpaceTimeTileSpec
           * This test checks that update uses the same ZoomRanges as create and doesn't fail on ZoomRanges mismatch.
           */
         import COGLayerWriter.Options.DEFAULT
-        val createOptions = DEFAULT.copy(maxTileSize = sample.metadata.tileCols) //suggests one ZoomRange per each zoom
-        val updateOptions = DEFAULT.copy(maxTileSize = sample.metadata.tileCols * 2) //suggests one ZoomRange per two zooms
+        val createOptions = DEFAULT.copy(maxTileSize = sample.metadata.tileCols) // suggests one ZoomRange per each zoom
+        val updateOptions = DEFAULT.copy(maxTileSize = sample.metadata.tileCols * 2) // suggests one ZoomRange per two zooms
 
         val tmpLayerId = layerId.createTemporaryId.name
 
