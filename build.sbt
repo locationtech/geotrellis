@@ -119,7 +119,6 @@ lazy val root = Project("geotrellis", file(".")).
     s3,
     shapefile,
     spark,
-    `spark-etl`,
     `spark-pipeline`,
     `spark-testkit`,
     util,
@@ -256,11 +255,6 @@ lazy val `hbase-spark` = project
   .settings(commonSettings) // HBase depends on its own protobuf version
   .settings(Settings.`hbase-spark`)
   .settings(projectDependencies := { Seq((projectID in spark).value.exclude("com.google.protobuf", "protobuf-java")) })
-
-lazy val `spark-etl` = Project(id = "spark-etl", base = file("spark-etl"))
-  .dependsOn(spark, s3, `accumulo-spark`, `cassandra-spark`, `hbase-store`, `hbase-spark`)
-  .settings(commonSettings)
-  .settings(Settings.`spark-etl`)
 
 lazy val `spark-pipeline` = Project(id = "spark-pipeline", base = file("spark-pipeline")).
   dependsOn(spark, s3, `spark-testkit` % "test").

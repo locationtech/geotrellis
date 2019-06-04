@@ -111,7 +111,6 @@ Ready? `Setup a GeoTrellis development environment. <tutorials/setup.html>`__
    tutorials/quickstart
    tutorials/kernel-density
    tutorials/reading-geoTiffs
-   Extract-Transform-Load (ETL) <tutorials/etl-tutorial>
 
 .. toctree::
    :maxdepth: 4
@@ -123,7 +122,7 @@ Ready? `Setup a GeoTrellis development environment. <tutorials/setup.html>`__
    Using Rasters <guide/rasters>
    Using Vectors <guide/vectors>
    Spark and GeoTrellis <guide/spark>
-   The ETL Tool <guide/etl>
+   Ingesting a Raster Layer <guide/ingests>
    Extending GeoTrellis Types <guide/extending-geotrellis>
    GeoTrellis Module Hierarchy <guide/module-hierarchy>
    Tile Layer Backends <guide/tile-backends>

@@ -15,10 +15,8 @@
 ./sbt "project spark-testkit" publishLocal && \
 ./sbt "project shapefile" publishLocal && \
 ./sbt "project spark-pipeline" publishLocal && \
-./sbt "project spark-etl" publishLocal && \
 ./sbt "project accumulo-store" publishLocal && \
 ./sbt "project accumulo-spark" publishLocal && \
-./sbt "project layers-accumulo" publishLocal && \
 ./sbt "project cassandra-store" publishLocal && \
 ./sbt "project cassandra-spark" publishLocal && \
 ./sbt "project geomesa" publishLocal && \
