@@ -1,7 +1,7 @@
 #!/bin/bash
 
-./sbt "project accumulo" publish \
-      "project layers-accumulo" publish \
+./sbt "project accumulo-store" publish \
+      "project accumulo-spark" publish \
       "project cassandra-store" publish \
       "project cassandra-spark" publish \
       "project geomesa" publish \

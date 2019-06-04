@@ -1,9 +1,8 @@
 #!/bin/bash
 
-./sbt -J-Xmx2G "project accumulo" clean  || { exit 1; }
-./sbt -J-Xmx2G "project layers-accumulo" clean  || { exit 1; }
+./sbt -J-Xmx2G "project accumulo-store" clean  || { exit 1; }
+./sbt -J-Xmx2G "project accumulo-spark" clean  || { exit 1; }
 ./sbt -J-Xmx2G "project cassandra-store" clean  || { exit 1; }
-./sbt -J-Xmx2G "project cassandra-spark" clean  || { exit 1; }
 ./sbt -J-Xmx2G "project geomesa" clean || { exit 1; }
 ./sbt -J-Xmx2G "project geotools" clean || { exit 1; }
 ./sbt -J-Xmx2G "project geowave" clean || { exit 1; }
@@ -17,8 +16,8 @@
 ./sbt -J-Xmx2G "project vector" clean || { exit 1; }
 ./sbt -J-Xmx2G "project vectortile" clean || { exit 1; }
 
-rm -r accumulo/target
-rm -r layers-accumulo/target
+rm -r accumulo-store/target
+rm -r accumulo-spark/target
 rm -r cassandra-store/target
 rm -r cassandra-spark/target
 rm -r geomesa/target

@@ -1,7 +1,7 @@
 #!/bin/bash
 
-./sbt "project accumulo" createHeaders test:createHeaders \
-      "project layers-accumulo" createHeaders test:createHeaders \
+./sbt "project accumulo-store" createHeaders test:createHeaders \
+      "project accumulo-spark" createHeaders test:createHeaders \
       "project cassandra-store" createHeaders test:createHeaders \
       "project cassandra-spark" createHeaders test:createHeaders \
       "project doc-examples" createHeaders test:createHeaders \

@@ -1,7 +1,7 @@
 #!/bin/bash
 
-./sbt -J-Xmx2G "project accumulo" test  || { exit 1; }
-./sbt -J-Xmx2G "project layers-accumulo" test  || { exit 1; }
+./sbt -J-Xmx2G "project accumulo-store" test  || { exit 1; }
+./sbt -J-Xmx2G "project accumulo-spak" test  || { exit 1; }
 ./sbt -J-Xmx2G "project cassandra-store" test  || { exit 1; }
 ./sbt -J-Xmx2G "project cassandra-spark" test  || { exit 1; }
 ./sbt -J-Xmx2G "project doc-examples" compile || { exit 1; }

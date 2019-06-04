@@ -42,8 +42,29 @@ object Settings {
     parallelExecution in Test := false
   )
 
-  lazy val accumulo = Seq(
-    name := "geotrellis-accumulo",
+  lazy val `accumulo-store` = Seq(
+    name := "geotrellis-accumulo-store",
+    libraryDependencies ++= Seq(
+      accumuloCore
+        exclude("org.jboss.netty", "netty")
+        exclude("org.apache.hadoop", "hadoop-client"),
+      spire,
+      scalatest % Test,
+      hadoopClient % Provided
+    ),
+    initialCommands in console :=
+      """
+      import geotrellis.proj4._
+      import geotrellis.vector._
+      import geotrellis.raster._
+      import geotrellis.tiling._
+      import geotrellis.layers._
+      import geotrellis.store.accumulo._
+      """
+  ) ++ noForkInTests
+
+  lazy val `accumulo-spark` = Seq(
+    name := "geotrellis-accumulo-spark",
     libraryDependencies ++= Seq(
       accumuloCore
         exclude("org.jboss.netty", "netty")
@@ -62,27 +83,6 @@ object Settings {
       import geotrellis.spark._
       import geotrellis.spark.util._
       import geotrellis.spark.io.accumulo._
-      """
-  ) ++ noForkInTests
-
-  lazy val `layers-accumulo` = Seq(
-    name := "geotrellis-layers-accumulo",
-    libraryDependencies ++= Seq(
-      accumuloCore
-        exclude("org.jboss.netty", "netty")
-        exclude("org.apache.hadoop", "hadoop-client"),
-      spire,
-      scalatest % Test,
-      hadoopClient % Provided
-    ),
-    initialCommands in console :=
-      """
-      import geotrellis.proj4._
-      import geotrellis.vector._
-      import geotrellis.raster._
-      import geotrellis.tiling._
-      import geotrellis.layers._
-      import geotrellis.layers.accumulo._
       """
   ) ++ noForkInTests
 
