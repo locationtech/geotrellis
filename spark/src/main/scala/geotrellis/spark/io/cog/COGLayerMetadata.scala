@@ -270,26 +270,7 @@ object COGLayerMetadata {
 
     val baseLayout = layoutScheme.levelForZoom(maxZoom).layout
 
-    val pmin =
-      baseLayout
-        .mapTransform
-        .keyToExtent(keyBounds.minKey.getComponent[SpatialKey])
-        .center
-
-    val pmax =
-      baseLayout
-        .mapTransform
-        .keyToExtent(keyBounds.maxKey.getComponent[SpatialKey])
-        .center
-
-    def getKeyBounds(layout: LayoutDefinition): KeyBounds[K] = {
-      val (skMin, skMax) =
-        (layout.mapTransform.pointToKey(pmin), layout.mapTransform.pointToKey(pmax))
-      KeyBounds(
-        keyBounds.minKey.setComponent[SpatialKey](skMin),
-        keyBounds.maxKey.setComponent[SpatialKey](skMax)
-      )
-    }
+    def getKeyBounds(layout: LayoutDefinition): KeyBounds[K] = transformKeyBounds(baseLayout, keyBounds, layout)
 
     /**
       * List of ranges, the current maximum zoom for the next range, the current tile size, isLowLevel, fitsZoomRange.
@@ -352,6 +333,67 @@ object COGLayerMetadata {
       layoutScheme,
       extent,
       crs
+    )
+  }
+
+  /** Constructs a COGLayerMetadata.
+    * This overload can be used when zoom ranges are predefined - e.g., for updating an existing layer.
+    *
+    * @param cellType: CellType of layer.
+    * @param extent: The extent of the layer.
+    * @param crs: CRS of layer.
+    * @param keyBounds: KeyBounds of the base zoom level for the layer.
+    * @param baseZoom: base zoom, for which keyBounds are defined.
+    * @param layoutScheme: The ZoomedLayoutScheme of this layer.
+    * @param zoomRanges: ZoomRanges for this layer.
+    */
+  def apply[K: SpatialComponent](
+    cellType: CellType,
+    extent: Extent,
+    crs: CRS,
+    keyBounds: KeyBounds[K],
+    baseZoom: Int,
+    layoutScheme: ZoomedLayoutScheme,
+    zoomRanges: Vector[ZoomRange]
+  ): COGLayerMetadata[K] = {
+
+    val baseLayout = layoutScheme.levelForZoom(baseZoom).layout
+
+    val zoomRangeInfos = zoomRanges
+      .map(zr => (zr, transformKeyBounds(baseLayout, keyBounds, layoutScheme.levelForZoom(zr.maxZoom).layout)))
+
+    COGLayerMetadata(
+      cellType,
+      zoomRangeInfos,
+      layoutScheme,
+      extent,
+      crs
+    )
+  }
+
+  private def transformKeyBounds[K: SpatialComponent](
+    baseLayout: LayoutDefinition,
+    baseKeyBounds: KeyBounds[K],
+    targetLayout: LayoutDefinition
+  ): KeyBounds[K] = {
+    val pmin =
+      baseLayout
+        .mapTransform
+        .keyToExtent(baseKeyBounds.minKey.getComponent[SpatialKey])
+        .center
+
+    val pmax =
+      baseLayout
+        .mapTransform
+        .keyToExtent(baseKeyBounds.maxKey.getComponent[SpatialKey])
+        .center
+
+    val (skMin, skMax) =
+      (targetLayout.mapTransform.pointToKey(pmin), targetLayout.mapTransform.pointToKey(pmax))
+
+    KeyBounds(
+      baseKeyBounds.minKey.setComponent[SpatialKey](skMin),
+      baseKeyBounds.maxKey.setComponent[SpatialKey](skMax)
     )
   }
 
