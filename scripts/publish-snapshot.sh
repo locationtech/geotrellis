@@ -2,8 +2,8 @@
 
 ./sbt "project accumulo" publish \
       "project layers-accumulo" publish \
-      "project layers-cassandra" publish \
-      "project cassandra" publish \
+      "project cassandra-store" publish \
+      "project cassandra-spark" publish \
       "project geomesa" publish \
       "project geotools" publish \
       # "project geowave" publish \

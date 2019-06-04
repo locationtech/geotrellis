@@ -2,8 +2,8 @@
 
 ./sbt -J-Xmx2G "project accumulo" clean  || { exit 1; }
 ./sbt -J-Xmx2G "project layers-accumulo" clean  || { exit 1; }
-./sbt -J-Xmx2G "project cassandra" clean  || { exit 1; }
-./sbt -J-Xmx2G "project layers-cassandra" clean  || { exit 1; }
+./sbt -J-Xmx2G "project cassandra-store" clean  || { exit 1; }
+./sbt -J-Xmx2G "project cassandra-spark" clean  || { exit 1; }
 ./sbt -J-Xmx2G "project geomesa" clean || { exit 1; }
 ./sbt -J-Xmx2G "project geotools" clean || { exit 1; }
 ./sbt -J-Xmx2G "project geowave" clean || { exit 1; }
@@ -19,8 +19,8 @@
 
 rm -r accumulo/target
 rm -r layers-accumulo/target
-rm -r cassandra/target
-rm -r layers-cassandra/target
+rm -r cassandra-store/target
+rm -r cassandra-spark/target
 rm -r geomesa/target
 rm -r geotools/target
 rm -r geowave/target

@@ -2,8 +2,8 @@
 
 ./sbt "project accumulo" createHeaders test:createHeaders \
       "project layers-accumulo" createHeaders test:createHeaders \
-      "project cassandra" createHeaders test:createHeaders \
-      "project layers-cassandra" createHeaders test:createHeaders \
+      "project cassandra-store" createHeaders test:createHeaders \
+      "project cassandra-spark" createHeaders test:createHeaders \
       "project doc-examples" createHeaders test:createHeaders \
       "project geomesa" createHeaders test:createHeaders \
       "project geotools" createHeaders test:createHeaders \
