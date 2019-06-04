@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.io.hadoop
+package geotrellis.spark.store.hadoop
 
 import geotrellis.tiling._
 import geotrellis.layers.{LayerId, Metadata}
@@ -24,7 +24,7 @@ import geotrellis.layers.avro._
 import geotrellis.layers.avro.codecs._
 import geotrellis.layers.index.KeyIndex
 import geotrellis.layers.merge.Mergable
-import geotrellis.spark.io._
+import geotrellis.spark.store._
 import geotrellis.util._
 
 import com.typesafe.scalalogging.LazyLogging

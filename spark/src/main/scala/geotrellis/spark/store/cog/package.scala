@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.io
+package geotrellis.spark.store
 
 
 package object cog extends Implicits with vrt.Implicits

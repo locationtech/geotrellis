@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.io.hadoop
+package geotrellis.spark.store.hadoop
 
 import geotrellis.tiling._
 import geotrellis.layers.LayerId
@@ -25,7 +25,7 @@ import geotrellis.layers.hadoop._
 import geotrellis.layers.index._
 import geotrellis.layers.json._
 import geotrellis.spark._
-import geotrellis.spark.io._
+import geotrellis.spark.store._
 import geotrellis.util._
 
 import org.apache.spark.SparkContext

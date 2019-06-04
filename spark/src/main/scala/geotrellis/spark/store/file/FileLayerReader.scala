@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.io.file
+package geotrellis.spark.store.file
 
 import geotrellis.tiling._
 import geotrellis.layers.LayerId
@@ -23,7 +23,7 @@ import geotrellis.layers.file.{FileAttributeStore, FileLayerHeader, KeyPathGener
 import geotrellis.layers.avro._
 import geotrellis.layers.index._
 import geotrellis.spark._
-import geotrellis.spark.io.FilteringLayerReader
+import geotrellis.spark.store.FilteringLayerReader
 import geotrellis.util._
 
 import com.typesafe.scalalogging.LazyLogging

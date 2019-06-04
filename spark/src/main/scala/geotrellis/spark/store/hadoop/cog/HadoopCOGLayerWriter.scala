@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.io.hadoop.cog
+package geotrellis.spark.store.hadoop.cog
 
 
 import geotrellis.tiling.SpatialComponent
@@ -30,8 +30,8 @@ import geotrellis.layers.cog.vrt.VRT.IndexedSimpleSource
 import geotrellis.layers.hadoop.{HadoopLayerHeader, HdfsUtils, SerializableConfiguration, HadoopAttributeStore}
 import geotrellis.layers.hadoop.cog.byteReader
 import geotrellis.layers.index._
-import geotrellis.spark.io.cog._
-import geotrellis.spark.io.hadoop._
+import geotrellis.spark.store.cog._
+import geotrellis.spark.store.hadoop._
 import geotrellis.util.ByteReader
 
 import org.apache.hadoop.fs.Path

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package geotrellis.layers.hadoop
+package geotrellis.spark.store.hadoop
 
 import org.apache.spark.Partitioner
 

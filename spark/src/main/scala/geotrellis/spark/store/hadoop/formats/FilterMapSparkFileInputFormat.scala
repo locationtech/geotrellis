@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.io.hadoop.formats
+package geotrellis.spark.store.hadoop.formats
 
 import geotrellis.layers._
 import geotrellis.layers.hadoop._
 import geotrellis.layers.hadoop.formats._
 import geotrellis.layers.index.MergeQueue
-import geotrellis.spark.io.hadoop._
+import geotrellis.spark.store.hadoop._
 
 import org.apache.hadoop.conf._
 import org.apache.hadoop.fs._

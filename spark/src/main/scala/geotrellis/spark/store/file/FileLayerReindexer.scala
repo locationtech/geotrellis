@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.io.file
+package geotrellis.spark.store.file
 
 import geotrellis.layers.LayerId
 import geotrellis.layers.avro._
 import geotrellis.layers.LayerReindexer
 import geotrellis.layers.file._
 import geotrellis.layers.index._
-import geotrellis.spark.io.GenericLayerReindexer
+import geotrellis.spark.store.GenericLayerReindexer
 
 import org.apache.spark.SparkContext
 

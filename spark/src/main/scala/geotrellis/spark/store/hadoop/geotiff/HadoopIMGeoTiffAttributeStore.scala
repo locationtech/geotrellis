@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.io.hadoop.geotiff
+package geotrellis.spark.store.hadoop.geotiff
 
 import geotrellis.layers.hadoop.HdfsUtils
-import geotrellis.spark.io.hadoop._
+import geotrellis.spark.store.hadoop._
 import geotrellis.util.annotations.experimental
 
 import org.apache.hadoop.conf.Configuration

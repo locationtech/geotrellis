@@ -1,4 +1,4 @@
-package geotrellis.spark.io
+package geotrellis.spark.store
 
 import geotrellis.layers.LayerId
 import geotrellis.layers.AttributeStore

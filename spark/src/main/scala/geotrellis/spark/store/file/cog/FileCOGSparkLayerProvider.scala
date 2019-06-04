@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.io.file.cog
+package geotrellis.spark.store.file.cog
 
 import geotrellis.layers.LayerId
 import geotrellis.layers.cog.{COGCollectionLayerReader, COGCollectionLayerReaderProvider, COGValueReader}
@@ -22,8 +22,8 @@ import geotrellis.layers.{AttributeStore, AttributeStoreProvider}
 import geotrellis.layers.file.FileAttributeStore
 import geotrellis.layers.file.cog.{FileCOGCollectionLayerReader, FileCOGValueReader}
 import geotrellis.spark._
-import geotrellis.spark.io.cog._
-import geotrellis.spark.io.file._
+import geotrellis.spark.store.cog._
+import geotrellis.spark.store.file._
 
 import org.apache.spark.SparkContext
 

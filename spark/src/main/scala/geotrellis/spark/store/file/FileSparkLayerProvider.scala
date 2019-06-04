@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.io.file
+package geotrellis.spark.store.file
 
 import geotrellis.layers.LayerId
 import geotrellis.layers._
 import geotrellis.layers.file.FileCollectionLayerProvider
-import geotrellis.spark.io._
+import geotrellis.spark.store._
 
 import org.apache.spark.SparkContext
 

@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.io.file
+package geotrellis.spark.store.file
 
-import geotrellis.spark.io.LayerWriter
+import geotrellis.spark.store.LayerWriter
 import geotrellis.layers.avro.{AvroRecordCodec, AvroEncoder}
 import geotrellis.layers.avro.codecs.KeyValueRecordCodec
 import geotrellis.spark.util.KryoWrapper

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.io.cog.vrt
+package geotrellis.spark.store.cog.vrt
 
 import geotrellis.layers.cog.vrt.VRT
 import geotrellis.layers.cog.vrt.VRT._

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.io.cog
+package geotrellis.spark.store.cog
 
 import geotrellis.layers.AttributeStore
 

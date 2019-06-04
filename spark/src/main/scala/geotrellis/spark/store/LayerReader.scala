@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.io
+package geotrellis.spark.store
 
 import geotrellis.tiling._
 import geotrellis.layers.{AttributeStore, Reader}

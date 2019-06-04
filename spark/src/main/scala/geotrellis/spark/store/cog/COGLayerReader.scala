@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.io.cog
+package geotrellis.spark.store.cog
 
 import geotrellis.tiling._
 import geotrellis.raster.{CellGrid, GridBounds, MultibandTile, RasterExtent, Tile}
@@ -27,7 +27,7 @@ import geotrellis.layers.cog._
 import geotrellis.layers.index.{Index, IndexRanges, KeyIndex, MergeQueue}
 import geotrellis.layers.util.IOUtils
 import geotrellis.spark._
-import geotrellis.spark.io._
+import geotrellis.spark.store._
 import geotrellis.spark.util.KryoWrapper
 import geotrellis.util._
 

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.io.hadoop
+package geotrellis.spark.store.hadoop
 
 import geotrellis.layers.LayerId
 import geotrellis.layers.AttributeStore
@@ -24,7 +24,7 @@ import geotrellis.layers.index._
 import geotrellis.layers.hadoop.formats.FilterMapFileInputFormat
 import geotrellis.layers.hadoop._
 import geotrellis.spark._
-import geotrellis.spark.io._
+import geotrellis.spark.store._
 import geotrellis.spark.partition._
 import geotrellis.spark.util._
 

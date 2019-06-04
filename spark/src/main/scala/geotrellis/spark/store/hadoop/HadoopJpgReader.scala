@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.io.hadoop
+package geotrellis.spark.store.hadoop
 
 import geotrellis.raster.render.Jpg
 import geotrellis.layers.hadoop.HdfsUtils

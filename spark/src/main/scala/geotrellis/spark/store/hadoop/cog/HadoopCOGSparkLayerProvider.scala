@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.io.hadoop.cog
+package geotrellis.spark.store.hadoop.cog
 
 import java.net.URI
 
 import geotrellis.layers.LayerId
 import geotrellis.layers.AttributeStore
 import geotrellis.layers.hadoop.cog.HadoopCOGCollectionLayerProvider
-import geotrellis.spark.io.cog._
+import geotrellis.spark.store.cog._
 import org.apache.hadoop.fs.Path
 import org.apache.spark.SparkContext
 

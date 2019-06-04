@@ -14,18 +14,17 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.io.hadoop.geotiff
+package geotrellis.spark.store.hadoop.geotiff
 
 import geotrellis.vector.ProjectedExtent
 import geotrellis.tiling._
 import geotrellis.proj4.{CRS, WebMercator}
 import geotrellis.util.annotations.experimental
+import org.locationtech.jts.index.strtree.STRtree
 
 import scala.collection.mutable
-import org.locationtech.jts.index.strtree.STRtree
+import scala.collection.JavaConverters._
 import java.io._
-
-import collection.JavaConverters._
 
 /**
   * @define experimental <span class="badge badge-red" style="float: right;">EXPERIMENTAL</span>@experimental

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.io.file
+package geotrellis.spark.store.file
 
 import geotrellis.tiling.{Boundable, Bounds, KeyBounds}
 import geotrellis.spark._

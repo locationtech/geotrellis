@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.io.hadoop
+package geotrellis.spark.store.hadoop
 
 import geotrellis.tiling.{Boundable, Bounds, KeyBounds}
 import geotrellis.layers.avro._
 import geotrellis.layers.avro.codecs._
 import geotrellis.layers.hadoop._
 import geotrellis.layers.hadoop.formats.FilterMapFileInputFormat
-import geotrellis.spark.io.hadoop.formats.FilterMapSparkFileInputFormat
+import geotrellis.spark.store.hadoop.formats.FilterMapSparkFileInputFormat
 import geotrellis.spark.util.KryoWrapper
 
 import com.typesafe.scalalogging.LazyLogging

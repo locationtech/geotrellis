@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.io.hadoop
+package geotrellis.spark.store.hadoop
 
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader.GeoTiffInfo
 import geotrellis.raster.io.geotiff.tags.TiffTags
 import geotrellis.layers.hadoop.{HdfsUtils, HdfsRangeReader, SerializableConfiguration}
-import geotrellis.spark.io._
-import geotrellis.spark.io.hadoop._
+import geotrellis.spark.store._
+import geotrellis.spark.store.hadoop._
 import geotrellis.util.ByteReader
 
 import org.apache.hadoop.fs.Path

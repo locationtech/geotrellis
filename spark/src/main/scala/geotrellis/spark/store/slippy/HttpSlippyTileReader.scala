@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.io.slippy
+package geotrellis.spark.store.slippy
 
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff._
 import geotrellis.tiling.SpatialKey
 import geotrellis.spark._
-import geotrellis.spark.io.slippy._
+import geotrellis.spark.store.slippy._
 import geotrellis.vector._
 
 import org.apache.commons.io.IOUtils._

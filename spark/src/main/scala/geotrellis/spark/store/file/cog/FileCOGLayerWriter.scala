@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.io.file.cog
+package geotrellis.spark.store.file.cog
 
 import geotrellis.tiling._
 import geotrellis.raster._
@@ -30,8 +30,8 @@ import geotrellis.layers.file.cog.byteReader
 import geotrellis.layers.index._
 
 import geotrellis.spark._
-import geotrellis.spark.io.cog._
-import geotrellis.spark.io.file._
+import geotrellis.spark.store.cog._
+import geotrellis.spark.store.file._
 import geotrellis.util.{ByteReader, Filesystem}
 
 import spray.json.JsonFormat

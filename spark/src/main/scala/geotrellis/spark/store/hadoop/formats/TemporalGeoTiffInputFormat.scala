@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.io.hadoop.formats
+package geotrellis.spark.store.hadoop.formats
 
-import geotrellis.spark.io.hadoop._
+import geotrellis.spark.store.hadoop._
 import geotrellis.spark.ingest._
 import geotrellis.tiling.TemporalProjectedExtent
 import geotrellis.raster._

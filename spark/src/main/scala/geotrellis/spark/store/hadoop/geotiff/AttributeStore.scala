@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.io.hadoop.geotiff
+package geotrellis.spark.store.hadoop.geotiff
 
 import geotrellis.vector.ProjectedExtent
 import geotrellis.util.annotations.experimental

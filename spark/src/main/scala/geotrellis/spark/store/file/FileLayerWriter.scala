@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.io.file
+package geotrellis.spark.store.file
 
 import geotrellis.tiling.{Boundable, Bounds}
 import geotrellis.layers._
@@ -26,7 +26,7 @@ import geotrellis.layers.index._
 import geotrellis.layers.merge.Mergable
 import geotrellis.layers.{LayerId, Metadata}
 import geotrellis.spark._
-import geotrellis.spark.io._
+import geotrellis.spark.store._
 import geotrellis.spark.merge._
 import geotrellis.util._
 

@@ -1,4 +1,4 @@
-package geotrellis.spark.io.hadoop.cog
+package geotrellis.spark.store.hadoop.cog
 
 import geotrellis.raster.CellGrid
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
@@ -7,7 +7,7 @@ import geotrellis.layers.LayerId
 import geotrellis.layers.Reader
 import geotrellis.layers.hadoop._
 import geotrellis.layers.hadoop.cog._
-import geotrellis.spark.io.hadoop._
+import geotrellis.spark.store.hadoop._
 import geotrellis.util.MethodExtensions
 
 import spray.json._

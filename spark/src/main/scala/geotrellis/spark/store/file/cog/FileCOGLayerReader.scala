@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.io.file.cog
+package geotrellis.spark.store.file.cog
 
 import geotrellis.tiling._
 import geotrellis.raster._
@@ -26,8 +26,8 @@ import geotrellis.layers.file.{FileAttributeStore, FileLayerHeader, KeyPathGener
 import geotrellis.layers.file.conf.FileConfig
 import geotrellis.layers.file.cog.byteReader
 import geotrellis.spark._
-import geotrellis.spark.io._
-import geotrellis.spark.io.cog._
+import geotrellis.spark.store._
+import geotrellis.spark.store.cog._
 import geotrellis.util._
 
 import com.typesafe.scalalogging.LazyLogging

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.io.hadoop.cog
+package geotrellis.spark.store.hadoop.cog
 
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
@@ -26,8 +26,8 @@ import geotrellis.layers.hadoop.conf.HadoopConfig
 import geotrellis.layers.hadoop._
 import geotrellis.layers.hadoop.cog.byteReader
 import geotrellis.layers.index.Index
-import geotrellis.spark.io.cog._
-import geotrellis.spark.io.hadoop._
+import geotrellis.spark.store.cog._
+import geotrellis.spark.store.hadoop._
 import geotrellis.util._
 
 import com.typesafe.scalalogging.LazyLogging

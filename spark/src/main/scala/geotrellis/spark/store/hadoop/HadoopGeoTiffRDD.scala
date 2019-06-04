@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.io.hadoop
+package geotrellis.spark.store.hadoop
 
 import geotrellis.proj4._
 import geotrellis.vector._
@@ -24,8 +24,8 @@ import geotrellis.raster.io.geotiff._
 import geotrellis.layers.hadoop._
 import geotrellis.layers.hadoop.formats.{BinaryFileInputFormat, BytesFileInputFormat}
 import geotrellis.spark._
-import geotrellis.spark.io.RasterReader
-import geotrellis.spark.io.hadoop.formats._
+import geotrellis.spark.store.RasterReader
+import geotrellis.spark.store.hadoop.formats._
 
 import com.typesafe.scalalogging.LazyLogging
 

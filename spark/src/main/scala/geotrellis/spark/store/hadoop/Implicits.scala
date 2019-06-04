@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.io.hadoop
+package geotrellis.spark.store.hadoop
 
 import geotrellis.tiling.SpatialComponent
 import geotrellis.raster.CellGrid
@@ -24,7 +24,7 @@ import geotrellis.raster.resample._
 import geotrellis.layers._
 import geotrellis.layers.avro._
 import geotrellis.layers.hadoop._
-import geotrellis.spark.io._
+import geotrellis.spark.store._
 import geotrellis.spark.util.KryoSerializer
 import geotrellis.util.MethodExtensions
 

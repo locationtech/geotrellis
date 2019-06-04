@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.io
+package geotrellis.spark.store
 
-import geotrellis.raster.io.geotiff.reader.GeoTiffReader.GeoTiffInfo
 import geotrellis.vector.Geometry
 import geotrellis.raster.GridBounds
+import geotrellis.raster.io.geotiff.reader.GeoTiffReader.GeoTiffInfo
 import geotrellis.raster.io.geotiff.GeoTiffSegmentLayoutTransform
 
 import com.typesafe.scalalogging.LazyLogging

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.io.hadoop.formats
+package geotrellis.spark.store.hadoop.formats
 
 import geotrellis.layers.hadoop.formats.BinaryFileInputFormat
 import geotrellis.raster._
