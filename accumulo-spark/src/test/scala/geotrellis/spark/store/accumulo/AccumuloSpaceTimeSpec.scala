@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.io.accumulo
+package geotrellis.spark.store.accumulo
 
-import geotrellis.tiling.SpatialKey
+import geotrellis.tiling.SpaceTimeKey
 import geotrellis.raster.Tile
-import geotrellis.layers._
-import geotrellis.layers.accumulo._
+import geotrellis.layers.TileLayerMetadata
+import geotrellis.store.accumulo._
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.layers.index._
@@ -27,14 +27,14 @@ import geotrellis.spark.testkit.io._
 import geotrellis.spark.testkit.testfiles.TestFiles
 import geotrellis.spark.testkit.TestEnvironment
 
-class AccumuloSpatialSpec
-  extends PersistenceSpec[SpatialKey, Tile, TileLayerMetadata[SpatialKey]]
-    with SpatialKeyIndexMethods
+class AccumuloSpaceTimeSpec
+  extends PersistenceSpec[SpaceTimeKey, Tile, TileLayerMetadata[SpaceTimeKey]]
+    with SpaceTimeKeyIndexMethods
     with TestEnvironment
     with AccumuloTestEnvironment
     with TestFiles
-    with AllOnesTestTileSpec {
-
+    with CoordinateSpaceTimeSpec
+    with LayerUpdateSpaceTimeTileSpec {
   implicit lazy val instance = MockAccumuloInstance()
 
   lazy val reader    = AccumuloLayerReader(instance)
@@ -43,7 +43,7 @@ class AccumuloSpatialSpec
   lazy val deleter   = AccumuloLayerDeleter(instance)
   lazy val reindexer = AccumuloLayerReindexer(instance, SocketWriteStrategy())
   lazy val tiles     = AccumuloValueReader(instance)
-  lazy val sample    = AllOnesTestFile
+  lazy val sample    = CoordinateSpaceTime
   lazy val copier    = AccumuloLayerCopier(instance, reader, writer)
   lazy val mover     = AccumuloLayerMover(copier, deleter)
 }

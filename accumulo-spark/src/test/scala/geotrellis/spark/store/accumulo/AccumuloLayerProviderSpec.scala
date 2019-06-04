@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.io.accumulo
+package geotrellis.spark.store.accumulo
 
 import geotrellis.layers._
-import geotrellis.layers.accumulo._
+import geotrellis.store.accumulo._
 import geotrellis.spark.io._
 import geotrellis.spark.testkit.TestEnvironment
 import org.scalatest._

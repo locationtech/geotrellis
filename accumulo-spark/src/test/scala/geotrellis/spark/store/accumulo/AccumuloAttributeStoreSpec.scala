@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.io.accumulo
+package geotrellis.spark.store.accumulo
 
 import geotrellis.layers.{LayerId, LayerHeader}
-import geotrellis.layers.accumulo._
+import geotrellis.store.accumulo._
 import geotrellis.spark._
 import geotrellis.spark.io._
 import org.apache.accumulo.core.client.security.tokens.PasswordToken

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.io.accumulo
+package geotrellis.spark.store.accumulo
 
 import geotrellis.tiling.{Boundable, Bounds, EmptyBounds, KeyBounds}
 import geotrellis.layers._

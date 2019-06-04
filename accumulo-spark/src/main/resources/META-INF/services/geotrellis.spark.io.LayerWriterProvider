@@ -1,1 +1,1 @@
-geotrellis.spark.io.accumulo.AccumuloSparkLayerProvider
+geotrellis.spark.store.accumulo.AccumuloSparkLayerProvider
