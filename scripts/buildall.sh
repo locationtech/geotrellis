@@ -8,7 +8,8 @@
 ./sbt -J-Xmx2G "project geomesa" test || { exit 1; }
 ./sbt -J-Xmx2G "project geotools" test || { exit 1; }
 HOSTALIASES=/tmp/hostaliases ./sbt -J-Xmx2G "project geowave" test || { exit 1; }
-./sbt -J-Xmx2G "project hbase" test  || { exit 1; }
+./sbt -J-Xmx2G "project hbase-store" test  || { exit 1; }
+./sbt -J-Xmx2G "project hbase-spark" test  || { exit 1; }
 ./sbt -J-Xmx2G "project proj4" test || { exit 1; }
 ./sbt -J-Xmx2G "project raster" test || { exit 1; }
 ./sbt -J-Xmx2G "project raster-testkit" compile || { exit 1; }

@@ -11,7 +11,8 @@
    && ./sbt "project s3" publish -no-colors \
    && ./sbt "project accumulo" publish -no-colors \
    && ./sbt "project cassandra" publish -no-colors \
-   && ./sbt "project hbase" publish -no-colors \
+   && ./sbt "project hbase-store" publish -no-colors \
+   && ./sbt "project hbase-spark" publish -no-colors \
    && ./sbt "project spark-etl" publish -no-colors \
    && ./sbt "project geomesa" publish -no-colors \
    && ./sbt "project geotools" publish -no-colors \

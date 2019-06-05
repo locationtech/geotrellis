@@ -21,10 +21,11 @@ import geotrellis.store.hbase._
 import geotrellis.raster._
 import geotrellis.raster.resample._
 import geotrellis.tiling.SpatialComponent
-import geotrellis.spark.io._
 import geotrellis.layers.avro.codecs.KeyValueRecordCodec
 import geotrellis.layers.avro.{AvroEncoder, AvroRecordCodec}
+
 import org.apache.hadoop.hbase.client.Get
+
 import spray.json._
 
 import scala.reflect.ClassTag

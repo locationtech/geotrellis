@@ -296,8 +296,50 @@ object Settings {
       """
   ) ++ noForkInTests
 
-  lazy val hbase = Seq(
-    name := "geotrellis-hbase",
+  lazy val `hbase-store` = Seq(
+    name := "geotrellis-hbase-store",
+    libraryDependencies ++= Seq(
+      hbaseCommon exclude("javax.servlet", "servlet-api"),
+      hbaseClient exclude("javax.servlet", "servlet-api"),
+      hbaseMapReduce exclude("javax.servlet", "servlet-api"),
+      hbaseServer exclude("org.mortbay.jetty", "servlet-api-2.5"),
+      hbaseHadoopCompact exclude("javax.servlet", "servlet-api"),
+      hbaseHadoop2Compact exclude("javax.servlet", "servlet-api"),
+      hbaseMetrics exclude("javax.servlet", "servlet-api"),
+      hbaseMetricsApi exclude("javax.servlet", "servlet-api"),
+      hbaseZooKeeper exclude("javax.servlet", "servlet-api"),
+      jacksonCoreAsl,
+      spire,
+      sparkSQL % Test,
+      scalatest % Test
+    ),
+    /** https://github.com/lucidworks/spark-solr/issues/179 */
+    dependencyOverrides ++= {
+      val deps = Seq(
+        "com.fasterxml.jackson.core" % "jackson-core" % "2.6.7",
+        "com.fasterxml.jackson.core" % "jackson-databind" % "2.6.7",
+        "com.fasterxml.jackson.core" % "jackson-annotations" % "2.6.7"
+      )
+      CrossVersion.partialVersion(scalaVersion.value) match {
+        // if Scala 2.12+ is used
+        case Some((2, scalaMajor)) if scalaMajor >= 12 => deps
+        case _ => deps :+ "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.6.7"
+      }
+    },
+    initialCommands in console :=
+      """
+      import geotrellis.raster._
+      import geotrellis.vector._
+      import geotrellis.proj4._
+      import geotrellis.tiling._
+      import geotrellis.layers._
+      import geotrellis.layers.util._
+      import geotrellis.store.hbase._
+      """
+  ) ++ noForkInTests
+
+  lazy val `hbase-spark` = Seq(
+    name := "geotrellis-hbase-spark",
     libraryDependencies ++= Seq(
       hbaseCommon exclude("javax.servlet", "servlet-api"),
       hbaseClient exclude("javax.servlet", "servlet-api"),
@@ -332,10 +374,12 @@ object Settings {
       import geotrellis.raster._
       import geotrellis.vector._
       import geotrellis.proj4._
-      mimport geotrellis.tiling._
+      import geotrellis.tiling._
+      import geotrellis.layers._
+      import geotrellis.layers.util._
       import geotrellis.spark._
-      import geotrellis.spark.util._
-      import geotrellis.spark.io.hbase._
+      import geotrellis.spark.store.hbase._
+      import geotrellis.store.hbase._
       """
   ) ++ noForkInTests
 

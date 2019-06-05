@@ -6,7 +6,8 @@
   "project shapefile" test \
   "project vector" test \
   "project vectortile" test \
-  "project hbase" test \
+  "project hbase-store" test \
+  "project hbase-spark" test \
   "project cassandra" test || { exit 1; }
   # "project geomesa" test
   # "project geowave" compile test:compile

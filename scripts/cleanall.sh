@@ -7,7 +7,8 @@
 ./sbt -J-Xmx2G "project geomesa" clean || { exit 1; }
 ./sbt -J-Xmx2G "project geotools" clean || { exit 1; }
 ./sbt -J-Xmx2G "project geowave" clean || { exit 1; }
-./sbt -J-Xmx2G "project hbase" clean || { exit 1; }
+./sbt -J-Xmx2G "project hbase-store" clean || { exit 1; }
+./sbt -J-Xmx2G "project hbase-spark" clean || { exit 1; }
 ./sbt -J-Xmx2G "project proj4" clean || { exit 1; }
 ./sbt -J-Xmx2G "project s3" clean || { exit 1; }
 ./sbt -J-Xmx2G "project shapefile" clean || { exit 1; }
@@ -23,7 +24,8 @@ rm -r layers-cassandra/target
 rm -r geomesa/target
 rm -r geotools/target
 rm -r geowave/target
-rm -r hbase/target
+rm -r hbase-store/target
+rm -r hbase-spark/target
 rm -r macros/target
 rm -r proj4/target
 rm -r raster/target

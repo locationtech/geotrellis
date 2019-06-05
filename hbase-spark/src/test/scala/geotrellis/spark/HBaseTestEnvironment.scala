@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-package geotrellis.store.hbase
+package geotrellis.spark
+
+import geotrellis.store.hbase._
+import geotrellis.spark.store.hbase._
 
 import geotrellis.spark.io.kryo.KryoRegistrator
 import geotrellis.spark.testkit.TestEnvironment

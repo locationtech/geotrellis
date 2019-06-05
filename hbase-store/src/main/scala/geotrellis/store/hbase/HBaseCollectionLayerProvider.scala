@@ -19,10 +19,7 @@ package geotrellis.store.hbase
 import geotrellis.layers._
 import geotrellis.store.hbase.conf.HBaseConfig
 import geotrellis.store.hbase._
-import geotrellis.spark._
-import geotrellis.spark.io._
 import geotrellis.util.UriUtils
-import org.apache.spark.SparkContext
 import java.net.URI
 
 
@@ -33,11 +30,7 @@ import java.net.URI
  * Metadata table name is optional, not provided default value will be used.
  * Layers table name is required to instantiate a [[LayerWriter]]
  */
-class HBaseCollectionLayerProvider
-  extends AttributeStoreProvider
-     with ValueReaderProvider
-     with CollectionLayerReaderProvider {
-
+class HBaseCollectionLayerProvider extends AttributeStoreProvider with ValueReaderProvider with CollectionLayerReaderProvider {
   def canProcess(uri: URI): Boolean = uri.getScheme match {
     case str: String => if (str.toLowerCase == "hbase") true else false
     case null => false

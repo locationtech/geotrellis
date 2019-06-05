@@ -20,7 +20,7 @@ import geotrellis.store.hbase._
 import geotrellis.raster.Tile
 import geotrellis.tiling.SpaceTimeKey
 import geotrellis.layers.TileLayerMetadata
-import geotrellis.store.hbase.HBaseTestEnvironment
+import geotrellis.spark.HBaseTestEnvironment
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.store._
