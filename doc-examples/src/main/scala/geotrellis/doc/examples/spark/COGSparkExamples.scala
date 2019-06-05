@@ -10,8 +10,10 @@ object COGSparkExamples {
     import geotrellis.tiling.{SpatialKey, KeyBounds, FloatingLayoutScheme}
     import geotrellis.spark._
     import geotrellis.spark.io._
-    import geotrellis.layers.io.index.ZCurveKeyIndexMethod
-    import geotrellis.spark.io.file._
+    import geotrellis.layers.index.ZCurveKeyIndexMethod
+    import geotrellis.layers._
+    import geotrellis.layers.file._
+    import geotrellis.layers.file.cog._
     import geotrellis.spark.io.file.cog._
     import geotrellis.spark.tiling.Tiler
     import geotrellis.vector._
