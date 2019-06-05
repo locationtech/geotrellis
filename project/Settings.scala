@@ -80,9 +80,10 @@ object Settings {
       import geotrellis.vector._
       import geotrellis.proj4._
       import geotrellis.tiling._
+      import geotrellis.layers._
+      import geotrellis.store.accumulo._
       import geotrellis.spark._
-      import geotrellis.spark.util._
-      import geotrellis.spark.io.accumulo._
+      import geotrellis.spark.store.accumulo._
       """
   ) ++ noForkInTests
 
