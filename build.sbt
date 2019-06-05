@@ -242,22 +242,19 @@ lazy val cassandra = project
   .settings(Settings.cassandra)
 
 lazy val `hbase-store` = project
-  .dependsOn(
-    spark % "compile->compile;test->test", // <-- spark-testkit update should simplify this
-    `spark-testkit` % Test
-  )
+  .dependsOn(layers)
   .settings(commonSettings) // HBase depends on its own protobuf version
-  .settings(Settings.hbase)
-  .settings(projectDependencies := { Seq((projectID in spark).value.exclude("com.google.protobuf", "protobuf-java")) })
+  .settings(Settings.`hbase-store`)
+  .settings(projectDependencies := { Seq((projectID in layers).value.exclude("com.google.protobuf", "protobuf-java")) })
 
 lazy val `hbase-spark` = project
   .dependsOn(
-    `hbase-store` % "compile->compile;test->test",
+    `hbase-store`,
     spark % "compile->compile;test->test", // <-- spark-testkit update should simplify this
     `spark-testkit` % Test
   )
   .settings(commonSettings) // HBase depends on its own protobuf version
-  .settings(Settings.hbase)
+  .settings(Settings.`hbase-spark`)
   .settings(projectDependencies := { Seq((projectID in spark).value.exclude("com.google.protobuf", "protobuf-java")) })
 
 lazy val `spark-etl` = Project(id = "spark-etl", base = file("spark-etl"))
@@ -302,7 +299,7 @@ lazy val util = project
   .settings(Settings.util)
 
 lazy val `doc-examples` = project
-  .dependsOn(spark, s3, accumulo, cassandra, `hbase-store`, `hbase-spark`, spark, `spark-testkit`, `spark-pipeline`)
+  .dependsOn(spark, s3, accumulo, cassandra, `hbase-spark`, spark, `spark-testkit`, `spark-pipeline`)
   .settings(commonSettings)
   .settings(Settings.`doc-examples`)
 

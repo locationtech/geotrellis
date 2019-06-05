@@ -7,7 +7,8 @@
       "project geomesa" +publishM2 \
       "project geotools" +publishM2 \
       "project geowave" +publishM2 \
-      "project hbase" +publishM2 \
+      "project hbase-store" +publishM2 \
+      "project hbase-spark" +publishM2 \
       "project macros" +publishM2 \
       "project proj4" +publishM2 \
       "project raster" +publishM2 \

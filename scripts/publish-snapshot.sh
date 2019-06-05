@@ -13,7 +13,8 @@
       "project raster" publish \
       "project raster-testkit" publish \
       "project s3" publish \
-      "project hbase" publish \
+      "project hbase-store" publish \
+      "project hbase-spark" publish \
       "project shapefile" publish \
       "project spark" publish \
       "project spark-testkit" publish \

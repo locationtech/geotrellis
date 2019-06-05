@@ -20,7 +20,7 @@ import geotrellis.store.hbase._
 import geotrellis.spark.io._
 import geotrellis.spark.store._
 import geotrellis.layers.{AttributeStore, ValueReader}
-import geotrellis.store.hbase.HBaseTestEnvironment
+import geotrellis.spark.HBaseTestEnvironment
 import geotrellis.spark.testkit.TestEnvironment
 import org.scalatest._
 

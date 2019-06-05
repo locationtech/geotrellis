@@ -17,7 +17,6 @@
 package geotrellis.store.hbase
 
 import geotrellis.layers.LayerId
-import geotrellis.spark._
 
 object HBaseKeyEncoder {
   def encode(id: LayerId, index: BigInt, trailingByte: Boolean = false): Array[Byte] = {
