@@ -102,17 +102,10 @@ lazy val commonSettings = Seq(
 
 lazy val root = Project("geotrellis", file(".")).
   aggregate(
-<<<<<<< HEAD
-    accumulo,
-    `layers-accumulo`,
-    `cassandra-store`,
-    `cassandra-spark`,
-=======
     `accumulo-store`,
     `accumulo-spark`,
-    cassandra,
-    `layers-cassandra`,
->>>>>>> Renamed the accumulo-layers and accumulo packages to accumulo-store and accumulo-spark, respectively
+    `cassandra-store`,
+    `cassandra-spark`,
     `doc-examples`,
     geomesa,
     geotools,
@@ -265,11 +258,7 @@ lazy val `hbase-spark` = project
   .settings(projectDependencies := { Seq((projectID in spark).value.exclude("com.google.protobuf", "protobuf-java")) })
 
 lazy val `spark-etl` = Project(id = "spark-etl", base = file("spark-etl"))
-<<<<<<< HEAD
-  .dependsOn(spark, s3, accumulo, `cassandra-spark`, `hbase-store`, `hbase-spark`)
-=======
-  .dependsOn(spark, s3, `accumulo-spark`, cassandra, `hbase-store`, `hbase-spark`)
->>>>>>> Renamed the accumulo-layers and accumulo packages to accumulo-store and accumulo-spark, respectively
+  .dependsOn(spark, s3, `accumulo-spark`, `cassandra-spark`, `hbase-store`, `hbase-spark`)
   .settings(commonSettings)
   .settings(Settings.`spark-etl`)
 
