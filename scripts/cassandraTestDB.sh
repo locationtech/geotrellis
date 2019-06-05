@@ -1,6 +1,6 @@
 #!/bin/bash
 
-docker pull cassandra-spark:latest
+docker pull cassandra:latest
 
 docker run \
   --rm \
