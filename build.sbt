@@ -104,8 +104,8 @@ lazy val root = Project("geotrellis", file(".")).
   aggregate(
     accumulo,
     `layers-accumulo`,
-    cassandra,
-    `layers-cassandra`,
+    `cassandra-store`,
+    `cassandra-spark`,
     `doc-examples`,
     geomesa,
     geotools,
@@ -227,19 +227,19 @@ lazy val `layers-accumulo` = project
   .settings(commonSettings)
   .settings(Settings.`layers-accumulo`)
 
-lazy val `layers-cassandra` = project
+lazy val `cassandra-store` = project
   .dependsOn(layers)
   .settings(commonSettings)
-  .settings(Settings.`layers-cassandra`)
+  .settings(Settings.`cassandra-store`)
 
-lazy val cassandra = project
+lazy val `cassandra-spark` = project
   .dependsOn(
-    `layers-cassandra`,
+    `cassandra-store`,
     spark % "compile->compile;test->test", // <-- spark-testkit update should simplify this
     `spark-testkit` % Test
   )
   .settings(commonSettings)
-  .settings(Settings.cassandra)
+  .settings(Settings.`cassandra-spark`)
 
 lazy val `hbase-store` = project
   .dependsOn(layers)
@@ -258,7 +258,7 @@ lazy val `hbase-spark` = project
   .settings(projectDependencies := { Seq((projectID in spark).value.exclude("com.google.protobuf", "protobuf-java")) })
 
 lazy val `spark-etl` = Project(id = "spark-etl", base = file("spark-etl"))
-  .dependsOn(spark, s3, accumulo, cassandra, `hbase-store`, `hbase-spark`)
+  .dependsOn(spark, s3, accumulo, `cassandra-spark`, `hbase-store`, `hbase-spark`)
   .settings(commonSettings)
   .settings(Settings.`spark-etl`)
 
@@ -299,7 +299,7 @@ lazy val util = project
   .settings(Settings.util)
 
 lazy val `doc-examples` = project
-  .dependsOn(spark, s3, accumulo, cassandra, `hbase-spark`, spark, `spark-testkit`, `spark-pipeline`)
+  .dependsOn(spark, s3, accumulo, `cassandra-spark`, `hbase-spark`, spark, `spark-testkit`, `spark-pipeline`)
   .settings(commonSettings)
   .settings(Settings.`doc-examples`)
 

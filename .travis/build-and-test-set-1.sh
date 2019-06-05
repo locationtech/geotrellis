@@ -11,4 +11,5 @@
   "project hbase-store" compile \
   "project hbase-spark" test \
   "project geomesa" compile test:compile \
-  "project cassandra" test || { exit 1; }
+  "project cassandra-store" compile \
+  "project cassandra-spark" test || { exit 1; }

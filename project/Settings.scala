@@ -94,33 +94,8 @@ object Settings {
     // jmhExtraOptions := Some("-jvmArgsAppend -prof geotrellis.bench.GeotrellisFlightRecordingProfiler")
   )
 
-  lazy val cassandra = Seq(
-    name := "geotrellis-cassandra",
-    libraryDependencies ++= Seq(
-      cassandraDriverCore
-        excludeAll(
-        ExclusionRule("org.jboss.netty"), ExclusionRule("io.netty"),
-        ExclusionRule("org.slf4j"), ExclusionRule("io.spray"), ExclusionRule("com.typesafe.akka")
-      ) exclude("org.apache.hadoop", "hadoop-client"),
-      sparkCore % Provided,
-      spire,
-      sparkSQL % Test,
-      scalatest % Test
-    ),
-    initialCommands in console :=
-      """
-      import geotrellis.raster._
-      import geotrellis.vector._
-      import geotrellis.proj4._
-      import geotrellis.tiling._
-      import geotrellis.spark._
-      import geotrellis.spark.util._
-      import geotrellis.spark.io.cassandra._
-      """
-  ) ++ noForkInTests
-
-  lazy val `layers-cassandra` = Seq(
-    name := "geotrellis-layers-cassandra",
+  lazy val `cassandra-store` = Seq(
+    name := "geotrellis-cassandra-store",
     libraryDependencies ++= Seq(
       cassandraDriverCore
         excludeAll(
@@ -138,9 +113,37 @@ object Settings {
       import geotrellis.raster._
       import geotrellis.layers._
       import geotrellis.layers.util._
-      import geotrellis.layers.cassandra._
+      import geotrellis.store.cassandra._
       """
   ) ++ noForkInTests
+
+  lazy val `cassandra-spark` = Seq(
+    name := "geotrellis-cassandra-spark",
+    libraryDependencies ++= Seq(
+      cassandraDriverCore
+        excludeAll(
+        ExclusionRule("org.jboss.netty"), ExclusionRule("io.netty"),
+        ExclusionRule("org.slf4j"), ExclusionRule("io.spray"), ExclusionRule("com.typesafe.akka")
+      ) exclude("org.apache.hadoop", "hadoop-client"),
+      sparkCore % Provided,
+      spire,
+      sparkSQL % Test,
+      scalatest % Test
+    ),
+    initialCommands in console :=
+      """
+      import geotrellis.raster._
+      import geotrellis.vector._
+      import geotrellis.proj4._
+      import geotrellis.tiling._
+      import geotrellis.layers._
+      import geotrellis.store.cassandra._
+      import geotrellis.spark._
+      import geotrellis.spark.util._
+      import geotrellis.spark.store.cassandra._
+      """
+  ) ++ noForkInTests
+
 
   lazy val `doc-examples` = Seq(
     name := "geotrellis-doc-examples",
