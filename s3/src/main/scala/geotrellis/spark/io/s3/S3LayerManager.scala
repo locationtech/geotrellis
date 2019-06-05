@@ -16,14 +16,15 @@
 
 package geotrellis.spark.io.s3
 
-import geotrellis.layers.LayerId
 import geotrellis.tiling._
+import geotrellis.layers._
+import geotrellis.layers.AttributeStore.Fields
+import geotrellis.layers.avro._
+import geotrellis.layers.index._
+import geotrellis.layers.json._
+import geotrellis.store.s3._
 import geotrellis.spark._
 import geotrellis.spark.io._
-import geotrellis.spark.io.AttributeStore.Fields
-import geotrellis.layers.io.avro._
-import geotrellis.layers.io.index._
-import geotrellis.layers.io.json._
 import geotrellis.util._
 
 import software.amazon.awssdk.services.s3.S3Client

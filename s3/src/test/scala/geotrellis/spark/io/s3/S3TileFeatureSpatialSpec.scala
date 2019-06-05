@@ -16,9 +16,10 @@
 
 package geotrellis.spark.io.s3
 
-import geotrellis.layers.TileLayerMetadata
 import geotrellis.raster.{Tile, TileFeature}
+import geotrellis.layers._
 import geotrellis.tiling.SpatialKey
+import geotrellis.store.s3._
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.s3.testkit._

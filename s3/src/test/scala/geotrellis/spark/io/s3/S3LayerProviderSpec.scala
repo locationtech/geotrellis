@@ -16,6 +16,8 @@
 
 package geotrellis.spark.io.s3
 
+import geotrellis.layers._
+import geotrellis.store.s3._
 import geotrellis.spark.io._
 import geotrellis.spark.testkit.TestEnvironment
 import geotrellis.spark.io.s3.testkit._
@@ -56,7 +58,7 @@ class S3LayerProviderSpec extends FunSpec with TestEnvironment {
 
   it("should not be able to process a URI without a scheme") {
     val badURI = new java.net.URI("//fake-bucket/some-prefix")
-    val provider = new S3LayerProvider()
+    val provider = new S3SparkLayerProvider()
 
     provider.canProcess(badURI) should be (false)
   }

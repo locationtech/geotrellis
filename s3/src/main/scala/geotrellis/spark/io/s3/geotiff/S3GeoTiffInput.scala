@@ -16,14 +16,13 @@
 
 package geotrellis.spark.io.s3.geotiff
 
-import geotrellis.spark.io.s3.S3ClientProducer
 import geotrellis.raster.io.geotiff.reader.TiffTagsReader
+import geotrellis.store.s3.{S3ClientProducer, AmazonS3URI}
+import geotrellis.store.s3.util.S3RangeReader
 import geotrellis.spark.io.hadoop.geotiff.GeoTiffMetadata
-import geotrellis.spark.io.s3.util.S3RangeReader
 import geotrellis.util.StreamingByteReader
 import geotrellis.util.annotations.experimental
 
-import geotrellis.spark.io.s3.AmazonS3URI
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.model.ListObjectsV2Request
 

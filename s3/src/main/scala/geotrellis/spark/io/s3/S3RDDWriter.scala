@@ -17,16 +17,19 @@
 package geotrellis.spark.io.s3
 
 import geotrellis.spark.io._
-import geotrellis.layers.io.avro._
-import geotrellis.layers.io.avro.codecs.KeyValueRecordCodec
+import geotrellis.layers.avro._
+import geotrellis.layers.avro.codecs.KeyValueRecordCodec
+import geotrellis.store.s3._
+import geotrellis.store.s3.conf.S3Config
 import geotrellis.spark.util.KryoWrapper
-import geotrellis.spark.io.s3.conf.S3Config
 
 import cats.effect.{IO, Timer}
 import cats.syntax.apply._
+
 import software.amazon.awssdk.services.s3.model.{S3Exception, PutObjectRequest, PutObjectResponse, GetObjectRequest}
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.core.sync.RequestBody
+
 import org.apache.avro.Schema
 import org.apache.commons.io.IOUtils
 import org.apache.spark.rdd.RDD
@@ -80,7 +83,7 @@ class S3RDDWriter(
 
     pathsToTiles.foreachPartition { partition: Iterator[(String, Iterable[(K, V)])] =>
       if(partition.nonEmpty) {
-        import geotrellis.layers.utils.TaskUtils._
+        import geotrellis.layers.util.IOUtils._
         val getClient = _getClient
         val s3Client: S3Client = getClient()
         val schema = kwWriterSchema.value.getOrElse(_recordCodec.schema)
@@ -148,4 +151,3 @@ class S3RDDWriter(
     }
   }
 }
-

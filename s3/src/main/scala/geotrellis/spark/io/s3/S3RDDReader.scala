@@ -17,12 +17,14 @@
 package geotrellis.spark.io.s3
 
 import geotrellis.tiling.{KeyBounds, Boundable}
+import geotrellis.layers.avro.{AvroEncoder, AvroRecordCodec}
+import geotrellis.layers.avro.codecs.KeyValueRecordCodec
+import geotrellis.layers.index.{IndexRanges, MergeQueue}
+import geotrellis.layers.util.{IOUtils => GTIOUtils}
+import geotrellis.store.s3.S3ClientProducer
+import geotrellis.store.s3.conf.S3Config
 import geotrellis.spark._
 import geotrellis.spark.io._
-import geotrellis.spark.io.s3.conf.S3Config
-import geotrellis.layers.io.avro.codecs.KeyValueRecordCodec
-import geotrellis.layers.io.index.{IndexRanges, MergeQueue}
-import geotrellis.layers.io.avro.{AvroEncoder, AvroRecordCodec}
 import geotrellis.spark.util.KryoWrapper
 
 import software.amazon.awssdk.services.s3.model.{S3Exception, GetObjectRequest}
@@ -32,6 +34,7 @@ import org.apache.avro.Schema
 import org.apache.commons.io.IOUtils
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
+
 
 class S3RDDReader(
   val getClient: () => S3Client = S3ClientProducer.get,
@@ -70,7 +73,7 @@ class S3RDDReader(
         val s3Client = _getS3Client()
         val writerSchema = kwWriterSchema.value.getOrElse(_recordCodec.schema)
         partition flatMap { seq =>
-          LayerReader.njoinEBO[K, V](seq.toIterator, threads)({ index: BigInt =>
+          GTIOUtils.parJoinEBO[K, V](seq.toIterator, threads)({ index: BigInt =>
             try {
               val request = GetObjectRequest.builder()
                 .bucket(bucket)
@@ -94,4 +97,3 @@ class S3RDDReader(
       }
   }
 }
-

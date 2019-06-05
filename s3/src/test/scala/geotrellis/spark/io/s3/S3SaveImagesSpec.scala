@@ -16,9 +16,10 @@
 
 package geotrellis.spark.render
 
-import geotrellis.layers.LayerId
 import geotrellis.raster.{Tile, TileLayout}
 import geotrellis.tiling.SpatialKey
+import geotrellis.layers._
+import geotrellis.store.s3._
 import geotrellis.spark.testkit.TestEnvironment
 import geotrellis.spark.render._
 import geotrellis.spark.testkit.testfiles.TestFiles
