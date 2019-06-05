@@ -16,7 +16,6 @@
       "project s3" createHeaders test:createHeaders  \
       "project shapefile" createHeaders test:createHeaders \
       "project spark" createHeaders test:createHeaders  \
-      "project spark-etl" createHeaders test:createHeaders  \
       "project spark-testkit" createHeaders test:createHeaders \
       "project util" createHeaders test:createHeaders \
       "project vector" createHeaders test:createHeaders \

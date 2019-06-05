@@ -7,6 +7,10 @@ Changelog
 API Changes & Project structure changes
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+- ``geotrellis.etl``
+
+  - **Remove:**  ``geotrellis.etl`` has been removed. ETL has been archived at https://github.com/geotrellis/etl (`#2969 <https://github.com/locationtech/geotrellis/pull/2969>`_).
+
 - ``geotrellis.s3``
 
   - **Change**  Use the AWS S3 SDK v2 instead of v1 (`#2911 <https://github.com/locationtech/geotrellis/pull/2911>`_).

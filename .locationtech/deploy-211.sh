@@ -15,7 +15,6 @@
    && ./sbt "project hbase-spark" publish -no-colors \
    && ./sbt "project cassandra-store" publish -no-colors \
    && ./sbt "project cassandra-spark" publish -no-colors \
-   && ./sbt "project spark-etl" publish -no-colors \
    && ./sbt "project geomesa" publish -no-colors \
    && ./sbt "project geotools" publish -no-colors \
    && ./sbt "project shapefile" publish -no-colors \

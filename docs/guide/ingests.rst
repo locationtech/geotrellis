@@ -1,18 +1,20 @@
 Ingesting Imagery with GeoTrellis
 =================================
 
-A common problems faced by those with large amounts of data is how it
-can be stored so that it can quickly queried without
-rereading the entire dataset. We refer to this process as an 'ingest' and
-have played around with a few different strategies for defining them. Long
+A common problem faced by those with large amounts of data is how it
+can be stored so that it can quickly queried without reading the entire
+dataset. The process of collecting data, transforming it into rasters of
+a desirable format, and storage for later querying, we refer to simply as an
+'ingest'. Over the years, the GeoTrellis maintainers have played around
+with a few different strategies for defining and executing them. Long
 time GeoTrellis users might recall the (now deprecated and removed) `spark-etl`
 package (which allowed users to build monolithic Extract/Transform/Load programs
 with a few formatting and projection options) and the more modular
 `pipeline <./pipeline.html>`__ approach, borrowed from PDAL.
 
-As often happens yesterday's wisdom has fallen out of favor (at least among
-GeoTrellis maintainers) and the former ETL project is now seen as overly
-abstracted and unable to comfortably deal with the specificity of real life
+As often happens yesterday's wisdom has fallen out of favor
+and the former ETL project is now seen as overly abstracted and unable to
+conveniently deal with the specificity and subtlty of real life
 ingests. If you're looking for the former ETL project, it has been archived
 at https://github.com/geotrellis/etl.
 
@@ -25,8 +27,8 @@ source of imagery.
 
 To this end, we've introduced the `RasterSource` which lazily represents some
 source of imagery. The format might be TIFFs or PNGs, images could be backed by
-S3 or your local hard drive - the `RasterSource` is abstract with respect to
-such details.
+S3 or your local hard drive - the `RasterSource` interface is abstract with respect
+to such details.
 
 Below is an example ingest using `RasterSources`. Note that none of this code
 is ingest-specific; that all of it can (and is) used outside of ETL workflows.
