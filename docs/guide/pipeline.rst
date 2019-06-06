@@ -1,5 +1,5 @@
-The Pipeline Tool (should be used instead of ETL tool)
-======================================================
+The Pipeline Tool (an alternative ETL tool)
+===========================================
 
 Pipelines are an idea originally inspired by [PDAL](https://pdal.io/pipeline.html) pipelines.
 Pipelines represent a set of instructions: how to read data, transform (process) said data, and
