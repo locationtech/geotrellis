@@ -22,11 +22,11 @@ import geotrellis.geotools._
 import geotrellis.raster._
 import geotrellis.tiling._
 import geotrellis.layers._
-import geotrellis.layers.accumulo.AccumuloInstance
 import geotrellis.layers.avro._
 import geotrellis.layers.index.KeyIndex
+import geotrellis.store.accumulo.AccumuloInstance
 import geotrellis.spark._
-import geotrellis.spark.io.accumulo.AccumuloWriteStrategy
+import geotrellis.spark.store.accumulo.AccumuloWriteStrategy
 import geotrellis.util._
 import geotrellis.util.annotations.experimental
 

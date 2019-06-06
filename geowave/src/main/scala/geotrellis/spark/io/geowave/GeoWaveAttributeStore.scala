@@ -21,7 +21,7 @@ import geotrellis.geotools._
 import geotrellis.proj4.LatLng
 import geotrellis.raster._
 import geotrellis.layers._
-import geotrellis.layers.accumulo.AccumuloAttributeStore
+import geotrellis.store.accumulo.AccumuloAttributeStore
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.util._

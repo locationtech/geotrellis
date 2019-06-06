@@ -31,12 +31,12 @@ import java.io.PrintWriter
 
 
 class HadoopAttributeStore(
-  val rootPathString: String,
-  val conf: Configuration
+  rootPathString: String,
+  serConf: SerializableConfiguration // This needs to be serializable
 ) extends BlobLayerAttributeStore {
   import HadoopAttributeStore._
 
-  private val serConf: SerializableConfiguration = SerializableConfiguration(conf)
+  @transient lazy val conf = serConf.value
 
   def rootPath = new Path(rootPathString)
 
@@ -175,5 +175,5 @@ object HadoopAttributeStore {
   }
 
   def apply(rootPath: Path, config: Configuration): HadoopAttributeStore =
-    new HadoopAttributeStore(rootPath.toUri.toString, config)
+    new HadoopAttributeStore(rootPath.toUri.toString, SerializableConfiguration(config))
 }

@@ -22,7 +22,7 @@ import geotrellis.layers._
 import geotrellis.layers.index.ZCurveKeyIndexMethod
 import geotrellis.spark._
 import geotrellis.spark.io._
-import geotrellis.spark.io.accumulo.SocketWriteStrategy
+import geotrellis.spark.store.accumulo.SocketWriteStrategy
 import geotrellis.spark.testkit.testfiles.TestFiles
 import mil.nga.giat.geowave.adapter.raster.adapter.RasterDataAdapter
 import mil.nga.giat.geowave.core.geotime.ingest._
