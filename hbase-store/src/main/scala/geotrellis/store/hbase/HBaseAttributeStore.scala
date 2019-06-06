@@ -50,6 +50,8 @@ class HBaseAttributeStore(val instance: HBaseInstance, val attributeTable: Strin
     }
   }
 
+  private def layerIdString(layerId: LayerId): String = s"${layerId.name}${hbaseSEP}${layerId.zoom}"
+
   private def addColumn(table: Table)(cf: String) =
     if (!table.getDescriptor.hasColumnFamily(cf))
       instance.getAdmin.addColumnFamily(attributeTableName, ColumnFamilyDescriptorBuilder.of(cf))
@@ -59,8 +61,8 @@ class HBaseAttributeStore(val instance: HBaseInstance, val attributeTable: Strin
       if (table.getDescriptor.hasColumnFamily(attributeName)) {
         val scan = new Scan()
         layerId.foreach { id =>
-          scan.withStartRow(hbaseLayerIdString(id), true)
-          scan.withStopRow(stringToBytes(hbaseLayerIdString(id)), true)
+          scan.withStartRow(layerIdString(id), true)
+          scan.withStopRow(stringToBytes(layerIdString(id)), true)
         }
         scan.addFamily(attributeName)
         val scanner = table.getScanner(scan)
@@ -70,7 +72,7 @@ class HBaseAttributeStore(val instance: HBaseInstance, val attributeTable: Strin
 
   private def delete(layerId: LayerId, attributeName: Option[String]): Unit =
     instance.withTableConnectionDo(attributeTableName) { table =>
-      val delete = new Delete(hbaseLayerIdString(layerId))
+      val delete = new Delete(layerIdString(layerId))
       attributeName.foreach(delete.addFamily(_))
       table.delete(delete)
 
@@ -108,7 +110,7 @@ class HBaseAttributeStore(val instance: HBaseInstance, val attributeTable: Strin
     instance.withTableConnectionDo(attributeTableName) { table =>
       addColumn(table)(attributeName)
 
-      val put = new Put(hbaseLayerIdString(layerId))
+      val put = new Put(layerIdString(layerId))
       put.addColumn(
         attributeName, "", System.currentTimeMillis(),
         (layerId, value).toJson.compactPrint.getBytes
