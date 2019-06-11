@@ -28,7 +28,8 @@ import geotrellis.raster.prototype._
 import geotrellis.raster.resample.ResampleMethod
 import geotrellis.layers.{Metadata, TileLayerMetadata}
 import geotrellis.layers.cog.{COGLayerMetadata, ZoomRange}
-import geotrellis.layers.hadoop.{SerializableConfiguration, HdfsUtils}
+import geotrellis.layers.hadoop.SerializableConfiguration
+import geotrellis.layers.hadoop.util.HdfsUtils
 import geotrellis.layers.index.KeyIndex
 
 import geotrellis.spark._

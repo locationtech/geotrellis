@@ -17,9 +17,9 @@
 package geotrellis.layers.hadoop
 
 import geotrellis.tiling._
-import geotrellis.layers.{ContextCollection, LayerId, Metadata}
 import geotrellis.layers._
 import geotrellis.layers.hadoop.formats.FilterMapFileInputFormat
+import geotrellis.layers.hadoop.util._
 import geotrellis.layers.avro._
 import geotrellis.util._
 

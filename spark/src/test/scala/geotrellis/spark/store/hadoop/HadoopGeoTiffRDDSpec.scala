@@ -21,7 +21,7 @@ import geotrellis.vector.ProjectedExtent
 import geotrellis.tiling._
 import geotrellis.raster._
 import geotrellis.raster.testkit.RasterMatchers
-import geotrellis.layers.hadoop.HdfsUtils
+import geotrellis.layers.hadoop.util.HdfsUtils
 import geotrellis.spark._
 import geotrellis.spark.store.hadoop.formats._
 import geotrellis.spark.testkit._

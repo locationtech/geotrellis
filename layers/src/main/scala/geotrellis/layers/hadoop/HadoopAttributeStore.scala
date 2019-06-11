@@ -17,7 +17,7 @@
 package geotrellis.layers.hadoop
 
 import geotrellis.layers._
-import geotrellis.layers._
+import geotrellis.layers.hadoop.util._
 import geotrellis.util._
 
 import org.apache.hadoop.conf.Configuration

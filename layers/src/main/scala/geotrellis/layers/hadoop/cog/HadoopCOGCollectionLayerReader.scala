@@ -23,7 +23,8 @@ import geotrellis.layers.{LayerId, TileLayerMetadata}
 import geotrellis.layers._
 import geotrellis.layers.cog.{COGCollectionLayerReader, ZoomRange, Extension}
 import geotrellis.layers.hadoop.conf.HadoopConfig
-import geotrellis.layers.hadoop.{HadoopAttributeStore, SerializableConfiguration, HdfsUtils}
+import geotrellis.layers.hadoop.{HadoopAttributeStore, SerializableConfiguration}
+import geotrellis.layers.hadoop.util._
 import geotrellis.layers.index.Index
 import geotrellis.util._
 

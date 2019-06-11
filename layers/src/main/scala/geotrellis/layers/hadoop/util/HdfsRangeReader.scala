@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package geotrellis.layers.hadoop
+package geotrellis.layers.hadoop.util
 
 import geotrellis.util.RangeReader
 

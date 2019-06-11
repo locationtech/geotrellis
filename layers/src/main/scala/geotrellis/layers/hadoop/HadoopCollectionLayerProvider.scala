@@ -11,7 +11,7 @@ import java.net.URI
 
 
 class HadoopCollectionLayerProvider extends AttributeStoreProvider with ValueReaderProvider with CollectionLayerReaderProvider {
-  val schemes: Array[String] = Array("hdfs", "hdfs+file", "s3n", "s3a", "wasb", "wasbs")
+  import HadoopCollectionLayerProvider._
 
   protected def trim(uri: URI): URI =
     if (uri.getScheme.startsWith("hdfs+"))
@@ -44,4 +44,8 @@ class HadoopCollectionLayerProvider extends AttributeStoreProvider with ValueRea
     val conf = new Configuration()
     HadoopCollectionLayerReader(path, conf)
   }
+}
+
+object HadoopCollectionLayerProvider {
+  final val schemes: Array[String] = Array("hdfs", "hdfs+file", "s3n", "s3a", "wasb", "wasbs")
 }

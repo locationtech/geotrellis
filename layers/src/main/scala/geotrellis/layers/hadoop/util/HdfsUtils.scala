@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-package geotrellis.layers.hadoop
+package geotrellis.layers.hadoop.util
 
 import com.typesafe.scalalogging.LazyLogging
+
 import org.apache.hadoop.io.compress.CompressionCodecFactory
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs._

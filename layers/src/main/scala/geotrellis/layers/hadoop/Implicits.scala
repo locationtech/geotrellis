@@ -4,6 +4,7 @@ import geotrellis.raster.CellGrid
 import geotrellis.raster.io.geotiff.GeoTiff
 import geotrellis.raster.io.geotiff.writer.GeoTiffWriter
 import geotrellis.raster.render.{Jpg, Png}
+import geotrellis.layers.hadoop.util._
 import geotrellis.util.MethodExtensions
 
 import org.apache.hadoop.conf.Configuration

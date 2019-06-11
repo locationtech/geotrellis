@@ -16,13 +16,13 @@
 
 package geotrellis.spark.store.hadoop
 
-import geotrellis.layers.LayerId
-import geotrellis.layers.AttributeStore
+import geotrellis.layers._
 import geotrellis.layers.avro._
 import geotrellis.layers.avro.codecs._
 import geotrellis.layers.index._
 import geotrellis.layers.hadoop.formats.FilterMapFileInputFormat
 import geotrellis.layers.hadoop._
+import geotrellis.layers.hadoop.util._
 import geotrellis.spark._
 import geotrellis.spark.store._
 import geotrellis.spark.partition._

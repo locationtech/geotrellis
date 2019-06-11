@@ -1,5 +1,6 @@
 package geotrellis.layers.hadoop
 
+import geotrellis.layers.hadoop.util._
 import geotrellis.util.StreamingByteReader
 
 import org.apache.hadoop.conf.Configuration

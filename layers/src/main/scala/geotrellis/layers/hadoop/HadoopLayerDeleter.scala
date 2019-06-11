@@ -16,8 +16,8 @@
 
 package geotrellis.layers.hadoop
 
-import geotrellis.layers.LayerId
 import geotrellis.layers._
+import geotrellis.layers.hadoop.util._
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path

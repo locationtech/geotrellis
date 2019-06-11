@@ -17,6 +17,7 @@
 package geotrellis.layers.hadoop.formats
 
 import geotrellis.layers.hadoop._
+import geotrellis.layers.hadoop.util._
 
 import org.apache.hadoop.fs._
 import org.apache.hadoop.mapreduce._
