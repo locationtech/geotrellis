@@ -17,6 +17,7 @@
 package geotrellis.store.hadoop
 
 import geotrellis.store._
+import geotrellis.store.hadoop.util._
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path

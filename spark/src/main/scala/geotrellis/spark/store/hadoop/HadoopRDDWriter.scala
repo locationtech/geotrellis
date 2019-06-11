@@ -23,6 +23,7 @@ import geotrellis.store.avro.codecs._
 import geotrellis.store.index._
 import geotrellis.store.hadoop.formats.FilterMapFileInputFormat
 import geotrellis.store.hadoop._
+import geotrellis.store.hadoop.util._
 import geotrellis.spark._
 import geotrellis.spark.store._
 import geotrellis.spark.partition._

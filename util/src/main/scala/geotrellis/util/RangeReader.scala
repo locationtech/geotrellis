@@ -16,6 +16,11 @@
 
 package geotrellis.util
 
+import scala.collection.JavaConverters._
+
+import java.net.URI
+import java.util.ServiceLoader
+
 /**
  * This trait defines methods for breaking up a source of bytes into
  * Map[Long, Array[Byte]] called a, "chunk". Where the Long is where within
@@ -45,4 +50,13 @@ trait RangeReader {
 object RangeReader {
   implicit def rangeReaderToStreamingByteReader(rangeReader: RangeReader): StreamingByteReader =
     StreamingByteReader(rangeReader)
+
+  def apply(uri: URI): RangeReader =
+    ServiceLoader.load(classOf[RangeReaderProvider])
+      .iterator().asScala
+      .find(_.canProcess(uri))
+      .getOrElse(throw new RuntimeException(s"Unable to find RangeReaderProvider for $uri"))
+      .rangeReader(uri)
+
+  def apply(uri: String): RangeReader = apply(new URI(uri))
 }
