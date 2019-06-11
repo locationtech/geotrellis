@@ -31,7 +31,8 @@ import org.apache.hadoop.fs.Path
  */
 class HdfsRangeReader(
   path: Path,
-  conf: Configuration) extends RangeReader {
+  conf: Configuration
+) extends RangeReader {
 
   val totalLength: Long =
     path.getFileSystem(conf).getFileStatus(path).getLen
@@ -51,5 +52,4 @@ object HdfsRangeReader {
     */
   def apply(path: Path, conf: Configuration): HdfsRangeReader =
     new HdfsRangeReader(path, conf)
-
 }

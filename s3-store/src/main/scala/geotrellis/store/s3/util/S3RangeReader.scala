@@ -36,7 +36,8 @@ import java.net.URI
  */
 class S3RangeReader(
   request: GetObjectRequest,
-  client: S3Client) extends RangeReader {
+  client: S3Client
+) extends RangeReader {
 
   val metadata: HeadObjectResponse = {
     val headRequest = HeadObjectRequest.builder()

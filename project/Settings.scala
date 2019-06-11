@@ -552,7 +552,8 @@ object Settings {
       sparkSQL % Test,
       scalatest % Test,
       logging,
-      scaffeine
+      scaffeine,
+      apacheValidator
     ),
     mimaPreviousArtifacts := Set(
       "org.locationtech.geotrellis" %% "geotrellis-spark" % Version.previousVersion
