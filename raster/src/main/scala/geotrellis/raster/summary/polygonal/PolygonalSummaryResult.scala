@@ -16,9 +16,11 @@
 
 package geotrellis.raster.summary.polygonal
 
-import cats.Monad
+import cats.{Monad, Semigroup}
+import cats.syntax.semigroup._
 
 import scala.annotation.tailrec
+import scala.reflect.ClassTag
 
 /**
   * A Result ADT returned by [[PolygonalSummary]] operations
@@ -33,9 +35,11 @@ import scala.annotation.tailrec
 sealed trait PolygonalSummaryResult[+A] {
   def toOption: Option[A]
 
-  def toEither: Either[Any, A]
+  def toEither: Either[NoIntersection.type, A]
+}
 
-  implicit val noIntersectionMonad: Monad[PolygonalSummaryResult] = new Monad[PolygonalSummaryResult] {
+object PolygonalSummaryResult {
+  implicit val monad: Monad[PolygonalSummaryResult] = new Monad[PolygonalSummaryResult] {
     def flatMap[A, B](fa: PolygonalSummaryResult[A])
                      (f: A => PolygonalSummaryResult[B]): PolygonalSummaryResult[B] = {
       flatten(map(fa)(f))
@@ -52,16 +56,27 @@ sealed trait PolygonalSummaryResult[+A] {
       }
     }
   }
+
+  implicit def semigroup[A : Semigroup : ClassTag]: Semigroup[PolygonalSummaryResult[A]] = new Semigroup[PolygonalSummaryResult[A]] {
+    override def combine(x: PolygonalSummaryResult[A], y: PolygonalSummaryResult[A]): PolygonalSummaryResult[A] = {
+      (x, y) match {
+        case (Summary(x: A), Summary(y: A)) => Summary(x.combine(y))
+        case (Summary(x: A), NoIntersection) => Summary(x)
+        case (NoIntersection, Summary(y: A)) => Summary(y)
+        case _ => NoIntersection
+      }
+    }
+  }
 }
 
 case object NoIntersection extends PolygonalSummaryResult[Nothing] {
-  def toOption = None
+  def toOption: Option[Nothing] = None
 
-  def toEither = Left(NoIntersection)
+  def toEither: Either[NoIntersection.type, Nothing] = Left(NoIntersection)
 }
 
 case class Summary[A](value: A) extends PolygonalSummaryResult[A] {
-  def toOption = Some(value)
+  def toOption: Option[A] = Some(value)
 
-  def toEither = Right(value)
+  def toEither: Either[NoIntersection.type, A] = Right(value)
 }

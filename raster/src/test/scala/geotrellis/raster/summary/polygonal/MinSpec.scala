@@ -18,6 +18,7 @@ package geotrellis.raster.summary.polygonal
 
 import geotrellis.raster._
 import geotrellis.raster.summary.polygonal.visitors.MinVisitor
+import geotrellis.raster.summary.types.MinValue
 import geotrellis.raster.testkit._
 import geotrellis.vector._
 import org.scalatest._
@@ -38,12 +39,12 @@ class MinSpec extends FunSpec
 
     it("computes Minimum for Singleband") {
       val result = rs.polygonalSummary(zone, MinVisitor)
-      result should equal(Summary(Some(1.0)))
+      result should equal(Summary(MinValue(1.0)))
     }
 
     it("computes Minimum for Multiband") {
       multibandRaster.polygonalSummary(zone, MinVisitor) match {
-        case Summary(result) => result.foreach { _ should equal(Some(1.0)) }
+        case Summary(result) => result.foreach { _ should equal(MinValue(1.0)) }
         case _ => fail("polygonalSummary did not return a result")
       }
     }

@@ -25,6 +25,7 @@ import geotrellis.raster.io.geotiff.tags.codes.ColorSpace
 import geotrellis.raster.render.RGB
 import geotrellis.raster.summary.polygonal._
 import geotrellis.raster.summary.polygonal.visitors._
+import geotrellis.raster.summary.types.{MaxValue, MinValue}
 import geotrellis.raster.testkit._
 import geotrellis.vector.{Extent, Point}
 import monocle.syntax.apply._
@@ -351,15 +352,14 @@ class GeoTiffReaderSpec extends FunSpec
     val MeanEpsilon = 1e-8
 
     def testMinMaxAndMean(min: Double, max: Double, mean: Double, file: String) {
-      import geotrellis.raster.summary.polygonal.Implicits._
 
       val geotiff = SinglebandGeoTiff(file)
       val extent = geotiff.extent
 
-      geotiff.raster.polygonalSummary(extent.toPolygon, MaxVisitor) should be (Summary(Some(max)))
-      geotiff.raster.polygonalSummary(extent.toPolygon, MinVisitor) should be (Summary(Some(min)))
+      geotiff.raster.polygonalSummary(extent.toPolygon, MaxVisitor) should be (Summary(MaxValue(max)))
+      geotiff.raster.polygonalSummary(extent.toPolygon, MinVisitor) should be (Summary(MinValue(min)))
       geotiff.raster.polygonalSummary(extent.toPolygon, MeanVisitor) match {
-        case Summary(result) => result.get should be (mean +- MeanEpsilon)
+        case Summary(result) => result.mean should be (mean +- MeanEpsilon)
         case _ => fail("failed to compute PolygonalSummaryResult")
       }
     }

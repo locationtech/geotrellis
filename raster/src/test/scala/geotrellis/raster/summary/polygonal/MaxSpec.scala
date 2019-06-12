@@ -18,6 +18,7 @@ package geotrellis.raster.summary.polygonal
 
 import geotrellis.raster._
 import geotrellis.raster.summary.polygonal.visitors.MaxVisitor
+import geotrellis.raster.summary.types.MaxValue
 import geotrellis.raster.testkit._
 import geotrellis.vector._
 import org.scalatest._
@@ -64,7 +65,7 @@ class MaxSpec
 
     it("converts PolygonalSummaryResult ADT to Either") {
       val result = rs.polygonalSummary(zone, MaxVisitor)
-      result.toEither should equal(Right(Some(1)))
+      result.toEither should equal(Right(MaxValue(1)))
 
       val noResult = rs.polygonalSummary(disjointZone, MaxVisitor)
       noResult.toEither should equal(Left(NoIntersection))
@@ -72,7 +73,7 @@ class MaxSpec
 
     it("converts PolygonalSummaryResult ADT to Option") {
       val result = rs.polygonalSummary(zone, MaxVisitor)
-      result.toOption should equal(Some(Some(1.0)))
+      result.toOption should equal(Some(MaxValue(1.0)))
 
       val noResult = rs.polygonalSummary(disjointZone, MaxVisitor)
       noResult.toOption should equal(None)
@@ -80,7 +81,7 @@ class MaxSpec
 
     it("computes Maximum for Singleband") {
       val result = rs.polygonalSummary(zone, MaxVisitor)
-      result should equal(Summary(Some(1.0)))
+      result should equal(Summary(MaxValue(1.0)))
     }
 
     it("computes NoIntersection for disjoint Singleband polygon") {
@@ -91,7 +92,8 @@ class MaxSpec
 
     it("computes None for Singleband NODATA") {
       val result = nodataRS.polygonalSummary(zone, MaxVisitor)
-      result should equal(Summary(None))
+      val value = result.toOption.get
+      value.toOption should equal(None)
     }
 
     it("computes Maximum for Multiband") {
@@ -99,7 +101,7 @@ class MaxSpec
         .polygonalSummary(zone, MaxVisitor)
 
       result match {
-        case Summary(results) => results.foreach { _ should equal(Some(1.0)) }
+        case Summary(results) => results.foreach { _ should equal(MaxValue(1.0)) }
         case _ => fail("polygonalSummary did not return a result")
       }
     }
@@ -109,7 +111,7 @@ class MaxSpec
         .polygonalSummary(zone, MaxVisitor)
 
       result match {
-        case Summary(results) => results.foreach { _ should equal(None) }
+        case Summary(results) => results.foreach { _.toOption should equal(None) }
         case _ => fail("polygonalSummary did not return a result")
       }
     }

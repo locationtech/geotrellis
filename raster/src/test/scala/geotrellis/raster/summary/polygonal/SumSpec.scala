@@ -18,6 +18,7 @@ package geotrellis.raster.summary.polygonal
 
 import geotrellis.raster._
 import geotrellis.raster.summary.polygonal.visitors.SumVisitor
+import geotrellis.raster.summary.types.SumValue
 import geotrellis.raster.testkit._
 import geotrellis.vector._
 import org.scalatest._
@@ -39,14 +40,14 @@ class SumSpec
 
     it("computes Sum for Singleband") {
       val result = rs.polygonalSummary(zone, SumVisitor)
-      result should equal(Summary(Some(40.0)))
+      result should equal(Summary(SumValue(40.0)))
     }
 
     it("computes Sum for Multiband") {
       multibandRaster.polygonalSummary(zone, SumVisitor) match {
         case Summary(result) =>
           result.foreach {
-            _ should equal(Some(40.0))
+            _ should equal(SumValue(40.0))
           }
         case _ => fail("polygonalSummary did not return a result")
       }

@@ -99,7 +99,7 @@ lazy val commonSettings = Seq(
           }
         }.getOrElse(newText)
       } } )),
-  // scapegoatVersion in ThisBuild := "1.3.8",
+  scapegoatVersion in ThisBuild := "1.3.8",
   updateOptions := updateOptions.value.withGigahorse(false)
 )
 
@@ -302,7 +302,7 @@ lazy val `doc-examples` = project
   .settings(Settings.`doc-examples`)
 
 lazy val bench = project
-  .dependsOn(raster)
+  .dependsOn(raster, spark)
   .enablePlugins(GTBenchmarkPlugin)
   .settings(commonSettings)
   .settings(Settings.bench)

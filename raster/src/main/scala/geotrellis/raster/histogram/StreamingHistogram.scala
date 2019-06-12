@@ -95,6 +95,10 @@ object StreamingHistogram {
   * Ben-Haim, Yael, and Elad Tom-Tov. "A streaming parallel decision
   * tree algorithm."  The Journal of Machine Learning Research 11
   * (2010): 849-872.
+  *
+  * NOTE: The order in which values are counted could affect Bucket
+  * distribution and counts as StreamingHistogram instances are merged,
+  * due to the way in which bucket boundaries are defined.
   */
 class StreamingHistogram(
   size: Int,

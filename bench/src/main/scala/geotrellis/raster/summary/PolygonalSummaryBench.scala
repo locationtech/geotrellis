@@ -20,7 +20,8 @@ import org.openjdk.jmh.annotations.{Mode => JMHMode, _}
 import geotrellis.vector._
 import geotrellis.raster._
 import geotrellis.raster.summary.polygonal._
-import geotrellis.raster.summary.polygonal.visitors.MaxVisitor
+import geotrellis.raster.summary.polygonal.visitors._
+import geotrellis.raster.summary.types._
 import geotrellis.raster.io.geotiff.{MultibandGeoTiff, SinglebandGeoTiff}
 
 @BenchmarkMode(Array(JMHMode.AverageTime))
@@ -44,11 +45,21 @@ class PolygonalSummaryBench {
     multibandGeom  = multibandGeoTiff.extent.toPolygon
   }
 
+  // Bench the MeanVisitor because it uses a class instead of an AnyVal
+  // Curious to see difference between the two
   @Benchmark
-  def singlebandVisitor: PolygonalSummaryResult[Option[Double]] =
+  def singlebandMeanVisitor: PolygonalSummaryResult[MeanValue] =
+    raster.polygonalSummary(geom, MeanVisitor)
+
+  @Benchmark
+  def multibandMeanVisitor: PolygonalSummaryResult[Array[MeanValue]] =
+    multibandRaster.polygonalSummary(geom, MeanVisitor)
+
+  @Benchmark
+  def singlebandVisitor: PolygonalSummaryResult[MaxValue] =
     raster.polygonalSummary(geom, MaxVisitor)
 
   @Benchmark
-  def multibandVisitor: PolygonalSummaryResult[Array[Option[Double]]] =
+  def multibandVisitor: PolygonalSummaryResult[Array[MaxValue]] =
     multibandRaster.polygonalSummary(multibandGeom, MaxVisitor)
 }

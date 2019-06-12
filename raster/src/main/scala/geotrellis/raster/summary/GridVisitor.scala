@@ -19,12 +19,17 @@ package geotrellis.raster.summary
 import geotrellis.raster.Grid
 
 /**
-  * Visitor used to summarize a two-dimensional grid T that stores values of R
+  * Visitor used to reduce values in a two-dimensional grid T to a single result R
   *
   * The user should implement concrete subclasses that update the value of `result` as
   * necessary on each call to `visit(raster: T, col: Int, row: Int)`.
   *
-  * Be sure to handle the empty state. This could occur if no points in T are ever visited.
+  * @note Be sure to handle the empty state. This could occur if no points in T are ever visited.
+  *
+  * @note User implementations intended to be used with
+  *       `geotrellis.spark.summary.polygonal.RDDPolygonalSummary` must have a
+  *       zero argument constructor so that new instances can be instantiated
+  *       automatically.
   *
   * GridVisitor is contravariant in T and covariant in R in the same fashion as Function1.
   * This allows more generic concrete Visitor class implementations
@@ -40,7 +45,7 @@ import geotrellis.raster.Grid
   * - https://stackoverflow.com/a/10604305
   * - https://stackoverflow.com/a/38577878
   */
-trait GridVisitor[-T <: Grid[Int], +R] {
+trait GridVisitor[-T <: Grid[Int], +R] extends Serializable {
 
   def result: R
 
@@ -50,7 +55,7 @@ trait GridVisitor[-T <: Grid[Int], +R] {
     * The visitor result should be updated within this method as appropriate for
     * the implementation.
     *
-    * @see [[polygonal.visitors.TileFoldingVisitor]] and [[polygonal.visitors.MaxVisitor]] for an example concrete implementation.
+    * @see [[polygonal.visitors.TileCombineVisitor]] and [[polygonal.visitors.MaxVisitor]] for an example concrete implementation.
     *
     * @param grid The grid being visited
     * @param col The column in the grid being visited

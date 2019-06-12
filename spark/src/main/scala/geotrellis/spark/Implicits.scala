@@ -65,7 +65,6 @@ trait Implicits
     with split.Implicits
     with stitch.Implicits
     with summary.Implicits
-    with summary.polygonal.Implicits
     with tiling.Implicits
     with timeseries.Implicits
     with viewshed.Implicits

@@ -16,6 +16,8 @@
 
 package geotrellis.raster.summary.polygonal.visitors
 
+import geotrellis.raster.summary.types.SumValue
+
 /**
   * Visitor that implements the Sum aggregate function
   *
@@ -28,11 +30,11 @@ object SumVisitor {
   implicit def toMultibandTileVisitor(t: SumVisitor.type): MultibandTileSumVisitor =
     new MultibandTileSumVisitor
 
-  class TileSumVisitor extends TileFoldingVisitor {
-    def fold(sum: Double, newValue: Double): Double = sum + newValue
+  class TileSumVisitor extends TileCombineVisitor[SumValue] {
+    def fromDouble(value: Double): SumValue = SumValue(value)
   }
 
-  class MultibandTileSumVisitor extends MultibandTileFoldingVisitor {
-    def fold(sum: Double, newValue: Double): Double = sum + newValue
+  class MultibandTileSumVisitor extends MultibandTileCombineVisitor[SumValue] {
+    def fromDouble(value: Double): SumValue = SumValue(value)
   }
 }

@@ -38,12 +38,12 @@ class MeanSpec extends FunSpec
 
     it("computes Mean for Singleband") {
       val result = rs.polygonalSummary(zone, MeanVisitor)
-      result should equal(Summary(Some(1.0)))
+      result.toOption.get.mean should equal(1.0)
     }
 
     it("computes Mean for Multiband") {
       multibandRaster.polygonalSummary(zone, MeanVisitor) match {
-        case Summary(result) => result.foreach { _ should equal(Some(1.0)) }
+        case Summary(result) => result.foreach { _.mean should equal(1.0) }
         case _ => fail("polygonalSummary did not return a result")
       }
     }

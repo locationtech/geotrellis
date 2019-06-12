@@ -16,6 +16,8 @@
 
 package geotrellis.raster.summary.polygonal.visitors
 
+import geotrellis.raster.summary.types.MeanValue
+
 /**
   * Visitor that implements the Mean aggregate function
   *
@@ -28,22 +30,11 @@ object MeanVisitor {
   implicit def toMultibandTileVisitor(t: MeanVisitor.type): MultibandTileMeanVisitor =
     new MultibandTileMeanVisitor
 
-  class TileMeanVisitor extends TileFoldingVisitor {
-    // Start at 1 because the first time we call fold we'll have already visited n = 1
-    private var count: Int = 1
-
-    def fold(mean: Double, newValue: Double): Double = {
-      count += 1
-      (newValue + (count - 1) * mean) / count
-    }
+  class TileMeanVisitor extends TileCombineVisitor[MeanValue] {
+    def fromDouble(value: Double): MeanValue = MeanValue(value, 1L)
   }
 
-  class MultibandTileMeanVisitor extends MultibandTileFoldingVisitor {
-    private var count: Int = 1
-
-    def fold(mean: Double, newValue: Double): Double = {
-      count += 1
-      (newValue + (count - 1) * mean) / count
-    }
+  class MultibandTileMeanVisitor extends MultibandTileCombineVisitor[MeanValue] {
+    def fromDouble(value: Double): MeanValue = MeanValue(value, 1L)
   }
 }

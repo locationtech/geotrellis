@@ -16,7 +16,7 @@
 
 package geotrellis.raster.summary.polygonal.visitors
 
-import geotrellis.raster._
+import geotrellis.raster.summary.types.MinValue
 
 /**
   * Visitor that implements the Min aggregate function
@@ -30,13 +30,11 @@ object MinVisitor {
   implicit def toMultibandTileVisitor(t: MinVisitor.type): MultibandTileMinVisitor =
     new MultibandTileMinVisitor
 
-  class TileMinVisitor extends TileFoldingVisitor {
-    def fold(min: Double, newValue: Double): Double =
-      if (isData(newValue) && newValue < min) newValue else min
+  class TileMinVisitor extends TileCombineVisitor[MinValue] {
+    def fromDouble(value: Double): MinValue = MinValue(value)
   }
 
-  class MultibandTileMinVisitor extends MultibandTileFoldingVisitor {
-    def fold(min: Double, newValue: Double): Double =
-      if (isData(newValue) && newValue < min) newValue else min
+  class MultibandTileMinVisitor extends MultibandTileCombineVisitor[MinValue] {
+    def fromDouble(value: Double): MinValue = MinValue(value)
   }
 }
