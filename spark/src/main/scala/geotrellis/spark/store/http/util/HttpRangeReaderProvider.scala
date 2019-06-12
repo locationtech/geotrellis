@@ -2,12 +2,17 @@ package geotrellis.spark.store.http.util
 
 import geotrellis.util.RangeReaderProvider
 
-import java.net.URI
+import java.net.{URI, URL}
 
 
 class HttpRangeReaderProvider extends RangeReaderProvider {
   def canProcess(uri: URI): Boolean =
-    SCHEMES.contains(uri.getScheme) && urlValidator.isValid(uri.toString)
+    try {
+      new URL(uri.toString)
+      true
+    } catch {
+      case _: Throwable => false
+    }
 
   def rangeReader(uri: URI): HttpRangeReader =
     HttpRangeReader(uri)

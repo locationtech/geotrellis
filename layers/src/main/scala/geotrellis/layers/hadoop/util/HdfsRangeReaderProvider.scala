@@ -1,6 +1,6 @@
 package geotrellis.layers.hadoop.util
 
-import geotrellis.layers.hadoop.HadoopCollectionLayerProvider
+import geotrellis.layers.hadoop.{HadoopCollectionLayerProvider, SCHEMES}
 import geotrellis.util.RangeReaderProvider
 
 import org.apache.hadoop.conf.Configuration
@@ -11,13 +11,13 @@ import java.net.URI
 
 class HdfsRangeReaderProvider extends RangeReaderProvider {
   def canProcess(uri: URI): Boolean = uri.getScheme match {
-    case str: String => HadoopCollectionLayerProvider.schemes contains str.toLowerCase
+    case str: String => SCHEMES contains str.toLowerCase
     case null => false
   }
 
   def rangeReader(uri: URI): HdfsRangeReader = {
     val conf = new Configuration()
 
-    HdfsRangeReader(new Path(uri), conf)
+    HdfsRangeReader(new Path(HdfsUtils.trim(uri)), conf)
   }
 }

@@ -26,6 +26,7 @@ import org.apache.hadoop.mapreduce.lib.input.FileInputFormat
 import org.apache.hadoop.io._
 
 import java.io._
+import java.net.URI
 import java.util.Scanner
 
 import scala.collection.mutable.ListBuffer
@@ -34,6 +35,10 @@ import scala.util.Random
 abstract class LineScanner extends Iterator[String] with java.io.Closeable
 
 object HdfsUtils extends LazyLogging {
+  def trim(uri: URI): URI =
+    if (uri.getScheme.startsWith("hdfs+"))
+      new URI(uri.toString.stripPrefix("hdfs+"))
+    else uri
 
   def pathExists(path: Path, conf: Configuration): Boolean =
     path.getFileSystem(conf).exists(path)

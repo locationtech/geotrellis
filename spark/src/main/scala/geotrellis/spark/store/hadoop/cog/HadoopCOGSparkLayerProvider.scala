@@ -18,10 +18,11 @@ package geotrellis.spark.store.hadoop.cog
 
 import java.net.URI
 
-import geotrellis.layers.LayerId
-import geotrellis.layers.AttributeStore
+import geotrellis.layers.{LayerId, AttributeStore}
 import geotrellis.layers.hadoop.cog.HadoopCOGCollectionLayerProvider
+import geotrellis.layers.hadoop.util.HdfsUtils
 import geotrellis.spark.store.cog._
+
 import org.apache.hadoop.fs.Path
 import org.apache.spark.SparkContext
 
@@ -34,16 +35,14 @@ import org.apache.spark.SparkContext
  * This Provider intentinally does not handle the `s3` scheme because the Hadoop implemintation is poor.
  * That support is provided by [[HadoopAttributeStore]]
  */
-class HadoopCOGSparkLayerProvider extends HadoopCOGCollectionLayerProvider
-    with COGLayerReaderProvider with COGLayerWriterProvider {
-
+class HadoopCOGSparkLayerProvider extends HadoopCOGCollectionLayerProvider with COGLayerReaderProvider with COGLayerWriterProvider {
   def layerReader(uri: URI, store: AttributeStore, sc: SparkContext): COGLayerReader[LayerId] = {
     // don't need uri because HadoopLayerHeader contains full path of the layer
     new HadoopCOGLayerReader(store)(sc)
   }
 
   def layerWriter(uri: URI, store: AttributeStore): COGLayerWriter = {
-    val _uri = trim(uri)
+    val _uri = HdfsUtils.trim(uri)
     val path = new Path(_uri)
     new HadoopCOGLayerWriter(path.toString, store)
   }
