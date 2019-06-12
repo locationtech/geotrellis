@@ -44,11 +44,8 @@ class S3COGCollectionLayerProvider extends AttributeStoreProvider
     // Need to use an alternative to AmazonS3URI
     // https://github.com/aws/aws-sdk-java-v2/issues/860
     val s3Uri = new AmazonS3URI(uri)
-    val prefix =
-      Option(s3Uri.getKey()) match {
-        case Some(s) => s
-        case None => ""
-      }
+    val prefix = Option(s3Uri.getKey()).getOrElse("")
+
     new S3AttributeStore(bucket = s3Uri.getBucket(), prefix = prefix, getClient)
   }
 
