@@ -33,6 +33,7 @@ case class DeflateCompression(level: Int = Deflater.DEFAULT_COMPRESSION) extends
         val tmp = Array.ofDim[Byte](segment.length + 10)
         deflater.setInput(segment, 0, segment.length)
         deflater.finish()
+        deflater.end()
         val compressedSize = deflater.deflate(tmp)
         val result = Array.ofDim[Byte](compressedSize)
         System.arraycopy(tmp, 0, result, 0, compressedSize)
