@@ -21,7 +21,7 @@ import geotrellis.raster._
 import geotrellis.raster.rasterize.Rasterizer
 import geotrellis.raster.viewshed.R2Viewshed
 import geotrellis.raster.viewshed.R2Viewshed._
-import geotrellis.tiling.{SpatialKey, KeyBounds}
+import geotrellis.layer._
 import geotrellis.spark._
 import geotrellis.spark.tiling._
 import geotrellis.util._

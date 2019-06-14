@@ -388,7 +388,7 @@ object Settings {
       import geotrellis.raster._
       import geotrellis.vector._
       import geotrellis.proj4._
-      import geotrellis.tiling._
+      import geotrellis.layer._
       import geotrellis.spark._
       import geotrellis.spark.util._
       """
@@ -434,7 +434,7 @@ object Settings {
       import geotrellis.raster._
       import geotrellis.vector._
       import geotrellis.proj4._
-      import geotrellis.tiling._
+      import geotrellis.layer._
       import geotrellis.spark._
       import geotrellis.spark.util._
       """
@@ -522,13 +522,24 @@ object Settings {
     )
   )
 
-  lazy val tiling = Seq(
-    name := "geotrellis-tiling",
+  lazy val layer = Seq(
+    name := "geotrellis-layer",
     libraryDependencies ++= Seq(
+      hadoopClient % Provided,
+      apacheIO,
+      avro,
       spire,
       monocleCore,
       monocleMacro,
       chronoscala,
+      catsEffect,
+      spire,
+      fs2Core,
+      fs2Io,
+      logging,
+      scaffeine,
+      uzaygezenCore,
+      pureconfig,
       scalatest % Test
     ),
     initialCommands in console :=
@@ -536,6 +547,7 @@ object Settings {
       import geotrellis.raster._
       import geotrellis.vector._
       import geotrellis.proj4._
+      import geotrellis.layer._
       """
   )
 }

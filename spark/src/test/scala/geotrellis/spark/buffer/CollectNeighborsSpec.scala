@@ -16,9 +16,9 @@
 
 package geotrellis.spark.buffer
 
-import geotrellis.tiling._
 import geotrellis.spark._
 import geotrellis.spark.io._
+import geotrellis.layer._
 import geotrellis.raster.io.geotiff.SinglebandGeoTiff
 import geotrellis.spark.testkit._
 

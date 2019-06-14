@@ -1,16 +1,17 @@
 package geotrellis.doc.examples.spark
 
+import geotrellis.layer._
 object COGSparkExamples {
   def `Having an RDD[(ProjectedExtent, Tile)] ingest it as a Structured COG layer and query it` = {
     import geotrellis.raster._
     import geotrellis.raster.io.geotiff._
     import geotrellis.raster.resample._
-    import geotrellis.tiling.{SpatialKey, KeyBounds, FloatingLayoutScheme}
     import geotrellis.spark._
     import geotrellis.spark.io._
     import geotrellis.spark.io.index.ZCurveKeyIndexMethod
     import geotrellis.spark.io.file._
     import geotrellis.spark.io.file.cog._
+    import geotrellis.layer._
     import geotrellis.spark.tiling.Tiler
     import geotrellis.vector._
     import geotrellis.proj4.WebMercator

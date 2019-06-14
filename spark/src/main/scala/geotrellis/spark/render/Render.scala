@@ -20,10 +20,9 @@ import geotrellis.proj4.CRS
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff._
 import geotrellis.raster.render._
-import geotrellis.tiling._
+import geotrellis.layer._
 import geotrellis.spark._
 import geotrellis.util._
-
 import org.apache.spark.rdd.RDD
 
 object Render {

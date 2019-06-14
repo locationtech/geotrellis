@@ -17,9 +17,9 @@
 package geotrellis.spark.timeseries
 
 import geotrellis.raster._
-import geotrellis.tiling.SpaceTimeKey
+import geotrellis.layer.SpaceTimeKey
+import geotrellis.layer.mask.Mask
 import geotrellis.spark._
-import geotrellis.spark.mask._
 import geotrellis.util.annotations.experimental
 import geotrellis.vector._
 

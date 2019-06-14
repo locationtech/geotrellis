@@ -16,7 +16,7 @@
 
 package geotrellis.spark.partition
 
-import geotrellis.tiling.Bounds
+import geotrellis.layer.Bounds
 import geotrellis.spark._
 import geotrellis.spark.io.index._
 import geotrellis.spark.io.index.zcurve.{Z3, Z2, ZSpatialKeyIndex}

@@ -274,7 +274,12 @@ lazy val bench = project
   .settings(commonSettings)
   .settings(Settings.bench)
 
-lazy val tiling = project
-  .dependsOn(raster, vector, proj4, util)
+lazy val layer = project
+  .dependsOn(raster)
   .settings(commonSettings)
-  .settings(Settings.tiling)
+  .settings(Settings.layer)
+
+lazy val store = project
+  .dependsOn(layer)
+  .settings(commonSettings)
+  .settings(Settings.store)

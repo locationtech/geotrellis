@@ -18,7 +18,7 @@ package geotrellis.spark.render
 
 import geotrellis.proj4.CRS
 import geotrellis.raster.{Tile, TileLayout}
-import geotrellis.tiling._
+import geotrellis.layer._
 import geotrellis.spark._
 import geotrellis.spark.render._
 import geotrellis.spark.testkit.testfiles.TestFiles

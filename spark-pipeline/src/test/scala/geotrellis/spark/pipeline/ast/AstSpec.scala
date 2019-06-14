@@ -1,6 +1,6 @@
 package geotrellis.spark.pipeline.ast
 
-import geotrellis.tiling._
+import geotrellis.layer._
 import geotrellis.spark.pipeline._
 import geotrellis.spark.pipeline.json
 import geotrellis.spark.pipeline.json._

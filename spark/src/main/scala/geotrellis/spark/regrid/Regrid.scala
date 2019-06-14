@@ -17,12 +17,11 @@
 package geotrellis.spark.regrid
 
 import org.apache.spark.rdd.RDD
-
 import geotrellis.raster._
 import geotrellis.raster.crop._
 import geotrellis.raster.prototype._
 import geotrellis.raster.stitch._
-import geotrellis.tiling._
+import geotrellis.layer._
 import geotrellis.spark._
 import geotrellis.util._
 import geotrellis.vector._

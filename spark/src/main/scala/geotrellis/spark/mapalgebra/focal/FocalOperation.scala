@@ -16,10 +16,11 @@
 
 package geotrellis.spark.mapalgebra.focal
 
-import geotrellis.tiling.{SpatialComponent, TileBounds}
 import geotrellis.spark._
 import geotrellis.spark.buffer._
+import geotrellis.layer.{SpatialComponent, TileBounds}
 import geotrellis.raster._
+import geotrellis.raster.buffer.BufferedTile
 import geotrellis.raster.mapalgebra.focal._
 import geotrellis.util.MethodExtensions
 

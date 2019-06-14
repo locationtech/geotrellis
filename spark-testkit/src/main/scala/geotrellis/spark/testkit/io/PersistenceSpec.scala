@@ -16,7 +16,7 @@
 
 package geotrellis.spark.testkit.io
 
-import geotrellis.tiling.{Bounds, SpatialKey, Boundable}
+import geotrellis.layer._
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.avro._
