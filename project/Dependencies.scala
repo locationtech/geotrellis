@@ -21,6 +21,7 @@ object Dependencies {
   val logging             = "com.typesafe.scala-logging" %% "scala-logging"            % "3.9.0"
   val scalatest           = "org.scalatest"              %% "scalatest"                % "3.0.7"
   val scalacheck          = "org.scalacheck"             %% "scalacheck"               % "1.14.0"
+  val scalaXml            = "org.scala-lang.modules"     %% "scala-xml"                % "1.2.0"
   val jts                 = "org.locationtech.jts"        % "jts-core"                 % "1.16.1"
   val proj4j              = "org.locationtech.proj4j"     % "proj4j"                   % "1.0.0"
 
@@ -34,6 +35,7 @@ object Dependencies {
 
   val sprayJson           = "io.spray"                   %% "spray-json"               % Version.sprayJson
 
+  val apacheIO            = "commons-io"                  % "commons-io"               % "2.6"
   val apacheMath          = "org.apache.commons"          % "commons-math3"            % "3.6.1"
 
   val chronoscala         = "jp.ne.opt"                  %% "chronoscala"              % "0.3.0"

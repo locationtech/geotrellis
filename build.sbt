@@ -91,29 +91,35 @@ lazy val commonSettings = Seq(
       }
       override def apply(text: String, existingText: Option[String]): String = {
         val newText = CommentStyle.cStyleBlockComment.commentCreator.apply(text, existingText)
-        existingText
-          .flatMap(findYear)
-          .map(year => newText.replace("2018", year))
-          .getOrElse(newText)
+        existingText.flatMap { text =>
+          if (text.contains("Azavea")) {
+            findYear(text).map(year => newText.replace("2019", year))
+          } else {
+            existingText.map(_.trim)
+          }
+        }.getOrElse(newText)
       } } )),
-  scapegoatVersion in ThisBuild := "1.3.8",
   updateOptions := updateOptions.value.withGigahorse(false)
 )
 
 lazy val root = Project("geotrellis", file(".")).
   aggregate(
-    accumulo,
-    cassandra,
+    `accumulo`,
+    `accumulo-spark`,
+    `cassandra`,
+    `cassandra-spark`,
     `doc-examples`,
     geomesa,
     geotools,
     geowave,
-    hbase,
+    `hbase`,
+    `hbase-spark`,
     macros,
     proj4,
     raster,
     `raster-testkit`,
-    s3,
+    `s3`,
+    `s3-spark`,
     shapefile,
     spark,
     `spark-pipeline`,
@@ -180,7 +186,7 @@ lazy val `raster-testkit` = project
   .settings(Settings.`raster-testkit`)
 
 lazy val spark = project
-  .dependsOn(util, raster, `raster-testkit` % Test, `vector-testkit` % Test, tiling)
+  .dependsOn(util, raster, `raster-testkit` % Test, `vector-testkit` % Test, layer, store)
   .settings(commonSettings)
   .settings(Settings.spark)
   .settings(
@@ -195,41 +201,66 @@ lazy val `spark-testkit` = project
   .settings(commonSettings)
   .settings(Settings.`spark-testkit`)
 
-lazy val s3 = project
+lazy val `s3` = project
+  .dependsOn(store)
+  .settings(commonSettings)
+  .settings(Settings.`s3`)
+
+lazy val `s3-spark` = project
   .dependsOn(
     spark % "compile->compile;test->test",  // <-- spark-testkit update should simplify this
+    `s3`,
     `spark-testkit` % Test
   )
   .settings(commonSettings)
-  .settings(Settings.s3)
+  .settings(Settings.`s3-spark`)
 
-lazy val accumulo = project
+lazy val `accumulo` = project
+  .dependsOn(store)
+  .settings(commonSettings)
+  .settings(Settings.`accumulo`)
+
+lazy val `accumulo-spark` = project
   .dependsOn(
+    `accumulo`,
     spark % "compile->compile;test->test", // <-- spark-testkit update should simplify this
     `spark-testkit` % Test
   )
   .settings(commonSettings)
-  .settings(Settings.accumulo)
+  .settings(Settings.`accumulo-spark`)
 
-lazy val cassandra = project
+lazy val `cassandra` = project
+  .dependsOn(store)
+  .settings(commonSettings)
+  .settings(Settings.`cassandra`)
+
+lazy val `cassandra-spark` = project
   .dependsOn(
+    `cassandra`,
     spark % "compile->compile;test->test", // <-- spark-testkit update should simplify this
     `spark-testkit` % Test
   )
   .settings(commonSettings)
-  .settings(Settings.cassandra)
+  .settings(Settings.`cassandra-spark`)
 
-lazy val hbase = project
+lazy val `hbase` = project
+  .dependsOn(store)
+  .settings(commonSettings) // HBase depends on its own protobuf version
+  .settings(Settings.`hbase`)
+  .settings(projectDependencies := { Seq((projectID in layer).value.exclude("com.google.protobuf", "protobuf-java")) })
+
+lazy val `hbase-spark` = project
   .dependsOn(
+    `hbase`,
     spark % "compile->compile;test->test", // <-- spark-testkit update should simplify this
     `spark-testkit` % Test
   )
   .settings(commonSettings) // HBase depends on its own protobuf version
-  .settings(Settings.hbase)
+  .settings(Settings.`hbase-spark`)
   .settings(projectDependencies := { Seq((projectID in spark).value.exclude("com.google.protobuf", "protobuf-java")) })
 
 lazy val `spark-pipeline` = Project(id = "spark-pipeline", base = file("spark-pipeline")).
-  dependsOn(spark, s3, `spark-testkit` % "test").
+  dependsOn(spark, `s3-spark`, `spark-testkit` % "test").
   settings(commonSettings)
   .settings(Settings.`spark-pipeline`)
 
@@ -241,7 +272,7 @@ lazy val geotools = project
   .settings(Settings.geotools)
 
 lazy val geomesa = project
-  .dependsOn(`spark-testkit` % Test, spark, geotools, accumulo)
+  .dependsOn(`spark-testkit` % Test, spark, geotools, `accumulo-spark`)
   .settings(commonSettings)
   .settings(Settings.geomesa)
   .settings(crossScalaVersions := Seq(scalaVersion.value))
@@ -249,7 +280,7 @@ lazy val geomesa = project
 lazy val geowave = project
   .dependsOn(
     spark % "compile->compile;test->test", // <-- spark-testkit update should simplify this
-    `spark-testkit` % Test, geotools, accumulo
+    `spark-testkit` % Test, geotools, `accumulo-spark`
   )
   .settings(commonSettings)
   .settings(Settings.geowave)
@@ -265,7 +296,7 @@ lazy val util = project
   .settings(Settings.util)
 
 lazy val `doc-examples` = project
-  .dependsOn(spark, s3, accumulo, cassandra, hbase, spark, `spark-testkit`, `spark-pipeline`)
+  .dependsOn(spark, `s3-spark`, `accumulo-spark`, `cassandra-spark`, `hbase-spark`, spark, `spark-testkit`, `spark-pipeline`)
   .settings(commonSettings)
   .settings(Settings.`doc-examples`)
 
