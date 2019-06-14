@@ -14,14 +14,15 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.io.geowave
+package geotrellis.spark.store.geowave
 
 import geotrellis.geotools._
 import geotrellis.spark._
-import geotrellis.spark.io.avro._
-import geotrellis.spark.io.avro.codecs._
-import geotrellis.spark.io.hadoop.formats._
-import geotrellis.spark.io.index._
+import geotrellis.store._
+import geotrellis.store.avro._
+import geotrellis.store.avro.codecs._
+import geotrellis.spark.store.hadoop.formats._
+import geotrellis.store.index._
 import geotrellis.spark.util.KryoWrapper
 import geotrellis.util.annotations.experimental
 import geotrellis.vector._

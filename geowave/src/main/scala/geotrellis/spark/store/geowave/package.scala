@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Azavea
+ * Copyright 2019 Azavea
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,28 +14,15 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.io.geowave
+package geotrellis.spark.store
 
-import geotrellis.spark.io.AttributeStoreSpec
-import org.scalatest.BeforeAndAfter
+import org.locationtech.jts.{geom => jts}
+import org.locationtech.jts.io.WKTWriter
+import com.vividsolutions.jts.io.{WKTReader => OLDWKTReader}
+import com.vividsolutions.jts.{geom => jtsOld}
 
-class GeoWaveAttributeStoreSpec
-    extends AttributeStoreSpec {
-
-  private def clear: Unit =
-    attributeStore
-      .layerIds
-      .foreach(attributeStore.delete(_))
-
-  lazy val attributeStore = new GeoWaveAttributeStore(
-    "leader:21810",
-    "instance",
-    "root",
-    "password",
-    "TEST"
-  )
-
-  it("should clean up after itself") {
-    clear
-  }
+package object geowave {
+  /** An ugly conversion function from the new jts.Geometry type into the old GeoWave compatible Geometry type */
+  implicit def geometryConversion(geom: jts.Geometry): jtsOld.Geometry =
+    new OLDWKTReader().read(new WKTWriter().write(geom))
 }

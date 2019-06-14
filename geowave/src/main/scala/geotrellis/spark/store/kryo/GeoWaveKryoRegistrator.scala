@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.io.kryo
+package geotrellis.spark.store.kryo
 
 import geotrellis.util.annotations.experimental
 

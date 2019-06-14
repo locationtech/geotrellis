@@ -14,20 +14,24 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.io.geowave
+package geotrellis.spark.store.geowave
 
+import geotrellis.vector.Extent
 import geotrellis.geotools._
 import geotrellis.proj4.LatLng
 import geotrellis.raster._
+import geotrellis.layer._
+import geotrellis.store._
+import geotrellis.store.accumulo.AccumuloAttributeStore
 import geotrellis.spark._
-import geotrellis.spark.io._
-import geotrellis.spark.io.accumulo.AccumuloAttributeStore
+import geotrellis.spark.store._
 import geotrellis.util._
 import geotrellis.util.annotations.experimental
-import geotrellis.vector.Extent
 
 import com.typesafe.scalalogging.LazyLogging
+
 import org.locationtech.jts.geom._
+
 import mil.nga.giat.geowave.adapter.raster.adapter.RasterDataAdapter
 import mil.nga.giat.geowave.core.geotime.ingest._
 import mil.nga.giat.geowave.core.geotime.store.statistics.BoundingBoxDataStatistics
@@ -35,14 +39,15 @@ import mil.nga.giat.geowave.core.index.ByteArrayId
 import mil.nga.giat.geowave.core.index.HierarchicalNumericIndexStrategy
 import mil.nga.giat.geowave.core.index.HierarchicalNumericIndexStrategy.SubStrategy
 import mil.nga.giat.geowave.core.store._
-import mil.nga.giat.geowave.core.store.index.{PrimaryIndex, CustomIdIndex}
+import mil.nga.giat.geowave.core.store.index.{CustomIdIndex, PrimaryIndex}
 import mil.nga.giat.geowave.core.store.operations.remote.options.DataStorePluginOptions
 import mil.nga.giat.geowave.core.store.query.QueryOptions
 import mil.nga.giat.geowave.datastore.accumulo._
 import mil.nga.giat.geowave.datastore.accumulo.index.secondary.AccumuloSecondaryIndexDataStore
 import mil.nga.giat.geowave.datastore.accumulo.metadata._
 import mil.nga.giat.geowave.datastore.accumulo.operations.config.AccumuloRequiredOptions
-import mil.nga.giat.geowave.mapreduce.input.{GeoWaveInputKey, GeoWaveInputFormat}
+import mil.nga.giat.geowave.mapreduce.input.{GeoWaveInputFormat, GeoWaveInputKey}
+
 import org.apache.accumulo.core.client.security.tokens.PasswordToken
 import org.apache.accumulo.core.client.{TableNotFoundException, ZooKeeperInstance}
 import org.apache.hadoop.mapreduce.Job
