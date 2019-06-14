@@ -16,7 +16,7 @@
 
 package geotrellis.geomesa.geotools
 
-import geotrellis.spark.io.geomesa.conf.GeoMesaConfig
+import geotrellis.spark.store.geomesa.conf.GeoMesaConfig
 import geotrellis.proj4.{CRS => GCRS}
 import geotrellis.util.annotations.experimental
 import geotrellis.vector.{Geometry, Line, MultiLine, MultiPoint, MultiPolygon, Point, Polygon}

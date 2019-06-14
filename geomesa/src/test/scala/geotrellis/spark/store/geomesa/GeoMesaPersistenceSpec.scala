@@ -14,21 +14,20 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.io.geomesa
+package geotrellis.spark.store.geomesa
 
 import geotrellis.geomesa.geotools.{GeoMesaSimpleFeatureType, GeometryToGeoMesaSimpleFeature}
-import geotrellis.spark.LayerId
 import geotrellis.vector._
 import geotrellis.spark.testkit.TestEnvironment
-
 import org.opengis.filter.Filter
 import org.apache.spark.rdd.RDD
 import org.geotools.data.Query
 import org.geotools.filter.text.ecql.ECQL
 import org.scalatest.{BeforeAndAfterAll, FunSpec, Matchers, Suite}
-
 import java.text.SimpleDateFormat
 import java.util.TimeZone
+
+import geotrellis.store.LayerId
 
 class GeoMesaPersistenceSpec extends FunSpec with Suite with BeforeAndAfterAll with Matchers with TestEnvironment {
 

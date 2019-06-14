@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Azavea
+ * Copyright 2018 Azavea
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,16 +14,13 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.io
+package geotrellis.spark.store.geomesa.conf
 
-import geotrellis.geomesa.geotools._
-import geotrellis.util.annotations.experimental
+import pureconfig.generic.auto._
 
-/**
-  * @define experimental <span class="badge badge-red" style="float: right;">EXPERIMENTAL</span>@experimental
-  */
-package object geomesa extends GeoMesaImplicits {
+case class GeoMesaConfig(featureTypeCacheSize: Int = 16)
 
-  /** $experimental */
-  @experimental implicit def mapToSeq[K, V](map: Map[K, V]): Seq[(K, V)] = map.toSeq
+object GeoMesaConfig {
+  lazy val conf: GeoMesaConfig = pureconfig.loadConfigOrThrow[GeoMesaConfig]("geotrellis.geomesa")
+  implicit def geoMesaConfigToClass(obj: GeoMesaConfig.type): GeoMesaConfig = conf
 }
