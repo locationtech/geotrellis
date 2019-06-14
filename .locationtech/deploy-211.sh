@@ -12,7 +12,6 @@
    && ./sbt "project accumulo" publish -no-colors \
    && ./sbt "project cassandra" publish -no-colors \
    && ./sbt "project hbase" publish -no-colors \
-   && ./sbt "project spark-etl" publish -no-colors \
    && ./sbt "project geomesa" publish -no-colors \
    && ./sbt "project geotools" publish -no-colors \
    && ./sbt "project shapefile" publish -no-colors \

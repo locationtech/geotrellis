@@ -16,7 +16,6 @@
 ./sbt "project spark-testkit" publishLocal && \
 ./sbt "project shapefile" publishLocal && \
 ./sbt "project spark-pipeline" publishLocal && \
-./sbt "project spark-etl" publishLocal && \
 ./sbt "project accumulo" publishLocal && \
 ./sbt "project cassandra" publishLocal && \
 ./sbt "project geomesa" publishLocal && \

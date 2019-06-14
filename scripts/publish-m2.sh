@@ -14,7 +14,6 @@
       "project shapefile" +publishM2 \
       "project spark-pipeline" publishM2 \
       "project spark" +publishM2 \
-      "project spark-etl" +publishM2 \
       "project spark-testkit" +publishM2 \
       "project tiling" +publishM2 \
       "project util" +publishM2 \
