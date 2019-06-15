@@ -18,11 +18,10 @@ package geotrellis.spark.crop
 
 import geotrellis.raster._
 import geotrellis.raster.crop.TileCropMethods
-import geotrellis.tiling._
+import geotrellis.layer._
 import geotrellis.spark._
 import geotrellis.util._
 import geotrellis.vector.Extent
-
 import org.apache.spark.rdd.RDD
 
 object Implicits extends Implicits

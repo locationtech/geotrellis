@@ -16,10 +16,9 @@
 
 package geotrellis.spark.costdistance
 
+import geotrellis.layer._
 import geotrellis.spark._
-import geotrellis.tiling.SpatialKey
 import geotrellis.raster.Tile
-
 import org.apache.spark.rdd.RDD
 
 

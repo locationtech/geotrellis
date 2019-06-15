@@ -19,7 +19,7 @@ package geotrellis.spark.rasterize
 import org.scalatest._
 import geotrellis.raster._
 import geotrellis.raster.rasterize.Rasterizer
-import geotrellis.tiling._
+import geotrellis.layer._
 import geotrellis.spark._
 import geotrellis.spark.tiling._
 import geotrellis.spark.testkit._

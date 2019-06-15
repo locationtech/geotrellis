@@ -18,7 +18,7 @@ package geotrellis.spark.summary.polygonal
 
 import geotrellis.raster._
 import geotrellis.raster.summary.polygonal._
-import geotrellis.tiling._
+import geotrellis.layer._
 import geotrellis.spark._
 import geotrellis.util._
 import geotrellis.vector._

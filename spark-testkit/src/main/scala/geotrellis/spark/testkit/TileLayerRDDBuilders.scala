@@ -20,16 +20,15 @@ import geotrellis.proj4._
 import geotrellis.vector._
 import geotrellis.raster._
 import geotrellis.raster.resample._
-import geotrellis.tiling._
+import geotrellis.layer._
 import geotrellis.spark._
 import geotrellis.spark.tiling._
 import geotrellis.spark.ingest._
-
 import org.apache.spark._
 import org.apache.spark.rdd.RDD
 import jp.ne.opt.chronoscala.Imports._
-
 import java.time.{ZoneOffset, ZonedDateTime}
+
 import scala.collection.mutable
 
 object TileLayerRDDBuilders extends TileLayerRDDBuilders

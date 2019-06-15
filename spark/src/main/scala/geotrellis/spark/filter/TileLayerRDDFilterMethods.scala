@@ -16,11 +16,11 @@
 
 package geotrellis.spark.filter
 
-import geotrellis.tiling._
+import geotrellis.layer._
+import geotrellis.store.BoundLayerQuery
 import geotrellis.spark._
-import geotrellis.spark.io._
+import geotrellis.spark.store._
 import geotrellis.util._
-
 import org.apache.spark.rdd._
 
 abstract class TileLayerRDDFilterMethods[K: Boundable, V, M: Component[?, Bounds[K]]] extends MethodExtensions[RDD[(K, V)] with Metadata[M]] {

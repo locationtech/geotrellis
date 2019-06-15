@@ -1,16 +1,16 @@
-The Pipeline Tool (should be used instead of ETL tool)
-======================================================
+The Pipeline Tool (an alternative ETL tool)
+===========================================
 
-Pipelines are the operative construct in GeoTrellis (the original idea was taken from [PDAL](https://pdal.io/pipeline.html)).
-Pipelines can represent not a simple ETL process but a set of instructions: how to read data, transform (process),
-write it. It is possible to do just with a common GeoTrellis API, but we decided
-to create a separate package to simplify some common processing tasks
-and to reduce code amount that should be written to perform some common and simple operations.
+Pipelines are an idea originally inspired by [PDAL](https://pdal.io/pipeline.html) pipelines.
+Pipelines represent a set of instructions: how to read data, transform (process) said data, and
+write it. It is possible to do this with other parts of the GeoTrellis API, but the pipeline provides
+an alternative which could simplify some common processing tasks and to reduce the amount of code
+that is necessary to perform some common operations.
 
-Basically Pipeline here is always a `JSON` object with the primary object called
-`pipeline` which is an array of steps (also some `JSON` objects, which we will call `Stage Objects`) to be performed.
+Pipelines are represented as `JSON` objects which each represent discrete
+steps (which we will call `Stage Objects`) to be performed.
 
-You can break these `Stage Objects` into three categories: `readers`, `writers`, `transformations`.
+You can break these `Stage Objects` into three categories: `readers`, `writers`, and `transformations`.
 
 Sample Pipeline Application
 ---------------------------
@@ -82,19 +82,19 @@ Sample Pipeline Application
       }
 
 
-To understand what's going go in the above pipeline is possible just by reading the corresponding `type` field of the each
-pipeline step. In our case it would be:
+To understand what's going on in the above pipeline, read the corresponding `type` field of the each
+pipeline step. In our case:
 
-- ``singleband.spatial.read.s3`` -- load tiles into Spark memory into (ProjectedExtent, Tile) tuples
-- ``singleband.spatial.transform.tile-to-layout`` -- tile into (SpatialKey, Tile) tuples
+- ``singleband.spatial.read.s3`` -- load tiles into Spark memory as (ProjectedExtent, Tile) tuples
+- ``singleband.spatial.transform.tile-to-layout`` -- tile and index data as (SpatialKey, Tile) tuples
 - ``singleband.spatial.transform.buffered-reproject`` -- reproject everything into a target CRS
-- ``singleband.spatial.transform.pyramid`` -- build a pyramid
-- ``singleband.spatial.write`` -- write the output of the previous operation into storage
+- ``singleband.spatial.transform.pyramid`` -- build a pyramid (i.e. build out layers for different zoom levels)
+- ``singleband.spatial.write`` -- write the output of the above operations to storage
 
-The result node type would equal to the final operation type, it means that it is possible to evaluate some pipeline and
-to continue the work with the result of this pipeline.
+The result node type should equal to the final operation type, meaning that it is possible to evaluate a pipeline and
+continue working with its results (whose character we can know based on the final operation type)
 
-However it is possible not to write and parse JSON objects, but possible to use an internal scala DSL to write the pipeline:
+It is also possible to build pipelines using only the internal scala DSL:
 
 .. code:: scala
 
@@ -127,19 +127,19 @@ However it is possible not to write and parse JSON objects, but possible to use 
         .node[Stream[(Int, TileLayerRDD[SpatialKey])]]
     val result: Stream[(Int, TileLayerRDD[SpatialKey])] = typedAst.eval
 
-Pipeline in a user application
+Pipeline in user applications
 ------------------------------
 
 The above sample application can be placed in a new SBT project that has
 a dependency on
 ``"org.locationtech.geotrellis" %% "geotrellis-spark-pipeline" % s"$VERSION"``
-in addition to dependency on ``spark-core``. and built into an assembly
-with ``sbt-assembly`` plugin. You should be careful to include a
+in addition to dependency on ``spark-core`` and built into an assembly
+with the ``sbt-assembly`` plugin. You should be careful to include an
 ``assemblyMergeStrategy`` for sbt assembly plugin as it is provided in
 `spark-pipeline build file <build.sbt>`__.
 
-At this point you would create a seperate ``App`` object for each one of
-your `Pipeline` configs.
+Each `Pipeline` config represents a full `Main` and, thus, requires the
+creation of separate ``App`` objects (scala more idiomatic Main) per ingest.
 
 Built-in Pipeline assembly  fat jar
 -----------------------------------

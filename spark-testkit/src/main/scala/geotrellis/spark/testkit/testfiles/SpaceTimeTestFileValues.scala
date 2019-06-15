@@ -16,7 +16,7 @@
 
 package geotrellis.spark.testkit.testfiles
 
-import geotrellis.tiling.SpaceTimeKey
+import geotrellis.layer.SpaceTimeKey
 import geotrellis.spark._
 import geotrellis.raster._
 

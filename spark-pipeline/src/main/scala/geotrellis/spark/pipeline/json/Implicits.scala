@@ -22,7 +22,7 @@ import geotrellis.spark.pipeline.json.reindex._
 import geotrellis.spark.pipeline.json.update._
 import geotrellis.spark.pipeline.json.transform._
 import geotrellis.proj4.CRS
-import geotrellis.tiling._
+import geotrellis.layer._
 import geotrellis.spark.pipeline._
 import geotrellis.raster._
 import geotrellis.raster.resample._

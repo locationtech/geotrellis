@@ -10,7 +10,6 @@
     && ./sbt "project accumulo" publish-signed \
     && ./sbt "project cassandra" publish-signed \
     && ./sbt "project hbase" publish-signed \
-    && ./sbt "project spark-etl" publish-signed \
     && ./sbt "project geomesa" publish-signed \
     && ./sbt "project geowave" publish-signed \
     && ./sbt "project geotools" publish-signed \

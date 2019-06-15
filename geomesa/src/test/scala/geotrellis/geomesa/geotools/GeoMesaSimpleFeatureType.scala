@@ -16,7 +16,7 @@
 
 package geotrellis.geomesa.geotools
 
-import geotrellis.spark.io.geomesa.conf.GeoMesaConfig
+import geotrellis.spark.store.geomesa.conf.GeoMesaConfig
 import geotrellis.vector.Geometry
 import geotrellis.proj4.{WebMercator, CRS => GCRS}
 import com.github.blemale.scaffeine.{Cache, Scaffeine}

@@ -7,6 +7,10 @@ Changelog
 API Changes & Project structure changes
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+- ``geotrellis.etl``
+
+  - **Remove:**  ``geotrellis.etl`` has been removed. ETL has been archived at https://github.com/geotrellis/etl (`#2969 <https://github.com/locationtech/geotrellis/pull/2969>`_).
+
 - ``geotrellis.s3``
 
   - **Change**  Use the AWS S3 SDK v2 instead of v1 (`#2911 <https://github.com/locationtech/geotrellis/pull/2911>`_).
@@ -17,6 +21,23 @@ API Changes & Project structure changes
 - ``geotrellis.s3-testkit``
 
   - **Remove:**  ``geotrellis.s3-testkit`` has been removed. (`#2911 <https://github.com/locationtech/geotrellis/pull/2911>`_).
+
+- ``geotrellis.accumulo``
+
+  - **Remove:** The following types have been moved from ``geotrellis.accumulo`` to the ``geotrellis.layers.accumulo`` package:
+    - ``AccumuloAttributeStore``
+    - ``AccumuloCollectionLayerReader``
+    - ``AccumuloCollectionReader``
+    - ``AccumuloInstance``
+    - ``AccumuloKeyEncoder``
+    - ``AccumuloLayerDeleter``
+    - ``AccumuloLayerHeader``
+    - ``AccumuloUtils``
+    - ``AccumuloValueReader``
+
+- ``geotrellis.layers.accumulo``
+
+  - **New:** ``geotrellis.layers.accumulo`` is a new package where non-Spark related Accumulo API will be contained.
 
 - ``geotrellis.slick``
 
@@ -70,6 +91,7 @@ Fixes & Updates
 - Fix COG layer update bug related to COGLayerMetadata zoomRanges ordering (`#2922 <https://github.com/locationtech/geotrellis/pull/2922>`_).
 - Use original ZoomRanges on COG layer update (`#2956 <https://github.com/locationtech/geotrellis/pull/2956>`_).
 - ArrayTile equality will now check the cols, rows, and cellType of the two tiles (`#2991 <https://github.com/locationtech/geotrellis/pull/2991>`_).
+- Fix incorrect Deflate compressor usage (`#2997 <https://github.com/locationtech/geotrellis/pull/2997>`_).
 
 2.3.0
 -----
