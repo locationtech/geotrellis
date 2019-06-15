@@ -20,11 +20,10 @@ import geotrellis.proj4.LatLng
 import geotrellis.raster._
 import geotrellis.raster.costdistance.SimpleCostDistance
 import geotrellis.raster.rasterize.Rasterizer
-import geotrellis.tiling._
+import geotrellis.layer._
 import geotrellis.spark._
 import geotrellis.util._
 import geotrellis.vector._
-
 import org.apache.log4j.Logger
 import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkContext

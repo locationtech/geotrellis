@@ -22,11 +22,10 @@ import geotrellis.raster.merge._
 import geotrellis.raster.prototype._
 import geotrellis.raster.reproject._
 import geotrellis.raster.stitch._
-import geotrellis.tiling._
+import geotrellis.layer._
 import geotrellis.spark._
 import geotrellis.vector._
 import geotrellis.util._
-
 import org.apache.spark.rdd._
 
 import scala.reflect.ClassTag

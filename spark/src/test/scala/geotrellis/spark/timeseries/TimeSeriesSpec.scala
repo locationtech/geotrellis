@@ -18,11 +18,10 @@ package geotrellis.spark.timeseries
 
 import geotrellis.proj4.LatLng
 import geotrellis.raster._
-import geotrellis.tiling._
+import geotrellis.layer._
 import geotrellis.spark._
 import geotrellis.spark.testkit.TestEnvironment
 import geotrellis.vector._
-
 import org.scalatest._
 
 

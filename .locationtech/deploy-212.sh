@@ -10,12 +10,17 @@
    && ./sbt -212 "project raster" publish -no-colors \
    && ./sbt -212 "project spark" publish -no-colors \
    && ./sbt -212 "project s3" publish -no-colors \
+   && ./sbt -212 "project s3-spark" publish -no-colors \
    && ./sbt -212 "project accumulo" publish -no-colors \
-   && ./sbt -212 "project cassandra" publish -no-colors \
+   && ./sbt -212 "project accumulo-spark" publish -no-colors \
    && ./sbt -212 "project hbase" publish -no-colors \
+   && ./sbt -212 "project hbase-spark" publish -no-colors \
+   && ./sbt -212 "project cassandra" publish -no-colors \
+   && ./sbt -212 "project cassandra-spark" publish -no-colors \
    && ./sbt -212 "project geotools" publish -no-colors \
    && ./sbt -212 "project shapefile" publish -no-colors \
-   && ./sbt -212 "project tiling" publish -no-colors \
+   && ./sbt -212 "project layer" publish -no-colors \
+   && ./sbt -212 "project store" publish -no-colors \
    && ./sbt -212 "project util" publish -no-colors \
    && ./sbt -212 "project vectortile" publish -no-colors \
    && ./sbt -212 "project raster-testkit" publish -no-colors \

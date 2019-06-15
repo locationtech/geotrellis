@@ -4,11 +4,13 @@
   "project proj4" test \
   "project geotools" test \
   "project shapefile" test \
-  "project tiling" test \
+  "project layer" test \
   "project doc-examples" compile \
   "project vector" test \
   "project vectortile" test \
   "project geowave" compile test:compile \
-  "project hbase" test \
+  "project hbase" compile \
+  "project hbase-spark" test \
   "project geomesa" compile test:compile \
-  "project cassandra" test || { exit 1; }
+  "project cassandra" compile \
+  "project cassandra-spark" test || { exit 1; }

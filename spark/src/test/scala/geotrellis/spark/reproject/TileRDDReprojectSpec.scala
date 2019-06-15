@@ -21,7 +21,7 @@ import geotrellis.raster.io.geotiff._
 import geotrellis.raster.resample._
 import geotrellis.raster.reproject._
 import geotrellis.raster.reproject.Reproject.{Options => RasterReprojectOptions}
-import geotrellis.tiling._
+import geotrellis.layer._
 import geotrellis.spark._
 import geotrellis.spark.reproject.Reproject.Options
 import geotrellis.spark.testkit._
@@ -243,7 +243,7 @@ class TileRDDReprojectSpec extends FunSpec with TestEnvironment {
       // import geotrellis.raster.crop._
       // import geotrellis.raster.merge._
       // import geotrellis.raster.prototype._
-       
+
       // val st1 = implicitly[Stitcher[Tile]]
       // val st2 = implicitly[Stitcher[TileFeature[Tile, Int]]]
       // val st3 = implicitly[RasterRegionReproject[TileFeature[Tile, Int]]]

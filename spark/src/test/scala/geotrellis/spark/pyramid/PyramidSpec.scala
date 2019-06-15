@@ -16,7 +16,7 @@
 
 package geotrellis.spark.pyramid
 
-import geotrellis.tiling._
+import geotrellis.layer._
 import geotrellis.spark._
 import geotrellis.spark.stitch._
 import geotrellis.spark.tiling._

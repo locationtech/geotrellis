@@ -16,10 +16,10 @@
 
 package geotrellis.spark.mapalgebra.zonal
 
-import geotrellis.tiling._
+import geotrellis.layer._
 import geotrellis.spark._
 import geotrellis.spark.tiling._
-import geotrellis.spark.io.hadoop._
+import geotrellis.spark.store.hadoop._
 import geotrellis.spark.testkit.testfiles._
 import geotrellis.spark.testkit._
 

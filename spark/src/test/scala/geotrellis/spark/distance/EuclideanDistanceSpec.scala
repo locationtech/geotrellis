@@ -1,31 +1,34 @@
 package geotrellis.spark.distance
 
-import org.locationtech.jts.geom.Coordinate
-import org.apache.spark.rdd.RDD
-
 import geotrellis.proj4._
+import geotrellis.layer._
 import geotrellis.raster._
+import geotrellis.raster.buffer.Direction
+import geotrellis.raster.buffer.Direction._
 import geotrellis.raster.distance.{EuclideanDistanceTile => RasterEuclideanDistance}
 import geotrellis.raster.render._
 import geotrellis.raster.testkit._
-import geotrellis.tiling._
 import geotrellis.spark._
-import geotrellis.spark.buffer.Direction
-import geotrellis.spark.buffer.Direction._
 import geotrellis.spark.testkit._
 import geotrellis.vector._
 import geotrellis.vector.triangulation._
 import geotrellis.vector.io.wkt.WKT
 
+import org.locationtech.jts.geom.Coordinate
+
+import org.apache.spark.rdd.RDD
+
 import scala.util.Random
-import scala.math.{Pi, sin, cos, atan, max, pow}
+import scala.math.{Pi, atan, cos, max, pow, sin}
 
 import org.scalatest._
+
 import spire.syntax.cfor._
 
-class EuclideanDistanceSpec extends FunSpec 
+
+class EuclideanDistanceSpec extends FunSpec
                             with TestEnvironment
-                            with Matchers 
+                            with Matchers
                             with RasterMatchers {
 
   //def heightField(x: Double, y: Double): Double = math.pow(x*x + y*y - 1, 3) - x*x * y*y*y + 0.5
@@ -179,7 +182,7 @@ class EuclideanDistanceSpec extends FunSpec
       val newsample = broken.map(_._2.toSeq).reduce(_ ++ _)
       val rasterTile = newsample.euclideanDistanceTile(rasterExtent)
 
-      val rdd: RDD[(SpatialKey, Array[Coordinate])] = 
+      val rdd: RDD[(SpatialKey, Array[Coordinate])] =
         sc.parallelize(broken.toSeq)
           .map{ case (key, iter) => (key, iter.toArray) }
 
@@ -188,7 +191,7 @@ class EuclideanDistanceSpec extends FunSpec
       val tileRDD: RDD[(SpatialKey, Tile)] = rdd.euclideanDistance(layoutdef)
       val stitched = tileRDD.stitch
 
-      // For to export point data 
+      // For to export point data
       // val mp = MultiPoint(newsample.map{ Point.jtsCoord2Point(_)})
       // val wktString = geotrellis.vector.io.wkt.WKT.write(mp)
       // new java.io.PrintWriter("euclidean_distance_sample.wkt") { write(wktString); close }

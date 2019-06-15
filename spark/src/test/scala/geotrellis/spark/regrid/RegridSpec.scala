@@ -19,12 +19,11 @@ package geotrellis.spark.regrid
 import geotrellis.proj4._
 import geotrellis.raster._
 import geotrellis.raster.testkit._
-import geotrellis.tiling._
+import geotrellis.layer._
 import geotrellis.spark._
 import geotrellis.spark.testkit._
 import geotrellis.spark.tiling._
 import geotrellis.vector._
-
 import org.scalatest._
 
 class RegridSpec extends FunSpec with TestEnvironment with RasterMatchers {

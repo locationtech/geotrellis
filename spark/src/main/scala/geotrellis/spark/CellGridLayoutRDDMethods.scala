@@ -17,9 +17,8 @@
 package geotrellis.spark
 
 import geotrellis.raster._
-import geotrellis.tiling._
+import geotrellis.layer._
 import geotrellis.util._
-
 import org.apache.spark.rdd._
 
 import scala.reflect.ClassTag

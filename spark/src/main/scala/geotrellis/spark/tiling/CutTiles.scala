@@ -20,7 +20,7 @@ import geotrellis.raster._
 import geotrellis.raster.merge._
 import geotrellis.raster.prototype._
 import geotrellis.raster.resample._
-import geotrellis.tiling._
+import geotrellis.layer._
 import geotrellis.spark._
 import geotrellis.util._
 
