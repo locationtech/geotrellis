@@ -16,7 +16,9 @@
 
 package geotrellis.spark.io.s3
 
-import geotrellis.spark.io.hadoop._
+import geotrellis.store.s3.S3ClientProducer
+import geotrellis.store.hadoop._
+import geotrellis.spark.store.hadoop._
 
 import com.typesafe.scalalogging.LazyLogging
 import software.amazon.awssdk.regions._

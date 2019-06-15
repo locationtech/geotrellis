@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.io.cassandra.conf
+package geotrellis.store.cassandra.conf
+
+import geotrellis.util.CamelCaseConfig
+import geotrellis.store.util._
 
 import geotrellis.spark.io.hadoop.conf.CamelCaseConfig
 import geotrellis.spark.util._

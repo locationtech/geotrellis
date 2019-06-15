@@ -16,13 +16,12 @@
 
 package geotrellis.spark.io.s3
 
-import geotrellis.tiling._
-import geotrellis.spark._
-import geotrellis.spark.io._
-import geotrellis.spark.io.avro.codecs.KeyValueRecordCodec
-import geotrellis.spark.io.index.MergeQueue
-import geotrellis.spark.io.avro.{AvroEncoder, AvroRecordCodec}
-import geotrellis.spark.io.s3.conf.S3Config
+import geotrellis.layer._
+import geotrellis.store.avro.codecs.KeyValueRecordCodec
+import geotrellis.store.index.MergeQueue
+import geotrellis.store.avro.{AvroEncoder, AvroRecordCodec}
+import geotrellis.store.util.{IOUtils => GTIOUtils}
+import geotrellis.store.s3.conf.S3Config
 
 import software.amazon.awssdk.services.s3.model._
 import software.amazon.awssdk.services.s3.S3Client
@@ -73,4 +72,3 @@ class S3CollectionReader(
     }: Seq[(K, V)]
   }
 }
-

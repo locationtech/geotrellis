@@ -18,9 +18,11 @@ package geotrellis.doc.examples.spark
 
 import geotrellis.layer._
 import geotrellis.spark._
-import geotrellis.spark.io._
-import geotrellis.spark.io.index._
-import geotrellis.spark.io.json._
+import geotrellis.spark.store._
+import geotrellis.store._
+import geotrellis.store.json._
+import geotrellis.store.index._
+import geotrellis.layer.json._
 import scala.reflect.ClassTag
 
 import spray.json._

@@ -28,6 +28,7 @@ import geotrellis.raster.mapalgebra.focal._
 import geotrellis.raster.mapalgebra.local._
 import geotrellis.raster.testkit._
 import geotrellis.layer._
+import geotrellis.layer.stitch._
 import geotrellis.spark._
 import geotrellis.spark.stitch._
 import geotrellis.vector._

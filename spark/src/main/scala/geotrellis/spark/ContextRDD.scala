@@ -16,6 +16,7 @@
 
 package geotrellis.spark
 
+import geotrellis.layer.Metadata
 import geotrellis.raster._
 import org.apache.spark.SparkContext._
 import org.apache.spark._

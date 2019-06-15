@@ -80,7 +80,7 @@ class S3RDDWriter(
 
     pathsToTiles.foreachPartition { partition: Iterator[(String, Iterable[(K, V)])] =>
       if(partition.nonEmpty) {
-        import geotrellis.spark.util.TaskUtils._
+        import geotrellis.store.util.IOUtils._
         val getClient = _getClient
         val s3Client: S3Client = getClient()
         val schema = kwWriterSchema.value.getOrElse(_recordCodec.schema)
@@ -148,4 +148,3 @@ class S3RDDWriter(
     }
   }
 }
-

@@ -17,10 +17,10 @@
 package geotrellis.spark.filter
 
 import geotrellis.layer._
+import geotrellis.store.{LayerQuery, BoundLayerQuery}
 import geotrellis.spark._
-import geotrellis.spark.io._
+import geotrellis.spark.store._
 import geotrellis.util._
-
 import org.apache.spark.rdd._
 
 object Filter {

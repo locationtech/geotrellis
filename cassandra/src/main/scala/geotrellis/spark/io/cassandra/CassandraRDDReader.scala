@@ -14,15 +14,17 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.io.cassandra
+package geotrellis.spark.store.cassandra
 
-import geotrellis.tiling.{Boundable, KeyBounds}
-import geotrellis.spark.LayerId
-import geotrellis.spark.io._
-import geotrellis.spark.io.avro.codecs.KeyValueRecordCodec
-import geotrellis.spark.io.avro.{AvroEncoder, AvroRecordCodec}
-import geotrellis.spark.io.index.{IndexRanges, MergeQueue}
-import geotrellis.spark.io.cassandra.conf.CassandraConfig
+import geotrellis.layer._
+import geotrellis.store._
+import geotrellis.store.cassandra._
+import geotrellis.store.cassandra.conf.CassandraConfig
+import geotrellis.store.avro.codecs.KeyValueRecordCodec
+import geotrellis.store.avro.{AvroEncoder, AvroRecordCodec}
+import geotrellis.store.index.{IndexRanges, MergeQueue}
+import geotrellis.store.util.IOUtils
+import geotrellis.spark.store._
 import geotrellis.spark.util.KryoWrapper
 
 import com.datastax.driver.core.querybuilder.QueryBuilder

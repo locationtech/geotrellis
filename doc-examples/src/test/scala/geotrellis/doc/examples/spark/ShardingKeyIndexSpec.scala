@@ -18,7 +18,7 @@ package geotrellis.doc.examples.spark
 
 import geotrellis.layer.{SpatialKey, SpaceTimeKey, KeyBounds}
 import geotrellis.spark._
-import geotrellis.spark.io.index._
+import geotrellis.store.index._
 
 import org.scalatest._
 import spray.json._

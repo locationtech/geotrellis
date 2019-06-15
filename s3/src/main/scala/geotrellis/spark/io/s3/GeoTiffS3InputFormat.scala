@@ -19,7 +19,8 @@ package geotrellis.spark.io.s3
 import geotrellis.proj4.CRS
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff._
-import geotrellis.spark.io.hadoop._
+import geotrellis.store.hadoop._
+import geotrellis.spark.store.hadoop._
 import geotrellis.vector._
 
 import software.amazon.awssdk.services.s3.S3Client

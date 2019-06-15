@@ -17,11 +17,14 @@
 package geotrellis.doc.examples.spark
 
 import geotrellis.layer._
+import geotrellis.store._
 import geotrellis.spark._
-import geotrellis.spark.io._
-import geotrellis.spark.io.index._
-import geotrellis.spark.io.index.zcurve._
-import geotrellis.spark.io.json._
+import geotrellis.spark.store._
+import geotrellis.store._
+import geotrellis.store.json._
+import geotrellis.store.index._
+import geotrellis.store.index.zcurve._
+import geotrellis.layer.json._
 import geotrellis.util._
 
 import spray.json._

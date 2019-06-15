@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.io.s3.conf
+package geotrellis.store.s3.conf
+
+import geotrellis.store.util._
+import geotrellis.util.CamelCaseConfig
 
 import geotrellis.spark.io.hadoop.conf.CamelCaseConfig
 import geotrellis.spark.util.threadsFromString

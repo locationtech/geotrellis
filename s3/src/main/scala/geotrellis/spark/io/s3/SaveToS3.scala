@@ -96,7 +96,7 @@ object SaveToS3 {
       implicit val timer: Timer[IO] = IO.timer(ec)
       implicit val cs = IO.contextShift(ec)
 
-      import geotrellis.spark.util.TaskUtils._
+      import geotrellis.store.util.IOUtils._
       val write: (PutObjectRequest, RequestBody) => fs2.Stream[IO, PutObjectResponse] =
         (request, requestBody) => {
           fs2.Stream eval IO.shift(ec) *> IO {

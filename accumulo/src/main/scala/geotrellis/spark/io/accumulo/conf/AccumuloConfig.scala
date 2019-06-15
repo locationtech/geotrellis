@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.io.accumulo.conf
+package geotrellis.store.accumulo.conf
+
+import geotrellis.store.util.threadsFromString
+import geotrellis.util.CamelCaseConfig
 
 import geotrellis.spark.io.hadoop.conf.CamelCaseConfig
 import geotrellis.spark.util.threadsFromString

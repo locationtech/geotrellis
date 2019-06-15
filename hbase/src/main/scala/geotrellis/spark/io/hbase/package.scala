@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.io
+package geotrellis.store
 
 import org.apache.hadoop.hbase.TableName
 import org.apache.hadoop.hbase.util.Bytes

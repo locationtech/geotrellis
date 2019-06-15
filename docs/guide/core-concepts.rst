@@ -814,7 +814,7 @@ metadata, provide a ``LayoutDefinition`` plus a ``CRS``, ``CellType``, and
 bounds for the keys found in the ``RDD``.
 
 .. |TileLayerMetadata| replace:: ``TileLayerMetadata[K]``
-.. _TileLayerMetadata: https://geotrellis.github.io/scaladocs/latest/#geotrellis.spark.TileLayerMetadata
+.. _TileLayerMetadata: https://geotrellis.github.io/scaladocs/latest/#geotrellis.layers.TileLayerMetadata
 
     Note: The easiest means to represent a tile layer is with a
     ``ContextRDD`` object.

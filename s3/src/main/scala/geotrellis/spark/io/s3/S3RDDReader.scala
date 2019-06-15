@@ -16,13 +16,15 @@
 
 package geotrellis.spark.io.s3
 
-import geotrellis.tiling.{KeyBounds, Boundable}
+import geotrellis.layer._
+import geotrellis.store._
+import geotrellis.store.avro.{AvroEncoder, AvroRecordCodec}
+import geotrellis.store.avro.codecs.KeyValueRecordCodec
+import geotrellis.store.index.{IndexRanges, MergeQueue}
+import geotrellis.store.util.{IOUtils => GTIOUtils}
+import geotrellis.store.s3.S3ClientProducer
+import geotrellis.store.s3.conf.S3Config
 import geotrellis.spark._
-import geotrellis.spark.io._
-import geotrellis.spark.io.s3.conf.S3Config
-import geotrellis.spark.io.avro.codecs.KeyValueRecordCodec
-import geotrellis.spark.io.index.{IndexRanges, MergeQueue}
-import geotrellis.spark.io.avro.{AvroEncoder, AvroRecordCodec}
 import geotrellis.spark.util.KryoWrapper
 
 import software.amazon.awssdk.services.s3.model.{S3Exception, GetObjectRequest}
@@ -94,4 +96,3 @@ class S3RDDReader(
       }
   }
 }
-
