@@ -72,7 +72,6 @@ resolvers ++= Seq(
 - `geotrellis-accumulo`: Accumulo backend for geotrellis-spark
 - `geotrellis-cassandra`: Cassandra backend for geotrellis-spark
 - `geotrellis-hbase`: HBase backend for geotrellis-spark
-- `geotrellis-spark-etl`: Utilities for writing ETL (Extract-Transform-Load), or "ingest" applications for geotrellis-spark
 - `geotrellis-geotools`: Conversions to and from GeoTools Vector and Raster data
 - `geotrellis-geomesa`: Experimental GeoMesa integration
 - `geotrellis-geowave`: Experimental GeoWave integration
@@ -260,15 +259,6 @@ This is a list of features contained in the GeoTrellis library. It is broken up 
 
 - Save/load raster layers to/from the local filesystem or HDFS using Spark's IO API.
 - Save spatially keyed RDDs of byte arrays to z/x/y files in S3. Useful for saving PNGs off for use as map layers in web maps.
-
-#### geotrellis-etl
-
-- Parse command line options for input and output of ETL (Extract, Transform, and Load) applications
-- Utility methods that make ETL applications easier for the user to build.
-- Work with input rasters from the local file system, HDFS, or S3
-- Reproject input rasters using a per-tile reproject or a seamless reprojection that takes into account neighboring tiles.
-- Transform input rasters into layers based on a ZXY layout scheme
-- Save layers into Accumulo, S3, HDFS or the local file system.
 
 #### geotrellis-shapefile
 

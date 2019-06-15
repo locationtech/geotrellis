@@ -423,55 +423,6 @@ processing steps or be served to applications (e.g., web mapping
 applications). If it is absolutely necessary, the individual tiles may
 be saved off as GeoTIFFs and stitched via an application like GDAL.
 
-A Note on Running Example Code
-------------------------------
-
-To run the above test code, it is necessary to have a compatible
-environment. Spark code may experience failures if run solely in the
-Scala interpreter, as accessed through SBT's ``console`` command. One
-way to ensure proper execution is to run in ``spark-shell``, a Scala
-environment which provides a SparkContext made available through the
-variable ``sc``. Another way is to compile the application into a JAR
-file using ``sbt assembly``, and to use ``spark-submit``. This latter
-option is the preferred method for Spark applications, in general, but
-for the purposes of trying out the provided code samples,
-``spark-shell`` is the more sensible choice. The use of ``spark-submit``
-is beyond the scope of this documentation, but many resources are
-available on the internet for learning this tool.
-
-In either event, it will be necessary to install Spark in your local
-environment to run the code above. Once that is done, you will need to
-clone the GeoTrellis repository from
-`Github <https://github.com/geotrellis/geotrellis>`__. From the root
-directory of that project, execute the provided ``sbt`` script. Once SBT
-is loaded, the following commands can be executed:
-
-.. code:: scala
-
-    project spark-etl
-    assembly
-
-This packages the required class files into a JAR file. Now, again from
-the GeoTrellis source tree root directory, issue the command
-
-.. code:: bash
-
-    spark-shell --jars spark-etl/target/scala-2.11/geotrellis-spark-etl-assembly-[version].jar
-
-From the resulting interpreter prompt, perform the following imports:
-
-.. code:: scala
-
-    import geotrellis.raster._
-    import geotrellis.vector._
-    import geotrellis.proj4._
-    import geotrellis.spark._
-    import geotrellis.spark.util._
-    import geotrellis.spark.tiling._
-
-It should then be possible to input the example code from above
-(excluding the creation of a SparkContext) and get the desired result.
-
 A Note on Implementation
 ------------------------
 
