@@ -33,8 +33,8 @@ case class DeflateCompression(level: Int = Deflater.DEFAULT_COMPRESSION) extends
         val tmp = Array.ofDim[Byte](segment.length + 10)
         deflater.setInput(segment, 0, segment.length)
         deflater.finish()
-        deflater.end()
         val compressedSize = deflater.deflate(tmp)
+        deflater.end()
         val result = Array.ofDim[Byte](compressedSize)
         System.arraycopy(tmp, 0, result, 0, compressedSize)
         result
@@ -59,6 +59,7 @@ class DeflateDecompressor(segmentSizes: Array[Int]) extends Decompressor {
     val tmp = Array.ofDim[Byte](segment.length + 10)
     deflater.setInput(segment, 0, segment.length)
     val compressedDataLength = deflater.deflate(tmp)
+    deflater.end()
     java.util.Arrays.copyOf(tmp, compressedDataLength)
   }
 
@@ -70,6 +71,7 @@ class DeflateDecompressor(segmentSizes: Array[Int]) extends Decompressor {
     val result = new Array[Byte](resultSize)
     inflater.inflate(result)
     inflater.reset()
+    inflater.end()
     result
   }
 }
