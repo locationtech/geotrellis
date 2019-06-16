@@ -296,15 +296,27 @@ trait ArrayTile extends Tile with Serializable {
     * @return         A boolean
     */
   override def equals(other: Any): Boolean = other match {
-    case r: ArrayTile => {
-      if (r == null) return false
-      val len = size
-      if (len != r.size) return false
+    case tile: ArrayTile => {
+      if (tile == null) return false
+      if (tile.cols != cols || tile.rows != rows) return false
+      if (tile.cellType != cellType) return false
+
       var i = 0
-      while (i < len) {
-        if (apply(i) != r(i)) return false
-        i += 1
-      }
+
+      if (cellType.isFloatingPoint)
+        while (i < size) {
+          val value = applyDouble(i)
+          val otherValue = tile.applyDouble(i)
+
+          if (value.isNaN && otherValue.isNaN) return true
+          if (value != otherValue) return false
+          i += 1
+        }
+      else
+        while (i < size) {
+          if (apply(i) != tile(i)) return false
+          i += 1
+        }
       true
     }
     case _ => false

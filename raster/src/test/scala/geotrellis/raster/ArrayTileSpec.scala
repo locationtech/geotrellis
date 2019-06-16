@@ -208,4 +208,26 @@ class ArrayTileSpec extends FunSpec
       }
     }
   }
+
+  describe("ArrayTile equality") {
+    val at = IntArrayTile(Array.ofDim[Int](4 * 4).fill(0), 4, 4)
+
+    it("should not equal an ArrayTile of different shape") {
+      val other = IntArrayTile(Array.ofDim[Int](2 * 8).fill(0), 2, 8)
+
+      assert(at != other)
+    }
+
+    it("should not equal an ArrayTile of different cellType") {
+      val other = ShortArrayTile(Array.ofDim[Short](4 * 4).fill(0), 4, 4)
+
+      assert(at != other)
+    }
+
+    it("should equal other ArrayTile") {
+      val other = IntArrayTile(Array.ofDim[Int](4 * 4).fill(0), 4, 4)
+
+      assert(at == other)
+    }
+  }
 }

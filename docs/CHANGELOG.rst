@@ -90,6 +90,7 @@ Fixes & Updates
 - Fix map{X|Y}ToGrid function behavior that could give a bit incorrect results (`#2953 <https://github.com/locationtech/geotrellis/pull/2953>`_).
 - Fix COG layer update bug related to COGLayerMetadata zoomRanges ordering (`#2922 <https://github.com/locationtech/geotrellis/pull/2922>`_).
 - Use original ZoomRanges on COG layer update (`#2956 <https://github.com/locationtech/geotrellis/pull/2956>`_).
+- ArrayTile equality will now check the cols, rows, and cellType of the two tiles (`#2991 <https://github.com/locationtech/geotrellis/pull/2991>`_).
 - Fix incorrect Deflate compressor usage (`#2997 <https://github.com/locationtech/geotrellis/pull/2997>`_).
 
 2.3.0
