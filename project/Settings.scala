@@ -32,8 +32,8 @@ object Settings {
     val boundlessgeoRelease   = "boundless" at "https://repo.boundlessgeo.com/release"
     val geosolutions          = "geosolutions" at "http://maven.geo-solutions.it/"
     val osgeo                 = "osgeo" at "http://download.osgeo.org/webdav/geotools/"
-    val geowaveRelease        = "geowave-release" at "http://geowave-maven.s3-website-us-east-1.amazonaws.com/release"
-    val geowaveSnapshot       = "geowave-snapshot" at "http://geowave-maven.s3-website-us-east-1.amazonaws.com/snapshot"
+    val geowaveRelease        = "geowave-release" at "http://geowave-maven.s3.amazonaws.com/release"
+    val geowaveSnapshot       = "geowave-snapshot" at "http://geowave-maven.s3.amazonaws.com/snapshot"
     val local                 = Resolver.file("local", file(Path.userHome.absolutePath + "/.ivy2/local"))(Resolver.ivyStylePatterns)
   }
 
