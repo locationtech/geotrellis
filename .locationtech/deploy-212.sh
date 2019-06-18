@@ -3,12 +3,13 @@
  set -e
  set -x
 
- # there is no geomesa and slick projects
+ # there is no geomesa project
  ./sbt -212 "project macros" publish -no-colors \
    && ./sbt -212 "project vector" publish -no-colors \
    && ./sbt -212 "project proj4" publish -no-colors \
    && ./sbt -212 "project raster" publish -no-colors \
    && ./sbt -212 "project spark" publish -no-colors \
+   && ./sbt -212 "project spark-pipeline" publish -no-colors \
    && ./sbt -212 "project s3" publish -no-colors \
    && ./sbt -212 "project s3-spark" publish -no-colors \
    && ./sbt -212 "project accumulo" publish -no-colors \
@@ -25,5 +26,4 @@
    && ./sbt -212 "project vectortile" publish -no-colors \
    && ./sbt -212 "project raster-testkit" publish -no-colors \
    && ./sbt -212 "project vector-testkit" publish -no-colors \
-   && ./sbt -212 "project spark-testkit" publish -no-colors \
-   && ./sbt -212 "project s3-testkit" publish -no-colors
+   && ./sbt -212 "project spark-testkit" publish -no-colors

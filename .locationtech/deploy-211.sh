@@ -8,6 +8,7 @@
    && ./sbt "project proj4" publish -no-colors \
    && ./sbt "project raster" publish -no-colors \
    && ./sbt "project spark" publish -no-colors \
+   && ./sbt "project spark-pipeline" publish -no-colors \
    && ./sbt "project s3" publish -no-colors \
    && ./sbt "project s3-spark" publish -no-colors \
    && ./sbt "project accumulo" publish -no-colors \
@@ -25,5 +26,4 @@
    && ./sbt "project vectortile" publish -no-colors \
    && ./sbt "project raster-testkit" publish -no-colors \
    && ./sbt "project vector-testkit" publish -no-colors \
-   && ./sbt "project spark-testkit" publish -no-colors \
-   && ./sbt "project s3-testkit" publish -no-colors
+   && ./sbt "project spark-testkit" publish -no-colors
