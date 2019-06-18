@@ -19,6 +19,7 @@ package geotrellis.store.hadoop
 import geotrellis.layer.{Boundable, Bounds}
 import geotrellis.store._
 import geotrellis.store.avro._
+import geotrellis.store.hadoop.util._
 import geotrellis.util._
 
 import org.apache.hadoop.conf.Configuration

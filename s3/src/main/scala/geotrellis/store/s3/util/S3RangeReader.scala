@@ -35,25 +35,31 @@ import java.net.URI
  * @return A new instance of S3RangeReader.
  */
 class S3RangeReader(
-  request: GetObjectRequest,
-  client: S3Client) extends RangeReader {
+  request: => GetObjectRequest,
+  client: S3Client
+) extends RangeReader {
 
-  val metadata: HeadObjectResponse = {
-    val headRequest = HeadObjectRequest.builder()
-      .bucket(request.bucket)
-      .key(request.key)
-      .build()
+  lazy val metadata: HeadObjectResponse = {
+    val headRequest =
+      HeadObjectRequest
+        .builder()
+        .bucket(request.bucket)
+        .key(request.key)
+        .build()
+
     client.headObject(headRequest)
   }
 
-  val totalLength: Long = metadata.contentLength
+  lazy val totalLength: Long = metadata.contentLength
 
   def readClippedRange(start: Long, length: Int): Array[Byte] = {
-    val getRequest = GetObjectRequest.builder()
-      .bucket(request.bucket)
-      .key(request.key)
-      .range(s"bytes=${start}-${start + length}")
-      .build()
+    val getRequest =
+      GetObjectRequest
+        .builder()
+        .bucket(request.bucket)
+        .key(request.key)
+        .range(s"bytes=${start}-${start + length}")
+        .build()
 
     val is = client.getObject(getRequest)
     val bytes = IOUtils.toByteArray(is)
@@ -73,11 +79,14 @@ object S3RangeReader {
     apply(uri, S3ClientProducer.get())
 
   def apply(uri: URI, client: S3Client): S3RangeReader = {
-    val s3Uri = new AmazonS3URI(uri)
-    val request = GetObjectRequest.builder()
-      .bucket(s3Uri.getBucket())
-      .key(s3Uri.getKey())
-      .build()
+    lazy val s3Uri = new AmazonS3URI(uri)
+    lazy val request =
+      GetObjectRequest
+        .builder()
+        .bucket(s3Uri.getBucket())
+        .key(s3Uri.getKey())
+        .build()
+
     apply(request, client)
   }
 
@@ -90,10 +99,13 @@ object S3RangeReader {
    * @return A new instance of S3RangeReader.
    */
   def apply(bucket: String, key: String, client: S3Client): S3RangeReader = {
-    val request = GetObjectRequest.builder()
-      .bucket(bucket)
-      .key(key)
-      .build()
+    lazy val request =
+      GetObjectRequest
+        .builder()
+        .bucket(bucket)
+        .key(key)
+        .build()
+
     apply(request, client)
   }
 

@@ -24,6 +24,7 @@ import geotrellis.store.cog.{ZoomRange, Extension}
 import geotrellis.store.hadoop.conf.HadoopConfig
 import geotrellis.store.hadoop._
 import geotrellis.store.hadoop.cog.byteReader
+import geotrellis.store.hadoop.util._
 import geotrellis.store.index.Index
 import geotrellis.spark.store.cog._
 import geotrellis.spark.store.hadoop._

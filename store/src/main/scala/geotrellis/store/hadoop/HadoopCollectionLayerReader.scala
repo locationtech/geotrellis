@@ -21,6 +21,7 @@ import geotrellis.layer.{ContextCollection, Metadata}
 import geotrellis.store._
 import geotrellis.store.hadoop.formats.FilterMapFileInputFormat
 import geotrellis.store.avro._
+import geotrellis.store.hadoop.util._
 import geotrellis.util._
 
 import spray.json._

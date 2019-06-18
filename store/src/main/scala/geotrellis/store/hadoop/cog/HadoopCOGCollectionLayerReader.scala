@@ -22,7 +22,8 @@ import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.store._
 import geotrellis.store.cog.{COGCollectionLayerReader, ZoomRange, Extension}
 import geotrellis.store.hadoop.conf.HadoopConfig
-import geotrellis.store.hadoop.{HadoopAttributeStore, SerializableConfiguration, HdfsUtils}
+import geotrellis.store.hadoop.{HadoopAttributeStore, SerializableConfiguration}
+import geotrellis.store.hadoop.util._
 import geotrellis.store.index.Index
 import geotrellis.util._
 

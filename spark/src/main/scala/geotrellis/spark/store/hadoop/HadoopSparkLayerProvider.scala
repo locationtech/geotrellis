@@ -16,9 +16,10 @@
 
 package geotrellis.spark.store.hadoop
 
+import geotrellis.layer._
 import geotrellis.store._
 import geotrellis.store.hadoop.{HadoopAttributeStore, HadoopValueReader, HadoopCollectionLayerProvider}
-import geotrellis.layer._
+import geotrellis.store.hadoop.util.HdfsUtils
 import geotrellis.spark._
 import geotrellis.spark.store._
 import geotrellis.util.UriUtils
@@ -39,8 +40,7 @@ import java.net.URI
  * This Provider intentinally does not handle the `s3` scheme because the Hadoop implemintation is poor.
  * That support is provided by [[HadoopAttributeStore]]
  */
-class HadoopSparkLayerProvider extends HadoopCollectionLayerProvider
-    with LayerReaderProvider with LayerWriterProvider {
+class HadoopSparkLayerProvider extends HadoopCollectionLayerProvider with LayerReaderProvider with LayerWriterProvider {
 
   def layerReader(uri: URI, store: AttributeStore, sc: SparkContext): FilteringLayerReader[LayerId] = {
     // don't need uri because HadoopLayerHeader contains full path of the layer
@@ -48,7 +48,7 @@ class HadoopSparkLayerProvider extends HadoopCollectionLayerProvider
   }
 
   def layerWriter(uri: URI, store: AttributeStore): LayerWriter[LayerId] = {
-    val _uri = trim(uri)
+    val _uri = HdfsUtils.trim(uri)
     val path = new Path(_uri)
     val params = UriUtils.getParams(_uri)
     val interval = params.getOrElse("interval", "4").toInt

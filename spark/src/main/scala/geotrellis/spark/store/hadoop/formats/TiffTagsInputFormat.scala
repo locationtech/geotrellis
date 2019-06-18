@@ -18,7 +18,7 @@ package geotrellis.spark.store.hadoop.formats
 
 import geotrellis.raster.io.geotiff.tags.TiffTags
 import geotrellis.raster.io.geotiff.reader.TiffTagsReader
-import geotrellis.store.hadoop.HdfsRangeReader
+import geotrellis.store.hadoop.util.HdfsRangeReader
 import geotrellis.spark.store.hadoop._
 import geotrellis.util.StreamingByteReader
 
