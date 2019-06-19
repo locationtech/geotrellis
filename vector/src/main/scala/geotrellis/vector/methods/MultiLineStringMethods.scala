@@ -9,8 +9,4 @@ trait ExtraMultiLineStringMethods extends MethodExtensions[MultiLineString] {
       self.getGeometryN(i).copy.asInstanceOf[LineString]
     }
   }.toArray
-
-  def typedIntersection(p: Point): PointOrNoResult = self.intersection(p)
-  def typedIntersection(mp: MultiPoint): MultiPointAtLeastOneDimensionIntersectionResult = self.intersection(mp)
-  def typedIntersection[G <: Geometry : AtLeastOneDimension](g: G): OneDimensionAtLeastOneDimensionIntersectionResult = self.intersection(g)
 }

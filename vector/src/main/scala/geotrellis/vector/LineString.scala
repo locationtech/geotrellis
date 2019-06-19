@@ -30,7 +30,7 @@ object LineString {
   def apply(points: jts.Point*): jts.LineString =
     apply(points.toList)
 
-  def apply(coords: jts.Coordinate*): jts.LineString =
+  def apply(coords: jts.Coordinate*)(implicit d: DummyImplicit, e: DummyImplicit): jts.LineString =
     apply(GeomFactory.factory.getCoordinateSequenceFactory.create(coords.toArray))
 
   def apply(coords: Traversable[jts.Coordinate]): jts.LineString =
@@ -39,7 +39,7 @@ object LineString {
   def apply(coords: jts.CoordinateSequence): jts.LineString =
     GeomFactory.factory.createLineString(coords)
 
-  def apply(points: Traversable[jts.Point]): jts.LineString = {
+  def apply(points: Traversable[jts.Point])(implicit ev: DummyImplicit, ev2: DummyImplicit): jts.LineString = {
     if (points.size < 2) {
       sys.error("Invalid line: Requires 2 or more points.")
     }

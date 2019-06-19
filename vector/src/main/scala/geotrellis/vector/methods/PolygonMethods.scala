@@ -31,10 +31,4 @@ trait ExtraPolygonMethods extends MethodExtensions[Polygon] {
 
     arr
   }
-
-
-  def typedIntersection(p: Point): PointOrNoResult = self.intersection(p)
-  def typedIntersection(mp: MultiPoint): MultiPointAtLeastOneDimensionIntersectionResult = self.intersection(mp)
-  def typedIntersection[G <: Geometry : OneDimensional](g: G): OneDimensionAtLeastOneDimensionIntersectionResult = self.intersection(g)
-  def typedIntersection[G <: Geometry : TwoDimensional](g: G): TwoDimensionsTwoDimensionsIntersectionResult = self.intersection(g)
 }

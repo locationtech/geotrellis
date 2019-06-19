@@ -27,8 +27,4 @@ trait ExtraLineStringMethods extends MethodExtensions[LineString] {
 
     arr
   }
-
-  def typedIntersection(p: Point): PointOrNoResult = self.intersection(p)
-  def typedIntersection(mp: MultiPoint): MultiPointAtLeastOneDimensionIntersectionResult = self.intersection(mp)
-  def typedIntersection[G <: Geometry : AtLeastOneDimension](g: G): OneDimensionAtLeastOneDimensionIntersectionResult = self.intersection(g)
 }

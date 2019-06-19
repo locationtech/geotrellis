@@ -32,21 +32,21 @@ object Intersection {
 
   private def polyGeomIntersection(poly: Polygon, geom: Geometry): Seq[Polygon] = {
     geom match {
-      case poly2: Polygon => poly2.typedIntersection(poly) match {
-        case PolygonResult(p) => Seq(p)
-        case MultiPolygonResult(mp) => mp.polygons.toSeq
-        case GeometryCollectionResult(gc) => polysFromGC(gc)
+      case poly2: Polygon => poly2.intersection(poly) match {
+        case p: Polygon => Seq(p)
+        case mp: MultiPolygon => mp.polygons.toSeq
+        case gc: GeometryCollection => polysFromGC(gc)
         case _ => Seq.empty[Polygon]
       }
-      case mp: MultiPolygon => mp.typedIntersection(poly) match {
-        case PolygonResult(p) => Seq(p)
-        case MultiPolygonResult(mp) => mp.polygons.toSeq
-        case GeometryCollectionResult(gc) => polysFromGC(gc)
+      case mp: MultiPolygon => mp.intersection(poly) match {
+        case p: Polygon => Seq(p)
+        case mp: MultiPolygon => mp.polygons.toSeq
+        case gc: GeometryCollection => polysFromGC(gc)
         case _ => Seq.empty[Polygon]
       }
-      case gc: GeometryCollection => gc.typedIntersection(poly) match {
+      case gc: GeometryCollection => gc.intersection(poly) match {
         // In testing, GeometryCollection.intersection only seems to return GeometryCollectionResult
-        case GeometryCollectionResult(res) => polysFromGC(res)
+        case res: GeometryCollection => polysFromGC(res)
         case _ => Seq.empty[Polygon]
       }
       case _ =>

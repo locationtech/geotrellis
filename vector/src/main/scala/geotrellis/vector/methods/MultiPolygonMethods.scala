@@ -9,8 +9,4 @@ trait ExtraMultiPolygonMethods extends MethodExtensions[MultiPolygon] {
       self.getGeometryN(i).copy.asInstanceOf[Polygon]
     }
   }.toArray
-
-  def typedIntersection(p: Point): PointOrNoResult = self.intersection(p)
-  def typedIntersection[G <: Geometry : TwoDimensional](g: G): TwoDimensionsTwoDimensionsIntersectionResult = self.intersection(g)
-  def typedIntersection[G <: Geometry : OneDimensional](g: G): OneDimensionAtLeastOneDimensionIntersectionResult = self.intersection(g)
 }

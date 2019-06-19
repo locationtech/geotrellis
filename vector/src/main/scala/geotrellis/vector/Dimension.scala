@@ -18,17 +18,17 @@ package geotrellis.vector
 
 import simulacrum._
 
-@typeclass trait Dimension[G <: Geometry]
+trait Dimension[G <: Geometry]
 
-@typeclass trait AtLeastOneDimension[G] extends Dimension[G]
-@typeclass trait AtMostOneDimension[G] extends Dimension[G]
+trait AtLeastOneDimension[G <: Geometry] extends Dimension[G]
+trait AtMostOneDimension[G <: Geometry] extends Dimension[G]
 
-@typeclass trait ZeroDimensional[G] extends Dimension[G]
-                                    with AtMostOneDimension[G]
+trait ZeroDimensional[G <: Geometry] extends Dimension[G]
+                         with AtMostOneDimension[G]
 
-@typeclass trait OneDimensional[G] extends Dimension[G]
-                                   with AtMostOneDimension[G]
-                                   with AtLeastOneDimension[G]
+trait OneDimensional[G <: Geometry] extends Dimension[G]
+                        with AtMostOneDimension[G]
+                        with AtLeastOneDimension[G]
 
-@typeclass trait TwoDimensional[G] extends Dimension[G]
-                                   with AtLeastOneDimension[G]
+trait TwoDimensional[G <: Geometry] extends Dimension[G]
+                        with AtLeastOneDimension[G]

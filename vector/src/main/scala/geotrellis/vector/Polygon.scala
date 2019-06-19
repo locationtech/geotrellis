@@ -30,10 +30,10 @@ object Polygon {
   def apply(exterior: Seq[Point]): Polygon =
     apply(LineString(exterior), Set())
 
-  def apply(exterior: jts.Coordinate*)(implicit d: DummyImplicit): Polygon =
+  def apply(exterior: jts.Coordinate*)(implicit d: DummyImplicit, e: DummyImplicit): Polygon =
     apply(LineString(exterior), Set())
 
-  def apply(exterior: Seq[jts.Coordinate]): Polygon =
+  def apply(exterior: Seq[jts.Coordinate])(implicit d: DummyImplicit, e: DummyImplicit, f: DummyImplicit): Polygon =
     apply(LineString(exterior), Set())
 
   def apply(exterior: LineString): Polygon =
