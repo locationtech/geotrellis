@@ -81,8 +81,11 @@ object IOUtils {
         .parJoin(threads)
         .compile
         .toVector
-        .unsafeRunSync
+        .attempt
+        .unsafeRunSync()
+        .valueOr(throw _)
         .flatten
+
     } finally pool.shutdown()
   }
 }

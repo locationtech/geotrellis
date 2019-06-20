@@ -26,6 +26,7 @@ import geotrellis.spark.util.KryoWrapper
 
 import cats.effect.{IO, Timer}
 import cats.syntax.apply._
+import cats.syntax.either._
 
 import software.amazon.awssdk.services.s3.model.{S3Exception, PutObjectRequest, PutObjectResponse, GetObjectRequest}
 import software.amazon.awssdk.services.s3.S3Client
@@ -145,7 +146,9 @@ class S3RDDWriter(
           .parJoin(threads)
           .compile
           .drain
+          .attempt
           .unsafeRunSync()
+          .valueOr(throw _)
 
         pool.shutdown()
       }

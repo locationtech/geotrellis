@@ -18,6 +18,7 @@ package geotrellis.store
 
 import cats.effect.{IO, Timer}
 import cats.syntax.apply._
+import cats.syntax.either._
 
 import scala.util.{Failure, Success, Try}
 import scala.concurrent.ExecutionContext
@@ -83,7 +84,9 @@ abstract class AsyncWriter[Client, V, E](threads: Int) extends Serializable {
       .parJoin(threads)
       .compile
       .toVector
+      .attempt
       .unsafeRunSync()
+      .valueOr(throw _)
 
     pool.shutdown()
   }
