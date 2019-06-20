@@ -70,7 +70,7 @@ class JsonFeatureCollection(features: List[JsValue] = Nil) {
     * Carry out serialization on all buffered JsValue objects.
     */
   def toJson: JsValue = {
-    val bboxOption = getAllGeometries().map(_.envelope).reduceOption(_ combine _)
+    val bboxOption = getAllGeometries().map(_.envelope).reduceOption(_ expandToInclude _)
     bboxOption match {
       case Some(bbox) =>
         JsObject(

@@ -23,9 +23,10 @@ import geotrellis.spark.ingest._
 import geotrellis.spark.tiling._
 import geotrellis.util._
 import geotrellis.vector.{Extent, ProjectedExtent}
+
+import org.apache.spark.rdd._
 import cats.Functor
 import cats.implicits._
-import org.apache.spark.rdd._
 
 
 object CollectTileLayerMetadata {

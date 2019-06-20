@@ -14,6 +14,8 @@ import org.scalatest._
 
 import spray.json._
 
+import cats.syntax.semigroup._
+
 class COGLayerMetadataSpec extends FunSpec with Matchers {
   def generateLCMetadata(maxZoom: Int = 13, minZoom: Int = 0): COGLayerMetadata[SpatialKey] = {
     val cellType = IntConstantNoDataCellType

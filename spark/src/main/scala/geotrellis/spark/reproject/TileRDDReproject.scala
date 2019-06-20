@@ -395,13 +395,13 @@ object TileRDDReproject extends LazyLogging {
         ReprojectSummary(
           sourcePixels + other.sourcePixels,
           pixels + other.rescaledPixelCount(cellSize),
-          extent combine other.extent,
+          extent expandToInclude other.extent,
           cellSize)
       else
         ReprojectSummary(
           sourcePixels + other.sourcePixels,
           rescaledPixelCount(other.cellSize) + other.pixels,
-          extent combine other.extent,
+          extent expandToInclude other.extent,
           other.cellSize)
     }
 

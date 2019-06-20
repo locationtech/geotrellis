@@ -17,6 +17,9 @@
 package geotrellis.raster
 
 import geotrellis.vector.{Extent, Point}
+
+import cats.Semigroup
+
 import scala.math.{min, max, ceil}
 
 
@@ -79,13 +82,13 @@ case class RasterExtent(
     * same cellsizes).  The result is a new extent at the same
     * resolution.
     */
-  def combine(that: RasterExtent): RasterExtent = {
+  def expandToInclude(that: RasterExtent): RasterExtent = {
     if (cellwidth != that.cellwidth)
       throw GeoAttrsError(s"illegal cellwidths: $cellwidth and ${that.cellwidth}")
     if (cellheight != that.cellheight)
       throw GeoAttrsError(s"illegal cellheights: $cellheight and ${that.cellheight}")
 
-    val newExtent = extent.combine(that.extent)
+    val newExtent = extent.expandToInclude(that.extent)
     val newRows = ceil(newExtent.height / cellheight).toInt
     val newCols = ceil(newExtent.width / cellwidth).toInt
 
@@ -165,4 +168,8 @@ object RasterExtent {
     */
   def apply(extent: Extent, tile: CellGrid[Int]): RasterExtent =
     apply(extent, tile.cols, tile.rows)
+
+  implicit val rasterExtentSemigroup: Semigroup[RasterExtent] = new Semigroup[RasterExtent] {
+    def combine(x: RasterExtent, y: RasterExtent): RasterExtent = x expandToInclude y
+  }
 }

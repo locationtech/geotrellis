@@ -21,6 +21,8 @@ import geotrellis.raster.testkit._
 
 import org.scalatest._
 
+import cats.syntax.semigroup._
+
 class RasterExtentSpec extends FunSpec with Matchers
                                        with TileBuilders {
   describe("A RasterExtent object") {

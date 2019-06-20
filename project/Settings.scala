@@ -411,8 +411,8 @@ object Settings {
     libraryDependencies ++= Seq(
       pureconfig,
       jts,
-      catsCore,
       spire,
+      catsCore,
       monocleCore,
       monocleMacro,
       scalaXml,
@@ -623,6 +623,7 @@ object Settings {
       sprayJson,
       apacheMath,
       spire,
+      catsCore,
       scalatest % Test,
       scalacheck % Test
     )

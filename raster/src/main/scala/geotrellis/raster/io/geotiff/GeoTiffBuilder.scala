@@ -113,7 +113,7 @@ trait GeoTiffBuilder[T <: CellGrid[Int]] extends Serializable {
       options.compression
     )
 
-    val extent = tileExtent(colMin, rowMin) combine tileExtent(colMax, rowMax)
+    val extent = tileExtent(colMin, rowMin) expandToInclude tileExtent(colMax, rowMax)
 
     makeGeoTiff(tile, extent, crs, tags, opts)
   }

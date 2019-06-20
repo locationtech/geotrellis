@@ -67,7 +67,7 @@ class JsonFeatureCollectionMap(features: List[JsValue] = Nil) {
   def ++=[G <: Geometry, D: JsonWriter](featureMaps: Seq[(String, Feature[G, D])]) = addAll(featureMaps)
 
   def toJson: JsValue = {
-    val bboxOption = getAllGeometries().map(_._2.envelope).reduceOption(_ combine _)
+    val bboxOption = getAllGeometries().map(_._2.envelope).reduceOption(_ expandToInclude _)
     bboxOption match {
       case Some(bbox) =>
         JsObject(

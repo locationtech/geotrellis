@@ -18,9 +18,12 @@ package geotrellis.vector
 
 import geotrellis.vector.io._
 import geotrellis.vector.io.json.JsonFeatureCollection
+
 import org.scalatest.FunSpec
 import org.scalatest.Matchers
 import spray.json.DefaultJsonProtocol._
+// `import cats.implicits._` causes ambiguous implicits on `===`:  https://github.com/typelevel/cats/issues/219
+import cats.syntax.semigroup._
 
 class ExtentSpec extends FunSpec with Matchers {
   describe("Extent") {

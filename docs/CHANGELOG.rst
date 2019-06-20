@@ -7,6 +7,10 @@ Changelog
 API Changes & Project structure changes
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+- ``geotrellis``
+
+  - **New:** Semigroup instances have been used for defining the combination/merger of types where possible
+
 - ``geotrellis.util``, ``geotrellis.store``, ``geotrellis.store.s3``
 
   - **New:** An SPI interface has been created for ``RangeReader``.

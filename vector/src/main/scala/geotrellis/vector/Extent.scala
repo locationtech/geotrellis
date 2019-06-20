@@ -17,50 +17,9 @@
 package geotrellis.vector
 
 import GeomFactory._
-import geotrellis.proj4.{CRS, Transform}
 
 import org.locationtech.jts.{geom => jts}
-
-case class ExtentRangeError(msg:String) extends Exception(msg)
-
-object Extent {
-  def apply(env: jts.Envelope): Extent =
-    Extent(env.getMinX, env.getMinY, env.getMaxX, env.getMaxY)
-
-  /** Create an extent from a string
-    *
-    * @param s   A string of the form "xmin,ymin,xmax,ymax"
-    */
-  def fromString(s:String) = {
-    val Array(xmin,ymin,xmax,ymax) = s.split(",").map(_.toDouble)
-    Extent(xmin,ymin,xmax,ymax)
-  }
-
-  implicit def toPolygon(extent: Extent): Polygon =
-    extent.toPolygon
-
-  implicit def jts2Extent(env: jts.Envelope): Extent =
-    Extent(env)
-}
-
-/** A case class for an extent and its corresponding CRS
-  *
-  * @param extent The Extent which is projected
-  * @param crs    The CRS projection of this extent
-  */
-case class ProjectedExtent(extent: Extent, crs: CRS) {
-  def reproject(dest: CRS): Extent =
-    extent.reproject(crs, dest)
-
-  def reprojectAsPolygon(dest: CRS, relError: Double = 0.01): Polygon =
-    extent.reprojectAsPolygon(Transform(crs, dest), relError)
-}
-
-/** ProjectedExtent companion object */
-object ProjectedExtent {
-  implicit def fromTupleA(tup: (Extent, CRS)):ProjectedExtent = ProjectedExtent(tup._1, tup._2)
-  implicit def fromTupleB(tup: (CRS, Extent)):ProjectedExtent = ProjectedExtent(tup._2, tup._1)
-}
+import cats.Semigroup
 
 /** A rectangular region of geographic space
   *
@@ -253,17 +212,13 @@ case class Extent(
   }
 
   /** Return the smallest extent that contains this extent and the provided extent. */
-  def combine(other:Extent): Extent =
+  def expandToInclude(other:Extent): Extent =
     Extent(
       if(xmin < other.xmin) xmin else other.xmin,
       if(ymin < other.ymin) ymin else other.ymin,
       if(xmax > other.xmax) xmax else other.xmax,
       if(ymax > other.ymax) ymax else other.ymax
     )
-
-  /** Return the smallest extent that contains this extent and the provided extent. */
-  def expandToInclude(other: Extent): Extent =
-    combine(other)
 
   /** Return the smallest extent that contains this extent and the provided point. */
   def expandToInclude(p: Point): Extent =
@@ -323,3 +278,28 @@ case class Extent(
 
   override def toString = s"Extent($xmin, $ymin, $xmax, $ymax)"
 }
+
+object Extent {
+  def apply(env: jts.Envelope): Extent =
+    Extent(env.getMinX, env.getMinY, env.getMaxX, env.getMaxY)
+
+  /** Create an extent from a string
+    *
+    * @param s   A string of the form "xmin,ymin,xmax,ymax"
+    */
+  def fromString(s:String) = {
+    val Array(xmin,ymin,xmax,ymax) = s.split(",").map(_.toDouble)
+    Extent(xmin,ymin,xmax,ymax)
+  }
+
+  implicit def toPolygon(extent: Extent): Polygon =
+    extent.toPolygon
+
+  implicit def jts2Extent(env: jts.Envelope): Extent =
+    Extent(env)
+
+  implicit val extentSemigroup: Semigroup[Extent] = new Semigroup[Extent] {
+    def combine(x: Extent, y: Extent): Extent = x.expandToInclude(y)
+  }
+}
+

@@ -93,6 +93,7 @@ object ClipToGridExamples {
 
     import org.apache.spark.HashPartitioner
     import org.apache.spark.rdd.RDD
+    import cats.syntax.semigroup._
 
     import java.util.UUID
 

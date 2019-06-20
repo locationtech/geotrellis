@@ -17,10 +17,14 @@
 package geotrellis.raster
 
 import geotrellis.vector.{Extent, Point}
+import geotrellis.util.Constants
 
-import scala.math.{min, max, ceil}
 import spire.math.{Integral}
 import spire.implicits._
+import cats.SemigroupK
+import cats.syntax.semigroup._
+
+import scala.math.{min, max, ceil}
 
 /**
   * Represents an abstract grid over geographic extent.
@@ -60,13 +64,13 @@ class GridExtent[@specialized(Int, Long) N: Integral](
   * same cellsizes).  The result is a new extent at the same
   * resolution.
   */
-  def combine (that: GridExtent[N]): GridExtent[N] = {
+  def expandToInclude (that: GridExtent[N]): GridExtent[N] = {
     if (cellwidth != that.cellwidth)
       throw GeoAttrsError(s"illegal cellwidths: $cellwidth and ${that.cellwidth}")
     if (cellheight != that.cellheight)
       throw GeoAttrsError(s"illegal cellheights: $cellheight and ${that.cellheight}")
 
-    val newExtent = extent.combine(that.extent)
+    val newExtent = extent.expandToInclude(that.extent)
     val newRows = ceil(newExtent.height / cellheight)
     val newCols = ceil(newExtent.width / cellwidth)
 
@@ -372,6 +376,12 @@ object GridExtent {
     val cw = extent.width / grid.cols.toDouble
     val ch = extent.height / grid.rows.toDouble
     new GridExtent[N](extent, cw, ch, grid.cols, grid.rows)
+  }
+
+  implicit def gridExtentMergeSemigroupK: SemigroupK[GridExtent] = new SemigroupK[GridExtent] {
+    def combineK[T](x: GridExtent[T], y: GridExtent[T]): GridExtent[T] = {
+      x expandToInclude y
+    }
   }
 
   /** RasterSource interface reads GridBounds[Long] but GridBounds[Int] abounds.

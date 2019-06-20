@@ -16,7 +16,6 @@
 
 package geotrellis.spark.rasterize
 
-import org.scalatest._
 import geotrellis.raster._
 import geotrellis.raster.rasterize.Rasterizer
 import geotrellis.layer._
@@ -28,10 +27,12 @@ import geotrellis.raster.rasterize.Rasterizer.Options
 import geotrellis.vector._
 import geotrellis.vector.io.json._
 
+import org.scalatest._
+import org.apache.spark._
+import cats.syntax.semigroup._
+
 import java.nio.file.Files;
 import java.nio.file.Paths;
-
-import org.apache.spark._
 
 
 class RasterizeRDDSpec extends FunSpec with Matchers

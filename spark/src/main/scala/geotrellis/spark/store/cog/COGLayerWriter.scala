@@ -31,15 +31,13 @@ import geotrellis.store.index._
 import geotrellis.spark._
 
 import com.typesafe.scalalogging.LazyLogging
-
 import org.apache.spark.rdd.RDD
-
 import spray.json._
-
-import java.net.URI
-import java.util.ServiceLoader
+import cats.syntax.semigroup._
 
 import scala.reflect._
+import java.net.URI
+import java.util.ServiceLoader
 
 
 trait COGLayerWriter extends LazyLogging with Serializable {

@@ -23,12 +23,11 @@ import geotrellis.raster.io._
 import geotrellis.layer._
 import geotrellis.util._
 
-import cats.instances.either._
-import cats.instances.stream._
-import cats.syntax.foldable._
-
 import spray.json._
 import spray.json.DefaultJsonProtocol._
+
+import cats.Semigroup
+import cats.syntax.semigroup._
 
 
 case class COGLayerMetadata[K: SpatialComponent](
@@ -40,24 +39,6 @@ case class COGLayerMetadata[K: SpatialComponent](
 ) {
   val zoomRangesInfosSorted: Vector[(ZoomRange, KeyBounds[K])] = zoomRangeInfos.sortBy(_._1)
 
-  def combine(other: COGLayerMetadata[K])(implicit ev: Boundable[K]): COGLayerMetadata[K] = {
-    val combinedZoomRangeInfos =
-      (zoomRangeInfos ++ other.zoomRangeInfos)
-        .groupBy(_._1)
-        .map { case (key, bounds) => key -> bounds.map(_._2).reduce(_ combine _) }
-        .toVector
-        .sortBy(_._1)
-
-    val combinedExtent = extent.combine(other.extent)
-
-    COGLayerMetadata(
-      cellType,
-      combinedZoomRangeInfos,
-      layoutScheme,
-      combinedExtent,
-      crs
-    )
-  }
 
   private val maxZooms =
     zoomRangesInfosSorted.map(_._1.maxZoom).toArray
@@ -420,4 +401,25 @@ object COGLayerMetadata {
             throw DeserializationException(s"COGLayerMetadata expected, got $v")
         }
     }
+
+  implicit def cogLayerMetadataSemigroup[K: Boundable: SpatialComponent] = new Semigroup[COGLayerMetadata[K]] {
+    def combine(x: COGLayerMetadata[K], y: COGLayerMetadata[K]): COGLayerMetadata[K] = {
+      val combinedZoomRangeInfos =
+        (x.zoomRangeInfos ++ y.zoomRangeInfos)
+          .groupBy(_._1)
+          .map { case (key, bounds) => key -> bounds.map(_._2).reduce(_ combine _) }
+          .toVector
+          .sortBy(_._1)
+
+      val combinedExtent = x.extent.expandToInclude(y.extent)
+
+      COGLayerMetadata(
+        x.cellType,
+        combinedZoomRangeInfos,
+        x.layoutScheme,
+        combinedExtent,
+        x.crs
+      )
+    }
+  }
 }
