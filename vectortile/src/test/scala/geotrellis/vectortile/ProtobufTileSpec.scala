@@ -16,7 +16,7 @@
 
 package geotrellis.vectortile
 
-import geotrellis.vector.Extent
+import geotrellis.vector.{Extent, Point}
 
 import org.scalatest._
 
@@ -38,6 +38,37 @@ class ProtobufTileSpec extends FunSpec with Matchers {
   describe("onepoint.mvt") {
     it("must decode") {
       VectorTile.fromBytes(read("vectortile/data/onepoint.mvt"), tileExtent)
+    }
+
+    it("should encode ids into the tile") {
+      val layerId = "x"
+      val mvtFeature = MVTFeature(Some(1), Point(10, 10), Map.empty)
+      val layer = StrictLayer(layerId, 4096, 2, tileExtent,
+                              Seq(mvtFeature), Seq(), Seq(), Seq(), Seq(), Seq())
+      val tile = VectorTile(Map(layerId -> layer), tileExtent)
+      val tile2 = VectorTile.fromBytes(tile.toBytes, tileExtent)
+      val tileId = tile.layers(layerId).points.head.id
+      val tile2Id = tile2.layers(layerId).points.head.id
+      tileId should equal(tile2Id)
+    }
+
+    it("should encode attributes into the tile") {
+      val layerId = "x"
+      val mvtFeature = MVTFeature(Some(1), Point(10, 10), Map(
+        "building" -> VString("yes"),
+        "isValid" -> VBool(true),
+        "elevation" -> VDouble(100.5),
+        "population" -> VInt64(6)
+      ))
+      val layer = StrictLayer(layerId, 4096, 2, tileExtent,
+                              Seq(mvtFeature), Seq(), Seq(), Seq(), Seq(), Seq())
+      val tile = VectorTile(Map(layerId -> layer), tileExtent)
+      val tile2 = VectorTile.fromBytes(tile.toBytes, tileExtent)
+      val tileId = tile.layers(layerId).points.head.data.toList.foreach {
+        case (key, value) => {
+          tile2.layers(layerId).points.head.data(key) should equal(value)
+        }
+      }
     }
 
     it("decode, encode and decode again") {
