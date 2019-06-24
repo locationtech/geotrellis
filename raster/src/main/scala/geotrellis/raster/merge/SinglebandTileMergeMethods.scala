@@ -101,7 +101,7 @@ trait SinglebandTileMergeMethods extends TileMergeMethods[Tile] {
 
         self.cellType match {
           case BitCellType | ByteCellType | UByteCellType | ShortCellType | UShortCellType | IntCellType  =>
-            val interpolate = Resample(method, other, otherExtent, targetCS).resample _
+            val interpolate: (Double, Double) => Int = Resample(method, other, otherExtent, targetCS).resample _
             // Assume 0 as the transparent value
             cfor(0)(_ < self.rows, _ + 1) { row =>
               cfor(0)(_ < self.cols, _ + 1) { col =>
@@ -115,7 +115,7 @@ trait SinglebandTileMergeMethods extends TileMergeMethods[Tile] {
               }
             }
           case FloatCellType | DoubleCellType =>
-            val interpolate = Resample(method, other, otherExtent, targetCS).resampleDouble _
+            val interpolate: (Double, Double) => Double = Resample(method, other, otherExtent, targetCS).resampleDouble _
             // Assume 0.0 as the transparent value
             cfor(0)(_ < self.rows, _ + 1) { row =>
               cfor(0)(_ < self.cols, _ + 1) { col =>
@@ -129,7 +129,7 @@ trait SinglebandTileMergeMethods extends TileMergeMethods[Tile] {
               }
             }
           case x if x.isFloatingPoint =>
-            val interpolate = Resample(method, other, otherExtent, targetCS).resampleDouble _
+            val interpolate: (Double, Double) => Double = Resample(method, other, otherExtent, targetCS).resampleDouble _
             cfor(0)(_ < self.rows, _ + 1) { row =>
               cfor(0)(_ < self.cols, _ + 1) { col =>
                 if (isNoData(self.getDouble(col, row))) {
@@ -139,7 +139,7 @@ trait SinglebandTileMergeMethods extends TileMergeMethods[Tile] {
               }
             }
           case _ =>
-            val interpolate = Resample(method, other, otherExtent, targetCS).resample _
+            val interpolate: (Double, Double) => Int = Resample(method, other, otherExtent, targetCS).resample _
             cfor(0)(_ < self.rows, _ + 1) { row =>
               cfor(0)(_ < self.cols, _ + 1) { col =>
                 if (isNoData(self.get(col, row))) {

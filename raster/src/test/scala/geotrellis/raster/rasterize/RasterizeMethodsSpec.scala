@@ -18,7 +18,7 @@ package geotrellis.raster.rasterize
 
 import geotrellis.raster._
 import geotrellis.raster.testkit._
-import geotrellis.vector.{Extent, Feature}
+import geotrellis.vector._
 
 import org.scalatest._
 
@@ -27,17 +27,15 @@ class RasterizeMethodsSpec extends FunSpec
     with Matchers
     with TileBuilders {
 
-  import geotrellis.vector.{Point,Line,Polygon}
-
   val magicNumber = 42
   val e = Extent(0.0, 0.0, 10.0, 10.0)
   val re = RasterExtent(e, 1.0, 1.0, 10, 10)
 
   val point = Point(1,9)
-  val line = Line((3,7), (6,4), (3,1), (0,4))
-  val square  = Polygon( Line((1,9), (1,6), (4,6), (4,9), (1,9)) )
-  val diamond = Polygon( Line((3,7), (6,4), (3,1), (0,4), (3,7)))
-  val triangle = Polygon( Line((2,8),(5,5),(6,7), (6,7), (2,8)))
+  val line = LineString(Seq[(Double,Double)]((3,7), (6,4), (3,1), (0,4)))
+  val square  = Polygon( LineString(Seq[(Double,Double)]((1,9), (1,6), (4,6), (4,9), (1,9))) )
+  val diamond = Polygon( LineString(Seq[(Double,Double)]((3,7), (6,4), (3,1), (0,4), (3,7))) )
+  val triangle = Polygon( LineString(Seq[(Double,Double)]((2,8),(5,5),(6,7), (6,7), (2,8))) )
 
   val pointExpected = Rasterizer.rasterizeWithValue(point, re, magicNumber).toArray.filter(_ == magicNumber).length
   val lineExpected = Rasterizer.rasterizeWithValue(line, re, magicNumber).toArray.filter(_ == magicNumber).length
@@ -63,9 +61,9 @@ class RasterizeMethodsSpec extends FunSpec
     }
 
     it("should agree with Rasterizer.rasterizeWithValue for a line") {
-      val actual1 = Feature[Line, Int](line, magicNumber).rasterize(re)
+      val actual1 = Feature[LineString, Int](line, magicNumber).rasterize(re)
         .tile.toArray.filter(_ == magicNumber).length
-      val actual2 = Feature[Line, Double](line, magicNumber).rasterize(re)
+      val actual2 = Feature[LineString, Double](line, magicNumber).rasterize(re)
         .tile.toArray.filter(_ == magicNumber).length
 
       assert(actual1 == lineExpected)

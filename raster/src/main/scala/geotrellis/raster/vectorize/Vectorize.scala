@@ -118,10 +118,10 @@ object Vectorize {
             shellPoly.geom.foreach(rasterExtent)(callback)
 
             val holes = {
-              val rings = callback.linearRings.map(Line.apply)
+              val rings = callback.linearRings.map{ lr => LineString(lr.getCoordinates) }
               if(rings.size > 1) {
                 // We need to get rid of intersecting holes.
-                rings.map(Polygon(_).buffer(0)).unionGeometries.asMultiPolygon match {
+                rings.map(Polygon(_).buffer(0).asInstanceOf[Polygon]).unionGeometries.asMultiPolygon match {
                   case Some(mp) => mp.polygons.map(_.exterior).toSet
                   case None => sys.error(s"Invalid geometries returned by polygon holes: ${rings.map(Polygon.apply).unionGeometries}")
                 }
@@ -131,7 +131,7 @@ object Vectorize {
             }
 
             polygons += PolygonFeature(
-              Polygon(Line(shell), holes),
+              Polygon(LineString(shell.getCoordinates), holes),
               rgr.regionMap(v)
             )
 

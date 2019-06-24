@@ -31,16 +31,16 @@ case class CostDistanceWithPathsResult(
 
   val (cols, rows) = tileDimension
 
-  def getPath(dest: (Int, Int)): (Double, Seq[Line]) = {
+  def getPath(dest: (Int, Int)): (Double, Seq[LineString]) = {
     val (col, row) = dest
     val idx = row * cols + col
     val start = Seq(idx)
     val paths = getPath(start)
 
-    val res = Array.ofDim[Line](paths.size)
+    val res = Array.ofDim[LineString](paths.size)
     cfor(0)(_ < paths.size, _ + 1) { i =>
       val path = paths(i)
-      res(i) = Line(path.map(idx => ((idx % cols).toDouble, (idx / cols).toDouble)))
+      res(i) = LineString(path.map(idx => ((idx % cols).toDouble, (idx / cols).toDouble)))
     }
 
     (costs(idx), res)

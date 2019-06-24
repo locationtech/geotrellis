@@ -36,6 +36,12 @@ object Polygon {
   def apply(exterior: Seq[jts.Coordinate])(implicit d: DummyImplicit, e: DummyImplicit, f: DummyImplicit): Polygon =
     apply(LineString(exterior), Set())
 
+  def apply(exterior: (Double, Double)*)(implicit d: DummyImplicit, e: DummyImplicit, f: DummyImplicit, g: DummyImplicit): Polygon =
+    apply(LineString(exterior)(d), Set())
+
+  def apply(exterior: Seq[(Double, Double)])(implicit d: DummyImplicit, e: DummyImplicit, f: DummyImplicit, g: DummyImplicit, h: DummyImplicit): Polygon =
+    apply(LineString(exterior)(d), Set())
+
   def apply(exterior: LineString): Polygon =
     apply(exterior, Set())
 

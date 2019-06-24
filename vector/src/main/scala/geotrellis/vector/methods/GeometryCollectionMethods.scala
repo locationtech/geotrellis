@@ -22,4 +22,10 @@ trait ExtraGeometryCollectionMethods extends MethodExtensions[GeometryCollection
     }
     lb.toSeq
   }
+
+  def normalized(): GeometryCollection = {
+    val res = self.copy.asInstanceOf[GeometryCollection]
+    res.normalize
+    res
+  }
 }
