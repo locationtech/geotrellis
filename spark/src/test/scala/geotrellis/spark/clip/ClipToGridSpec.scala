@@ -86,7 +86,7 @@ class ClipToGridSpec extends FunSpec with TestEnvironment {
 
     it("should clip a line") {
       val line =
-        Line(
+        LineString(
           (1.5, -14.2),
           (1.5, -12.5),
           (2.6, -12.5),
@@ -99,13 +99,13 @@ class ClipToGridSpec extends FunSpec with TestEnvironment {
 
       checkCorrect(actual,
         Vector(
-          (SpatialKey(1, 6), Line((1.5, -14.0), (1.5, -12.5), (2.0, -12.5))),
-          (SpatialKey(2, 6), Line((2.0, -12.5), (2.6, -12.5), (2.6, -14.0))),
-          (SpatialKey(2, 7), Line((2.6, -14.0), (2.6, -15.1), (2.0, -15.1))),
+          (SpatialKey(1, 6), LineString((1.5, -14.0), (1.5, -12.5), (2.0, -12.5))),
+          (SpatialKey(2, 6), LineString((2.0, -12.5), (2.6, -12.5), (2.6, -14.0))),
+          (SpatialKey(2, 7), LineString((2.6, -14.0), (2.6, -15.1), (2.0, -15.1))),
           (SpatialKey(1, 7),
-            MultiLine(
-              Line((2.0, -15.1), (1.6, -15.1)),
-              Line((1.5, -14.2), (1.5, -14.0))
+            MultiLineString(
+              LineString((2.0, -15.1), (1.6, -15.1)),
+              LineString((1.5, -14.2), (1.5, -14.0))
             )
           )
         )
@@ -115,7 +115,7 @@ class ClipToGridSpec extends FunSpec with TestEnvironment {
 
     it("should clip a line contained in one key") {
       val line =
-        Line(
+        LineString(
           (1.5, -14.2),
           (1.5, -14.1),
           (1.6, -14.1),
@@ -131,7 +131,7 @@ class ClipToGridSpec extends FunSpec with TestEnvironment {
 
     it("should clip a polygon") {
       val shell =
-        Line(
+        LineString(
           (1.5, -3.0),
           (6.5, -3.0),
           (6.5, -19.0),
@@ -140,7 +140,7 @@ class ClipToGridSpec extends FunSpec with TestEnvironment {
         )
 
       val hole =
-        Line(
+        LineString(
           (3.5, -7.0),
           (5.5, -7.0),
           (5.5, -15.0),

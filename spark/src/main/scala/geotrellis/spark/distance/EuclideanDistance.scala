@@ -76,7 +76,7 @@ object EuclideanDistance {
       do {
         while (getDest(e) == -1 && e < maxEdgeIndex)
           e += 1
-        val dist = re.extent.distance(Point.jtsCoord2Point(stitched.indexToCoord(getDest(e))))
+        val dist = re.extent.distance(Point(stitched.indexToCoord(getDest(e))))
         if (dist < bestdist) {
           best = e
           bestdist = dist

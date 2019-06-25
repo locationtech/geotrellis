@@ -31,6 +31,14 @@ trait ExtraLineStringMethods extends MethodExtensions[LineString] {
   def typedIntersection(p: Point): PointOrNoResult = self.intersection(p)
   def typedIntersection(mp: MultiPoint): MultiPointAtLeastOneDimensionIntersectionResult = self.intersection(mp)
   def typedIntersection[G <: Geometry : AtLeastOneDimension](g: G): OneDimensionAtLeastOneDimensionIntersectionResult = self.intersection(g)
+  def typedIntersection(ex: Extent): OneDimensionAtLeastOneDimensionIntersectionResult = self.intersection(ex.toPolygon)
+
+  def -(p: Point): LineStringResult = self.difference(p)
+  def -(mp: MultiPoint): LineStringResult = self.difference(mp)
+  def -(l: LineString): LineStringAtLeastOneDimensionDifferenceResult = self.difference(l)
+  def -(ml: MultiLineString): LineStringAtLeastOneDimensionDifferenceResult = self.difference(ml)
+  def -(p: Polygon): LineStringAtLeastOneDimensionDifferenceResult = self.difference(p)
+  def -(mp: MultiPolygon): LineStringAtLeastOneDimensionDifferenceResult = self.difference(mp)
 
   def normalized(): LineString = {
     val res = self.copy.asInstanceOf[LineString]

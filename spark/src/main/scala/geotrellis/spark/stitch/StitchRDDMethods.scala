@@ -22,7 +22,7 @@ import geotrellis.raster.prototype._
 import geotrellis.raster.stitch.Stitcher
 import geotrellis.layer._
 import geotrellis.layer.stitch._
-import geotrellis.vector.Extent
+import geotrellis.vector._
 import geotrellis.spark._
 import geotrellis.util._
 import org.apache.spark.rdd.RDD

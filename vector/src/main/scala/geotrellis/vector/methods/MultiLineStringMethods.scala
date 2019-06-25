@@ -13,6 +13,9 @@ trait ExtraMultiLineStringMethods extends MethodExtensions[MultiLineString] {
   def typedIntersection(p: Point): PointOrNoResult = self.intersection(p)
   def typedIntersection(mp: MultiPoint): MultiPointAtLeastOneDimensionIntersectionResult = self.intersection(mp)
   def typedIntersection[G <: Geometry : AtLeastOneDimension](g: G): OneDimensionAtLeastOneDimensionIntersectionResult = self.intersection(g)
+  def typedIntersection(ex: Extent): OneDimensionAtLeastOneDimensionIntersectionResult = self.intersection(ex.toPolygon)
+
+  def -(g: Geometry): MultiLineStringGeometryDifferenceResult = self.difference(g)
 
   def normalized(): MultiLineString = {
     val res = self.copy.asInstanceOf[MultiLineString]

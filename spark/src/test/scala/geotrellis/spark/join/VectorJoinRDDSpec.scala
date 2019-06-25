@@ -31,21 +31,21 @@ import org.scalatest._
 class VectorJoinRDDSpec extends FunSpec with Matchers with TestEnvironment {
 
   val polyA = Polygon(
-    Line(Point(0,0), Point(1,0), Point(1,1), Point(0,1), Point(0,0)))
+    LineString(Point(0,0), Point(1,0), Point(1,1), Point(0,1), Point(0,0)))
   val polyB = Polygon(
     List(Point(10,10), Point(11,10), Point(11,11), Point(10,11), Point(10,10)))
   val polyC = Polygon(
     List(Point(100,100), Point(101,100), Point(101,101), Point(100,101), Point(100,100)))
-  val line1 = Line(Point(0,0), Point(5,5))
-  val line2 = Line(Point(13,0), Point(33,0))
+  val line1 = LineString(Point(0,0), Point(5,5))
+  val line2 = LineString(Point(13,0), Point(33,0))
 
   it("Joins two RDDs of Geometries") {
 
     val left: RDD[Polygon] = sc.parallelize(Array(polyA, polyB, polyC))
-    val right: RDD[Line] = sc.parallelize(Array(line1, line2, line2))
+    val right: RDD[LineString] = sc.parallelize(Array(line1, line2, line2))
     val pred = { (a: Geometry, b: Geometry) => a intersects b }
 
-    val res: Vector[(Polygon, Line)] = VectorJoin(left, right, pred).collect.toVector
+    val res: Vector[(Polygon, LineString)] = VectorJoin(left, right, pred).collect.toVector
 
     res should contain only ((polyA, line1))
   }
@@ -53,32 +53,32 @@ class VectorJoinRDDSpec extends FunSpec with Matchers with TestEnvironment {
   it("Joins two RDDs of Geometries using Implicit Methods") {
 
     val left: RDD[Polygon] = sc.parallelize(Array(polyA, polyB, polyC))
-    val right: RDD[Line] = sc.parallelize(Array(line1, line2, line2))
+    val right: RDD[LineString] = sc.parallelize(Array(line1, line2, line2))
     val pred = { (a: Geometry, b: Geometry) => a intersects b }
 
-    val res: Vector[(Polygon, Line)] = left.vectorJoin(right, pred).collect.toVector
+    val res: Vector[(Polygon, LineString)] = left.vectorJoin(right, pred).collect.toVector
 
     res should contain only ((polyA, line1))
   }
 
   it("Joins another two RDDs of Geometries using Implicit Methods (1/2)") {
 
-    val left: RDD[Line] = sc.parallelize(Array(line2, line1))
+    val left: RDD[LineString] = sc.parallelize(Array(line2, line1))
     val right: RDD[Polygon] = sc.parallelize(Array(polyA, polyB, polyC, polyC, polyC, polyB))
     val pred = { (a: Geometry, b: Geometry) => a intersects b }
 
-    val res: Vector[(Line, Polygon)] = left.vectorJoin(right, pred).collect.toVector
+    val res: Vector[(LineString, Polygon)] = left.vectorJoin(right, pred).collect.toVector
 
     res should contain only ((line1, polyA))
   }
 
   it("Joins another two RDDs of Geometries using Implicit Methods (2/2)") {
 
-    val left: RDD[Line] = sc.parallelize(Array(line2, line2, line2, line1), 4)
+    val left: RDD[LineString] = sc.parallelize(Array(line2, line2, line2, line1), 4)
     val right: RDD[Polygon] = sc.parallelize(Array(polyA, polyB, polyC, polyC, polyC, polyB), 6)
     val pred = { (a: Geometry, b: Geometry) => a intersects b }
 
-    val res: Vector[(Line, Polygon)] = left.vectorJoin(right, pred).collect.toVector
+    val res: Vector[(LineString, Polygon)] = left.vectorJoin(right, pred).collect.toVector
 
     res should contain only ((line1, polyA))
   }

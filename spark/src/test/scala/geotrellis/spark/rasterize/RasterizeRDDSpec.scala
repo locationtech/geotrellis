@@ -26,6 +26,7 @@ import geotrellis.spark.testkit._
 import geotrellis.spark.testkit.TestEnvironment
 import geotrellis.raster.rasterize.Rasterizer.Options
 import geotrellis.vector._
+import geotrellis.vector.io.wkt.WKT
 import geotrellis.vector.io.json._
 
 import java.nio.file.Files;
@@ -42,7 +43,7 @@ class RasterizeRDDSpec extends FunSpec with Matchers
 
   val septaRailLines = {
     val s = readFile("vector/data/septaRail.geojson")
-    s.parseGeoJson[JsonFeatureCollection].getAllLines
+    s.parseGeoJson[JsonFeatureCollection].getAllLineStrings
   }
 
   val septaExtent = septaRailLines.map(_.envelope).reduce(_ combine _)
@@ -66,7 +67,7 @@ class RasterizeRDDSpec extends FunSpec with Matchers
         val sk = SpatialKey(tileCol, tileRow)
         val keyExtent = ld.mapTransform(sk)
         sk -> Rasterizer.rasterizeWithValue(
-          MultiLine(septaRailLines),
+          MultiLineString(septaRailLines),
           RasterExtent(keyExtent, 256, 256),
           1)
       }

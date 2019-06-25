@@ -13,6 +13,9 @@ trait ExtraMultiPointMethods extends MethodExtensions[MultiPoint] {
   def typedIntersection(p: Point): PointOrNoResult = self.intersection(p)
   def typedIntersection(mp: MultiPoint): MultiPointMultiPointIntersectionResult = self.intersection(mp)
   def typedIntersection[G <: Geometry : AtLeastOneDimension](g: G): MultiPointAtLeastOneDimensionIntersectionResult = self.intersection(g)
+  def typedIntersection(ex: Extent): MultiPointAtLeastOneDimensionIntersectionResult = self.intersection(ex.toPolygon)
+
+  def -(g: Geometry): MultiPointGeometryDifferenceResult = self.difference(g)
 
   def normalized(): MultiPoint = {
     val res = self.copy.asInstanceOf[MultiPoint]

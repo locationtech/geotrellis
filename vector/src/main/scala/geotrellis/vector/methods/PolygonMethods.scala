@@ -38,6 +38,14 @@ trait ExtraPolygonMethods extends MethodExtensions[Polygon] {
   def typedIntersection(ml: MultiLineString): OneDimensionAtLeastOneDimensionIntersectionResult = self.intersection(ml)
   def typedIntersection(p: Polygon): TwoDimensionsTwoDimensionsIntersectionResult = self.intersection(p)
   def typedIntersection(mp: MultiPolygon): TwoDimensionsTwoDimensionsIntersectionResult = self.intersection(mp)
+  def typedIntersection(ex: Extent): TwoDimensionsTwoDimensionsIntersectionResult = self.intersection(ex.toPolygon)
+
+  def -(p: Point): PolygonAtMostOneDimensionDifferenceResult = self.difference(p)
+  def -(mp: MultiPoint): PolygonAtMostOneDimensionDifferenceResult = self.difference(mp)
+  def -(l: LineString): PolygonAtMostOneDimensionDifferenceResult = self.difference(l)
+  def -(ml: MultiLineString): PolygonAtMostOneDimensionDifferenceResult = self.difference(ml)
+  def -(p: Polygon): TwoDimensionsTwoDimensionsDifferenceResult = self.difference(p)
+  def -(mp: MultiPolygon): TwoDimensionsTwoDimensionsDifferenceResult = self.difference(mp)
 
   def normalized(): Polygon = {
     val res = self.copy.asInstanceOf[Polygon]
