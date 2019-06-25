@@ -58,9 +58,9 @@ import scala.collection.mutable.ListBuffer
   /** Every MultiPoint Feature in this Layer. */
   def multiPoints: Seq[MVTFeature[MultiPoint]]
   /** Every Line Feature in this Layer. */
-  def lines: Seq[MVTFeature[Line]]
+  def lines: Seq[MVTFeature[LineString]]
   /** Every MultiLine Feature in this Layer. */
-  def multiLines: Seq[MVTFeature[MultiLine]]
+  def multiLines: Seq[MVTFeature[MultiLineString]]
   /** Every Polygon Feature in this Layer. */
   def polygons: Seq[MVTFeature[Polygon]]
   /** Every MultiPolygon Feature in this Layer. */
@@ -89,7 +89,7 @@ import scala.collection.mutable.ListBuffer
     **/
   private[vectortile] def toProtobuf(forcePolygonWinding: Boolean = true): PBLayer = {
     val pgp = implicitly[ProtobufGeom[Point, MultiPoint]]
-    val pgl = implicitly[ProtobufGeom[Line, MultiLine]]
+    val pgl = implicitly[ProtobufGeom[LineString, MultiLineString]]
     val pgy = implicitly[ProtobufGeom[Polygon, MultiPolygon]]
 
     val (keys, values) = totalMeta
@@ -217,8 +217,8 @@ ${sortedMeta.map({ case (k,v) => s"            ${k}: ${v}"}).mkString("\n")}
   tileExtent: Extent,
   points: Seq[MVTFeature[Point]],
   multiPoints: Seq[MVTFeature[MultiPoint]],
-  lines: Seq[MVTFeature[Line]],
-  multiLines: Seq[MVTFeature[MultiLine]],
+  lines: Seq[MVTFeature[LineString]],
+  multiLines: Seq[MVTFeature[MultiLineString]],
   polygons: Seq[MVTFeature[Polygon]],
   multiPolygons: Seq[MVTFeature[MultiPolygon]]
 ) extends Layer
@@ -246,7 +246,7 @@ ${sortedMeta.map({ case (k,v) => s"            ${k}: ${v}"}).mkString("\n")}
    * Polymorphically generate a [[Stream]] of parsed Geometries and
    * their metadata.
    */
-  private def geomStream[G1 <: Geometry, G2 <: MultiGeometry](
+  private def geomStream[G1 <: Geometry, G2 <: Geometry](
     feats: ListBuffer[PBFeature]
   )(implicit protobufGeom: ProtobufGeom[G1, G2]): Stream[(Option[Long], Either[G1, G2], Map[String, Value])] = {
     def loop(fs: ListBuffer[PBFeature]): Stream[(Option[Long], Either[G1, G2], Map[String, Value])] = {
@@ -291,7 +291,7 @@ ${sortedMeta.map({ case (k,v) => s"            ${k}: ${v}"}).mkString("\n")}
 
   /* Geometry Streams */
   private lazy val pointStream = geomStream[Point, MultiPoint](pointFs)
-  private lazy val lineStream = geomStream[Line, MultiLine](lineFs)
+  private lazy val lineStream = geomStream[LineString, MultiLineString](lineFs)
   private lazy val polyStream = geomStream[Polygon, MultiPolygon](polyFs)
 
   /* OPTIMIZATION NOTES
@@ -320,13 +320,13 @@ ${sortedMeta.map({ case (k,v) => s"            ${k}: ${v}"}).mkString("\n")}
       case _ => Nil
     })
 
-  lazy val lines: Stream[MVTFeature[Line]] = lineStream
+  lazy val lines: Stream[MVTFeature[LineString]] = lineStream
     .flatMap({
       case (id, Left(p), meta) if !p.isEmpty => new ::(MVTFeature(id, p, meta), Nil)
       case _ => Nil
     })
 
-  lazy val multiLines: Stream[MVTFeature[MultiLine]] = lineStream
+  lazy val multiLines: Stream[MVTFeature[MultiLineString]] = lineStream
     .flatMap({
       case (id, Right(p), meta) if !p.isEmpty => new ::(MVTFeature(id, p, meta), Nil)
       case _ => Nil

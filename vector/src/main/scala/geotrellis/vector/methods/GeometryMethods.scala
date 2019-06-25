@@ -2,6 +2,7 @@ package geotrellis.vector.methods
 
 import geotrellis.vector._
 import geotrellis.util.MethodExtensions
+import org.locationtech.jts.geom.TopologyException
 
 trait ExtraGeometryMethods extends MethodExtensions[Geometry] {
   def envelope: Extent =
@@ -9,4 +10,10 @@ trait ExtraGeometryMethods extends MethodExtensions[Geometry] {
     else self.getEnvelopeInternal
 
   def typedIntersection(g: Geometry): TwoDimensionsTwoDimensionsIntersectionResult = self.intersection(g)
+
+  def intersectionSafe(g: Geometry): TwoDimensionsTwoDimensionsIntersectionResult =
+    try self.intersection(g)
+    catch {
+      case _: TopologyException => GeomFactory.simplifier.reduce(self).intersection(GeomFactory.simplifier.reduce(g))
+    }
 }
