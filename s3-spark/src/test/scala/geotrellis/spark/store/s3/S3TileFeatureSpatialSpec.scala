@@ -56,7 +56,7 @@ class S3TileFeatureSpatialSpec
   lazy val deleter = new S3LayerDeleter(attributeStore, getS3Client)
   lazy val copier  = new S3LayerCopier(attributeStore, bucket, prefix, getS3Client)
   lazy val creader = new S3CollectionLayerReader(attributeStore)
-  lazy val reindexer = GenericLayerReindexer[S3LayerHeader](attributeStore, reader, writer, deleter, copier)
+  lazy val reindexer = GenericLayerReindexer(attributeStore, reader, writer, deleter, copier)
   lazy val mover = GenericLayerMover(copier, deleter)
   lazy val tiles = new S3ValueReader(attributeStore, getS3Client)
   lazy val sample = AllOnesTestFile

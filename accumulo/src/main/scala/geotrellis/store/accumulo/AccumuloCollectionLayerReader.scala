@@ -21,7 +21,9 @@ import geotrellis.store._
 import geotrellis.store.avro._
 import geotrellis.util._
 
-import io.circe._
+import org.apache.accumulo.core.data.{Range => AccumuloRange}
+import org.apache.hadoop.io.Text
+import _root_.io.circe._
 
 import scala.reflect._
 

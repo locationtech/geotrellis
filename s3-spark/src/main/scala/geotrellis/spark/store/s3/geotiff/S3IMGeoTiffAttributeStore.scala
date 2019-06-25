@@ -23,7 +23,7 @@ import geotrellis.util.annotations.experimental
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.core.sync.RequestBody
 import software.amazon.awssdk.services.s3.model.PutObjectRequest
-import io.circe.syntax._
+import _root_.io.circe.syntax._
 
 import java.io.ByteArrayInputStream
 import java.net.URI
@@ -60,7 +60,7 @@ import java.net.URI
         val s3Path = new AmazonS3URI(uri)
         val data = metadataList
 
-        val str = data.toJson.compactPrint
+        val str = data.asJson.noSpaces
         val request = PutObjectRequest.builder()
           .bucket(s3Path.getBucket())
           .key(s3Path.getKey())

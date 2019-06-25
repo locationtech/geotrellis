@@ -20,13 +20,12 @@ import geotrellis.layer._
 import geotrellis.store._
 import geotrellis.store.avro.AvroRecordCodec
 import geotrellis.store.index.KeyIndex
-import geotrellis.layer.json._
 import geotrellis.util._
 
 import software.amazon.awssdk.services.s3.model._
 import software.amazon.awssdk.services.s3.S3Client
 import org.apache.avro.Schema
-import io.circe._
+import _root_.io.circe._
 
 import scala.annotation.tailrec
 import scala.collection.JavaConverters._

@@ -25,7 +25,7 @@ import geotrellis.store.avro.codecs.KeyValueRecordCodec
 import geotrellis.store.avro.{AvroEncoder, AvroRecordCodec}
 
 import org.apache.hadoop.hbase.client.Get
-import io.circe._
+import _root_.io.circe._
 
 import scala.reflect.ClassTag
 

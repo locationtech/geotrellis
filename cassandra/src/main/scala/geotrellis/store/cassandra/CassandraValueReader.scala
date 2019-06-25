@@ -25,7 +25,7 @@ import geotrellis.store.avro.{AvroEncoder, AvroRecordCodec}
 
 import com.datastax.driver.core.querybuilder.QueryBuilder
 import com.datastax.driver.core.querybuilder.QueryBuilder.{eq => eqs}
-import io.circe._
+import _root_.io.circe._
 
 import scala.collection.JavaConverters._
 import scala.reflect.ClassTag

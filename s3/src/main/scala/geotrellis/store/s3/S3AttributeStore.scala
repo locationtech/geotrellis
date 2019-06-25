@@ -19,18 +19,17 @@ package geotrellis.store.s3
 import geotrellis.layer._
 import geotrellis.store._
 
-import spray.json._
-import DefaultJsonProtocol._
-
 import software.amazon.awssdk.core.sync.RequestBody
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.model._
-
 import org.apache.commons.io.IOUtils
+import _root_.io.circe._
+import _root_.io.circe.syntax._
+import _root_.io.circe.parser._
+import cats.syntax.either._
 
 import scala.util.matching.Regex
 import scala.collection.JavaConverters._
-
 import java.nio.charset.Charset
 import java.io.ByteArrayInputStream
 
@@ -66,7 +65,7 @@ class S3AttributeStore(
   def attributePrefix(attributeName: String): String =
     path(prefix, "_attributes", s"${attributeName}${SEP}")
 
-  private def readKey[T: JsonFormat](key: String): (LayerId, T) = {
+  private def readKey[T: Decoder](key: String): (LayerId, T) = {
     val getRequest = GetObjectRequest.builder()
       .bucket(bucket)
       .key(key)
@@ -79,10 +78,16 @@ class S3AttributeStore(
         s3objStream.close()
       }
 
-    json.parseJson.convertTo[(LayerId, T)]
+    (for {
+      parsed <- parse(json)
+      key <- parsed.as[(LayerId, T)]
+    } yield key) match {
+      case Right(success) => success
+      case Left(error) => throw error
+    }
   }
 
-  def read[T: JsonFormat](layerId: LayerId, attributeName: String): T =
+  def read[T: Decoder](layerId: LayerId, attributeName: String): T =
     try {
       readKey[T](attributePath(layerId, attributeName))._2
     } catch {
@@ -90,7 +95,7 @@ class S3AttributeStore(
         throw new AttributeNotFoundError(attributeName, layerId).initCause(e)
     }
 
-  def readAll[T: JsonFormat](attributeName: String): Map[LayerId, T] = {
+  def readAll[T: Decoder](attributeName: String): Map[LayerId, T] = {
     val listRequest = ListObjectsV2Request.builder()
       .bucket(bucket)
       .prefix(attributePrefix(attributeName))
@@ -110,9 +115,9 @@ class S3AttributeStore(
       .toMap
   }
 
-  def write[T: JsonFormat](layerId: LayerId, attributeName: String, value: T): Unit = {
+  def write[T: Encoder](layerId: LayerId, attributeName: String, value: T): Unit = {
     val key = attributePath(layerId, attributeName)
-    val str = (layerId, value).toJson.compactPrint
+    val str = (layerId, value).asJson.noSpaces
     val putRequest = PutObjectRequest.builder()
       .bucket(bucket)
       .key(key)

@@ -28,10 +28,6 @@ import geotrellis.spark.ContextRDD
 import geotrellis.util._
 import geotrellis.util.annotations.experimental
 
-import com.typesafe.scalalogging.LazyLogging
-
-import org.locationtech.jts.geom._
-
 import mil.nga.giat.geowave.adapter.raster.adapter.RasterDataAdapter
 import mil.nga.giat.geowave.core.geotime.ingest._
 import mil.nga.giat.geowave.core.geotime.store.query.IndexOnlySpatialQuery
@@ -44,15 +40,15 @@ import mil.nga.giat.geowave.datastore.accumulo._
 import mil.nga.giat.geowave.datastore.accumulo.metadata._
 import mil.nga.giat.geowave.mapreduce.input.{GeoWaveInputFormat, GeoWaveInputKey}
 
-import io.circe._
-
 import org.apache.hadoop.mapreduce.Job
 import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkContext
 import org.apache.avro.Schema
 import org.apache.hadoop.io.Text
-
 import org.geotools.coverage.grid._
+import com.typesafe.scalalogging.LazyLogging
+import org.locationtech.jts.geom._
+import _root_.io.circe._
 
 import scala.reflect._
 

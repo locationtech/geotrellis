@@ -23,13 +23,13 @@ import geotrellis.util.annotations.experimental
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.core.sync.RequestBody
 import software.amazon.awssdk.services.s3.model.{GetObjectRequest, PutObjectRequest}
-
-import spray.json._
-import spray.json.DefaultJsonProtocol._
+import _root_.io.circe._
+import _root_.io.circe.parser._
+import _root_.io.circe.syntax._
+import cats.syntax.either._
 
 import java.io.ByteArrayInputStream
 import java.net.URI
-
 import scala.io.Source
 
 /**
@@ -56,9 +56,13 @@ import scala.io.Source
         .mkString(" ")
     } finally objStream.close()
 
-    json
-      .parseJson
-      .convertTo[List[GeoTiffMetadata]]
+    (for {
+      parsed <- parse(json)
+      md <- parsed.as[List[GeoTiffMetadata]]
+    } yield md) match {
+      case Right(success) => success
+      case Left(error) => throw error
+    }
   }
 
   @experimental def readDataAsTree(uri: URI, getClient: () => S3Client = S3ClientProducer.get): GeoTiffMetadataTree[GeoTiffMetadata] =
@@ -85,7 +89,7 @@ import scala.io.Source
     // https://github.com/aws/aws-sdk-java-v2/blob/master/docs/BestPractices.md#reuse-sdk-client-if-possible
     val attributeStore = JsonGeoTiffAttributeStore(path, readDataAsTree(_, getClient))
 
-    val str = data.toJson.compactPrint
+    val str = data.asJson.noSpaces
     val request = PutObjectRequest.builder()
       .bucket(s3Uri.getBucket())
       .key(s3Uri.getKey())

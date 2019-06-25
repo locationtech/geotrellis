@@ -28,7 +28,6 @@ import geotrellis.layer._
 import geotrellis.store._
 import geotrellis.store.cog.{COGCollectionLayerReader, COGValueReader}
 import geotrellis.store.index._
-import geotrellis.layer.json._
 import geotrellis.spark._
 import geotrellis.spark.store._
 import geotrellis.spark.store.cog._

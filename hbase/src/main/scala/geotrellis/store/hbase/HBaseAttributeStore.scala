@@ -24,9 +24,9 @@ import org.apache.hadoop.hbase._
 import org.apache.hadoop.hbase.client._
 import org.apache.hadoop.hbase.filter.{FilterList, RegexStringComparator, RowFilter}
 import org.apache.hadoop.hbase.util.Bytes
-import io.circe._
-import io.circe.syntax._
-import io.circe.parser._
+import _root_.io.circe._
+import _root_.io.circe.syntax._
+import _root_.io.circe.parser._
 import cats.syntax.either._
 
 import scala.collection.JavaConverters._

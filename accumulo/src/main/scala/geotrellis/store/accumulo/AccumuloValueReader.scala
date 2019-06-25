@@ -26,7 +26,7 @@ import geotrellis.store.avro.codecs.KeyValueRecordCodec
 import org.apache.accumulo.core.data.{Range => ARange}
 import org.apache.accumulo.core.security.Authorizations
 import org.apache.hadoop.io.Text
-import io.circe._
+import _root_.io.circe._
 
 import scala.collection.JavaConverters._
 import scala.reflect.ClassTag

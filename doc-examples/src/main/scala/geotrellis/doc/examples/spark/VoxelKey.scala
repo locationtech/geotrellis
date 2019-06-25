@@ -24,7 +24,6 @@ import geotrellis.store._
 import geotrellis.store.json._
 import geotrellis.store.index._
 import geotrellis.store.index.zcurve._
-import geotrellis.layer.json._
 import geotrellis.util._
 
 import _root_.io.circe._

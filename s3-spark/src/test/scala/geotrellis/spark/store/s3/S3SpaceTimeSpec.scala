@@ -32,7 +32,6 @@ import software.amazon.awssdk.http.AbortableInputStream
 import software.amazon.awssdk.core.ResponseInputStream
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.regions.Region
-
 import org.scalatest._
 
 import java.net.URI
@@ -68,7 +67,7 @@ class S3SpaceTimeSpec
   lazy val writer = new S3LayerWriter(attributeStore, bucket, prefix, identity, getS3Client)
   lazy val deleter = new S3LayerDeleter(attributeStore, getS3Client)
   lazy val copier = new S3LayerCopier(attributeStore, bucket, prefix, getS3Client)
-  lazy val reindexer = GenericLayerReindexer[S3LayerHeader](attributeStore, reader, writer, deleter, copier)
+  lazy val reindexer = GenericLayerReindexer(attributeStore, reader, writer, deleter, copier)
   lazy val mover = GenericLayerMover(copier, deleter)
   lazy val tiles = new S3ValueReader(attributeStore, getS3Client)
   lazy val sample =  CoordinateSpaceTime

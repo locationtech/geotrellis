@@ -37,7 +37,7 @@ import software.amazon.awssdk.services.s3.model.{S3Exception, PutObjectRequest, 
 import software.amazon.awssdk.services.s3._
 import software.amazon.awssdk.core.sync.RequestBody
 import org.apache.commons.io.IOUtils
-import io.circe._
+import _root_.io.circe._
 
 import java.io.ByteArrayInputStream
 import scala.util.Try

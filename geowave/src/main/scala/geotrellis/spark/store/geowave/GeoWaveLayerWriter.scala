@@ -30,7 +30,7 @@ import geotrellis.spark.store.accumulo.AccumuloWriteStrategy
 import geotrellis.util._
 import geotrellis.util.annotations.experimental
 
-import io.circe._
+import _root_.io.circe._
 
 import com.typesafe.scalalogging.LazyLogging
 

@@ -21,7 +21,6 @@ import geotrellis.vector.Extent
 import geotrellis.raster.{GridBounds, Tile}
 import geotrellis.store._
 import geotrellis.store.avro.codecs._
-import geotrellis.layer.json._
 import geotrellis.spark._
 import geotrellis.spark.testkit.io._
 

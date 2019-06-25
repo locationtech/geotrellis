@@ -28,10 +28,6 @@ import geotrellis.spark.store._
 import geotrellis.util._
 import geotrellis.util.annotations.experimental
 
-import com.typesafe.scalalogging.LazyLogging
-
-import org.locationtech.jts.geom._
-
 import mil.nga.giat.geowave.adapter.raster.adapter.RasterDataAdapter
 import mil.nga.giat.geowave.core.geotime.ingest._
 import mil.nga.giat.geowave.core.geotime.store.statistics.BoundingBoxDataStatistics
@@ -46,10 +42,12 @@ import mil.nga.giat.geowave.datastore.accumulo._
 import mil.nga.giat.geowave.datastore.accumulo.metadata._
 import mil.nga.giat.geowave.datastore.accumulo.operations.config.AccumuloRequiredOptions
 import mil.nga.giat.geowave.mapreduce.input.{GeoWaveInputKey, GeoWaveInputFormat}
-import io.circe._
 
 import org.apache.accumulo.core.client.security.tokens.PasswordToken
 import org.apache.accumulo.core.client.ZooKeeperInstance
+import com.typesafe.scalalogging.LazyLogging
+import org.locationtech.jts.geom._
+import _root_.io.circe._
 
 import scala.collection.JavaConverters._
 

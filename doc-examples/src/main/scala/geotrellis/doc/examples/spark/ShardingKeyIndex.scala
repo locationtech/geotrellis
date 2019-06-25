@@ -22,7 +22,6 @@ import geotrellis.spark.store._
 import geotrellis.store._
 import geotrellis.store.json._
 import geotrellis.store.index._
-import geotrellis.layer.json._
 import scala.reflect.ClassTag
 
 import _root_.io.circe._
