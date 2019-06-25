@@ -63,7 +63,7 @@ trait Mask {
     }
 
     geom match {
-      case Some(g: Line) if g.envelope.area == 0 => None
+      case Some(g: LineString) if g.envelope.area == 0 => None
       case Some(_: Point) => None
       case Some(g: GeometryCollection) => Some(rec(g))
       case _ => geom

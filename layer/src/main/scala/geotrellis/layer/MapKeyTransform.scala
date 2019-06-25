@@ -129,7 +129,7 @@ class MapKeyTransform(val extent: Extent, val layoutCols: Int, val layoutRows: I
       extent.ymax - row * tileHeight
     )
 
-  def multiLineToKeys(multiLine: MultiLine): Set[SpatialKey] = {
+  def multiLineToKeys(multiLine: MultiLineString): Set[SpatialKey] = {
     val bounds: TileBounds = extentToBounds(multiLine.envelope)
     val boundsExtent: Extent = boundsToExtent(bounds)
     val rasterExtent = RasterExtent(boundsExtent, bounds.width, bounds.height)
@@ -167,21 +167,21 @@ class MapKeyTransform(val extent: Extent, val layoutCols: Int, val layoutRows: I
     * that it touches.
     */
   def keysForGeometry[G <: Geometry](g: G): Set[SpatialKey] = g match {
-    case p:  Point        => Set(pointToKey(p))
-    case mp: MultiPoint   => mp.points.map(pointToKey(_)).toSet
-    case l:  Line         => multiLineToKeys(MultiLine(l))
-    case ml: MultiLine    => multiLineToKeys(ml)
-    case p:  Polygon      => multiPolygonToKeys(MultiPolygon(p))
-    case mp: MultiPolygon => multiPolygonToKeys(mp)
+    case p:  Point              => Set(pointToKey(p))
+    case mp: MultiPoint         => mp.points.map(pointToKey(_)).toSet
+    case l:  LineString         => multiLineToKeys(MultiLineString(l))
+    case ml: MultiLineString    => multiLineToKeys(ml)
+    case p:  Polygon            => multiPolygonToKeys(MultiPolygon(p))
+    case mp: MultiPolygon       => multiPolygonToKeys(mp)
     case gc: GeometryCollection =>
       List(
-        gc.points.map(pointToKey),
-        gc.multiPoints.flatMap(_.points.map(pointToKey)),
-        gc.lines.flatMap { l => multiLineToKeys(MultiLine(l)) },
-        gc.multiLines.flatMap { ml => multiLineToKeys(ml) },
-        gc.polygons.flatMap { p => multiPolygonToKeys(MultiPolygon(p)) },
-        gc.multiPolygons.flatMap { mp => multiPolygonToKeys(mp) },
-        gc.geometryCollections.flatMap(keysForGeometry)
+        gc.getAll[Point].map(pointToKey),
+        gc.getAll[MultiPoint].flatMap(_.points.map(pointToKey)),
+        gc.getAll[LineString].flatMap { l => multiLineToKeys(MultiLineString(l)) },
+        gc.getAll[MultiLineString].flatMap { ml => multiLineToKeys(ml) },
+        gc.getAll[Polygon].flatMap { p => multiPolygonToKeys(MultiPolygon(p)) },
+        gc.getAll[MultiPolygon].flatMap { mp => multiPolygonToKeys(mp) },
+        gc.getAll[GeometryCollection].flatMap(keysForGeometry)
       ).flatten.toSet
   }
 }
