@@ -112,8 +112,8 @@ Types and algorithms for Raster processing.
    Conway's Game of Life, Max, Mean, Median, Mode, Min, MoransI,
    StandardDeviation, Sum
 -  Zonal Map Algebra operations: ZonalHistogram, ZonalPercentage
--  Operations that summarize raster data intersecting polygons: Min,
-   Mean, Max, Sum.
+-  Polygonal Summary operations that summarize raster data intersecting polygons: Min,
+   Mean, Max, Sum, Histogram.
 -  Cost distance operation based on a set of starting points and a
    friction raster.
 -  Hydrology operations: Accumulation, Fill, and FlowDirection.

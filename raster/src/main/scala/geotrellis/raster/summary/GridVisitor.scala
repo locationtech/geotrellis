@@ -47,6 +47,14 @@ import geotrellis.raster.Grid
   */
 trait GridVisitor[-T <: Grid[Int], +R] extends Serializable {
 
+  /** Called when a result is desired by the parent implementation.
+    *
+    * No guarantees are made that this will only be called after all
+    * visitation is complete. As a result, this should return an
+    * iterative result as cells are visited for full compatibility.
+    *
+    * @return R
+    */
   def result: R
 
   /**

@@ -69,6 +69,7 @@ API Changes & Project structure changes
     - ``EmptyBoundsError``
     - ``SpatialComponent``
     - ``TemporalComponent``
+  - **Change:** Polygonal summaries on raster RDDs of ``RDD[(SpatialKey, T <: Grid[Int])] with Metadata[TileLayerMetadata[SpatialKey]]`` can now be performed with far less boilerplate using the same visitor pattern as the new raster polygonal summary API. See ``RDDPolygonalSummary.scala`` for additional details.
 
 - ``geotrellis.spark.tiling``
 
