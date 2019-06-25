@@ -20,7 +20,6 @@ import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.model.{NoSuchKeyException, HeadObjectRequest}
 
 import scala.util.{Try, Success, Failure}
-import java.net.URI
 
 package object s3 {
   private[geotrellis] def makePath(chunks: String*) =

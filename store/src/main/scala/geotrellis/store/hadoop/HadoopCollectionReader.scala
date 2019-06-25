@@ -20,17 +20,15 @@ import geotrellis.layer._
 import geotrellis.store._
 import geotrellis.store.avro._
 import geotrellis.store.avro.codecs._
-import geotrellis.store.hadoop.conf.HadoopConfig
 import geotrellis.store.hadoop.formats.FilterMapFileInputFormat
 import geotrellis.store.util.IOUtils
+import geotrellis.util.conf.BlockingThreadPoolConfig
 
 import com.github.blemale.scaffeine.{Cache, Scaffeine}
-
 import org.apache.avro.Schema
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.io._
-
 
 class HadoopCollectionReader(maxOpenFiles: Int) {
 
@@ -53,7 +51,7 @@ class HadoopCollectionReader(maxOpenFiles: Int) {
     decomposeBounds: KeyBounds[K] => Seq[(BigInt, BigInt)],
     indexFilterOnly: Boolean,
     writerSchema: Option[Schema] = None,
-    threads: Int = HadoopCollectionReader.defaultThreads
+    threads: Int = BlockingThreadPoolConfig.threads
   ): Seq[(K, V)] = {
     if (queryKeyBounds.isEmpty) return Seq.empty[(K, V)]
 
@@ -85,6 +83,5 @@ class HadoopCollectionReader(maxOpenFiles: Int) {
 }
 
 object HadoopCollectionReader {
-  val defaultThreads: Int = HadoopConfig.threads.collection.readThreads
   def apply(maxOpenFiles: Int = 16) = new HadoopCollectionReader(maxOpenFiles)
 }

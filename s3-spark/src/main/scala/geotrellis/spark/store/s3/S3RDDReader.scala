@@ -23,23 +23,19 @@ import geotrellis.store.avro.codecs.KeyValueRecordCodec
 import geotrellis.store.index.{IndexRanges, MergeQueue}
 import geotrellis.store.util.{IOUtils => GTIOUtils}
 import geotrellis.store.s3.S3ClientProducer
-import geotrellis.store.s3.conf.S3Config
-import geotrellis.spark._
-import geotrellis.spark.store._
 import geotrellis.spark.util.KryoWrapper
+import geotrellis.util.conf.BlockingThreadPoolConfig
 
-import software.amazon.awssdk.services.s3.model.{S3Exception, GetObjectRequest}
+import software.amazon.awssdk.services.s3.model.{GetObjectRequest, S3Exception}
 import software.amazon.awssdk.services.s3.S3Client
-
 import org.apache.avro.Schema
 import org.apache.commons.io.IOUtils
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
-
 class S3RDDReader(
   val getClient: () => S3Client = S3ClientProducer.get,
-  val defaultThreadCount: Int = S3Config.threads.rdd.readThreads
+  val defaultThreadCount: Int = BlockingThreadPoolConfig.threads
 ) {
 
   def read[

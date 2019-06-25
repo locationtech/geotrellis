@@ -48,8 +48,8 @@ import java.io.File
   * @param attributeStore    AttributeStore to be used for storing raster metadata
   */
 class FileLayerWriter(
-    val attributeStore: AttributeStore,
-    catalogPath: String
+  val attributeStore: AttributeStore,
+  catalogPath: String
 ) extends LayerWriter[LayerId] with LazyLogging {
 
   // Layer Updating

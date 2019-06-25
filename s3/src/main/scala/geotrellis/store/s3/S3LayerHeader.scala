@@ -16,7 +16,6 @@
 
 package geotrellis.store.s3
 
-import geotrellis.raster.Tile
 import geotrellis.store.{LayerHeader, LayerType, AvroLayerType}
 
 import io.circe._

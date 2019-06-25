@@ -25,6 +25,7 @@ import cats.syntax.either._
 
 import java.net.URI
 
+import java.net.URI
 
 case class HadoopLayerHeader(
   keyClass: String,

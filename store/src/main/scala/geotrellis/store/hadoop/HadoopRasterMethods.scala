@@ -26,7 +26,6 @@ import geotrellis.util.MethodExtensions
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 
-
 trait HadoopRasterMethods[T] extends MethodExtensions[T] {
   def write(path: Path, conf: Configuration): Unit
 }

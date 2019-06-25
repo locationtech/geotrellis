@@ -22,11 +22,11 @@ import geotrellis.store.avro._
 import geotrellis.store.avro.codecs._
 import geotrellis.store.index._
 import geotrellis.store.s3._
-import geotrellis.store.s3.conf.S3Config
 import geotrellis.spark._
 import geotrellis.spark.store._
 import geotrellis.spark.merge._
 import geotrellis.util._
+import geotrellis.util.conf.BlockingThreadPoolConfig
 
 import software.amazon.awssdk.services.s3.model.PutObjectRequest
 import software.amazon.awssdk.services.s3.S3Client
@@ -55,7 +55,7 @@ class S3LayerWriter(
   keyPrefix: String,
   putObjectModifier: PutObjectRequest => PutObjectRequest = identity,
   getClient: () => S3Client = S3ClientProducer.get,
-  threadCount: Int = S3Config.threads.rdd.writeThreads
+  threadCount: Int = BlockingThreadPoolConfig.threads
 ) extends LayerWriter[LayerId] with LazyLogging {
 
   def rddWriter: S3RDDWriter = new S3RDDWriter(getClient, threadCount)

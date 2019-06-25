@@ -24,11 +24,8 @@ import geotrellis.store.cog._
 import geotrellis.store.index._
 import geotrellis.store.s3._
 import geotrellis.store.s3.cog._
-import geotrellis.store.s3.conf.S3Config
-import geotrellis.spark._
-import geotrellis.spark.store._
-import geotrellis.spark.store.s3._
 import geotrellis.spark.store.cog._
+import geotrellis.util.conf.BlockingThreadPoolConfig
 import geotrellis.util._
 
 import org.apache.spark.SparkContext
@@ -48,7 +45,7 @@ import java.net.URI
 class S3COGLayerReader(
   val attributeStore: AttributeStore,
   val getClient: () => S3Client = S3ClientProducer.get,
-  val defaultThreads: Int = S3COGLayerReader.defaultThreadCount
+  val defaultThreads: Int = BlockingThreadPoolConfig.threads
 )(@transient implicit val sc: SparkContext) extends COGLayerReader[LayerId] with LazyLogging {
 
   val defaultNumPartitions: Int = sc.defaultParallelism
@@ -105,8 +102,6 @@ class S3COGLayerReader(
 }
 
 object S3COGLayerReader {
-  lazy val defaultThreadCount: Int = S3Config.threads.rdd.readThreads
-
   def apply(attributeStore: S3AttributeStore)(implicit sc: SparkContext): S3COGLayerReader =
     new S3COGLayerReader(
       attributeStore,

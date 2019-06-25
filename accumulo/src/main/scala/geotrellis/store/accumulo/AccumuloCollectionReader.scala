@@ -17,29 +17,23 @@
 package geotrellis.store.accumulo
 
 import geotrellis.layer._
-import geotrellis.store.accumulo.conf.AccumuloConfig
 import geotrellis.store.avro.codecs.KeyValueRecordCodec
 import geotrellis.store.avro.{AvroEncoder, AvroRecordCodec}
+import geotrellis.util.conf.BlockingThreadPoolConfig
+import geotrellis.util.BlockingThreadPool
 
 import org.apache.accumulo.core.data.{Range => AccumuloRange}
 import org.apache.accumulo.core.security.Authorizations
 import org.apache.avro.Schema
 import org.apache.hadoop.io.Text
-
 import cats.effect._
 import cats.syntax.apply._
 import cats.syntax.either._
 
-import scala.concurrent.ExecutionContext
 import scala.collection.JavaConverters._
 import scala.reflect.ClassTag
 
-import java.util.concurrent.Executors
-
-
 object AccumuloCollectionReader {
-  val defaultThreadCount: Int = AccumuloConfig.threads.collection.readThreads
-
   def read[K: Boundable: AvroRecordCodec: ClassTag, V: AvroRecordCodec: ClassTag](
     table: String,
     columnFamily: Text,
@@ -47,7 +41,7 @@ object AccumuloCollectionReader {
     decomposeBounds: KeyBounds[K] => Seq[AccumuloRange],
     filterIndexOnly: Boolean,
     writerSchema: Option[Schema] = None,
-    threads: Int = defaultThreadCount
+    threads: Int = BlockingThreadPoolConfig.threads
   )(implicit instance: AccumuloInstance): Seq[(K, V)] = {
     if(queryKeyBounds.isEmpty) return Seq.empty[(K, V)]
 
@@ -56,8 +50,7 @@ object AccumuloCollectionReader {
 
     val ranges = queryKeyBounds.flatMap(decomposeBounds).toIterator
 
-    val pool = Executors.newFixedThreadPool(threads)
-    implicit val ec = ExecutionContext.fromExecutor(pool)
+    implicit val ec = BlockingThreadPool.executionContext
     implicit val cs = IO.contextShift(ec)
 
     val range: fs2.Stream[IO, AccumuloRange] = fs2.Stream.fromIterator[IO, AccumuloRange](ranges)
@@ -79,16 +72,14 @@ object AccumuloCollectionReader {
       }
     }
 
-    try {
-      range
-        .map(read)
-        .parJoin(threads)
-        .compile
-        .toVector
-        .map(_.flatten)
-        .attempt
-        .unsafeRunSync()
-        .valueOr(throw _)
-    } finally pool.shutdown()
+    range
+      .map(read)
+      .parJoin(threads)
+      .compile
+      .toVector
+      .map(_.flatten)
+      .attempt
+      .unsafeRunSync()
+      .valueOr(throw _)
   }
 }

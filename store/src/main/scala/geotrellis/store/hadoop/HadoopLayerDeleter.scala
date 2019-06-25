@@ -24,7 +24,6 @@ import org.apache.hadoop.fs.Path
 
 import com.typesafe.scalalogging.LazyLogging
 
-
 class HadoopLayerDeleter(
   val attributeStore: AttributeStore,
   conf: Configuration

@@ -18,10 +18,8 @@ package geotrellis.spark.store.accumulo
 
 import geotrellis.layer._
 import geotrellis.store._
-import geotrellis.store.AttributeStore.Fields
 import geotrellis.store.accumulo._
 import geotrellis.store.avro._
-import geotrellis.store.index._
 import geotrellis.util._
 
 import org.apache.spark.SparkContext

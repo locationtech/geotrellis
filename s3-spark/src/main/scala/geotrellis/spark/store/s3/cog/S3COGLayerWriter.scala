@@ -27,19 +27,15 @@ import geotrellis.store.cog.vrt.VRT
 import geotrellis.store.cog.vrt.VRT.IndexedSimpleSource
 import geotrellis.store.index.{Index, KeyIndex}
 import geotrellis.store.s3._
-import geotrellis.store.s3.cog._
-import geotrellis.store.s3.conf.S3Config
-import geotrellis.spark._
-import geotrellis.spark.store.s3._
 import geotrellis.spark.store.cog._
+import geotrellis.util.conf.BlockingThreadPoolConfig
 
-import software.amazon.awssdk.services.s3.model.{S3Exception, PutObjectRequest, GetObjectRequest}
+import software.amazon.awssdk.services.s3.model.{GetObjectRequest, PutObjectRequest, S3Exception}
 import software.amazon.awssdk.services.s3._
 import software.amazon.awssdk.core.sync.RequestBody
 import org.apache.commons.io.IOUtils
 import _root_.io.circe._
 
-import java.io.ByteArrayInputStream
 import scala.util.Try
 import scala.reflect.{ClassTag, classTag}
 
@@ -48,7 +44,7 @@ class S3COGLayerWriter(
   bucket: String,
   keyPrefix: String,
   val getClient: () => S3Client = S3ClientProducer.get,
-  val defaultThreadCount: Int = S3Config.threads.rdd.writeThreads
+  val defaultThreadCount: Int = BlockingThreadPoolConfig.threads
 ) extends COGLayerWriter {
 
   def writeCOGLayer[

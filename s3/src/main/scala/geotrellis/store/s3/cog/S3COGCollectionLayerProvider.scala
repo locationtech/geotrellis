@@ -21,8 +21,6 @@ import geotrellis.store._
 import geotrellis.store.cog.{COGCollectionLayerReader, COGCollectionLayerReaderProvider, COGValueReader, COGValueReaderProvider}
 import geotrellis.store.s3._
 
-import software.amazon.awssdk.services.s3.S3Client
-
 import java.net.URI
 
 /**

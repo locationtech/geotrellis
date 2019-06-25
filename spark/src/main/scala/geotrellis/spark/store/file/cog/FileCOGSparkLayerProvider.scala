@@ -29,7 +29,6 @@ import org.apache.spark.SparkContext
 import java.net.URI
 import java.io.File
 
-
 /**
  * Provides [[FileLayerReader]] instance for URI with `file` scheme.
  * The uri represents local path to catalog root.

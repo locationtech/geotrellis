@@ -19,8 +19,6 @@ package geotrellis.store.s3
 import geotrellis.layer._
 import geotrellis.store._
 
-import software.amazon.awssdk.services.s3.S3Client
-
 import java.net.URI
 
 /**
@@ -57,5 +55,4 @@ class S3CollectionLayerProvider()
   def collectionLayerReader(uri: URI, store: AttributeStore): CollectionLayerReader[LayerId] = {
     new S3CollectionLayerReader(store)
   }
-
 }

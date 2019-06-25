@@ -17,11 +17,10 @@
 package geotrellis.spark.store.accumulo
 
 import geotrellis.store.accumulo._
-import geotrellis.store.accumulo.conf.AccumuloConfig
-import geotrellis.store.hadoop._
 import geotrellis.store.hadoop.util._
 import geotrellis.spark.util._
-import geotrellis.spark.store._
+import geotrellis.util.BlockingThreadPool
+import geotrellis.util.conf.BlockingThreadPoolConfig
 
 import org.apache.hadoop.mapreduce.Job
 import org.apache.hadoop.fs.Path
@@ -29,19 +28,13 @@ import org.apache.spark.rdd.RDD
 import org.apache.accumulo.core.data.{Key, Mutation, Value}
 import org.apache.accumulo.core.client.mapreduce.AccumuloFileOutputFormat
 import org.apache.accumulo.core.client.BatchWriterConfig
-
 import cats.effect.IO
 import cats.syntax.apply._
 import cats.syntax.either._
 
-import scala.concurrent.ExecutionContext
-
 import java.util.UUID
-import java.util.concurrent.Executors
 
 object AccumuloWriteStrategy {
-  val defaultThreadCount = AccumuloConfig.threads.rdd.writeThreads
-
   def DEFAULT = HdfsWriteStrategy("/geotrellis-ingest")
 }
 
@@ -115,16 +108,15 @@ object HdfsWriteStrategy {
  * @param config Configuration for the BatchWriters
  */
 case class SocketWriteStrategy(
-  @transient config: BatchWriterConfig = new BatchWriterConfig().setMaxMemory(128*1024*1024).setMaxWriteThreads(AccumuloWriteStrategy.defaultThreadCount),
-  threads: Int = AccumuloWriteStrategy.defaultThreadCount
+  @transient config: BatchWriterConfig = new BatchWriterConfig().setMaxMemory(128*1024*1024).setMaxWriteThreads(BlockingThreadPoolConfig.threads),
+  threads: Int = BlockingThreadPoolConfig.threads
 ) extends AccumuloWriteStrategy {
   val kwConfig = KryoWrapper(config) // BatchWriterConfig is not java serializable
 
   def write(kvPairs: RDD[(Key, Value)], instance: AccumuloInstance, table: String): Unit = {
     kvPairs.foreachPartition { partition =>
       if(partition.nonEmpty) {
-        val pool = Executors.newFixedThreadPool(threads)
-        implicit val ec = ExecutionContext.fromExecutor(pool)
+        implicit val ec = BlockingThreadPool.executionContext
         implicit val cs = IO.contextShift(ec)
 
         val writer = instance.connector.createBatchWriter(table, kwConfig.value)
@@ -147,9 +139,7 @@ case class SocketWriteStrategy(
             .attempt
             .unsafeRunSync()
             .valueOr(throw _)
-        } finally {
-          writer.close(); pool.shutdown()
-        }
+        } finally writer.close()
       }
     }
   }

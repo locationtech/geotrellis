@@ -16,13 +16,11 @@
 
 package geotrellis.store.hbase.conf
 
-import geotrellis.util.CamelCaseConfig
-
 import pureconfig.generic.auto._
 
 case class HBaseConfig(catalog: String)
 
-object HBaseConfig extends CamelCaseConfig {
+object HBaseConfig {
   lazy val conf: HBaseConfig = pureconfig.loadConfigOrThrow[HBaseConfig]("geotrellis.hbase")
   implicit def hbaseConfigToClass(obj: HBaseConfig.type): HBaseConfig = conf
 }

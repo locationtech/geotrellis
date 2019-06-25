@@ -17,9 +17,7 @@
 package geotrellis.spark.store.file
 
 import geotrellis.store._
-import geotrellis.store.avro._
 import geotrellis.store.file._
-import geotrellis.store.index._
 import geotrellis.spark.store.GenericLayerReindexer
 
 import org.apache.spark.SparkContext

@@ -20,14 +20,16 @@ import geotrellis.raster._
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.layer._
 import geotrellis.store._
-import geotrellis.store.cog.{COGCollectionLayerReader, ZoomRange, Extension}
-import geotrellis.store.file.conf.FileConfig
+import geotrellis.store.cog.{COGCollectionLayerReader, Extension, ZoomRange}
 import geotrellis.store.file.{FileAttributeStore, KeyPathGenerator}
 import geotrellis.util._
+import geotrellis.util.conf.BlockingThreadPoolConfig
 
 import com.typesafe.scalalogging.LazyLogging
 import _root_.io.circe._
 
+import java.io.File
+import java.net.URI
 import scala.reflect.ClassTag
 import java.net.URI
 import java.io.File
@@ -40,7 +42,7 @@ import java.io.File
 class FileCOGCollectionLayerReader(
   val attributeStore: AttributeStore,
   val catalogPath: String,
-  val defaultThreads: Int = FileCOGCollectionLayerReader.defaultThreadCount
+  val defaultThreads: Int = BlockingThreadPoolConfig.threads
 ) extends COGCollectionLayerReader[LayerId] with LazyLogging {
 
   implicit def getByteReader(uri: URI): ByteReader = byteReader(uri)
@@ -64,8 +66,6 @@ class FileCOGCollectionLayerReader(
 }
 
 object FileCOGCollectionLayerReader {
-  val defaultThreadCount: Int = FileConfig.threads.collection.readThreads
-
   def apply(attributeStore: AttributeStore, catalogPath: String): FileCOGCollectionLayerReader =
     new FileCOGCollectionLayerReader(attributeStore, catalogPath)
 

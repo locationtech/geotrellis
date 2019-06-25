@@ -33,7 +33,6 @@ import _root_.io.circe._
 import scala.collection.immutable._
 import scala.reflect.ClassTag
 
-
 class HadoopValueReader(
   val attributeStore: AttributeStore,
   conf: Configuration,

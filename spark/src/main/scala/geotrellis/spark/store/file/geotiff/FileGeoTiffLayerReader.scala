@@ -21,9 +21,9 @@ import geotrellis.raster.resample.{NearestNeighbor, ResampleMethod}
 import geotrellis.raster.io.geotiff.{AutoHigherResolution, OverviewStrategy}
 import geotrellis.store.file._
 import geotrellis.store.file.cog.byteReader
-import geotrellis.store.file.conf.FileConfig
 import geotrellis.spark.store.hadoop.geotiff._
 import geotrellis.util.ByteReader
+import geotrellis.util.conf.BlockingThreadPoolConfig
 import geotrellis.util.annotations.experimental
 
 import java.net.URI
@@ -36,14 +36,7 @@ import java.net.URI
   layoutScheme: ZoomedLayoutScheme,
   resampleMethod: ResampleMethod = NearestNeighbor,
   strategy: OverviewStrategy = AutoHigherResolution,
-  defaultThreads: Int = FileGeoTiffLayerReader.defaultThreadCount
+  defaultThreads: Int = BlockingThreadPoolConfig.threads
 ) extends GeoTiffLayerReader[M] {
   implicit def getByteReader(uri: URI): ByteReader = byteReader(uri)
-}
-
-/**
-  * @define experimental <span class="badge badge-red" style="float: right;">EXPERIMENTAL</span>@experimental
-  */
-@experimental object FileGeoTiffLayerReader {
-  val defaultThreadCount: Int = FileConfig.threads.collection.readThreads
 }

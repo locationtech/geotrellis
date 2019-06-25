@@ -23,7 +23,6 @@ import geotrellis.store.file.FileAttributeStore
 import java.net.URI
 import java.io.File
 
-
 class FileCOGCollectionLayerProvider extends AttributeStoreProvider
   with COGValueReaderProvider with COGCollectionLayerReaderProvider {
 

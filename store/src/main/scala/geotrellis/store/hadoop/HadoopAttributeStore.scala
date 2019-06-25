@@ -31,7 +31,6 @@ import org.apache.hadoop.fs.Path
 import scala.util.matching.Regex
 import java.io.PrintWriter
 
-
 class HadoopAttributeStore(
   rootPathString: String,
   serConf: SerializableConfiguration // This needs to be serializable

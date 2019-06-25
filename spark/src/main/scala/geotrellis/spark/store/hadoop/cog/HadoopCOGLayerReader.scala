@@ -23,17 +23,16 @@ import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.layer._
 import geotrellis.store._
 import geotrellis.store.cog.{ZoomRange, Extension}
-import geotrellis.store.hadoop.conf.HadoopConfig
 import geotrellis.store.hadoop._
 import geotrellis.store.hadoop.cog.byteReader
 import geotrellis.store.hadoop.util._
 import geotrellis.store.index.Index
 import geotrellis.spark.store.cog._
 import geotrellis.spark.store.hadoop._
+import geotrellis.util.conf.BlockingThreadPoolConfig
 import geotrellis.util._
 
 import com.typesafe.scalalogging.LazyLogging
-
 import org.apache.hadoop.fs.Path
 import org.apache.spark.SparkContext
 
@@ -48,7 +47,7 @@ import scala.reflect.ClassTag
  */
 class HadoopCOGLayerReader(
   val attributeStore: AttributeStore,
-  val defaultThreads: Int = HadoopCOGLayerReader.defaultThreadCount
+  val defaultThreads: Int = BlockingThreadPoolConfig.threads
 )(@transient implicit val sc: SparkContext) extends COGLayerReader[LayerId] with LazyLogging {
 
   val hadoopConfiguration = SerializableConfiguration(sc.hadoopConfiguration)
@@ -103,8 +102,6 @@ class HadoopCOGLayerReader(
 }
 
 object HadoopCOGLayerReader {
-  val defaultThreadCount: Int = HadoopConfig.threads.rdd.readThreads
-
   def apply(attributeStore: HadoopAttributeStore)(implicit sc: SparkContext): HadoopCOGLayerReader =
     new HadoopCOGLayerReader(attributeStore)
 

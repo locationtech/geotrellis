@@ -25,7 +25,6 @@ import org.apache.hadoop.conf.Configuration
 
 import java.net.URI
 
-
 class HadoopCollectionLayerProvider extends AttributeStoreProvider with ValueReaderProvider with CollectionLayerReaderProvider {
   def canProcess(uri: URI): Boolean = uri.getScheme match {
     case str: String => SCHEMES contains str.toLowerCase

@@ -28,11 +28,8 @@ import _root_.io.circe.syntax._
 import _root_.io.circe.parser._
 import cats.syntax.either._
 
-import scala.util.matching.Regex
 import scala.collection.JavaConverters._
 import java.nio.charset.Charset
-import java.io.ByteArrayInputStream
-
 
 /**
  * Stores and retrieves layer attributes in an S3 bucket in JSON format

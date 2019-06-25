@@ -2,7 +2,6 @@ package geotrellis.store.hadoop
 
 import geotrellis.raster.CellGrid
 import geotrellis.raster.io.geotiff.GeoTiff
-import geotrellis.raster.io.geotiff.writer.GeoTiffWriter
 import geotrellis.raster.render.{Jpg, Png}
 import geotrellis.store.hadoop.util._
 import geotrellis.util.MethodExtensions
@@ -14,7 +13,6 @@ import org.apache.hadoop.mapreduce.lib.input.FileInputFormat
 import org.apache.hadoop.mapreduce._
 
 import java.io.{ByteArrayOutputStream, ObjectOutputStream, ByteArrayInputStream, ObjectInputStream}
-import java.nio.charset.StandardCharsets
 import java.util.Base64
 
 object Implicits extends Implicits with CrsFormats

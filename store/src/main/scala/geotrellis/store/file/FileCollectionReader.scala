@@ -1,28 +1,25 @@
 package geotrellis.store.file
 
-import java.io.File
-
 import geotrellis.layer._
 import geotrellis.store.avro.codecs.KeyValueRecordCodec
 import geotrellis.store.avro.{AvroEncoder, AvroRecordCodec}
-import geotrellis.store.file.conf.FileConfig
 import geotrellis.store.index.MergeQueue
 import geotrellis.store.util.IOUtils
 import geotrellis.util.Filesystem
+import geotrellis.util.conf.BlockingThreadPoolConfig
 
 import org.apache.avro.Schema
-
+import java.io.File
 
 object FileCollectionReader {
-  val defaultThreadCount: Int = FileConfig.threads.collection.readThreads
-
   def read[K: AvroRecordCodec : Boundable, V: AvroRecordCodec](
     keyPath: BigInt => String,
     queryKeyBounds: Seq[KeyBounds[K]],
     decomposeBounds: KeyBounds[K] => Seq[(BigInt, BigInt)],
     filterIndexOnly: Boolean,
     writerSchema: Option[Schema] = None,
-    threads: Int = defaultThreadCount): Seq[(K, V)] = {
+    threads: Int = BlockingThreadPoolConfig.threads
+  ): Seq[(K, V)] = {
     if (queryKeyBounds.isEmpty) return Seq.empty[(K, V)]
 
     val ranges = if (queryKeyBounds.length > 1)

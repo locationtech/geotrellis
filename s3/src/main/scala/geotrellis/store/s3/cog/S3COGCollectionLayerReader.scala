@@ -25,13 +25,13 @@ import geotrellis.store._
 import geotrellis.store.cog._
 import geotrellis.store.index._
 import geotrellis.store.s3._
-import geotrellis.store.s3.conf.S3Config
 import geotrellis.util._
+import geotrellis.util.conf.BlockingThreadPoolConfig
 
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.model._
-
 import com.typesafe.scalalogging.LazyLogging
+
 import java.net.URI
 
 import scala.reflect.ClassTag
@@ -44,7 +44,7 @@ import scala.reflect.ClassTag
 class S3COGCollectionLayerReader(
   val attributeStore: AttributeStore,
   val getClient: () => S3Client = S3ClientProducer.get,
-  val defaultThreads: Int = S3Config.threads.collection.readThreads
+  val defaultThreads: Int = BlockingThreadPoolConfig.threads
 ) extends COGCollectionLayerReader[LayerId] with LazyLogging {
 
   @transient

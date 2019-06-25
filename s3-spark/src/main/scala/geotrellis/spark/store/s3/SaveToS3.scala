@@ -19,29 +19,20 @@ package geotrellis.spark.store.s3
 import geotrellis.layer.SpatialKey
 import geotrellis.store.LayerId
 import geotrellis.store.s3._
-import geotrellis.store.s3.conf.S3Config
-import geotrellis.spark.store._
+import geotrellis.util.conf.BlockingThreadPoolConfig
+import geotrellis.util.BlockingThreadPool
 
 import software.amazon.awssdk.services.s3.model.{PutObjectRequest, PutObjectResponse, S3Exception}
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.core.sync.RequestBody
-
 import org.apache.spark.rdd.RDD
-
 import cats.effect.{IO, Timer}
 import cats.syntax.apply._
 import cats.syntax.either._
 
-import scala.concurrent.ExecutionContext
-
-import java.io.ByteArrayInputStream
-import java.util.concurrent.Executors
 import java.net.URI
 
-
 object SaveToS3 {
-  final val defaultThreadCount = S3Config.threads.rdd.writeThreads
-
   /**
     * @param id           A Layer ID
     * @param pathTemplate The template used to convert a Layer ID and a SpatialKey into an S3 URI
@@ -70,7 +61,7 @@ object SaveToS3 {
     keyToUri: K => String,
     putObjectModifier: PutObjectRequest => PutObjectRequest = { p => p },
     s3Maker: () => S3Client = S3ClientProducer.get,
-    threads: Int = defaultThreadCount
+    threads: Int = BlockingThreadPoolConfig.threads
   ): Unit = {
     val keyToPrefix: K => (String, String) = key => {
       val uri = new URI(keyToUri(key))
@@ -97,8 +88,7 @@ object SaveToS3 {
           }
         )
 
-      val pool = Executors.newFixedThreadPool(threads)
-      implicit val ec = ExecutionContext.fromExecutor(pool)
+      implicit val ec = BlockingThreadPool.executionContext
       implicit val timer: Timer[IO] = IO.timer(ec)
       implicit val cs = IO.contextShift(ec)
 
@@ -114,16 +104,14 @@ object SaveToS3 {
           }
         }
 
-      requests
-        .map(Function.tupled(write))
-        .parJoin(threads)
-        .compile
-        .toVector
-        .attempt
-        .unsafeRunSync()
-        .valueOr(throw _)
-
-      pool.shutdown()
+    requests
+      .map(Function.tupled(write))
+      .parJoin(threads)
+      .compile
+      .toVector
+      .attempt
+      .unsafeRunSync()
+      .valueOr(throw _)
     }
   }
 }

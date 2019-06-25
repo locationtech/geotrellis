@@ -21,11 +21,10 @@ import geotrellis.store.avro.codecs.KeyValueRecordCodec
 import geotrellis.store.index.MergeQueue
 import geotrellis.store.avro.{AvroEncoder, AvroRecordCodec}
 import geotrellis.store.util.{IOUtils => GTIOUtils}
-import geotrellis.store.s3.conf.S3Config
+import geotrellis.util.conf.BlockingThreadPoolConfig
 
 import software.amazon.awssdk.services.s3.model._
 import software.amazon.awssdk.services.s3.S3Client
-
 import org.apache.avro.Schema
 import org.apache.commons.io.IOUtils
 
@@ -43,7 +42,7 @@ class S3CollectionReader(
      decomposeBounds: KeyBounds[K] => Seq[(BigInt, BigInt)],
      filterIndexOnly: Boolean,
      writerSchema: Option[Schema] = None,
-     threads: Int = S3Config.threads.rdd.readThreads
+     threads: Int = BlockingThreadPoolConfig.threads
    ): Seq[(K, V)] = {
     if (queryKeyBounds.isEmpty) return Seq.empty[(K, V)]
 

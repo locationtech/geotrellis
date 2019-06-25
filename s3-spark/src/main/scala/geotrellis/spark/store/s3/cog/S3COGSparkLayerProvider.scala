@@ -27,8 +27,6 @@ import geotrellis.spark.store.s3._
 
 import org.apache.spark._
 
-import software.amazon.awssdk.services.s3.S3Client
-
 import java.net.URI
 
 

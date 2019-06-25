@@ -54,10 +54,6 @@ API Changes & Project structure changes
 
   - **Remove:**  ``geotrellis.slick`` has been removed. Slick support will now reside in `geotrellis-contrib` (`#2902 <https://github.com/locationtech/geotrellis/pull/2902>`_).
 
-- ``geotrellis.tiling``
-
-  - **New:** ``geotrellis.tiling`` is a new package where the tiling and key API will be contained.
-
 - ``geotrellis.spark``
 
   - **Remove:** The following types have been moved from ``geotrellis.spark`` to the ``geotrellis.tiling`` package:
@@ -104,6 +100,7 @@ Fixes & Updates
 - Use original ZoomRanges on COG layer update (`#2956 <https://github.com/locationtech/geotrellis/pull/2956>`_).
 - ArrayTile equality will now check the cols, rows, and cellType of the two tiles (`#2991 <https://github.com/locationtech/geotrellis/pull/2991>`_).
 - Fix incorrect Deflate compressor usage (`#2997 <https://github.com/locationtech/geotrellis/pull/2997>`_).
+- Refactor IO thread pool usage (`#3007 <https://github.com/locationtech/geotrellis/pull/3007>`_).
 
 2.3.0
 -----

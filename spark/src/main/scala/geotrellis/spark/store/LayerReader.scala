@@ -29,8 +29,6 @@ import cats.syntax.apply._
 import io.circe._
 
 import scala.reflect._
-import scala.concurrent.ExecutionContext
-import java.util.concurrent.Executors
 import java.util.ServiceLoader
 import java.net.URI
 

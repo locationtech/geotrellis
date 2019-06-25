@@ -26,7 +26,6 @@ import geotrellis.store.index._
 
 import software.amazon.awssdk.services.s3.model.{S3Exception, GetObjectRequest}
 import software.amazon.awssdk.services.s3.S3Client
-import org.apache.avro.Schema
 import org.apache.commons.io.IOUtils
 import _root_.io.circe._
 

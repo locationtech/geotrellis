@@ -20,11 +20,11 @@ import geotrellis.layer.ZoomedLayoutScheme
 import geotrellis.raster.resample.{NearestNeighbor, ResampleMethod}
 import geotrellis.raster.io.geotiff.{AutoHigherResolution, OverviewStrategy}
 import geotrellis.store.s3.cog.byteReader
-import geotrellis.store.s3.conf.S3Config
 import geotrellis.store.s3.S3ClientProducer
 import geotrellis.spark.store.hadoop.geotiff.{AttributeStore, GeoTiffLayerReader, GeoTiffMetadata}
 import geotrellis.util.ByteReader
 import geotrellis.util.annotations.experimental
+import geotrellis.util.conf.BlockingThreadPoolConfig
 
 import software.amazon.awssdk.services.s3.S3Client
 
@@ -39,14 +39,7 @@ import java.net.URI
   resampleMethod: ResampleMethod = NearestNeighbor,
   strategy: OverviewStrategy = AutoHigherResolution,
   getClient: () => S3Client = S3ClientProducer.get,
-  defaultThreads: Int = S3GeoTiffLayerReader.defaultThreadCount
+  defaultThreads: Int = BlockingThreadPoolConfig.threads
 ) extends GeoTiffLayerReader[M] {
   implicit def getByteReader(uri: URI): ByteReader = byteReader(uri, getClient())
-}
-
-/**
-  * @define experimental <span class="badge badge-red" style="float: right;">EXPERIMENTAL</span>@experimental
-  */
-@experimental object S3GeoTiffLayerReader {
-  val defaultThreadCount: Int = S3Config.threads.collection.readThreads
 }

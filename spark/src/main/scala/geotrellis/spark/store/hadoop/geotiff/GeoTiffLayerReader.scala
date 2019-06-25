@@ -29,14 +29,15 @@ import geotrellis.raster.reproject.RasterReprojectMethods
 import geotrellis.raster.merge.RasterMergeMethods
 import geotrellis.util.ByteReader
 import geotrellis.util.annotations.experimental
+import geotrellis.store.LayerId
+import geotrellis.util.BlockingThreadPool
 
 import cats.effect.IO
 import cats.syntax.apply._
 import cats.syntax.either._
 
 import java.net.URI
-import java.util.concurrent.{ExecutorService, Executors}
-import scala.concurrent.ExecutionContext
+
 import scala.reflect.ClassTag
 
 /**
@@ -50,11 +51,8 @@ import scala.reflect.ClassTag
   val resampleMethod: ResampleMethod
   val strategy: OverviewStrategy
   val defaultThreads: Int
-  lazy val pool: ExecutorService = Executors.newFixedThreadPool(defaultThreads)
-  implicit lazy val ec = ExecutionContext.fromExecutor(pool)
+  implicit lazy val ec = BlockingThreadPool.executionContext
   implicit val cs = IO.contextShift(ec)
-
-  @experimental def shutdown: Unit = pool.shutdown()
 
   @experimental def read[
     V <: CellGrid[Int]: GeoTiffReader: ClassTag

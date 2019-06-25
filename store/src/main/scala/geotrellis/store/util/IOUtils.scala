@@ -20,12 +20,10 @@ import cats.effect._
 import cats.syntax.all._
 import cats.syntax.apply
 
-import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
 import scala.util.Random
 
-import java.util.concurrent.Executors
-
+import geotrellis.util.BlockingThreadPool
 
 object IOUtils {
   /**
@@ -59,9 +57,8 @@ object IOUtils {
     ranges: Iterator[(BigInt, BigInt)],
     threads: Int
   )(readFunc: BigInt => Vector[(K, V)])(backOffPredicate: Throwable => Boolean): Vector[(K, V)] = {
-    val pool = Executors.newFixedThreadPool(threads)
     // TODO: remove the implicit on ec and consider moving the implicit timer to method signature
-    implicit val ec = ExecutionContext.fromExecutor(pool)
+    implicit val ec = BlockingThreadPool.executionContext
     implicit val timer: Timer[IO] = IO.timer(ec)
     implicit val cs = IO.contextShift(ec)
 
@@ -72,20 +69,21 @@ object IOUtils {
     val index: fs2.Stream[IO, BigInt] = fs2.Stream.fromIterator[IO, BigInt](indices)
 
     val readRecord: (BigInt => fs2.Stream[IO, Vector[(K, V)]]) = { index =>
-      fs2.Stream eval IO.shift(ec) *> IO { readFunc(index) }.retryEBO { backOffPredicate }
+      fs2.Stream eval IO.shift(ec) *> IO {
+        readFunc(index)
+      }.retryEBO {
+        backOffPredicate
+      }
     }
 
-    try {
-      index
-        .map(readRecord)
-        .parJoin(threads)
-        .compile
-        .toVector
-        .attempt
-        .unsafeRunSync()
-        .valueOr(throw _)
-        .flatten
-
-    } finally pool.shutdown()
+    index
+      .map(readRecord)
+      .parJoin(threads)
+      .compile
+      .toVector
+      .attempt
+      .unsafeRunSync()
+      .valueOr(throw _)
+      .flatten
   }
 }

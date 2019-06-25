@@ -22,7 +22,6 @@ import com.typesafe.scalalogging.LazyLogging
 
 import java.io.File
 
-
 class FileLayerDeleter(val attributeStore: FileAttributeStore) extends LazyLogging with LayerDeleter[LayerId] {
   def delete(id: LayerId): Unit =
     try {

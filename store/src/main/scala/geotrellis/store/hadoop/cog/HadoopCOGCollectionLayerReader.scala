@@ -20,11 +20,11 @@ import geotrellis.layer._
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.store._
-import geotrellis.store.cog.{COGCollectionLayerReader, ZoomRange, Extension}
-import geotrellis.store.hadoop.conf.HadoopConfig
+import geotrellis.store.cog.{COGCollectionLayerReader, Extension, ZoomRange}
 import geotrellis.store.hadoop.{HadoopAttributeStore, SerializableConfiguration}
 import geotrellis.store.hadoop.util._
 import geotrellis.store.index.Index
+import geotrellis.util.conf.BlockingThreadPoolConfig
 import geotrellis.util._
 
 import _root_.io.circe._
@@ -44,7 +44,7 @@ class HadoopCOGCollectionLayerReader(
   val attributeStore: AttributeStore,
   val catalogPath: String,
   val conf: Configuration = new Configuration,
-  val defaultThreads: Int = HadoopCOGCollectionLayerReader.defaultThreadCount
+  val defaultThreads: Int = BlockingThreadPoolConfig.threads
 ) extends COGCollectionLayerReader[LayerId] with LazyLogging {
 
   val serConf: SerializableConfiguration = SerializableConfiguration(conf)
@@ -73,8 +73,6 @@ class HadoopCOGCollectionLayerReader(
 }
 
 object HadoopCOGCollectionLayerReader {
-  val defaultThreadCount: Int = HadoopConfig.threads.collection.readThreads
-
   def apply(attributeStore: HadoopAttributeStore): HadoopCOGCollectionLayerReader =
     new HadoopCOGCollectionLayerReader(attributeStore, attributeStore.rootPath.toString, attributeStore.conf)
 

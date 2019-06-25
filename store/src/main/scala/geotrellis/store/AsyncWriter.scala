@@ -16,14 +16,12 @@
 
 package geotrellis.store
 
+import geotrellis.util.BlockingThreadPool
 import cats.effect.{IO, Timer}
 import cats.syntax.apply._
 import cats.syntax.either._
 
 import scala.util.{Failure, Success, Try}
-import scala.concurrent.ExecutionContext
-
-import java.util.concurrent.Executors
 
 abstract class AsyncWriter[Client, V, E](threads: Int) extends Serializable {
 
@@ -41,9 +39,8 @@ abstract class AsyncWriter[Client, V, E](threads: Int) extends Serializable {
   ): Unit = {
     if (partition.isEmpty) return
 
-    val pool = Executors.newFixedThreadPool(threads)
     // TODO: remove the implicit on ec and consider moving the implicit timer to method signature
-    implicit val ec = ExecutionContext.fromExecutor(pool)
+    implicit val ec = BlockingThreadPool.executionContext
     implicit val timer: Timer[IO] = IO.timer(ec)
     implicit val cs = IO.contextShift(ec)
 
@@ -87,7 +84,5 @@ abstract class AsyncWriter[Client, V, E](threads: Int) extends Serializable {
       .attempt
       .unsafeRunSync()
       .valueOr(throw _)
-
-    pool.shutdown()
   }
 }

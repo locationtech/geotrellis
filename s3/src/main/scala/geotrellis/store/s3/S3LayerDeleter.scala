@@ -17,9 +17,9 @@
 package geotrellis.store.s3
 
 import geotrellis.store._
+
 import software.amazon.awssdk.services.s3.model._
 import software.amazon.awssdk.services.s3.S3Client
-
 import com.typesafe.scalalogging.LazyLogging
 
 import scala.collection.JavaConverters._

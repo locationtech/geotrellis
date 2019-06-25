@@ -21,7 +21,6 @@ import geotrellis.util.{ByteReader, StreamingByteReader}
 
 import software.amazon.awssdk.services.s3.S3Client
 
-import scala.util.{Try, Success, Failure}
 import java.net.URI
 
 package object cog {

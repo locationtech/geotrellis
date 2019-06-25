@@ -16,15 +16,12 @@
 
 package geotrellis.spark.store.hadoop
 
-import geotrellis.layer._
 import geotrellis.store._
 import geotrellis.store.hadoop._
 import geotrellis.spark.store._
-import geotrellis.util._
 
 import org.apache.spark.SparkContext
 import org.apache.hadoop.fs.Path
-
 
 object HadoopLayerReindexer {
   def apply(rootPath: Path, attributeStore: HadoopAttributeStore)(implicit sc: SparkContext): LayerReindexer[LayerId] =
