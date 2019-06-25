@@ -99,7 +99,6 @@ lazy val commonSettings = Seq(
           }
         }.getOrElse(newText)
       } } )),
-  scapegoatVersion in ThisBuild := "1.3.8",
   updateOptions := updateOptions.value.withGigahorse(false)
 )
 
