@@ -16,10 +16,9 @@
 
 package geotrellis.store.json
 
-import geotrellis.spark._
-import geotrellis.spark.io._
-import geotrellis.spark.io.file._
-import geotrellis.spark.io.hadoop._
+import geotrellis.store._
+import geotrellis.store.hadoop.HadoopLayerHeader
+import geotrellis.store.file.FileLayerHeader
 
 import io.circe._
 import io.circe.syntax._

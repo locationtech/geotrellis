@@ -35,9 +35,4 @@ trait Implicits extends HistogramJsonFormats {
 
   implicit val tileLayoutEncoder: Encoder[TileLayout] = deriveEncoder
   implicit val tileLayoutDecoder: Decoder[TileLayout] = deriveDecoder
-
-  implicit val gridBoundsIntEncoder: Encoder[GridBounds[Int]] = deriveEncoder
-  implicit val gridBoundsIntDecoder: Decoder[GridBounds[Int]] = deriveDecoder
-  implicit val gridBoundsLongEncoder: Encoder[GridBounds[Long]] = deriveEncoder
-  implicit val gridBoundsLongDecoder: Decoder[GridBounds[Long]] = deriveDecoder
 }

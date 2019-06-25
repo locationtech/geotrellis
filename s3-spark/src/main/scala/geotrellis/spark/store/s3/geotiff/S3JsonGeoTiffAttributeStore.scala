@@ -56,13 +56,7 @@ import scala.io.Source
         .mkString(" ")
     } finally objStream.close()
 
-    (for {
-      parsed <- parse(json)
-      md <- parsed.as[List[GeoTiffMetadata]]
-    } yield md) match {
-      case Right(success) => success
-      case Left(error) => throw error
-    }
+    parse(json).flatMap(_.as[List[GeoTiffMetadata]]).valueOr(throw _)
   }
 
   @experimental def readDataAsTree(uri: URI, getClient: () => S3Client = S3ClientProducer.get): GeoTiffMetadataTree[GeoTiffMetadata] =

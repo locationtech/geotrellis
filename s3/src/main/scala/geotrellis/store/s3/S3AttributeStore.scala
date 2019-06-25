@@ -78,13 +78,7 @@ class S3AttributeStore(
         s3objStream.close()
       }
 
-    (for {
-      parsed <- parse(json)
-      key <- parsed.as[(LayerId, T)]
-    } yield key) match {
-      case Right(success) => success
-      case Left(error) => throw error
-    }
+    parse(json).flatMap(_.as[(LayerId, T)]).valueOr(throw _)
   }
 
   def read[T: Decoder](layerId: LayerId, attributeName: String): T =
