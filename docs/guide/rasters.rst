@@ -1005,3 +1005,86 @@ attribute characteristics.
 .. |Light Purple to Dark Purple to White| image:: ./images/10_purple-to-dark-purple-to-white-heatmap.png
 .. |Bold Lands Use| image:: ./images/11_bold-land-use-qualitative.png
 .. |Muted Terrain| image:: ./images/12_muted-terrain-qualitative.png
+
+Polygonal Summary
+=================
+
+What is it?
+-----------
+
+A polygonal summary operation performs some computation for each raster
+pixel that falls within a bounding polygon. Typically, this is an
+aggregation operation such as Sum, Max or Mean.
+
+Supported Operations
+--------------------
+
+GeoTrellis supports a few polygonal summary operations on instances of
+``Raster[Tile]`` and ``Raster[MultibandTile]`` out of the box.
+These are available at ``geotrellis.raster.summary.polygonal.visitors._``:
+
+- MaxVisitor
+- MinVisitor
+- MeanVisitor
+- SumVisitor
+- FastMapHistogramVisitor
+- StreamingHistogramVisitor
+
+If you need to perform a polygonal summary on grids other than ``Raster[Tile]``
+and ``Raster[MultibandTile]`` or you require some other aggregation method,
+you'll need to implement your own visitor. See "Creating your own GridVisitor"
+below.
+
+Example
+-------
+
+This contrived example performs a sum across all pixels in the raster that
+intersect with the provided polygon.
+
+.. code-block:: scala
+
+    import geotrellis.raster._
+    // This import extends Raster with the polygonalSummary method
+    import geotrellis.raster.summary.polygonal._
+    import geotrellis.raster.summary.polygonal.visitors.SumVisitor
+    import geotrellis.raster.summary.types.SumValue
+
+    // Source these from your application
+    val raster: Raster[Tile] = ???
+    val polygon: Polygon = ???
+
+    val summary = raster.polygonalSummary(polygon, SumVisitor)
+    match summary {
+        case Summary(result: SumValue) => println("Sum across polygon: ${result}")
+        case NoIntersection => println("No Intersection!")
+    }
+
+Spark Support
+-------------
+
+The ``geotrellis.spark.summary.polygonal`` package supports performing
+polygonal summaries on RDDs of
+``RDD[(SpatialKey, T <: Grid[Int])] with Metadata[TileLayerMetadata[SpatialKey]]``
+which includes the ``geotrellis.spark.TileLayerRDD`` and
+``geotrellis.spark.MultibandTileLayerRDD`` abstractions returned by many
+GeoTrellis layer reader operations. The available methods take one to many
+geometries either as a Seq or RDD and return an RDD of Features with the polygonal
+summary result as their data: ``RDD[Feature[Geometry, PolygonalSummaryResult[R]]]``.
+
+This API uses the same visitor pattern as the raster polygonal summary operations
+so that you can write one visitor and scale it from single raster operations to
+RDDs. This also means that the Spark API supports the same operations out of the
+box as the raster API.
+
+An example is provided at
+``geotrellis.doc.examples.spark.PolygonalSummaryExamples``
+
+Creating your own GridVisitor
+-----------------------------
+
+Create a class that extends ``geotrellis.raster.summary.GridVisitor`` using
+the class documentation as a guide. If you're looking for example
+implementations to get started, see:
+
+- ``geotrellis.raster.summary.polygonal.visitors.MaxVisitor``
+- ``geotrellis.raster.summary.polygonal.visitors.StreamingHistogramVisitor``

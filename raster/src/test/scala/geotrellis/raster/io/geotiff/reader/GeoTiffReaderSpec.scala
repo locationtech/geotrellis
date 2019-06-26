@@ -23,6 +23,9 @@ import geotrellis.raster.io.geotiff._
 import geotrellis.raster.io.geotiff.tags._
 import geotrellis.raster.io.geotiff.tags.codes.ColorSpace
 import geotrellis.raster.render.RGB
+import geotrellis.raster.summary.polygonal._
+import geotrellis.raster.summary.polygonal.visitors._
+import geotrellis.raster.summary.types.{MaxValue, MinValue}
 import geotrellis.raster.testkit._
 import geotrellis.vector.{Extent, Point}
 import monocle.syntax.apply._
@@ -349,11 +352,16 @@ class GeoTiffReaderSpec extends FunSpec
     val MeanEpsilon = 1e-8
 
     def testMinMaxAndMean(min: Double, max: Double, mean: Double, file: String) {
-      val SinglebandGeoTiff(tile, extent, _, _, _, _) = SinglebandGeoTiff(file)
 
-      tile.polygonalMax(extent, extent.toPolygon) should be (max)
-      tile.polygonalMin(extent, extent.toPolygon) should be (min)
-      tile.polygonalMean(extent, extent.toPolygon) should be (mean +- MeanEpsilon)
+      val geotiff = SinglebandGeoTiff(file)
+      val extent = geotiff.extent
+
+      geotiff.raster.polygonalSummary(extent.toPolygon, MaxVisitor) should be (Summary(MaxValue(max)))
+      geotiff.raster.polygonalSummary(extent.toPolygon, MinVisitor) should be (Summary(MinValue(min)))
+      geotiff.raster.polygonalSummary(extent.toPolygon, MeanVisitor) match {
+        case Summary(result) => result.mean should be (mean +- MeanEpsilon)
+        case _ => fail("failed to compute PolygonalSummaryResult")
+      }
     }
 
     it("should read UINT 16 little endian files correctly") {
@@ -375,16 +383,15 @@ class GeoTiffReaderSpec extends FunSpec
     }
 
     it("should read GeoTiff without GeoKey Directory correctly") {
-      val SinglebandGeoTiff(tile, extent, crs, _, _, _) = SinglebandGeoTiff(geoTiffPath("no-geokey-dir.tif"))
+      val file = geoTiffPath("no-geokey-dir.tif")
+      val geotiff = SinglebandGeoTiff(file)
+      val extent = geotiff.extent
 
-      crs should be (LatLng)
+      geotiff.crs should be (LatLng)
       extent should be (Extent(307485, 3911490, 332505, 3936510))
 
       val (max, min, mean) = (74032, -20334, 17.023709809131)
-
-      tile.polygonalMax(extent, extent.toPolygon) should be (max)
-      tile.polygonalMin(extent, extent.toPolygon) should be (min)
-      tile.polygonalMean(extent, extent.toPolygon) should be (mean +- MeanEpsilon)
+      testMinMaxAndMean(min, max, mean, file)
     }
 
     it("should read GeoTiff with incorrect GeoKey Directory header correctly (NumberOfKeys is wrong)") {

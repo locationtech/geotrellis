@@ -17,55 +17,46 @@
 package geotrellis.raster.summary.polygonal
 
 import geotrellis.raster._
-import geotrellis.raster.summary._
+import geotrellis.raster.histogram.StreamingHistogram
+import geotrellis.raster.summary.polygonal.visitors.StreamingHistogramVisitor
 import geotrellis.vector._
 import geotrellis.raster.testkit._
-
 import org.scalatest._
 
-class HistogramSpec extends FunSpec
-                       with Matchers
-                       with RasterMatchers
-                       with TileBuilders {
+class HistogramSpec
+    extends FunSpec
+    with Matchers
+    with RasterMatchers
+    with TileBuilders {
 
   describe("zonalHistogram") {
-    val arr = Array.fill(40*40)(1.0)
-    val rs = createRaster(arr,40,40)
+    val arr = Array.fill(40 * 40)(1.0)
+    val rs = createRaster(arr, 40, 40)
     val tile = rs.tile
-    val extent = rs.extent
-    val zone = Extent(10,-10,50,10).toPolygon
+    val zone = Extent(10, -10, 50, 10).toPolygon
 
     val multibandTile = MultibandTile(tile, tile, tile)
-
-    it("computes Histogram for Singleband") {
-      val result = tile.polygonalHistogram(extent, zone)
-
-      result.itemCount(1) should equal (40)
-      result.itemCount(2) should equal (0)
-    }
+    val multibandRaster = Raster(multibandTile, rs.extent)
 
     it("computes Histogram for Multiband") {
-      val result = multibandTile.polygonalHistogram(extent, zone)
-
-      result map { r =>
-        r.itemCount(1) should equal (40)
-        r.itemCount(2) should equal (0)
+      multibandRaster.polygonalSummary(zone, StreamingHistogramVisitor) match {
+        case Summary(result) => result.foreach { histogram =>
+          histogram.itemCount(1) should equal(40.0)
+          histogram.itemCount(2) should equal(0)
+        }
+        case _ => fail("")
       }
     }
 
     it("computes double Histogram for Singleband") {
-      val result = tile.polygonalHistogramDouble(extent, zone)
+      val result = rs.polygonalSummary(zone, StreamingHistogramVisitor)
 
-      result.itemCount(1) should equal (40)
-      result.itemCount(2) should equal (0)
-    }
-
-    it("computes double Histogram for Multiband") {
-      val result = multibandTile.polygonalHistogramDouble(extent, zone)
-
-      result map { r =>
-        r.itemCount(1) should equal (40)
-        r.itemCount(2) should equal (0)
+      result match {
+        case Summary(histogram) => {
+          histogram.itemCount(1) should equal(40)
+          histogram.itemCount(2) should equal(0)
+        }
+        case _ => fail("polygonalSummary did not return a result")
       }
     }
   }

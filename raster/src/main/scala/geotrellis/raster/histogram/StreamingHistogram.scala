@@ -21,16 +21,23 @@ import geotrellis.raster.summary.Statistics
 import geotrellis.raster.doubleNODATA
 import StreamingHistogram.{Bucket, Delta, DeltaCompare}
 
-import math.{abs, exp, min, max, sqrt}
-
+import math.{abs, exp, max, min, sqrt}
 import java.util.Comparator
 import java.util.TreeMap
+
+import cats.Monoid
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable.{ListBuffer => MutableListBuffer}
 
 
 object StreamingHistogram {
+
+  implicit val streamingHistogramMonoid: Monoid[StreamingHistogram] =
+    new Monoid[StreamingHistogram] {
+      def empty: StreamingHistogram = StreamingHistogram()
+      def combine(x: StreamingHistogram, y: StreamingHistogram) = x.merge(y)
+    }
 
   case class Bucket(label: Double, count: Long) {
     def _1 = label
@@ -88,6 +95,10 @@ object StreamingHistogram {
   * Ben-Haim, Yael, and Elad Tom-Tov. "A streaming parallel decision
   * tree algorithm."  The Journal of Machine Learning Research 11
   * (2010): 849-872.
+  *
+  * NOTE: The order in which values are counted could affect Bucket
+  * distribution and counts as StreamingHistogram instances are merged,
+  * due to the way in which bucket boundaries are defined.
   */
 class StreamingHistogram(
   size: Int,

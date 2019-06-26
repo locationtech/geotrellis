@@ -17,25 +17,6 @@
 package geotrellis.store.index
 
 import scala.collection.TraversableOnce
-import scala.collection.mutable
-
-
-object MergeQueue{
-  def apply(ranges: TraversableOnce[(BigInt, BigInt)]): Seq[(BigInt, BigInt)] = {
-    val q = new MergeQueue()
-    ranges.foreach(range => q += range)
-    q.toSeq
-  }
-}
-
-private class RangeComparator extends java.util.Comparator[(BigInt, BigInt)] {
-  def compare(r1: (BigInt, BigInt), r2: (BigInt, BigInt)): Int = {
-    val retval = (r1._2 - r2._2)
-    if (retval < 0) +1
-    else if (retval == 0) 0
-    else -1
-  }
-}
 
 class MergeQueue(initialSize: Int = 1) {
   // Sorted data structure
@@ -79,5 +60,21 @@ class MergeQueue(initialSize: Int = 1) {
     }
 
     stack
+  }
+}
+object MergeQueue {
+  def apply(ranges: TraversableOnce[(BigInt, BigInt)]): Seq[(BigInt, BigInt)] = {
+    val q = new MergeQueue()
+    ranges.foreach(range => q += range)
+    q.toSeq
+  }
+}
+
+private class RangeComparator extends java.util.Comparator[(BigInt, BigInt)] {
+  def compare(r1: (BigInt, BigInt), r2: (BigInt, BigInt)): Int = {
+    val retval = (r1._2 - r2._2)
+    if (retval < 0) +1
+    else if (retval == 0) 0
+    else -1
   }
 }

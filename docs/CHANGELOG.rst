@@ -5,6 +5,10 @@ Changelog
 -----
 
 API Changes & Project structure changes
+
+- ``geotrellis-raster``
+
+  - **Change:** ``geotrellis.raster.summary.polygonal.[Multi]TilePolygonalSummaryHandler`` replaced with ``geotrellis.raster.summary.polygonal.PolygonalSummary. Users should expect to implement concrete subclasses of ``geotrellis.raster.summary.GridVisitor`` and pass those to the new polygonalSummary methods. There are a number of default GridVisitor implementations provided for simple operations in `geotrellis.raster.summary.visitors``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - ``geotrellis.util``, ``geotrellis.store``, ``geotrellis.store.s3``
@@ -65,6 +69,7 @@ API Changes & Project structure changes
     - ``EmptyBoundsError``
     - ``SpatialComponent``
     - ``TemporalComponent``
+  - **Change:** Polygonal summaries on raster RDDs of ``RDD[(SpatialKey, T <: Grid[Int])] with Metadata[TileLayerMetadata[SpatialKey]]`` can now be performed with far less boilerplate using the same visitor pattern as the new raster polygonal summary API. See ``RDDPolygonalSummary.scala`` for additional details.
 
 - ``geotrellis.spark.tiling``
 

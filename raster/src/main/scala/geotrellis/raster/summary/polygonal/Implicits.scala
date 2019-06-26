@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Azavea
+ * Copyright 2019 Azavea
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,16 +17,14 @@
 package geotrellis.raster.summary.polygonal
 
 import geotrellis.raster._
-
-
-object Implicits extends Implicits
+import geotrellis.util.GetComponent
 
 trait Implicits {
-  implicit class withSinglebandTilePolygonalSummaryMethods(
-    val self: Tile
-  ) extends SinglebandTilePolygonalSummaryMethods
-
-  implicit class withMultibandTilePolygonalSummaryMethods(
-    val self: MultibandTile
-  ) extends MultibandTilePolygonalSummaryMethods
+  implicit def rasterHasRasterExtent[T <: CellGrid[Int]]
+    : GetComponent[Raster[T], RasterExtent] =
+    new GetComponent[Raster[T], RasterExtent] {
+      override def get: Raster[T] => RasterExtent = _.rasterExtent
+    }
 }
+
+object Implicits extends Implicits
