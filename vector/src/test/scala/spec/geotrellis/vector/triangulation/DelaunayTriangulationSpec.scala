@@ -118,10 +118,10 @@ class DelaunayTriangulationSpec extends FunSpec with Matchers {
       var overlapping = false
       cfor(0)(_ < ntris - 1, _ + 1){ i => {
         val (a0,b0,c0) = tris(i)
-        val basetri = Polygon(Point.jtsCoord2Point(trans(a0)), Point.jtsCoord2Point(trans(b0)), Point.jtsCoord2Point(trans(c0)), Point.jtsCoord2Point(trans(a0)))
+        val basetri = Polygon(Point(trans(a0)), Point(trans(b0)), Point(trans(c0)), Point(trans(a0)))
         cfor(i+1)(_ < ntris, _ + 1){ j => {
           val (a1,b1,c1) = tris(j)
-          val testtri = Polygon(Point.jtsCoord2Point(trans(a1)), Point.jtsCoord2Point(trans(b1)), Point.jtsCoord2Point(trans(c1)), Point.jtsCoord2Point(trans(a1)))
+          val testtri = Polygon(Point(trans(a1)), Point(trans(b1)), Point(trans(c1)), Point(trans(a1)))
 
           overlapping = overlapping || (basetri.intersects(testtri) && !basetri.touches(testtri))
         }}

@@ -3,7 +3,10 @@ package geotrellis.vector.methods
 import geotrellis.vector._
 import geotrellis.util.MethodExtensions
 import org.locationtech.jts.geom.CoordinateSequence
+import org.locationtech.jts.operation.union._
 import spire.syntax.cfor._
+
+import scala.collection.JavaConverters._
 
 trait ExtraPolygonMethods extends MethodExtensions[Polygon] {
   def exterior: LineString =
@@ -46,6 +49,19 @@ trait ExtraPolygonMethods extends MethodExtensions[Polygon] {
   def -(ml: MultiLineString): PolygonAtMostOneDimensionDifferenceResult = self.difference(ml)
   def -(p: Polygon): TwoDimensionsTwoDimensionsDifferenceResult = self.difference(p)
   def -(mp: MultiPolygon): TwoDimensionsTwoDimensionsDifferenceResult = self.difference(mp)
+
+  def |(p: Point): AtMostOneDimensionPolygonUnionResult = self.union(p)
+  def |(mp: MultiPoint): AtMostOneDimensionPolygonUnionResult = self.union(mp)
+  def |(l: LineString): AtMostOneDimensionPolygonUnionResult = self.union(l)
+  def |(ml: MultiLineString): AtMostOneDimensionPolygonUnionResult = self.union(ml)
+  def |[G <: Geometry : TwoDimensional](g: G): TwoDimensionsTwoDimensionsUnionResult =  g match {
+    case p: Polygon =>
+      new CascadedPolygonUnion(Seq(self, p).asJava).union
+    case mp: MultiPolygon =>
+      new CascadedPolygonUnion((self +: mp.polygons).toSeq.asJava).union
+    case _ =>
+      self.union(g)
+}
 
   def normalized(): Polygon = {
     val res = self.copy.asInstanceOf[Polygon]

@@ -24,7 +24,7 @@ import geotrellis.vector._
   */
 object Raster {
   def apply[T <: CellGrid[Int]](feature: PolygonFeature[T]): Raster[T] =
-    Raster(feature.data, feature.geom.envelope)
+    Raster(feature.data, feature.geom.extent)
 
   /**
     * Implicit conversion from a [[Tile]], Extent pair to a

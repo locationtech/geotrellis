@@ -37,7 +37,7 @@ class ConformingDelaunaySpec extends FunSpec with Matchers {
 
     val delaunayTriangles = {
       val gf = new GeometryFactory
-      val sites = new MultiPoint(points.map(_.jtsGeom), gf)
+      val sites = new MultiPoint(points, gf)
       val builder = new DelaunayTriangulationBuilder
       builder.setSites(sites)
       val subd = builder.getSubdivision
@@ -45,24 +45,24 @@ class ConformingDelaunaySpec extends FunSpec with Matchers {
       val tris = subd.getTriangles(gf)
       val len = tris.getNumGeometries
       val arr = Array.ofDim[Polygon](len)
-      cfor(0)(_ < len, _ + 1) { i => arr(i) = Polygon(tris.getGeometryN(i).asInstanceOf[JTSPolygon]) }
+      cfor(0)(_ < len, _ + 1) { i => arr(i) = tris.getGeometryN(i).asInstanceOf[JTSPolygon] }
       arr
     }
 
     it("should be the same as standard Delaunay when no constraints are given") {
       val conformingDelaunay = ConformingDelaunay(points, emptyCollection)
-      val delaunay = DelaunayTriangulation(points.map(_.jtsGeom.getCoordinate))
+      val delaunay = DelaunayTriangulation(points.map(_.getCoordinate))
       conformingDelaunay.triangles.toSet should be (delaunayTriangles.toSet)
     }
 
     it("should produce same results with redundant constraints as without any") {
       val conformingDelaunay = ConformingDelaunay(points, List(polygon))
-      val delaunay = DelaunayTriangulation(points.map(_.jtsGeom.getCoordinate))
+      val delaunay = DelaunayTriangulation(points.map(_.getCoordinate))
       conformingDelaunay.triangles.toSet should be (delaunayTriangles.toSet)
     }
 
     it("should only produce Steiner points on constraints") {
-      val line = Line(points(1), points(4))
+      val line = LineString(points(1), points(4))
       val conformingDelaunay = ConformingDelaunay(points, List(line))
       val steiners = conformingDelaunay.steinerPoints
 

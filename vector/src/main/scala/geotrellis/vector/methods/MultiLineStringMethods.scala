@@ -17,6 +17,13 @@ trait ExtraMultiLineStringMethods extends MethodExtensions[MultiLineString] {
 
   def -(g: Geometry): MultiLineStringGeometryDifferenceResult = self.difference(g)
 
+  def |(p: Point): PointMultiLineStringUnionResult = self.union(p)
+  def |(mp: MultiPoint): MultiPointMultiLineStringUnionResult = self.union(mp)
+  def |(l: LineString): LineStringOneDimensionUnionResult = self.union(l)
+  def |(ml: MultiLineString): MultiLineStringMultiLineStringUnionResult = self.union(ml)
+  def |(p: Polygon): AtMostOneDimensionPolygonUnionResult = self.union(p)
+  def |(mp: MultiPolygon): MultiLineStringMultiPolygonUnionResult = self.union(mp)
+
   def normalized(): MultiLineString = {
     val res = self.copy.asInstanceOf[MultiLineString]
     res.normalize

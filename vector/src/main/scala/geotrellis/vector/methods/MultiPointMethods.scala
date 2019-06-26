@@ -17,6 +17,13 @@ trait ExtraMultiPointMethods extends MethodExtensions[MultiPoint] {
 
   def -(g: Geometry): MultiPointGeometryDifferenceResult = self.difference(g)
 
+  def |(p: Point): PointZeroDimensionsUnionResult = self.union(p)
+  def |(mp: MultiPoint): MultiPointMultiPointUnionResult = self.union(mp)
+  def |(l: LineString): ZeroDimensionsLineStringUnionResult = self.union(l)
+  def |(ml: MultiLineString): MultiPointMultiLineStringUnionResult= self.union(ml)
+  def |(p: Polygon): AtMostOneDimensionPolygonUnionResult = self.union(p)
+  def |(mp: MultiPolygon): MultiPointMultiPolygonUnionResult = self.union(mp)
+
   def normalized(): MultiPoint = {
     val res = self.copy.asInstanceOf[MultiPoint]
     res.normalize

@@ -72,7 +72,7 @@ class StitchedDelaunaySpec extends FunSpec with Matchers {
 
   val directions = Seq(TopLeft, Top, TopRight, Left, Center, Right, BottomLeft, Bottom, BottomRight)
   val chunks: Seq[(Extent, Direction)] = directions.map{ dir => (directionToExtent(dir), dir) }
-  def findDirection(pt: Coordinate) = chunks.find { pair => pair._1.contains(Point.jtsCoord2Point(pt)) }.get._2
+  def findDirection(pt: Coordinate) = chunks.find { pair => pair._1.contains(Point(pt)) }.get._2
 
   describe("Stitched Delaunay triangulation") {
     it("should have no stitch triangles with circumcircles containing other points") {
@@ -110,7 +110,7 @@ class StitchedDelaunaySpec extends FunSpec with Matchers {
     it ("Should correctly stitch a problematic data set") {
       val wktIS = getClass.getResourceAsStream("/wkt/erringPoints.wkt")
       val wktString = scala.io.Source.fromInputStream(wktIS).getLines.mkString
-      val points: Array[Coordinate] = WKT.read(wktString).asInstanceOf[MultiPoint].points.map(_.jtsGeom.getCoordinate)
+      val points: Array[Coordinate] = WKT.read(wktString).asInstanceOf[MultiPoint].points.map(_.getCoordinate)
 
       val keyedPoints: Seq[(Direction, Array[Coordinate])] =
         points

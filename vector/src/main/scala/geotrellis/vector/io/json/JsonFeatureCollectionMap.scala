@@ -70,7 +70,7 @@ class JsonFeatureCollectionMap(features: List[Json] = Nil) {
 
 
   def asJson: Json = {
-    val bboxOption = getAllGeometries().map(_._2.envelope).reduceOption(_ combine _)
+    val bboxOption = getAllGeometries().map(_._2.extent).reduceOption(_ combine _)
     bboxOption match {
       case Some(bbox) =>
         Json.obj(

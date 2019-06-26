@@ -37,7 +37,7 @@ class VoronoiDiagramSpec extends FunSpec with Matchers {
     if (erring) {
       Rasterizer.foreachCellByPolygon(poly, re){ (c,r) => tile.set(c, r, 2) }
     } else {
-      val l = poly.boundary.toGeometry.get
+      val l = poly.getBoundary
       Rasterizer.foreachCellByGeometry(l, re){ (c,r) => tile.set(c, r, 1) }
     }
   }
@@ -56,7 +56,7 @@ class VoronoiDiagramSpec extends FunSpec with Matchers {
     it("should have valid polygons entirely covered by the extent") {
       val extent = Extent(-2.25, -3, 1, 3)
       val pts = Array((0.0,-2.0), (0.0,0.0), (0.0,1.0), (-0.5,2.0), (0.5,2.0)).map{ case (x ,y) => new Coordinate(x, y) }
-      implicit val trans = { i: Int => Point.jtsCoord2Point(pts(i)) }
+      implicit val trans = { i: Int => Point(pts(i)) }
       val voronoi = VoronoiDiagram(pts, extent)
 
       def validCoveredPolygon(poly: Polygon) = {
@@ -70,7 +70,7 @@ class VoronoiDiagramSpec extends FunSpec with Matchers {
     it("should work for linear input set") {
       val extent = Extent(-2.25, -3, 1, 3)
       val pts = Array((0.0,-2.0), (0.0,-1.0), (0.0,0.0), (0.0,1.0), (0.0,2.0)).map{ case (x ,y) => new Coordinate(x, y) }
-      implicit val trans = { i: Int => Point.jtsCoord2Point(pts(i)) }
+      implicit val trans = { i: Int => Point(pts(i)) }
       val voronoi = VoronoiDiagram(pts, extent)
 
       def validCoveredPolygon(poly: Polygon) = {
@@ -85,7 +85,7 @@ class VoronoiDiagramSpec extends FunSpec with Matchers {
     it("should work when some cells don't intersect the extent") {
       val extent = Extent(-2.25, 0, 1, 6)
       val pts = Array((0.0,-2.0), (0.0,-1.0), (0.0,0.0), (0.0,1.0), (0.0,2.0)).map{ case (x ,y) => new Coordinate(x, y) }
-      implicit val trans = { i: Int => Point.jtsCoord2Point(pts(i)) }
+      implicit val trans = { i: Int => Point(pts(i)) }
       val voronoi = VoronoiDiagram(pts, extent)
 
       def validCoveredPolygon(poly: Polygon) = {
@@ -123,7 +123,7 @@ class VoronoiDiagramSpec extends FunSpec with Matchers {
       }
 
       val cells = voronoi.voronoiCells
-      (cells.length == 1 && sameAsExtent(cells(0))) should be (true)      
+      (cells.length == 1 && sameAsExtent(cells(0))) should be (true)
     }
 
     it("should produce a Voronoi diagram from a real dataset") {
@@ -131,7 +131,7 @@ class VoronoiDiagramSpec extends FunSpec with Matchers {
       val parksWKT = scala.io.Source.fromInputStream(parksStream).getLines.mkString
       val pts = geotrellis.vector.io.wkt.WKT.read(parksWKT).asInstanceOf[MultiPoint].points
 
-      val dt = DelaunayTriangulation(pts.map{_.jtsGeom.getCoordinate}.toArray)
+      val dt = DelaunayTriangulation(pts.map{_.getCoordinate}.toArray)
 
       val zoom = 12
       def crToExtent(col: Int, row: Int): Extent = {

@@ -5,7 +5,7 @@ import geotrellis.util.MethodExtensions
 import org.locationtech.jts.geom.TopologyException
 
 trait ExtraGeometryMethods extends MethodExtensions[Geometry] {
-  def envelope: Extent =
+  def extent: Extent =
     if(self.isEmpty) Extent(0.0, 0.0, 0.0, 0.0)
     else self.getEnvelopeInternal
 

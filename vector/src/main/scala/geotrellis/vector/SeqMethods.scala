@@ -41,7 +41,9 @@ trait SeqMethods {
       _.symDifference(_)
     }
 
-    def toMultiLine = ml
+    def toMultiLineString = ml
+
+    def extent: Extent = ml.extent
   }
 
   implicit class SeqPointExtensions(val points: Traversable[Point]) {
@@ -63,6 +65,8 @@ trait SeqMethods {
       }
 
     def toMultiPoint = mp
+
+    def extent: Extent = mp.extent
   }
 
   implicit class SeqPolygonExtensions(val polygons: Traversable[Polygon]) {
@@ -87,6 +91,8 @@ trait SeqMethods {
       }
 
     def toMultiPolygon() = mp
+
+    def extent: Extent = mp.extent
   }
 
   implicit class SeqMultiLineStringExtensions(val multilines: Traversable[MultiLineString]) {
@@ -98,6 +104,8 @@ trait SeqMethods {
     def intersectionGeometries() = seq.intersectionGeometries
     def differenceGeometries() = seq.differenceGeometries
     def symDifferenceGeometries() = seq.symDifferenceGeometries
+
+    def extent: Extent = ml.extent
   }
 
   implicit class SeqMultiPointExtensions(val multipoints: Traversable[MultiPoint]) {
@@ -109,6 +117,8 @@ trait SeqMethods {
     def intersectionGeometries() = seq.intersectionGeometries
     def differenceGeometries() = seq.differenceGeometries
     def symDifferenceGeometries() = seq.symDifferenceGeometries
+
+    def extent: Extent = mp.extent
   }
 
   implicit class SeqMultiPolygonExtensions(val multipolygons: Traversable[MultiPolygon]) {
@@ -123,5 +133,7 @@ trait SeqMethods {
     def intersectionGeometries() = seq.intersectionGeometries
     def differenceGeometries() = seq.differenceGeometries
     def symDifferenceGeometries() = seq.symDifferenceGeometries
+
+    def extent: Extent = mp.extent
   }
 }

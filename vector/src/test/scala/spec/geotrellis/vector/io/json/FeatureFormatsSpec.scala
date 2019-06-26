@@ -28,7 +28,7 @@ import geotrellis.vector._
 class FeatureFormatsSpec extends FlatSpec with Matchers with GeoJsonSupport {
 
   val pointFeature = PointFeature(Point(6.0,1.2), 123)
-  val lineFeature = LineFeature(Line(Point(1,2) :: Point(1,3) :: Nil), 321)
+  val lineFeature = LineStringFeature(LineString(Point(1,2) :: Point(1,3) :: Nil), 321)
 
   "Feature" should "work single point feature" in {
     val body =
@@ -59,7 +59,7 @@ class FeatureFormatsSpec extends FlatSpec with Matchers with GeoJsonSupport {
         |}""".stripMargin.parseJson
 
     lineFeature.asJson should equal (body)
-    body.as[LineFeature[Int]].valueOr(throw _) should equal(lineFeature)
+    body.as[LineStringFeature[Int]].valueOr(throw _) should equal(lineFeature)
   }
 
   it should "knows how to heterogeneous collection" in {
@@ -93,7 +93,7 @@ class FeatureFormatsSpec extends FlatSpec with Matchers with GeoJsonSupport {
 
     val fc = body.as[JsonFeatureCollection].valueOr(throw _)
     fc.getAllFeatures[PointFeature[Int]] should contain (pointFeature)
-    fc.getAllFeatures[LineFeature[Int]] should contain (lineFeature)
+    fc.getAllFeatures[LineStringFeature[Int]] should contain (lineFeature)
   }
 
   it should "parse polygons out of a feature collection" in {

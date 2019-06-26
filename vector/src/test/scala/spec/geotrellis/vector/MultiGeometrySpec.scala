@@ -16,22 +16,20 @@
 
 package geotrellis.vector
 
-import org.locationtech.jts.{geom=>jts}
-
 import org.scalatest._
 
 class MultiGeometrySpec extends FunSpec with Matchers {
-  describe("MultiGeometry.envelope") {
+  describe("MultiGeometry.extent") {
     it("should return a 0 Extent when empty.") {
-      val env = Set(
-        MultiPoint().envelope,
-        MultiLine().envelope,
-        MultiPolygon().envelope,
-        GeometryCollection().envelope
+      val ex = Set(
+        MultiPoint().extent,
+        MultiLineString().extent,
+        MultiPolygon().extent,
+        GeometryCollection().extent
       )
 
-      env.size should be (1)
-      env.toSeq.head should be (Extent(0.0, 0.0, 0.0, 0.0))
+      ex.size should be (1)
+      ex.toSeq.head should be (Extent(0.0, 0.0, 0.0, 0.0))
     }
   }
 }

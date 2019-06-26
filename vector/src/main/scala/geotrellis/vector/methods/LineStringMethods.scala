@@ -7,14 +7,18 @@ import spire.syntax.cfor._
 
 trait ExtraLineStringMethods extends MethodExtensions[LineString] {
   def closed(): LineString = {
-    val arr = Array.ofDim[Coordinate](self.getNumPoints + 1)
+    if (self.isClosed)
+      self.copy.asInstanceOf[LineString]
+    else {
+      val arr = Array.ofDim[Coordinate](self.getNumPoints + 1)
 
-    cfor(0)(_ < arr.length, _ + 1) { i =>
-      arr(i) = self.getCoordinateN(i)
+      cfor(0)(_ < self.getNumPoints, _ + 1) { i =>
+        arr(i) = self.getCoordinateN(i)
+      }
+      arr(self.getNumPoints) = self.getCoordinateN(0)
+
+      GeomFactory.factory.createLineString(arr)
     }
-    arr(self.getNumPoints) = self.getCoordinateN(0)
-
-    GeomFactory.factory.createLineString(arr)
   }
 
   def points: Array[Point] = {
@@ -39,6 +43,13 @@ trait ExtraLineStringMethods extends MethodExtensions[LineString] {
   def -(ml: MultiLineString): LineStringAtLeastOneDimensionDifferenceResult = self.difference(ml)
   def -(p: Polygon): LineStringAtLeastOneDimensionDifferenceResult = self.difference(p)
   def -(mp: MultiPolygon): LineStringAtLeastOneDimensionDifferenceResult = self.difference(mp)
+
+  def |(p: Point): ZeroDimensionsLineStringUnionResult = self.union(p)
+  def |(mp: MultiPoint): ZeroDimensionsLineStringUnionResult = self.union(mp)
+  def |(l: LineString): LineStringOneDimensionUnionResult = self.union(l)
+  def |(ml: MultiLineString): LineStringOneDimensionUnionResult = self.union(ml)
+  def |(p: Polygon): AtMostOneDimensionPolygonUnionResult = self.union(p)
+  def |(mp: MultiPolygon): LineStringMultiPolygonUnionResult = self.union(mp)
 
   def normalized(): LineString = {
     val res = self.copy.asInstanceOf[LineString]

@@ -25,6 +25,13 @@ trait ExtraMultiPolygonMethods extends MethodExtensions[MultiPolygon] {
   def -(p: Polygon): TwoDimensionsTwoDimensionsDifferenceResult = self.difference(p)
   def -(mp: MultiPolygon): TwoDimensionsTwoDimensionsDifferenceResult = self.difference(mp)
 
+  def |(p: Point): PointMultiPolygonUnionResult = self.union(p)
+  def |(mp: MultiPoint): LineStringMultiPolygonUnionResult = self.union(mp)
+  def |(l: LineString): LineStringMultiPolygonUnionResult = self.union(l)
+  def |(ml: MultiLineString): LineStringMultiPolygonUnionResult = self.union(ml)
+  def |(p: Polygon): TwoDimensionsTwoDimensionsSeqUnionResult = (this.polygons :+ p).toSeq.unionGeometries
+  def |(mp: MultiPolygon): TwoDimensionsTwoDimensionsSeqUnionResult = (this.polygons ++ mp.polygons).toSeq.unionGeometries
+
   def normalized(): MultiPolygon = {
     val res = self.copy.asInstanceOf[MultiPolygon]
     res.normalize

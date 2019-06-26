@@ -30,11 +30,11 @@ object Generators {
       y <- choose(-99999999999999999999.0,99999999999999999999.0)
     } yield Point(x, y)
 
-  lazy val genLine:Gen[Line] =
+  lazy val genLine:Gen[LineString] =
     for {
       size <-Gen.choose(2,40)
       points <- Gen.containerOfN[Seq,Point](size,genPoint)
-    } yield Line(points.toList)
+    } yield LineString(points.toList)
 
   // Doesn't yet deal with interior rings
   lazy val genPolygon:Gen[Polygon] =
@@ -48,9 +48,9 @@ object Generators {
       subSet1 <- Gen.pick(subSize1,fullSet).map(_.toSeq)
       subSet2 <- Gen.pick(subSize2,fullSet).map(_.toSeq)
     } yield {
-      val polyOne = MultiPoint(subSet1 ++ sharedSet).convexHull.as[Polygon].get
-      val polyTwo = MultiPoint(subSet2 ++ sharedSet).convexHull.as[Polygon].get
-      polyOne | polyTwo match {
+      val polyOne = MultiPoint(subSet1 ++ sharedSet).convexHull.asInstanceOf[PolygonOrNoResult].as[Polygon].get
+      val polyTwo = MultiPoint(subSet2 ++ sharedSet).convexHull.asInstanceOf[PolygonOrNoResult].as[Polygon].get
+      (polyOne union polyTwo).asInstanceOf[TwoDimensionsTwoDimensionsUnionResult] match {
         case PolygonResult(p) => p
         case _ => sys.error("Should have resulted in a polygon.")
       }
@@ -59,7 +59,7 @@ object Generators {
   implicit lazy val arbPoint: Arbitrary[Point] =
     Arbitrary(genPoint)
 
-  implicit lazy val arbLine: Arbitrary[Line] =
+  implicit lazy val arbLine: Arbitrary[LineString] =
     Arbitrary(genLine)
 
   implicit lazy val arbPolygon: Arbitrary[Polygon] =

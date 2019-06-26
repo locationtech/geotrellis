@@ -11,4 +11,11 @@ trait ExtraPointMethods extends MethodExtensions[Point] {
   def typedIntersection(ex: Extent): PointOrNoResult = self.intersection(ex.toPolygon)
 
   def -(g: Geometry): PointGeometryDifferenceResult = self.difference(g)
+
+  def |(p: Point): PointZeroDimensionsUnionResult = self.union(p)
+  def |(mp: MultiPoint): PointZeroDimensionsUnionResult = self.union(mp)
+  def |(l: LineString): ZeroDimensionsLineStringUnionResult = self.union(l)
+  def |(ml: MultiLineString): PointMultiLineStringUnionResult = self.union(ml)
+  def |(p: Polygon): AtMostOneDimensionPolygonUnionResult = self.union(p)
+  def |(mp: MultiPolygon): PointMultiPolygonUnionResult = self.union(mp)
 }

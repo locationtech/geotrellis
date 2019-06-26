@@ -68,10 +68,10 @@ object Reproject {
     * to ensure that underlying cells are fully and accurately captured by reprojection.
     */
   def apply(extent: Extent, src: CRS, dest: CRS): Extent =
-    apply(extent.toPolygon, src, dest).envelope
+    apply(extent.toPolygon, src, dest).extent
 
   def apply(extent: Extent, transform: Transform): Extent =
-    apply(extent.toPolygon, transform).envelope
+    apply(extent.toPolygon, transform).extent
 
   /** Performs adaptive refinement to produce a Polygon representation of the projected region.
     *

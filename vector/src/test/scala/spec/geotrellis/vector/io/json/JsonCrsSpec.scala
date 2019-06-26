@@ -26,7 +26,7 @@ import org.scalatest._
 
 class JsonCrsSpec extends FlatSpec with Matchers with GeoJsonSupport {
   val point = Point(6.0,1.2)
-  val line = Line(Point(1,2) :: Point(1,3) :: Nil)
+  val line = LineString(Point(1,2) :: Point(1,3) :: Nil)
   val crs = NamedCRS("napkin:map:sloppy")
 
   it should "should attach to a Geometry" in {
@@ -44,7 +44,7 @@ class JsonCrsSpec extends FlatSpec with Matchers with GeoJsonSupport {
 
     WithCrs(line, crs).asJson should be (body)
     line.withCrs(crs).asJson should be (body)
-    body.as[WithCrs[Line]].valueOr(throw _) should equal (WithCrs(line, crs))
+    body.as[WithCrs[LineString]].valueOr(throw _) should equal (WithCrs(line, crs))
   }
 
   it should "should attach to a GeometryCollection" in {
