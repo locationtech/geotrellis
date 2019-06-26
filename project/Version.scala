@@ -19,7 +19,6 @@ object Version {
   val scala       = "2.11.12"
   val crossScala  = Seq(scala, "2.12.7")
   val geotools    = "21.0"
-  val sprayJson   = "1.3.4"
   val monocle     = "1.5.1-cats"
   val spire       = "0.13.0"
   val accumulo    = "1.9.3"
