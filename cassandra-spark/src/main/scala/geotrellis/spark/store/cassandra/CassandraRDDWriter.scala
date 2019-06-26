@@ -33,6 +33,7 @@ import com.datastax.driver.core.schemabuilder.SchemaBuilder
 
 import cats.effect.IO
 import cats.syntax.apply._
+import cats.syntax.either._
 
 import org.apache.avro.Schema
 import org.apache.spark.rdd.RDD
@@ -165,7 +166,13 @@ object CassandraRDDWriter {
                   }
                 }
 
-              results.compile.drain.unsafeRunSync()
+              results
+                .compile
+                .drain
+                .attempt
+                .unsafeRunSync()
+                .valueOr(throw _)
+
               pool.shutdown()
             }
           }

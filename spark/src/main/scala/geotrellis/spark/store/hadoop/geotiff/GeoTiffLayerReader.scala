@@ -19,6 +19,7 @@ package geotrellis.spark.store.hadoop.geotiff
 import geotrellis.raster.io.geotiff._
 import geotrellis.raster.{CellGrid, Raster, RasterExtent}
 import geotrellis.raster.resample.{RasterResampleMethods, ResampleMethod}
+import geotrellis.store.LayerId
 import geotrellis.layer.{SpatialKey, ZoomedLayoutScheme}
 import geotrellis.vector.{Extent, ProjectedExtent}
 import geotrellis.raster.crop.Crop
@@ -28,13 +29,13 @@ import geotrellis.raster.reproject.RasterReprojectMethods
 import geotrellis.raster.merge.RasterMergeMethods
 import geotrellis.util.ByteReader
 import geotrellis.util.annotations.experimental
+
 import cats.effect.IO
 import cats.syntax.apply._
+import cats.syntax.either._
+
 import java.net.URI
 import java.util.concurrent.{ExecutorService, Executors}
-
-import geotrellis.store.LayerId
-
 import scala.concurrent.ExecutionContext
 import scala.reflect.ClassTag
 
@@ -94,7 +95,9 @@ import scala.reflect.ClassTag
     (index flatMap readRecord)
       .compile
       .toVector.map(_.flatten.reduce(_ merge _))
+      .attempt
       .unsafeRunSync()
+      .valueOr(throw _)
   }
 
   @experimental def readAll[
@@ -124,6 +127,8 @@ import scala.reflect.ClassTag
       .parJoin(defaultThreads)
       .compile
       .toVector
+      .attempt
       .unsafeRunSync()
+      .valueOr(throw _)
   }
 }

@@ -30,6 +30,7 @@ import org.apache.spark.rdd.RDD
 
 import cats.effect.{IO, Timer}
 import cats.syntax.apply._
+import cats.syntax.either._
 
 import scala.concurrent.ExecutionContext
 
@@ -118,7 +119,10 @@ object SaveToS3 {
         .parJoin(threads)
         .compile
         .toVector
+        .attempt
         .unsafeRunSync()
+        .valueOr(throw _)
+
       pool.shutdown()
     }
   }

@@ -32,6 +32,7 @@ import org.apache.accumulo.core.client.BatchWriterConfig
 
 import cats.effect.IO
 import cats.syntax.apply._
+import cats.syntax.either._
 
 import scala.concurrent.ExecutionContext
 
@@ -143,7 +144,9 @@ case class SocketWriteStrategy(
             .parJoin(threads)
             .compile
             .drain
+            .attempt
             .unsafeRunSync()
+            .valueOr(throw _)
         } finally {
           writer.close(); pool.shutdown()
         }

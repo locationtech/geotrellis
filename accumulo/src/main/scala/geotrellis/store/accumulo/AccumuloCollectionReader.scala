@@ -28,6 +28,7 @@ import org.apache.hadoop.io.Text
 
 import cats.effect._
 import cats.syntax.apply._
+import cats.syntax.either._
 
 import scala.concurrent.ExecutionContext
 import scala.collection.JavaConverters._
@@ -85,7 +86,9 @@ object AccumuloCollectionReader {
         .compile
         .toVector
         .map(_.flatten)
-        .unsafeRunSync
+        .attempt
+        .unsafeRunSync()
+        .valueOr(throw _)
     } finally pool.shutdown()
   }
 }
