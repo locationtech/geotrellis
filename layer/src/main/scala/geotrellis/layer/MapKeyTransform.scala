@@ -130,7 +130,7 @@ class MapKeyTransform(val extent: Extent, val layoutCols: Int, val layoutRows: I
     )
 
   def multiLineToKeys(multiLine: MultiLineString): Set[SpatialKey] = {
-    val bounds: TileBounds = extentToBounds(multiLine.envelope)
+    val bounds: TileBounds = extentToBounds(multiLine.extent)
     val boundsExtent: Extent = boundsToExtent(bounds)
     val rasterExtent = RasterExtent(boundsExtent, bounds.width, bounds.height)
 
@@ -146,7 +146,7 @@ class MapKeyTransform(val extent: Extent, val layoutCols: Int, val layoutRows: I
   }
 
   def multiPolygonToKeys(multiPolygon: MultiPolygon): Set[SpatialKey] = {
-    val extent = multiPolygon.envelope
+    val extent = multiPolygon.extent
     val bounds: TileBounds = extentToBounds(extent)
     val options = Rasterizer.Options(includePartial=true, sampleType=PixelIsArea)
     val boundsExtent: Extent = boundsToExtent(bounds)

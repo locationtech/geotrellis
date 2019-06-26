@@ -46,7 +46,7 @@ class RasterizeRDDSpec extends FunSpec with Matchers
     s.parseGeoJson[JsonFeatureCollection].getAllLineStrings
   }
 
-  val septaExtent = septaRailLines.map(_.envelope).reduce(_ combine _)
+  val septaExtent = septaRailLines.map(_.extent).reduce(_ combine _)
 
   it("rasterize lines"){
     val linesRdd = sc.parallelize(septaRailLines, 10)
@@ -81,7 +81,7 @@ class RasterizeRDDSpec extends FunSpec with Matchers
     val huc10 = WKT.read(wkt).asInstanceOf[MultiPolygon]
 
     val layout = TileLayout(3,3,256,256)
-    val ld = LayoutDefinition(huc10.envelope, layout)
+    val ld = LayoutDefinition(huc10.extent, layout)
 
     val polyRdd = sc.parallelize(huc10.polygons)
     val rasterizedRdd = polyRdd.rasterize(1, IntConstantNoDataCellType, ld)

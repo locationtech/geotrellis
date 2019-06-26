@@ -63,7 +63,7 @@ class S3GeoTiffRDDSpec
       mockClient.putObject(putRequest, putBody)
 
       val options = S3GeoTiffRDD.Options(getClient = () => MockS3Client(), partitionBytes=1<<20, maxTileSize = Some(64))
-      val geometry = Line(Point(141.7066667, -17.5200000), Point(142.1333333, -17.7))
+      val geometry = LineString(Point(141.7066667, -17.5200000), Point(142.1333333, -17.7))
       val fn = {( _: Any, key: ProjectedExtent) => key }
       val source1 =
         S3GeoTiffRDD

@@ -48,8 +48,8 @@ class ClipToGridSpec extends FunSpec with TestEnvironment {
       for((k, resultGeoms) <- resultMap) {
         val expectedGeoms = expectedMap(k)
 
-        resultGeoms.sortBy { g => (g.envelope.xmin, g.envelope.ymax) }
-          .zip(expectedGeoms.sortBy { g => (g.envelope.xmin, g.envelope.ymax) })
+        resultGeoms.sortBy { g => (g.extent.xmin, g.extent.ymax) }
+          .zip(expectedGeoms.sortBy { g => (g.extent.xmin, g.extent.ymax) })
           .foreach { case (g1, g2) =>
             withClue(s"Failed for $k:") {
               g1 should matchGeom (g2, 0.0001)
@@ -75,7 +75,7 @@ class ClipToGridSpec extends FunSpec with TestEnvironment {
       val p3 = Point(0, 0)
 
       val rdd = sc.parallelize(Array(MultiPoint(p1, p2, p3)))
-      val result = ClipToGrid(rdd, layoutDefinition).collect().toVector.sortBy(_._2.envelope.ymin)
+      val result = ClipToGrid(rdd, layoutDefinition).collect().toVector.sortBy(_._2.extent.ymin)
       result.size should be (2)
       result(0)._1 should be (SpatialKey(0, 5))
       result(0)._2 should be (an[MultiPoint])
@@ -151,8 +151,8 @@ class ClipToGridSpec extends FunSpec with TestEnvironment {
       val poly =
         Polygon(shell, hole)
 
-      val shellExtent = Polygon(shell).envelope
-      val holeExtent = Polygon(hole).envelope
+      val shellExtent = Polygon(shell).extent
+      val holeExtent = Polygon(hole).extent
 
       def outerPoly(k: SpatialKey): Polygon =
         try {

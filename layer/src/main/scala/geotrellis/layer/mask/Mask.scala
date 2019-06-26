@@ -54,7 +54,7 @@ trait Mask {
       case GeometryCollection(_, lines, polygons, multiPoints, multiLines, multiPolygons, geometryCollections) =>
         GeometryCollection(
           Seq(),
-          lines.filter(_.envelope.area != 0),
+          lines.filter(_.extent.area != 0),
           polygons,
           multiPoints,
           multiLines,
@@ -63,7 +63,7 @@ trait Mask {
     }
 
     geom match {
-      case Some(g: LineString) if g.envelope.area == 0 => None
+      case Some(g: LineString) if g.extent.area == 0 => None
       case Some(_: Point) => None
       case Some(g: GeometryCollection) => Some(rec(g))
       case _ => geom

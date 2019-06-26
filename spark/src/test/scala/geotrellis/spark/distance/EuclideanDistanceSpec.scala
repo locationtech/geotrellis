@@ -102,7 +102,7 @@ class EuclideanDistanceSpec extends FunSpec
       val wktString = scala.io.Source.fromInputStream(wkt).getLines.mkString
       val multiPoint = WKT.read(wktString).asInstanceOf[MultiPoint]
       val points: Array[Coordinate] = multiPoint.points.map(_.getCoordinate)
-      val fullExtent @ Extent(xmin, ymin, xmax, ymax) = multiPoint.envelope
+      val fullExtent @ Extent(xmin, ymin, xmax, ymax) = multiPoint.extent
 
       def keyToExtent(key: SpatialKey) = {
         val SpatialKey(col, row) = key
@@ -331,7 +331,7 @@ class EuclideanDistanceSpec extends FunSpec
 
       val LayoutLevel(_, ld) = ZoomedLayoutScheme(WebMercator).levelForZoom(12)
       val maptrans = ld.mapTransform
-      val gb @ GridBounds(cmin, rmin, cmax, rmax) = maptrans(geom.envelope)
+      val gb @ GridBounds(cmin, rmin, cmax, rmax) = maptrans(geom.extent)
       val extent = maptrans(gb)
       val rasterExtent = RasterExtent(extent, 256 * (cmax - cmin + 1), 256 * (rmax - rmin + 1))
 

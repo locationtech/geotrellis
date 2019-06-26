@@ -42,13 +42,13 @@ object EuclideanDistanceExamples {
     val maptrans = ld.mapTransform
 
     val geom = geotrellis.vector.io.wkt.WKT.read(geomWKT).asInstanceOf[MultiPoint]
-    val GridBounds(cmin, rmin, cmax, rmax) = maptrans(geom.envelope)
+    val GridBounds(cmin, rmin, cmax, rmax) = maptrans(geom.extent)
 
     val skRDD = sc.parallelize(for (r <- rmin to rmax; c <- cmin to cmax) yield SpatialKey(c, r))
 
     def createPoints(sk: SpatialKey): (SpatialKey, Array[Coordinate]) = {
       val ex = maptrans(sk)
-      val coords = geom.points.filter(ex.contains(_)).map(_.jtsGeom.getCoordinate)
+      val coords = geom.points.filter(ex.contains(_)).map(_.getCoordinate)
       println(s"$sk has ${coords.size} points")
       (sk, coords)
     }

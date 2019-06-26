@@ -212,7 +212,7 @@ class TileRDDMaskMethodsSpec extends FunSpec
     }
 
     it ("should be masked by random extents") {
-      val extents = randomPolygons()(width, height).map(_.envelope)
+      val extents = randomPolygons()(width, height).map(_.extent)
       extents foreach { extent =>
         val masked = rdd.mask(extent, options = opts).stitch
         val expected = tile.mask(worldExt, extent)
