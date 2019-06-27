@@ -82,14 +82,14 @@ trait GeometryFormats {
     }
 
   implicit lazy val lineEncoder: Encoder[LineString] =
-    Encoder.encodeJson.contramap[Line] { obj =>
+    Encoder.encodeJson.contramap[LineString] { obj =>
       Json.obj(
         "type" -> "LineString".asJson,
         "coordinates" -> writeLineCoords(obj)
       )
     }
 
-  implicit lazy val lineDecoder: Decoder[Line] =
+  implicit lazy val lineDecoder: Decoder[LineString] =
     Decoder.decodeJson.emap { json: Json =>
       val c = json.hcursor
       c.downField("type").as[String].flatMap {
@@ -135,8 +135,8 @@ trait GeometryFormats {
       }.leftMap(_ => "MultiPoint geometry expected")
     }
 
-  implicit lazy val multiLineEncoder: Encoder[MultiLine] =
-    Encoder.encodeJson.contramap[MultiLine] { obj =>
+  implicit lazy val multiLineStringEncoder: Encoder[MultiLineString] =
+    Encoder.encodeJson.contramap[MultiLineString] { obj =>
       Json.obj(
         "type" -> "MultiLineString".asJson,
         "coordinates" -> obj.lines.map(writeLineCoords).toVector.asJson
@@ -147,7 +147,7 @@ trait GeometryFormats {
     Decoder.decodeJson.emap { json: Json =>
       val c = json.hcursor
       c.downField("type").as[String].flatMap {
-        case "MultiLineString" => c.downField("coordinates").focus.map(json => MultiLineString(json.asArray.toVector.flatten.map(readLineCoords))).toRight("MultiLine geometry expected")
+        case "MultiLineString" => c.downField("coordinates").focus.map(json => MultiLineString(json.asArray.toVector.flatten.map(readLineCoords))).toRight("MultiLineString geometry expected")
         case "Feature" => multiLineStringDecoder(unwrapFeature(json).hcursor)
         case _ => Left("MultiLineString geometry expected")
       }.leftMap(_ => "MultiLineString geometry expected")
@@ -203,13 +203,15 @@ trait GeometryFormats {
       case geom: Point => geom.asJson
       case geom: LineString => geom.asJson
       case geom: Polygon => geom.asJson
-      case geom: Extent => geom.toPolygon.asJson
       case geom: MultiPolygon => geom.asJson
       case geom: MultiPoint => geom.asJson
       case geom: MultiLineString => geom.asJson
       case geom: GeometryCollection => geom.asJson
       case geom => throw new Exception(s"Unknown Geometry type ${geom.getClass.getName}: $geom")
     }
+
+  implicit lazy val extentEncoder: Encoder[Extent] =
+    Encoder.encodeJson.contramap[Extent] {_.toPolygon.asJson}
 
   implicit lazy val geometryDecoder: Decoder[Geometry] =
     Decoder.decodeJson.emap { json: Json =>

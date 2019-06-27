@@ -129,7 +129,7 @@ class JsonFeatureCollectionMap(features: List[Json] = Nil) {
   def getAllLineStrings()      = getAll[LineString]
   def getAllPolygons()         = getAll[Polygon]
   def getAllMultiPoints()      = getAll[MultiPoint]
-  def getAllMultiLineStrings() = getAll[MultiLine]
+  def getAllMultiLineStrings() = getAll[MultiLineString]
   def getAllMultiPolygons()    = getAll[MultiPolygon]
 
   def getAllGeometries(): Map[String, Geometry] =
