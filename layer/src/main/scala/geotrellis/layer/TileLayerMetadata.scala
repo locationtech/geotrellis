@@ -22,8 +22,9 @@ import geotrellis.layer._
 import geotrellis.util._
 import geotrellis.vector.{Extent, ProjectedExtent}
 
-import cats.Functor
-import cats.implicits._
+import cats.{Functor, Semigroup}
+import cats.syntax.functor._
+
 import _root_.io.circe._
 import _root_.io.circe.generic.semiauto._
 
@@ -105,10 +106,10 @@ object TileLayerMetadata {
   implicit def boundsComponent[K: SpatialComponent]: Component[TileLayerMetadata[K], Bounds[K]] =
     Component(_.bounds, (md, b) => md.updateBounds(b))
 
-  implicit def mergable[K: Boundable]: merge.Mergable[TileLayerMetadata[K]] =
-    new merge.Mergable[TileLayerMetadata[K]] {
-      def merge(t1: TileLayerMetadata[K], t2: TileLayerMetadata[K]): TileLayerMetadata[K] =
-        t1.combine(t2)
+  implicit def semigroup[K: Boundable]: Semigroup[TileLayerMetadata[K]] =
+    new Semigroup[TileLayerMetadata[K]] {
+      def combine(x: TileLayerMetadata[K], y: TileLayerMetadata[K]): TileLayerMetadata[K] =
+        x combine y
     }
 
   implicit val tileLayerMetadataFunctor: Functor[TileLayerMetadata] = new Functor[TileLayerMetadata] {

@@ -24,8 +24,10 @@ import geotrellis.util._
 
 import software.amazon.awssdk.services.s3.model._
 import software.amazon.awssdk.services.s3.S3Client
+
 import org.apache.avro.Schema
-import _root_.io.circe._
+
+import io.circe._
 
 import scala.annotation.tailrec
 import scala.collection.JavaConverters._

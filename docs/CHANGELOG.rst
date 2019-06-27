@@ -11,6 +11,10 @@ API Changes & Project structure changes
   - **Change:** ``geotrellis.raster.summary.polygonal.[Multi]TilePolygonalSummaryHandler`` replaced with ``geotrellis.raster.summary.polygonal.PolygonalSummary. Users should expect to implement concrete subclasses of ``geotrellis.raster.summary.GridVisitor`` and pass those to the new polygonalSummary methods. There are a number of default GridVisitor implementations provided for simple operations in `geotrellis.raster.summary.visitors``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+- ``geotrellis.layer``
+
+  - **Change:** Replaced ``Mergable`` with cats' ``Semigroup``
+
 - ``geotrellis.util``, ``geotrellis.store``, ``geotrellis.store.s3``
 
   - **New:** An SPI interface has been created for ``RangeReader``.
