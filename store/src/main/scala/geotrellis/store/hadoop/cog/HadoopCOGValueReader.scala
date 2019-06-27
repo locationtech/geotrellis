@@ -25,13 +25,11 @@ import geotrellis.store.hadoop.{HadoopAttributeStore, HadoopLayerHeader}
 import geotrellis.store.index.{Index, KeyIndex}
 import geotrellis.util._
 
-import spray.json._
-
-import org.apache.hadoop.fs.Path
 import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.fs.Path
+import _root_.io.circe._
 
 import java.net.URI
-
 import scala.reflect.ClassTag
 
 
@@ -43,7 +41,7 @@ class HadoopCOGValueReader(
   implicit def getByteReader(uri: URI): ByteReader = byteReader(uri)
 
   def reader[
-    K: JsonFormat: SpatialComponent: ClassTag,
+    K: Decoder: SpatialComponent: ClassTag,
     V <: CellGrid[Int]: GeoTiffReader
   ](layerId: LayerId): COGReader[K, V] = {
 

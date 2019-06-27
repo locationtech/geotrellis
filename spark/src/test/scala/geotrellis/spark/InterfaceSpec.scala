@@ -20,7 +20,6 @@ import geotrellis.layer._
 import geotrellis.raster._
 import geotrellis.store._
 import geotrellis.store.avro.codecs._
-import geotrellis.layer.json._
 import geotrellis.spark.store._
 
 import org.apache.spark._

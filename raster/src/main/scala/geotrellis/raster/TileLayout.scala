@@ -16,6 +16,7 @@
 
 package geotrellis.raster
 
+import _root_.io.circe.generic.JsonCodec
 import geotrellis.vector.Extent
 
 
@@ -45,6 +46,7 @@ object TileLayout {
  * @param tileCols   number of pixel columns in each tile, East to West
  * @param tileRows   number of pixel rows in each tile, North to South
  */
+@JsonCodec
 case class TileLayout(layoutCols: Int, layoutRows: Int, tileCols: Int, tileRows: Int) {
 
   require(

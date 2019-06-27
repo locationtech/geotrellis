@@ -23,7 +23,6 @@ import geotrellis.raster._
 import geotrellis.raster.testkit._
 import geotrellis.store._
 import geotrellis.store.avro.codecs._
-import geotrellis.layer.json._
 import geotrellis.spark._
 import geotrellis.spark.testkit._
 import geotrellis.spark.util._
@@ -32,7 +31,6 @@ import geotrellis.spark.testkit.io._
 import geotrellis.util._
 
 import org.apache.spark.rdd._
-
 import jp.ne.opt.chronoscala.Imports._
 
 import java.time.{ZoneOffset, ZonedDateTime}

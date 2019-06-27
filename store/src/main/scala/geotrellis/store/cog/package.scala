@@ -20,8 +20,7 @@ import geotrellis.vector.Extent
 import geotrellis.layer.LayoutDefinition
 import geotrellis.store.index.KeyIndex
 
-
-package object cog {
+package object cog extends Implicits {
   val GTKey     = "GT_KEY"
   val Extension = "tiff"
 

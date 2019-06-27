@@ -28,10 +28,6 @@ import geotrellis.spark.store._
 import geotrellis.util._
 import geotrellis.util.annotations.experimental
 
-import com.typesafe.scalalogging.LazyLogging
-
-import org.locationtech.jts.geom._
-
 import mil.nga.giat.geowave.adapter.raster.adapter.RasterDataAdapter
 import mil.nga.giat.geowave.core.geotime.ingest._
 import mil.nga.giat.geowave.core.geotime.store.statistics.BoundingBoxDataStatistics
@@ -43,26 +39,17 @@ import mil.nga.giat.geowave.core.store.index.{CustomIdIndex, PrimaryIndex}
 import mil.nga.giat.geowave.core.store.operations.remote.options.DataStorePluginOptions
 import mil.nga.giat.geowave.core.store.query.QueryOptions
 import mil.nga.giat.geowave.datastore.accumulo._
-import mil.nga.giat.geowave.datastore.accumulo.index.secondary.AccumuloSecondaryIndexDataStore
 import mil.nga.giat.geowave.datastore.accumulo.metadata._
 import mil.nga.giat.geowave.datastore.accumulo.operations.config.AccumuloRequiredOptions
-import mil.nga.giat.geowave.mapreduce.input.{GeoWaveInputFormat, GeoWaveInputKey}
+import mil.nga.giat.geowave.mapreduce.input.{GeoWaveInputKey, GeoWaveInputFormat}
 
 import org.apache.accumulo.core.client.security.tokens.PasswordToken
-import org.apache.accumulo.core.client.{TableNotFoundException, ZooKeeperInstance}
-import org.apache.hadoop.mapreduce.Job
-import org.apache.spark.{SparkConf, SparkContext}
-import org.apache.spark.SparkContext._
-import org.geotools.coverage.grid._
-import org.geotools.gce.geotiff._
-import org.opengis.coverage.grid.GridCoverage
-import org.opengis.parameter.GeneralParameterValue
+import org.apache.accumulo.core.client.ZooKeeperInstance
+import com.typesafe.scalalogging.LazyLogging
+import org.locationtech.jts.geom._
+import _root_.io.circe._
 
 import scala.collection.JavaConverters._
-import scala.util.Try
-
-import spray.json._
-import spray.json.DefaultJsonProtocol._
 
 /**
   * @define experimental <span class="badge badge-red" style="float: right;">EXPERIMENTAL</span>@experimental
@@ -220,15 +207,15 @@ import spray.json.DefaultJsonProtocol._
   @experimental def delete(layerId: LayerId): Unit = delegate.delete(layerId)
 
   /** $experimental */
-  @experimental def readAll[T: JsonFormat](attributeName: String): Map[LayerId, T] =
+  @experimental def readAll[T: Decoder](attributeName: String): Map[LayerId, T] =
     delegate.readAll[T](attributeName)
 
   /** $experimental */
-  @experimental def read[T: JsonFormat](layerId: LayerId, attributeName: String): T =
+  @experimental def read[T: Decoder](layerId: LayerId, attributeName: String): T =
     delegate.read[T](layerId, attributeName)
 
   /** $experimental */
-  @experimental def write[T: JsonFormat](layerId: LayerId, attributeName: String, value: T): Unit =
+  @experimental def write[T: Encoder](layerId: LayerId, attributeName: String, value: T): Unit =
     delegate.write[T](layerId, attributeName, value)
 
   /** $experimental */

@@ -12,8 +12,6 @@ import geotrellis.spark.tiling._
 
 import org.scalatest._
 
-import spray.json._
-
 class COGLayerMetadataSpec extends FunSpec with Matchers {
   def generateLCMetadata(maxZoom: Int = 13, minZoom: Int = 0): COGLayerMetadata[SpatialKey] = {
     val cellType = IntConstantNoDataCellType

@@ -21,7 +21,6 @@ import geotrellis.util.MethodExtensions
 import software.amazon.awssdk.services.s3.model.PutObjectRequest
 import org.apache.spark.rdd.RDD
 
-
 class SaveToS3Methods[K](val self: RDD[(K, Array[Byte])]) extends MethodExtensions[RDD[(K, Array[Byte])]] {
 
   /**

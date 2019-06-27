@@ -16,7 +16,9 @@
 
 package geotrellis.vector.io.json
 
-import spray.json._
+import io.circe._
+import io.circe.syntax._
+
 import scala.collection.mutable
 
 case class Style(
@@ -36,67 +38,57 @@ object Style {
     fillOpacity: Double = Double.NaN
   ): Style =
     Style(
-      if(strokeColor != "") Some(strokeColor) else None,
-      if(strokeWidth != "") Some(strokeWidth) else None,
-      if(!java.lang.Double.isNaN(strokeOpacity)) Some(strokeOpacity) else None,
-      if(fillColor != "") Some(fillColor) else None,
-      if(!java.lang.Double.isNaN(fillOpacity)) Some(fillOpacity) else None
+      if (strokeColor != "") Some(strokeColor) else None,
+      if (strokeWidth != "") Some(strokeWidth) else None,
+      if (!java.lang.Double.isNaN(strokeOpacity)) Some(strokeOpacity) else None,
+      if (fillColor != "") Some(fillColor) else None,
+      if (!java.lang.Double.isNaN(fillOpacity)) Some(fillOpacity) else None
     )
 
-  implicit object StyleFormat extends RootJsonFormat[Style] {
-    def read(value: JsValue): Style =
-      value match {
-        case obj: JsObject =>
-          val fields = obj.fields
-          val strokeColor =
-            fields.get("stroke") match {
-              case Some(JsString(v)) => Some(v)
-              case None => None
-              case Some(v) => throw new DeserializationException(s"'stroke' property must be a string, got $v")
-            }
+  implicit val styleDecoder: Decoder[Style] =
+    Decoder.decodeHCursor.emap { c: HCursor =>
+      val strokeColor =
+        c.downField("stroke").as[String] match {
+          case Right(v) => Some(v)
+          case _ => None // throw new Exception(s"'stroke' property must be a string")
+        }
 
-          val strokeWidth =
-            fields.get("stroke-width") match {
-              case Some(JsString(v)) => Some(v)
-              case None => None
-              case Some(v) => throw new DeserializationException(s"'stroke-width' property must be a string, got $v")
-            }
+      val strokeWidth =
+        c.downField("stroke-width").as[String] match {
+          case Right(v) => Some(v)
+          case _ => None // throw new Exception(s"'stroke-width' property must be a string")
+        }
 
-          val strokeOpacity =
-            fields.get("stroke-opacity") match {
-              case Some(JsString(v)) => Some(v.toDouble)
-              case None => None
-              case Some(v) => throw new DeserializationException(s"'stroke-opacity' property must be a string, got $v")
-            }
+      val strokeOpacity =
+        c.downField("stroke-opacity").as[Double] match {
+          case Right(v) => Some(v)
+          case _ => None // throw new Exception(s"'stroke-opacity' property must be a double")
+        }
 
-          val fillColor =
-            fields.get("fill") match {
-              case Some(JsString(sc)) => Some(sc)
-              case None => None
-              case Some(v) => throw new DeserializationException(s"'fill' property must be a string, got $v")
-            }
+      val fillColor =
+        c.downField("fill").as[String] match {
+          case Right(v) => Some(v)
+          case _ => None // throw new Exception(s"'fill' property must be a string")
+        }
 
-          val fillOpacity =
-            fields.get("fill-opacity") match {
-              case Some(JsNumber(v)) => Some(v.toDouble)
-              case None => None
-              case Some(v) => throw new DeserializationException(s"'fill-opacity' property must be a string, got $v")
-            }
+      val fillOpacity =
+        c.downField("fill-opacity").as[Double] match {
+          case Right(v) => Some(v)
+          case _ => None // throw new Exception(s"'fill-opacity' property must be a double")
+        }
 
-          Style(strokeColor, strokeWidth, strokeOpacity, fillColor, fillOpacity)
-        case _ =>
-          Style()
-      }
-
-    def write(style: Style): JsValue = {
-      val l = mutable.ListBuffer[(String, JsValue)]()
-      if(style.strokeColor.isDefined) l += ( ("stroke", JsString(style.strokeColor.get)) )
-      if(style.strokeWidth.isDefined) l += ( ("stroke-width", JsString(style.strokeWidth.get)) )
-      if(style.strokeOpacity.isDefined) l += ( ("stroke-opacity", JsNumber(style.strokeOpacity.get)) )
-      if(style.fillColor.isDefined) l += ( ("fill", JsString(style.fillColor.get)) )
-      if(style.fillOpacity.isDefined) l += ( ("fill-opacity", JsNumber(style.fillOpacity.get)) )
-
-      JsObject(l:_*)
+      Right(Style(strokeColor, strokeWidth, strokeOpacity, fillColor, fillOpacity))
     }
-  }
+
+  implicit val styleEncoder: Encoder[Style] =
+    Encoder.encodeJson.contramap[Style] { style =>
+      val l = mutable.ListBuffer[(String, Json)]()
+      if (style.strokeColor.isDefined) l += (("stroke", style.strokeColor.get.asJson))
+      if (style.strokeWidth.isDefined) l += (("stroke-width", style.strokeWidth.get.asJson))
+      if (style.strokeOpacity.isDefined) l += (("stroke-opacity", style.strokeOpacity.get.asJson))
+      if (style.fillColor.isDefined) l += (("fill", style.fillColor.get.asJson))
+      if (style.fillOpacity.isDefined) l += (("fill-opacity", style.fillOpacity.get.asJson))
+
+      Json.fromFields(l)
+    }
 }

@@ -23,7 +23,7 @@ import geotrellis.store.index.Index
 import geotrellis.util._
 
 import com.typesafe.scalalogging.LazyLogging
-import spray.json.JsonFormat
+import io.circe.Decoder
 
 import scala.reflect.ClassTag
 
@@ -41,9 +41,9 @@ class FileCollectionLayerReader(
 ) extends CollectionLayerReader[LayerId] with LazyLogging {
 
   def read[
-    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
+    K: AvroRecordCodec: Boundable: Decoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: Component[?, Bounds[K]]
+    M: Decoder: Component[?, Bounds[K]]
   ](id: LayerId, rasterQuery: LayerQuery[K, M], filterIndexOnly: Boolean) = {
     if(!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
 

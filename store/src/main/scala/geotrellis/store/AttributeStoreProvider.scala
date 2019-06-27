@@ -18,7 +18,6 @@ package geotrellis.store
 
 import java.net.URI
 
-
 trait AttributeStoreProvider {
   def canProcess(uri: URI): Boolean
 

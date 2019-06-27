@@ -24,8 +24,9 @@ import geotrellis.store.hbase._
 import geotrellis.spark._
 import geotrellis.spark.store._
 import geotrellis.util._
+
 import org.apache.spark.SparkContext
-import spray.json.JsonFormat
+import io.circe._
 
 import scala.reflect.ClassTag
 
@@ -35,30 +36,30 @@ class HBaseLayerManager(attributeStore: HBaseAttributeStore, instance: HBaseInst
     HBaseLayerDeleter(attributeStore, instance).delete(id)
 
   def copy[
-    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
+    K: AvroRecordCodec: Boundable: Encoder: Decoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: Component[?, Bounds[K]]
+    M: Encoder: Decoder: Component[?, Bounds[K]]
   ](from: LayerId, to: LayerId): Unit =
     HBaseLayerCopier(instance).copy[K, V, M](from, to)
 
   def move[
-    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
+    K: AvroRecordCodec: Boundable: Encoder: Decoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: Component[?, Bounds[K]]
+    M: Encoder: Decoder: Component[?, Bounds[K]]
   ](from: LayerId, to: LayerId): Unit =
     HBaseLayerMover(instance).move[K, V, M](from, to)
 
   def reindex[
-    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
+    K: AvroRecordCodec: Boundable: Encoder: Decoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: Component[?, Bounds[K]]
+    M: Encoder: Decoder: Component[?, Bounds[K]]
   ](id: LayerId, keyIndexMethod: KeyIndexMethod[K]): Unit =
     HBaseLayerReindexer(instance).reindex[K, V, M](id, keyIndexMethod)
 
   def reindex[
-    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
+    K: AvroRecordCodec: Boundable: Encoder: Decoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: Component[?, Bounds[K]]
+    M: Encoder: Decoder: Component[?, Bounds[K]]
   ](id: LayerId, keyIndex: KeyIndex[K]): Unit =
     HBaseLayerReindexer(instance).reindex[K, V, M](id, keyIndex)
 }

@@ -25,7 +25,6 @@ import software.amazon.awssdk.services.s3.S3Client
 
 import java.net.URI
 
-
 /**
  * Provides [[S3LayerReader]] instance for URI with `s3` scheme.
  * The uri represents S3 bucket an prefix of catalog root.

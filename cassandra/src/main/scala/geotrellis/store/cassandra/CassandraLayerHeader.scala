@@ -18,7 +18,9 @@ package geotrellis.store.cassandra
 
 import geotrellis.store._
 
-import spray.json._
+import io.circe._
+import io.circe.syntax._
+import cats.syntax.either._
 
 case class CassandraLayerHeader(
   keyClass: String,
@@ -31,37 +33,32 @@ case class CassandraLayerHeader(
 }
 
 object CassandraLayerHeader {
-  implicit object CassandraLayerMetadataFormat extends RootJsonFormat[CassandraLayerHeader] {
-    def write(md: CassandraLayerHeader) =
-      JsObject(
-        "format" -> JsString(md.format),
-        "keyClass" -> JsString(md.keyClass),
-        "valueClass" -> JsString(md.valueClass),
-        "keyspace" -> JsString(md.keyspace),
-        "tileTable" -> JsString(md.tileTable),
-        "layerType" -> md.layerType.toJson
+  implicit val cassandraLayerHeaderEncoder: Encoder[CassandraLayerHeader] =
+    Encoder.encodeJson.contramap[CassandraLayerHeader] { obj =>
+      Json.obj(
+        "keyClass" -> obj.keyClass.asJson,
+        "valueClass" -> obj.valueClass.asJson,
+        "keyspace"   -> obj.keyspace.asJson,
+        "tileTable" -> obj.tileTable.asJson,
+        "layerType" -> obj.layerType.asJson,
+        "format" -> obj.format.asJson
       )
+    }
 
-    def read(value: JsValue): CassandraLayerHeader =
-      value.asJsObject.getFields("keyClass", "valueClass", "keyspace", "tileTable", "layerType") match {
-        case Seq(JsString(keyClass), JsString(valueClass), JsString(keyspace), JsString(tileTable), layerType) =>
-          CassandraLayerHeader(
-            keyClass,
-            valueClass,
-            keyspace,
-            tileTable,
-            layerType.convertTo[LayerType]
-          )
-        case Seq(JsString(keyClass), JsString(valueClass), JsString(keyspace), JsString(tileTable)) =>
-          CassandraLayerHeader(
-            keyClass,
-            valueClass,
-            keyspace,
-            tileTable,
-            AvroLayerType
-          )
-        case _ =>
-          throw new DeserializationException(s"CassandraLayerHeader expected, got: $value")
-      }
-  }
+  implicit val cassandraLayerHeaderDecoder: Decoder[CassandraLayerHeader] =
+    Decoder.decodeHCursor.emap { c =>
+      c.downField("format").as[String].flatMap {
+        case "cassandra" =>
+          (c.downField("keyClass").as[String],
+            c.downField("valueClass").as[String],
+            c.downField("keyspace").as[String],
+            c.downField("tileTable").as[String],
+            c.downField("layerType").as[LayerType]) match {
+            case (Right(f), Right(kc), Right(ks), Right(t), Right(lt)) => Right(CassandraLayerHeader(f, kc, ks, t, lt))
+            case (Right(f), Right(kc), Right(ks), Right(t), _) => Right(CassandraLayerHeader(f, kc, ks, t, AvroLayerType))
+            case _ => Left(s"CassandraLayerHeader expected, got: ${c.focus}")
+          }
+        case _ => Left(s"CassandraLayerHeader expected, got: ${c.focus}")
+      }.leftMap(_ => s"CassandraLayerHeader expected, got: ${c.focus}")
+    }
 }

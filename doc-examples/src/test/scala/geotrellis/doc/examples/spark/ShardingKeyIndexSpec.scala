@@ -20,9 +20,9 @@ import geotrellis.layer.{SpatialKey, SpaceTimeKey, KeyBounds}
 import geotrellis.spark._
 import geotrellis.store.index._
 
+import _root_.io.circe._
+import _root_.io.circe.syntax._
 import org.scalatest._
-import spray.json._
-import spray.json.DefaultJsonProtocol._
 
 // --- //
 
@@ -64,26 +64,33 @@ class ShardingKeyIndexSpec extends FunSpec with Matchers {
     it("Z-Space Isomorphism") {
       val index: KeyIndex[SpatialKey] = new ShardingKeyIndex(zspace, 5)
 
-      index.toJson.convertTo[KeyIndex[SpatialKey]]
+      index.asJson.as[KeyIndex[SpatialKey]] match {
+        case Left(err) => fail(err.message)
+      }
     }
 
     it("Z-Time Isomorphism") {
       val index: KeyIndex[SpaceTimeKey] = new ShardingKeyIndex(zspaceTime, 5)
 
-      index.toJson.convertTo[KeyIndex[SpaceTimeKey]]
+      index.asJson.as[KeyIndex[SpaceTimeKey]] match {
+        case Left(err) => fail(err.message)
+      }
     }
 
     it("H-Space Isomorphism") {
       val index: KeyIndex[SpatialKey] = new ShardingKeyIndex(hspace, 5)
 
-      index.toJson.convertTo[KeyIndex[SpatialKey]]
+      index.asJson.as[KeyIndex[SpatialKey]] match {
+        case Left(err) => fail(err.message)
+      }
     }
 
     it("H-Time Isomorphism") {
       val index: KeyIndex[SpaceTimeKey] = new ShardingKeyIndex(hspaceTime, 5)
 
-      index.toJson.convertTo[KeyIndex[SpaceTimeKey]]
+      index.asJson.as[KeyIndex[SpaceTimeKey]] match {
+        case Left(err) => fail(err.message)
+      }
     }
-
   }
 }

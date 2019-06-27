@@ -27,15 +27,12 @@ import geotrellis.store.hadoop.util._
 import geotrellis.store.index.Index
 import geotrellis.util._
 
+import _root_.io.circe._
+import com.typesafe.scalalogging.LazyLogging
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 
-import spray.json.JsonFormat
-
-import com.typesafe.scalalogging.LazyLogging
-
 import scala.reflect.ClassTag
-
 import java.net.URI
 
 /**
@@ -55,7 +52,7 @@ class HadoopCOGCollectionLayerReader(
   implicit def getByteReader(uri: URI): ByteReader = byteReader(uri, conf)
 
   def read[
-    K: SpatialComponent: Boundable: JsonFormat: ClassTag,
+    K: SpatialComponent: Boundable: Decoder: ClassTag,
     V <: CellGrid[Int]: GeoTiffReader: ClassTag
   ](id: LayerId, tileQuery: LayerQuery[K, TileLayerMetadata[K]]) = {
     def getKeyPath(zoomRange: ZoomRange, maxWidth: Int): BigInt => String =

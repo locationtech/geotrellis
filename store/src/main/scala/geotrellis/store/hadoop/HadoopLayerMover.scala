@@ -21,11 +21,10 @@ import geotrellis.store._
 import geotrellis.store.avro._
 import geotrellis.store.hadoop.util._
 import geotrellis.util._
+import io.circe._
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
-
-import spray.json.JsonFormat
 
 import scala.reflect.ClassTag
 
@@ -35,9 +34,9 @@ class HadoopLayerMover(
   val attributeStore: HadoopAttributeStore
 ) extends LayerMover[LayerId] {
   override def move[
-    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
+    K: AvroRecordCodec: Boundable: Encoder: Decoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: Component[?, Bounds[K]]
+    M: Encoder: Decoder: Component[?, Bounds[K]]
   ](from: LayerId, to: LayerId): Unit = {
     if (!attributeStore.layerExists(from)) throw new LayerNotFoundError(from)
     if (attributeStore.layerExists(to)) throw new LayerExistsError(to)

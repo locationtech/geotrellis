@@ -28,9 +28,9 @@ import geotrellis.store.index._
 import geotrellis.layer.merge.Mergable
 import geotrellis.util._
 
-import org.apache.spark.rdd.RDD
 import com.typesafe.scalalogging.LazyLogging
-import spray.json._
+import org.apache.spark.rdd.RDD
+import io.circe._
 
 import scala.reflect._
 
@@ -42,9 +42,9 @@ class HBaseLayerWriter(
 
   // Layer Updating
   def overwrite[
-    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
+    K: AvroRecordCodec: Boundable: Encoder: Decoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: Component[?, Bounds[K]]: Mergable
+    M: Encoder: Decoder: Component[?, Bounds[K]]: Mergable
   ](
     id: LayerId,
     rdd: RDD[(K, V)] with Metadata[M]
@@ -53,9 +53,9 @@ class HBaseLayerWriter(
   }
 
   def update[
-    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
+    K: AvroRecordCodec: Boundable: Encoder: Decoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: Component[?, Bounds[K]]: Mergable
+    M: Encoder: Decoder: Component[?, Bounds[K]]: Mergable
   ](
     id: LayerId,
     rdd: RDD[(K, V)] with Metadata[M],
@@ -65,9 +65,9 @@ class HBaseLayerWriter(
   }
 
   private def update[
-    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
+    K: AvroRecordCodec: Boundable: Encoder: Decoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: Component[?, Bounds[K]]: Mergable
+    M: Encoder: Decoder: Component[?, Bounds[K]]: Mergable
   ](
     id: LayerId,
     rdd: RDD[(K, V)] with Metadata[M],
@@ -88,9 +88,9 @@ class HBaseLayerWriter(
 
   // Layer Writing
   protected def _write[
-    K: AvroRecordCodec: JsonFormat: ClassTag,
+    K: AvroRecordCodec: Encoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: Component[?, Bounds[K]]
+    M: Encoder: Component[?, Bounds[K]]
   ](id: LayerId, rdd: RDD[(K, V)] with Metadata[M], keyIndex: KeyIndex[K]): Unit = {
     val codec  = KeyValueRecordCodec[K, V]
     val schema = codec.schema

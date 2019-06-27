@@ -16,9 +16,6 @@
 
 package geotrellis.spark.store
 
-import java.time.format.DateTimeFormatter
-import java.time.{ZoneOffset, ZonedDateTime}
-
 import geotrellis.proj4._
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff._
@@ -27,6 +24,8 @@ import geotrellis.layer.TemporalProjectedExtent
 import geotrellis.util.{ByteReader, StreamingByteReader}
 import geotrellis.vector._
 
+import java.time.format.DateTimeFormatter
+import java.time.{ZoneOffset, ZonedDateTime}
 
 /**
   * Type class to read a raster either fully or partially from a ByteReader.

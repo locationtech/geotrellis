@@ -26,12 +26,9 @@ import geotrellis.store.index._
 
 import software.amazon.awssdk.services.s3.model.{S3Exception, GetObjectRequest}
 import software.amazon.awssdk.services.s3.S3Client
-
 import org.apache.avro.Schema
 import org.apache.commons.io.IOUtils
-
-import spray.json._
-import spray.json.DefaultJsonProtocol._
+import _root_.io.circe._
 
 import scala.reflect.ClassTag
 
@@ -42,7 +39,7 @@ class S3ValueReader(
 
   val s3Client: S3Client = getClient()
 
-  def reader[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec](layerId: LayerId): Reader[K, V] = new Reader[K, V] {
+  def reader[K: AvroRecordCodec: Decoder: ClassTag, V: AvroRecordCodec](layerId: LayerId): Reader[K, V] = new Reader[K, V] {
     val header = attributeStore.readHeader[S3LayerHeader](layerId)
     val keyIndex = attributeStore.readKeyIndex[K](layerId)
     val writerSchema = attributeStore.readSchema(layerId)
@@ -78,14 +75,14 @@ class S3ValueReader(
 }
 
 object S3ValueReader {
-  def apply[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec](
+  def apply[K: AvroRecordCodec: Decoder: ClassTag, V: AvroRecordCodec](
     attributeStore: AttributeStore,
     layerId: LayerId,
     getClient: () => S3Client
   ): Reader[K, V] =
     new S3ValueReader(attributeStore, getClient).reader[K, V](layerId)
 
-  def apply[K: AvroRecordCodec: JsonFormat: SpatialComponent: ClassTag, V <: CellGrid[Int]: AvroRecordCodec: ? => TileResampleMethods[V]](
+  def apply[K: AvroRecordCodec: Decoder: SpatialComponent: ClassTag, V <: CellGrid[Int]: AvroRecordCodec: ? => TileResampleMethods[V]](
     attributeStore: AttributeStore,
     layerId: LayerId,
     resampleMethod: ResampleMethod,

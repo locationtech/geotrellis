@@ -31,16 +31,14 @@ import geotrellis.spark.store.s3._
 import geotrellis.spark.store.cog._
 import geotrellis.util._
 
+import org.apache.spark.SparkContext
 import software.amazon.awssdk.services.s3._
 import software.amazon.awssdk.services.s3.model._
-
 import com.typesafe.scalalogging.LazyLogging
-import org.apache.spark.SparkContext
-import spray.json.JsonFormat
-
-import java.net.URI
+import io.circe._
 
 import scala.reflect.ClassTag
+import java.net.URI
 
 /**
  * Handles reading raster RDDs and their metadata from S3.
@@ -85,7 +83,7 @@ class S3COGLayerReader(
   }
 
   def read[
-    K: SpatialComponent: Boundable: JsonFormat: ClassTag,
+    K: SpatialComponent: Boundable: Decoder: ClassTag,
     V <: CellGrid[Int]: GeoTiffReader: ClassTag
   ](id: LayerId, tileQuery: LayerQuery[K, TileLayerMetadata[K]], numPartitions: Int) =
     baseReadAllBands[K, V](
@@ -96,7 +94,7 @@ class S3COGLayerReader(
     )
 
   def readSubsetBands[
-    K: SpatialComponent: Boundable: JsonFormat: ClassTag
+    K: SpatialComponent: Boundable: Decoder: ClassTag
   ](
     id: LayerId,
     targetBands: Seq[Int],

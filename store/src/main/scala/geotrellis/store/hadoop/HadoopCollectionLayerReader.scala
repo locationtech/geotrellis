@@ -24,12 +24,10 @@ import geotrellis.store.avro._
 import geotrellis.store.hadoop.util._
 import geotrellis.util._
 
-import spray.json._
-
-import com.typesafe.scalalogging.LazyLogging
-
+import io.circe._
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
+import com.typesafe.scalalogging.LazyLogging
 
 import scala.reflect.ClassTag
 
@@ -46,9 +44,9 @@ class HadoopCollectionLayerReader(
   extends CollectionLayerReader[LayerId] with LazyLogging {
 
   def read[
-    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
+    K: AvroRecordCodec: Boundable: Decoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: Component[?, Bounds[K]]
+    M: Decoder: Component[?, Bounds[K]]
   ](id: LayerId, rasterQuery: LayerQuery[K, M], indexFilterOnly: Boolean): Seq[(K, V)] with Metadata[M] = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
     val LayerAttributes(header, metadata, keyIndex, writerSchema) = try {

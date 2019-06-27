@@ -19,12 +19,11 @@ package geotrellis.store
 import geotrellis.store.hadoop.conf.AttributeConfig
 
 import com.github.blemale.scaffeine.Scaffeine
+import io.circe._
+import io.circe.syntax._
+import cats.syntax.either._
 
 import scala.concurrent.duration._
-
-import spray.json._
-import spray.json.DefaultJsonProtocol._
-
 
 trait AttributeCaching { self: AttributeStore =>
   @transient private lazy val cache =
@@ -32,22 +31,22 @@ trait AttributeCaching { self: AttributeStore =>
       .recordStats()
       .expireAfterWrite(AttributeConfig.caching.expirationMinutes.minutes)
       .maximumSize(AttributeConfig.caching.maxSize)
-      .build[(LayerId, String), JsValue]
+      .build[(LayerId, String), Json]
 
-  def cacheRead[T: JsonFormat](layerId: LayerId, attributeName: String): T =
+  def cacheRead[T: Decoder](layerId: LayerId, attributeName: String): T =
     if(AttributeConfig.caching.enabled)
-      cache.get(layerId -> attributeName, { _ => read[JsValue](layerId, attributeName) }).convertTo[T]
+      cache.get(layerId -> attributeName, { _ => read[Json](layerId, attributeName) }).as[T].valueOr(throw _)
     else
-      read[JsValue](layerId, attributeName).convertTo[T]
+      read[Json](layerId, attributeName).as[T].valueOr(throw _)
 
   def cacheLayerType(layerId: LayerId, layerType: LayerType): LayerType =
     if (AttributeConfig.caching.enabled)
-      cache.get(layerId -> "layerType", { _ => layerType.toJson }).convertTo[LayerType]
+      cache.get(layerId -> "layerType", { _ => layerType.asJson }).as[LayerType].valueOr(throw _)
     else
       layerType
 
-  def cacheWrite[T: JsonFormat](layerId: LayerId, attributeName: String, value: T): Unit = {
-    if(AttributeConfig.caching.enabled) cache.put(layerId -> attributeName, value.toJson)
+  def cacheWrite[T: Encoder](layerId: LayerId, attributeName: String, value: T): Unit = {
+    if(AttributeConfig.caching.enabled) cache.put(layerId -> attributeName, value.asJson)
     write[T](layerId, attributeName, value)
   }
 

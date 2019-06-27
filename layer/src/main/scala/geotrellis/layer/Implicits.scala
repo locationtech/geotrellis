@@ -19,13 +19,14 @@ package geotrellis.layer
 import geotrellis.raster.CellGrid
 import geotrellis.util._
 import java.time.Instant
+import geotrellis.vector.io.json.CrsFormats
 
 
 object Implicits extends Implicits
 
 trait Implicits extends merge.Implicits
   with buffer.Implicits
-  with json.Implicits
+  with CrsFormats
   with stitch.Implicits
   with mapalgebra.Implicits
   with mapalgebra.focal.Implicits

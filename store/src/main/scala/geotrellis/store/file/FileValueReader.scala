@@ -16,8 +16,6 @@
 
 package geotrellis.store.file
 
-import java.io.File
-
 import geotrellis.store._
 import geotrellis.store.avro._
 import geotrellis.store.avro.codecs.KeyValueRecordCodec
@@ -26,16 +24,18 @@ import geotrellis.layer._
 import geotrellis.raster._
 import geotrellis.raster.resample._
 import geotrellis.util.Filesystem
-import spray.json._
+
+import _root_.io.circe._
 
 import scala.reflect.ClassTag
+import java.io.File
 
 class FileValueReader(
   val attributeStore: AttributeStore,
   catalogPath: String
 ) extends OverzoomingValueReader {
 
-  def reader[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec](layerId: LayerId): Reader[K, V] = new Reader[K, V] {
+  def reader[K: AvroRecordCodec: Decoder: ClassTag, V: AvroRecordCodec](layerId: LayerId): Reader[K, V] = new Reader[K, V] {
 
     val header = attributeStore.readHeader[FileLayerHeader](layerId)
     val keyIndex = attributeStore.readKeyIndex[K](layerId)
@@ -62,14 +62,14 @@ class FileValueReader(
 }
 
 object FileValueReader {
-  def apply[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec](
+  def apply[K: AvroRecordCodec: Decoder: ClassTag, V: AvroRecordCodec](
     attributeStore: AttributeStore,
     catalogPath: String,
     layerId: LayerId
   ): Reader[K, V] =
     new FileValueReader(attributeStore, catalogPath).reader(layerId)
 
-  def apply[K: AvroRecordCodec: JsonFormat: SpatialComponent: ClassTag, V <: CellGrid[Int]: AvroRecordCodec: ? => TileResampleMethods[V]](
+  def apply[K: AvroRecordCodec: Decoder: SpatialComponent: ClassTag, V <: CellGrid[Int]: AvroRecordCodec: ? => TileResampleMethods[V]](
     attributeStore: AttributeStore,
     catalogPath: String,
     layerId: LayerId,

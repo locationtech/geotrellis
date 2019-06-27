@@ -20,14 +20,14 @@ import geotrellis.layer._
 import geotrellis.store.avro.AvroRecordCodec
 import geotrellis.util._
 
-import scala.reflect.ClassTag
-import spray.json._
+import io.circe._
 
+import scala.reflect.ClassTag
 
 trait LayerCopier[ID] {
   def copy[
-    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
+    K: AvroRecordCodec: Boundable: Encoder: Decoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: Component[?, Bounds[K]]
+    M: Encoder: Decoder: Component[?, Bounds[K]]
   ](from: ID, to: ID): Unit
 }

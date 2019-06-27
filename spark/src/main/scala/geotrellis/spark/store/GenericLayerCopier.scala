@@ -21,21 +21,21 @@ import geotrellis.store._
 import geotrellis.store.avro._
 import geotrellis.store.index.KeyIndex
 import geotrellis.util._
-import org.apache.avro.Schema
-import spray.json._
+
+import io.circe._
 
 import scala.reflect._
 
-class GenericLayerCopier[Header: JsonFormat](
+class GenericLayerCopier(
   val attributeStore: AttributeStore,
   layerReader: LayerReader[LayerId],
   layerWriter: LayerWriter[LayerId]
 ) extends LayerCopier[LayerId] {
 
   def copy[
-    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
+    K: AvroRecordCodec: Boundable: Encoder: Decoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: Component[?, Bounds[K]]
+    M: Encoder: Decoder: Component[?, Bounds[K]]
   ](from: LayerId, to: LayerId): Unit = {
     if (!attributeStore.layerExists(from)) throw new LayerNotFoundError(from)
     if (attributeStore.layerExists(to)) throw new LayerExistsError(to)

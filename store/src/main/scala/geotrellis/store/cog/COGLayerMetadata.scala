@@ -26,10 +26,10 @@ import geotrellis.util._
 import cats.instances.either._
 import cats.instances.stream._
 import cats.syntax.foldable._
+import _root_.io.circe._
+import _root_.io.circe.generic.semiauto._
 
-import spray.json._
-import spray.json.DefaultJsonProtocol._
-
+import scala.reflect.ClassTag
 
 case class COGLayerMetadata[K: SpatialComponent](
   cellType: CellType,
@@ -395,29 +395,6 @@ object COGLayerMetadata {
     )
   }
 
-  implicit def cogLayerMetadataFormat[K: SpatialComponent: JsonFormat] =
-    new RootJsonFormat[COGLayerMetadata[K]] {
-      def write(metadata: COGLayerMetadata[K]) =
-        JsObject(
-          "cellType" -> metadata.cellType.toJson,
-          "zoomRangesInfos" -> metadata.zoomRangesInfosSorted.toJson,
-          "layoutScheme" -> metadata.layoutScheme.toJson,
-          "extent" -> metadata.extent.toJson,
-          "crs" -> metadata.crs.toJson
-        )
-
-      def read(value: JsValue): COGLayerMetadata[K] =
-        value.asJsObject.getFields("cellType", "zoomRangesInfos", "layoutScheme", "extent", "crs") match {
-          case Seq(cellType, JsArray(zoomRanges), layoutScheme, extent, crs) =>
-            COGLayerMetadata(
-              cellType.convertTo[CellType],
-              zoomRanges.map(_.convertTo[(ZoomRange, KeyBounds[K])]).sortBy(_._1),
-              layoutScheme.convertTo[ZoomedLayoutScheme],
-              extent.convertTo[Extent],
-              crs.convertTo[CRS]
-            )
-          case v =>
-            throw DeserializationException(s"COGLayerMetadata expected, got $v")
-        }
-    }
+  implicit def cogLayerMetadataEncoder[K: SpatialComponent: Encoder: ClassTag]: Encoder[COGLayerMetadata[K]] = deriveEncoder
+  implicit def cogLayerMetadataDecoder[K: SpatialComponent: Decoder: ClassTag]: Decoder[COGLayerMetadata[K]] = deriveDecoder
 }

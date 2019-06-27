@@ -16,9 +16,6 @@
 
 package geotrellis.store.cog
 
-import java.net.URI
-import java.util.ServiceLoader
-
 import geotrellis.layer._
 import geotrellis.store._
 import geotrellis.store.index._
@@ -27,9 +24,12 @@ import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.raster.resample._
 import geotrellis.layer._
 import geotrellis.util._
-import spray.json._
+
+import _root_.io.circe._
 
 import scala.reflect._
+import java.net.URI
+import java.util.ServiceLoader
 
 trait COGValueReader[ID] {
   val attributeStore: AttributeStore
@@ -38,13 +38,13 @@ trait COGValueReader[ID] {
   implicit def getLayerId(id: ID): LayerId
 
   def reader[
-    K: JsonFormat : SpatialComponent : ClassTag,
+    K: Decoder : SpatialComponent : ClassTag,
     V <: CellGrid[Int] : GeoTiffReader
   ](layerId: LayerId): COGReader[K, V]
 
   /** Produce a key value reader for a specific layer, prefetching layer metadata once at construction time */
   def baseReader[
-    K: JsonFormat: SpatialComponent: ClassTag,
+    K: Decoder: SpatialComponent: ClassTag,
     V <: CellGrid[Int]: GeoTiffReader
   ](
     layerId: ID,
@@ -120,7 +120,7 @@ trait COGValueReader[ID] {
   }
 
   def overzoomingReader[
-    K: JsonFormat: SpatialComponent: ClassTag,
+    K: Decoder: SpatialComponent: ClassTag,
     V <: CellGrid[Int]: GeoTiffReader: ? => TileResampleMethods[V]
   ](layerId: ID, resampleMethod: ResampleMethod = ResampleMethod.DEFAULT): COGReader[K, V]
 }

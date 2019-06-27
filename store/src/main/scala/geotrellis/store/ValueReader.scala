@@ -21,12 +21,11 @@ import geotrellis.raster._
 import geotrellis.raster.resample._
 import geotrellis.store.avro._
 
-import spray.json._
-
-import java.net.URI
-import java.util.ServiceLoader
+import _root_.io.circe.Decoder
 
 import scala.reflect._
+import java.net.URI
+import java.util.ServiceLoader
 
 /** A key-value reader producer to read a layer one value at a time.
  * This interface abstracts over various construction requirements for
@@ -35,10 +34,10 @@ trait ValueReader[ID] {
   val attributeStore: AttributeStore
 
   /** Produce a key value reader for a specific layer, prefetching layer metadata once at construction time */
-  def reader[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec](layerId: ID): Reader[K, V]
+  def reader[K: AvroRecordCodec: Decoder: ClassTag, V: AvroRecordCodec](layerId: ID): Reader[K, V]
 
   def overzoomingReader[
-    K: AvroRecordCodec: JsonFormat: SpatialComponent: ClassTag,
+    K: AvroRecordCodec: Decoder: SpatialComponent: ClassTag,
     V <: CellGrid[Int]: AvroRecordCodec: ? => TileResampleMethods[V]
   ](layerId: ID, resampleMethod: ResampleMethod = ResampleMethod.DEFAULT): Reader[K, V]
 }

@@ -27,8 +27,6 @@ import geotrellis.util._
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
-import spray.json.JsonFormat
-
 import scala.reflect.ClassTag
 
 object AccumuloLayerMover {

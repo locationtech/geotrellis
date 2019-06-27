@@ -20,18 +20,15 @@ import geotrellis.layer._
 import geotrellis.store.LayerId
 import geotrellis.store.AttributeStore.Fields
 import geotrellis.store.LayerManager
+import geotrellis.spark.store._
 import geotrellis.store.avro.AvroRecordCodec
 import geotrellis.store.hadoop._
 import geotrellis.store.index._
-import geotrellis.layer.json._
 import geotrellis.spark._
-import geotrellis.spark.store._
 import geotrellis.util._
 
 import org.apache.spark.SparkContext
-import org.apache.spark.rdd.RDD
-
-import spray.json.JsonFormat
+import _root_.io.circe._
 
 import scala.reflect.ClassTag
 
@@ -42,30 +39,30 @@ class HadoopLayerManager(attributeStore: HadoopAttributeStore)(implicit sc: Spar
     HadoopLayerDeleter(attributeStore, attributeStore.conf).delete(id)
 
   def copy[
-    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
+    K: AvroRecordCodec: Boundable: Encoder: Decoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: Component[?, Bounds[K]]
+    M: Encoder: Decoder: Component[?, Bounds[K]]
   ](from: LayerId, to: LayerId): Unit =
     HadoopLayerCopier(attributeStore).copy[K, V, M](from, to)
 
   def move[
-    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
+    K: AvroRecordCodec: Boundable: Encoder: Decoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: Component[?, Bounds[K]]
+    M: Encoder: Decoder: Component[?, Bounds[K]]
   ](from: LayerId, to: LayerId): Unit =
     HadoopLayerMover(attributeStore).move[K, V, M](from, to)
 
   def reindex[
-    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
+    K: AvroRecordCodec: Boundable: Encoder: Decoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: Component[?, Bounds[K]]
+    M: Encoder: Decoder: Component[?, Bounds[K]]
   ](id: LayerId, keyIndex: KeyIndex[K]): Unit =
     HadoopLayerReindexer(attributeStore).reindex[K, V, M](id, keyIndex)
 
   def reindex[
-    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
+    K: AvroRecordCodec: Boundable: Encoder: Decoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: Component[?, Bounds[K]]
+    M: Encoder: Decoder: Component[?, Bounds[K]]
   ](id: LayerId, keyIndexMethod: KeyIndexMethod[K]): Unit =
     HadoopLayerReindexer(attributeStore).reindex[K, V, M](id, keyIndexMethod)
 }

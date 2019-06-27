@@ -26,9 +26,6 @@ import geotrellis.util._
 
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
-
-import spray.json.JsonFormat
-
 import software.amazon.awssdk.services.s3.S3Client
 
 import scala.reflect.ClassTag
@@ -40,7 +37,7 @@ object S3LayerReindexer {
     val layerDeleter = S3LayerDeleter(attributeStore, attributeStore.getClient)
     val layerCopier  = S3LayerCopier(attributeStore)
 
-    GenericLayerReindexer[S3LayerHeader](attributeStore, layerReader, layerWriter, layerDeleter, layerCopier)
+    GenericLayerReindexer(attributeStore, layerReader, layerWriter, layerDeleter, layerCopier)
   }
 
   def apply(

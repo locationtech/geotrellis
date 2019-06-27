@@ -27,9 +27,6 @@ import org.apache.avro.Schema
 
 import scala.reflect.ClassTag
 
-import java.io.File
-
-
 object FileRDDWriter {
   private[file] def update[K: AvroRecordCodec: ClassTag, V: AvroRecordCodec: ClassTag](
     rdd: RDD[(K, V)],

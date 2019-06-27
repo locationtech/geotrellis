@@ -20,7 +20,8 @@ import geotrellis.vector.io._
 import geotrellis.vector.io.json.JsonFeatureCollection
 import org.scalatest.FunSpec
 import org.scalatest.Matchers
-import spray.json.DefaultJsonProtocol._
+
+import _root_.io.circe.generic.JsonCodec
 
 class ExtentSpec extends FunSpec with Matchers {
   describe("Extent") {
@@ -172,8 +173,8 @@ class ExtentSpec extends FunSpec with Matchers {
       val env5 = polygonsBack.envelope
       assert(env5 === env4)
 
+      @JsonCodec
       case class SomeData(name: String, value: Double)
-      implicit val someDataFormat = jsonFormat2(SomeData)
 
       val jsonFeature =
         """{
@@ -194,8 +195,8 @@ class ExtentSpec extends FunSpec with Matchers {
       val env7 = feature.geom.envelope
       assert(env7 === env6)
 
+      @JsonCodec
       case class DataBox(data: Int)
-      implicit val boxFormat = jsonFormat1(DataBox)
       val jsonFc = """{
                      |  "type":"FeatureCollection",
                      |  "features":[

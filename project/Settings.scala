@@ -99,7 +99,7 @@ object Settings {
       cassandraDriverCore
         excludeAll(
         ExclusionRule("org.jboss.netty"), ExclusionRule("io.netty"),
-        ExclusionRule("org.slf4j"), ExclusionRule("io.spray"), ExclusionRule("com.typesafe.akka")
+        ExclusionRule("org.slf4j"), ExclusionRule("com.typesafe.akka")
       ) exclude("org.apache.hadoop", "hadoop-client"),
       spire,
       scalatest % Test
@@ -121,7 +121,7 @@ object Settings {
       cassandraDriverCore
         excludeAll(
         ExclusionRule("org.jboss.netty"), ExclusionRule("io.netty"),
-        ExclusionRule("org.slf4j"), ExclusionRule("io.spray"), ExclusionRule("com.typesafe.akka")
+        ExclusionRule("org.slf4j"), ExclusionRule("com.typesafe.akka")
       ) exclude("org.apache.hadoop", "hadoop-client"),
       sparkCore % Provided,
       spire,
@@ -620,7 +620,10 @@ object Settings {
     libraryDependencies ++= Seq(
       jts,
       pureconfig,
-      sprayJson,
+      circeCore,
+      circeGeneric,
+      circeGenericExtras,
+      circeParser,
       apacheMath,
       spire,
       scalatest % Test,

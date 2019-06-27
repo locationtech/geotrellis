@@ -23,7 +23,6 @@ import geotrellis.util.UriUtils
 
 import java.net.URI
 
-
 /**
  * Provides [[AccumuloAttributeStore]] instance for URI with `accumulo` scheme.
  *  ex: `accumulo://[user[:password]@]zookeeper/instance-name[?attributes=table1[&layers=table2]]`

@@ -16,13 +16,16 @@
 
 package geotrellis.layer
 
-import cats.Functor
-import cats.implicits._
 import geotrellis.proj4.CRS
 import geotrellis.raster._
 import geotrellis.layer._
 import geotrellis.util._
 import geotrellis.vector.{Extent, ProjectedExtent}
+
+import cats.Functor
+import cats.implicits._
+import _root_.io.circe._
+import _root_.io.circe.generic.semiauto._
 
 /**
  * @param cellType    value type of each cell
@@ -84,6 +87,9 @@ case class TileLayerMetadata[K](
 }
 
 object TileLayerMetadata {
+  implicit def tileLayerMetadataEncoder[K: SpatialComponent: Encoder]: Encoder[TileLayerMetadata[K]] = deriveEncoder
+  implicit def tileLayerMetadataDecoder[K: SpatialComponent: Decoder]: Decoder[TileLayerMetadata[K]] = deriveDecoder
+
   implicit def toLayoutDefinition(md: TileLayerMetadata[_]): LayoutDefinition =
     md.layout
 
