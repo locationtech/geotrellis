@@ -45,9 +45,9 @@ class S3SaveImagesSpec extends FunSpec with TestEnvironment with Matchers {
       val bucket = "mock-bucket"
       val keyToPath = SaveToS3.spatialKeyToPath(id, template)
       val rdd = sample.renderPng().mapValues(_.bytes)
-      val maker = { () => MockS3Client() }
+      val getClient = { () => MockS3Client() }
 
-      SaveToS3(rdd, keyToPath, s3Maker = maker)
+      SaveToS3(rdd, keyToPath, getClient = getClient)
       rdd.collect().foreach { case (SpatialKey(col, row), bytes) =>
         val getReq = GetObjectRequest.builder()
           .bucket(bucket)
@@ -63,9 +63,9 @@ class S3SaveImagesSpec extends FunSpec with TestEnvironment with Matchers {
       val bucket = "mock-bucket"
       val keyToPath = SaveToS3.spatialKeyToPath(id, template)
       val rdd = sample.renderPng().mapValues(_.bytes)
-      val maker = { () => MockS3Client() }
+      val getClient = { () => MockS3Client() }
 
-      SaveToS3(rdd, keyToPath, s3Maker = maker)
+      SaveToS3(rdd, keyToPath, getClient = getClient)
       rdd.collect().foreach { case (SpatialKey(col, row), bytes) =>
         val getReq = GetObjectRequest.builder()
           .bucket(bucket)
@@ -81,9 +81,9 @@ class S3SaveImagesSpec extends FunSpec with TestEnvironment with Matchers {
       val bucket = "mock-bucket"
       val keyToPath = SaveToS3.spatialKeyToPath(id, template)
       val rdd = sample.renderPng().mapValues(_.bytes)
-      val maker = { () => MockS3Client() }
+      val getClient = { () => MockS3Client() }
 
-      SaveToS3(rdd, keyToPath, s3Maker = maker)
+      SaveToS3(rdd, keyToPath, getClient = getClient)
       rdd.collect().foreach { case (SpatialKey(col, row), bytes) =>
         val getReq = GetObjectRequest.builder()
           .bucket(bucket)

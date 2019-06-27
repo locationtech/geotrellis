@@ -27,6 +27,7 @@ import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import com.typesafe.scalalogging.LazyLogging
 
+import scala.concurrent.ExecutionContext
 import scala.reflect.ClassTag
 
 /**
@@ -37,9 +38,11 @@ import scala.reflect.ClassTag
 class HadoopCollectionLayerReader(
   val attributeStore: AttributeStore,
   conf: Configuration,
-  maxOpenFiles: Int = 16
-)
-  extends CollectionLayerReader[LayerId] with LazyLogging {
+  maxOpenFiles: Int = 16,
+  getExecutionContext: () => ExecutionContext = () => BlockingThreadPool.executionContext
+) extends CollectionLayerReader[LayerId] with LazyLogging {
+
+  implicit val ec: ExecutionContext = getExecutionContext()
 
   def read[
     K: AvroRecordCodec: Boundable: Decoder: ClassTag,

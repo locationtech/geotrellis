@@ -25,7 +25,6 @@ import geotrellis.store.index.{IndexRanges, MergeQueue}
 import geotrellis.store.util.IOUtils
 import geotrellis.spark.store._
 import geotrellis.spark.util.KryoWrapper
-import geotrellis.util.conf.BlockingThreadPoolConfig
 
 import com.datastax.driver.core.querybuilder.QueryBuilder
 import com.datastax.driver.core.querybuilder.QueryBuilder.{eq => eqs}
@@ -35,8 +34,11 @@ import org.apache.spark.rdd.RDD
 
 import scala.collection.JavaConverters._
 import scala.reflect.ClassTag
-
 import java.math.BigInteger
+
+import geotrellis.util.BlockingThreadPool
+
+import scala.concurrent.ExecutionContext
 
 object CassandraRDDReader {
   def read[K: Boundable : AvroRecordCodec : ClassTag, V: AvroRecordCodec : ClassTag](
@@ -49,7 +51,7 @@ object CassandraRDDReader {
     filterIndexOnly: Boolean,
     writerSchema: Option[Schema] = None,
     numPartitions: Option[Int] = None,
-    threads: Int = BlockingThreadPoolConfig.threads
+    getExecutionContext: () => ExecutionContext = () => BlockingThreadPool.executionContext
   )(implicit sc: SparkContext): RDD[(K, V)] = {
     if (queryKeyBounds.isEmpty) return sc.emptyRDD[(K, V)]
 
@@ -74,10 +76,11 @@ object CassandraRDDReader {
     sc.parallelize(bins, bins.size)
       .mapPartitions { partition: Iterator[Seq[(BigInt, BigInt)]] =>
         instance.withSession { session =>
+          implicit val ec = getExecutionContext()
           val statement = session.prepare(query)
 
           val result = partition map { seq =>
-            IOUtils.parJoin[K, V](seq.iterator, threads) { index: BigInt =>
+            IOUtils.parJoin[K, V](seq.iterator) { index: BigInt =>
               val row = session.execute(statement.bind(index: BigInteger))
               if (row.asScala.nonEmpty) {
                 val bytes = row.one().getBytes("value").array()

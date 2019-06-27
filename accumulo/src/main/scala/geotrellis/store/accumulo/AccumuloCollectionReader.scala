@@ -19,7 +19,6 @@ package geotrellis.store.accumulo
 import geotrellis.layer._
 import geotrellis.store.avro.codecs.KeyValueRecordCodec
 import geotrellis.store.avro.{AvroEncoder, AvroRecordCodec}
-import geotrellis.util.conf.BlockingThreadPoolConfig
 import geotrellis.util.BlockingThreadPool
 
 import org.apache.accumulo.core.data.{Range => AccumuloRange}
@@ -31,6 +30,7 @@ import cats.syntax.apply._
 import cats.syntax.either._
 
 import scala.collection.JavaConverters._
+import scala.concurrent.ExecutionContext
 import scala.reflect.ClassTag
 
 object AccumuloCollectionReader {
@@ -41,7 +41,7 @@ object AccumuloCollectionReader {
     decomposeBounds: KeyBounds[K] => Seq[AccumuloRange],
     filterIndexOnly: Boolean,
     writerSchema: Option[Schema] = None,
-    threads: Int = BlockingThreadPoolConfig.threads
+    getExecutionContext: () => ExecutionContext = () => BlockingThreadPool.executionContext
   )(implicit instance: AccumuloInstance): Seq[(K, V)] = {
     if(queryKeyBounds.isEmpty) return Seq.empty[(K, V)]
 
@@ -50,12 +50,12 @@ object AccumuloCollectionReader {
 
     val ranges = queryKeyBounds.flatMap(decomposeBounds).toIterator
 
-    implicit val ec = BlockingThreadPool.executionContext
+    implicit val ec = getExecutionContext()
     implicit val cs = IO.contextShift(ec)
 
     val range: fs2.Stream[IO, AccumuloRange] = fs2.Stream.fromIterator[IO, AccumuloRange](ranges)
 
-    val read = { (range: AccumuloRange) => fs2.Stream eval IO.shift(ec) *> IO {
+    val read = { range: AccumuloRange => fs2.Stream eval IO.shift(ec) *> IO {
       val scanner = instance.connector.createScanner(table, new Authorizations())
       scanner.setRange(range)
       scanner.fetchColumnFamily(columnFamily)
@@ -74,7 +74,7 @@ object AccumuloCollectionReader {
 
     range
       .map(read)
-      .parJoin(threads)
+      .parJoinUnbounded
       .compile
       .toVector
       .map(_.flatten)

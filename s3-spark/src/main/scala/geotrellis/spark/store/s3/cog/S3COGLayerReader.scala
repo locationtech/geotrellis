@@ -25,15 +25,15 @@ import geotrellis.store.index._
 import geotrellis.store.s3._
 import geotrellis.store.s3.cog._
 import geotrellis.spark.store.cog._
-import geotrellis.util.conf.BlockingThreadPoolConfig
-import geotrellis.util._
 
 import org.apache.spark.SparkContext
+import geotrellis.util._
 import software.amazon.awssdk.services.s3._
 import software.amazon.awssdk.services.s3.model._
 import com.typesafe.scalalogging.LazyLogging
 import io.circe._
 
+import scala.concurrent.ExecutionContext
 import scala.reflect.ClassTag
 import java.net.URI
 
@@ -45,8 +45,10 @@ import java.net.URI
 class S3COGLayerReader(
   val attributeStore: AttributeStore,
   val getClient: () => S3Client = S3ClientProducer.get,
-  val defaultThreads: Int = BlockingThreadPoolConfig.threads
+  val getExecutionContext: () => ExecutionContext = () => BlockingThreadPool.executionContext
 )(@transient implicit val sc: SparkContext) extends COGLayerReader[LayerId] with LazyLogging {
+
+  @transient implicit lazy val ec: ExecutionContext = getExecutionContext()
 
   val defaultNumPartitions: Int = sc.defaultParallelism
 
@@ -86,8 +88,7 @@ class S3COGLayerReader(
     baseReadAllBands[K, V](
       id              = id,
       tileQuery       = tileQuery,
-      numPartitions   = numPartitions,
-      defaultThreads  = defaultThreads
+      numPartitions   = numPartitions
     )
 
   def readSubsetBands[
@@ -98,13 +99,14 @@ class S3COGLayerReader(
     rasterQuery: LayerQuery[K, TileLayerMetadata[K]],
     numPartitions: Int
   ) =
-    baseReadSubsetBands[K](id, targetBands, rasterQuery, numPartitions, defaultThreads)
+    baseReadSubsetBands[K](id, targetBands, rasterQuery, numPartitions)
 }
 
 object S3COGLayerReader {
   def apply(attributeStore: S3AttributeStore)(implicit sc: SparkContext): S3COGLayerReader =
     new S3COGLayerReader(
       attributeStore,
-      attributeStore.getClient
+      attributeStore.getClient,
+      () => BlockingThreadPool.executionContext
     )
 }

@@ -6,10 +6,11 @@ import geotrellis.store.avro.{AvroEncoder, AvroRecordCodec}
 import geotrellis.store.index.MergeQueue
 import geotrellis.store.util.IOUtils
 import geotrellis.util.Filesystem
-import geotrellis.util.conf.BlockingThreadPoolConfig
 
 import org.apache.avro.Schema
 import java.io.File
+
+import scala.concurrent.ExecutionContext
 
 object FileCollectionReader {
   def read[K: AvroRecordCodec : Boundable, V: AvroRecordCodec](
@@ -17,9 +18,8 @@ object FileCollectionReader {
     queryKeyBounds: Seq[KeyBounds[K]],
     decomposeBounds: KeyBounds[K] => Seq[(BigInt, BigInt)],
     filterIndexOnly: Boolean,
-    writerSchema: Option[Schema] = None,
-    threads: Int = BlockingThreadPoolConfig.threads
-  ): Seq[(K, V)] = {
+    writerSchema: Option[Schema] = None
+  )(implicit ec: ExecutionContext): Seq[(K, V)] = {
     if (queryKeyBounds.isEmpty) return Seq.empty[(K, V)]
 
     val ranges = if (queryKeyBounds.length > 1)
@@ -31,7 +31,7 @@ object FileCollectionReader {
     val includeKey = (key: K) => KeyBounds.includeKey(queryKeyBounds, key)(boundable)
     val _recordCodec = KeyValueRecordCodec[K, V]
 
-    IOUtils.parJoin[K, V](ranges.toIterator, threads) { index: BigInt =>
+    IOUtils.parJoin[K, V](ranges.toIterator) { index: BigInt =>
       val path = keyPath(index)
       if (new File(path).exists) {
         val bytes: Array[Byte] = Filesystem.slurp(path)

@@ -28,12 +28,13 @@ import io.circe._
 import io.circe.parser._
 import cats.syntax.either._
 
+import scala.concurrent.ExecutionContext
 import scala.reflect._
 import java.net.URI
 import java.util.ServiceLoader
 
-
 abstract class COGCollectionLayerReader[ID] { self =>
+  implicit val ec: ExecutionContext
   val attributeStore: AttributeStore
 
   def read[
@@ -49,8 +50,7 @@ abstract class COGCollectionLayerReader[ID] { self =>
     tileQuery: LayerQuery[K, TileLayerMetadata[K]],
     getKeyPath: (ZoomRange, Int) => BigInt => String,
     pathExists: String => Boolean, // check the path above exists
-    fullPath: String => URI, // add an fs prefix
-    defaultThreads: Int
+    fullPath: String => URI // add an fs prefix
   )(implicit getByteReader: URI => ByteReader, idToLayerId: ID => LayerId): Seq[(K, V)] with Metadata[TileLayerMetadata[K]] = {
     val COGLayerStorageMetadata(cogLayerMetadata, keyIndexes) =
       try {
@@ -122,7 +122,6 @@ abstract class COGCollectionLayerReader[ID] { self =>
               fullPath = fullPath,
               baseQueryKeyBounds = baseQueryKeyBounds,
               decomposeBounds = decompose,
-              threads = defaultThreads,
               readDefinitions = readDefinitions.flatMap(_._2).groupBy(_._1)
           )
 
@@ -207,9 +206,8 @@ object COGCollectionLayerReader {
      baseQueryKeyBounds: Seq[KeyBounds[K]], // each key here represents a COG filename
      decomposeBounds: KeyBounds[K] => Seq[(BigInt, BigInt)],
      readDefinitions: Map[SpatialKey, Seq[(SpatialKey, Int, TileBounds, Seq[(TileBounds, SpatialKey)])]],
-     threads: Int,
      numPartitions: Option[Int] = None
-   )(implicit getByteReader: URI => ByteReader): Seq[(K, V)] = {
+   )(implicit getByteReader: URI => ByteReader, ec: ExecutionContext): Seq[(K, V)] = {
     if (baseQueryKeyBounds.isEmpty) return Seq.empty[(K, V)]
 
     val ranges = if (baseQueryKeyBounds.length > 1)
@@ -217,7 +215,7 @@ object COGCollectionLayerReader {
     else
       baseQueryKeyBounds.flatMap(decomposeBounds)
 
-    IOUtils.parJoin[K, V](ranges.toIterator, threads) { index: BigInt =>
+    IOUtils.parJoin[K, V](ranges.toIterator) { index: BigInt =>
       if (!pathExists(keyPath(index))) Vector()
       else {
         val uri = fullPath(keyPath(index))

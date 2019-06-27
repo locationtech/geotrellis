@@ -24,7 +24,6 @@ import geotrellis.store.cog.{COGCollectionLayerReader, Extension, ZoomRange}
 import geotrellis.store.hadoop.{HadoopAttributeStore, SerializableConfiguration}
 import geotrellis.store.hadoop.util._
 import geotrellis.store.index.Index
-import geotrellis.util.conf.BlockingThreadPoolConfig
 import geotrellis.util._
 
 import _root_.io.circe._
@@ -35,6 +34,8 @@ import org.apache.hadoop.fs.Path
 import scala.reflect.ClassTag
 import java.net.URI
 
+import scala.concurrent.ExecutionContext
+
 /**
  * Handles reading raster RDDs and their metadata from HDFS.
  *
@@ -44,12 +45,14 @@ class HadoopCOGCollectionLayerReader(
   val attributeStore: AttributeStore,
   val catalogPath: String,
   val conf: Configuration = new Configuration,
-  val defaultThreads: Int = BlockingThreadPoolConfig.threads
+  val getExecutionContext: () => ExecutionContext = () => BlockingThreadPool.executionContext
 ) extends COGCollectionLayerReader[LayerId] with LazyLogging {
 
   val serConf: SerializableConfiguration = SerializableConfiguration(conf)
 
   implicit def getByteReader(uri: URI): ByteReader = byteReader(uri, conf)
+
+  implicit val ec: ExecutionContext = getExecutionContext()
 
   def read[
     K: SpatialComponent: Boundable: Decoder: ClassTag,
@@ -66,8 +69,7 @@ class HadoopCOGCollectionLayerReader(
       tileQuery       = tileQuery,
       getKeyPath      = getKeyPath,
       pathExists      = { str => HdfsUtils.pathExists(new Path(str), conf) },
-      fullPath        = { path => new URI(path) },
-      defaultThreads  = defaultThreads
+      fullPath        = { path => new URI(path) }
     )
   }
 }

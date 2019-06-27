@@ -24,7 +24,6 @@ import geotrellis.store.s3._
 import geotrellis.spark._
 import geotrellis.spark.store._
 import geotrellis.util._
-import geotrellis.util.conf.BlockingThreadPoolConfig
 
 import com.typesafe.scalalogging.LazyLogging
 import org.apache.spark.SparkContext
@@ -32,6 +31,7 @@ import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.model._
 import io.circe._
 
+import scala.concurrent.ExecutionContext
 import scala.reflect.ClassTag
 
 /**
@@ -45,13 +45,13 @@ import scala.reflect.ClassTag
 class S3LayerReader(
   val attributeStore: AttributeStore,
   val getClient: () => S3Client = S3ClientProducer.get,
-  val threadCount: Int = BlockingThreadPoolConfig.threads
+  val getExecutionContext: () => ExecutionContext = () => BlockingThreadPool.executionContext
 )(implicit sc: SparkContext)
   extends FilteringLayerReader[LayerId] with LazyLogging {
 
   val defaultNumPartitions = sc.defaultParallelism
 
-  def rddReader: S3RDDReader = new S3RDDReader(getClient, threadCount)
+  def rddReader: S3RDDReader = new S3RDDReader(getClient, getExecutionContext)
 
   def read[
     K: AvroRecordCodec: Boundable: Decoder: ClassTag,

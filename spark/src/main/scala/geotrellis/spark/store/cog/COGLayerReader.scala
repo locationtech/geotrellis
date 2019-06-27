@@ -16,7 +16,7 @@
 
 package geotrellis.spark.store.cog
 
-import geotrellis.raster.{CellGrid, GridBounds, MultibandTile, RasterExtent, Tile}
+import geotrellis.raster.{CellGrid, GridBounds, MultibandTile, Tile}
 import geotrellis.raster.crop._
 import geotrellis.raster.io.geotiff._
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
@@ -40,9 +40,13 @@ import cats.syntax.either._
 
 import java.net.URI
 import java.util.ServiceLoader
+
+import scala.concurrent.ExecutionContext
 import scala.reflect._
 
 abstract class COGLayerReader[ID] extends Serializable {
+
+  implicit val ec: ExecutionContext
 
   val attributeStore: AttributeStore
 
@@ -219,8 +223,7 @@ abstract class COGLayerReader[ID] extends Serializable {
   ](
     id: LayerId,
     tileQuery: LayerQuery[K, TileLayerMetadata[K]],
-    numPartitions: Int,
-    defaultThreads: Int
+    numPartitions: Int
   )(implicit sc: SparkContext,
              getByteReader: URI => ByteReader,
              idToLayerId: ID => LayerId
@@ -254,8 +257,7 @@ abstract class COGLayerReader[ID] extends Serializable {
           queryKeyBounds = queryKeyBounds,
           readDefinitions = readDefinitions.flatMap(_._2).groupBy(_._1),
           readGeoTiff = crop,
-          numPartitions = numPartitions,
-          defaultThreads = defaultThreads
+          numPartitions = numPartitions
         )
       }
       case None =>
@@ -269,8 +271,7 @@ abstract class COGLayerReader[ID] extends Serializable {
     id: LayerId,
     targetBands: Seq[Int],
     tileQuery: LayerQuery[K, TileLayerMetadata[K]],
-    numPartitions: Int,
-    defaultThreads: Int
+    numPartitions: Int
   )(implicit sc: SparkContext,
              getByteReader: URI => ByteReader,
              idToLayerId: ID => LayerId
@@ -305,8 +306,7 @@ abstract class COGLayerReader[ID] extends Serializable {
             queryKeyBounds = queryKeyBounds,
             readDefinitions = readDefinitions.flatMap(_._2).groupBy(_._1),
             readGeoTiff = produceCropBands(targetBands),
-            numPartitions = numPartitions,
-            defaultThreads = defaultThreads
+            numPartitions = numPartitions
           )
 
         new ContextRDD(rdd, metadata)
@@ -329,8 +329,7 @@ abstract class COGLayerReader[ID] extends Serializable {
     queryKeyBounds: Seq[KeyBounds[K]],
     readDefinitions: Map[SpatialKey, Seq[(SpatialKey, Int, GridBounds[Int], Seq[(GridBounds[Int], SpatialKey)])]],
     readGeoTiff: (GeoTiff[V], Seq[GridBounds[Int]]) => Iterator[(GridBounds[Int], R)],
-    numPartitions: Int,
-    defaultThreads: Int
+    numPartitions: Int
   )(implicit sc: SparkContext,
              getByteReader: URI => ByteReader,
              idToLayerId: ID => LayerId
@@ -371,8 +370,7 @@ abstract class COGLayerReader[ID] extends Serializable {
           bins = bins,
           keyPath = keyPath,
           readDefinitions = readDefinitions,
-          readGeoTiff = readGeoTiff,
-          threads = defaultThreads
+          readGeoTiff = readGeoTiff
         )
 
     new ContextRDD(rdd, metadata)
@@ -386,8 +384,7 @@ abstract class COGLayerReader[ID] extends Serializable {
      bins: Seq[Seq[(BigInt, BigInt)]],
      keyPath: BigInt => String, // keyPath
      readDefinitions: Map[SpatialKey, Seq[(SpatialKey, Int, GridBounds[Int], Seq[(GridBounds[Int], SpatialKey)])]],
-     readGeoTiff: (GeoTiff[V], Seq[GridBounds[Int]]) => Iterator[(GridBounds[Int], R)],
-     threads: Int
+     readGeoTiff: (GeoTiff[V], Seq[GridBounds[Int]]) => Iterator[(GridBounds[Int], R)]
    )(implicit sc: SparkContext, getByteReader: URI => ByteReader): RDD[(K, R)] = {
     val kwDecoder = KryoWrapper(implicitly[Decoder[K]])
 
@@ -396,7 +393,7 @@ abstract class COGLayerReader[ID] extends Serializable {
         val keyDecoder = kwDecoder.value
 
         partition flatMap { seq =>
-          IOUtils.parJoin[K, R](seq.toIterator, threads) { index: BigInt =>
+          IOUtils.parJoin[K, R](seq.toIterator) { index: BigInt =>
             if (!pathExists(keyPath(index))) Vector()
             else {
               val uri = fullPath(keyPath(index))

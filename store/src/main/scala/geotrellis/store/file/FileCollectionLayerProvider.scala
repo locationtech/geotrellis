@@ -45,6 +45,6 @@ class FileCollectionLayerProvider extends AttributeStoreProvider with ValueReade
 
   def collectionLayerReader(uri: URI, store: AttributeStore): CollectionLayerReader[LayerId] = {
     val catalogPath = new File(uri).getCanonicalPath
-    new FileCollectionLayerReader(store, catalogPath)
+    FileCollectionLayerReader(store, catalogPath)
   }
 }

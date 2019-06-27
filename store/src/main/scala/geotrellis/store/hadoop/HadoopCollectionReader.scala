@@ -22,7 +22,7 @@ import geotrellis.store.avro._
 import geotrellis.store.avro.codecs._
 import geotrellis.store.hadoop.formats.FilterMapFileInputFormat
 import geotrellis.store.util.IOUtils
-import geotrellis.util.conf.BlockingThreadPoolConfig
+import geotrellis.util.BlockingThreadPool
 
 import com.github.blemale.scaffeine.{Cache, Scaffeine}
 import org.apache.avro.Schema
@@ -30,7 +30,12 @@ import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.io._
 
-class HadoopCollectionReader(maxOpenFiles: Int) {
+import scala.concurrent.ExecutionContext
+
+class HadoopCollectionReader(
+  maxOpenFiles: Int,
+  getExecutionContext: () => ExecutionContext = () => BlockingThreadPool.executionContext
+) extends Serializable {
 
   val readers: Cache[Path, MapFile.Reader] =
     Scaffeine()
@@ -38,6 +43,8 @@ class HadoopCollectionReader(maxOpenFiles: Int) {
       .maximumSize(maxOpenFiles.toLong)
       .removalListener[Path, MapFile.Reader] { case (_, v, _) => v.close() }
       .build[Path, MapFile.Reader]
+
+  implicit val ec: ExecutionContext = getExecutionContext()
 
   private def predicate(row: (Path, BigInt, BigInt), index: BigInt): Boolean =
     (index >= row._2) && ((index <= row._3) || (row._3 == -1))
@@ -50,9 +57,8 @@ class HadoopCollectionReader(maxOpenFiles: Int) {
     queryKeyBounds: Seq[KeyBounds[K]],
     decomposeBounds: KeyBounds[K] => Seq[(BigInt, BigInt)],
     indexFilterOnly: Boolean,
-    writerSchema: Option[Schema] = None,
-    threads: Int = BlockingThreadPoolConfig.threads
-  ): Seq[(K, V)] = {
+    writerSchema: Option[Schema] = None
+  )(implicit ec: ExecutionContext): Seq[(K, V)] = {
     if (queryKeyBounds.isEmpty) return Seq.empty[(K, V)]
 
     val includeKey = (key: K) => KeyBounds.includeKey(queryKeyBounds, key)
@@ -63,7 +69,7 @@ class HadoopCollectionReader(maxOpenFiles: Int) {
     val pathRanges: Vector[(Path, BigInt, BigInt)] =
       FilterMapFileInputFormat.layerRanges(path, conf)
 
-    IOUtils.parJoin[K, V](indexRanges, threads){ index: BigInt =>
+    IOUtils.parJoin[K, V](indexRanges){ index: BigInt =>
       val valueWritable = pathRanges
         .find(row => predicate(row, index))
         .map { case (p, _, _) =>

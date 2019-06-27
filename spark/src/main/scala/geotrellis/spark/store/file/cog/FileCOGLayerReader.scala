@@ -24,11 +24,8 @@ import geotrellis.store._
 import geotrellis.store.cog.{Extension, ZoomRange}
 import geotrellis.store.file.{FileAttributeStore, FileLayerHeader, KeyPathGenerator}
 import geotrellis.store.file.cog.byteReader
-import geotrellis.spark._
-import geotrellis.spark.store._
 import geotrellis.spark.store.cog._
 import geotrellis.util._
-import geotrellis.util.conf.BlockingThreadPoolConfig
 
 import com.typesafe.scalalogging.LazyLogging
 import org.apache.spark.SparkContext
@@ -37,6 +34,7 @@ import _root_.io.circe._
 import java.net.URI
 import java.io.File
 
+import scala.concurrent.ExecutionContext
 import scala.reflect.ClassTag
 
 /**
@@ -47,8 +45,10 @@ import scala.reflect.ClassTag
 class FileCOGLayerReader(
   val attributeStore: AttributeStore,
   val catalogPath: String,
-  val defaultThreads: Int = BlockingThreadPoolConfig.threads
+  val getExecutionContext: () => ExecutionContext = () => BlockingThreadPool.executionContext
 )(@transient implicit val sc: SparkContext) extends COGLayerReader[LayerId] with LazyLogging {
+
+  @transient implicit lazy val ec: ExecutionContext = getExecutionContext()
 
   val defaultNumPartitions: Int = sc.defaultParallelism
 
@@ -80,8 +80,7 @@ class FileCOGLayerReader(
     baseReadAllBands[K, V](
       id              = id,
       tileQuery       = tileQuery,
-      numPartitions   = numPartitions,
-      defaultThreads  = defaultThreads
+      numPartitions   = numPartitions
     )
 
   def readSubsetBands[
@@ -92,7 +91,7 @@ class FileCOGLayerReader(
     rasterQuery: LayerQuery[K, TileLayerMetadata[K]],
     numPartitions: Int
   ) =
-    baseReadSubsetBands[K](id, targetBands, rasterQuery, numPartitions, defaultThreads)
+    baseReadSubsetBands[K](id, targetBands, rasterQuery, numPartitions)
 }
 
 object FileCOGLayerReader {

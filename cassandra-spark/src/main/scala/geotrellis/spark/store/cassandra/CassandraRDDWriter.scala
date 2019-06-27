@@ -23,7 +23,6 @@ import geotrellis.store.avro.codecs._
 import geotrellis.store.cassandra._
 import geotrellis.spark.store._
 import geotrellis.spark.util.KryoWrapper
-import geotrellis.util.conf.BlockingThreadPoolConfig
 import geotrellis.util.BlockingThreadPool
 
 import com.datastax.driver.core.DataType._
@@ -41,6 +40,7 @@ import java.nio.ByteBuffer
 import java.math.BigInteger
 
 import scala.collection.JavaConverters._
+import scala.concurrent.ExecutionContext
 
 object CassandraRDDWriter {
   def write[K: AvroRecordCodec, V: AvroRecordCodec](
@@ -50,8 +50,8 @@ object CassandraRDDWriter {
     decomposeKey: K => BigInt,
     keyspace: String,
     table: String,
-    threads: Int = BlockingThreadPoolConfig.threads
-  ): Unit = update(rdd, instance, layerId, decomposeKey, keyspace, table, None, None, threads)
+    getExecutionContext: () => ExecutionContext = () => BlockingThreadPool.executionContext
+  ): Unit = update(rdd, instance, layerId, decomposeKey, keyspace, table, None, None, getExecutionContext)
 
   private[cassandra] def update[K: AvroRecordCodec, V: AvroRecordCodec](
     raster: RDD[(K, V)],
@@ -62,7 +62,7 @@ object CassandraRDDWriter {
     table: String,
     writerSchema: Option[Schema],
     mergeFunc: Option[(V,V) => V],
-    threads: Int = BlockingThreadPoolConfig.threads
+    getExecutionContext: () => ExecutionContext = () => BlockingThreadPool.executionContext
   ): Unit = {
     implicit val sc = raster.sparkContext
 
@@ -114,7 +114,7 @@ object CassandraRDDWriter {
                   partition.map { case (key, value) => (key, value.toVector) }
                 )
 
-              implicit val ec = BlockingThreadPool.executionContext
+              implicit val ec = getExecutionContext()
               implicit val cs = IO.contextShift(ec)
 
               def elaborateRow(row: (BigInt, Vector[(K,V)])): fs2.Stream[IO, (BigInt, Vector[(K,V)])] = {
@@ -152,7 +152,7 @@ object CassandraRDDWriter {
                 .flatMap(elaborateRow)
                 .flatMap(rowToBytes)
                 .map(retire)
-                .parJoin(threads)
+                .parJoinUnbounded
                 .onComplete {
                   fs2.Stream eval IO.shift(ec) *> IO {
                     session.closeAsync()

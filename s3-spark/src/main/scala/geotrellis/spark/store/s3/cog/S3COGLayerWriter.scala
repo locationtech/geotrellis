@@ -28,7 +28,7 @@ import geotrellis.store.cog.vrt.VRT.IndexedSimpleSource
 import geotrellis.store.index.{Index, KeyIndex}
 import geotrellis.store.s3._
 import geotrellis.spark.store.cog._
-import geotrellis.util.conf.BlockingThreadPoolConfig
+import geotrellis.util.BlockingThreadPool
 
 import software.amazon.awssdk.services.s3.model.{GetObjectRequest, PutObjectRequest, S3Exception}
 import software.amazon.awssdk.services.s3._
@@ -36,6 +36,7 @@ import software.amazon.awssdk.core.sync.RequestBody
 import org.apache.commons.io.IOUtils
 import _root_.io.circe._
 
+import scala.concurrent.ExecutionContext
 import scala.util.Try
 import scala.reflect.{ClassTag, classTag}
 
@@ -44,7 +45,7 @@ class S3COGLayerWriter(
   bucket: String,
   keyPrefix: String,
   val getClient: () => S3Client = S3ClientProducer.get,
-  val defaultThreadCount: Int = BlockingThreadPoolConfig.threads
+  val getExecutionContext: () => ExecutionContext = () => BlockingThreadPool.executionContext
 ) extends COGLayerWriter {
 
   def writeCOGLayer[
@@ -76,7 +77,7 @@ class S3COGLayerWriter(
     lazy val s3Client = getClient() // for saving VRT from Accumulator
 
     // Make S3COGAsyncWriter
-    val asyncWriter = new S3COGAsyncWriter[V](bucket, defaultThreadCount, p => p)
+    val asyncWriter = new S3COGAsyncWriter[V](bucket, p => p, getExecutionContext)
 
     val retryCheck: Throwable => Boolean = {
       case e: S3Exception if e.statusCode == 503 => true
@@ -120,8 +121,7 @@ class S3COGLayerWriter(
           .contentLength(bytes.length)
           .build()
 
-      val requestBody =
-        RequestBody.fromBytes(bytes)
+      val requestBody = RequestBody.fromBytes(bytes)
 
       s3Client.putObject(request, requestBody)
       samplesAccumulator.reset
@@ -137,9 +137,9 @@ object S3COGLayerWriter {
 
 class S3COGAsyncWriter[V <: CellGrid[Int]: GeoTiffReader](
   bucket: String,
-  threads: Int,
-  putObjectModifier: PutObjectRequest => PutObjectRequest
-) extends  AsyncWriter[S3Client, GeoTiff[V], (PutObjectRequest, RequestBody)](threads) {
+  putObjectModifier: PutObjectRequest => PutObjectRequest,
+  getExecutionContext: () => ExecutionContext = () => BlockingThreadPool.executionContext
+) extends  AsyncWriter[S3Client, GeoTiff[V], (PutObjectRequest, RequestBody)](getExecutionContext) {
 
   def readRecord(
     client: S3Client,

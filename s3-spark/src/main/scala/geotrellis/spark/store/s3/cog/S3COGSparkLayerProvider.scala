@@ -16,19 +16,15 @@
 
 package geotrellis.spark.store.s3.cog
 
-import geotrellis.layer._
 import geotrellis.store._
-import geotrellis.store.cog._
 import geotrellis.store.s3._
 import geotrellis.store.s3.cog._
-import geotrellis.spark._
 import geotrellis.spark.store.cog._
 import geotrellis.spark.store.s3._
 
 import org.apache.spark._
 
 import java.net.URI
-
 
 /**
  * Provides [[S3LayerReader]] instance for URI with `s3` scheme.

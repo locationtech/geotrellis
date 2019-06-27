@@ -21,16 +21,18 @@ import geotrellis.store.avro.codecs.KeyValueRecordCodec
 import geotrellis.store.index.MergeQueue
 import geotrellis.store.avro.{AvroEncoder, AvroRecordCodec}
 import geotrellis.store.util.{IOUtils => GTIOUtils}
-import geotrellis.util.conf.BlockingThreadPoolConfig
-
+import geotrellis.util.BlockingThreadPool
 import software.amazon.awssdk.services.s3.model._
 import software.amazon.awssdk.services.s3.S3Client
 import org.apache.avro.Schema
 import org.apache.commons.io.IOUtils
 
+import scala.concurrent.ExecutionContext
+
 class S3CollectionReader(
-  val getClient: () => S3Client = S3ClientProducer.get
-) {
+  val getClient: () => S3Client = S3ClientProducer.get,
+  val getExecutionContext: () => ExecutionContext = () => BlockingThreadPool.executionContext
+) extends Serializable {
 
   def read[
     K: AvroRecordCodec: Boundable,
@@ -41,8 +43,7 @@ class S3CollectionReader(
      queryKeyBounds: Seq[KeyBounds[K]],
      decomposeBounds: KeyBounds[K] => Seq[(BigInt, BigInt)],
      filterIndexOnly: Boolean,
-     writerSchema: Option[Schema] = None,
-     threads: Int = BlockingThreadPoolConfig.threads
+     writerSchema: Option[Schema] = None
    ): Seq[(K, V)] = {
     if (queryKeyBounds.isEmpty) return Seq.empty[(K, V)]
 
@@ -52,9 +53,10 @@ class S3CollectionReader(
       queryKeyBounds.flatMap(decomposeBounds)
 
     val recordCodec = KeyValueRecordCodec[K, V]
+    implicit val ec = getExecutionContext()
     val s3client = getClient()
 
-    GTIOUtils.parJoin[K, V](ranges.toIterator, threads){ index: BigInt =>
+    GTIOUtils.parJoin[K, V](ranges.toIterator){ index: BigInt =>
       try {
         val getRequest = GetObjectRequest.builder()
           .bucket(bucket)

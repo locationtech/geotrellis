@@ -28,17 +28,20 @@ import org.apache.spark.rdd.RDD
 import org.apache.accumulo.core.data.{Key, Mutation, Value}
 import org.apache.accumulo.core.client.mapreduce.AccumuloFileOutputFormat
 import org.apache.accumulo.core.client.BatchWriterConfig
+
 import cats.effect.IO
 import cats.syntax.apply._
 import cats.syntax.either._
 
 import java.util.UUID
 
+import scala.concurrent.ExecutionContext
+
 object AccumuloWriteStrategy {
   def DEFAULT = HdfsWriteStrategy("/geotrellis-ingest")
 }
 
-sealed trait AccumuloWriteStrategy {
+sealed trait AccumuloWriteStrategy extends Serializable {
   def write(kvPairs: RDD[(Key, Value)], instance: AccumuloInstance, table: String): Unit
 }
 
@@ -109,14 +112,14 @@ object HdfsWriteStrategy {
  */
 case class SocketWriteStrategy(
   @transient config: BatchWriterConfig = new BatchWriterConfig().setMaxMemory(128*1024*1024).setMaxWriteThreads(BlockingThreadPoolConfig.threads),
-  threads: Int = BlockingThreadPoolConfig.threads
+  getExecutionContext: () => ExecutionContext = () => BlockingThreadPool.executionContext
 ) extends AccumuloWriteStrategy {
   val kwConfig = KryoWrapper(config) // BatchWriterConfig is not java serializable
 
   def write(kvPairs: RDD[(Key, Value)], instance: AccumuloInstance, table: String): Unit = {
     kvPairs.foreachPartition { partition =>
       if(partition.nonEmpty) {
-        implicit val ec = BlockingThreadPool.executionContext
+        implicit val ec = getExecutionContext()
         implicit val cs = IO.contextShift(ec)
 
         val writer = instance.connector.createBatchWriter(table, kwConfig.value)
@@ -130,10 +133,10 @@ case class SocketWriteStrategy(
             }
           )
 
-          val write = { (mutation: Mutation) => fs2.Stream eval IO.shift(ec) *> IO { writer.addMutation(mutation) } }
+          val write = { mutation: Mutation => fs2.Stream eval IO.shift(ec) *> IO { writer.addMutation(mutation) } }
 
           (mutations map write)
-            .parJoin(threads)
+            .parJoinUnbounded
             .compile
             .drain
             .attempt

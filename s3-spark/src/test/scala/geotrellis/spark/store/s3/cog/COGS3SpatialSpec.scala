@@ -51,7 +51,7 @@ class COGS3SpatialSpec
   lazy val getS3Client = () => MockS3Client()
   lazy val attributeStore = new S3AttributeStore(bucket, prefix, getS3Client)
 
-  lazy val reader = new S3COGLayerReader(attributeStore, getS3Client, 2)
+  lazy val reader = new S3COGLayerReader(attributeStore, getS3Client)
   lazy val creader = new S3COGCollectionLayerReader(attributeStore, getS3Client)
   lazy val writer = new S3COGLayerWriter(attributeStore, attributeStore.bucket, attributeStore.prefix, getS3Client)
   // TODO: implement and test all layer functions

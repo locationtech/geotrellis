@@ -24,7 +24,7 @@ import geotrellis.store.index.{IndexRanges, MergeQueue}
 import geotrellis.store.util.{IOUtils => GTIOUtils}
 import geotrellis.store.s3.S3ClientProducer
 import geotrellis.spark.util.KryoWrapper
-import geotrellis.util.conf.BlockingThreadPoolConfig
+import geotrellis.util.BlockingThreadPool
 
 import software.amazon.awssdk.services.s3.model.{GetObjectRequest, S3Exception}
 import software.amazon.awssdk.services.s3.S3Client
@@ -33,10 +33,12 @@ import org.apache.commons.io.IOUtils
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
+import scala.concurrent.ExecutionContext
+
 class S3RDDReader(
   val getClient: () => S3Client = S3ClientProducer.get,
-  val defaultThreadCount: Int = BlockingThreadPoolConfig.threads
-) {
+  val getExecutionContext: () => ExecutionContext = () => BlockingThreadPool.executionContext
+) extends Serializable {
 
   def read[
     K: AvroRecordCodec: Boundable,
@@ -48,8 +50,7 @@ class S3RDDReader(
     decomposeBounds: KeyBounds[K] => Seq[(BigInt, BigInt)],
     filterIndexOnly: Boolean,
     writerSchema: Option[Schema] = None,
-    numPartitions: Option[Int] = None,
-    threads: Int = defaultThreadCount
+    numPartitions: Option[Int] = None
   )(implicit sc: SparkContext): RDD[(K, V)] = {
     if (queryKeyBounds.isEmpty) return sc.emptyRDD[(K, V)]
 
@@ -62,15 +63,15 @@ class S3RDDReader(
 
     val includeKey = (key: K) => queryKeyBounds.includeKey(key)
     val _recordCodec = KeyValueRecordCodec[K, V]
-    val _getS3Client = getClient
     val kwWriterSchema = KryoWrapper(writerSchema) //Avro Schema is not Serializable
 
     sc.parallelize(bins, bins.size)
       .mapPartitions { partition: Iterator[Seq[(BigInt, BigInt)]] =>
-        val s3Client = _getS3Client()
+        implicit val ec = getExecutionContext()
+        val s3Client = getClient()
         val writerSchema = kwWriterSchema.value.getOrElse(_recordCodec.schema)
         partition flatMap { seq =>
-          GTIOUtils.parJoinEBO[K, V](seq.toIterator, threads)({ index: BigInt =>
+          GTIOUtils.parJoinEBO[K, V](seq.toIterator)({ index: BigInt =>
             try {
               val request = GetObjectRequest.builder()
                 .bucket(bucket)
