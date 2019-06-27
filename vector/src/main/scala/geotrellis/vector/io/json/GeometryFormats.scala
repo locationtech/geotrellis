@@ -210,9 +210,6 @@ trait GeometryFormats {
       case geom => throw new Exception(s"Unknown Geometry type ${geom.getClass.getName}: $geom")
     }
 
-  implicit lazy val extentEncoder: Encoder[Extent] =
-    Encoder.encodeJson.contramap[Extent] {_.toPolygon.asJson}
-
   implicit lazy val geometryDecoder: Decoder[Geometry] =
     Decoder.decodeJson.emap { json: Json =>
       val c = json.hcursor
