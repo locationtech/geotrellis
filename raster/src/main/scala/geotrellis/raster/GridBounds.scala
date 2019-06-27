@@ -249,7 +249,7 @@ case class GridBounds[@specialized(Int, Long) N: Integral](
       * @param  r  The given Grid
       */
     def apply[N: Integral](r: Grid[N]): GridBounds[N] =
-      GridBounds(0, 0, r.cols - 1, r.rows - 1)
+      new GridBounds[N](0, 0, r.cols - 1, r.rows - 1)
 
     def apply(colMin: Int, rowMin: Int, colMax: Int, rowMax: Int): GridBounds[Int] =
       new GridBounds[Int](colMin, rowMin, colMax, rowMax)
