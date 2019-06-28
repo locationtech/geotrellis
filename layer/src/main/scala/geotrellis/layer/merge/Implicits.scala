@@ -18,12 +18,13 @@ package geotrellis.layer.merge
 
 import geotrellis.util.MethodExtensions
 
+import cats.Semigroup
 
 object Implicits extends Implicits
 
 trait Implicits {
-  implicit class withMergableMethods[T: Mergable](val self: T) extends MethodExtensions[T] {
+  implicit class withMergableMethods[T: Semigroup](val self: T) extends MethodExtensions[T] {
     def merge(other: T): T =
-      implicitly[Mergable[T]].merge(self, other)
+      Semigroup[T].combine(self, other)
   }
 }

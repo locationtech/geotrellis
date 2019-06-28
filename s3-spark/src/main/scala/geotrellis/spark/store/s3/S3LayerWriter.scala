@@ -21,7 +21,6 @@ import geotrellis.store._
 import geotrellis.store.avro._
 import geotrellis.store.avro.codecs._
 import geotrellis.store.index._
-import geotrellis.layer.merge.Mergable
 import geotrellis.store.s3._
 import geotrellis.store.s3.conf.S3Config
 import geotrellis.spark._
@@ -34,6 +33,7 @@ import software.amazon.awssdk.services.s3.S3Client
 import org.apache.spark.rdd.RDD
 import com.typesafe.scalalogging.LazyLogging
 import io.circe._
+import cats.Semigroup
 
 import scala.reflect._
 
@@ -64,7 +64,7 @@ class S3LayerWriter(
   def overwrite[
     K: AvroRecordCodec: Boundable: Encoder: Decoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: Encoder: Decoder: Component[?, Bounds[K]]: Mergable
+    M: Encoder: Decoder: Component[?, Bounds[K]]: Semigroup
   ](
     id: LayerId,
     rdd: RDD[(K, V)] with Metadata[M]
@@ -75,7 +75,7 @@ class S3LayerWriter(
   def update[
     K: AvroRecordCodec: Boundable: Encoder: Decoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: Encoder: Decoder: Component[?, Bounds[K]]: Mergable
+    M: Encoder: Decoder: Component[?, Bounds[K]]: Semigroup
   ](id: LayerId, rdd: RDD[(K, V)] with Metadata[M], mergeFunc: (V, V) => V): Unit = {
     update(id, rdd, Some(mergeFunc))
   }
@@ -83,7 +83,7 @@ class S3LayerWriter(
   private def update[
     K: AvroRecordCodec: Boundable: Encoder: Decoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: Encoder: Decoder: Component[?, Bounds[K]]: Mergable
+    M: Encoder: Decoder: Component[?, Bounds[K]]: Semigroup
   ](
     id: LayerId,
     rdd: RDD[(K, V)] with Metadata[M],

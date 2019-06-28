@@ -22,7 +22,6 @@ import geotrellis.store.file.{FileAttributeStore, FileLayerHeader, KeyPathGenera
 import geotrellis.store.avro._
 import geotrellis.store.avro.codecs._
 import geotrellis.store.index._
-import geotrellis.layer.merge.Mergable
 import geotrellis.spark._
 import geotrellis.spark.store._
 import geotrellis.spark.merge._
@@ -31,6 +30,7 @@ import geotrellis.util._
 import com.typesafe.scalalogging.LazyLogging
 import org.apache.spark.rdd.RDD
 import io.circe._
+import cats.Semigroup
 
 import scala.reflect._
 import java.io.File
@@ -56,7 +56,7 @@ class FileLayerWriter(
   def overwrite[
     K: AvroRecordCodec: Boundable: Encoder: Decoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: Encoder: Decoder: Component[?, Bounds[K]]: Mergable
+    M: Encoder: Decoder: Component[?, Bounds[K]]: Semigroup
   ](
     id: LayerId,
     rdd: RDD[(K, V)] with Metadata[M]
@@ -67,7 +67,7 @@ class FileLayerWriter(
   def update[
     K: AvroRecordCodec: Boundable: Encoder: Decoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: Encoder: Decoder: Component[?, Bounds[K]]: Mergable
+    M: Encoder: Decoder: Component[?, Bounds[K]]: Semigroup
   ](
     id: LayerId,
     rdd: RDD[(K, V)] with Metadata[M],
@@ -79,7 +79,7 @@ class FileLayerWriter(
   private def update[
     K: AvroRecordCodec: Boundable: Encoder: Decoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: Encoder: Decoder: Component[?, Bounds[K]]: Mergable
+    M: Encoder: Decoder: Component[?, Bounds[K]]: Semigroup
   ](
     id: LayerId,
     rdd: RDD[(K, V)] with Metadata[M],
