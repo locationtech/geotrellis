@@ -26,13 +26,10 @@ import geotrellis.spark.store._
 import geotrellis.util._
 
 import com.typesafe.scalalogging.LazyLogging
-
 import org.apache.hadoop.fs.Path
 import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkContext
-
 import io.circe._
-
 import cats.Semigroup
 
 import scala.reflect._

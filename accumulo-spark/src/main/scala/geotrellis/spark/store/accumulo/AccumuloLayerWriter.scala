@@ -27,11 +27,8 @@ import geotrellis.spark.merge._
 import geotrellis.util._
 
 import com.typesafe.scalalogging.LazyLogging
-
 import org.apache.spark.rdd.RDD
-
 import io.circe._
-
 import cats.Semigroup
 
 import scala.reflect._

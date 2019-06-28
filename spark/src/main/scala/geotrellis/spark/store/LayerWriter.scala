@@ -25,18 +25,14 @@ import geotrellis.spark._
 import geotrellis.util._
 
 import com.typesafe.scalalogging.LazyLogging
-
 import org.apache.avro._
 import org.apache.spark.rdd.RDD
-
-import io.circe._
-
+import _root_.io.circe._
 import cats.Semigroup
 
 import scala.reflect.ClassTag
 import java.util.ServiceLoader
 import java.net.URI
-
 
 trait LayerWriter[ID] {
   val attributeStore: AttributeStore

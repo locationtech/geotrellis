@@ -20,11 +20,10 @@ import geotrellis.proj4.CRS
 import geotrellis.raster._
 import geotrellis.layer._
 import geotrellis.util._
-import geotrellis.vector.{Extent, ProjectedExtent}
+import geotrellis.vector.Extent
 
 import cats.{Functor, Semigroup}
 import cats.syntax.functor._
-
 import _root_.io.circe._
 import _root_.io.circe.generic.semiauto._
 

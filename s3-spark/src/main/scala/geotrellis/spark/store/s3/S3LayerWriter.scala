@@ -30,13 +30,9 @@ import geotrellis.util._
 
 import software.amazon.awssdk.services.s3.model.PutObjectRequest
 import software.amazon.awssdk.services.s3.S3Client
-
 import org.apache.spark.rdd.RDD
-
 import com.typesafe.scalalogging.LazyLogging
-
 import io.circe._
-
 import cats.Semigroup
 
 import scala.reflect._
