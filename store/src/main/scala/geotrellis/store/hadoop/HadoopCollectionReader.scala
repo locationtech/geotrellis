@@ -22,7 +22,7 @@ import geotrellis.store.avro._
 import geotrellis.store.avro.codecs._
 import geotrellis.store.hadoop.formats.FilterMapFileInputFormat
 import geotrellis.store.util.IOUtils
-import geotrellis.util.BlockingThreadPool
+import geotrellis.store.util.BlockingThreadPool
 
 import com.github.blemale.scaffeine.{Cache, Scaffeine}
 import org.apache.avro.Schema
@@ -34,7 +34,7 @@ import scala.concurrent.ExecutionContext
 
 class HadoopCollectionReader(
   maxOpenFiles: Int,
-  getExecutionContext: () => ExecutionContext = () => BlockingThreadPool.executionContext
+  executionContext: => ExecutionContext = BlockingThreadPool.executionContext
 ) extends Serializable {
 
   val readers: Cache[Path, MapFile.Reader] =
@@ -44,7 +44,7 @@ class HadoopCollectionReader(
       .removalListener[Path, MapFile.Reader] { case (_, v, _) => v.close() }
       .build[Path, MapFile.Reader]
 
-  implicit val ec: ExecutionContext = getExecutionContext()
+  implicit val ec: ExecutionContext = executionContext
 
   private def predicate(row: (Path, BigInt, BigInt), index: BigInt): Boolean =
     (index >= row._2) && ((index <= row._3) || (row._3 == -1))

@@ -20,14 +20,15 @@ import geotrellis.raster.CellGrid
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.layer._
 import geotrellis.store._
+import geotrellis.store.util._
 import geotrellis.store.cog._
 import geotrellis.store.index._
 import geotrellis.store.s3._
 import geotrellis.store.s3.cog._
 import geotrellis.spark.store.cog._
+import geotrellis.util._
 
 import org.apache.spark.SparkContext
-import geotrellis.util._
 import software.amazon.awssdk.services.s3._
 import software.amazon.awssdk.services.s3.model._
 import com.typesafe.scalalogging.LazyLogging
@@ -44,23 +45,19 @@ import java.net.URI
  */
 class S3COGLayerReader(
   val attributeStore: AttributeStore,
-  val getClient: () => S3Client = S3ClientProducer.get,
-  val getExecutionContext: () => ExecutionContext = () => BlockingThreadPool.executionContext
+  s3Client: => S3Client = S3ClientProducer.get(),
+  executionContext: => ExecutionContext = BlockingThreadPool.executionContext
 )(@transient implicit val sc: SparkContext) extends COGLayerReader[LayerId] with LazyLogging {
 
-  @transient implicit lazy val ec: ExecutionContext = getExecutionContext()
+  @transient implicit lazy val ec: ExecutionContext = executionContext
 
   val defaultNumPartitions: Int = sc.defaultParallelism
 
-  lazy val client = getClient()
+  implicit def getByteReader(uri: URI): ByteReader = byteReader(uri, s3Client)
 
-  implicit def getByteReader(uri: URI): ByteReader = byteReader(uri, client)
+  def pathExists(path: String): Boolean = s3Client.objectExists(path)
 
-  def pathExists(path: String): Boolean =
-    client.objectExists(path)
-
-  def fullPath(path: String): URI =
-    new URI(s"s3://$path")
+  def fullPath(path: String): URI = new URI(s"s3://$path")
 
   def getHeader(id: LayerId): S3LayerHeader =
     try {
@@ -106,7 +103,7 @@ object S3COGLayerReader {
   def apply(attributeStore: S3AttributeStore)(implicit sc: SparkContext): S3COGLayerReader =
     new S3COGLayerReader(
       attributeStore,
-      attributeStore.getClient,
-      () => BlockingThreadPool.executionContext
+      attributeStore.client,
+      BlockingThreadPool.executionContext
     )
 }

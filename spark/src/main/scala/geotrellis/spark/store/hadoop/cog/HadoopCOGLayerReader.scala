@@ -29,12 +29,12 @@ import geotrellis.store.hadoop.util._
 import geotrellis.store.index.Index
 import geotrellis.spark.store.cog._
 import geotrellis.spark.store.hadoop._
+import geotrellis.store.util.BlockingThreadPool
 import geotrellis.util._
 
 import com.typesafe.scalalogging.LazyLogging
 import org.apache.hadoop.fs.Path
 import org.apache.spark.SparkContext
-
 import java.net.URI
 
 import scala.concurrent.ExecutionContext
@@ -47,10 +47,10 @@ import scala.reflect.ClassTag
  */
 class HadoopCOGLayerReader(
   val attributeStore: AttributeStore,
-  val getExecutionContext: () => ExecutionContext = () => BlockingThreadPool.executionContext
+  executionContext: => ExecutionContext = BlockingThreadPool.executionContext
 )(@transient implicit val sc: SparkContext) extends COGLayerReader[LayerId] with LazyLogging {
 
-  @transient implicit lazy val ec: ExecutionContext = getExecutionContext()
+  @transient implicit lazy val ec: ExecutionContext = executionContext
 
   val hadoopConfiguration = SerializableConfiguration(sc.hadoopConfiguration)
 

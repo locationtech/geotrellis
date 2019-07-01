@@ -24,10 +24,8 @@ import geotrellis.spark.testkit.TestEnvironment
 import geotrellis.spark.render._
 import geotrellis.spark.testkit.testfiles.TestFiles
 import geotrellis.spark.store.s3._
-import geotrellis.spark.store.s3.testkit._
 import geotrellis.spark.store.s3.SaveToS3
 
-import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.model._
 
 import org.scalatest._
@@ -36,7 +34,7 @@ class S3SaveImagesSpec extends FunSpec with TestEnvironment with Matchers {
   lazy val sample = TestFiles.generateSpatial("all-ones")
   val  mockClient = MockS3Client()
   S3TestUtils.cleanBucket(mockClient, "mock-bucket")
-  S3ClientProducer.set(() => MockS3Client())
+  S3ClientProducer.set(() => MockS3Client.instance)
 
   describe("Saving of Rendered Tiles to S3") {
     it("should work with PNGs") {
@@ -45,9 +43,8 @@ class S3SaveImagesSpec extends FunSpec with TestEnvironment with Matchers {
       val bucket = "mock-bucket"
       val keyToPath = SaveToS3.spatialKeyToPath(id, template)
       val rdd = sample.renderPng().mapValues(_.bytes)
-      val getClient = { () => MockS3Client() }
 
-      SaveToS3(rdd, keyToPath, getClient = getClient)
+      SaveToS3(rdd, keyToPath, s3Client = MockS3Client.instance)
       rdd.collect().foreach { case (SpatialKey(col, row), bytes) =>
         val getReq = GetObjectRequest.builder()
           .bucket(bucket)
@@ -63,9 +60,8 @@ class S3SaveImagesSpec extends FunSpec with TestEnvironment with Matchers {
       val bucket = "mock-bucket"
       val keyToPath = SaveToS3.spatialKeyToPath(id, template)
       val rdd = sample.renderPng().mapValues(_.bytes)
-      val getClient = { () => MockS3Client() }
 
-      SaveToS3(rdd, keyToPath, getClient = getClient)
+      SaveToS3(rdd, keyToPath, s3Client = MockS3Client.instance)
       rdd.collect().foreach { case (SpatialKey(col, row), bytes) =>
         val getReq = GetObjectRequest.builder()
           .bucket(bucket)
@@ -81,9 +77,8 @@ class S3SaveImagesSpec extends FunSpec with TestEnvironment with Matchers {
       val bucket = "mock-bucket"
       val keyToPath = SaveToS3.spatialKeyToPath(id, template)
       val rdd = sample.renderPng().mapValues(_.bytes)
-      val getClient = { () => MockS3Client() }
 
-      SaveToS3(rdd, keyToPath, getClient = getClient)
+      SaveToS3(rdd, keyToPath, s3Client = MockS3Client.instance)
       rdd.collect().foreach { case (SpatialKey(col, row), bytes) =>
         val getReq = GetObjectRequest.builder()
           .bucket(bucket)

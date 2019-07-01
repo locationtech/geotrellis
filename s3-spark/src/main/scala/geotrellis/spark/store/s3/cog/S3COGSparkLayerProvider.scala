@@ -33,12 +33,12 @@ import java.net.URI
  */
 class S3COGSparkLayerProvider extends S3COGCollectionLayerProvider with COGLayerReaderProvider with COGLayerWriterProvider {
   def layerReader(uri: URI, store: AttributeStore, sc: SparkContext): COGLayerReader[LayerId] = {
-    new S3COGLayerReader(store, getClient)(sc)
+    new S3COGLayerReader(store, client)(sc)
   }
 
   def layerWriter(uri: URI, store: AttributeStore): COGLayerWriter = {
     // TODO: encoder ACL changes in putObjectModifier
     val s3Uri = new AmazonS3URI(uri)
-    new S3COGLayerWriter(store, bucket = s3Uri.getBucket(), keyPrefix = s3Uri.getKey())
+    new S3COGLayerWriter(store, bucket = s3Uri.getBucket, keyPrefix = s3Uri.getKey)
   }
 }

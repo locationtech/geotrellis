@@ -50,9 +50,8 @@ import scala.reflect.ClassTag
   val layoutScheme: ZoomedLayoutScheme
   val resampleMethod: ResampleMethod
   val strategy: OverviewStrategy
-  val getExecutionContext: () => ExecutionContext
 
-  implicit lazy val ec = getExecutionContext()
+  implicit val ec: ExecutionContext
   implicit val cs      = IO.contextShift(ec)
 
   @experimental def read[V <: CellGrid[Int]: GeoTiffReader: ClassTag]

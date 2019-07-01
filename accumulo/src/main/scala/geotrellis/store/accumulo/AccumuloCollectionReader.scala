@@ -19,7 +19,7 @@ package geotrellis.store.accumulo
 import geotrellis.layer._
 import geotrellis.store.avro.codecs.KeyValueRecordCodec
 import geotrellis.store.avro.{AvroEncoder, AvroRecordCodec}
-import geotrellis.util.BlockingThreadPool
+import geotrellis.store.util.BlockingThreadPool
 
 import org.apache.accumulo.core.data.{Range => AccumuloRange}
 import org.apache.accumulo.core.security.Authorizations
@@ -41,7 +41,7 @@ object AccumuloCollectionReader {
     decomposeBounds: KeyBounds[K] => Seq[AccumuloRange],
     filterIndexOnly: Boolean,
     writerSchema: Option[Schema] = None,
-    getExecutionContext: () => ExecutionContext = () => BlockingThreadPool.executionContext
+    executionContext: => ExecutionContext = BlockingThreadPool.executionContext
   )(implicit instance: AccumuloInstance): Seq[(K, V)] = {
     if(queryKeyBounds.isEmpty) return Seq.empty[(K, V)]
 
@@ -50,7 +50,7 @@ object AccumuloCollectionReader {
 
     val ranges = queryKeyBounds.flatMap(decomposeBounds).toIterator
 
-    implicit val ec = getExecutionContext()
+    implicit val ec = executionContext
     implicit val cs = IO.contextShift(ec)
 
     val range: fs2.Stream[IO, AccumuloRange] = fs2.Stream.fromIterator[IO, AccumuloRange](ranges)

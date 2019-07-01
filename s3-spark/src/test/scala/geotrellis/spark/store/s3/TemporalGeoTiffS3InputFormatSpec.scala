@@ -23,7 +23,6 @@ import geotrellis.spark._
 import geotrellis.spark.store.hadoop._
 import geotrellis.spark.ingest._
 import geotrellis.util.Filesystem
-import geotrellis.spark.store.s3.testkit._
 import geotrellis.spark.testkit.TestEnvironment
 
 import software.amazon.awssdk.services.s3.model._

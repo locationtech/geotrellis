@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package geotrellis.util.conf
+package geotrellis.store.conf
 
 import pureconfig._
 

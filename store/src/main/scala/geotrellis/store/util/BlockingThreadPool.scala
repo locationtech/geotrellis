@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package geotrellis.util
+package geotrellis.store.util
 
-import geotrellis.util.conf.BlockingThreadPoolConfig
+import geotrellis.store.conf.BlockingThreadPoolConfig
 
 import java.util.concurrent.{ExecutorService, Executors}
 import scala.concurrent.ExecutionContext

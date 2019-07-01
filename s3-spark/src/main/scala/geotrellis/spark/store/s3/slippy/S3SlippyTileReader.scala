@@ -14,22 +14,14 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.store.slippy
+package geotrellis.spark.store.s3.slippy
 
-import geotrellis.vector._
-import geotrellis.raster._
-import geotrellis.raster.io.geotiff._
+import geotrellis.spark.store.slippy._
 import geotrellis.layer.SpatialKey
 import geotrellis.store.s3._
-import geotrellis.spark._
-import geotrellis.spark.store.s3._
-import geotrellis.util.Filesystem
 
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.model.{GetObjectRequest, ListObjectsV2Request, S3Object}
-
-import org.apache.commons.io.FileUtils
-import org.apache.commons.io.filefilter._
 import org.apache.spark._
 import org.apache.spark.rdd._
 import org.apache.commons.io.IOUtils
@@ -37,15 +29,11 @@ import org.apache.commons.io.IOUtils
 import scala.collection.JavaConverters._
 import java.io.File
 
-
 class S3SlippyTileReader[T](
   uri: String,
-  val getClient: () => S3Client = S3ClientProducer.get
+  s3Client: => S3Client = S3ClientProducer.get()
 )(fromBytes: (SpatialKey, Array[Byte]) => T) extends SlippyTileReader[T] {
   import SlippyTileReader.TilePath
-
-  @transient
-  lazy val client = getClient()
 
   val parsed = new java.net.URI(uri)
   val bucket = parsed.getHost
@@ -62,25 +50,25 @@ class S3SlippyTileReader[T](
       .prefix(s3key)
       .build()
 
-    val objectList: List[S3Object] = client.listObjectsV2(listRequest)
+    val objectList: List[S3Object] = s3Client.listObjectsV2(listRequest)
       .contents
       .asScala
       .toList
 
     objectList match {
-        case List() => sys.error(s"KeyNotFound: $s3key not found in bucket $bucket")
-        case List(s3obj) =>
-          val getRequest = GetObjectRequest.builder()
-            .bucket(bucket)
-            .key(s3obj.key)
-            .build()
-          val s3objStream = client.getObject(getRequest)
-          val bytes = IOUtils.toByteArray(s3objStream)
-          val t = fromBytes(spatialkey, bytes)
-          s3objStream.close()
-          t
-        case _ => sys.error(s"Multiple keys found for prefix $s3key in bucket $bucket")
-      }
+      case List() => sys.error(s"KeyNotFound: $s3key not found in bucket $bucket")
+      case List(s3obj) =>
+        val getRequest = GetObjectRequest.builder()
+          .bucket(bucket)
+          .key(s3obj.key)
+          .build()
+        val s3objStream = s3Client.getObject(getRequest)
+        val bytes = IOUtils.toByteArray(s3objStream)
+        val t = fromBytes(spatialkey, bytes)
+        s3objStream.close()
+        t
+      case _ => sys.error(s"Multiple keys found for prefix $s3key in bucket $bucket")
+    }
   }
 
   def read(zoom: Int)(implicit sc: SparkContext): RDD[(SpatialKey, T)] = {
@@ -89,7 +77,7 @@ class S3SlippyTileReader[T](
         .bucket(bucket)
         .prefix(new File(prefix, zoom.toString).getPath)
         .build()
-      client.listObjectsV2Paginator(listRequest)
+      s3Client.listObjectsV2Paginator(listRequest)
         .contents
         .asScala
         .flatMap { s3obj =>
@@ -105,14 +93,14 @@ class S3SlippyTileReader[T](
     sc.parallelize(s3keys)
       .partitionBy(new HashPartitioner(numPartitions))
       .mapPartitions({ partition =>
-        val client = getClient()
+        val s3Client = this.s3Client
 
         partition.map { case (spatialKey, s3Key) =>
           val getRequest = GetObjectRequest.builder()
             .bucket(bucket)
             .key(s3Key)
             .build()
-          val s3obj = client.getObject(getRequest)
+          val s3obj = s3Client.getObject(getRequest)
           val bytes = IOUtils.toByteArray(s3obj)
           val t = fromBytes(spatialKey, bytes)
           s3obj.close()

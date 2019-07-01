@@ -32,7 +32,7 @@ class S3LayerCopier(
   val attributeStore: AttributeStore,
   destBucket: String,
   destKeyPrefix: String,
-  val getClient: () => S3Client = S3ClientProducer.get
+  s3Client: => S3Client = S3ClientProducer.get()
 ) extends LayerCopier[LayerId] {
 
   // Not necessary if this isn't recursive any longer due to the iterator handling *all* objects
@@ -69,7 +69,6 @@ class S3LayerCopier(
 
     val bucket = header.bucket
     val prefix = header.key
-    val s3Client = getClient()
 
     val listRequest =
       ListObjectsV2Request.builder()
@@ -93,19 +92,19 @@ class S3LayerCopier(
 }
 
 object S3LayerCopier {
-  def apply(attributeStore: AttributeStore, destBucket: String, destKeyPrefix: String, getClient: () => S3Client): S3LayerCopier =
-    new S3LayerCopier(attributeStore, destBucket, destKeyPrefix, getClient)
+  def apply(attributeStore: AttributeStore, destBucket: String, destKeyPrefix: String, s3Client: => S3Client): S3LayerCopier =
+    new S3LayerCopier(attributeStore, destBucket, destKeyPrefix, s3Client)
 
-  def apply(bucket: String, keyPrefix: String, destBucket: String, destKeyPrefix: String, getClient: () => S3Client): S3LayerCopier = {
-    val attStore = S3AttributeStore(bucket, keyPrefix, getClient)
-    apply(attStore, destBucket, destKeyPrefix, getClient)
+  def apply(bucket: String, keyPrefix: String, destBucket: String, destKeyPrefix: String, s3Client: => S3Client): S3LayerCopier = {
+    val attStore = S3AttributeStore(bucket, keyPrefix, s3Client)
+    apply(attStore, destBucket, destKeyPrefix, s3Client)
   }
 
-  def apply(bucket: String, keyPrefix: String, getClient: () => S3Client): S3LayerCopier = {
-    val attStore = S3AttributeStore(bucket, keyPrefix, getClient)
+  def apply(bucket: String, keyPrefix: String, s3Client: => S3Client): S3LayerCopier = {
+    val attStore = S3AttributeStore(bucket, keyPrefix, s3Client)
     apply(attStore)
   }
 
   def apply(attributeStore: S3AttributeStore): S3LayerCopier =
-    apply(attributeStore, attributeStore.bucket, attributeStore.prefix, attributeStore.getClient)
+    apply(attributeStore, attributeStore.bucket, attributeStore.prefix, attributeStore.client)
 }

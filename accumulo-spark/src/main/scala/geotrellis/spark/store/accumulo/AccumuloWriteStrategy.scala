@@ -19,8 +19,8 @@ package geotrellis.spark.store.accumulo
 import geotrellis.store.accumulo._
 import geotrellis.store.hadoop.util._
 import geotrellis.spark.util._
-import geotrellis.util.BlockingThreadPool
-import geotrellis.util.conf.BlockingThreadPoolConfig
+import geotrellis.store.util.BlockingThreadPool
+import geotrellis.store.conf.BlockingThreadPoolConfig
 
 import org.apache.hadoop.mapreduce.Job
 import org.apache.hadoop.fs.Path
@@ -110,16 +110,16 @@ object HdfsWriteStrategy {
  *
  * @param config Configuration for the BatchWriters
  */
-case class SocketWriteStrategy(
+class SocketWriteStrategy(
   @transient config: BatchWriterConfig = new BatchWriterConfig().setMaxMemory(128*1024*1024).setMaxWriteThreads(BlockingThreadPoolConfig.threads),
-  getExecutionContext: () => ExecutionContext = () => BlockingThreadPool.executionContext
+  executionContext: => ExecutionContext = BlockingThreadPool.executionContext
 ) extends AccumuloWriteStrategy {
   val kwConfig = KryoWrapper(config) // BatchWriterConfig is not java serializable
 
   def write(kvPairs: RDD[(Key, Value)], instance: AccumuloInstance, table: String): Unit = {
     kvPairs.foreachPartition { partition =>
       if(partition.nonEmpty) {
-        implicit val ec = getExecutionContext()
+        implicit val ec = executionContext
         implicit val cs = IO.contextShift(ec)
 
         val writer = instance.connector.createBatchWriter(table, kwConfig.value)
@@ -146,4 +146,11 @@ case class SocketWriteStrategy(
       }
     }
   }
+}
+
+object SocketWriteStrategy {
+  def apply(
+    config: BatchWriterConfig = new BatchWriterConfig().setMaxMemory(128*1024*1024).setMaxWriteThreads(BlockingThreadPoolConfig.threads),
+    executionContext: => ExecutionContext = BlockingThreadPool.executionContext
+  ): SocketWriteStrategy = new SocketWriteStrategy(config, executionContext)
 }

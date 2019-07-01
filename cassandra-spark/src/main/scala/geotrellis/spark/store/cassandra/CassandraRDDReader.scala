@@ -22,7 +22,7 @@ import geotrellis.store.cassandra._
 import geotrellis.store.avro.codecs.KeyValueRecordCodec
 import geotrellis.store.avro.{AvroEncoder, AvroRecordCodec}
 import geotrellis.store.index.{IndexRanges, MergeQueue}
-import geotrellis.store.util.IOUtils
+import geotrellis.store.util.{BlockingThreadPool, IOUtils}
 import geotrellis.spark.store._
 import geotrellis.spark.util.KryoWrapper
 
@@ -35,8 +35,6 @@ import org.apache.spark.rdd.RDD
 import scala.collection.JavaConverters._
 import scala.reflect.ClassTag
 import java.math.BigInteger
-
-import geotrellis.util.BlockingThreadPool
 
 import scala.concurrent.ExecutionContext
 
@@ -51,7 +49,7 @@ object CassandraRDDReader {
     filterIndexOnly: Boolean,
     writerSchema: Option[Schema] = None,
     numPartitions: Option[Int] = None,
-    getExecutionContext: () => ExecutionContext = () => BlockingThreadPool.executionContext
+    executionContext: => ExecutionContext = BlockingThreadPool.executionContext
   )(implicit sc: SparkContext): RDD[(K, V)] = {
     if (queryKeyBounds.isEmpty) return sc.emptyRDD[(K, V)]
 
@@ -76,7 +74,7 @@ object CassandraRDDReader {
     sc.parallelize(bins, bins.size)
       .mapPartitions { partition: Iterator[Seq[(BigInt, BigInt)]] =>
         instance.withSession { session =>
-          implicit val ec = getExecutionContext()
+          implicit val ec = executionContext
           val statement = session.prepare(query)
 
           val result = partition map { seq =>

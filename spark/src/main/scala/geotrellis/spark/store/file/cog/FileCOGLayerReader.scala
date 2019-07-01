@@ -17,10 +17,10 @@
 package geotrellis.spark.store.file.cog
 
 import geotrellis.layer._
-
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.store._
+import geotrellis.store.util._
 import geotrellis.store.cog.{Extension, ZoomRange}
 import geotrellis.store.file.{FileAttributeStore, FileLayerHeader, KeyPathGenerator}
 import geotrellis.store.file.cog.byteReader
@@ -45,10 +45,10 @@ import scala.reflect.ClassTag
 class FileCOGLayerReader(
   val attributeStore: AttributeStore,
   val catalogPath: String,
-  val getExecutionContext: () => ExecutionContext = () => BlockingThreadPool.executionContext
+  executionContext: => ExecutionContext = BlockingThreadPool.executionContext
 )(@transient implicit val sc: SparkContext) extends COGLayerReader[LayerId] with LazyLogging {
 
-  @transient implicit lazy val ec: ExecutionContext = getExecutionContext()
+  @transient implicit lazy val ec: ExecutionContext = executionContext
 
   val defaultNumPartitions: Int = sc.defaultParallelism
 

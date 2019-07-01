@@ -21,9 +21,9 @@ import geotrellis.spark._
 import geotrellis.store.avro.codecs.KeyValueRecordCodec
 import geotrellis.store.index.{IndexRanges, MergeQueue}
 import geotrellis.store.avro.{AvroEncoder, AvroRecordCodec}
-import geotrellis.store.util.IOUtils
+import geotrellis.store.util.{BlockingThreadPool, IOUtils}
 import geotrellis.spark.util.KryoWrapper
-import geotrellis.util.{BlockingThreadPool, Filesystem}
+import geotrellis.util.Filesystem
 
 import org.apache.avro.Schema
 import org.apache.spark.SparkContext
@@ -40,7 +40,7 @@ object FileRDDReader {
     filterIndexOnly: Boolean,
     writerSchema: Option[Schema] = None,
     numPartitions: Option[Int] = None,
-    getExecutionContext: () => ExecutionContext = () => BlockingThreadPool.executionContext
+    executionContext: => ExecutionContext = BlockingThreadPool.executionContext
   )(implicit sc: SparkContext): RDD[(K, V)] = {
     if(queryKeyBounds.isEmpty) return sc.emptyRDD[(K, V)]
 
@@ -58,7 +58,7 @@ object FileRDDReader {
 
     sc.parallelize(bins, bins.size)
       .mapPartitions { partition: Iterator[Seq[(BigInt, BigInt)]] =>
-        implicit val ec: ExecutionContext = getExecutionContext()
+        implicit val ec: ExecutionContext = executionContext
 
         partition flatMap { seq =>
           IOUtils.parJoin[K, V](seq.toIterator) { index: BigInt =>

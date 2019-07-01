@@ -19,14 +19,11 @@ package geotrellis.spark.store.s3.util
 import java.nio.file.{ Paths, Files }
 import java.nio.ByteBuffer
 import geotrellis.store.s3.util._
-import geotrellis.util._
 import geotrellis.spark.store.s3._
-import geotrellis.spark.store.s3.testkit._
-import spire.syntax.cfor._
 
+import spire.syntax.cfor._
 import software.amazon.awssdk.core.sync.RequestBody
 import software.amazon.awssdk.services.s3.model._
-import org.apache.commons.io.IOUtils
 
 import org.scalatest._
 

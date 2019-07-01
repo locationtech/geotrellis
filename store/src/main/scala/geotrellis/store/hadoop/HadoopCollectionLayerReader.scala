@@ -19,6 +19,7 @@ package geotrellis.store.hadoop
 import geotrellis.layer._
 import geotrellis.layer.{ContextCollection, Metadata}
 import geotrellis.store._
+import geotrellis.store.util.BlockingThreadPool
 import geotrellis.store.avro._
 import geotrellis.util._
 
@@ -39,10 +40,10 @@ class HadoopCollectionLayerReader(
   val attributeStore: AttributeStore,
   conf: Configuration,
   maxOpenFiles: Int = 16,
-  getExecutionContext: () => ExecutionContext = () => BlockingThreadPool.executionContext
+  executionContext: => ExecutionContext = BlockingThreadPool.executionContext
 ) extends CollectionLayerReader[LayerId] with LazyLogging {
 
-  implicit val ec: ExecutionContext = getExecutionContext()
+  @transient implicit lazy val ec: ExecutionContext = executionContext
 
   def read[
     K: AvroRecordCodec: Boundable: Decoder: ClassTag,

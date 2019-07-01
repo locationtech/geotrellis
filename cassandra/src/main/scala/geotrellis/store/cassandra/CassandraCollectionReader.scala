@@ -22,7 +22,7 @@ import geotrellis.store.avro.codecs.KeyValueRecordCodec
 import geotrellis.store.avro.{AvroEncoder, AvroRecordCodec}
 import geotrellis.store.index.MergeQueue
 import geotrellis.store.LayerId
-import geotrellis.util.BlockingThreadPool
+import geotrellis.store.util.BlockingThreadPool
 
 import org.apache.avro.Schema
 import com.datastax.driver.core.querybuilder.QueryBuilder
@@ -44,7 +44,7 @@ object CassandraCollectionReader {
     decomposeBounds: KeyBounds[K] => Seq[(BigInt, BigInt)],
     filterIndexOnly: Boolean,
     writerSchema: Option[Schema] = None,
-    getExecutionContext: () => ExecutionContext = () => BlockingThreadPool.executionContext
+    executionContext: ExecutionContext = BlockingThreadPool.executionContext
   ): Seq[(K, V)] = {
     if (queryKeyBounds.isEmpty) return Seq.empty[(K, V)]
 
@@ -56,7 +56,7 @@ object CassandraCollectionReader {
     else
       queryKeyBounds.flatMap(decomposeBounds)
 
-    implicit val ec = getExecutionContext()
+    implicit val ec = executionContext
 
     val query = QueryBuilder.select("value")
       .from(keyspace, table)

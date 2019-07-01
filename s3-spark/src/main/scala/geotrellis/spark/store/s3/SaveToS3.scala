@@ -19,7 +19,7 @@ package geotrellis.spark.store.s3
 import geotrellis.layer.SpatialKey
 import geotrellis.store.LayerId
 import geotrellis.store.s3._
-import geotrellis.util.BlockingThreadPool
+import geotrellis.store.util.BlockingThreadPool
 
 import software.amazon.awssdk.services.s3.model.{PutObjectRequest, PutObjectResponse, S3Exception}
 import software.amazon.awssdk.services.s3.S3Client
@@ -38,7 +38,7 @@ object SaveToS3 {
     * @param pathTemplate The template used to convert a Layer ID and a SpatialKey into an S3 URI
     * @return             A functon which takes a spatial key and returns an S3 URI
     */
-  def spatialKeyToPath(id: LayerId, pathTemplate: String): (SpatialKey => String) = {
+  def spatialKeyToPath(id: LayerId, pathTemplate: String): SpatialKey => String = {
     // Return λ
     { key =>
       pathTemplate
@@ -53,15 +53,15 @@ object SaveToS3 {
     * @param keyToUri  A function that maps each key to full s3 uri
     * @param rdd       An RDD of K, Byte-Array pairs (where the byte-arrays contains image data) to send to S3
     * @param putObjectModifier  Function that will be applied ot S3 PutObjectRequests, so that they can be modified (e.g. to change the ACL settings)
-    * @param getClient   A function which returns an S3 Client (real or mock) into-which to save the data
-    * @param getExecutionContext   A function to get execution context
+    * @param s3Client   A function which returns an S3 Client (real or mock) into-which to save the data
+    * @param executionContext   A function to get execution context
     */
   def apply[K](
     rdd: RDD[(K, Array[Byte])],
     keyToUri: K => String,
     putObjectModifier: PutObjectRequest => PutObjectRequest = { p => p },
-    getClient: () => S3Client = S3ClientProducer.get,
-    getExecutionContext: () => ExecutionContext = () => BlockingThreadPool.executionContext
+    s3Client: => S3Client = S3ClientProducer.get(),
+    executionContext: => ExecutionContext = BlockingThreadPool.executionContext
   ): Unit = {
     val keyToPrefix: K => (String, String) = key => {
       val uri = new URI(keyToUri(key))
@@ -72,7 +72,7 @@ object SaveToS3 {
     }
 
     rdd.foreachPartition { partition =>
-      val s3client = getClient()
+      val s3client = s3Client
       val requests: fs2.Stream[IO, (PutObjectRequest, RequestBody)] =
         fs2.Stream.fromIterator[IO, (PutObjectRequest, RequestBody)](
           partition.map { case (key, bytes) =>
@@ -88,7 +88,7 @@ object SaveToS3 {
           }
         )
 
-      implicit val ec    = getExecutionContext()
+      implicit val ec    = executionContext
       implicit val timer = IO.timer(ec)
       implicit val cs    = IO.contextShift(ec)
 

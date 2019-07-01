@@ -33,10 +33,8 @@ import scala.reflect.ClassTag
 
 class S3ValueReader(
   val attributeStore: AttributeStore,
-  val getClient: () => S3Client
+  s3Client: => S3Client
 ) extends OverzoomingValueReader {
-
-  val s3Client: S3Client = getClient()
 
   def reader[K: AvroRecordCodec: Decoder: ClassTag, V: AvroRecordCodec](layerId: LayerId): Reader[K, V] = new Reader[K, V] {
     val header = attributeStore.readHeader[S3LayerHeader](layerId)
@@ -77,23 +75,23 @@ object S3ValueReader {
   def apply[K: AvroRecordCodec: Decoder: ClassTag, V: AvroRecordCodec](
     attributeStore: AttributeStore,
     layerId: LayerId,
-    getClient: () => S3Client
+    s3Client: => S3Client
   ): Reader[K, V] =
-    new S3ValueReader(attributeStore, getClient).reader[K, V](layerId)
+    new S3ValueReader(attributeStore, s3Client).reader[K, V](layerId)
 
   def apply[K: AvroRecordCodec: Decoder: SpatialComponent: ClassTag, V <: CellGrid[Int]: AvroRecordCodec: ? => TileResampleMethods[V]](
     attributeStore: AttributeStore,
     layerId: LayerId,
     resampleMethod: ResampleMethod,
-    getClient: () => S3Client
+    s3Client: => S3Client
   ): Reader[K, V] =
-    new S3ValueReader(attributeStore, getClient).overzoomingReader[K, V](layerId, resampleMethod)
+    new S3ValueReader(attributeStore, s3Client).overzoomingReader[K, V](layerId, resampleMethod)
 
-  def apply(bucket: String, root: String, getClient: () => S3Client): S3ValueReader = {
-    val attStore = new S3AttributeStore(bucket, root, getClient)
-    new S3ValueReader(attStore, getClient)
+  def apply(bucket: String, root: String, s3Client: => S3Client): S3ValueReader = {
+    val attStore = new S3AttributeStore(bucket, root, s3Client)
+    new S3ValueReader(attStore, s3Client)
   }
 
-  def apply(bucket: String, getClient: () => S3Client): S3ValueReader =
-    apply(bucket, "", getClient)
+  def apply(bucket: String, s3Client: => S3Client): S3ValueReader =
+    apply(bucket, "", s3Client)
 }

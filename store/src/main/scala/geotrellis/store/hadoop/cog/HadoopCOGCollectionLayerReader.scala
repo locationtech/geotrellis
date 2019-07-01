@@ -20,6 +20,7 @@ import geotrellis.layer._
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.store._
+import geotrellis.store.util._
 import geotrellis.store.cog.{COGCollectionLayerReader, Extension, ZoomRange}
 import geotrellis.store.hadoop.{HadoopAttributeStore, SerializableConfiguration}
 import geotrellis.store.hadoop.util._
@@ -45,14 +46,14 @@ class HadoopCOGCollectionLayerReader(
   val attributeStore: AttributeStore,
   val catalogPath: String,
   val conf: Configuration = new Configuration,
-  val getExecutionContext: () => ExecutionContext = () => BlockingThreadPool.executionContext
+  executionContext: => ExecutionContext = BlockingThreadPool.executionContext
 ) extends COGCollectionLayerReader[LayerId] with LazyLogging {
 
   val serConf: SerializableConfiguration = SerializableConfiguration(conf)
 
   implicit def getByteReader(uri: URI): ByteReader = byteReader(uri, conf)
 
-  implicit val ec: ExecutionContext = getExecutionContext()
+  @transient implicit lazy val ec: ExecutionContext = executionContext
 
   def read[
     K: SpatialComponent: Boundable: Decoder: ClassTag,

@@ -23,7 +23,7 @@ import geotrellis.store.avro.codecs._
 import geotrellis.store.cassandra._
 import geotrellis.spark.store._
 import geotrellis.spark.util.KryoWrapper
-import geotrellis.util.BlockingThreadPool
+import geotrellis.store.util.BlockingThreadPool
 
 import com.datastax.driver.core.DataType._
 import com.datastax.driver.core.querybuilder.QueryBuilder
@@ -50,8 +50,8 @@ object CassandraRDDWriter {
     decomposeKey: K => BigInt,
     keyspace: String,
     table: String,
-    getExecutionContext: () => ExecutionContext = () => BlockingThreadPool.executionContext
-  ): Unit = update(rdd, instance, layerId, decomposeKey, keyspace, table, None, None, getExecutionContext)
+    executionContext: => ExecutionContext = BlockingThreadPool.executionContext
+  ): Unit = update(rdd, instance, layerId, decomposeKey, keyspace, table, None, None, executionContext)
 
   private[cassandra] def update[K: AvroRecordCodec, V: AvroRecordCodec](
     raster: RDD[(K, V)],
@@ -62,7 +62,7 @@ object CassandraRDDWriter {
     table: String,
     writerSchema: Option[Schema],
     mergeFunc: Option[(V,V) => V],
-    getExecutionContext: () => ExecutionContext = () => BlockingThreadPool.executionContext
+    executionContext: => ExecutionContext = BlockingThreadPool.executionContext
   ): Unit = {
     implicit val sc = raster.sparkContext
 
@@ -114,7 +114,7 @@ object CassandraRDDWriter {
                   partition.map { case (key, value) => (key, value.toVector) }
                 )
 
-              implicit val ec = getExecutionContext()
+              implicit val ec = executionContext
               implicit val cs = IO.contextShift(ec)
 
               def elaborateRow(row: (BigInt, Vector[(K,V)])): fs2.Stream[IO, (BigInt, Vector[(K,V)])] = {

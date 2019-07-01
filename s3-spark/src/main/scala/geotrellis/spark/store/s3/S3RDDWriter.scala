@@ -22,7 +22,7 @@ import geotrellis.store.avro._
 import geotrellis.store.avro.codecs.KeyValueRecordCodec
 import geotrellis.store.s3._
 import geotrellis.spark.util.KryoWrapper
-import geotrellis.util.BlockingThreadPool
+import geotrellis.store.util.BlockingThreadPool
 
 import cats.effect.IO
 import cats.syntax.apply._
@@ -38,8 +38,8 @@ import scala.concurrent.ExecutionContext
 import scala.reflect._
 
 class S3RDDWriter(
-  val getClient: () => S3Client = S3ClientProducer.get,
-  val getExecutionContext: () => ExecutionContext = () => BlockingThreadPool.executionContext
+  s3Client: => S3Client = S3ClientProducer.get(),
+  excutionContext: => ExecutionContext = BlockingThreadPool.executionContext
 ) extends Serializable {
 
   def write[K: AvroRecordCodec: ClassTag, V: AvroRecordCodec: ClassTag](
@@ -64,7 +64,6 @@ class S3RDDWriter(
 
     implicit val sc = rdd.sparkContext
 
-    val _getClient = getClient
     val _codec = codec
 
     val pathsToTiles =
@@ -78,10 +77,10 @@ class S3RDDWriter(
 
     pathsToTiles.foreachPartition { partition: Iterator[(String, Iterable[(K, V)])] =>
       if(partition.nonEmpty) {
-        val s3Client  = getClient()
+        val s3Client  = this.s3Client
         val schema = kwWriterSchema.value.getOrElse(_recordCodec.schema)
 
-        implicit val ec    = getExecutionContext()
+        implicit val ec    = excutionContext
         implicit val timer = IO.timer(ec)
         implicit val cs    = IO.contextShift(ec)
 

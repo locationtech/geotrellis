@@ -32,10 +32,10 @@ import _root_.io.circe._
 
 import scala.reflect.ClassTag
 
-class S3LayerManager(attributeStore: S3AttributeStore, getClient: () => S3Client = S3ClientProducer.get)(implicit sc: SparkContext)
+class S3LayerManager(attributeStore: S3AttributeStore, s3Client: => S3Client = S3ClientProducer.get())(implicit sc: SparkContext)
     extends LayerManager[LayerId] {
   def delete(id: LayerId): Unit =
-    S3LayerDeleter(attributeStore, getClient).delete(id)
+    S3LayerDeleter(attributeStore, s3Client).delete(id)
 
   def copy[
     K: AvroRecordCodec: Boundable: Encoder: Decoder: ClassTag,

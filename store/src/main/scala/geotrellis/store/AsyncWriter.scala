@@ -16,7 +16,8 @@
 
 package geotrellis.store
 
-import geotrellis.util.BlockingThreadPool
+import geotrellis.store.util.BlockingThreadPool
+
 import cats.effect.IO
 import cats.syntax.apply._
 import cats.syntax.either._
@@ -24,7 +25,7 @@ import cats.syntax.either._
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success, Try}
 
-abstract class AsyncWriter[Client, V, E](val getExecutionContext: () => ExecutionContext = () => BlockingThreadPool.executionContext) extends Serializable {
+abstract class AsyncWriter[Client, V, E](executionContext: => ExecutionContext = BlockingThreadPool.executionContext) extends Serializable {
 
   def readRecord(client: Client, key: String): Try[V]
 
@@ -41,7 +42,7 @@ abstract class AsyncWriter[Client, V, E](val getExecutionContext: () => Executio
     if (partition.isEmpty) return
 
     // TODO: remove the implicit on ec and consider moving the implicit timer to method signature
-    implicit val ec    = getExecutionContext()
+    implicit val ec    = executionContext
     implicit val timer = IO.timer(ec)
     implicit val cs    = IO.contextShift(ec)
 

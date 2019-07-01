@@ -20,15 +20,13 @@ import geotrellis.raster._
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.layer._
 import geotrellis.store._
+import geotrellis.store.util._
 import geotrellis.store.cog.{COGCollectionLayerReader, Extension, ZoomRange}
 import geotrellis.store.file.{FileAttributeStore, KeyPathGenerator}
 import geotrellis.util._
 
 import com.typesafe.scalalogging.LazyLogging
 import _root_.io.circe._
-
-import java.io.File
-import java.net.URI
 
 import scala.concurrent.ExecutionContext
 import scala.reflect.ClassTag
@@ -43,12 +41,12 @@ import java.io.File
 class FileCOGCollectionLayerReader(
   val attributeStore: AttributeStore,
   val catalogPath: String,
-  val getExecutionContext: () => ExecutionContext = () => BlockingThreadPool.executionContext
+  executionContext: => ExecutionContext = BlockingThreadPool.executionContext
 ) extends COGCollectionLayerReader[LayerId] with LazyLogging {
 
   implicit def getByteReader(uri: URI): ByteReader = byteReader(uri)
 
-  implicit val ec: ExecutionContext = getExecutionContext()
+  @transient implicit lazy val ec: ExecutionContext = executionContext
 
   def read[
     K: SpatialComponent: Boundable: Decoder: ClassTag,

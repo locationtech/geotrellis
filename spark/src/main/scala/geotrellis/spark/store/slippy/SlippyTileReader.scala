@@ -22,7 +22,7 @@ import geotrellis.spark._
 import org.apache.spark._
 import org.apache.spark.rdd._
 
-trait SlippyTileReader[T] {
+trait SlippyTileReader[T] extends Serializable {
   def read(zoom: Int)(implicit sc: SparkContext): RDD[(SpatialKey, T)]
   def read(zoom: Int, key: SpatialKey): T
   def read(zoom: Int, x: Int, y: Int): T =
