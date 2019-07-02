@@ -50,7 +50,7 @@ object PolygonalSummary {
       NoIntersection
     } else {
       geometry match {
-        case area if (rasterArea.coveredBy(area)) =>
+        case area if (area.getDimension==2 && rasterArea.coveredBy(area)) =>
           cfor(0)(_ < rasterExtent.cols, _ + 1) { col =>
             cfor(0)(_ < rasterExtent.rows, _ + 1) { row =>
               gridVisitor.visit(raster, col, row)
