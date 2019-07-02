@@ -67,7 +67,7 @@ ${layers.values.map(_.pretty).mkString}
     layers.values.flatMap(_.features).map(_.geom.reproject(WebMercator,LatLng)).toGeoJson
 
   /** Return a VectorTile to a Spark-friendly structure. */
-  def toIterable: Iterable[Feature[Geometry, Map[String, Value]]] =
+  def toIterable: Iterable[MVTFeature[Geometry]] =
     layers.values.flatMap(_.features)
 
 }

@@ -92,6 +92,11 @@ API Changes & Project structure changes
 
     ``import geotrellis.raster._``
 
+- ``geotrellis.vectortile``
+
+  - **Add:** ``geotrellis.vectortile.MVTFeature`` which properly conforms to the MVT 2.0 spec. Specifically, MVTFeature adds support for an ``Option[Long]`` id property.
+  - **Change:** The ``geotrellis.vectortile.{Layer, VectorTile}`` interfaces now uses ``MVTFeature`` instead of ``geotrellis.vector.Feature``. This better aligns these interfaces with the Mapbox Vector Tile specification.
+
 Fixes & Updates
 ^^^^^^^^^^^^^^^
 
