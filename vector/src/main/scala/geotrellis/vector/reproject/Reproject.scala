@@ -61,6 +61,12 @@ object Reproject {
       p.holes.map{ apply(_, transform) }
     )
 
+  /** Naively reproject an extent
+    *
+    * @note This method is unsafe when attempting to reproject a gridded space (as is the
+    * case when dealing with rasters) and should not be used. Instead, reproject a RasterExtent
+    * to ensure that underlying cells are fully and accurately captured by reprojection.
+    */
   def apply(extent: Extent, src: CRS, dest: CRS): Extent =
     apply(extent.toPolygon, src, dest).envelope
 
