@@ -16,12 +16,34 @@
 
 package geotrellis.store.util
 
-import geotrellis.store.conf.BlockingThreadPoolConfig
+import org.apache.commons.lang3.concurrent.BasicThreadFactory
+import pureconfig._
 
 import java.util.concurrent.{ExecutorService, Executors}
 import scala.concurrent.ExecutionContext
+import scala.util.{Failure, Success, Try}
 
 object BlockingThreadPool extends Serializable {
-  @transient lazy val pool: ExecutorService = Executors.newFixedThreadPool(BlockingThreadPoolConfig.conf.threads)
+  case class Config(threads: Int = Runtime.getRuntime.availableProcessors)
+
+  implicit val configReader = ConfigReader.fromCursor[Config] { cur =>
+    cur.fluent.at("threads").asString match {
+      case Right("default") => Right(Config())
+      case Right(th) => Try(th.toInt) match {
+        case Success(threads) => Right(Config(threads))
+        case Failure(_) => Right(Config())
+      }
+      case Left(_) => Right(Config())
+    }
+  }
+
+  lazy val conf: Config = pureconfig.loadConfigOrThrow[Config]("geotrellis.blocking-thread-pool")
+  implicit def blockingThreadPoolToConf(obj: BlockingThreadPool.type): Config = conf
+
+  @transient lazy val pool: ExecutorService =
+    Executors.newFixedThreadPool(
+      conf.threads,
+      new BasicThreadFactory.Builder().namingPattern("geotrellis-default-io-%d").build()
+    )
   @transient lazy val executionContext: ExecutionContext = ExecutionContext.fromExecutor(pool)
 }

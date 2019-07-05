@@ -40,7 +40,7 @@ import scala.reflect.ClassTag
 class FileCollectionLayerReader(
   val attributeStore: AttributeStore,
   catalogPath: String,
-  executionContext: => ExecutionContext
+  executionContext: => ExecutionContext = BlockingThreadPool.executionContext
 ) extends CollectionLayerReader[LayerId] with LazyLogging {
 
   @transient implicit lazy val ec = executionContext
@@ -73,7 +73,7 @@ class FileCollectionLayerReader(
 
 object FileCollectionLayerReader {
   def apply(attributeStore: AttributeStore, catalogPath: String): FileCollectionLayerReader =
-    new FileCollectionLayerReader(attributeStore, catalogPath, BlockingThreadPool.executionContext)
+    new FileCollectionLayerReader(attributeStore, catalogPath)
 
   def apply(catalogPath: String): FileCollectionLayerReader =
     apply(new FileAttributeStore(catalogPath), catalogPath)
