@@ -38,9 +38,9 @@ object ZFactorCalculator {
   /** Creates a [[ZFactorCalculator]] specifically for layers that are in
    *  LatLng.
    *
-   *  @param unit The [[Unit]] type that the Tiles are in.
+   *  @param unit The [[TileUnit]] type that the Tiles are in.
    */
-  def createLatLngCalculator(unit: Unit): ZFactorCalculator =
+  def createLatLngCalculator(unit: TileUnit): ZFactorCalculator =
     unit match {
       case Feet =>
         ZFactorCalculator((lat: Double) => 1 / (LAT_LNG_FEET_AT_EQUATOR * math.cos(math.toRadians(lat))))

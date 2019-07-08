@@ -2,7 +2,7 @@ package geotrellis.raster.mapalgebra.focal
 
 
 /** The Unit of measurement of a Tile. */
-trait Unit
+trait TileUnit
 
-case object Feet extends Unit
-case object Meters extends Unit
+case object Feet extends TileUnit
+case object Meters extends TileUnit
