@@ -20,7 +20,7 @@ object ZFactorCalculator {
   final val LAT_LNG_FEET_AT_EQUATOR = 365217.6
   final val LAT_LNG_METERS_AT_EQUATOR = 11320
 
-  def createLatLngZFactorCalculator(unit: Unit): ZFactorCalculator =
+  def createLatLngCalculator(unit: Unit): ZFactorCalculator =
     unit match {
       case Feet =>
         ZFactorCalculator((lat: Double) => 1 / (LAT_LNG_FEET_AT_EQUATOR * math.cos(math.toRadians(lat))))
@@ -28,7 +28,7 @@ object ZFactorCalculator {
         ZFactorCalculator((lat: Double) => 1 / (LAT_LNG_METERS_AT_EQUATOR * math.cos(math.toRadians(lat))))
     }
 
-  def createZFactorCalculator(mappedLats: Map[Double, Double]): ZFactorCalculator = {
+  def createCalculator(mappedLats: Map[Double, Double]): ZFactorCalculator = {
     val interp = new LinearInterpolator()
     val spline = interp.interpolate(mappedLats.keys.toArray, mappedLats.values.toArray)
 
