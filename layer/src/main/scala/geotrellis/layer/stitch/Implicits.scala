@@ -17,18 +17,16 @@
 package geotrellis.layer.stitch
 
 import geotrellis.raster._
-import geotrellis.raster.merge._
 import geotrellis.raster.prototype._
 import geotrellis.raster.stitch._
 import geotrellis.layer._
-import geotrellis.vector.Extent
 import geotrellis.util._
 
 object Implicits extends Implicits
 
 trait Implicits {
   implicit class withSpatialTileLayoutCollectionMethods[
-    V <: CellGrid[Int]: Stitcher,
+    V <: CellGrid[Int]: Stitcher: ? => TilePrototypeMethods[V],
     M: GetComponent[?, LayoutDefinition]
   ](
     val self: Seq[(SpatialKey, V)] with Metadata[M]

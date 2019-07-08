@@ -99,5 +99,80 @@ class CollectionStitchMethodsSpec extends FunSpec
 
       assertEqual(tile, layer.stitch.tile)
     }
+
+    it("should correctly sparse stitch a singleband tile with an offset extent") {
+      val expectedTile =
+        createTile(
+          Array(
+            NaN, NaN, NaN, NaN, NaN,
+            1, 1,  1, 1, NaN,
+            1, 1,  1, 1, NaN,
+            1, 1,  1, 1, NaN,
+            1, 1,  1, 1, NaN
+          ), 5, 5)
+
+      val tile =
+        createTile(
+          Array(
+            1, 1,  1, 1,
+            1, 1,  1, 1,
+            1, 1,  1, 1,
+            1, 1,  1, 1
+          ), 4, 4)
+      val extent = Extent(0, 0, 4, 4)
+      val layer =
+        createTileLayerRDD(
+          Raster(tile, extent),
+          TileLayout(4, 4, 1, 1)
+        ).toCollection
+      val testExtent = Extent(0, 0, 5, 5)
+      assertEqual(layer.sparseStitch(testExtent).get.tile, expectedTile)
+    }
+  }
+
+  it("should correctly sparse stitch a multiband tile with an offset extent") {
+    val expectedTile = ArrayMultibandTile(
+      createTile(Array(NaN, NaN, NaN, 1, 1, NaN, 1, 1, NaN), 3, 3),
+      createTile(Array(NaN, NaN, NaN, 2, 2, NaN, 2, 2, NaN), 3, 3)
+    )
+    val tile1 =
+      createTile(
+        Array(
+          1, 1,
+          1, 1
+        ), 2, 2)
+    val tile2 =
+      createTile(
+        Array(
+          2, 2,
+          2, 2
+        ), 2, 2)
+    val tile = ArrayMultibandTile(tile1, tile2)
+    val extent = Extent(0, 0, 2, 2)
+    val layer =
+      createMultibandTileLayerRDD(
+        Raster(tile, extent),
+        TileLayout(2, 2, 1, 1)
+      ).toCollection
+    val testExtent = Extent(0, 0, 3, 3)
+    assertEqual(layer.sparseStitch(testExtent).get.tile, expectedTile)
+  }
+
+  it("should correctly sparse stitch a singleband tile using the raster tile extent") {
+    val tile =
+      createTile(
+        Array(
+          1, 1,  1, 1,
+          1, 1,  1, 1,
+          1, 1,  1, 1,
+          1, 1,  1, 1
+        ), 4, 4)
+    val extent = Extent(0, 0, 4, 4)
+    val layer =
+      createTileLayerRDD(
+        Raster(tile, extent),
+        TileLayout(4, 4, 1, 1)
+      ).toCollection
+    assertEqual(layer.sparseStitch.get.tile, tile)
   }
 }

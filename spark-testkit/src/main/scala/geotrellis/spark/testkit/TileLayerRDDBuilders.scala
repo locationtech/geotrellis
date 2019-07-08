@@ -145,6 +145,12 @@ trait TileLayerRDDBuilders {
   }
 
   def createTileLayerRDD(
+    raster: Raster[Tile],
+    tileLayout: TileLayout
+  )(implicit sc: SparkContext): TileLayerRDD[SpatialKey] =
+    createTileLayerRDD(sc, raster, tileLayout, defaultCRS)
+
+  def createTileLayerRDD(
     sc: SparkContext,
     raster: Raster[Tile],
     tileLayout: TileLayout
@@ -172,6 +178,12 @@ trait TileLayerRDDBuilders {
     tileLayout: TileLayout
   )(implicit sc: SparkContext): MultibandTileLayerRDD[SpatialKey] =
     createMultibandTileLayerRDD(sc, tile, tileLayout)
+
+  def createMultibandTileLayerRDD(
+    raster: Raster[MultibandTile],
+    tileLayout: TileLayout
+  )(implicit sc: SparkContext): MultibandTileLayerRDD[SpatialKey] =
+    createMultibandTileLayerRDD(sc, raster, tileLayout)
 
   def createMultibandTileLayerRDD(
     sc: SparkContext,
