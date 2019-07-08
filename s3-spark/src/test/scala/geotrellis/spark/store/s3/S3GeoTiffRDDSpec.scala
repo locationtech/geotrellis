@@ -21,20 +21,17 @@ import geotrellis.raster.io.geotiff._
 import geotrellis.raster.testkit.RasterMatchers
 import geotrellis.layer._
 import geotrellis.spark._
-import geotrellis.spark.store.s3.testkit._
 import geotrellis.spark.testkit.TestEnvironment
 import geotrellis.vector._
 
 import spire.syntax.cfor._
 import software.amazon.awssdk.core.sync.RequestBody
 import software.amazon.awssdk.services.s3.model._
+import org.apache.spark.rdd.RDD
 
 import java.nio.file.{Files, Paths}
 
 import org.scalatest._
-
-import org.apache.spark.rdd.RDD
-
 
 class S3GeoTiffRDDSpec
   extends FunSpec

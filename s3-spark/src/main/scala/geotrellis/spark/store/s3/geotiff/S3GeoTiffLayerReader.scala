@@ -19,34 +19,48 @@ package geotrellis.spark.store.s3.geotiff
 import geotrellis.layer.ZoomedLayoutScheme
 import geotrellis.raster.resample.{NearestNeighbor, ResampleMethod}
 import geotrellis.raster.io.geotiff.{AutoHigherResolution, OverviewStrategy}
+import geotrellis.store.util._
 import geotrellis.store.s3.cog.byteReader
-import geotrellis.store.s3.conf.S3Config
 import geotrellis.store.s3.S3ClientProducer
 import geotrellis.spark.store.hadoop.geotiff.{AttributeStore, GeoTiffLayerReader, GeoTiffMetadata}
 import geotrellis.util.ByteReader
 import geotrellis.util.annotations.experimental
 
 import software.amazon.awssdk.services.s3.S3Client
-
 import java.net.URI
 
-/**
-  * @define experimental <span class="badge badge-red" style="float: right;">EXPERIMENTAL</span>@experimental
-  */
-@experimental case class S3GeoTiffLayerReader[M[T] <: Traversable[T]](
-  attributeStore: AttributeStore[M, GeoTiffMetadata],
-  layoutScheme: ZoomedLayoutScheme,
-  resampleMethod: ResampleMethod = NearestNeighbor,
-  strategy: OverviewStrategy = AutoHigherResolution,
-  getClient: () => S3Client = S3ClientProducer.get,
-  defaultThreads: Int = S3GeoTiffLayerReader.defaultThreadCount
-) extends GeoTiffLayerReader[M] {
-  implicit def getByteReader(uri: URI): ByteReader = byteReader(uri, getClient())
-}
+import scala.concurrent.ExecutionContext
 
 /**
   * @define experimental <span class="badge badge-red" style="float: right;">EXPERIMENTAL</span>@experimental
   */
+@experimental class S3GeoTiffLayerReader[M[T] <: Traversable[T]](
+  val attributeStore: AttributeStore[M, GeoTiffMetadata],
+  val layoutScheme: ZoomedLayoutScheme,
+  val resampleMethod: ResampleMethod = NearestNeighbor,
+  val strategy: OverviewStrategy = AutoHigherResolution,
+  s3Client: => S3Client = S3ClientProducer.get(),
+  executionContext: ExecutionContext = BlockingThreadPool.executionContext
+) extends GeoTiffLayerReader[M] {
+  implicit lazy val ec: ExecutionContext = executionContext
+
+  implicit def getByteReader(uri: URI): ByteReader = byteReader(uri, s3Client)
+}
+
 @experimental object S3GeoTiffLayerReader {
-  val defaultThreadCount: Int = S3Config.threads.collection.readThreads
+  def apply[M[T] <: Traversable[T]](
+    attributeStore: AttributeStore[M, GeoTiffMetadata],
+    layoutScheme: ZoomedLayoutScheme,
+    resampleMethod: ResampleMethod = NearestNeighbor,
+    strategy: OverviewStrategy = AutoHigherResolution,
+    s3Client: => S3Client = S3ClientProducer.get(),
+    executionContext: => ExecutionContext = BlockingThreadPool.executionContext
+  ): S3GeoTiffLayerReader[M] = new S3GeoTiffLayerReader[M](
+    attributeStore,
+    layoutScheme,
+    resampleMethod,
+    strategy,
+    s3Client,
+    executionContext
+  )
 }

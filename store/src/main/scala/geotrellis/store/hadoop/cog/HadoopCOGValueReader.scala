@@ -32,7 +32,6 @@ import _root_.io.circe._
 import java.net.URI
 import scala.reflect.ClassTag
 
-
 class HadoopCOGValueReader(
   val attributeStore: AttributeStore,
   conf: Configuration

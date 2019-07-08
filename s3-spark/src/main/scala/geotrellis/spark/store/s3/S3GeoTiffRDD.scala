@@ -181,7 +181,6 @@ object S3GeoTiffRDD extends LazyLogging {
     * @param  prefix    Prefix of all of the keys on S3 that are to be read in.
     * @param  uriToKey  Function to transform input key basing on the URI information.
     * @param  options   An instance of [[Options]] that contains any user defined or default settings.
-    * @param  geometry  An optional geometry to filter by.  If this is provided, it is assumed that all GeoTiffs are in the same CRS, and that this geometry is in that CRS.
     */
   def apply[I, K, V](
     bucket: String, prefix: String,

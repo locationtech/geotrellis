@@ -106,7 +106,7 @@ object BaseCassandraInstance {
       val builder = DCAwareRoundRobinPolicy.builder()
       if(cassandraConfig.localDc.nonEmpty) builder.withLocalDc(cassandraConfig.localDc)
       if(cassandraConfig.usedHostsPerRemoteDc > 0) builder.withUsedHostsPerRemoteDc(cassandraConfig.usedHostsPerRemoteDc)
-      if(cassandraConfig.allowRemoteDCsForLocalConsistencyLevel) builder.allowRemoteDCsForLocalConsistencyLevel()
+      if(cassandraConfig.allowRemoteDcsForLocalConsistencyLevel) builder.allowRemoteDCsForLocalConsistencyLevel()
 
       new TokenAwarePolicy(builder.build())
     }

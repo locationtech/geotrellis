@@ -28,7 +28,6 @@ import org.apache.hadoop.fs.Path
 
 import scala.reflect.ClassTag
 
-
 class HadoopLayerMover(
   rootPath: Path,
   val attributeStore: HadoopAttributeStore

@@ -42,11 +42,11 @@ import java.net.URI
     uri: URI,
     pattern: String,
     recursive: Boolean = true,
-    getClient: () => S3Client = S3ClientProducer.get
+    client: => S3Client = S3ClientProducer.get()
   ): List[GeoTiffMetadata] = {
 
     @transient
-    lazy val s3Client = getClient()
+    lazy val s3Client = client
 
     val s3Uri = new AmazonS3URI(uri)
     val regexp = pattern.r

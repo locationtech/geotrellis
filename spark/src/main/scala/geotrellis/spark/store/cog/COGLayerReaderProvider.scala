@@ -23,7 +23,6 @@ import org.apache.spark.SparkContext
 
 import java.net.URI
 
-
 trait COGLayerReaderProvider {
   def canProcess(uri: URI): Boolean
 

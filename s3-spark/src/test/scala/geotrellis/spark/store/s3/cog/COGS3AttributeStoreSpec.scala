@@ -16,14 +16,10 @@
 
 package geotrellis.spark.store.s3.cog
 
-import geotrellis.layer._
 import geotrellis.store._
 import geotrellis.store.s3._
-import geotrellis.spark._
-import geotrellis.spark.store._
 import geotrellis.spark.store.cog._
 import geotrellis.spark.store.s3._
-import geotrellis.spark.store.s3.testkit._
 
 class COGS3AttributeStoreSpec extends COGAttributeStoreSpec {
   val bucket = "attribute-store-test-mock-bucket"
@@ -32,5 +28,5 @@ class COGS3AttributeStoreSpec extends COGAttributeStoreSpec {
   S3TestUtils.cleanBucket(client, bucket)
 
   lazy val header = S3LayerHeader("geotrellis.spark.SpatialKey", "geotrellis.raster.Tile", bucket, prefix, COGLayerType)
-  lazy val attributeStore: AttributeStore = new S3AttributeStore(bucket, prefix, () => MockS3Client())
+  lazy val attributeStore: AttributeStore = new S3AttributeStore(bucket, prefix, MockS3Client.instance)
 }

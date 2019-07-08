@@ -27,19 +27,16 @@ import geotrellis.store.cog.vrt.VRT
 import geotrellis.store.cog.vrt.VRT.IndexedSimpleSource
 import geotrellis.store.index.{Index, KeyIndex}
 import geotrellis.store.s3._
-import geotrellis.store.s3.cog._
-import geotrellis.store.s3.conf.S3Config
-import geotrellis.spark._
-import geotrellis.spark.store.s3._
 import geotrellis.spark.store.cog._
+import geotrellis.store.util.BlockingThreadPool
 
-import software.amazon.awssdk.services.s3.model.{S3Exception, PutObjectRequest, GetObjectRequest}
+import software.amazon.awssdk.services.s3.model.{GetObjectRequest, PutObjectRequest, S3Exception}
 import software.amazon.awssdk.services.s3._
 import software.amazon.awssdk.core.sync.RequestBody
 import org.apache.commons.io.IOUtils
 import _root_.io.circe._
 
-import java.io.ByteArrayInputStream
+import scala.concurrent.ExecutionContext
 import scala.util.Try
 import scala.reflect.{ClassTag, classTag}
 
@@ -47,8 +44,8 @@ class S3COGLayerWriter(
   val attributeStore: AttributeStore,
   bucket: String,
   keyPrefix: String,
-  val getClient: () => S3Client = S3ClientProducer.get,
-  val defaultThreadCount: Int = S3Config.threads.rdd.writeThreads
+  s3Client: => S3Client = S3ClientProducer.get(),
+  executionContext: => ExecutionContext = BlockingThreadPool.executionContext
 ) extends COGLayerWriter {
 
   def writeCOGLayer[
@@ -76,11 +73,8 @@ class S3COGLayerWriter(
 
     attributeStore.writeCOGLayerAttributes(layerId0, header, storageMetadata)
 
-    @transient
-    lazy val s3Client = getClient() // for saving VRT from Accumulator
-
     // Make S3COGAsyncWriter
-    val asyncWriter = new S3COGAsyncWriter[V](bucket, defaultThreadCount, p => p)
+    val asyncWriter = new S3COGAsyncWriter[V](bucket, p => p, executionContext)
 
     val retryCheck: Throwable => Boolean = {
       case e: S3Exception if e.statusCode == 503 => true
@@ -108,7 +102,7 @@ class S3COGLayerWriter(
 
           (s"${keyPath(key)}.${Extension}", cog)
         }
-        .foreachPartition { partition => asyncWriter.write(getClient(), partition, mergeFunc, Some(retryCheck)) }
+        .foreachPartition { partition => asyncWriter.write(s3Client, partition, mergeFunc, Some(retryCheck)) }
 
       // Save Accumulator
       val bytes =
@@ -124,8 +118,7 @@ class S3COGLayerWriter(
           .contentLength(bytes.length)
           .build()
 
-      val requestBody =
-        RequestBody.fromBytes(bytes)
+      val requestBody = RequestBody.fromBytes(bytes)
 
       s3Client.putObject(request, requestBody)
       samplesAccumulator.reset
@@ -135,15 +128,15 @@ class S3COGLayerWriter(
 
 object S3COGLayerWriter {
   def apply(attributeStore: S3AttributeStore): S3COGLayerWriter =
-    new S3COGLayerWriter(attributeStore, attributeStore.bucket, attributeStore.prefix, attributeStore.getClient)
+    new S3COGLayerWriter(attributeStore, attributeStore.bucket, attributeStore.prefix, attributeStore.client)
 }
 
 
 class S3COGAsyncWriter[V <: CellGrid[Int]: GeoTiffReader](
   bucket: String,
-  threads: Int,
-  putObjectModifier: PutObjectRequest => PutObjectRequest
-) extends  AsyncWriter[S3Client, GeoTiff[V], (PutObjectRequest, RequestBody)](threads) {
+  putObjectModifier: PutObjectRequest => PutObjectRequest,
+  executionContext: => ExecutionContext = BlockingThreadPool.executionContext
+) extends  AsyncWriter[S3Client, GeoTiff[V], (PutObjectRequest, RequestBody)](executionContext) {
 
   def readRecord(
     client: S3Client,

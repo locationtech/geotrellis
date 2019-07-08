@@ -16,26 +16,23 @@
 
 package geotrellis.spark.store.file
 
-import geotrellis.layer.{Boundable, Bounds, KeyBounds}
+import geotrellis.layer.{Boundable, KeyBounds}
 import geotrellis.spark._
 import geotrellis.store.avro.codecs.KeyValueRecordCodec
 import geotrellis.store.index.{IndexRanges, MergeQueue}
 import geotrellis.store.avro.{AvroEncoder, AvroRecordCodec}
-import geotrellis.store.util.IOUtils
+import geotrellis.store.util.{BlockingThreadPool, IOUtils}
 import geotrellis.spark.util.KryoWrapper
 import geotrellis.util.Filesystem
 
 import org.apache.avro.Schema
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
-
 import java.io.File
 
-import geotrellis.store.file.conf.FileConfig
+import scala.concurrent.ExecutionContext
 
 object FileRDDReader {
-  val defaultThreadCount: Int = FileConfig.threads.rdd.readThreads
-
   def read[K: AvroRecordCodec: Boundable, V: AvroRecordCodec](
     keyPath: BigInt => String,
     queryKeyBounds: Seq[KeyBounds[K]],
@@ -43,7 +40,7 @@ object FileRDDReader {
     filterIndexOnly: Boolean,
     writerSchema: Option[Schema] = None,
     numPartitions: Option[Int] = None,
-    threads: Int = defaultThreadCount
+    executionContext: => ExecutionContext = BlockingThreadPool.executionContext
   )(implicit sc: SparkContext): RDD[(K, V)] = {
     if(queryKeyBounds.isEmpty) return sc.emptyRDD[(K, V)]
 
@@ -61,8 +58,10 @@ object FileRDDReader {
 
     sc.parallelize(bins, bins.size)
       .mapPartitions { partition: Iterator[Seq[(BigInt, BigInt)]] =>
+        implicit val ec: ExecutionContext = executionContext
+
         partition flatMap { seq =>
-          IOUtils.parJoin[K, V](seq.toIterator, threads) { index: BigInt =>
+          IOUtils.parJoin[K, V](seq.toIterator) { index: BigInt =>
             val path = keyPath(index)
             if (new File(path).exists) {
               val bytes: Array[Byte] = Filesystem.slurp(path)

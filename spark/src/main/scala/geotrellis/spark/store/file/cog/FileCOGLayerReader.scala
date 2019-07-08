@@ -17,16 +17,13 @@
 package geotrellis.spark.store.file.cog
 
 import geotrellis.layer._
-
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.store._
-import geotrellis.store.cog.{ZoomRange, Extension}
+import geotrellis.store.util._
+import geotrellis.store.cog.{Extension, ZoomRange}
 import geotrellis.store.file.{FileAttributeStore, FileLayerHeader, KeyPathGenerator}
-import geotrellis.store.file.conf.FileConfig
 import geotrellis.store.file.cog.byteReader
-import geotrellis.spark._
-import geotrellis.spark.store._
 import geotrellis.spark.store.cog._
 import geotrellis.util._
 
@@ -36,6 +33,8 @@ import _root_.io.circe._
 
 import java.net.URI
 import java.io.File
+
+import scala.concurrent.ExecutionContext
 import scala.reflect.ClassTag
 
 /**
@@ -46,8 +45,10 @@ import scala.reflect.ClassTag
 class FileCOGLayerReader(
   val attributeStore: AttributeStore,
   val catalogPath: String,
-  val defaultThreads: Int = FileCOGLayerReader.defaultThreadCount
+  executionContext: => ExecutionContext = BlockingThreadPool.executionContext
 )(@transient implicit val sc: SparkContext) extends COGLayerReader[LayerId] with LazyLogging {
+
+  @transient implicit lazy val ec: ExecutionContext = executionContext
 
   val defaultNumPartitions: Int = sc.defaultParallelism
 
@@ -79,8 +80,7 @@ class FileCOGLayerReader(
     baseReadAllBands[K, V](
       id              = id,
       tileQuery       = tileQuery,
-      numPartitions   = numPartitions,
-      defaultThreads  = defaultThreads
+      numPartitions   = numPartitions
     )
 
   def readSubsetBands[
@@ -91,12 +91,10 @@ class FileCOGLayerReader(
     rasterQuery: LayerQuery[K, TileLayerMetadata[K]],
     numPartitions: Int
   ) =
-    baseReadSubsetBands[K](id, targetBands, rasterQuery, numPartitions, defaultThreads)
+    baseReadSubsetBands[K](id, targetBands, rasterQuery, numPartitions)
 }
 
 object FileCOGLayerReader {
-  val defaultThreadCount: Int = FileConfig.threads.rdd.readThreads
-
   def apply(attributeStore: AttributeStore, catalogPath: String)(implicit sc: SparkContext): FileCOGLayerReader =
     new FileCOGLayerReader(attributeStore, catalogPath)
 

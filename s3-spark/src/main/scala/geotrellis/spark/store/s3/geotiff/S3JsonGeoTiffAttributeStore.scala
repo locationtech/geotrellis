@@ -23,12 +23,10 @@ import geotrellis.util.annotations.experimental
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.core.sync.RequestBody
 import software.amazon.awssdk.services.s3.model.{GetObjectRequest, PutObjectRequest}
-import _root_.io.circe._
 import _root_.io.circe.parser._
 import _root_.io.circe.syntax._
 import cats.syntax.either._
 
-import java.io.ByteArrayInputStream
 import java.net.URI
 import scala.io.Source
 
@@ -36,18 +34,15 @@ import scala.io.Source
   * @define experimental <span class="badge badge-red" style="float: right;">EXPERIMENTAL</span>@experimental
   */
 @experimental object S3JsonGeoTiffAttributeStore {
-  @experimental def readData(uri: URI, getClient: () => S3Client = S3ClientProducer.get): List[GeoTiffMetadata] = {
-
-    @transient
-    lazy val s3Client = getClient()
+  @experimental def readData(uri: URI, s3Client: => S3Client = S3ClientProducer.get()): List[GeoTiffMetadata] = {
 
     val s3Uri = new AmazonS3URI(uri)
     val request = GetObjectRequest.builder()
-      .bucket(s3Uri.getBucket())
-      .key(s3Uri.getKey())
+      .bucket(s3Uri.getBucket)
+      .key(s3Uri.getKey)
       .build()
-    val objStream =
-      s3Client.getObject(request)
+
+    val objStream = s3Client.getObject(request)
 
     val json = try {
       Source
@@ -59,15 +54,15 @@ import scala.io.Source
     parse(json).flatMap(_.as[List[GeoTiffMetadata]]).valueOr(throw _)
   }
 
-  @experimental def readDataAsTree(uri: URI, getClient: () => S3Client = S3ClientProducer.get): GeoTiffMetadataTree[GeoTiffMetadata] =
-    GeoTiffMetadataTree.fromGeoTiffMetadataSeq(readData(uri, getClient))
+  @experimental def readDataAsTree(uri: URI, s3Client: => S3Client = S3ClientProducer.get()): GeoTiffMetadataTree[GeoTiffMetadata] =
+    GeoTiffMetadataTree.fromGeoTiffMetadataSeq(readData(uri, s3Client))
 
   def apply(
     uri: URI,
-    getClient: () => S3Client
+    s3Client: => S3Client
   ): JsonGeoTiffAttributeStore = {
     // https://github.com/aws/aws-sdk-java-v2/blob/master/docs/BestPractices.md#reuse-sdk-client-if-possible
-    JsonGeoTiffAttributeStore(uri, readDataAsTree(_, getClient))
+    JsonGeoTiffAttributeStore(uri, readDataAsTree(_, s3Client))
   }
 
   def apply(
@@ -76,19 +71,19 @@ import scala.io.Source
     uri: URI,
     pattern: String,
     recursive: Boolean = true,
-    getClient: () => S3Client = S3ClientProducer.get
+    s3Client:  S3Client = S3ClientProducer.get()
   ): JsonGeoTiffAttributeStore = {
     val s3Uri = new AmazonS3URI(path)
     val data = S3GeoTiffInput.list(name, uri, pattern, recursive)
     // https://github.com/aws/aws-sdk-java-v2/blob/master/docs/BestPractices.md#reuse-sdk-client-if-possible
-    val attributeStore = JsonGeoTiffAttributeStore(path, readDataAsTree(_, getClient))
+    val attributeStore = JsonGeoTiffAttributeStore(path, readDataAsTree(_, s3Client))
 
     val str = data.asJson.noSpaces
     val request = PutObjectRequest.builder()
       .bucket(s3Uri.getBucket())
       .key(s3Uri.getKey())
       .build()
-    getClient().putObject(request, RequestBody.fromBytes(str.getBytes("UTF-8")))
+    s3Client.putObject(request, RequestBody.fromBytes(str.getBytes("UTF-8")))
 
     attributeStore
   }

@@ -26,13 +26,11 @@ import geotrellis.store.hadoop.cog._
 import geotrellis.spark.store.hadoop._
 import geotrellis.util.MethodExtensions
 
-import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import org.apache.spark.SparkContext
 import _root_.io.circe.Decoder
 
 import scala.reflect.ClassTag
-
 
 object Implicits extends Implicits
 

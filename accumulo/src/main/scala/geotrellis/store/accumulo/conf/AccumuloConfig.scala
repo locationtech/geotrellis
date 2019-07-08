@@ -16,29 +16,11 @@
 
 package geotrellis.store.accumulo.conf
 
-import geotrellis.store.util.threadsFromString
-import geotrellis.util.CamelCaseConfig
-
 import pureconfig.generic.auto._
 
-case class AccumuloCollectionConfig(read: String = "default") {
-  def readThreads: Int = threadsFromString(read)
-}
-case class AccumuloRDDConfig(write: String = "default") {
-  def writeThreads: Int = threadsFromString(write)
-}
+case class AccumuloConfig(catalog: String = "metadata")
 
-case class AccumuloThreadsConfig(
-  collection: AccumuloCollectionConfig = AccumuloCollectionConfig(),
-  rdd: AccumuloRDDConfig = AccumuloRDDConfig()
-)
-
-case class AccumuloConfig(
-  catalog: String = "metadata",
-  threads: AccumuloThreadsConfig = AccumuloThreadsConfig()
-)
-
-object AccumuloConfig extends CamelCaseConfig {
+object AccumuloConfig {
   lazy val conf: AccumuloConfig = pureconfig.loadConfigOrThrow[AccumuloConfig]("geotrellis.accumulo")
   implicit def accumuloConfigToClass(obj: AccumuloConfig.type): AccumuloConfig = conf
 }

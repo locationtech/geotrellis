@@ -18,10 +18,8 @@ package geotrellis.store.s3.cog
 
 import geotrellis.layer._
 import geotrellis.store._
-import geotrellis.store.cog.{COGCollectionLayerReader, COGCollectionLayerReaderProvider, COGValueReader, COGValueReaderProvider}
+import geotrellis.store.cog._
 import geotrellis.store.s3._
-
-import software.amazon.awssdk.services.s3.S3Client
 
 import java.net.URI
 
@@ -30,10 +28,9 @@ import java.net.URI
  * The uri represents S3 bucket an prefix of catalog root.
  *  ex: `s3://<bucket>/<prefix-to-catalog>`
  */
-class S3COGCollectionLayerProvider extends AttributeStoreProvider
-    with COGValueReaderProvider with COGCollectionLayerReaderProvider {
+class S3COGCollectionLayerProvider extends AttributeStoreProvider with COGValueReaderProvider with COGCollectionLayerReaderProvider {
 
-  val getClient = S3ClientProducer.get
+  @transient lazy val client = S3ClientProducer.get()
 
   def canProcess(uri: URI): Boolean = uri.getScheme match {
     case str: String => if (str.toLowerCase == "s3") true else false
@@ -44,13 +41,13 @@ class S3COGCollectionLayerProvider extends AttributeStoreProvider
     // Need to use an alternative to AmazonS3URI
     // https://github.com/aws/aws-sdk-java-v2/issues/860
     val s3Uri = new AmazonS3URI(uri)
-    val prefix = Option(s3Uri.getKey()).getOrElse("")
+    val prefix = Option(s3Uri.getKey).getOrElse("")
 
-    new S3AttributeStore(bucket = s3Uri.getBucket(), prefix = prefix, getClient)
+    new S3AttributeStore(bucket = s3Uri.getBucket, prefix = prefix, client)
   }
 
   def valueReader(uri: URI, store: AttributeStore): COGValueReader[LayerId] = {
-    new S3COGValueReader(store, getClient)
+    new S3COGValueReader(store, client)
   }
 
   def collectionLayerReader(uri: URI, store: AttributeStore): COGCollectionLayerReader[LayerId] = {

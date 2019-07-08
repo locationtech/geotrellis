@@ -22,23 +22,22 @@ import geotrellis.raster._
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.layer._
 import geotrellis.store._
-import geotrellis.store.cog.{ZoomRange, Extension}
-import geotrellis.store.hadoop.conf.HadoopConfig
+import geotrellis.store.cog.{Extension, ZoomRange}
 import geotrellis.store.hadoop._
 import geotrellis.store.hadoop.cog.byteReader
 import geotrellis.store.hadoop.util._
 import geotrellis.store.index.Index
 import geotrellis.spark.store.cog._
 import geotrellis.spark.store.hadoop._
+import geotrellis.store.util.BlockingThreadPool
 import geotrellis.util._
 
 import com.typesafe.scalalogging.LazyLogging
-
 import org.apache.hadoop.fs.Path
 import org.apache.spark.SparkContext
-
 import java.net.URI
 
+import scala.concurrent.ExecutionContext
 import scala.reflect.ClassTag
 
 /**
@@ -48,8 +47,10 @@ import scala.reflect.ClassTag
  */
 class HadoopCOGLayerReader(
   val attributeStore: AttributeStore,
-  val defaultThreads: Int = HadoopCOGLayerReader.defaultThreadCount
+  executionContext: => ExecutionContext = BlockingThreadPool.executionContext
 )(@transient implicit val sc: SparkContext) extends COGLayerReader[LayerId] with LazyLogging {
+
+  @transient implicit lazy val ec: ExecutionContext = executionContext
 
   val hadoopConfiguration = SerializableConfiguration(sc.hadoopConfiguration)
 
@@ -87,8 +88,7 @@ class HadoopCOGLayerReader(
     baseReadAllBands[K, V](
       id              = id,
       tileQuery       = tileQuery,
-      numPartitions   = numPartitions,
-      defaultThreads  = defaultThreads
+      numPartitions   = numPartitions
     )
 
   def readSubsetBands[
@@ -99,12 +99,10 @@ class HadoopCOGLayerReader(
     rasterQuery: LayerQuery[K, TileLayerMetadata[K]],
     numPartitions: Int
   ) =
-    baseReadSubsetBands[K](id, targetBands, rasterQuery, numPartitions, defaultThreads)
+    baseReadSubsetBands[K](id, targetBands, rasterQuery, numPartitions)
 }
 
 object HadoopCOGLayerReader {
-  val defaultThreadCount: Int = HadoopConfig.threads.rdd.readThreads
-
   def apply(attributeStore: HadoopAttributeStore)(implicit sc: SparkContext): HadoopCOGLayerReader =
     new HadoopCOGLayerReader(attributeStore)
 

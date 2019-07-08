@@ -16,16 +16,16 @@
 
 package geotrellis.store
 
-import cats.effect.{IO, Timer}
+import geotrellis.store.util.BlockingThreadPool
+
+import cats.effect.IO
 import cats.syntax.apply._
 import cats.syntax.either._
 
-import scala.util.{Failure, Success, Try}
 import scala.concurrent.ExecutionContext
+import scala.util.{Failure, Success, Try}
 
-import java.util.concurrent.Executors
-
-abstract class AsyncWriter[Client, V, E](threads: Int) extends Serializable {
+abstract class AsyncWriter[Client, V, E](executionContext: => ExecutionContext = BlockingThreadPool.executionContext) extends Serializable {
 
   def readRecord(client: Client, key: String): Try[V]
 
@@ -41,11 +41,10 @@ abstract class AsyncWriter[Client, V, E](threads: Int) extends Serializable {
   ): Unit = {
     if (partition.isEmpty) return
 
-    val pool = Executors.newFixedThreadPool(threads)
     // TODO: remove the implicit on ec and consider moving the implicit timer to method signature
-    implicit val ec = ExecutionContext.fromExecutor(pool)
-    implicit val timer: Timer[IO] = IO.timer(ec)
-    implicit val cs = IO.contextShift(ec)
+    implicit val ec    = executionContext
+    implicit val timer = IO.timer(ec)
+    implicit val cs    = IO.contextShift(ec)
 
     val rows: fs2.Stream[IO, (String, V)] = fs2.Stream.fromIterator[IO, (String, V)](partition)
 
@@ -81,13 +80,11 @@ abstract class AsyncWriter[Client, V, E](threads: Int) extends Serializable {
       .flatMap(elaborateRow)
       .flatMap(encode)
       .map(retire)
-      .parJoin(threads)
+      .parJoinUnbounded
       .compile
       .toVector
       .attempt
       .unsafeRunSync()
       .valueOr(throw _)
-
-    pool.shutdown()
   }
 }

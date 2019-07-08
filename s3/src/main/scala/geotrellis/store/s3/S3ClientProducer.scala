@@ -34,8 +34,7 @@ import java.time.Duration
   *
   */
 object S3ClientProducer {
-  @transient
-  private lazy val client = {
+  @transient private lazy val client = {
     val retryCondition =
       OrRetryCondition.create(
         RetryCondition.defaultRetryCondition(),

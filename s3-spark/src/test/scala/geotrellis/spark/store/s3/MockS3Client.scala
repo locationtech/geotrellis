@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.store.s3.testkit
+package geotrellis.spark.store.s3
 
 import software.amazon.awssdk.auth.credentials.{AwsBasicCredentials, StaticCredentialsProvider}
 import software.amazon.awssdk.services.s3.S3Client
@@ -32,4 +32,6 @@ object MockS3Client {
       .region(Region.US_EAST_1)
       .build()
   }
+
+  @transient lazy val instance: S3Client = apply()
 }

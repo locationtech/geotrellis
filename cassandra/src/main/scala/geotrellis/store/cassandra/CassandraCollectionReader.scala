@@ -20,24 +20,21 @@ import geotrellis.layer._
 import geotrellis.store.util.IOUtils
 import geotrellis.store.avro.codecs.KeyValueRecordCodec
 import geotrellis.store.avro.{AvroEncoder, AvroRecordCodec}
-import geotrellis.store.cassandra.conf.CassandraConfig
 import geotrellis.store.index.MergeQueue
+import geotrellis.store.LayerId
+import geotrellis.store.util.BlockingThreadPool
 
 import org.apache.avro.Schema
-
 import com.datastax.driver.core.querybuilder.QueryBuilder
 import com.datastax.driver.core.querybuilder.QueryBuilder.{eq => eqs}
 
 import scala.collection.JavaConverters._
 import scala.reflect.ClassTag
-
 import java.math.BigInteger
 
-import geotrellis.store.LayerId
+import scala.concurrent.ExecutionContext
 
 object CassandraCollectionReader {
-  final val defaultThreadCount = CassandraConfig.threads.collection.readThreads
-
   def read[K: Boundable : AvroRecordCodec : ClassTag, V: AvroRecordCodec : ClassTag](
     instance: CassandraInstance,
     keyspace: String,
@@ -47,7 +44,7 @@ object CassandraCollectionReader {
     decomposeBounds: KeyBounds[K] => Seq[(BigInt, BigInt)],
     filterIndexOnly: Boolean,
     writerSchema: Option[Schema] = None,
-    threads: Int = defaultThreadCount
+    executionContext: ExecutionContext = BlockingThreadPool.executionContext
   ): Seq[(K, V)] = {
     if (queryKeyBounds.isEmpty) return Seq.empty[(K, V)]
 
@@ -59,6 +56,8 @@ object CassandraCollectionReader {
     else
       queryKeyBounds.flatMap(decomposeBounds)
 
+    implicit val ec = executionContext
+
     val query = QueryBuilder.select("value")
       .from(keyspace, table)
       .where(eqs("key", QueryBuilder.bindMarker()))
@@ -69,7 +68,7 @@ object CassandraCollectionReader {
     instance.withSessionDo { session =>
       val statement = session.prepare(query)
 
-      IOUtils.parJoin[K, V](ranges.toIterator, threads){ index: BigInt =>
+      IOUtils.parJoin[K, V](ranges.toIterator){ index: BigInt =>
         val row = session.execute(statement.bind(index: BigInteger))
         if (row.asScala.nonEmpty) {
           val bytes = row.one().getBytes("value").array()

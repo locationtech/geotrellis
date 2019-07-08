@@ -16,21 +16,15 @@
 
 package geotrellis.spark.store.s3.cog
 
-import geotrellis.layer._
 import geotrellis.store._
-import geotrellis.store.cog._
 import geotrellis.store.s3._
 import geotrellis.store.s3.cog._
-import geotrellis.spark._
 import geotrellis.spark.store.cog._
 import geotrellis.spark.store.s3._
 
 import org.apache.spark._
 
-import software.amazon.awssdk.services.s3.S3Client
-
 import java.net.URI
-
 
 /**
  * Provides [[S3LayerReader]] instance for URI with `s3` scheme.
@@ -39,12 +33,12 @@ import java.net.URI
  */
 class S3COGSparkLayerProvider extends S3COGCollectionLayerProvider with COGLayerReaderProvider with COGLayerWriterProvider {
   def layerReader(uri: URI, store: AttributeStore, sc: SparkContext): COGLayerReader[LayerId] = {
-    new S3COGLayerReader(store, getClient)(sc)
+    new S3COGLayerReader(store, client)(sc)
   }
 
   def layerWriter(uri: URI, store: AttributeStore): COGLayerWriter = {
     // TODO: encoder ACL changes in putObjectModifier
     val s3Uri = new AmazonS3URI(uri)
-    new S3COGLayerWriter(store, bucket = s3Uri.getBucket(), keyPrefix = s3Uri.getKey())
+    new S3COGLayerWriter(store, bucket = s3Uri.getBucket, keyPrefix = s3Uri.getKey)
   }
 }

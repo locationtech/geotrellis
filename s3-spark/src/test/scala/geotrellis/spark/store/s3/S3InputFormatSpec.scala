@@ -16,16 +16,13 @@
 
 package geotrellis.spark.store.s3
 
-import geotrellis.spark.store.s3.testkit._
 import geotrellis.proj4.LatLng
-import geotrellis.raster.Tile
-import geotrellis.spark.testkit.TestEnvironment
 import geotrellis.vector.{Extent, ProjectedExtent}
 
 import software.amazon.awssdk.services.s3.model._
 import software.amazon.awssdk.core.sync.RequestBody
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.mapreduce.{Job, RecordReader, TaskAttemptContext, InputSplit}
+import org.apache.hadoop.mapreduce.{Job, TaskAttemptContext, InputSplit}
 import org.scalatest._
 
 import scala.collection.JavaConverters._

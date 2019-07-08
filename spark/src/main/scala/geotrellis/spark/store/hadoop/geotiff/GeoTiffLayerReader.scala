@@ -29,13 +29,14 @@ import geotrellis.raster.reproject.RasterReprojectMethods
 import geotrellis.raster.merge.RasterMergeMethods
 import geotrellis.util.ByteReader
 import geotrellis.util.annotations.experimental
+import geotrellis.store.LayerId
 
 import cats.effect.IO
 import cats.syntax.apply._
 import cats.syntax.either._
 
 import java.net.URI
-import java.util.concurrent.{ExecutorService, Executors}
+
 import scala.concurrent.ExecutionContext
 import scala.reflect.ClassTag
 
@@ -49,18 +50,16 @@ import scala.reflect.ClassTag
   val layoutScheme: ZoomedLayoutScheme
   val resampleMethod: ResampleMethod
   val strategy: OverviewStrategy
-  val defaultThreads: Int
-  lazy val pool: ExecutorService = Executors.newFixedThreadPool(defaultThreads)
-  implicit lazy val ec = ExecutionContext.fromExecutor(pool)
-  implicit val cs = IO.contextShift(ec)
 
-  @experimental def shutdown: Unit = pool.shutdown()
+  implicit val ec: ExecutionContext
+  implicit val cs      = IO.contextShift(ec)
 
-  @experimental def read[
-    V <: CellGrid[Int]: GeoTiffReader: ClassTag
-  ](layerId: LayerId)(x: Int, y: Int)(implicit rep: Raster[V] => RasterReprojectMethods[Raster[V]],
-                                               res: Raster[V] => RasterResampleMethods[Raster[V]],
-                                                 m: Raster[V] => RasterMergeMethods[V]): Raster[V] = {
+  @experimental def read[V <: CellGrid[Int]: GeoTiffReader: ClassTag]
+    (layerId: LayerId)
+    (x: Int, y: Int)
+    (implicit rep: Raster[V] => RasterReprojectMethods[Raster[V]],
+              res: Raster[V] => RasterResampleMethods[Raster[V]],
+                m: Raster[V] => RasterMergeMethods[V]): Raster[V] = {
     val layout =
       layoutScheme
         .levelForZoom(layerId.zoom)
@@ -72,7 +71,7 @@ import scala.reflect.ClassTag
     val index: fs2.Stream[IO, GeoTiffMetadata] =
       fs2.Stream.fromIterator[IO, GeoTiffMetadata](attributeStore.query(layerId.name, ProjectedExtent(keyExtent, layoutScheme.crs)).toIterator)
 
-    val readRecord: (GeoTiffMetadata => fs2.Stream[IO, Option[Raster[V]]]) = { md =>
+    val readRecord: GeoTiffMetadata => fs2.Stream[IO, Option[Raster[V]]] = { md =>
       fs2.Stream eval IO.shift(ec) *> IO {
         val tiff = GeoTiffReader[V].read(md.uri, streaming = true)
         val reprojectedKeyExtent = keyExtent.reproject(layoutScheme.crs, tiff.crs)
@@ -100,10 +99,10 @@ import scala.reflect.ClassTag
       .valueOr(throw _)
   }
 
-  @experimental def readAll[
-    V <: CellGrid[Int]: GeoTiffReader: ClassTag
-  ](layerId: LayerId)(implicit rep: Raster[V] => RasterReprojectMethods[Raster[V]],
-                               res: Raster[V] => RasterResampleMethods[Raster[V]]): Traversable[Raster[V]] = {
+  @experimental def readAll[V <: CellGrid[Int]: GeoTiffReader: ClassTag]
+    (layerId: LayerId)
+    (implicit rep: Raster[V] => RasterReprojectMethods[Raster[V]],
+              res: Raster[V] => RasterResampleMethods[Raster[V]]): Traversable[Raster[V]] = {
     val layout =
       layoutScheme
         .levelForZoom(layerId.zoom)
@@ -112,7 +111,7 @@ import scala.reflect.ClassTag
     val index: fs2.Stream[IO, GeoTiffMetadata] =
       fs2.Stream.fromIterator[IO, GeoTiffMetadata](attributeStore.query(layerId.name).toIterator)
 
-    val readRecord: (GeoTiffMetadata => fs2.Stream[IO, Raster[V]]) = { md =>
+    val readRecord: GeoTiffMetadata => fs2.Stream[IO, Raster[V]] = { md =>
       fs2.Stream eval IO.shift(ec) *> IO {
         val tiff = GeoTiffReader[V].read(md.uri, streaming = true)
         tiff
@@ -124,7 +123,7 @@ import scala.reflect.ClassTag
 
     index
       .map(readRecord)
-      .parJoin(defaultThreads)
+      .parJoinUnbounded
       .compile
       .toVector
       .attempt

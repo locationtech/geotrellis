@@ -18,23 +18,20 @@ package geotrellis.spark.store.s3
 
 import geotrellis.store.LayerId
 import geotrellis.store.s3._
-import geotrellis.spark._
 import geotrellis.spark.store._
-import geotrellis.spark.store.s3.testkit._
 
 class S3AttributeStoreSpec extends AttributeStoreSpec {
   val bucket = "attribute-store-test-mock-bucket"
   val prefix = "catalog"
   val client = MockS3Client()
-  val getS3Client = () => MockS3Client()
   S3TestUtils.cleanBucket(client, bucket)
 
-  lazy val attributeStore = new S3AttributeStore(bucket, prefix, getS3Client)
+  lazy val attributeStore = new S3AttributeStore(bucket, prefix, MockS3Client.instance)
 
   it("should handle prefix with ending slash") {
     val bucket = "test-bucket"
     val prefix = "some/key/"
-    val as = new S3AttributeStore(bucket, prefix, getS3Client)
+    val as = new S3AttributeStore(bucket, prefix, MockS3Client.instance)
 
     import S3AttributeStore.SEP
     as.attributePath(LayerId("testLayer", 0), "metadata") should be (s"some/key/_attributes/metadata${SEP}testLayer${SEP}0.json")

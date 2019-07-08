@@ -16,23 +16,7 @@
 
 package geotrellis.store.cassandra.conf
 
-import geotrellis.util.CamelCaseConfig
-import geotrellis.store.util._
-
 import pureconfig.generic.auto._
-
-case class CassandraCollectionConfig(read: String = "default") {
-  def readThreads: Int = threadsFromString(read)
-}
-case class CassandraRDDConfig(write: String = "default", read: String = "default") {
-  def readThreads: Int = threadsFromString(read)
-  def writeThreads: Int = threadsFromString(write)
-}
-
-case class CassandraThreadsConfig(
-  collection: CassandraCollectionConfig = CassandraCollectionConfig(),
-  rdd: CassandraRDDConfig = CassandraRDDConfig()
-)
 
 case class CassandraConfig(
   port: Int = 9042,
@@ -42,11 +26,10 @@ case class CassandraConfig(
   replicationFactor: Int = 1,
   localDc: String = "datacenter1",
   usedHostsPerRemoteDc: Int = 0,
-  allowRemoteDCsForLocalConsistencyLevel: Boolean = false,
-  threads: CassandraThreadsConfig = CassandraThreadsConfig()
+  allowRemoteDcsForLocalConsistencyLevel: Boolean = false
 )
 
-object CassandraConfig extends CamelCaseConfig {
+object CassandraConfig {
   lazy val conf: CassandraConfig = pureconfig.loadConfigOrThrow[CassandraConfig]("geotrellis.cassandra")
   implicit def cassandraConfigToClass(obj: CassandraConfig.type): CassandraConfig = conf
 }

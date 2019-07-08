@@ -20,19 +20,22 @@ import geotrellis.layer._
 import geotrellis.store._
 import geotrellis.store.avro._
 import geotrellis.store.avro.codecs._
-import geotrellis.store.hadoop.conf.HadoopConfig
 import geotrellis.store.hadoop.formats.FilterMapFileInputFormat
 import geotrellis.store.util.IOUtils
+import geotrellis.store.util.BlockingThreadPool
 
 import com.github.blemale.scaffeine.{Cache, Scaffeine}
-
 import org.apache.avro.Schema
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.io._
 
+import scala.concurrent.ExecutionContext
 
-class HadoopCollectionReader(maxOpenFiles: Int) {
+class HadoopCollectionReader(
+  maxOpenFiles: Int,
+  executionContext: => ExecutionContext = BlockingThreadPool.executionContext
+) extends Serializable {
 
   val readers: Cache[Path, MapFile.Reader] =
     Scaffeine()
@@ -40,6 +43,8 @@ class HadoopCollectionReader(maxOpenFiles: Int) {
       .maximumSize(maxOpenFiles.toLong)
       .removalListener[Path, MapFile.Reader] { case (_, v, _) => v.close() }
       .build[Path, MapFile.Reader]
+
+  implicit val ec: ExecutionContext = executionContext
 
   private def predicate(row: (Path, BigInt, BigInt), index: BigInt): Boolean =
     (index >= row._2) && ((index <= row._3) || (row._3 == -1))
@@ -52,9 +57,8 @@ class HadoopCollectionReader(maxOpenFiles: Int) {
     queryKeyBounds: Seq[KeyBounds[K]],
     decomposeBounds: KeyBounds[K] => Seq[(BigInt, BigInt)],
     indexFilterOnly: Boolean,
-    writerSchema: Option[Schema] = None,
-    threads: Int = HadoopCollectionReader.defaultThreads
-  ): Seq[(K, V)] = {
+    writerSchema: Option[Schema] = None
+  )(implicit ec: ExecutionContext): Seq[(K, V)] = {
     if (queryKeyBounds.isEmpty) return Seq.empty[(K, V)]
 
     val includeKey = (key: K) => KeyBounds.includeKey(queryKeyBounds, key)
@@ -65,7 +69,7 @@ class HadoopCollectionReader(maxOpenFiles: Int) {
     val pathRanges: Vector[(Path, BigInt, BigInt)] =
       FilterMapFileInputFormat.layerRanges(path, conf)
 
-    IOUtils.parJoin[K, V](indexRanges, threads){ index: BigInt =>
+    IOUtils.parJoin[K, V](indexRanges){ index: BigInt =>
       val valueWritable = pathRanges
         .find(row => predicate(row, index))
         .map { case (p, _, _) =>
@@ -85,6 +89,5 @@ class HadoopCollectionReader(maxOpenFiles: Int) {
 }
 
 object HadoopCollectionReader {
-  val defaultThreads: Int = HadoopConfig.threads.collection.readThreads
   def apply(maxOpenFiles: Int = 16) = new HadoopCollectionReader(maxOpenFiles)
 }

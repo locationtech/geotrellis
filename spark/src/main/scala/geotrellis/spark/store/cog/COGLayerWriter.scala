@@ -39,7 +39,6 @@ import java.util.ServiceLoader
 
 import scala.reflect._
 
-
 trait COGLayerWriter extends LazyLogging with Serializable {
   import COGLayerWriter.Options
 

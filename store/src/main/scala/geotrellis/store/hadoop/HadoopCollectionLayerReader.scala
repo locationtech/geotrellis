@@ -19,9 +19,8 @@ package geotrellis.store.hadoop
 import geotrellis.layer._
 import geotrellis.layer.{ContextCollection, Metadata}
 import geotrellis.store._
-import geotrellis.store.hadoop.formats.FilterMapFileInputFormat
+import geotrellis.store.util.BlockingThreadPool
 import geotrellis.store.avro._
-import geotrellis.store.hadoop.util._
 import geotrellis.util._
 
 import io.circe._
@@ -29,6 +28,7 @@ import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import com.typesafe.scalalogging.LazyLogging
 
+import scala.concurrent.ExecutionContext
 import scala.reflect.ClassTag
 
 /**
@@ -39,9 +39,11 @@ import scala.reflect.ClassTag
 class HadoopCollectionLayerReader(
   val attributeStore: AttributeStore,
   conf: Configuration,
-  maxOpenFiles: Int = 16
-)
-  extends CollectionLayerReader[LayerId] with LazyLogging {
+  maxOpenFiles: Int = 16,
+  executionContext: => ExecutionContext = BlockingThreadPool.executionContext
+) extends CollectionLayerReader[LayerId] with LazyLogging {
+
+  @transient implicit lazy val ec: ExecutionContext = executionContext
 
   def read[
     K: AvroRecordCodec: Boundable: Decoder: ClassTag,

@@ -17,16 +17,16 @@
 package geotrellis.store.s3
 
 import geotrellis.store._
+
 import software.amazon.awssdk.services.s3.model._
 import software.amazon.awssdk.services.s3.S3Client
-
 import com.typesafe.scalalogging.LazyLogging
 
 import scala.collection.JavaConverters._
 
 class S3LayerDeleter(
   val attributeStore: AttributeStore,
-  val getClient: () => S3Client
+  s3Client: => S3Client
 ) extends LazyLogging with LayerDeleter[LayerId] {
 
   def delete(id: LayerId): Unit = {
@@ -34,7 +34,6 @@ class S3LayerDeleter(
       val header = attributeStore.readHeader[S3LayerHeader](id)
       val bucket = header.bucket
       val prefix = header.key + "/"
-      val s3Client = getClient()
       val listRequest = ListObjectsV2Request.builder()
         .bucket(bucket)
         .prefix(prefix)
@@ -45,7 +44,7 @@ class S3LayerDeleter(
         .contents
         .asScala
 
-      if (iter.size == 0) throw new LayerDeleteError(id)
+      if (iter.isEmpty) throw new LayerDeleteError(id)
 
       val objIdentifiers =
         iter
@@ -53,7 +52,7 @@ class S3LayerDeleter(
           .toList
       val deleteDefinition =
         Delete.builder()
-          .objects(objIdentifiers:_*)
+          .objects(objIdentifiers: _*)
           .build()
       val deleteRequest =
         DeleteObjectsRequest.builder()
@@ -74,11 +73,11 @@ class S3LayerDeleter(
 }
 
 object S3LayerDeleter {
-  def apply(attributeStore: AttributeStore, getClient: () => S3Client): S3LayerDeleter =
-    new S3LayerDeleter(attributeStore, getClient)
+  def apply(attributeStore: AttributeStore, s3Client: => S3Client): S3LayerDeleter =
+    new S3LayerDeleter(attributeStore, s3Client)
 
-  def apply(bucket: String, prefix: String, getClient: () => S3Client): S3LayerDeleter = {
-    val attStore = S3AttributeStore(bucket, prefix, getClient)
-    apply(attStore, getClient)
+  def apply(bucket: String, prefix: String, s3Client: => S3Client): S3LayerDeleter = {
+    val attStore = S3AttributeStore(bucket, prefix, s3Client)
+    apply(attStore, s3Client)
   }
 }

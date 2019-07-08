@@ -19,35 +19,26 @@ package geotrellis.spark.store.s3
 import geotrellis.layer.SpatialKey
 import geotrellis.store.LayerId
 import geotrellis.store.s3._
-import geotrellis.store.s3.conf.S3Config
-import geotrellis.spark.store._
+import geotrellis.store.util.BlockingThreadPool
 
 import software.amazon.awssdk.services.s3.model.{PutObjectRequest, PutObjectResponse, S3Exception}
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.core.sync.RequestBody
-
 import org.apache.spark.rdd.RDD
-
-import cats.effect.{IO, Timer}
+import cats.effect.IO
 import cats.syntax.apply._
 import cats.syntax.either._
 
+import java.net.URI
 import scala.concurrent.ExecutionContext
 
-import java.io.ByteArrayInputStream
-import java.util.concurrent.Executors
-import java.net.URI
-
-
 object SaveToS3 {
-  final val defaultThreadCount = S3Config.threads.rdd.writeThreads
-
   /**
     * @param id           A Layer ID
     * @param pathTemplate The template used to convert a Layer ID and a SpatialKey into an S3 URI
     * @return             A functon which takes a spatial key and returns an S3 URI
     */
-  def spatialKeyToPath(id: LayerId, pathTemplate: String): (SpatialKey => String) = {
+  def spatialKeyToPath(id: LayerId, pathTemplate: String): SpatialKey => String = {
     // Return λ
     { key =>
       pathTemplate
@@ -62,15 +53,15 @@ object SaveToS3 {
     * @param keyToUri  A function that maps each key to full s3 uri
     * @param rdd       An RDD of K, Byte-Array pairs (where the byte-arrays contains image data) to send to S3
     * @param putObjectModifier  Function that will be applied ot S3 PutObjectRequests, so that they can be modified (e.g. to change the ACL settings)
-    * @param s3Maker   A function which returns an S3 Client (real or mock) into-which to save the data
-    * @param threads   Number of threads dedicated for the IO
+    * @param s3Client   A function which returns an S3 Client (real or mock) into-which to save the data
+    * @param executionContext   A function to get execution context
     */
   def apply[K](
     rdd: RDD[(K, Array[Byte])],
     keyToUri: K => String,
     putObjectModifier: PutObjectRequest => PutObjectRequest = { p => p },
-    s3Maker: () => S3Client = S3ClientProducer.get,
-    threads: Int = defaultThreadCount
+    s3Client: => S3Client = S3ClientProducer.get(),
+    executionContext: => ExecutionContext = BlockingThreadPool.executionContext
   ): Unit = {
     val keyToPrefix: K => (String, String) = key => {
       val uri = new URI(keyToUri(key))
@@ -81,7 +72,7 @@ object SaveToS3 {
     }
 
     rdd.foreachPartition { partition =>
-      val s3client = s3Maker()
+      val s3client = s3Client
       val requests: fs2.Stream[IO, (PutObjectRequest, RequestBody)] =
         fs2.Stream.fromIterator[IO, (PutObjectRequest, RequestBody)](
           partition.map { case (key, bytes) =>
@@ -97,10 +88,9 @@ object SaveToS3 {
           }
         )
 
-      val pool = Executors.newFixedThreadPool(threads)
-      implicit val ec = ExecutionContext.fromExecutor(pool)
-      implicit val timer: Timer[IO] = IO.timer(ec)
-      implicit val cs = IO.contextShift(ec)
+      implicit val ec    = executionContext
+      implicit val timer = IO.timer(ec)
+      implicit val cs    = IO.contextShift(ec)
 
       import geotrellis.store.util.IOUtils._
       val write: (PutObjectRequest, RequestBody) => fs2.Stream[IO, PutObjectResponse] =
@@ -114,16 +104,14 @@ object SaveToS3 {
           }
         }
 
-      requests
-        .map(Function.tupled(write))
-        .parJoin(threads)
-        .compile
-        .toVector
-        .attempt
-        .unsafeRunSync()
-        .valueOr(throw _)
-
-      pool.shutdown()
+    requests
+      .map(Function.tupled(write))
+      .parJoinUnbounded
+      .compile
+      .toVector
+      .attempt
+      .unsafeRunSync()
+      .valueOr(throw _)
     }
   }
 }

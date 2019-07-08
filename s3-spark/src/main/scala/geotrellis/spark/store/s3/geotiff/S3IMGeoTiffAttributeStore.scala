@@ -37,33 +37,29 @@ import java.net.URI
     uri: URI,
     pattern: String,
     recursive: Boolean = true,
-    getClient: () => S3Client = S3ClientProducer.get
+    s3Client: => S3Client = S3ClientProducer.get()
   ): InMemoryGeoTiffAttributeStore = {
-    val getInput = () => S3GeoTiffInput.list(name, uri, pattern, recursive, getClient)
-    apply(getInput, getClient)
+    val getInput = () => S3GeoTiffInput.list(name, uri, pattern, recursive, s3Client)
+    apply(getInput, s3Client)
   }
 
   def apply(getDataFunction: () => List[GeoTiffMetadata]): InMemoryGeoTiffAttributeStore =
-    apply(getDataFunction, S3ClientProducer.get)
+    apply(getDataFunction, S3ClientProducer.get())
 
   def apply(
     getDataFunction: () => List[GeoTiffMetadata],
-    getClient: () => S3Client
+    s3Client: => S3Client
   ): InMemoryGeoTiffAttributeStore =
     new InMemoryGeoTiffAttributeStore {
       lazy val metadataList = getDataFunction()
       def persist(uri: URI): Unit = {
-
-        @transient
-        lazy val s3Client = getClient()
-
         val s3Path = new AmazonS3URI(uri)
         val data = metadataList
 
         val str = data.asJson.noSpaces
         val request = PutObjectRequest.builder()
-          .bucket(s3Path.getBucket())
-          .key(s3Path.getKey())
+          .bucket(s3Path.getBucket)
+          .key(s3Path.getKey)
           .build()
         s3Client.putObject(request, RequestBody.fromBytes(str.getBytes("UTF-8")))
       }

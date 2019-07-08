@@ -20,14 +20,15 @@ import geotrellis.raster._
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.layer._
 import geotrellis.store._
-import geotrellis.store.cog.{COGCollectionLayerReader, ZoomRange, Extension}
-import geotrellis.store.file.conf.FileConfig
+import geotrellis.store.util._
+import geotrellis.store.cog.{COGCollectionLayerReader, Extension, ZoomRange}
 import geotrellis.store.file.{FileAttributeStore, KeyPathGenerator}
 import geotrellis.util._
 
 import com.typesafe.scalalogging.LazyLogging
 import _root_.io.circe._
 
+import scala.concurrent.ExecutionContext
 import scala.reflect.ClassTag
 import java.net.URI
 import java.io.File
@@ -40,10 +41,12 @@ import java.io.File
 class FileCOGCollectionLayerReader(
   val attributeStore: AttributeStore,
   val catalogPath: String,
-  val defaultThreads: Int = FileCOGCollectionLayerReader.defaultThreadCount
+  executionContext: => ExecutionContext = BlockingThreadPool.executionContext
 ) extends COGCollectionLayerReader[LayerId] with LazyLogging {
 
   implicit def getByteReader(uri: URI): ByteReader = byteReader(uri)
+
+  @transient implicit lazy val ec: ExecutionContext = executionContext
 
   def read[
     K: SpatialComponent: Boundable: Decoder: ClassTag,
@@ -57,15 +60,12 @@ class FileCOGCollectionLayerReader(
       tileQuery       = tileQuery,
       getKeyPath      = getKeyPath,
       pathExists      = { new File(_).isFile },
-      fullPath        = { path => new URI(s"file://$path") },
-      defaultThreads  = defaultThreads
+      fullPath        = { path => new URI(s"file://$path") }
     )
   }
 }
 
 object FileCOGCollectionLayerReader {
-  val defaultThreadCount: Int = FileConfig.threads.collection.readThreads
-
   def apply(attributeStore: AttributeStore, catalogPath: String): FileCOGCollectionLayerReader =
     new FileCOGCollectionLayerReader(attributeStore, catalogPath)
 

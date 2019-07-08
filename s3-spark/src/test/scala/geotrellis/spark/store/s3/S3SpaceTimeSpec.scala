@@ -19,22 +19,13 @@ package geotrellis.spark.store.s3
 import geotrellis.raster.Tile
 import geotrellis.layer._
 import geotrellis.store._
-import geotrellis.store.index._
 import geotrellis.store.s3._
 import geotrellis.spark.store._
-import geotrellis.spark.store.s3.testkit._
-import geotrellis.spark._
 import geotrellis.spark.testkit.io._
 import geotrellis.spark.testkit.testfiles.TestFiles
 import geotrellis.spark.testkit.TestEnvironment
 
-import software.amazon.awssdk.http.AbortableInputStream
-import software.amazon.awssdk.core.ResponseInputStream
-import software.amazon.awssdk.services.s3.S3Client
-import software.amazon.awssdk.regions.Region
 import org.scalatest._
-
-import java.net.URI
 
 class S3SpaceTimeSpec
   extends PersistenceSpec[SpaceTimeKey, Tile, TileLayerMetadata[SpaceTimeKey]]
@@ -47,7 +38,7 @@ class S3SpaceTimeSpec
 
   lazy val bucket = "mock-bucket"
   lazy val prefix = "catalog"
-  val client = MockS3Client()
+  val client = MockS3Client.instance
   S3TestUtils.cleanBucket(client, bucket)
   registerAfterAll { () =>
     S3TestUtils.cleanBucket(client, bucket)
@@ -55,20 +46,18 @@ class S3SpaceTimeSpec
   // Necessary to register the mock client as our default
   S3ClientProducer.set(() => MockS3Client())
 
-  lazy val getS3Client = () => MockS3Client()
-  lazy val attributeStore = new S3AttributeStore(bucket, prefix, getS3Client)
-  lazy val threadCount = 2
+  lazy val attributeStore = new S3AttributeStore(bucket, prefix, MockS3Client.instance)
 
-  lazy val rddReader = new S3RDDReader(getS3Client, threadCount)
-  lazy val rddWriter = new S3RDDWriter(getS3Client, threadCount)
+  lazy val rddReader = new S3RDDReader(MockS3Client.instance)
+  lazy val rddWriter = new S3RDDWriter(MockS3Client.instance)
 
-  lazy val reader = new S3LayerReader(attributeStore, getS3Client, threadCount)
-  lazy val creader = new S3CollectionLayerReader(attributeStore, getS3Client)
-  lazy val writer = new S3LayerWriter(attributeStore, bucket, prefix, identity, getS3Client)
-  lazy val deleter = new S3LayerDeleter(attributeStore, getS3Client)
-  lazy val copier = new S3LayerCopier(attributeStore, bucket, prefix, getS3Client)
+  lazy val reader = new S3LayerReader(attributeStore, MockS3Client.instance)
+  lazy val creader = new S3CollectionLayerReader(attributeStore, MockS3Client.instance)
+  lazy val writer = new S3LayerWriter(attributeStore, bucket, prefix, identity, MockS3Client.instance)
+  lazy val deleter = new S3LayerDeleter(attributeStore, MockS3Client.instance)
+  lazy val copier = new S3LayerCopier(attributeStore, bucket, prefix, MockS3Client.instance)
   lazy val reindexer = GenericLayerReindexer(attributeStore, reader, writer, deleter, copier)
   lazy val mover = GenericLayerMover(copier, deleter)
-  lazy val tiles = new S3ValueReader(attributeStore, getS3Client)
+  lazy val tiles = new S3ValueReader(attributeStore, MockS3Client.instance)
   lazy val sample =  CoordinateSpaceTime
 }

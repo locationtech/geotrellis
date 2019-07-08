@@ -18,10 +18,10 @@ package geotrellis.spark.store.s3
 
 import geotrellis.layer._
 import geotrellis.store._
+import geotrellis.store.util._
 import geotrellis.store.avro._
 import geotrellis.store.index._
 import geotrellis.store.s3._
-import geotrellis.store.s3.conf.S3Config
 import geotrellis.spark._
 import geotrellis.spark.store._
 import geotrellis.util._
@@ -32,6 +32,7 @@ import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.model._
 import io.circe._
 
+import scala.concurrent.ExecutionContext
 import scala.reflect.ClassTag
 
 /**
@@ -44,14 +45,14 @@ import scala.reflect.ClassTag
  */
 class S3LayerReader(
   val attributeStore: AttributeStore,
-  val getClient: () => S3Client = S3ClientProducer.get,
-  val threadCount: Int = S3Config.threads.rdd.readThreads
+  s3Client: => S3Client = S3ClientProducer.get(),
+  executionContext: => ExecutionContext = BlockingThreadPool.executionContext
 )(implicit sc: SparkContext)
   extends FilteringLayerReader[LayerId] with LazyLogging {
 
   val defaultNumPartitions = sc.defaultParallelism
 
-  def rddReader: S3RDDReader = new S3RDDReader(getClient, threadCount)
+  def rddReader: S3RDDReader = new S3RDDReader(s3Client, executionContext)
 
   def read[
     K: AvroRecordCodec: Boundable: Decoder: ClassTag,
@@ -82,11 +83,11 @@ class S3LayerReader(
 }
 
 object S3LayerReader {
-  def apply(attributeStore: AttributeStore, getClient: () => S3Client)(implicit sc: SparkContext): S3LayerReader =
-    new S3LayerReader(attributeStore, getClient)
+  def apply(attributeStore: AttributeStore, s3Client: => S3Client)(implicit sc: SparkContext): S3LayerReader =
+    new S3LayerReader(attributeStore, s3Client)
 
-  def apply(bucket: String, prefix: String, getClient: () => S3Client)(implicit sc: SparkContext): S3LayerReader = {
-    val attStore = new S3AttributeStore(bucket, prefix, getClient)
-    apply(attStore, getClient)
+  def apply(bucket: String, prefix: String, s3Client: => S3Client)(implicit sc: SparkContext): S3LayerReader = {
+    val attStore = new S3AttributeStore(bucket, prefix, s3Client)
+    apply(attStore, s3Client)
   }
 }

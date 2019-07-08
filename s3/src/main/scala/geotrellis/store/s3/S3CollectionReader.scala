@@ -20,18 +20,19 @@ import geotrellis.layer._
 import geotrellis.store.avro.codecs.KeyValueRecordCodec
 import geotrellis.store.index.MergeQueue
 import geotrellis.store.avro.{AvroEncoder, AvroRecordCodec}
-import geotrellis.store.util.{IOUtils => GTIOUtils}
-import geotrellis.store.s3.conf.S3Config
+import geotrellis.store.util.{BlockingThreadPool, IOUtils => GTIOUtils}
 
 import software.amazon.awssdk.services.s3.model._
 import software.amazon.awssdk.services.s3.S3Client
-
 import org.apache.avro.Schema
 import org.apache.commons.io.IOUtils
 
+import scala.concurrent.ExecutionContext
+
 class S3CollectionReader(
-  val getClient: () => S3Client = S3ClientProducer.get
-) {
+  s3Client: => S3Client = S3ClientProducer.get(),
+  executionContext: => ExecutionContext = BlockingThreadPool.executionContext
+) extends Serializable {
 
   def read[
     K: AvroRecordCodec: Boundable,
@@ -42,8 +43,7 @@ class S3CollectionReader(
      queryKeyBounds: Seq[KeyBounds[K]],
      decomposeBounds: KeyBounds[K] => Seq[(BigInt, BigInt)],
      filterIndexOnly: Boolean,
-     writerSchema: Option[Schema] = None,
-     threads: Int = S3Config.threads.rdd.readThreads
+     writerSchema: Option[Schema] = None
    ): Seq[(K, V)] = {
     if (queryKeyBounds.isEmpty) return Seq.empty[(K, V)]
 
@@ -53,15 +53,15 @@ class S3CollectionReader(
       queryKeyBounds.flatMap(decomposeBounds)
 
     val recordCodec = KeyValueRecordCodec[K, V]
-    val s3client = getClient()
+    implicit val ec = executionContext
 
-    GTIOUtils.parJoin[K, V](ranges.toIterator, threads){ index: BigInt =>
+    GTIOUtils.parJoin[K, V](ranges.toIterator){ index: BigInt =>
       try {
         val getRequest = GetObjectRequest.builder()
           .bucket(bucket)
           .key(keyPath(index))
           .build()
-        val s3obj = s3client.getObject(getRequest)
+        val s3obj = s3Client.getObject(getRequest)
         val bytes = IOUtils.toByteArray(s3obj)
         s3obj.close()
         val recs = AvroEncoder.fromBinary(writerSchema.getOrElse(recordCodec.schema), bytes)(recordCodec)

@@ -19,31 +19,38 @@ package geotrellis.spark.store.file.geotiff
 import geotrellis.layer.ZoomedLayoutScheme
 import geotrellis.raster.resample.{NearestNeighbor, ResampleMethod}
 import geotrellis.raster.io.geotiff.{AutoHigherResolution, OverviewStrategy}
-import geotrellis.store.file._
 import geotrellis.store.file.cog.byteReader
-import geotrellis.store.file.conf.FileConfig
 import geotrellis.spark.store.hadoop.geotiff._
+import geotrellis.store.util.BlockingThreadPool
 import geotrellis.util.ByteReader
 import geotrellis.util.annotations.experimental
 
 import java.net.URI
 
-/**
-  * @define experimental <span class="badge badge-red" style="float: right;">EXPERIMENTAL</span>@experimental
-  */
-@experimental case class FileGeoTiffLayerReader[M[T] <: Traversable[T]](
-  attributeStore: AttributeStore[M, GeoTiffMetadata],
-  layoutScheme: ZoomedLayoutScheme,
-  resampleMethod: ResampleMethod = NearestNeighbor,
-  strategy: OverviewStrategy = AutoHigherResolution,
-  defaultThreads: Int = FileGeoTiffLayerReader.defaultThreadCount
-) extends GeoTiffLayerReader[M] {
-  implicit def getByteReader(uri: URI): ByteReader = byteReader(uri)
-}
+import scala.concurrent.ExecutionContext
 
 /**
   * @define experimental <span class="badge badge-red" style="float: right;">EXPERIMENTAL</span>@experimental
   */
+@experimental class FileGeoTiffLayerReader[M[T] <: Traversable[T]](
+  val attributeStore: AttributeStore[M, GeoTiffMetadata],
+  val layoutScheme: ZoomedLayoutScheme,
+  val resampleMethod: ResampleMethod = NearestNeighbor,
+  val strategy: OverviewStrategy = AutoHigherResolution,
+  executionContext: => ExecutionContext = BlockingThreadPool.executionContext
+) extends GeoTiffLayerReader[M] {
+  implicit lazy val ec: ExecutionContext = executionContext
+
+  implicit def getByteReader(uri: URI): ByteReader = byteReader(uri)
+}
+
 @experimental object FileGeoTiffLayerReader {
-  val defaultThreadCount: Int = FileConfig.threads.collection.readThreads
+  def apply[M[T] <: Traversable[T]](
+    attributeStore: AttributeStore[M, GeoTiffMetadata],
+    layoutScheme: ZoomedLayoutScheme,
+    resampleMethod: ResampleMethod = NearestNeighbor,
+    strategy: OverviewStrategy = AutoHigherResolution,
+    executionContext: => ExecutionContext = BlockingThreadPool.executionContext
+  ): FileGeoTiffLayerReader[M] =
+    new FileGeoTiffLayerReader(attributeStore, layoutScheme, resampleMethod, strategy, executionContext)
 }

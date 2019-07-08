@@ -27,7 +27,7 @@ import org.apache.spark.rdd.RDD
 
 import java.net.URI
 
-private [geotrellis] trait GeoTiffInfoReader extends LazyLogging {
+private [geotrellis] trait GeoTiffInfoReader extends LazyLogging with Serializable {
   def geoTiffInfoRDD(implicit sc: SparkContext): RDD[String]
   def getGeoTiffInfo(uri: String): GeoTiffInfo
 

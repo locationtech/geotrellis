@@ -19,8 +19,6 @@ package geotrellis.store.s3
 import geotrellis.layer._
 import geotrellis.store._
 
-import software.amazon.awssdk.services.s3.S3Client
-
 import java.net.URI
 
 /**
@@ -33,7 +31,7 @@ class S3CollectionLayerProvider()
      with ValueReaderProvider
      with CollectionLayerReaderProvider {
 
-  @transient lazy val getClient = S3ClientProducer.get
+  @transient lazy val s3Client = S3ClientProducer.get()
 
   def canProcess(uri: URI): Boolean = uri.getScheme match {
     case str: String => if (str.toLowerCase == "s3") true else false
@@ -47,15 +45,14 @@ class S3CollectionLayerProvider()
         case Some(s) => s
         case None => ""
       }
-    new S3AttributeStore(bucket = s3Uri.getBucket(), prefix = prefix, getClient)
+    new S3AttributeStore(bucket = s3Uri.getBucket(), prefix = prefix, s3Client)
   }
 
   def valueReader(uri: URI, store: AttributeStore): ValueReader[LayerId] = {
-    new S3ValueReader(store, getClient)
+    new S3ValueReader(store, s3Client)
   }
 
   def collectionLayerReader(uri: URI, store: AttributeStore): CollectionLayerReader[LayerId] = {
     new S3CollectionLayerReader(store)
   }
-
 }

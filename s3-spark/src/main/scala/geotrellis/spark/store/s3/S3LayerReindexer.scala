@@ -16,25 +16,18 @@
 
 package geotrellis.spark.store.s3
 
-import geotrellis.layer._
 import geotrellis.store._
-import geotrellis.store.avro._
-import geotrellis.store.index.KeyIndexMethod
 import geotrellis.store.s3._
 import geotrellis.spark.store._
-import geotrellis.util._
 
 import org.apache.spark.SparkContext
-import org.apache.spark.rdd.RDD
 import software.amazon.awssdk.services.s3.S3Client
-
-import scala.reflect.ClassTag
 
 object S3LayerReindexer {
   def apply(attributeStore: S3AttributeStore)(implicit sc: SparkContext): LayerReindexer[LayerId] = {
-    val layerReader  = S3LayerReader(attributeStore, attributeStore.getClient)
+    val layerReader  = S3LayerReader(attributeStore, attributeStore.client)
     val layerWriter  = S3LayerWriter(attributeStore)
-    val layerDeleter = S3LayerDeleter(attributeStore, attributeStore.getClient)
+    val layerDeleter = S3LayerDeleter(attributeStore, attributeStore.client)
     val layerCopier  = S3LayerCopier(attributeStore)
 
     GenericLayerReindexer(attributeStore, layerReader, layerWriter, layerDeleter, layerCopier)
@@ -43,7 +36,7 @@ object S3LayerReindexer {
   def apply(
     bucket: String,
     prefix: String,
-    getClient: () => S3Client
+    s3Client: => S3Client
   )(implicit sc: SparkContext): LayerReindexer[LayerId] =
-    apply(S3AttributeStore(bucket, prefix, getClient))
+    apply(S3AttributeStore(bucket, prefix, s3Client))
 }

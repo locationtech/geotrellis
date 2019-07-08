@@ -16,10 +16,7 @@
 
 package geotrellis.store.hadoop.conf
 
-import geotrellis.util.CamelCaseConfig
-
 import pureconfig.generic.auto._
-
 
 case class AttributeCachingConfig(
   expirationMinutes: Int = 60,
@@ -29,7 +26,7 @@ case class AttributeCachingConfig(
 
 case class AttributeConfig(caching: AttributeCachingConfig = AttributeCachingConfig())
 
-object AttributeConfig extends CamelCaseConfig {
+object AttributeConfig {
   lazy val conf: AttributeConfig = pureconfig.loadConfigOrThrow[AttributeConfig]("geotrellis.attribute")
   implicit def attributeConfigToClass(obj: AttributeConfig.type): AttributeConfig = conf
 }
