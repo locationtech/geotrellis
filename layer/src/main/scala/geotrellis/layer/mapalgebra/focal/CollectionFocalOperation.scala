@@ -16,12 +16,13 @@
 
 package geotrellis.layer.mapalgebra.focal
 
-import geotrellis.layer.{SpatialComponent, TileBounds}
-import geotrellis.raster.buffer.BufferedTile
-import geotrellis.raster._
-import geotrellis.raster.mapalgebra.focal._
 import geotrellis.layer._
-import geotrellis.util.MethodExtensions
+import geotrellis.vector._
+import geotrellis.raster._
+import geotrellis.raster.buffer.BufferedTile
+import geotrellis.raster.mapalgebra.focal._
+import geotrellis.util._
+
 
 object CollectionFocalOperation {
   private def mapOverBufferedTiles[K: SpatialComponent](
@@ -44,13 +45,13 @@ object CollectionFocalOperation {
     mapOverBufferedTiles(seq.bufferTiles(neighborhood.extent), neighborhood)(calc)
 
   def apply[K: SpatialComponent](
-    rdd: Seq[(K, Tile)],
+    collection: Seq[(K, Tile)],
     neighborhood: Neighborhood,
     layerBounds: TileBounds
   )(
     calc: (Tile, Option[GridBounds[Int]]) => Tile
   ): Seq[(K, Tile)] =
-    mapOverBufferedTiles(rdd.bufferTiles(neighborhood.extent, layerBounds), neighborhood)(calc)
+    mapOverBufferedTiles(collection.bufferTiles(neighborhood.extent, layerBounds), neighborhood)(calc)
 
   def apply[K: SpatialComponent](
     rasterCollection: TileLayerCollection[K],
@@ -58,8 +59,51 @@ object CollectionFocalOperation {
   )(
     calc: (Tile, Option[GridBounds[Int]]) => Tile
   ): TileLayerCollection[K] =
-    rasterCollection.withContext { rdd =>
-      apply(rdd, neighborhood, rasterCollection.metadata.tileBounds)(calc)
+    rasterCollection.withContext { collection =>
+      apply(collection, neighborhood, rasterCollection.metadata.tileBounds)(calc)
+    }
+
+  private def mapBufferedTiles[K: SpatialComponent: GetComponent[?, SpatialKey]](
+    bufferedTiles: Seq[(K, BufferedTile[Tile])],
+    neighborhood: Neighborhood,
+    keyToExtent: SpatialKey => Extent
+  )(
+    calc: (Tile, Option[GridBounds[Int]], Extent) => Tile
+  ): Seq[(K, Tile)] =
+    bufferedTiles
+      .map { case (key, BufferedTile(tile, gridBounds)) =>
+        val spatialKey = key.getComponent[SpatialKey]
+        key -> calc(tile, Some(gridBounds), keyToExtent(spatialKey))
+      }
+
+  def deriveSlope[K: SpatialComponent: GetComponent[?, SpatialKey]](
+    collection: Seq[(K, Tile)],
+    neighborhood: Neighborhood,
+    layerBounds: TileBounds,
+    keyToExtent: SpatialKey => Extent
+  )(
+    calc: (Tile, Option[GridBounds[Int]], Extent) => Tile
+  ): Seq[(K, Tile)] =
+    mapBufferedTiles(
+      collection.bufferTiles(neighborhood.extent, layerBounds),
+      neighborhood,
+      keyToExtent
+    )(calc)
+
+  def deriveSlope[K: SpatialComponent: GetComponent[?, SpatialKey]](
+    rasterCollection: TileLayerCollection[K],
+    neighborhood: Neighborhood,
+    keyToExtent: SpatialKey => Extent
+  )(
+    calc: (Tile, Option[GridBounds[Int]], Extent) => Tile
+  ): TileLayerCollection[K] =
+    rasterCollection.withContext { collection =>
+      deriveSlope(
+        collection,
+        neighborhood,
+        rasterCollection.metadata.tileBounds,
+        keyToExtent
+      )(calc)
     }
 }
 
@@ -72,6 +116,16 @@ abstract class CollectionFocalOperation[K: SpatialComponent] extends MethodExten
     val cellSize = self.metadata.layout.cellSize
     CollectionFocalOperation(self, n){ (tile, bounds) =>
       calc(tile, bounds, cellSize)
+    }
+  }
+
+  def focalWithExtents(n: Neighborhood)(calc: (Tile, Option[GridBounds[Int]], CellSize, Extent) => Tile): TileLayerCollection[K] = {
+    val cellSize = self.metadata.layout.cellSize
+    val keyToExtent: SpatialKey => Extent =
+      (key: SpatialKey) => self.metadata.mapTransform.keyToExtent(key)
+
+    CollectionFocalOperation.deriveSlope(self, n, keyToExtent){ (tile, bounds, extent) =>
+      calc(tile, bounds, cellSize, extent)
     }
   }
 }

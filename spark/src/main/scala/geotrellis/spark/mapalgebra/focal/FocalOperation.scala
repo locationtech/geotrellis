@@ -16,13 +16,14 @@
 
 package geotrellis.spark.mapalgebra.focal
 
-import geotrellis.layer.{SpatialComponent, TileBounds}
+import geotrellis.layer.{SpatialComponent, TileBounds, SpatialKey}
+import geotrellis.vector.Extent
 import geotrellis.raster._
 import geotrellis.raster.buffer.BufferedTile
 import geotrellis.raster.mapalgebra.focal._
 import geotrellis.spark._
 import geotrellis.spark.buffer._
-import geotrellis.util.MethodExtensions
+import geotrellis.util._
 
 import org.apache.spark.rdd.RDD
 import org.apache.spark.Partitioner
@@ -55,6 +56,34 @@ object FocalOperation {
     rasterRDD.withContext { rdd =>
       apply(rdd, neighborhood, rasterRDD.metadata.tileBounds, partitioner)(calc)
     }
+
+  private def deriveSlope[K: SpatialComponent: ClassTag: GetComponent[?, SpatialKey]]
+    (bufferedTiles: RDD[(K, BufferedTile[Tile])], neighborhood: Neighborhood, keyToExtent: SpatialKey => Extent)
+    (calc: (Tile, Option[GridBounds[Int]], Extent) => Tile): RDD[(K, Tile)] =
+      bufferedTiles
+        .mapPartitions({ case partition =>
+          partition.map { case (k, BufferedTile(tile, gridBounds)) =>
+            val spatialKey = k.getComponent[SpatialKey]
+            k -> calc(tile, Some(gridBounds), keyToExtent(spatialKey))
+          }
+        }, preservesPartitioning = true)
+
+  def deriveSlope[K: SpatialComponent: ClassTag: GetComponent[?, SpatialKey]](
+    rdd: RDD[(K, Tile)],
+    neighborhood: Neighborhood,
+    layerBounds: TileBounds,
+    partitioner: Option[Partitioner],
+    keyToExtent: SpatialKey => Extent
+  )(calc: (Tile, Option[GridBounds[Int]], Extent) => Tile): RDD[(K, Tile)] =
+      deriveSlope(rdd.bufferTiles(neighborhood.extent, layerBounds, partitioner), neighborhood, keyToExtent)(calc)
+
+  def deriveSlope[
+    K: SpatialComponent: ClassTag: GetComponent[?, SpatialKey]
+  ](rasterRDD: TileLayerRDD[K], neighborhood: Neighborhood, partitioner: Option[Partitioner], keyToExtent: SpatialKey => Extent)
+  (calc: (Tile, Option[GridBounds[Int]], Extent) => Tile): TileLayerRDD[K] =
+    rasterRDD.withContext { rdd =>
+      deriveSlope(rdd, neighborhood, rasterRDD.metadata.tileBounds, partitioner, keyToExtent)(calc)
+    }
 }
 
 abstract class FocalOperation[K: SpatialComponent: ClassTag] extends MethodExtensions[TileLayerRDD[K]] {
@@ -67,5 +96,14 @@ abstract class FocalOperation[K: SpatialComponent: ClassTag] extends MethodExten
       (calc: (Tile, Option[GridBounds[Int]], CellSize) => Tile): TileLayerRDD[K] = {
     val cellSize = self.metadata.layout.cellSize
     FocalOperation(self, n, partitioner){ (tile, bounds) => calc(tile, bounds, cellSize) }
+  }
+
+  def focalWithExtents(n: Neighborhood, partitioner: Option[Partitioner])
+      (calc: (Tile, Option[GridBounds[Int]], CellSize, Extent) => Tile): TileLayerRDD[K] = {
+    val cellSize = self.metadata.layout.cellSize
+    val keyToExtent: SpatialKey => Extent =
+      (key: SpatialKey) => self.metadata.mapTransform.keyToExtent(key)
+
+    FocalOperation.deriveSlope(self, n, partitioner, keyToExtent){ (tile, bounds, extent) => calc(tile, bounds, cellSize, extent) }
   }
 }
