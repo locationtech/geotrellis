@@ -63,7 +63,7 @@ object CollectionFocalOperation {
       apply(collection, neighborhood, rasterCollection.metadata.tileBounds)(calc)
     }
 
-  private def mapBufferedTiles[K: SpatialComponent: GetComponent[?, SpatialKey]](
+  private def calculateSlope[K: SpatialComponent: GetComponent[?, SpatialKey]](
     bufferedTiles: Seq[(K, BufferedTile[Tile])],
     neighborhood: Neighborhood,
     keyToExtent: SpatialKey => Extent
@@ -76,7 +76,7 @@ object CollectionFocalOperation {
         key -> calc(tile, Some(gridBounds), keyToExtent(spatialKey))
       }
 
-  def deriveSlope[K: SpatialComponent: GetComponent[?, SpatialKey]](
+  def slope[K: SpatialComponent: GetComponent[?, SpatialKey]](
     collection: Seq[(K, Tile)],
     neighborhood: Neighborhood,
     layerBounds: TileBounds,
@@ -84,13 +84,13 @@ object CollectionFocalOperation {
   )(
     calc: (Tile, Option[GridBounds[Int]], Extent) => Tile
   ): Seq[(K, Tile)] =
-    mapBufferedTiles(
+    calculateSlope(
       collection.bufferTiles(neighborhood.extent, layerBounds),
       neighborhood,
       keyToExtent
     )(calc)
 
-  def deriveSlope[K: SpatialComponent: GetComponent[?, SpatialKey]](
+  def slope[K: SpatialComponent: GetComponent[?, SpatialKey]](
     rasterCollection: TileLayerCollection[K],
     neighborhood: Neighborhood,
     keyToExtent: SpatialKey => Extent
@@ -98,7 +98,7 @@ object CollectionFocalOperation {
     calc: (Tile, Option[GridBounds[Int]], Extent) => Tile
   ): TileLayerCollection[K] =
     rasterCollection.withContext { collection =>
-      deriveSlope(
+      slope(
         collection,
         neighborhood,
         rasterCollection.metadata.tileBounds,
@@ -124,7 +124,7 @@ abstract class CollectionFocalOperation[K: SpatialComponent] extends MethodExten
     val keyToExtent: SpatialKey => Extent =
       (key: SpatialKey) => self.metadata.mapTransform.keyToExtent(key)
 
-    CollectionFocalOperation.deriveSlope(self, n, keyToExtent){ (tile, bounds, extent) =>
+    CollectionFocalOperation.slope(self, n, keyToExtent){ (tile, bounds, extent) =>
       calc(tile, bounds, cellSize, extent)
     }
   }

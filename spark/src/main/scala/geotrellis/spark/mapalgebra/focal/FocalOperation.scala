@@ -57,7 +57,7 @@ object FocalOperation {
       apply(rdd, neighborhood, rasterRDD.metadata.tileBounds, partitioner)(calc)
     }
 
-  private def deriveSlope[K: SpatialComponent: ClassTag: GetComponent[?, SpatialKey]]
+  private def slope[K: SpatialComponent: ClassTag: GetComponent[?, SpatialKey]]
     (bufferedTiles: RDD[(K, BufferedTile[Tile])], neighborhood: Neighborhood, keyToExtent: SpatialKey => Extent)
     (calc: (Tile, Option[GridBounds[Int]], Extent) => Tile): RDD[(K, Tile)] =
       bufferedTiles
@@ -68,21 +68,21 @@ object FocalOperation {
           }
         }, preservesPartitioning = true)
 
-  def deriveSlope[K: SpatialComponent: ClassTag: GetComponent[?, SpatialKey]](
+  def slope[K: SpatialComponent: ClassTag: GetComponent[?, SpatialKey]](
     rdd: RDD[(K, Tile)],
     neighborhood: Neighborhood,
     layerBounds: TileBounds,
     partitioner: Option[Partitioner],
     keyToExtent: SpatialKey => Extent
   )(calc: (Tile, Option[GridBounds[Int]], Extent) => Tile): RDD[(K, Tile)] =
-      deriveSlope(rdd.bufferTiles(neighborhood.extent, layerBounds, partitioner), neighborhood, keyToExtent)(calc)
+      slope(rdd.bufferTiles(neighborhood.extent, layerBounds, partitioner), neighborhood, keyToExtent)(calc)
 
-  def deriveSlope[
+  def slope[
     K: SpatialComponent: ClassTag: GetComponent[?, SpatialKey]
   ](rasterRDD: TileLayerRDD[K], neighborhood: Neighborhood, partitioner: Option[Partitioner], keyToExtent: SpatialKey => Extent)
   (calc: (Tile, Option[GridBounds[Int]], Extent) => Tile): TileLayerRDD[K] =
     rasterRDD.withContext { rdd =>
-      deriveSlope(rdd, neighborhood, rasterRDD.metadata.tileBounds, partitioner, keyToExtent)(calc)
+      slope(rdd, neighborhood, rasterRDD.metadata.tileBounds, partitioner, keyToExtent)(calc)
     }
 }
 
@@ -104,6 +104,6 @@ abstract class FocalOperation[K: SpatialComponent: ClassTag] extends MethodExten
     val keyToExtent: SpatialKey => Extent =
       (key: SpatialKey) => self.metadata.mapTransform.keyToExtent(key)
 
-    FocalOperation.deriveSlope(self, n, partitioner, keyToExtent){ (tile, bounds, extent) => calc(tile, bounds, cellSize, extent) }
+    FocalOperation.slope(self, n, partitioner, keyToExtent){ (tile, bounds, extent) => calc(tile, bounds, cellSize, extent) }
   }
 }
