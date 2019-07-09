@@ -32,7 +32,7 @@ object CollectionFocalOperation {
     calc: (Tile, Option[GridBounds[Int]]) => Tile
   ): Seq[(K, Tile)] =
     bufferedTiles
-      .map { case (key, BufferedTile(tile, gridBounds)) => key -> calc(tile, Some(gridBounds)) }
+      .mapValues { case BufferedTile(tile, gridBounds) => calc(tile, Some(gridBounds)) }
 
   def apply[K: SpatialComponent](
     seq: Seq[(K, Tile)],
