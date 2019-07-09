@@ -60,7 +60,7 @@ object ZFactorCalculator {
    *    any latitude not mapped will have its associated ZFactor derived from
    *    that interpolation.
    */
-  def createCalculator(mappedLatitudess: Map[Double, Double]): ZFactorCalculator = {
+  def createCalculator(mappedLatitudes: Map[Double, Double]): ZFactorCalculator = {
     val interp = new LinearInterpolator()
     val spline = interp.interpolate(mappedLatitudes.keys.toArray, mappedLatitudes.values.toArray)
 
