@@ -9,11 +9,14 @@ API Changes & Project structure changes
 - ``geotrellis-raster``
 
   - **Change:** ``geotrellis.raster.summary.polygonal.[Multi]TilePolygonalSummaryHandler`` replaced with ``geotrellis.raster.summary.polygonal.PolygonalSummary. Users should expect to implement concrete subclasses of ``geotrellis.raster.summary.GridVisitor`` and pass those to the new polygonalSummary methods. There are a number of default GridVisitor implementations provided for simple operations in `geotrellis.raster.summary.visitors``
+  - **New:** Created the ``geotrellis.raster.mapalgebra.focal.ZFactorCalculator`` and the ``geotrellis.raster.mapalgebra.focal.TileUnit`` types to improve
+    slope calculations.
 
 - ``geotrellis.layer``
 
   - **Change:** Replaced ``Mergable`` with cats' ``Semigroup``
   - **New:** A sparseStitch method on ``geotrellis.layer.stitch.SpatialTileLayoutCollectionStitchMethods``. Note that ``SpatialTileLayoutCollectionStitchMethods`` now has the additional constraint ``geotrellis.raster.prototype.TilePrototypeMethods`` on type ``V``. This should be transparent for users of the ``geotrellis.raster.Tile`` and ``geotrellis.raster.MultibandTile`` types.
+  - **Change:** The ``slope`` focal method now requires a ``ZFactorCalculator`` instance.
 
 - ``geotrellis.util``, ``geotrellis.store``, ``geotrellis.store.s3``
 
@@ -70,6 +73,7 @@ API Changes & Project structure changes
     - ``SpatialComponent``
     - ``TemporalComponent``
   - **Change:** Polygonal summaries on raster RDDs of ``RDD[(SpatialKey, T <: Grid[Int])] with Metadata[TileLayerMetadata[SpatialKey]]`` can now be performed with far less boilerplate using the same visitor pattern as the new raster polygonal summary API. See ``RDDPolygonalSummary.scala`` for additional details.
+  - **Change:** The ``slope`` focal method now requires a ``ZFactorCalculator`` instance.
 
 - ``geotrellis.spark.tiling``
 
