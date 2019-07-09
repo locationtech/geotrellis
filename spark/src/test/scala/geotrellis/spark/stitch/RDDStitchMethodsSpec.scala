@@ -151,5 +151,30 @@ class RDDStitchMethodsSpec extends FunSpec
 
       assertEqual(tiles.stitch, reference)
     }
+
+    it("should sparse stitch an RDD with an offset extent") {
+        val expectedTile =
+          createTile(
+            Array(
+              NaN, NaN, NaN, NaN, NaN,
+              1, 1,  1, 1, NaN,
+              1, 1,  1, 1, NaN,
+              1, 1,  1, 1, NaN,
+              1, 1,  1, 1, NaN
+            ), 5, 5)
+
+        val tile =
+          createTile(
+            Array(
+              1, 1,  1, 1,
+              1, 1,  1, 1,
+              1, 1,  1, 1,
+              1, 1,  1, 1
+            ), 4, 4)
+        val extent = Extent(0, 0, 4, 4)
+        val layer = createTileLayerRDD(Raster(tile, extent), TileLayout(4, 4, 1, 1))
+        val testExtent = Extent(0, 0, 5, 5)
+        assertEqual(layer.sparseStitch(testExtent).get.tile, expectedTile)
+    }
   }
 }
