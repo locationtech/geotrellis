@@ -16,6 +16,7 @@
 
 package geotrellis.vector.check.jts
 
+import geotrellis.vector.GeomFactory
 import org.locationtech.jts.geom._
 import org.scalacheck.Gen._
 import org.scalacheck._
