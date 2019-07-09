@@ -78,7 +78,7 @@ object ClipToGrid {
     if(preds.covers(e)) { Some(Feature(e, feature.data)) }
     else if(preds.coveredBy(e)) { Some(feature) }
     else {
-      feature.geom.typedIntersection(e).toGeometry.map { g =>
+      (feature.geom & e).toGeometry.map { g =>
         Feature(g, feature.data)
       }
     }

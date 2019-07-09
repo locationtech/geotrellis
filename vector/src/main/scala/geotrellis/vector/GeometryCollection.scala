@@ -23,8 +23,7 @@ import spire.syntax.cfor._
 
 import scala.reflect._
 
-/** Companion object to [[GeometryCollection]] */
-object GeometryCollection {
+trait GeometryCollectionConstructors {
   def apply(points: Seq[jts.Point] = Seq(), lines: Seq[jts.LineString] = Seq(), polygons: Seq[jts.Polygon] = Seq(),
              multiPoints: Seq[jts.MultiPoint] = Seq(),
              multiLines: Seq[jts.MultiLineString] = Seq(),
@@ -44,3 +43,6 @@ object GeometryCollection {
           gc.getAll[jts.MultiPoint], gc.getAll[jts.MultiLineString], gc.getAll[jts.MultiPolygon],
           gc.getAll[jts.GeometryCollection]))
 }
+
+/** Companion object to [[GeometryCollection]] */
+object GeometryCollection extends GeometryCollectionConstructors

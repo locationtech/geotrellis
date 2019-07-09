@@ -10,10 +10,10 @@ trait ExtraMultiPointMethods extends MethodExtensions[MultiPoint] {
     }
   }.toArray
 
-  def typedIntersection(p: Point): PointOrNoResult = self.intersection(p)
-  def typedIntersection(mp: MultiPoint): MultiPointMultiPointIntersectionResult = self.intersection(mp)
-  def typedIntersection[G <: Geometry : AtLeastOneDimension](g: G): MultiPointAtLeastOneDimensionIntersectionResult = self.intersection(g)
-  def typedIntersection(ex: Extent): MultiPointAtLeastOneDimensionIntersectionResult = self.intersection(ex.toPolygon)
+  def &(p: Point): PointOrNoResult = self.intersection(p)
+  def &(mp: MultiPoint): MultiPointMultiPointIntersectionResult = self.intersection(mp)
+  def &[G <: Geometry : AtLeastOneDimension](g: G): MultiPointAtLeastOneDimensionIntersectionResult = self.intersection(g)
+  def &(ex: Extent): MultiPointAtLeastOneDimensionIntersectionResult = self.intersection(ex.toPolygon)
 
   def -(g: Geometry): MultiPointGeometryDifferenceResult = self.difference(g)
 

@@ -77,43 +77,43 @@ class LineSpec extends FunSpec with Matchers {
     it ("should intersect with a Point and return a PointResult") {
       val p = Point(1,1)
       val l = LineString(Point(0,0), Point(2,2))
-      l.typedIntersection(p) should be (PointResult(Point(1,1)))
+      l & p should be (PointResult(Point(1,1)))
     }
 
     it ("should intersect with a Point and return a NoResult") {
       val p = Point(10, 10)
       val l = LineString(Point(0,0), Point(2,2))
-      l.typedIntersection(p) should be (NoResult)
+      l & p should be (NoResult)
     }
 
     it ("should intersect with a LineString and return a PointResult") {
       val l1 = LineString(Point(0,0), Point(2,2))
       val l2 = LineString(Point(0,2), Point(2,0))
-      l1.typedIntersection(l2) should be (PointResult(Point(1,1)))
+      l1 & l2 should be (PointResult(Point(1,1)))
     }
 
     it ("should intersect with a LineString and return a LineStringResult") {
       val l1 = LineString(Point(0,0), Point(2,2))
       val l2 = LineString(Point(1,1), Point(3,3))
-      l1.typedIntersection(l2) should be (LineStringResult(LineString(Point(1,1), Point(2,2))))
+      l1 & l2 should be (LineStringResult(LineString(Point(1,1), Point(2,2))))
     }
 
     it ("should intersect with a LineString and return a MultiPointResult") {
       val l1 = LineString(Point(0,1), Point(4,1))
       val l2 = LineString(Point(1,2), Point(1,0), Point(3,0), Point(3,2))
-      l1.typedIntersection(l2) should be (MultiPointResult(Seq(Point(1,1), Point(3,1)).toMultiPoint))
+      l1 & l2 should be (MultiPointResult(Seq(Point(1,1), Point(3,1)).toMultiPoint))
     }
 
     it ("should intersect with a LineString and return a MultiLineStringResult") {
       val l1 = LineString(Point(0,1), Point(4,1))
       val l2 = LineString(Point(1,1), Point(0,1), Point(2,0), Point(4,1), Point(3,1))
-      l1.typedIntersection(l2) should be (MultiLineStringResult(Seq(LineString(Point(0,1), Point(1,1)), LineString(Point(3,1), Point(4,1))).toMultiLineString))
+      l1 & l2 should be (MultiLineStringResult(Seq(LineString(Point(0,1), Point(1,1)), LineString(Point(3,1), Point(4,1))).toMultiLineString))
     }
 
     it ("should intersect with a LineString and return a NoResult") {
       val l1 = LineString(Point(0,0), Point(0,4))
       val l2 = LineString(Point(4,0), Point(4,4))
-      l1.typedIntersection(l2) should be (NoResult)
+      l1 & l2 should be (NoResult)
     }
 
     it ("should intersect with a LineString and return a GeometryCollectionResult") {
@@ -121,7 +121,7 @@ class LineSpec extends FunSpec with Matchers {
       val l2 = LineString(Point(0,1), Point(2,0), Point(4,1), Point(3,1))
       val expected: GeometryCollection =
         GeometryCollection(points = Seq(Point(0,1)), lines = Seq(LineString(Point(3,1), Point(4,1))))
-      val result = l1.typedIntersection(l2)
+      val result = l1 & l2
       result match {
         case GeometryCollectionResult(gc) => gc should be (expected)
         case _ => fail()
@@ -133,7 +133,7 @@ class LineSpec extends FunSpec with Matchers {
       val p1 = Point(1,1)
       val p2 = Point(5,5)
       val mp = MultiPoint(Seq(p1, p2))
-      l.typedIntersection(mp) should be (PointResult(p1))
+      l & mp should be (PointResult(p1))
     }
 
     it ("should intersect with a MultiPoint and return a MultiPointResult") {
@@ -141,7 +141,7 @@ class LineSpec extends FunSpec with Matchers {
       val p1 = Point(1,1)
       val p2 = Point(5,5)
       val mp = MultiPoint(Seq(p1, p2))
-      l.typedIntersection(mp) should be (MultiPointResult(Seq(p1, p2).toMultiPoint))
+      l & mp should be (MultiPointResult(Seq(p1, p2).toMultiPoint))
     }
 
     it ("should intersect with a MultiPoint and return a NoResult") {
@@ -149,7 +149,7 @@ class LineSpec extends FunSpec with Matchers {
       val p1 = Point(1,1)
       val p2 = Point(5,5)
       val mp = MultiPoint(Seq(p1, p2))
-      l.typedIntersection(mp) should be (NoResult)
+      l & mp should be (NoResult)
     }
 
     // -- Union

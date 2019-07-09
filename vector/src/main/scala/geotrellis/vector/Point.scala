@@ -20,7 +20,7 @@ import geotrellis.vector.GeomFactory._
 import geotrellis.util.MethodExtensions
 import org.locationtech.jts.{geom => jts}
 
-object Point {
+trait PointConstructors {
   def apply(x: Double, y: Double): jts.Point =
     factory.createPoint(new jts.Coordinate(x, y))
 
@@ -30,3 +30,5 @@ object Point {
   def apply(coord: jts.Coordinate): jts.Point =
     factory.createPoint(coord)
 }
+
+object Point extends PointConstructors

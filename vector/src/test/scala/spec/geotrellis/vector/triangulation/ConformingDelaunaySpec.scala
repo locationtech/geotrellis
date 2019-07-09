@@ -20,7 +20,7 @@ import geotrellis.vector._
 import geotrellis.vector.triangulation._
 
 import org.locationtech.jts.{ geom => jts }
-import org.locationtech.jts.geom.{Coordinate, GeometryFactory, MultiPoint, Polygon => JTSPolygon}
+import org.locationtech.jts.geom.{Coordinate, MultiPoint, Polygon => JTSPolygon}
 import org.locationtech.jts.triangulate.{ConformingDelaunayTriangulationBuilder, DelaunayTriangulationBuilder}
 import org.scalatest.{FunSpec, Matchers}
 import spire.syntax.cfor._
@@ -36,13 +36,12 @@ class ConformingDelaunaySpec extends FunSpec with Matchers {
   describe("Conforming Delaunay Triangulation") {
 
     val delaunayTriangles = {
-      val gf = new GeometryFactory
-      val sites = new MultiPoint(points, gf)
+      val sites = new MultiPoint(points, GeomFactory.factory)
       val builder = new DelaunayTriangulationBuilder
       builder.setSites(sites)
       val subd = builder.getSubdivision
 
-      val tris = subd.getTriangles(gf)
+      val tris = subd.getTriangles(GeomFactory.factory)
       val len = tris.getNumGeometries
       val arr = Array.ofDim[Polygon](len)
       cfor(0)(_ < len, _ + 1) { i => arr(i) = tris.getGeometryN(i).asInstanceOf[JTSPolygon] }

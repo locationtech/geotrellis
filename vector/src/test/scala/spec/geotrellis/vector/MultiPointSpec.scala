@@ -28,19 +28,19 @@ class MultiPointSpec extends FunSpec with Matchers {
     it ("should intersect with a MultiPoint and return a NoResult") {
       val mp1 = MultiPoint(Point(1,1), Point(2,2))
       val mp2 = MultiPoint(Point(0,5), Point(5,5))
-      mp1.typedIntersection(mp2) should be (NoResult)
+      mp1 & mp2 should be (NoResult)
     }
 
     it ("should intersect with a MultiPoint and return a PointResult") {
       val mp1 = MultiPoint(Point(1,1))
       val mp2 = MultiPoint(Point(1,1), Point(2,2))
-      mp1.typedIntersection(mp2) should be (PointResult(Point(1,1)))
+      mp1 & mp2 should be (PointResult(Point(1,1)))
     }
 
     it ("should intersect with a MultiPoint and return a MultiPointResult") {
       val mp1 = MultiPoint(Point(1,1), Point(2,2))
       val mp2 = MultiPoint(Point(1,1), Point(2,2), Point(3,3))
-      mp1.typedIntersection(mp2) should be (MultiPointResult(Seq(Point(1,1), Point(2,2)).toMultiPoint))
+      mp1 & mp2 should be (MultiPointResult(Seq(Point(1,1), Point(2,2)).toMultiPoint))
     }
 
     it ("should intersect with a MultiLineString and return a NoResult") {
@@ -48,7 +48,7 @@ class MultiPointSpec extends FunSpec with Matchers {
       val l1 = LineString(Point(0,5), Point(5,5))
       val l2 = LineString(Point(0,10), Point(5,10))
       val ml = MultiLineString(l1, l2)
-      mp.typedIntersection(ml) should be (NoResult)
+      mp & ml should be (NoResult)
     }
 
     it ("should intersect with a MultiLineString and return a PointResult") {
@@ -56,7 +56,7 @@ class MultiPointSpec extends FunSpec with Matchers {
       val l1 = LineString(Point(1,1), Point(1,5))
       val l2 = LineString(Point(0,10), Point(5,10))
       val ml = MultiLineString(l1, l2)
-      mp.typedIntersection(ml) should be (PointResult(Point(1,1)))
+      mp & ml should be (PointResult(Point(1,1)))
     }
 
     it ("should intersect with a MultiLineString and return a MultiPointResult") {
@@ -64,7 +64,7 @@ class MultiPointSpec extends FunSpec with Matchers {
       val l1 = LineString(Point(1,1), Point(5,5))
       val l2 = LineString(Point(0,10), Point(5,10))
       val ml = MultiLineString(l1, l2)
-      mp.typedIntersection(ml) should be (MultiPointResult(Seq(Point(1,1), Point(2,2)).toMultiPoint))
+      mp & ml should be (MultiPointResult(Seq(Point(1,1), Point(2,2)).toMultiPoint))
     }
 
     it ("should intersect with a MultiPolygon and return a NoResult") {
@@ -72,7 +72,7 @@ class MultiPointSpec extends FunSpec with Matchers {
       val p1 = Polygon(LineString(Point(0,5), Point(5,5), Point(3,6), Point(0,5)))
       val p2 = Polygon(LineString(Point(0,10), Point(5,10), Point(3,11), Point(0,10)))
       val mp = MultiPolygon(p1, p2)
-      mpt.typedIntersection(mp) should be (NoResult)
+      mpt & mp should be (NoResult)
     }
 
     it ("should intersect with a MultiPolygon and return a PointResult") {
@@ -80,7 +80,7 @@ class MultiPointSpec extends FunSpec with Matchers {
       val p1 = Polygon(LineString(Point(1,1), Point(5,6), Point(3,6), Point(1,1)))
       val p2 = Polygon(LineString(Point(0,10), Point(5,10), Point(3,11), Point(0,10)))
       val mp = MultiPolygon(p1, p2)
-      mpt.typedIntersection(mp) should be (PointResult(Point(1,1)))
+      mpt & mp should be (PointResult(Point(1,1)))
     }
 
     it ("should intersect with a MultiPolygon and return a MultiPointResult") {
@@ -88,7 +88,7 @@ class MultiPointSpec extends FunSpec with Matchers {
       val p1 = Polygon(LineString(Point(1,1), Point(5,5), Point(3,6), Point(1,1)))
       val p2 = Polygon(LineString(Point(0,10), Point(5,10), Point(3,11), Point(0,10)))
       val mp = MultiPolygon(p1, p2)
-      mpt.typedIntersection(mp) should be (MultiPointResult(Seq(Point(1,1), Point(2,2)).toMultiPoint))
+      mpt & mp should be (MultiPointResult(Seq(Point(1,1), Point(2,2)).toMultiPoint))
     }
 
     // -- Union

@@ -22,7 +22,7 @@ import org.locationtech.jts.{geom => jts}
 import spire.syntax.cfor._
 
 /** Companion object to [[MultiLine]] */
-object MultiLineString {
+trait MultiLineStringConstructors {
   lazy val EMPTY = apply(Seq[jts.LineString]())
 
   def apply(ls: jts.LineString*): jts.MultiLineString =
@@ -41,3 +41,5 @@ object MultiLineString {
     factory.createMultiLineString(arr)
   }
 }
+
+object MultiLineString extends MultiLineStringConstructors

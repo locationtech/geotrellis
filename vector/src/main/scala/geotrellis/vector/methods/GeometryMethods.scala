@@ -9,7 +9,7 @@ trait ExtraGeometryMethods extends MethodExtensions[Geometry] {
     if(self.isEmpty) Extent(0.0, 0.0, 0.0, 0.0)
     else self.getEnvelopeInternal
 
-  def typedIntersection(g: Geometry): TwoDimensionsTwoDimensionsIntersectionResult = self.intersection(g)
+  def &(g: Geometry): TwoDimensionsTwoDimensionsIntersectionResult = self.intersection(g)
 
   def intersectionSafe(g: Geometry): TwoDimensionsTwoDimensionsIntersectionResult =
     try self.intersection(g)

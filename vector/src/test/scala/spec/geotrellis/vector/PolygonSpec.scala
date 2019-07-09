@@ -90,7 +90,7 @@ class PolygonSpec extends FunSpec with Matchers {
       val mp = MultiPoint(p1, p2)
       val l = LineString(Point(0,0), Point(2,2), Point(4,0), Point(0,0))
       val p = Polygon(l)
-      p.typedIntersection(mp) should be (NoResult)
+      p & mp should be (NoResult)
     }
 
     it ("should intersect with a MultiPoint and return a PointResult") {
@@ -99,7 +99,7 @@ class PolygonSpec extends FunSpec with Matchers {
       val mp = MultiPoint(p1, p2)
       val l = LineString(Point(0,0), Point(0,5), Point(5,5), Point(5,0), Point(0,0))
       val p = Polygon(l)
-      p.typedIntersection(mp) should be (PointResult(p2))
+      p & mp should be (PointResult(p2))
     }
 
     it ("should intersect with a MultiPoint and return a MultiPointResult") {
@@ -108,7 +108,7 @@ class PolygonSpec extends FunSpec with Matchers {
       val mp = MultiPoint(p1, p2)
       val l = LineString(Point(0,0), Point(0,5), Point(5,5), Point(5,0), Point(0,0))
       val p = Polygon(l)
-      p.typedIntersection(mp) should be (MultiPointResult(MultiPoint(p1, p2)))
+      p & mp should be (MultiPointResult(MultiPoint(p1, p2)))
     }
 
     it ("should intersect with a TwoDimensions and return a NoResult") {
@@ -116,7 +116,7 @@ class PolygonSpec extends FunSpec with Matchers {
       val p1 = Polygon(l1)
       val l2 = LineString(Point(6,0), Point(7,0), Point(7,1), Point(6,1), Point(6,0))
       val p2 = Polygon(l2)
-      p1.typedIntersection(p2) should be (NoResult)
+      p1 & p2 should be (NoResult)
     }
 
     it ("should intersect with a TwoDimensions and return a PointResult") {
@@ -124,7 +124,7 @@ class PolygonSpec extends FunSpec with Matchers {
       val p1 = Polygon(l1)
       val l2 = LineString(Point(5,0), Point(7,0), Point(7,1), Point(6,1), Point(5,0))
       val p2 = Polygon(l2)
-      p1.typedIntersection(p2) should be (PointResult(Point(5,0)))
+      p1 & p2 should be (PointResult(Point(5,0)))
     }
 
     it ("should intersect with a TwoDimensions and return a LineStringResult") {
@@ -132,7 +132,7 @@ class PolygonSpec extends FunSpec with Matchers {
       val p1 = Polygon(l1)
       val l2 = LineString(Point(5,0), Point(7,0), Point(7,1), Point(5,1), Point(5,0))
       val p2 = Polygon(l2)
-      p1.typedIntersection(p2) should be (LineStringResult(LineString(Point(5,1), Point(5,0))))
+      p1 & p2 should be (LineStringResult(LineString(Point(5,1), Point(5,0))))
     }
 
     it ("should intersect with a TwoDimensions and return a PolygonResult") {
@@ -140,7 +140,7 @@ class PolygonSpec extends FunSpec with Matchers {
       val p1 = Polygon(l1)
       val l2 = LineString(Point(4,0), Point(7,0), Point(7,1), Point(4,1), Point(4,0))
       val p2 = Polygon(l2)
-      p1.typedIntersection(p2) should be (PolygonResult(Polygon(LineString(Point(5,1), Point(5,0),
+      p1 & p2 should be (PolygonResult(Polygon(LineString(Point(5,1), Point(5,0),
                                                     Point(4,0), Point(4,1), Point(5,1)))))
     }
 
@@ -149,7 +149,7 @@ class PolygonSpec extends FunSpec with Matchers {
       val p1 = Polygon(l1)
       val l2 = LineString(Point(5,0), Point(7,0), Point(5,5), Point(10,5), Point(10,-1), Point(5,0))
       val p2 = Polygon(l2)
-      p1.typedIntersection(p2) should be (MultiPointResult(MultiPoint(Point(5,0), Point(5,5))))
+      p1 & p2 should be (MultiPointResult(MultiPoint(Point(5,0), Point(5,5))))
     }
 
     it ("should intersect with a TwoDimensions and return a MultiLineStringResult") {
@@ -158,7 +158,7 @@ class PolygonSpec extends FunSpec with Matchers {
       val l2 = LineString(Point(5,0), Point(5,2), Point(6,2), Point(6,4), Point(5,4),
                     Point(5,6), Point(7,6), Point(7,0), Point(5,0))
       val p2 = Polygon(l2)
-      p1.typedIntersection(p2) should be (MultiLineStringResult(MultiLineString(LineString(Point(5,6), Point(5,4)),
+      p1 & p2 should be (MultiLineStringResult(MultiLineString(LineString(Point(5,6), Point(5,4)),
                                              LineString(Point(5,2), Point(5,0)))))
     }
 
@@ -168,7 +168,7 @@ class PolygonSpec extends FunSpec with Matchers {
       val l2 = LineString(Point(0,4), Point(0,7), Point(5,7), Point(5,4), Point(3,4),
                     Point(3,6), Point(2,6), Point(2,4), Point(0,4))
       val p2 = Polygon(l2)
-      p1.typedIntersection(p2) should be (MultiPolygonResult(MultiPolygon(Polygon(LineString(Point(0,4), Point(0,5),
+      p1 & p2 should be (MultiPolygonResult(MultiPolygon(Polygon(LineString(Point(0,4), Point(0,5),
                                                              Point(2,5), Point(2,4), Point(0,4))),
                                                 Polygon(LineString(Point(3,5), Point(5,5),
                                                              Point(5,4), Point(3,4), Point(3,5))))))
@@ -183,7 +183,7 @@ class PolygonSpec extends FunSpec with Matchers {
       val expected: GeometryCollection =
         GeometryCollection(points = Seq(Point(5,5)), polygons = Seq(Polygon(LineString(Point(0,4), Point(0,5),
           Point(2,5), Point(2,4), Point(0,4)))))
-      val result = p1.typedIntersection(p2)
+      val result = p1 & p2
       result match {
         case GeometryCollectionResult(gc) => gc should be (expected)
         case _ => fail()

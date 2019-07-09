@@ -23,7 +23,7 @@ import geotrellis.vector.GeomFactory._
 import scala.collection.GenTraversable
 import scala.collection.JavaConverters._
 
-object Polygon {
+trait PolygonConstructors {
   def apply(exterior: Point*)(implicit d: DummyImplicit): Polygon =
     apply(LineString(exterior), Set())
 
@@ -84,3 +84,5 @@ object Polygon {
   def apply(exterior: jts.LinearRing, holes: GenTraversable[jts.LinearRing]): Polygon =
     factory.createPolygon(exterior, holes.toArray)
 }
+
+object Polygon extends PolygonConstructors

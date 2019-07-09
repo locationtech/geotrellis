@@ -21,7 +21,7 @@ import geotrellis.vector.GeomFactory._
 import org.locationtech.jts.{geom => jts}
 import spire.syntax.cfor._
 
-object MultiPolygon {
+trait MultiPolygonConstructors {
   lazy val EMPTY = apply(Seq[jts.Polygon]())
 
   def apply(ps: jts.Polygon*): jts.MultiPolygon =
@@ -40,3 +40,5 @@ object MultiPolygon {
     factory.createMultiPolygon(arr)
   }
 }
+
+object MultiPolygon extends MultiPolygonConstructors

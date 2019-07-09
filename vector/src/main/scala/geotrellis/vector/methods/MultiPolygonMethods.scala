@@ -10,13 +10,13 @@ trait ExtraMultiPolygonMethods extends MethodExtensions[MultiPolygon] {
     }
   }.toArray
 
-  def typedIntersection(p: Point): PointOrNoResult = self.intersection(p)
-  def typedIntersection(mp: MultiPoint): MultiPointAtLeastOneDimensionIntersectionResult = self.intersection(mp)
-  def typedIntersection(l: LineString): OneDimensionAtLeastOneDimensionIntersectionResult = self.intersection(l)
-  def typedIntersection(ml: MultiLineString): OneDimensionAtLeastOneDimensionIntersectionResult = self.intersection(ml)
-  def typedIntersection(p: Polygon): TwoDimensionsTwoDimensionsIntersectionResult = self.intersection(p)
-  def typedIntersection(mp: MultiPolygon): TwoDimensionsTwoDimensionsIntersectionResult = self.intersection(mp)
-  def typedIntersection(ex: Extent): TwoDimensionsTwoDimensionsIntersectionResult = self.intersection(ex.toPolygon)
+  def &(p: Point): PointOrNoResult = self.intersection(p)
+  def &(mp: MultiPoint): MultiPointAtLeastOneDimensionIntersectionResult = self.intersection(mp)
+  def &(l: LineString): OneDimensionAtLeastOneDimensionIntersectionResult = self.intersection(l)
+  def &(ml: MultiLineString): OneDimensionAtLeastOneDimensionIntersectionResult = self.intersection(ml)
+  def &(p: Polygon): TwoDimensionsTwoDimensionsIntersectionResult = self.intersection(p)
+  def &(mp: MultiPolygon): TwoDimensionsTwoDimensionsIntersectionResult = self.intersection(mp)
+  def &(ex: Extent): TwoDimensionsTwoDimensionsIntersectionResult = self.intersection(ex.toPolygon)
 
   def -(p: Point): MultiPolygonXDifferenceResult = self.difference(p)
   def -(mp: MultiPoint): MultiPolygonXDifferenceResult = self.difference(mp)

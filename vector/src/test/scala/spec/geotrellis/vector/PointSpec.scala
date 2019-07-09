@@ -35,14 +35,14 @@ class PointSpec extends FunSpec with Matchers {
     it ("should intersect with another Geometry and return a PointResult") {
       val p = Point(1,1)
       val l = LineString(Point(0, 0), Point(2,2))
-      val result = p.typedIntersection(l)
+      val result = p & l
       result should be (PointResult(Point(1, 1)))
     }
 
     it ("should return a NoResult if it does not intersect with another Geometry")  {
       val p = Point(1,1)
       val l = LineString(Point(0, 0), Point(0, 2))
-      val result = p.typedIntersection(l)
+      val result = p & l
       result should be (NoResult)
     }
 

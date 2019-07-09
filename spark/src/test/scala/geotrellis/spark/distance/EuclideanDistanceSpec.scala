@@ -127,7 +127,7 @@ class EuclideanDistanceSpec extends FunSpec
       println("  Building Delaunay triangulations")
       val triangulations = (for (x <- 0 to 2 ; y <- 0 to 2) yield SpatialKey(x, y)).toSeq.map { key =>
         val ex = keyToExtent(key)
-        val pts = multiPoint.typedIntersection(ex).asMultiPoint.get.points.map(_.getCoordinate)
+        val pts = (multiPoint & ex).asMultiPoint.get.points.map(_.getCoordinate)
         val dt = DelaunayTriangulation(pts)
         (keyToDirection(key), (dt, ex))
       }.toMap

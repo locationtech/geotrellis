@@ -21,7 +21,7 @@ import geotrellis.vector.GeomFactory._
 import org.locationtech.jts.{geom => jts}
 import spire.syntax.cfor._
 
-object MultiPoint {
+trait MultiPointConstructors {
   lazy val EMPTY = apply(Seq[jts.Point]())
 
   def apply(ps: jts.Point*): jts.MultiPoint =
@@ -43,3 +43,5 @@ object MultiPoint {
   def apply(ps: Traversable[(Double, Double)])(implicit d: DummyImplicit): jts.MultiPoint =
     factory.createMultiPointFromCoords(ps.map { p => new jts.Coordinate(p._1, p._2) }.toArray)
 }
+
+object MultiPoint extends MultiPointConstructors

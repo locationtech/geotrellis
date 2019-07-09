@@ -29,13 +29,13 @@ class GeometryResultSpec extends FunSpec with Matchers {
       val p = Polygon(LineString(List[(Double,Double)]((0,0),(1,0),(1,1),(0,1),(0,0))))
       val p2 = affine.translate(0.5, 0.5).transform(p).asInstanceOf[Polygon]
 
-      p.typedIntersection(p2).toGeometry.isDefined should be (true)
+      (p & p2).toGeometry.isDefined should be (true)
     }
 
     it("should return None for empty intersection") {
       val p = Polygon(LineString(List[(Double,Double)]((0,0),(1,0),(1,1),(0,1),(0,0))))
       val p2 = affine.translate(5.0, 5.0).transform(p).asInstanceOf[Polygon]
-      p.typedIntersection(p2).toGeometry.isDefined should be (false)
+      (p & p2).toGeometry.isDefined should be (false)
     }
 
     it("should use asMultiLine to be able to union over a set of lines") {

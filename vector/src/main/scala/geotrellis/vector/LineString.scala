@@ -19,7 +19,7 @@ package geotrellis.vector
 import org.locationtech.jts.{geom => jts}
 import spire.syntax.cfor._
 
-object LineString {
+trait LineStringConstructors {
 
   def apply(points: (Double, Double)*)(implicit d: DummyImplicit): jts.LineString =
     apply(points)
@@ -53,3 +53,5 @@ object LineString {
     GeomFactory.factory.createLineString(coords)
   }
 }
+
+object LineString extends LineStringConstructors
