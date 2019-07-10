@@ -6,6 +6,12 @@ Changelog
 
 API Changes & Project structure changes
 
+- ``geotrellis-vector``
+
+  - **Change:** We are now favoring direct use of JTS geometries for improved interoperability with other projects.  Scala wrapper classes for Geometry have been snuffed.  Many submodules of ``geotrellis.vector`` have also been sacked in favor of direct usage of the corresponding JTS functionality.  Extension methods and companion objects have been employed to maintain a crisp, candy shell around JTS to keep most interactions from messing up your fingers.  Import ``geotrellis.vector._`` to access these niceties; if it is required, ``import org.locationtech.jts.{geom => jts}`` to prevent namespace collisions.  In the REPL, geometries will need to be constructed via the duplicate definitions in the ``JTS`` object to avoid namespace clashes that appear to be buggy behavior on the part of the REPL (that is, use ``JTS.Point(0,0)`` to construct a point at the origin in interactive sessions, but in compiled code, ``Point(0,0)`` will suffice).
+
+    See core concepts documentation in the guide for more details.
+
 - ``geotrellis-raster``
 
   - **Change:** ``geotrellis.raster.summary.polygonal.[Multi]TilePolygonalSummaryHandler`` replaced with ``geotrellis.raster.summary.polygonal.PolygonalSummary. Users should expect to implement concrete subclasses of ``geotrellis.raster.summary.GridVisitor`` and pass those to the new polygonalSummary methods. There are a number of default GridVisitor implementations provided for simple operations in `geotrellis.raster.summary.visitors``
