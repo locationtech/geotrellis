@@ -57,7 +57,7 @@ object FocalOperation {
       apply(rdd, neighborhood, rasterRDD.metadata.tileBounds, partitioner)(calc)
     }
 
-  private def slope[K: SpatialComponent: ClassTag: GetComponent[?, SpatialKey]]
+  private def applyOnRaster[K: SpatialComponent: ClassTag: GetComponent[?, SpatialKey]]
     (bufferedTiles: RDD[(K, BufferedTile[Tile])], neighborhood: Neighborhood, keyToExtent: SpatialKey => Extent)
     (calc: (Raster[Tile], Option[GridBounds[Int]]) => Tile): RDD[(K, Tile)] =
       bufferedTiles
@@ -69,21 +69,27 @@ object FocalOperation {
           }
         }, preservesPartitioning = true)
 
-  def slope[K: SpatialComponent: ClassTag: GetComponent[?, SpatialKey]](
+  def applyOnRaster[K: SpatialComponent: ClassTag: GetComponent[?, SpatialKey]](
     rdd: RDD[(K, Tile)],
     neighborhood: Neighborhood,
     layerBounds: TileBounds,
     partitioner: Option[Partitioner],
     keyToExtent: SpatialKey => Extent
   )(calc: (Raster[Tile], Option[GridBounds[Int]]) => Tile): RDD[(K, Tile)] =
-      slope(rdd.bufferTiles(neighborhood.extent, layerBounds, partitioner), neighborhood, keyToExtent)(calc)
+      applyOnRaster(rdd.bufferTiles(neighborhood.extent, layerBounds, partitioner), neighborhood, keyToExtent)(calc)
 
-  def slope[
+  def applyOnRaster[
     K: SpatialComponent: ClassTag: GetComponent[?, SpatialKey]
-  ](rasterRDD: TileLayerRDD[K], neighborhood: Neighborhood, partitioner: Option[Partitioner], keyToExtent: SpatialKey => Extent)
+  ](rasterRDD: TileLayerRDD[K], neighborhood: Neighborhood, partitioner: Option[Partitioner])
   (calc: (Raster[Tile], Option[GridBounds[Int]]) => Tile): TileLayerRDD[K] =
     rasterRDD.withContext { rdd =>
-      slope(rdd, neighborhood, rasterRDD.metadata.tileBounds, partitioner, keyToExtent)(calc)
+      applyOnRaster(
+        rdd,
+        neighborhood,
+        rasterRDD.metadata.tileBounds,
+        partitioner,
+        (key: SpatialKey) => rasterRDD.metadata.mapTransform.keyToExtent(key)
+      )(calc)
     }
 }
 
@@ -102,9 +108,7 @@ abstract class FocalOperation[K: SpatialComponent: ClassTag] extends MethodExten
   def focalWithExtents(n: Neighborhood, partitioner: Option[Partitioner])
       (calc: (Raster[Tile], Option[GridBounds[Int]], CellSize) => Tile): TileLayerRDD[K] = {
     val cellSize = self.metadata.layout.cellSize
-    val keyToExtent: SpatialKey => Extent =
-      (key: SpatialKey) => self.metadata.mapTransform.keyToExtent(key)
 
-    FocalOperation.slope(self, n, partitioner, keyToExtent){ (raster, bounds) => calc(raster, bounds, cellSize) }
+    FocalOperation.applyOnRaster(self, n, partitioner){ (raster, bounds) => calc(raster, bounds, cellSize) }
   }
 }

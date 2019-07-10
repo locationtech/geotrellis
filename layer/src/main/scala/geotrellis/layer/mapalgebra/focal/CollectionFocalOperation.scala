@@ -63,7 +63,7 @@ object CollectionFocalOperation {
       apply(collection, neighborhood, rasterCollection.metadata.tileBounds)(calc)
     }
 
-  private def calculateSlope[K: SpatialComponent: GetComponent[?, SpatialKey]](
+  private def applyOnRaster[K: SpatialComponent: GetComponent[?, SpatialKey]](
     bufferedTiles: Seq[(K, BufferedTile[Tile])],
     neighborhood: Neighborhood,
     keyToExtent: SpatialKey => Extent
@@ -77,7 +77,7 @@ object CollectionFocalOperation {
         key -> calc(Raster(tile, keyToExtent(spatialKey)), Some(gridBounds))
       }
 
-  def slope[K: SpatialComponent: GetComponent[?, SpatialKey]](
+  def applyOnRaster[K: SpatialComponent: GetComponent[?, SpatialKey]](
     collection: Seq[(K, Tile)],
     neighborhood: Neighborhood,
     layerBounds: TileBounds,
@@ -85,25 +85,24 @@ object CollectionFocalOperation {
   )(
     calc: (Raster[Tile], Option[GridBounds[Int]]) => Tile
   ): Seq[(K, Tile)] =
-    calculateSlope(
+    applyOnRaster(
       collection.bufferTiles(neighborhood.extent, layerBounds),
       neighborhood,
       keyToExtent
     )(calc)
 
-  def slope[K: SpatialComponent: GetComponent[?, SpatialKey]](
+  def applyOnRaster[K: SpatialComponent: GetComponent[?, SpatialKey]](
     rasterCollection: TileLayerCollection[K],
-    neighborhood: Neighborhood,
-    keyToExtent: SpatialKey => Extent
+    neighborhood: Neighborhood
   )(
     calc: (Raster[Tile], Option[GridBounds[Int]]) => Tile
   ): TileLayerCollection[K] =
     rasterCollection.withContext { collection =>
-      slope(
+      applyOnRaster(
         collection,
         neighborhood,
         rasterCollection.metadata.tileBounds,
-        keyToExtent
+        (key: SpatialKey) => rasterCollection.metadata.mapTransform.keyToExtent(key)
       )(calc)
     }
 }
@@ -122,10 +121,8 @@ abstract class CollectionFocalOperation[K: SpatialComponent] extends MethodExten
 
   def focalWithExtents(n: Neighborhood)(calc: (Raster[Tile], Option[GridBounds[Int]], CellSize) => Tile): TileLayerCollection[K] = {
     val cellSize = self.metadata.layout.cellSize
-    val keyToExtent: SpatialKey => Extent =
-      (key: SpatialKey) => self.metadata.mapTransform.keyToExtent(key)
 
-    CollectionFocalOperation.slope(self, n, keyToExtent){ (raster, bounds) =>
+    CollectionFocalOperation.applyOnRaster(self, n){ (raster, bounds) =>
       calc(raster, bounds, cellSize)
     }
   }
