@@ -20,9 +20,6 @@ import org.locationtech.jts.geom.Coordinate
 import spire.syntax.cfor._
 
 import geotrellis.vector._
-import geotrellis.raster._
-import geotrellis.raster.rasterize._
-import geotrellis.raster.render._
 
 import scala.util.Random
 
