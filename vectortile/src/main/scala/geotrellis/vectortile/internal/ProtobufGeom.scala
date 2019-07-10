@@ -16,7 +16,7 @@
 
 package geotrellis.vectortile.internal
 
-import geotrellis.vector.{ Geometry, MultiGeometry, Point }
+import geotrellis.vector.{ Geometry, Point }
 
 // --- //
 
