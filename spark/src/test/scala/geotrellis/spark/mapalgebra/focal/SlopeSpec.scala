@@ -18,7 +18,7 @@ package geotrellis.spark.mapalgebra.focal
 
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff._
-import geotrellis.raster.mapalgebra.focal.ZFactorCalculator
+import geotrellis.raster.mapalgebra.focal.ZFactor
 import geotrellis.layer._
 import geotrellis.spark._
 import geotrellis.spark.testkit._
@@ -29,10 +29,10 @@ import java.io._
 class SlopeSpec extends FunSpec with TestEnvironment {
 
   describe("Slope Elevation Spec") {
-    val calculator = ZFactorCalculator((lat: Double) => 1.0)
+    val calculator = ZFactor({ _ => 1.0 })
 
     it("should match gdal computed slope raster") {
-      val rasterOp = (tile: Tile, re: RasterExtent) => tile.slope(re.cellSize, calculator.deriveZFactor(re.extent))
+      val rasterOp = (tile: Tile, re: RasterExtent) => tile.slope(re.cellSize, calculator.fromExtent(re.extent))
       val sparkOp = (rdd: TileLayerRDD[SpatialKey]) => rdd.slope(calculator)
 
       val path = "aspect.tif"
@@ -50,7 +50,7 @@ class SlopeSpec extends FunSpec with TestEnvironment {
     }
 
     it("should match gdal computed slope raster (collections api)") {
-      val rasterOp = (tile: Tile, re: RasterExtent) => tile.slope(re.cellSize, calculator.deriveZFactor(re.extent))
+      val rasterOp = (tile: Tile, re: RasterExtent) => tile.slope(re.cellSize, calculator.fromExtent(re.extent))
       val sparkOp = (collection: TileLayerCollection[SpatialKey]) => collection.slope(calculator)
 
       val path = "aspect.tif"

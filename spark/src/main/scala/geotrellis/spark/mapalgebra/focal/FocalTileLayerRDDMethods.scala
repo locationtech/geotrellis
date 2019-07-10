@@ -18,7 +18,7 @@ package geotrellis.spark.mapalgebra.focal
 
 import geotrellis.raster._
 import geotrellis.raster.Neighborhoods.Square
-import geotrellis.raster.mapalgebra.focal.{Kernel, Aspect, Sum, Max, Min, Mean, Median, Mode, StandardDeviation, Convolve, Slope, ZFactorCalculator}
+import geotrellis.raster.mapalgebra.focal.{Kernel, Aspect, Sum, Max, Min, Mean, Median, Mode, StandardDeviation, Convolve, Slope, ZFactor}
 import geotrellis.spark._
 
 import org.apache.spark.Partitioner
@@ -106,15 +106,15 @@ trait FocalTileLayerRDDMethods[K] extends FocalOperation[K] {
    * @see [[geotrellis.raster.mapalgebra.focal.Slope]]
    */
   def slope(
-    zFactorCalculator: ZFactorCalculator,
+    zFactor: ZFactor,
     target: TargetCell = TargetCell.All,
     partitioner: Option[Partitioner] = None
   ) = {
     val n = Square(1)
     focalWithExtents(n, partitioner) { (tile, bounds, cellSize, extent) =>
-      val zFactor = zFactorCalculator.deriveZFactor(extent)
+      val zValue = zFactor.fromExtent(extent)
 
-      Slope(tile, n, bounds, cellSize, zFactor, target)
+      Slope(tile, n, bounds, cellSize, zValue, target)
     }.mapContext(_.copy(cellType = DoubleConstantNoDataCellType))
   }
 }

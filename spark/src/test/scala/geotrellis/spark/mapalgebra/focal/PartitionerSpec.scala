@@ -31,7 +31,7 @@ class PartitionerSpec extends FunSpec with TestEnvironment {
   val tile = SinglebandGeoTiff(new File(inputHomeLocalPath, "aspect.tif").getPath).tile.toArrayTile
   val (_, rasterRDD) = createTileLayerRDD(tile, 4, 3)
 
-  val calculator = ZFactorCalculator((lat: Double) => lat)
+  val calculator = ZFactor((lat: Double) => lat)
 
   describe("Focal Partitioner Spec") {
     it("should retain the partitioner of the parent RDD") {
@@ -43,7 +43,7 @@ class PartitionerSpec extends FunSpec with TestEnvironment {
 
     it("should retain its new partitioner") {
       val targetPartitioner = Some(new HashPartitioner(10))
-      val minRDD = rasterRDD.slope(zFactorCalculator = calculator, partitioner = targetPartitioner).focalMin(Neighborhoods.Square(1))
+      val minRDD = rasterRDD.slope(zFactor = calculator, partitioner = targetPartitioner).focalMin(Neighborhoods.Square(1))
 
       assert(minRDD.partitioner == targetPartitioner)
     }

@@ -99,7 +99,7 @@ package object raster extends Implicits {
 
   val Stitcher = stitch.Stitcher
 
-  val ZFactorCalculator = mapalgebra.focal.ZFactorCalculator
+  val ZFactor = mapalgebra.focal.ZFactor
 
   // Keep constant values in sync with macro functions
   @inline final val byteNODATA = Byte.MinValue
