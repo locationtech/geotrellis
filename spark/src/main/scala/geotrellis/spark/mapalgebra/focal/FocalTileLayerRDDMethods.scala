@@ -111,10 +111,10 @@ trait FocalTileLayerRDDMethods[K] extends FocalOperation[K] {
     partitioner: Option[Partitioner] = None
   ) = {
     val n = Square(1)
-    focalWithExtents(n, partitioner) { (tile, bounds, cellSize, extent) =>
-      val zValue = zFactor.fromExtent(extent)
+    focalWithExtents(n, partitioner) { (raster, bounds, cellSize) =>
+      val zValue = zFactor.fromExtent(raster.extent)
 
-      Slope(tile, n, bounds, cellSize, zValue, target)
+      Slope(raster.tile, n, bounds, cellSize, zValue, target)
     }.mapContext(_.copy(cellType = DoubleConstantNoDataCellType))
   }
 }

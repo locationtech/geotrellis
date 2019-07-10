@@ -49,10 +49,10 @@ trait FocalTileLayerCollectionMethods[K] extends CollectionFocalOperation[K] {
    */
   def slope(zFactor: ZFactor, target: TargetCell = TargetCell.All) = {
     val n = Square(1)
-    focalWithExtents(n) { (tile, bounds, cellSize, extent) =>
-      val zValue = zFactor.fromExtent(extent)
+    focalWithExtents(n) { (raster, bounds, cellSize) =>
+      val zValue = zFactor.fromExtent(raster.extent)
 
-      Slope(tile, n, bounds, cellSize, zValue, target)
+      Slope(raster.tile, n, bounds, cellSize, zValue, target)
     }.mapContext(_.copy(cellType = DoubleConstantNoDataCellType))
   }
 }

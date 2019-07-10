@@ -59,12 +59,13 @@ object FocalOperation {
 
   private def slope[K: SpatialComponent: ClassTag: GetComponent[?, SpatialKey]]
     (bufferedTiles: RDD[(K, BufferedTile[Tile])], neighborhood: Neighborhood, keyToExtent: SpatialKey => Extent)
-    (calc: (Tile, Option[GridBounds[Int]], Extent) => Tile): RDD[(K, Tile)] =
+    (calc: (Raster[Tile], Option[GridBounds[Int]]) => Tile): RDD[(K, Tile)] =
       bufferedTiles
         .mapPartitions({ case partition =>
           partition.map { case (k, BufferedTile(tile, gridBounds)) =>
             val spatialKey = k.getComponent[SpatialKey]
-            k -> calc(tile, Some(gridBounds), keyToExtent(spatialKey))
+
+            k -> calc(Raster(tile, keyToExtent(spatialKey)), Some(gridBounds))
           }
         }, preservesPartitioning = true)
 
@@ -74,13 +75,13 @@ object FocalOperation {
     layerBounds: TileBounds,
     partitioner: Option[Partitioner],
     keyToExtent: SpatialKey => Extent
-  )(calc: (Tile, Option[GridBounds[Int]], Extent) => Tile): RDD[(K, Tile)] =
+  )(calc: (Raster[Tile], Option[GridBounds[Int]]) => Tile): RDD[(K, Tile)] =
       slope(rdd.bufferTiles(neighborhood.extent, layerBounds, partitioner), neighborhood, keyToExtent)(calc)
 
   def slope[
     K: SpatialComponent: ClassTag: GetComponent[?, SpatialKey]
   ](rasterRDD: TileLayerRDD[K], neighborhood: Neighborhood, partitioner: Option[Partitioner], keyToExtent: SpatialKey => Extent)
-  (calc: (Tile, Option[GridBounds[Int]], Extent) => Tile): TileLayerRDD[K] =
+  (calc: (Raster[Tile], Option[GridBounds[Int]]) => Tile): TileLayerRDD[K] =
     rasterRDD.withContext { rdd =>
       slope(rdd, neighborhood, rasterRDD.metadata.tileBounds, partitioner, keyToExtent)(calc)
     }
@@ -99,11 +100,11 @@ abstract class FocalOperation[K: SpatialComponent: ClassTag] extends MethodExten
   }
 
   def focalWithExtents(n: Neighborhood, partitioner: Option[Partitioner])
-      (calc: (Tile, Option[GridBounds[Int]], CellSize, Extent) => Tile): TileLayerRDD[K] = {
+      (calc: (Raster[Tile], Option[GridBounds[Int]], CellSize) => Tile): TileLayerRDD[K] = {
     val cellSize = self.metadata.layout.cellSize
     val keyToExtent: SpatialKey => Extent =
       (key: SpatialKey) => self.metadata.mapTransform.keyToExtent(key)
 
-    FocalOperation.slope(self, n, partitioner, keyToExtent){ (tile, bounds, extent) => calc(tile, bounds, cellSize, extent) }
+    FocalOperation.slope(self, n, partitioner, keyToExtent){ (raster, bounds) => calc(raster, bounds, cellSize) }
   }
 }

@@ -68,12 +68,13 @@ object CollectionFocalOperation {
     neighborhood: Neighborhood,
     keyToExtent: SpatialKey => Extent
   )(
-    calc: (Tile, Option[GridBounds[Int]], Extent) => Tile
+    calc: (Raster[Tile], Option[GridBounds[Int]]) => Tile
   ): Seq[(K, Tile)] =
     bufferedTiles
       .map { case (key, BufferedTile(tile, gridBounds)) =>
         val spatialKey = key.getComponent[SpatialKey]
-        key -> calc(tile, Some(gridBounds), keyToExtent(spatialKey))
+
+        key -> calc(Raster(tile, keyToExtent(spatialKey)), Some(gridBounds))
       }
 
   def slope[K: SpatialComponent: GetComponent[?, SpatialKey]](
@@ -82,7 +83,7 @@ object CollectionFocalOperation {
     layerBounds: TileBounds,
     keyToExtent: SpatialKey => Extent
   )(
-    calc: (Tile, Option[GridBounds[Int]], Extent) => Tile
+    calc: (Raster[Tile], Option[GridBounds[Int]]) => Tile
   ): Seq[(K, Tile)] =
     calculateSlope(
       collection.bufferTiles(neighborhood.extent, layerBounds),
@@ -95,7 +96,7 @@ object CollectionFocalOperation {
     neighborhood: Neighborhood,
     keyToExtent: SpatialKey => Extent
   )(
-    calc: (Tile, Option[GridBounds[Int]], Extent) => Tile
+    calc: (Raster[Tile], Option[GridBounds[Int]]) => Tile
   ): TileLayerCollection[K] =
     rasterCollection.withContext { collection =>
       slope(
@@ -119,13 +120,13 @@ abstract class CollectionFocalOperation[K: SpatialComponent] extends MethodExten
     }
   }
 
-  def focalWithExtents(n: Neighborhood)(calc: (Tile, Option[GridBounds[Int]], CellSize, Extent) => Tile): TileLayerCollection[K] = {
+  def focalWithExtents(n: Neighborhood)(calc: (Raster[Tile], Option[GridBounds[Int]], CellSize) => Tile): TileLayerCollection[K] = {
     val cellSize = self.metadata.layout.cellSize
     val keyToExtent: SpatialKey => Extent =
       (key: SpatialKey) => self.metadata.mapTransform.keyToExtent(key)
 
-    CollectionFocalOperation.slope(self, n, keyToExtent){ (tile, bounds, extent) =>
-      calc(tile, bounds, cellSize, extent)
+    CollectionFocalOperation.slope(self, n, keyToExtent){ (raster, bounds) =>
+      calc(raster, bounds, cellSize)
     }
   }
 }
