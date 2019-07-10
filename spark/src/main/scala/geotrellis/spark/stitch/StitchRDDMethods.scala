@@ -28,7 +28,7 @@ import geotrellis.util._
 import org.apache.spark.rdd.RDD
 
 abstract class SpatialTileLayoutRDDStitchMethods[
-  V <: CellGrid[Int]: Stitcher,
+  V <: CellGrid[Int]: Stitcher: ? => TilePrototypeMethods[V],
   M: GetComponent[?, LayoutDefinition]
 ] extends MethodExtensions[RDD[(SpatialKey, V)] with Metadata[M]] {
 
@@ -40,6 +40,58 @@ abstract class SpatialTileLayoutRDDStitchMethods[
     val base = nwTileEx.southEast
     val (ulx, uly) = (base.x - offsx.toDouble * layout.cellwidth, base.y + offsy * layout.cellheight)
     Raster(tile, Extent(ulx, uly - tile.rows * layout.cellheight, ulx + tile.cols * layout.cellwidth, uly))
+  }
+
+  /**
+    * Stitch all tiles in the RDD using a sparse stitch that handles missing keys
+    *
+    * Any missing tiles within the extent are filled with an empty prototype tile.
+    *
+    * @note This method performs an RDD.collect() so ensure your dataset fits
+    *       into driver memory.
+    *
+    * @param extent The requested [[geotrellis.vector.Extent]] of the output [[geotrellis.raster.Raster]]
+    * @return The stitched Raster, otherwise None if the collection is empty or the extent does not intersect
+    */
+  def sparseStitch(extent: Extent): Option[Raster[V]] = {
+    val tiles = self.toCollection
+    // From here down, this code duplicates SpatialTileLayoutCollectionStitchMethods.sparseStitch,
+    // replacing self with tiles
+    if (tiles.headOption.isEmpty) {
+      None
+    } else {
+      val tile = tiles.head._2
+      val layoutDefinition = self.metadata.getComponent[LayoutDefinition]
+      val mapTransform = layoutDefinition.mapTransform
+      val expectedKeys = mapTransform(extent)
+        .coordsIter
+        .map { case (x, y) => SpatialKey(x, y) }
+        .toList
+      val actualKeys = tiles.map(_._1)
+      val missingKeys = expectedKeys diff actualKeys
+
+      val missingTiles = missingKeys.map { key =>
+        (key, tile.prototype(layoutDefinition.tileLayout.tileCols, layoutDefinition.tileLayout.tileRows))
+      }
+      val allTiles = tiles.withContext { collection =>
+        collection ++ missingTiles
+      }
+      if (allTiles.isEmpty) {
+        None
+      } else {
+        Some(allTiles.stitch())
+      }
+    }
+  }
+
+  /**
+    * sparseStitch helper method that uses the extent of the collection it is called on
+    *
+    * @see sparseStitch(extent: Extent) for more details
+    */
+  def sparseStitch(): Option[Raster[V]] = {
+    val layoutDefinition = self.metadata.getComponent[LayoutDefinition]
+    sparseStitch(layoutDefinition.extent)
   }
 }
 

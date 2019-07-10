@@ -13,6 +13,7 @@ API Changes & Project structure changes
 - ``geotrellis.layer``
 
   - **Change:** Replaced ``Mergable`` with cats' ``Semigroup``
+  - **New:** A sparseStitch method on ``geotrellis.layer.stitch.SpatialTileLayoutCollectionStitchMethods``. Note that ``SpatialTileLayoutCollectionStitchMethods`` now has the additional constraint ``geotrellis.raster.prototype.TilePrototypeMethods`` on type ``V``. This should be transparent for users of the ``geotrellis.raster.Tile`` and ``geotrellis.raster.MultibandTile`` types.
 
 - ``geotrellis.util``, ``geotrellis.store``, ``geotrellis.store.s3``
 
