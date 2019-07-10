@@ -19,7 +19,6 @@ package geotrellis
 import geotrellis.util.MethodExtensions
 
 import org.locationtech.jts.{geom => jts}
-import simulacrum._
 
 package object vector extends SeqMethods
     with reproject.Implicits
@@ -51,11 +50,6 @@ package object vector extends SeqMethods
     /** Upgrade Geometry to Projected[Geometry] */
     def withSRID(srid: Int) = Projected(g, srid)
   }
-
-  @typeclass trait MultiGeometry[G]
-  implicit val multiPointIsMultiGeometry: MultiGeometry[MultiPoint] = new MultiGeometry[MultiPoint] {}
-  implicit val multiLineStringIsMultiGeometry: MultiGeometry[MultiLineString] = new MultiGeometry[MultiLineString] {}
-  implicit val multiPolygonIsMultiGeometry: MultiGeometry[MultiPolygon] = new MultiGeometry[MultiPolygon] {}
 
   implicit val pointIsZeroDimensional: ZeroDimensional[Point] = new ZeroDimensional[Point] {}
   implicit val multiPointIsZeroDimensional: ZeroDimensional[MultiPoint] = new ZeroDimensional[MultiPoint] {}
