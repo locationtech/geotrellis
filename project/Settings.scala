@@ -413,6 +413,7 @@ object Settings {
       jts,
       catsCore,
       spire,
+      squants,
       monocleCore,
       monocleMacro,
       scalaXml,

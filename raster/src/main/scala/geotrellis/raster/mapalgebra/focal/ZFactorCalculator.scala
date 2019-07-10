@@ -20,6 +20,8 @@ import geotrellis.vector.{Extent, Point}
 
 import org.apache.commons.math3.analysis.interpolation._
 
+import squants.space.{LengthUnit, Feet, Meters}
+
 
 /** Produces a ZFactor for a given point using the prescribed
  *  conversion method.
@@ -57,14 +59,17 @@ object ZFactorCalculator {
   /** Creates a [[ZFactorCalculator]] specifically for Tiles that are in
    *  LatLng.
    *
-   *  @param unit The [[TileUnit]] type that the Tiles are in.
+   *  @param unit The unit of measure that the Tile(s) are in. Only two
+   *    `LengthUnit`s are supported, `Feet` and `Meters`.
    */
-  def createLatLngCalculator(unit: TileUnit): ZFactorCalculator =
+  def createLatLngCalculator(unit: LengthUnit): ZFactorCalculator =
     unit match {
       case Feet =>
         ZFactorCalculator((lat: Double) => 1 / (LAT_LNG_FEET_AT_EQUATOR * math.cos(math.toRadians(lat))))
       case Meters =>
         ZFactorCalculator((lat: Double) => 1 / (LAT_LNG_METERS_AT_EQUATOR * math.cos(math.toRadians(lat))))
+      case _ =>
+        throw new Exception(s"Could not create a ZFactor instance from the following unit: ${unit}. Please use either Feet or Meters")
     }
 
   /** Creates a [[ZFactorCalculator]] which uses linear interplation to calculate

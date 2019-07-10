@@ -101,10 +101,6 @@ package object raster extends Implicits {
 
   val ZFactorCalculator = mapalgebra.focal.ZFactorCalculator
 
-  type TileUnit = mapalgebra.focal.TileUnit
-  val Feet = mapalgebra.focal.Feet
-  val Meters = mapalgebra.focal.Meters
-
   // Keep constant values in sync with macro functions
   @inline final val byteNODATA = Byte.MinValue
   @inline final val ubyteNODATA = 0.toByte
