@@ -16,7 +16,7 @@
 
 package geotrellis.vector.mesh
 
-import geotrellis.vector.{Line, Point, Polygon}
+import geotrellis.vector._
 
 class HalfEdge[V,F](val vert: V, var flip: HalfEdge[V,F], var next: HalfEdge[V,F], var face: Option[F]) extends Serializable {
 
@@ -122,6 +122,6 @@ object HalfEdge {
       e = e.next
     } while (e != base)
 
-    Polygon(Line(pts).closed)
+    Polygon(LineString(pts).closed)
   }
 }

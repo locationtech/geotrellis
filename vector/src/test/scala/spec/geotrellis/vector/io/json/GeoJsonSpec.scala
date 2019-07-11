@@ -74,7 +74,7 @@ class GeoJsonSpec extends FlatSpec with Matchers {
 
     val points = json.parseGeoJson[JsonFeatureCollection].getAllPoints.sortBy(_.x).toSeq
 
-    points.toGeoJson.parseGeoJson[GeometryCollection].points should be (points)
+    points.toGeoJson.parseGeoJson[GeometryCollection].getAll[Point] should be (points)
 
   }
 
@@ -90,7 +90,7 @@ class GeoJsonSpec extends FlatSpec with Matchers {
 
   it should "serialize a Seq[MultiPolygonFeature[Int]] to GeoJson" in {
     def rect(c: Double): Polygon =
-      Rectangle().setCenter((c, c)).withWidth(1.0).withHeight(1.0)
+      Rectangle().setCenter(Point(c, c)).withWidth(1.0).withHeight(1.0)
     val mp = Seq(
       MultiPolygonFeature(MultiPolygon(rect(0.0), rect(5.0)), 3),
       MultiPolygonFeature(MultiPolygon(rect(1.0), rect(4.0)), 5)
@@ -104,7 +104,7 @@ class GeoJsonSpec extends FlatSpec with Matchers {
     val expected = PointFeature(Point(1,1), "Data")
 
     intercept[DecodingFailure] {
-      GeoJson.parse[LineFeature[String]](json) should equal(expected)
+      GeoJson.parse[LineStringFeature[String]](json) should equal(expected)
     }
   }
 
@@ -166,14 +166,14 @@ class GeoJsonSpec extends FlatSpec with Matchers {
 
   it should "convert polygons in GeoJson GeometryCollection" in  {
 
-    val l1 = Line(Point(0,0), Point(0,5), Point(5,5), Point(5,0), Point(0,0))
-    val l2 = Line(Point(1,1), Point(1,6), Point(6,6), Point(6,1), Point(1,1))
+    val l1 = LineString(Point(0,0), Point(0,5), Point(5,5), Point(5,0), Point(0,0))
+    val l2 = LineString(Point(1,1), Point(1,6), Point(6,6), Point(6,1), Point(1,1))
 
     val p1: Polygon = Polygon(l1)
     val p2: Polygon = Polygon(l2)
 
     val json = Seq(p1, p2).toGeoJson
-    val polygonsBack = json.parseGeoJson[GeometryCollection].polygons
+    val polygonsBack = json.parseGeoJson[GeometryCollection].getAll[Polygon]
 
     polygonsBack should be (Seq(p1, p2))
   }
@@ -185,18 +185,18 @@ class GeoJsonSpec extends FlatSpec with Matchers {
     case class SomeData(name: String, value: Double)
 
     val point1 = Point(0,0)
-    val line1 = Line(point1, Point(0,5), Point(5,5), Point(5,0), Point(0,0))
+    val line1 = LineString(point1, Point(0,5), Point(5,5), Point(5,0), Point(0,0))
     val poly1: Polygon = Polygon(line1)
 
     val pointfeature1 = PointFeature(point1, SomeData("Bob", 32.2))
-    val linefeature2 = LineFeature(line1, SomeData("Alice", 31.2))
+    val linefeature2 = LineStringFeature(line1, SomeData("Alice", 31.2))
 
     val jsonGeom = poly1.toGeoJson
     val jsonGeomCol = Seq(point1, line1, poly1).toGeoJson
     val jsonFeature = pointfeature1.toGeoJson
     val jsonFeatCol = Seq(pointfeature1, linefeature2).toGeoJson
 
-    val polygonsBack = jsonGeomCol.parseGeoJson[GeometryCollection].polygons
+    val polygonsBack = jsonGeomCol.parseGeoJson[GeometryCollection].getAll[Polygon]
     polygonsBack.toSeq should be (Seq(poly1))
 
     val t1 = jsonGeom.extractGeometries[Polygon]
@@ -229,13 +229,13 @@ class GeoJsonSpec extends FlatSpec with Matchers {
     val t10 = jsonFeature.extractFeatures[PointFeature[SomeData]]
     t10 should be (Seq(pointfeature1))
 
-    val t11 = jsonFeature.extractFeatures[LineFeature[SomeData]]
+    val t11 = jsonFeature.extractFeatures[LineStringFeature[SomeData]]
     t11 should be (Seq())
 
-    val t12 = jsonFeatCol.extractFeatures[LineFeature[SomeData]]
+    val t12 = jsonFeatCol.extractFeatures[LineStringFeature[SomeData]]
     t12 should be (Seq(linefeature2))
 
-    val line2 = Line(point1, point1, point1, point1, point1)
+    val line2 = LineString(point1, point1, point1, point1, point1)
     val poly2: Polygon = Polygon(line2)
     poly2.toGeoJson.extractGeometries[Polygon].head should matchGeom (poly2)
   }

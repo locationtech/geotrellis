@@ -17,8 +17,6 @@
 package geotrellis.geotools
 
 import geotrellis.vector._
-
-import org.locationtech.jts.{geom => jts}
 import org.opengis.feature.simple.SimpleFeature
 
 import scala.collection._
@@ -27,25 +25,18 @@ import scala.reflect.ClassTag
 
 object SimpleFeatureToFeature {
 
-  private def jtsToGeotrellis[G <: Geometry : ClassTag](geometry: Object): Option[G] = {
-    geometry match {
-      case g: jts.Geometry => Some(Geometry(g).asInstanceOf[G])
-      case g => throw new Exception(s"Input $g is not a jts.Geometry")
-    }
-  }
-
   def apply[G <: Geometry : ClassTag](simpleFeature: SimpleFeature): Feature[G, immutable.Map[String, AnyRef]] = {
     val properties = simpleFeature.getProperties.asScala
     val map = mutable.Map.empty[String, AnyRef]
     val defaultGeom = simpleFeature.getDefaultGeometry
-    var geometry = if (defaultGeom != null) jtsToGeotrellis(defaultGeom); else None
+    var geometry: Option[G] = if (defaultGeom != null) Some(defaultGeom.asInstanceOf[G]) else None
 
     properties.foreach({ property =>
       (defaultGeom, property.getValue) match {
-        case (null, g: jts.Geometry) => geometry = jtsToGeotrellis(g)
-        case (g1: jts.Geometry, g2: jts.Geometry) =>
+        case (null, g: Geometry) => geometry = Some(g.asInstanceOf[G])
+        case (g1: Geometry, g2: Geometry) =>
           val key = property.getName.toString
-          val value = jtsToGeotrellis(g2)
+          val value = g2.asInstanceOf[G]
           if (g1.toString != g2.toString) {
             map += (key -> value)
           }

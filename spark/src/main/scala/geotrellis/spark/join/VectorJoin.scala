@@ -37,7 +37,7 @@ object VectorJoin {
     */
   def calculateEnvelope[T : ? => Geometry](gs: Iterator[T]): Iterator[Envelope] = {
     val env = gs.foldLeft(new Envelope)({ (env: Envelope, g: T) =>
-      val Extent(xmin, ymin, xmax, ymax) = g.envelope
+      val Extent(xmin, ymin, xmax, ymax) = Extent(g.getEnvelopeInternal)
       val env2 = new Envelope(xmin, xmax, ymin, ymax)
       env.expandToInclude(env2)
       env

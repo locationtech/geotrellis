@@ -189,8 +189,8 @@ object Intersects {
 
   /** Define Intersects filter for MultiLine */
   implicit def forMultiLine[K: SpatialComponent: Boundable, M: GetComponent[?, LayoutDefinition]] =
-    new LayerFilter[K, Intersects.type, MultiLine, M] {
-      def apply(metadata: M, kb: KeyBounds[K], multiLine: MultiLine) = {
+    new LayerFilter[K, Intersects.type, MultiLineString, M] {
+      def apply(metadata: M, kb: KeyBounds[K], multiLine: MultiLineString) = {
         val mapTransform = metadata.getComponent[LayoutDefinition].mapTransform
         mapTransform.multiLineToKeys(multiLine)
           .map({ key =>
@@ -208,9 +208,9 @@ object Intersects {
 
   /** Define Intersects filter for Polygon */
   implicit def forLine[K: SpatialComponent: Boundable, M: GetComponent[?, LayoutDefinition]] =
-    new LayerFilter[K, Intersects.type, Line, M] {
-      def apply(metadata: M, kb: KeyBounds[K], line: Line) =
-        forMultiLine[K, M].apply(metadata, kb, MultiLine(line))
+    new LayerFilter[K, Intersects.type, LineString, M] {
+      def apply(metadata: M, kb: KeyBounds[K], line: LineString) =
+        forMultiLine[K, M].apply(metadata, kb, MultiLineString(line))
     }
 
   /** Define Contains filter for Point */

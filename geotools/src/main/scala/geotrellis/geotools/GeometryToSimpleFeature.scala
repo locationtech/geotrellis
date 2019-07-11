@@ -19,7 +19,6 @@ package geotrellis.geotools
 import geotrellis.vector._
 import geotrellis.proj4.CRS
 
-import org.locationtech.jts.{geom => jts}
 import org.geotools.feature.simple.{SimpleFeatureTypeBuilder, SimpleFeatureBuilder}
 import org.opengis.feature.simple.SimpleFeature
 
@@ -44,13 +43,13 @@ object GeometryToSimpleFeature {
       case None =>
     }
     geom match {
-      case pt: Point => sftb.add(geometryField, classOf[jts.Point])
-      case ln: Line => sftb.add(geometryField, classOf[jts.LineString])
-      case pg: Polygon => sftb.add(geometryField, classOf[jts.Polygon])
-      case mp: MultiPoint => sftb.add(geometryField, classOf[jts.MultiPoint])
-      case ml: MultiLine => sftb.add(geometryField, classOf[jts.MultiLineString])
-      case mp: MultiPolygon => sftb.add(geometryField, classOf[jts.MultiPolygon])
-      case  g: Geometry => throw new Exception(s"Unhandled Geotrellis Geometry $g")
+      case pt: Point => sftb.add(geometryField, classOf[Point])
+      case ln: LineString => sftb.add(geometryField, classOf[LineString])
+      case pg: Polygon => sftb.add(geometryField, classOf[Polygon])
+      case mp: MultiPoint => sftb.add(geometryField, classOf[MultiPoint])
+      case ml: MultiLineString => sftb.add(geometryField, classOf[MultiLineString])
+      case mp: MultiPolygon => sftb.add(geometryField, classOf[MultiPolygon])
+      case  g: Geometry => throw new Exception(s"Unhandled Geometry type $g")
     }
     sftb.setDefaultGeometry(geometryField)
     data.foreach({ case (key, value) => sftb
@@ -62,13 +61,13 @@ object GeometryToSimpleFeature {
     val sfb = new SimpleFeatureBuilder(sft)
 
     geom match {
-      case Point(pt) => sfb.add(pt)
-      case Line(ln) => sfb.add(ln)
-      case Polygon(pg) => sfb.add(pg)
-      case MultiPoint(mp) => sfb.add(mp)
-      case MultiLine(ml) => sfb.add(ml)
-      case MultiPolygon(mp) => sfb.add(mp)
-      case g: Geometry => throw new Exception(s"Unhandled Geotrellis Geometry $g")
+      case pt: Point => sfb.add(pt)
+      case ln: LineString => sfb.add(ln)
+      case pg: Polygon => sfb.add(pg)
+      case mp: MultiPoint => sfb.add(mp)
+      case ml: MultiLineString => sfb.add(ml)
+      case mp: MultiPolygon => sfb.add(mp)
+      case g: Geometry => throw new Exception(s"Unhandled Geometry type $g")
     }
     data.foreach({ case (key, value) => sfb.add(value) })
 

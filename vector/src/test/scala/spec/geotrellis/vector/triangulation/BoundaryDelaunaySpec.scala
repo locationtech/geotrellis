@@ -60,7 +60,7 @@ class BoundaryDelaunaySpec extends FunSpec with Matchers {
         val (radius, center, valid) = circleCenter(getDest(tri), getDest(getNext(tri)), getDest(getNext(getNext(tri))))
         val ppd = new PointPairDistance
 
-        DistanceToPoint.computeDistance(ex.toPolygon.jtsGeom, center, ppd)
+        DistanceToPoint.computeDistance(ex.toPolygon, center, ppd)
         !valid || ppd.getDistance < radius
       }
 

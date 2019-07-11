@@ -33,8 +33,11 @@ package object testkit {
     def matchPoint(p1: Point, p2: Point, tolerance: Double): Boolean =
       math.abs(p1.x - p2.x) <= tolerance && math.abs(p1.y - p2.y) <= tolerance
 
-    def matchLine(l1: Line, l2: Line, tolerance: Double): Boolean = {
-      l1.normalized.points.zip(l2.normalized.points)
+    def matchLine(l1: LineString, l2: LineString, tolerance: Double): Boolean = {
+      val (n1, n2) = (l1.copy.asInstanceOf[LineString], l2.copy.asInstanceOf[LineString])
+      n1.normalize
+      n2.normalize
+      n1.points.zip(n2.points)
         .map { case (p1, p2) => matchPoint(p1, p2, tolerance) }.foldLeft(true)(_ && _)
     }
 
@@ -49,7 +52,7 @@ package object testkit {
       mp1.normalized.points.zip(mp2.normalized.points)
          .map { case (p1, p2) => matchPoint(p1, p2, tolerance) }.foldLeft(true)(_ && _)
 
-    def matchMultiLine(ml1: MultiLine, ml2: MultiLine, tolerance: Double): Boolean =
+    def matchMultiLine(ml1: MultiLineString, ml2: MultiLineString, tolerance: Double): Boolean =
       ml1.normalized.lines.zip(ml2.normalized.lines)
          .map { case (l1, l2) => matchLine(l1, l2, tolerance) }.foldLeft(true)(_ && _)
 
@@ -60,13 +63,13 @@ package object testkit {
     def matchGeometryCollection(gc1: GeometryCollection, gc2: GeometryCollection, tolerance: Double): Boolean = {
       val ngc1 = gc1.normalized
       val ngc2 = gc2.normalized
-      ngc1.points.zip(ngc2.points).map { case (p1, p2) => matchPoint(p1, p2, tolerance) }.foldLeft(true)(_ && _) &&
-      ngc1.lines.zip(ngc2.lines).map { case (l1, l2) => matchLine(l1, l2, tolerance) }.foldLeft(true)(_ && _) &&
-      ngc1.polygons.zip(ngc2.polygons).map { case (p1, p2) => matchPolygon(p1, p2, tolerance) }.foldLeft(true)(_ && _) &&
-      ngc1.multiPoints.zip(ngc2.multiPoints).map { case (mp1, mp2) => matchMultiPoint(mp1, mp2, tolerance) }.foldLeft(true)(_ && _) &&
-      ngc1.multiLines.zip(ngc2.multiLines).map { case (ml1, ml2) => matchMultiLine(ml1, ml2, tolerance) }.foldLeft(true)(_ && _) &&
-      ngc1.multiPolygons.zip(ngc2.multiPolygons).map { case (mp1, mp2) => matchMultiPolygon(mp1, mp2, tolerance) }.foldLeft(true)(_ && _) &&
-      ngc1.geometryCollections.zip(ngc2.geometryCollections).map { case (gc1, gc2) => matchGeometryCollection(gc1, gc2, tolerance) }.foldLeft(true)(_ && _)
+      ngc1.getAll[Point].zip(ngc2.getAll[Point]).map { case (p1, p2) => matchPoint(p1, p2, tolerance) }.foldLeft(true)(_ && _) &&
+      ngc1.getAll[LineString].zip(ngc2.getAll[LineString]).map { case (l1, l2) => matchLine(l1, l2, tolerance) }.foldLeft(true)(_ && _) &&
+      ngc1.getAll[Polygon].zip(ngc2.getAll[Polygon]).map { case (p1, p2) => matchPolygon(p1, p2, tolerance) }.foldLeft(true)(_ && _) &&
+      ngc1.getAll[MultiPoint].zip(ngc2.getAll[MultiPoint]).map { case (mp1, mp2) => matchMultiPoint(mp1, mp2, tolerance) }.foldLeft(true)(_ && _) &&
+      ngc1.getAll[MultiLineString].zip(ngc2.getAll[MultiLineString]).map { case (ml1, ml2) => matchMultiLine(ml1, ml2, tolerance) }.foldLeft(true)(_ && _) &&
+      ngc1.getAll[MultiPolygon].zip(ngc2.getAll[MultiPolygon]).map { case (mp1, mp2) => matchMultiPolygon(mp1, mp2, tolerance) }.foldLeft(true)(_ && _) &&
+      ngc1.getAll[GeometryCollection].zip(ngc2.getAll[GeometryCollection]).map { case (gc1, gc2) => matchGeometryCollection(gc1, gc2, tolerance) }.foldLeft(true)(_ && _)
     }
 
     def matchGeometry(g1: Geometry, g2: Geometry, tolerance: Double): Boolean =
@@ -75,10 +78,10 @@ package object testkit {
           g1.isInstanceOf[Point] && matchPoint(g1.asInstanceOf[Point], p, tolerance)
         case mp: MultiPoint =>
           g1.isInstanceOf[MultiPoint] && matchMultiPoint(g1.asInstanceOf[MultiPoint], mp, tolerance)
-        case l: Line =>
-          g1.isInstanceOf[Line] && matchLine(g1.asInstanceOf[Line], l, tolerance)
-        case ml: MultiLine =>
-          g1.isInstanceOf[MultiLine] && matchMultiLine(g1.asInstanceOf[MultiLine], ml, tolerance)
+        case l: LineString =>
+          g1.isInstanceOf[LineString] && matchLine(g1.asInstanceOf[LineString], l, tolerance)
+        case ml: MultiLineString =>
+          g1.isInstanceOf[MultiLineString] && matchMultiLine(g1.asInstanceOf[MultiLineString], ml, tolerance)
         case p: Polygon =>
           g1.isInstanceOf[Polygon] && matchPolygon(g1.asInstanceOf[Polygon], p, tolerance)
         case mp: MultiPolygon =>
@@ -117,8 +120,8 @@ package object testkit {
   def matchGeom(g: Point): GeometryMatcher[Point] = matchGeom(g, 0.0)
   def matchGeom(g: Point, tolerance: Double): GeometryMatcher[Point] = GeometryMatcher(g, tolerance, GeometryMatcher.matchPoint)
 
-  def matchGeom(g: Line): GeometryMatcher[Line] = matchGeom(g, 0.0)
-  def matchGeom(g: Line, tolerance: Double): GeometryMatcher[Line] = GeometryMatcher(g, tolerance, GeometryMatcher.matchLine)
+  def matchGeom(g: LineString): GeometryMatcher[LineString] = matchGeom(g, 0.0)
+  def matchGeom(g: LineString, tolerance: Double): GeometryMatcher[LineString] = GeometryMatcher(g, tolerance, GeometryMatcher.matchLine)
 
   def matchGeom(g: Polygon): GeometryMatcher[Polygon] = matchGeom(g, 0.0)
   def matchGeom(g: Polygon, tolerance: Double): GeometryMatcher[Polygon] = GeometryMatcher(g, tolerance, GeometryMatcher.matchPolygon)
@@ -126,8 +129,8 @@ package object testkit {
   def matchGeom(g: MultiPoint): GeometryMatcher[MultiPoint] = matchGeom(g, 0.0)
   def matchGeom(g: MultiPoint, tolerance: Double) = GeometryMatcher(g, tolerance, GeometryMatcher.matchMultiPoint)
 
-  def matchGeom(g: MultiLine): GeometryMatcher[MultiLine] = matchGeom(g, 0.0)
-  def matchGeom(g: MultiLine, tolerance: Double): GeometryMatcher[MultiLine] = GeometryMatcher(g, tolerance, GeometryMatcher.matchMultiLine)
+  def matchGeom(g: MultiLineString): GeometryMatcher[MultiLineString] = matchGeom(g, 0.0)
+  def matchGeom(g: MultiLineString, tolerance: Double): GeometryMatcher[MultiLineString] = GeometryMatcher(g, tolerance, GeometryMatcher.matchMultiLine)
 
   def matchGeom(g: MultiPolygon): GeometryMatcher[MultiPolygon] = matchGeom(g, 0.0)
   def matchGeom(g: MultiPolygon, tolerance: Double): GeometryMatcher[MultiPolygon] = GeometryMatcher(g, tolerance, GeometryMatcher.matchMultiPolygon)

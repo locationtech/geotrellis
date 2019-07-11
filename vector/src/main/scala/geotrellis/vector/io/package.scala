@@ -16,6 +16,9 @@
 
 package geotrellis.vector
 
+import geotrellis.vector.io.wkb.WKB
+import geotrellis.vector.io.wkt.WKT
+
 package object io {
 
   /** Read any WKT or WKB and return the corresponding geometry */

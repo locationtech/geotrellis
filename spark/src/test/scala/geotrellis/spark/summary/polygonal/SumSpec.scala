@@ -52,17 +52,17 @@ class SumSpec extends FunSpec with TestEnvironment with TestFiles {
     val p3 = Point(totalExtent.xmin + xd / 2, totalExtent.ymin)
     val p4 = Point(totalExtent.xmin, totalExtent.ymin + yd / 2)
 
-    val diamondPoly = Polygon(Line(Array(p1, p2, p3, p4, p1)))
+    val diamondPoly = Polygon(LineString(Array(p1, p2, p3, p4, p1)))
 
     val polyWithHole = {
-      val exterior = Line(Array(p1, p2, p3, p4, p1))
+      val exterior = LineString(Array(p1, p2, p3, p4, p1))
 
       val pi1 = Point(totalExtent.xmin + xd / 2, totalExtent.ymax - yd / 4)
       val pi2 = Point(totalExtent.xmax - xd / 4, totalExtent.ymin + yd / 2)
       val pi3 = Point(totalExtent.xmin + xd / 2, totalExtent.ymin + yd / 4)
       val pi4 = Point(totalExtent.xmin + xd / 4, totalExtent.ymin + yd / 2)
 
-      val interior = Line(Array(pi1, pi2, pi3, pi4, pi1))
+      val interior = LineString(Array(pi1, pi2, pi3, pi4, pi1))
 
       Polygon(exterior, interior)
     }
@@ -153,17 +153,17 @@ class SumSpec extends FunSpec with TestEnvironment with TestFiles {
     val p3 = Point(totalExtent.xmin + xd / 2, totalExtent.ymin)
     val p4 = Point(totalExtent.xmin, totalExtent.ymin + yd / 2)
 
-    val diamondPoly = Polygon(Line(Array(p1, p2, p3, p4, p1)))
+    val diamondPoly = Polygon(LineString(Array(p1, p2, p3, p4, p1)))
 
     val polyWithHole = {
-      val exterior = Line(Array(p1, p2, p3, p4, p1))
+      val exterior = LineString(Array(p1, p2, p3, p4, p1))
 
       val pi1 = Point(totalExtent.xmin + xd / 2, totalExtent.ymax - yd / 4)
       val pi2 = Point(totalExtent.xmax - xd / 4, totalExtent.ymin + yd / 2)
       val pi3 = Point(totalExtent.xmin + xd / 2, totalExtent.ymin + yd / 4)
       val pi4 = Point(totalExtent.xmin + xd / 4, totalExtent.ymin + yd / 2)
 
-      val interior = Line(Array(pi1, pi2, pi3, pi4, pi1))
+      val interior = LineString(Array(pi1, pi2, pi3, pi4, pi1))
 
       Polygon(exterior, interior)
     }

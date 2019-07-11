@@ -20,55 +20,55 @@ import org.locationtech.jts.{geom=>jts}
 
 import org.scalatest._
 
-class MultiLineSpec extends FunSpec with Matchers {
-  describe("MultiLine") {
+class MultiLineStringSpec extends FunSpec with Matchers {
+  describe("MultiLineString") {
     it ("should maintain immutability over normalization") {
-      val ml = 
-        MultiLine(
-          Line( (2.0, 3.0), (1.0, 1.0), (2.0, 2.0), (1.0, 1.0) ),
-          Line( (0.0, 3.0), (1.0, 1.0), (1.0, 2.0), (0.0, 3.0) )
+      val ml =
+        MultiLineString(
+          LineString( (2.0, 3.0), (1.0, 1.0), (2.0, 2.0), (1.0, 1.0) ),
+          LineString( (0.0, 3.0), (1.0, 1.0), (1.0, 2.0), (0.0, 3.0) )
         )
 
-      val expected = ml.jtsGeom.copy
+      val expected = ml.copy
       ml.normalized
-      ml.jtsGeom.equals(expected) should be (true)
+      ml.equals(expected) should be (true)
     }
 
     it ("should maintain immutability over lines") {
-      val ml = 
-        MultiLine(
-          Line( (0.0, 0.0), (1.0, 1.0), (1.0, 2.0), (2.0, 3.0) ),
-          Line( (0.0, 3.0), (1.0, 1.0), (1.0, 2.0), (0.0, 3.0) )
+      val ml =
+        MultiLineString(
+          LineString( (0.0, 0.0), (1.0, 1.0), (1.0, 2.0), (2.0, 3.0) ),
+          LineString( (0.0, 3.0), (1.0, 1.0), (1.0, 2.0), (0.0, 3.0) )
         )
 
-      val expected = ml.jtsGeom.copy
-      val coords = ml.lines(0).jtsGeom.getCoordinates()
+      val expected = ml.copy
+      val coords = ml.lines(0).getCoordinates()
       coords(0).setCoordinate(coords(1))
-      ml.jtsGeom.equals(expected) should be (true)
+      ml.equals(expected) should be (true)
     }
   }
 
-  describe("MultiLine.union") {
+  describe("MultiLineString.union") {
     it("should merge a multi line string that has overlapping segments") {
       val ml =
-        MultiLine(
-          Line( (0.0, 0.0), (1.0, 1.0), (1.0, 2.0), (2.0, 3.0) ),
-          Line( (0.0, 3.0), (1.0, 1.0), (1.0, 2.0), (0.0, 3.0) )
+        MultiLineString(
+          LineString( (0.0, 0.0), (1.0, 1.0), (1.0, 2.0), (2.0, 3.0) ),
+          LineString( (0.0, 3.0), (1.0, 1.0), (1.0, 2.0), (0.0, 3.0) )
         )
 
-      val expected = 
-        MultiLine(
-          Line( (0.0, 0.0), (1.0, 1.0) ),
-          Line( (0.0, 3.0), (1.0, 1.0) ),
-          Line( (0.0, 3.0), (1.0, 2.0) ),
-          Line( (1.0, 1.0), (1.0, 2.0) ),
-          Line( (1.0, 2.0), (2.0, 3.0) )
+      val expected =
+        MultiLineString(
+          LineString( (0.0, 0.0), (1.0, 1.0) ),
+          LineString( (0.0, 3.0), (1.0, 1.0) ),
+          LineString( (0.0, 3.0), (1.0, 2.0) ),
+          LineString( (1.0, 1.0), (1.0, 2.0) ),
+          LineString( (1.0, 2.0), (2.0, 3.0) )
         )
 
       val actual = ml.union match {
-        case MultiLineResult(ml) => ml
-        case LineResult(l) => MultiLine(l)
-        case NoResult => MultiLine()
+        case ml: MultiLineString => ml
+        case l:LineString => MultiLineString(l)
+        case _ => MultiLineString()
       }
 
       actual.normalized should be (expected)

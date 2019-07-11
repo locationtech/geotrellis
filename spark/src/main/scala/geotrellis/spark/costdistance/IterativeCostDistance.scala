@@ -91,7 +91,7 @@ object IterativeCostDistance {
     g: Geometry
   ) = {
     val keys = mutable.ArrayBuffer.empty[SpatialKey]
-    val bounds = md.layout.mapTransform(g.envelope)
+    val bounds = md.layout.mapTransform(g.extent)
 
     var row = bounds.rowMin; while (row <= bounds.rowMax) {
       var col = bounds.colMin; while (col <= bounds.colMax) {

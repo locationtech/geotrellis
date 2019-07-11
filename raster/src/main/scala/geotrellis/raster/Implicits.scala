@@ -18,7 +18,7 @@ package geotrellis.raster
 
 import geotrellis.vector.Point
 import geotrellis.macros.{ NoDataMacros, TypeConversionMacros }
-import geotrellis.vector.{Geometry, Feature}
+import geotrellis.vector._
 import geotrellis.util.MethodExtensions
 
 

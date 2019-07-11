@@ -16,10 +16,10 @@
 
 package geotrellis.vector.triangulation
 
-import org.locationtech.jts.geom.Coordinate
+import org.locationtech.jts.geom.{Coordinate}
 
 import geotrellis.util.MethodExtensions
-import geotrellis.vector.MultiPoint
+import geotrellis.vector._
 
 trait DelaunayTriangulationMethods extends MethodExtensions[Traversable[Coordinate]] {
   def delaunayTriangulation(): DelaunayTriangulation = { DelaunayTriangulation(self.toArray) }
@@ -30,5 +30,5 @@ trait DelaunayTriangulationArrayMethods extends MethodExtensions[Array[Coordinat
 }
 
 trait DelaunayTriangulationMultiPointMethods extends MethodExtensions[MultiPoint] {
-  def delaunayTriangulation(): DelaunayTriangulation = { DelaunayTriangulation(self.points.map(_.jtsGeom.getCoordinate)) }
+  def delaunayTriangulation(): DelaunayTriangulation = { DelaunayTriangulation(self.points.map(_.getCoordinate)) }
 }

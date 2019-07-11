@@ -42,7 +42,7 @@ object ClipToGridExamples {
     val (extent, totalHeight, totalWidth, totalCount) =
       squareGridRdd
         .map { poly =>
-          val e = poly.envelope
+          val e = poly.extent
           (e, e.height, e.width, 1)
         }
         .reduce { case ((extent1, height1, width1, count1), (extent2, height2, width2, count2)) =>

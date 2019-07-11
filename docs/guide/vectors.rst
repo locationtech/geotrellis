@@ -33,6 +33,9 @@ Note that ``geotrellis.jts.precision.type`` make take on the value
 ``floating`` for the default double precision case, or ``floating_single`` to
 use single precision floating point values.
 
+These parameters will be reflected in the system geometry factory available in
+`geotrellis.vector.GeomFactory.factory`.
+
 Parsing GeoJson
 ===============
 
@@ -783,10 +786,10 @@ The intent for our DelaunayTriangulation implementation is that we be able to
 easily handle triangulations over 10s or 100s of millions of points (though
 the latter scale especially may require distribution via Spark to do so in a
 reasonable time/memory envelope).  Smaller scale applications can easily
-compute Delaunay triangulations of arrays of JTS Coordinates (GeoTrellis
-Points are too heavyweight given the scale of our intended applications,
-though they may be converted to Coordinates via ``_.jtsGeom.getCoordinate``)
-using our method extensions:
+compute Delaunay triangulations of arrays of JTS Coordinates using our method
+extensions (``Points`` are too heavyweight for applications of tens of
+millions of points or more, though they may be converted to Coordinates via
+the ``getCoordinate`` method):
 
 .. code-block:: scala
 

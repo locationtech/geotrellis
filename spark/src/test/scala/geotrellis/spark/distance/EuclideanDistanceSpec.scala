@@ -101,8 +101,8 @@ class EuclideanDistanceSpec extends FunSpec
       val wkt = getClass.getResourceAsStream("/wkt/excerpt.wkt")
       val wktString = scala.io.Source.fromInputStream(wkt).getLines.mkString
       val multiPoint = WKT.read(wktString).asInstanceOf[MultiPoint]
-      val points: Array[Coordinate] = multiPoint.points.map(_.jtsGeom.getCoordinate)
-      val fullExtent @ Extent(xmin, ymin, xmax, ymax) = multiPoint.envelope
+      val points: Array[Coordinate] = multiPoint.points.map(_.getCoordinate)
+      val fullExtent @ Extent(xmin, ymin, xmax, ymax) = multiPoint.extent
 
       def keyToExtent(key: SpatialKey) = {
         val SpatialKey(col, row) = key
@@ -127,7 +127,7 @@ class EuclideanDistanceSpec extends FunSpec
       println("  Building Delaunay triangulations")
       val triangulations = (for (x <- 0 to 2 ; y <- 0 to 2) yield SpatialKey(x, y)).toSeq.map { key =>
         val ex = keyToExtent(key)
-        val pts = multiPoint.intersection(ex).asMultiPoint.get.points.map(_.jtsGeom.getCoordinate)
+        val pts = (multiPoint & ex).asMultiPoint.get.points.map(_.getCoordinate)
         val dt = DelaunayTriangulation(pts)
         (keyToDirection(key), (dt, ex))
       }.toMap
@@ -327,11 +327,11 @@ class EuclideanDistanceSpec extends FunSpec
     it("SparseEuclideanDistance should produce correct results") {
       val geomWKT = scala.io.Source.fromInputStream(getClass.getResourceAsStream("/wkt/schools.wkt")).getLines.mkString
       val geom = geotrellis.vector.io.wkt.WKT.read(geomWKT).asInstanceOf[MultiPoint]
-      val coords = geom.points.map(_.jtsGeom.getCoordinate)
+      val coords = geom.points.map(_.getCoordinate)
 
       val LayoutLevel(_, ld) = ZoomedLayoutScheme(WebMercator).levelForZoom(12)
       val maptrans = ld.mapTransform
-      val gb @ GridBounds(cmin, rmin, cmax, rmax) = maptrans(geom.envelope)
+      val gb @ GridBounds(cmin, rmin, cmax, rmax) = maptrans(geom.extent)
       val extent = maptrans(gb)
       val rasterExtent = RasterExtent(extent, 256 * (cmax - cmin + 1), 256 * (rmax - rmin + 1))
 

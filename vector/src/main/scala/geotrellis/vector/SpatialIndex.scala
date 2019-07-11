@@ -101,7 +101,6 @@ class SpatialIndex[T](val measure: Measure = Measure.Euclidean) extends Serializ
       def compare(that: PQitem[A]) = (this.d) compare (that.d)
     }
 
-    val gf = new GeometryFactory()
     val env = ex.jtsEnvelope
     val pq = (new mutable.PriorityQueue[PQitem[AbstractNode]]()).reverse
     val kNNqueue = new mutable.PriorityQueue[PQitem[T]]()
@@ -117,10 +116,10 @@ class SpatialIndex[T](val measure: Measure = Measure.Euclidean) extends Serializ
       }
     }
     def rtreeLeafAsPQitem (ib: ItemBoundable): PQitem[T] = {
-      PQitem(DistanceOp.distance(gf.toGeometry(env), gf.toGeometry(ib.getBounds.asInstanceOf[Envelope])), ib.getItem.asInstanceOf[T])
+      PQitem(DistanceOp.distance(GeomFactory.factory.toGeometry(env), GeomFactory.factory.toGeometry(ib.getBounds.asInstanceOf[Envelope])), ib.getItem.asInstanceOf[T])
     }
     def rtreeNodeAsPQitem (nd: AbstractNode): PQitem[AbstractNode] = {
-      PQitem(DistanceOp.distance(gf.toGeometry(env), gf.toGeometry(nd.getBounds.asInstanceOf[Envelope])), nd)
+      PQitem(DistanceOp.distance(GeomFactory.factory.toGeometry(env), GeomFactory.factory.toGeometry(nd.getBounds.asInstanceOf[Envelope])), nd)
     }
 
     pq.enqueue(rtreeNodeAsPQitem(rtree.getRoot))

@@ -21,7 +21,6 @@ import geotrellis.vector._
 import org.geotools.data.simple._
 import org.opengis.feature.simple._
 import org.geotools.data.shapefile._
-import org.locationtech.jts.{geom => jts}
 
 import java.net.URL
 import java.io.File
@@ -31,7 +30,7 @@ import scala.collection.JavaConverters._
 
 object ShapeFileReader {
   implicit class SimpleFeatureWrapper(ft: SimpleFeature) {
-    def geom[G <: jts.Geometry: Manifest]: Option[G] =
+    def geom[G <: Geometry: Manifest]: Option[G] =
       ft.getAttribute(0) match {
         case g: G => Some(g)
         case _ => None
@@ -65,97 +64,97 @@ object ShapeFileReader {
 
   def readPointFeatures(path: String): Seq[PointFeature[Map[String,Object]]] =
     readSimpleFeatures(path)
-      .flatMap { ft => ft.geom[jts.Point].map(PointFeature(_, ft.attributeMap)) }
+      .flatMap { ft => ft.geom[Point].map(PointFeature(_, ft.attributeMap)) }
 
   def readPointFeatures[D](path: String, dataField: String): Seq[PointFeature[D]] =
     readSimpleFeatures(path)
-      .flatMap { ft => ft.geom[jts.Point].map(PointFeature(_, ft.attribute[D](dataField))) }
+      .flatMap { ft => ft.geom[Point].map(PointFeature(_, ft.attribute[D](dataField))) }
 
   def readPointFeatures(url: URL): Seq[PointFeature[Map[String,Object]]] =
     readSimpleFeatures(url)
-      .flatMap { ft => ft.geom[jts.Point].map(PointFeature(_, ft.attributeMap)) }
+      .flatMap { ft => ft.geom[Point].map(PointFeature(_, ft.attributeMap)) }
 
   def readPointFeatures[D](url: URL, dataField: String): Seq[PointFeature[D]] =
     readSimpleFeatures(url)
-      .flatMap { ft => ft.geom[jts.Point].map(PointFeature(_, ft.attribute[D](dataField))) }
+      .flatMap { ft => ft.geom[Point].map(PointFeature(_, ft.attribute[D](dataField))) }
 
-  def readLineFeatures(path: String): Seq[LineFeature[Map[String,Object]]] =
+  def readLineFeatures(path: String): Seq[Feature[LineString, Map[String,Object]]] =
     readSimpleFeatures(path)
-      .flatMap { ft => ft.geom[jts.LineString].map(LineFeature(_, ft.attributeMap)) }
+      .flatMap { ft => ft.geom[LineString].map(Feature(_, ft.attributeMap)) }
 
-  def readLineFeatures[D](path: String, dataField: String): Seq[LineFeature[D]] =
+  def readLineFeatures[D](path: String, dataField: String): Seq[Feature[LineString, D]] =
     readSimpleFeatures(path)
-      .flatMap { ft => ft.geom[jts.LineString].map(LineFeature(_, ft.attribute[D](dataField))) }
+      .flatMap { ft => ft.geom[LineString].map(Feature(_, ft.attribute[D](dataField))) }
 
-  def readLineFeatures(url: URL): Seq[LineFeature[Map[String,Object]]] =
+  def readLineFeatures(url: URL): Seq[Feature[LineString, Map[String,Object]]] =
     readSimpleFeatures(url)
-      .flatMap { ft => ft.geom[jts.LineString].map(LineFeature(_, ft.attributeMap)) }
+      .flatMap { ft => ft.geom[LineString].map(Feature(_, ft.attributeMap)) }
 
-  def readLineFeatures[D](url: URL, dataField: String): Seq[LineFeature[D]] =
+  def readLineFeatures[D](url: URL, dataField: String): Seq[Feature[LineString, D]] =
     readSimpleFeatures(url)
-      .flatMap { ft => ft.geom[jts.LineString].map(LineFeature(_, ft.attribute[D](dataField))) }
+      .flatMap { ft => ft.geom[LineString].map(Feature(_, ft.attribute[D](dataField))) }
 
   def readPolygonFeatures(path: String): Seq[PolygonFeature[Map[String,Object]]] =
     readSimpleFeatures(path)
-      .flatMap { ft => ft.geom[jts.Polygon].map(PolygonFeature(_, ft.attributeMap)) }
+      .flatMap { ft => ft.geom[Polygon].map(PolygonFeature(_, ft.attributeMap)) }
 
   def readPolygonFeatures[D](path: String, dataField: String): Seq[PolygonFeature[D]] =
     readSimpleFeatures(path)
-      .flatMap { ft => ft.geom[jts.Polygon].map(PolygonFeature(_, ft.attribute[D](dataField))) }
+      .flatMap { ft => ft.geom[Polygon].map(PolygonFeature(_, ft.attribute[D](dataField))) }
 
   def readPolygonFeatures(url: URL): Seq[PolygonFeature[Map[String,Object]]] =
     readSimpleFeatures(url)
-      .flatMap { ft => ft.geom[jts.Polygon].map(PolygonFeature(_, ft.attributeMap)) }
+      .flatMap { ft => ft.geom[Polygon].map(PolygonFeature(_, ft.attributeMap)) }
 
   def readPolygonFeatures[D](url: URL, dataField: String): Seq[PolygonFeature[D]] =
     readSimpleFeatures(url)
-      .flatMap { ft => ft.geom[jts.Polygon].map(PolygonFeature(_, ft.attribute[D](dataField))) }
+      .flatMap { ft => ft.geom[Polygon].map(PolygonFeature(_, ft.attribute[D](dataField))) }
 
   def readMultiPointFeatures(path: String): Seq[MultiPointFeature[Map[String,Object]]] =
     readSimpleFeatures(path)
-      .flatMap { ft => ft.geom[jts.MultiPoint].map(MultiPointFeature(_, ft.attributeMap)) }
+      .flatMap { ft => ft.geom[MultiPoint].map(MultiPointFeature(_, ft.attributeMap)) }
 
   def readMultiPointFeatures[D](path: String, dataField: String): Seq[MultiPointFeature[D]] =
     readSimpleFeatures(path)
-      .flatMap { ft => ft.geom[jts.MultiPoint].map(MultiPointFeature(_, ft.attribute[D](dataField))) }
+      .flatMap { ft => ft.geom[MultiPoint].map(MultiPointFeature(_, ft.attribute[D](dataField))) }
 
   def readMultiPointFeatures(url: URL): Seq[MultiPointFeature[Map[String,Object]]] =
     readSimpleFeatures(url)
-      .flatMap { ft => ft.geom[jts.MultiPoint].map(MultiPointFeature(_, ft.attributeMap)) }
+      .flatMap { ft => ft.geom[MultiPoint].map(MultiPointFeature(_, ft.attributeMap)) }
 
   def readMultiPointFeatures[D](url: URL, dataField: String): Seq[MultiPointFeature[D]] =
     readSimpleFeatures(url)
-      .flatMap { ft => ft.geom[jts.MultiPoint].map(MultiPointFeature(_, ft.attribute[D](dataField))) }
+      .flatMap { ft => ft.geom[MultiPoint].map(MultiPointFeature(_, ft.attribute[D](dataField))) }
 
-  def readMultiLineFeatures(path: String): Seq[MultiLineFeature[Map[String,Object]]] =
+  def readMultiLineFeatures(path: String): Seq[Feature[MultiLineString, Map[String,Object]]] =
     readSimpleFeatures(path)
-      .flatMap { ft => ft.geom[jts.MultiLineString].map(MultiLineFeature(_, ft.attributeMap)) }
+      .flatMap { ft => ft.geom[MultiLineString].map(Feature(_, ft.attributeMap)) }
 
-  def readMultiLineFeatures[D](path: String, dataField: String): Seq[MultiLineFeature[D]] =
+  def readMultiLineFeatures[D](path: String, dataField: String): Seq[Feature[MultiLineString, D]] =
     readSimpleFeatures(path)
-      .flatMap { ft => ft.geom[jts.MultiLineString].map(MultiLineFeature(_, ft.attribute[D](dataField))) }
+      .flatMap { ft => ft.geom[MultiLineString].map(Feature(_, ft.attribute[D](dataField))) }
 
-  def readMultiLineFeatures(url: URL): Seq[MultiLineFeature[Map[String,Object]]] =
+  def readMultiLineFeatures(url: URL): Seq[Feature[MultiLineString, Map[String,Object]]] =
     readSimpleFeatures(url)
-      .flatMap { ft => ft.geom[jts.MultiLineString].map(MultiLineFeature(_, ft.attributeMap)) }
+      .flatMap { ft => ft.geom[MultiLineString].map(Feature(_, ft.attributeMap)) }
 
-  def readMultiLineFeatures[D](url: URL, dataField: String): Seq[MultiLineFeature[D]] =
+  def readMultiLineFeatures[D](url: URL, dataField: String): Seq[Feature[MultiLineString, D]] =
     readSimpleFeatures(url)
-      .flatMap { ft => ft.geom[jts.MultiLineString].map(MultiLineFeature(_, ft.attribute[D](dataField))) }
+      .flatMap { ft => ft.geom[MultiLineString].map(Feature(_, ft.attribute[D](dataField))) }
 
   def readMultiPolygonFeatures(path: String): Seq[MultiPolygonFeature[Map[String,Object]]] =
     readSimpleFeatures(path)
-      .flatMap { ft => ft.geom[jts.MultiPolygon].map(MultiPolygonFeature(_, ft.attributeMap)) }
+      .flatMap { ft => ft.geom[MultiPolygon].map(MultiPolygonFeature(_, ft.attributeMap)) }
 
   def readMultiPolygonFeatures[D](path: String, dataField: String): Seq[MultiPolygonFeature[D]] =
     readSimpleFeatures(path)
-      .flatMap { ft => ft.geom[jts.MultiPolygon].map(MultiPolygonFeature(_, ft.attribute[D](dataField))) }
+      .flatMap { ft => ft.geom[MultiPolygon].map(MultiPolygonFeature(_, ft.attribute[D](dataField))) }
 
   def readMultiPolygonFeatures(url: URL): Seq[MultiPolygonFeature[Map[String,Object]]] =
     readSimpleFeatures(url)
-      .flatMap { ft => ft.geom[jts.MultiPolygon].map(MultiPolygonFeature(_, ft.attributeMap)) }
+      .flatMap { ft => ft.geom[MultiPolygon].map(MultiPolygonFeature(_, ft.attributeMap)) }
 
   def readMultiPolygonFeatures[D](url: URL, dataField: String): Seq[MultiPolygonFeature[D]] =
     readSimpleFeatures(url)
-      .flatMap { ft => ft.geom[jts.MultiPolygon].map(MultiPolygonFeature(_, ft.attribute[D](dataField))) }
+      .flatMap { ft => ft.geom[MultiPolygon].map(MultiPolygonFeature(_, ft.attribute[D](dataField))) }
 }

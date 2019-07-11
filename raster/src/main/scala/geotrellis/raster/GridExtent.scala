@@ -16,7 +16,7 @@
 
 package geotrellis.raster
 
-import geotrellis.vector.{Extent, Point}
+import geotrellis.vector._
 
 import scala.math.{min, max, ceil}
 import spire.math.{Integral}

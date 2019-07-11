@@ -36,7 +36,7 @@ trait FeatureFormats {
     Json.obj(
       "type" -> "Feature".asJson,
       "geometry"   -> GeometryFormats.geometryEncoder(obj.geom),
-      "bbox"       -> Extent.listEncoder(obj.envelope),
+      "bbox"       -> Extent.listEncoder(obj.geom.extent),
       "properties" -> obj.data.asJson
     )
   }
@@ -45,7 +45,7 @@ trait FeatureFormats {
     Json.obj(
       "type"       -> "Feature".asJson,
       "geometry"   -> GeometryFormats.geometryEncoder(idFeature._2.geom),
-      "bbox"       -> Extent.listEncoder(idFeature._2.geom.envelope),
+      "bbox"       -> Extent.listEncoder(idFeature._2.geom.extent),
       "properties" -> idFeature._2.data.asJson,
       "id"         -> idFeature._1.asJson
     )

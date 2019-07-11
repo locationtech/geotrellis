@@ -47,19 +47,19 @@ class MaxSpec
     val xd = extent.xmax - extent.xmin / 4
     val yd = extent.ymax - extent.ymin / 4
 
-    val tri1 = Polygon(
+    val tri1 = Polygon(LineString(Seq[(Double,Double)](
       (extent.xmin + (xd / 2), extent.ymax - (yd / 2)),
       (extent.xmin + (xd / 2) + xd, extent.ymax - (yd / 2)),
       (extent.xmin + (xd / 2) + xd, extent.ymax - (yd)),
       (extent.xmin + (xd / 2), extent.ymax - (yd / 2))
-    )
+    )))
 
-    val tri2 = Polygon(
+    val tri2 = Polygon(LineString(Seq[(Double,Double)](
       (extent.xmax - (xd / 2), extent.ymin + (yd / 2)),
       (extent.xmax - (xd / 2) - xd, extent.ymin + (yd / 2)),
       (extent.xmax - (xd / 2) - xd, extent.ymin + (yd)),
       (extent.xmax - (xd / 2), extent.ymin + (yd / 2))
-    )
+    )))
 
     val mp = MultiPolygon(tri1, tri2)
 

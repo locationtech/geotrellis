@@ -160,7 +160,7 @@ lazy val vector = project
   )
 
 lazy val `vector-testkit` = project
-  .dependsOn(raster % Provided, vector % Provided)
+  .dependsOn(vector % Provided)
   .settings(commonSettings)
   .settings(Settings.`vector-testkit`)
 

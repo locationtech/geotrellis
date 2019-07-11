@@ -182,7 +182,7 @@ class LayerQuerySpec extends FunSpec
     it("should query perimeter of huc10 polygon") {
       val wkt = scala.io.Source.fromInputStream(getClass.getResourceAsStream("/wkt/huc10-conestoga.wkt")).getLines.mkString
       val huc10 = WKT.read(wkt).asInstanceOf[MultiPolygon]
-      val ml = MultiLine(huc10.polygons.flatMap { p =>
+      val ml = MultiLineString(huc10.polygons.flatMap { p =>
         p.exterior +: p.holes.toList
       })
       val huc10LayerMetadata = TileLayerMetadata(

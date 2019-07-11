@@ -36,7 +36,7 @@ object FractionalRasterizer {
     val arrayBuffer = mutable.ArrayBuffer.empty[Segment]
 
     /** Find the outer ring's segments */
-    val coords = poly.jtsGeom.getExteriorRing.getCoordinates
+    val coords = poly.getExteriorRing.getCoordinates
     cfor(1)(_ < coords.length, _ + 1) { ci =>
       val coord1 = coords(ci - 1)
       val coord2 = coords(ci)
@@ -54,8 +54,8 @@ object FractionalRasterizer {
     }
 
     /** Find the segments for the holes */
-    cfor(0)(_ < poly.numberOfHoles, _ + 1) { i =>
-      val coords = poly.jtsGeom.getInteriorRingN(i).getCoordinates
+    cfor(0)(_ < poly.getNumInteriorRing, _ + 1) { i =>
+      val coords = poly.getInteriorRingN(i).getCoordinates
       cfor(1)(_ < coords.length, _ + 1) { ci =>
         val coord1 = coords(ci - 1)
         val coord2 = coords(ci)
@@ -105,10 +105,10 @@ object FractionalRasterizer {
       Point(xmax, ymax),
       Point(xmax, ymin),
       Point(xmin, ymin)
-    ).jtsGeom
+    )
 
     // Intersection of envelope and polygon (in map space)
-    val localPoly = poly.jtsGeom.intersection(envelope)
+    val localPoly = poly.intersection(envelope)
 
     if (abs(m) <= 1) { // The edge is mostly horizontal
       var x = colMin; while (x <= colMax) {
@@ -126,8 +126,8 @@ object FractionalRasterizer {
             Point(pixelMaxX, pixelMaxY),
             Point(pixelMaxX, pixelMinY),
             Point(pixelMinX, pixelMinY)
-          ).jtsGeom
-          val fraction = if (localPoly.isEmpty) 0.0 else (util.Intersection.polygonalRegions(pixel, localPoly)).map(_.area).foldLeft(0.0)(_ + _) / pixel.getArea
+          )
+          val fraction = if (localPoly.isEmpty) 0.0 else (Intersection.polygonalRegions(pixel, localPoly)).map(_.getArea).foldLeft(0.0)(_ + _) / pixel.getArea
 
           if (fraction > 0.0) {
             if (!seen.contains(pair)) {
@@ -156,8 +156,8 @@ object FractionalRasterizer {
             Point(pixelMaxX, pixelMaxY),
             Point(pixelMaxX, pixelMinY),
             Point(pixelMinX, pixelMinY)
-          ).jtsGeom
-          val fraction = if (localPoly.isEmpty) 0.0 else (util.Intersection.polygonalRegions(pixel, localPoly)).map(_.area).foldLeft(0.0)(_ + _) / pixel.getArea
+          )
+          val fraction = if (localPoly.isEmpty) 0.0 else (Intersection.polygonalRegions(pixel, localPoly)).map(_.getArea).foldLeft(0.0)(_ + _) / pixel.getArea
 
           if (fraction > 0.0) {
             if (!seen.contains(pair)) {

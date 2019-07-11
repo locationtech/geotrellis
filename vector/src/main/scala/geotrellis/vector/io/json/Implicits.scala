@@ -22,7 +22,7 @@ import cats.syntax.either._
 import io.circe.parser.{parse => circeParse}
 
 import geotrellis.vector._
-
+import scala.reflect.ClassTag
 import scala.reflect.runtime.universe.TypeTag
 import scala.util.{Try, Success, Failure}
 
@@ -74,7 +74,7 @@ trait Implicits extends GeoJsonSupport {
       * @tparam G type of geometry desired to extract
       * @return Seq[G] containing geometries
       */
-    def extractGeometries[G <: Geometry: Decoder: TypeTag](): Seq[G] =
+    def extractGeometries[G <: Geometry: Decoder: TypeTag: ClassTag](): Seq[G] =
       circeParse(s).flatMap(_.as[G]) match {
         case Right(g) => Seq(g)
         case Left(_) =>
