@@ -26,14 +26,15 @@ import geotrellis.proj4._
 import geotrellis.raster.io.geotiff._
 import geotrellis.raster.io.geotiff.reader._
 import org.scalatest._
+
 import spire.syntax.cfor._
+import spire.math._
 
 class ReprojectSpec extends FunSpec
     with TileBuilders
     with GeoTiffTestUtils
     with RasterMatchers {
   describe("reprojects in approximation to GDAL") {
-    import Reproject.Options
 
     it("should (approximately) match a GDAL nearest neighbor interpolation on nlcd tile") {
       val ProjectedRaster(raster, crs) = SinglebandGeoTiff(geoTiffPath("reproject/nlcd_tile_wsg84.tif")).projectedRaster
@@ -42,7 +43,7 @@ class ReprojectSpec extends FunSpec
         SinglebandGeoTiff(geoTiffPath("reproject/nlcd_tile_webmercator-nearestneighbor.tif")).raster
 
       val rea @ Raster(actual, actualExtent) =
-        raster.reproject(crs, WebMercator, Options(method = NearestNeighbor, errorThreshold = 0.0))
+        raster.reproject(crs, WebMercator)
 
       // println(ree.rasterExtent)
       // println(rea.rasterExtent)
@@ -71,7 +72,7 @@ class ReprojectSpec extends FunSpec
         SinglebandGeoTiff(geoTiffPath("reproject/slope_wsg84-nearestneighbor.tif")).raster
 
       val Raster(actual, actualExtent) =
-        raster.reproject(WebMercator, LatLng, Options(method = NearestNeighbor, errorThreshold = 0.0))
+        raster.reproject(WebMercator, LatLng)
 
       actual.rows should be (expected.rows)
       actual.cols should be (expected.cols)
@@ -98,7 +99,7 @@ class ReprojectSpec extends FunSpec
         SinglebandGeoTiff(geoTiffPath("reproject/slope_wsg84-nearestneighbor-er0.125.tif")).raster
 
       val Raster(actual, actualExtent) =
-        raster.reproject(WebMercator, LatLng, Options(method = NearestNeighbor, errorThreshold = 0.124))
+        raster.reproject(WebMercator, LatLng)
 
       actual.rows should be (expected.rows)
       actual.cols should be (expected.cols)
@@ -156,13 +157,13 @@ class ReprojectSpec extends FunSpec
         Raster(mergeTile, unionExtent)
       }
 
-      // Now repreject; there should also be no lines.
+      // Now reproject; there should also be no lines.
 
       val wmLeft @ Raster(wmLeftTile, wmLeftExtent) =
-        mergedRaster.reproject(GridBounds(0, 0, 511, 1023), srcCRS, WebMercator, Options(method = Bilinear))
+        mergedRaster.reproject(srcCRS, WebMercator, TargetBounds(GridBounds(0, 0, 511, 1023)))
 
       val wmRight @ Raster(wmRightTile, wmRightExtent) =
-        mergedRaster.reproject(GridBounds(512, 0, 1023, 1023), srcCRS, WebMercator, Options(method = Bilinear))
+        mergedRaster.reproject(srcCRS, WebMercator, TargetBounds(GridBounds(512, 0, 1023, 1023)))
 
       val RasterExtent(_, cellwidthLeft, cellheightLeft, _, _) = RasterExtent(wmLeftExtent, wmLeftTile.cols, wmLeftTile.rows)
       val RasterExtent(_, cellwidthRight, cellheightRight, _, _) = RasterExtent(wmRightExtent, wmRightTile.cols, wmRightTile.rows)
@@ -174,7 +175,7 @@ class ReprojectSpec extends FunSpec
       val re = RasterExtent(Extent(-8247861.100, 4872401.931, -8238077.160, 4882185.871), 256, 256)
 
       val emptyTile = ArrayTile.empty(IntConstantNoDataCellType, re.cols, re.rows)
-      val mergeTile: Tile = emptyTile.merge(re.extent, wmLeftExtent, wmLeftTile).merge(re.extent, wmRightExtent, wmRightTile)
+      val mergeTile: Tile = emptyTile.merge(re.extent, wmLeftExtent, wmLeft.tile.asInstanceOf[Tile]).merge(re.extent, wmRightExtent, wmRight.tile.asInstanceOf[Tile])
 
       detectNoDataLine(mergeTile)
     }
@@ -199,35 +200,13 @@ class ReprojectSpec extends FunSpec
       val windowBounds = GridBounds(10, 10, 10 + rasterExtent.cols - 1, 10 + rasterExtent.rows - 1)
 
       val regularReproject = raster.reproject(srcCRS, destCRS)
-      val windowedReproject = expandedRaster.reproject(windowBounds, srcCRS, destCRS)
+      val windowedReproject = expandedRaster.reproject[Int](srcCRS, destCRS, TargetBounds[Int](windowBounds))
 
       windowedReproject.extent should be (regularReproject.extent)
     }
   }
 
   describe("Reprojecting with a specified target raster extent") {
-    it("should do a reproject into a different CRS") {
-      val srcCRS = CRS.fromEpsgCode(32618)
-      val destCRS = WebMercator
-      val transform = Transform(srcCRS, destCRS)
-
-      val tile = createConsecutiveTile(5)
-
-      val srcExtent = RasterExtent(Extent(-10.0, -20.0, 10.0, 20.0), 5, 5)
-      val destExtent = ReprojectRasterExtent(srcExtent, transform)
-
-      val srcRaster = ProjectedRaster(Raster(tile, srcExtent.extent), srcCRS)
-
-      val options = Reproject.Options(
-        targetRasterExtent = Some(destExtent)
-      )
-
-      val resultRegular = srcRaster.reproject(destCRS)
-      val resultOptions = srcRaster.reproject(destCRS, options)
-
-      resultRegular.raster.rasterExtent should be (resultOptions.raster.rasterExtent)
-    }
-
     it("should do a resample into a different CRS") {
       val srcCRS = CRS.fromEpsgCode(32618)
       val destCRS = WebMercator
@@ -237,16 +216,12 @@ class ReprojectSpec extends FunSpec
 
       val srcExtent = RasterExtent(Extent(-10.0, -20.0, 10.0, 20.0), 5, 5)
       val srcExtent2 = RasterExtent(Extent(-15.0, -25.0, 5.0, 15.0), 5, 5)
-      val destExtent2 = ReprojectRasterExtent(srcExtent2, transform)
+      val destExtent2 = ReprojectRasterExtent(srcExtent2, transform, IdentityResampleGrid)
 
       val srcRaster = ProjectedRaster(Raster(tile, srcExtent.extent), srcCRS)
 
-      val options = Reproject.Options(
-        targetRasterExtent = Some(destExtent2)
-      )
-
-      val resultRegular = srcRaster.reproject(destCRS).raster.resample(destExtent2)
-      val resultOptions = srcRaster.reproject(destCRS, options)
+      val resultRegular = srcRaster.reproject(destCRS, IdentityResampleGrid).raster.resample(TargetRegion(destExtent2))
+      val resultOptions = srcRaster.reproject(destCRS, TargetRegion(destExtent2))
 
       resultRegular.rasterExtent should be (resultOptions.raster.rasterExtent)
     }
@@ -258,7 +233,7 @@ class ReprojectSpec extends FunSpec
 
       val rasterExtent = RasterExtent(Extent(563760.000, 4428900.000, 579120.000, 4444260.000), 30.0, 30.0, 512, 512)
       val rasterExtent2 = RasterExtent(Extent(563750.000, 4428890.000, 579110.000, 4444250.000), 30.0, 30.0, 512, 512)
-      val destExtent2 = ReprojectRasterExtent(rasterExtent2, transform)
+      val destExtent2 = ReprojectRasterExtent(rasterExtent2, transform, IdentityResampleGrid)
 
       val expandedGridBounds = GridBounds(-10, -10, rasterExtent.cols + 10 - 1, rasterExtent.rows + 10 - 1)
       val expandedExtent = rasterExtent.extentFor(expandedGridBounds, clamp = false)
@@ -272,13 +247,11 @@ class ReprojectSpec extends FunSpec
       val raster = Raster(tile, rasterExtent.extent)
 
       val windowBounds = GridBounds(10, 10, 10 + rasterExtent.cols - 1, 10 + rasterExtent.rows - 1)
+      val windowExtent = expandedRaster.rasterExtent.extentFor(windowBounds)
+      val windowRasterExtent = RasterExtent(windowExtent, windowBounds.width, windowBounds.height)
 
-      val options = Reproject.Options(
-        targetRasterExtent = Some(destExtent2)
-      )
-
-      val regularReproject = raster.reproject(srcCRS, destCRS).resample(destExtent2)
-      val windowedReproject = expandedRaster.reproject(windowBounds, srcCRS, destCRS, options)
+      val regularReproject = raster.reproject(srcCRS, destCRS).resample(TargetRegion(destExtent2))
+      val windowedReproject = expandedRaster.reproject[Long](srcCRS, destCRS, TargetRegion(windowRasterExtent.toGridType[Long]))
 
       windowedReproject.rasterExtent should be (regularReproject.rasterExtent)
     }

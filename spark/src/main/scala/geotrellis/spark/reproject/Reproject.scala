@@ -19,6 +19,18 @@ package geotrellis.spark.reproject
 import geotrellis.raster.reproject.Reproject.{Options => RasterReprojectOptions}
 import geotrellis.raster.resample._
 
+case class RasterReprojectOptions(
+  method: ResampleMethod = ResampleMethods.NearestNeighbor,
+  errorThreshold: Double = 0.125,
+  parentGridExtent: Option[GridExtent[Long]] = None,
+  targetRasterExtent: Option[RasterExtent] = None,
+  targetCellSize: Option[CellSize] = None
+)
+
+object RasterReprojectOptions {
+  def DEFAULT = RasterReprojectOptions()
+}
+
 object Reproject {
   case class Options(
     rasterReprojectOptions: RasterReprojectOptions = RasterReprojectOptions.DEFAULT,

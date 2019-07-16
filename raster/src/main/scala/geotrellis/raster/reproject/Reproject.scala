@@ -32,18 +32,18 @@ object Reproject {
     *                                  Use with caution.
     *
     */
-  case class Options(
-    method: ResampleMethod = ResampleMethods.NearestNeighbor,
-    errorThreshold: Double = 0.125,
-    parentGridExtent: Option[GridExtent[Long]] = None,
-    targetRasterExtent: Option[RasterExtent] = None,
-    targetCellSize: Option[CellSize] = None
-  )
+  //case class Options(
+  //  method: ResampleMethod = ResampleMethods.NearestNeighbor,
+  //  errorThreshold: Double = 0.125,
+  //  parentGridExtent: Option[GridExtent[Long]] = None,
+  //  targetRasterExtent: Option[RasterExtent] = None,
+  //  targetCellSize: Option[CellSize] = None
+  //)
 
-  object Options {
-    def DEFAULT = Options()
+  //object Options {
+  //  def DEFAULT = Options()
 
-    implicit def methodToOptions(method: ResampleMethod): Options =
-      apply(method = method)
-  }
+  //  implicit def methodToOptions(method: ResampleMethod): Options =
+  //    apply(method = method)
+  //}
 }

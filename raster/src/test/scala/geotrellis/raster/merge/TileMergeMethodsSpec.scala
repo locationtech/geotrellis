@@ -17,6 +17,7 @@
 package geotrellis.raster.merge
 
 import geotrellis.raster._
+import geotrellis.raster.resample._
 import geotrellis.raster.testkit._
 import geotrellis.vector.Extent
 
@@ -112,7 +113,7 @@ class TileMergeMethodsSpec extends FunSpec
         val largerExtent = Extent(0.0, 0.0, 10.0, 10.0)
 
         val expected =
-          tile.resample(largerExtent, RasterExtent(smallerExtent, 10, 10))
+          tile.resample(largerExtent, TargetRegion(RasterExtent(smallerExtent, 10, 10)))
 
         val proto = tile.prototype(ct, tile.cols, tile.rows)
         val merged = proto.merge(smallerExtent, largerExtent, tile)

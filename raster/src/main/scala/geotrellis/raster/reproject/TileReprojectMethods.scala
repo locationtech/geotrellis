@@ -18,32 +18,25 @@ package geotrellis.raster.reproject
 
 import geotrellis.raster._
 import geotrellis.proj4._
-import geotrellis.raster.resample.ResampleMethod
+import geotrellis.raster.resample.{ResampleMethod, ResampleGrid}
 import geotrellis.vector.Extent
 import geotrellis.util.MethodExtensions
 
+import spire.math.Integral
+
+//gt
+  //val gridExtent: GridExtent[Long],
+  //val resampleMethod: ResampleMethod = NearestNeighbor,
+  //val targetCellType: Option[TargetCellType] = None
+
+//tiff
+  //resampleGrid: ResampleGrid[Long],
+  //method: ResampleMethod = NearestNeighbor,
+  //strategy: OverviewStrategy = AutoHigherResolution,
+  //private[vlm] val targetCellType: Option[TargetCellType] = None
 
 trait TileReprojectMethods[T <: CellGrid[Int]] extends MethodExtensions[T] {
-  import Reproject.Options
+  def reproject[N: Integral](srcExtent: Extent, transform: Transform, inverseTransform: Transform, resampleGrid: ResampleGrid[N]): Raster[T]
 
-  def reproject(srcExtent: Extent, targetRasterExtent: RasterExtent, transform: Transform, inverseTransform: Transform, options: Options): Raster[T]
-
-  def reproject(srcExtent: Extent, targetRasterExtent: RasterExtent, transform: Transform, inverseTransform: Transform): Raster[T] =
-    reproject(srcExtent, targetRasterExtent, transform, inverseTransform, Options.DEFAULT)
-
-  def reproject(srcExtent: Extent, src: CRS, dest: CRS, options: Options): Raster[T]
-
-  def reproject(srcExtent: Extent, src: CRS, dest: CRS): Raster[T] =
-    reproject(srcExtent, src, dest, Options.DEFAULT)
-
-  def reproject(srcExtent: Extent, gridBounds: GridBounds[Int], src: CRS, dest: CRS, options: Options): Raster[T]
-
-  def reproject(srcExtent: Extent, gridBounds: GridBounds[Int], src: CRS, dest: CRS): Raster[T] =
-    reproject(srcExtent, gridBounds, src, dest, Options.DEFAULT)
-
-  def reproject(srcExtent: Extent, gridBounds: GridBounds[Int], transform: Transform, inverseTransform: Transform, options: Options): Raster[T]
-
-  def reproject(srcExtent: Extent, gridBounds: GridBounds[Int], transform: Transform, inverseTransform: Transform): Raster[T] =
-    reproject(srcExtent, gridBounds, transform, inverseTransform, Options.DEFAULT)
-
+  def reproject[N: Integral](srcExtent: Extent, src: CRS, dest: CRS, resampleGrid: ResampleGrid[N]): Raster[T]
 }

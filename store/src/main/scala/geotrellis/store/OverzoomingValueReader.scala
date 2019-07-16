@@ -17,7 +17,7 @@
 package geotrellis.store
 
 import geotrellis.layer.{SpatialComponent, SpatialKey, TileLayerMetadata, ZoomedLayoutScheme}
-import geotrellis.raster.resample.{ResampleMethod, TileResampleMethods}
+import geotrellis.raster.resample.{ResampleMethod, TileResampleMethods, TargetRegion}
 import geotrellis.raster.{CellGrid, RasterExtent}
 import geotrellis.store._
 import geotrellis.store.avro.AvroRecordCodec
@@ -56,9 +56,11 @@ trait OverzoomingValueReader extends ValueReader[LayerId] {
 
         val toResample = maxReader.read(maxKey)
 
+        val targetRegion =
+          TargetRegion(RasterExtent(requestedMaptrans.keyToExtent(key.getComponent[SpatialKey]), toResample.cols, toResample.rows).toGridType[Long])
         toResample.resample(
           maxMaptrans.keyToExtent(maxKey.getComponent[SpatialKey]),
-          RasterExtent(requestedMaptrans.keyToExtent(key.getComponent[SpatialKey]), toResample.cols, toResample.rows),
+          targetRegion,
           resampleMethod
         )
       }

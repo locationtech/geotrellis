@@ -18,6 +18,7 @@ package geotrellis.raster.io.geotiff.writer
 
 import geotrellis.proj4.{CRS, LatLng}
 import geotrellis.raster._
+import geotrellis.raster.resample._
 import geotrellis.raster.io.geotiff._
 import geotrellis.raster.io.geotiff.tags.TiffTags
 import geotrellis.raster.io.geotiff.tags.codes.ColorSpace
@@ -167,8 +168,8 @@ class GeoTiffWriterSpec extends FunSpec
     it ("should read write raster correctly") {
       val geoTiff = SinglebandGeoTiff(geoTiffPath("econic_zlib_tiled_bandint_wm.tif"))
       val projectedRaster = geoTiff.projectedRaster
-      val ProjectedRaster(Raster(tile, extent), crs) = projectedRaster.reproject(LatLng)
-      val reprojGeoTiff = SinglebandGeoTiff(tile, extent, crs, geoTiff.tags, geoTiff.options)
+      val ProjectedRaster(Raster(tile, extent), crs) = projectedRaster.reproject(LatLng, IdentityResampleGrid)
+      val reprojGeoTiff = SinglebandGeoTiff(tile.asInstanceOf[Tile], extent, crs, geoTiff.tags, geoTiff.options)
 
       GeoTiffWriter.write(reprojGeoTiff, path)
 
@@ -178,7 +179,7 @@ class GeoTiffWriterSpec extends FunSpec
 
       actualExtent should equal (extent)
       crs should equal (LatLng)
-      assertEqual(actualTile, tile)
+      assertEqual(actualTile, tile.asInstanceOf[Tile])
     }
 
     it ("should read write multibandraster correctly") {

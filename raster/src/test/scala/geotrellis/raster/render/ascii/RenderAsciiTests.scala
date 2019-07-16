@@ -18,6 +18,7 @@ package geotrellis.raster.render.ascii
 
 import geotrellis.raster.io.geotiff.{GeoTiffTestUtils, SinglebandGeoTiff}
 import geotrellis.raster.render.ascii.AsciiArtEncoder.Palette
+import geotrellis.raster.resample.TargetDimensions
 import geotrellis.raster.testkit.TileBuilders
 import org.scalatest.{FunSuite, Inspectors, Matchers}
 
@@ -92,7 +93,7 @@ class RenderAsciiTests extends FunSuite with Matchers with TileBuilders with Ins
        |∘∘∘∘∘∘∘∘∘∘∘∘      ∘∘∘∘∘∘∘∘∘∘∘∘∘∘∘∘∘∘∘∘∘∘∘∘∘∘∘∘∘∘∘∘∘∘∘∘∘∘∘∘∘∘∘∘∘∘∘∘∘∘∘∘∘∘∘∘∘∘∘∘∘∘"""
        .stripMargin
     // format: on
-    val scaled = tiff.tile.resample(80, 40)
+    val scaled = tiff.tile.resample(tiff.extent, TargetDimensions(80, 40))
     val palette = Palette.STIPLED
     val render = scaled.renderAscii(palette)
 

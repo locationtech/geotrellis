@@ -97,7 +97,7 @@ object ZoomResample {
                       val targetExtent = targetMapTransform.keyToExtent(col, row)
                       val resampled = tile.resample(
                         sourceExtent,
-                        RasterExtent(targetExtent, tileSize, tileSize),
+                        TargetRegion(RasterExtent(targetExtent, tileSize, tileSize)),
                         method
                       )
 
@@ -136,7 +136,7 @@ object ZoomResample {
                     val sourceExtent = sourceMapTransform.keyToExtent(key.getComponent[SpatialKey])
                     val targetExtent = targetMapTransform.keyToExtent(col, row)
                     val resampled =
-                      tile.resample(sourceExtent, RasterExtent(targetExtent, tileSize, tileSize), method)
+                      tile.resample(sourceExtent, TargetRegion(RasterExtent(targetExtent, tileSize, tileSize)), method)
                     (key.setComponent(SpatialKey(col, row)), resampled)
                   }
                }

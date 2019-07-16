@@ -19,7 +19,7 @@ package geotrellis.store.cog
 import geotrellis.layer._
 import geotrellis.raster.{CellGrid, RasterExtent, Tile}
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
-import geotrellis.raster.resample.{ResampleMethod, TileResampleMethods}
+import geotrellis.raster.resample.{ResampleMethod, TileResampleMethods, TargetRegion}
 import geotrellis.store._
 import geotrellis.util._
 
@@ -61,10 +61,12 @@ trait OverzoomingCOGValueReader extends COGValueReader[LayerId] {
           toResample match {
             case None => None
             case Some(tile) =>
+              val targetRegion =
+                TargetRegion(RasterExtent(requestedMaptrans.keyToExtent(key.getComponent[SpatialKey]), tile.cols, tile.rows).toGridType[Long])
               Some(
                 tile.resample(
                   maxMaptrans.keyToExtent(maxKey.getComponent[SpatialKey]),
-                  RasterExtent(requestedMaptrans.keyToExtent(key.getComponent[SpatialKey]), tile.cols, tile.rows),
+                  targetRegion,
                   resampleMethod
                 )
               )
@@ -79,9 +81,11 @@ trait OverzoomingCOGValueReader extends COGValueReader[LayerId] {
         val maxKey = deriveMaxKey(key)
         val toResample = maxReader.read(maxKey)
 
+        val targetRegion =
+          TargetRegion(RasterExtent(requestedMaptrans.keyToExtent(key.getComponent[SpatialKey]), toResample.cols, toResample.rows).toGridType[Long])
         toResample.resample(
           maxMaptrans.keyToExtent(maxKey.getComponent[SpatialKey]),
-          RasterExtent(requestedMaptrans.keyToExtent(key.getComponent[SpatialKey]), toResample.cols, toResample.rows),
+          targetRegion,
           resampleMethod
         )
       }

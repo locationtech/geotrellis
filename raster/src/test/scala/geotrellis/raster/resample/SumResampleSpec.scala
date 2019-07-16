@@ -31,7 +31,7 @@ class SumResampleSpec extends FunSpec with Matchers {
         NODATA, NODATA, NODATA), 3, 3)
       val extent = Extent(0, 0, 10, 10)
       val cellsize = CellSize(extent, 10, 10)
-      tile.resample(extent, 1, 1, Sum).get(0, 0) should be (NODATA)
+      tile.resample(extent, TargetDimensions(1, 1), Sum).get(0, 0) should be (NODATA)
     }
 
     it("should for a nodata double tile compute nodata as sum value") {
@@ -40,21 +40,21 @@ class SumResampleSpec extends FunSpec with Matchers {
         NODATA, NODATA, NODATA), 3, 3)
       val extent = Extent(0, 0, 10, 10)
       val cellsize = CellSize(extent, 10, 10)
-      tile.resample(extent, 1, 1, Sum).get(0, 0) should be (NODATA)
+      tile.resample(extent, TargetDimensions(1, 1), Sum).get(0, 0) should be (NODATA)
     }
 
     it("should for an integer tile compute the correct sum value") {
       val tile = ArrayTile(Array(1, 1, 1, 1, 1, 1, 1, 1, 1), 3, 3)
       val extent = Extent(0, 0, 3, 3)
       val cellsize = CellSize(extent, 3, 3)
-      tile.resample(extent, 1, 1, Sum).get(0, 0) should be (9)
+      tile.resample(extent, TargetDimensions(1, 1), Sum).get(0, 0) should be (9)
     }
 
     it("should for a int tile compute the correct sum value - ignoring the nodata value") {
       val tile = ArrayTile(Array(NODATA, 1, 1, 1, 1, 1, 1, 1, 1), 3, 3)
       val extent = Extent(0, 0, 3, 3)
       val cellsize = CellSize(extent, 3, 3)
-      tile.resample(extent, 1, 1, Sum).get(0, 0) should be (8)
+      tile.resample(extent, TargetDimensions(1, 1), Sum).get(0, 0) should be (8)
     }
 
 
@@ -62,7 +62,7 @@ class SumResampleSpec extends FunSpec with Matchers {
       val tile = DoubleArrayTile(Array(.1, .1, .1, .1, .1, .1, .1, .1, .1), 3, 3)
       val extent = Extent(0, 0, 3, 3)
       val cellsize = CellSize(extent, 3, 3)
-      tile.resample(extent, 1, 1, Sum).getDouble(0, 0) should be (0.9 +- 0.01)
+      tile.resample(extent, TargetDimensions(1, 1), Sum).getDouble(0, 0) should be (0.9 +- 0.01)
     }
 
     // This test is necessitated because of Double.NaN's always being max and min according to scala
@@ -70,7 +70,7 @@ class SumResampleSpec extends FunSpec with Matchers {
       val tile = DoubleArrayTile(Array(Double.NaN, .1, .1, .1, .1, .1, .1, .1, .1), 3, 3)
       val extent = Extent(0, 0, 3, 3)
       val cellsize = CellSize(extent, 3, 3)
-      tile.resample(extent, 1, 1, Sum).getDouble(0, 0) should be (0.8 +- 0.01)
+      tile.resample(extent, TargetDimensions(1, 1), Sum).getDouble(0, 0) should be (0.8 +- 0.01)
     }
   }
 }

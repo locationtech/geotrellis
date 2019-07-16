@@ -18,44 +18,24 @@ package geotrellis.raster.reproject
 
 import geotrellis.proj4._
 import geotrellis.raster._
+import geotrellis.raster.resample.ResampleGrid
 import geotrellis.vector._
 import geotrellis.util.MethodExtensions
+
+import spire.math.Integral
 
 abstract class TileFeatureReprojectMethods[
   T <: CellGrid[Int]: (? => TileReprojectMethods[T]),
   D
 ](val self: TileFeature[T, D]) extends TileReprojectMethods[TileFeature[T, D]] {
-  import Reproject.Options
 
-  def reproject(
-    srcExtent: Extent,
-    targetRasterExtent: RasterExtent,
-    transform: Transform,
-    inverseTransform: Transform,
-    options: Options
-  ): Raster[TileFeature[T, D]] = {
-    val Raster(tile, extent) = self.tile.reproject(srcExtent, targetRasterExtent, transform, inverseTransform, options)
+  def reproject[N: Integral](srcExtent: Extent, transform: Transform, inverseTransform: Transform, resampleGrid: ResampleGrid[N]): Raster[TileFeature[T, D]] = {
+    val Raster(tile, extent) = self.tile.reproject(srcExtent, transform, inverseTransform, resampleGrid)
     Raster(TileFeature(tile, self.data), extent)
   }
 
-  def reproject(srcExtent: Extent, src: CRS, dest: CRS, options: Options): Raster[TileFeature[T, D]] = {
-    val Raster(tile, extent) = self.tile.reproject(srcExtent, src, dest, options)
-    Raster(TileFeature(tile, self.data), extent)
-  }
-
-  def reproject(srcExtent: Extent, gridBounds: GridBounds[Int], src: CRS, dest: CRS, options: Options): Raster[TileFeature[T, D]] = {
-    val Raster(tile, extent) = self.tile.reproject(srcExtent, gridBounds, src, dest, options)
-    Raster(TileFeature(tile, self.data), extent)
-  }
-
-  def reproject(
-    srcExtent: Extent,
-    gridBounds: GridBounds[Int],
-    transform: Transform,
-    inverseTransform: Transform,
-    options: Options
-  ): Raster[TileFeature[T, D]] = {
-    val Raster(tile, extent) = self.tile.reproject(srcExtent, gridBounds, transform, inverseTransform, options)
+  def reproject[N: Integral](srcExtent: Extent, src: CRS, dest: CRS, resampleGrid: ResampleGrid[N]): Raster[TileFeature[T, D]] = {
+    val Raster(tile, extent) = self.tile.reproject(srcExtent, src, dest, resampleGrid)
     Raster(TileFeature(tile, self.data), extent)
   }
 }

@@ -17,21 +17,16 @@
 package geotrellis.raster.reproject
 
 import geotrellis.raster._
+import geotrellis.raster.resample.ResampleGrid
 import geotrellis.proj4._
 import geotrellis.vector.Extent
 
+import spire.math.Integral
+
 trait MultibandTileReprojectMethods extends TileReprojectMethods[MultibandTile] {
-  import Reproject.Options
+  def reproject[N: Integral](srcExtent: Extent, transform: Transform, inverseTransform: Transform, resampleGrid: ResampleGrid[N]): Raster[MultibandTile] =
+    Raster(self, srcExtent).reproject(transform, inverseTransform, resampleGrid)
 
-  def reproject(srcExtent: Extent, targetRasterExtent: RasterExtent, transform: Transform, inverseTransform: Transform, options: Options): Raster[MultibandTile] =
-    Raster(self, srcExtent).reproject(targetRasterExtent, transform, inverseTransform, options)
-
-  def reproject(srcExtent: Extent, src: CRS, dest: CRS, options: Options): Raster[MultibandTile] =
-    Raster(self, srcExtent).reproject(src, dest, options)
-
-  def reproject(srcExtent: Extent, gridBounds: GridBounds[Int], src: CRS, dest: CRS, options: Options): Raster[MultibandTile] =
-    Raster(self, srcExtent).reproject(gridBounds, src, dest, options)
-
-  def reproject(srcExtent: Extent, gridBounds: GridBounds[Int], transform: Transform, inverseTransform: Transform, options: Options): Raster[MultibandTile] =
-    Raster(self, srcExtent).reproject(gridBounds, transform, inverseTransform, options)
+  def reproject[N: Integral](srcExtent: Extent, src: CRS, dest: CRS, resampleGrid: ResampleGrid[N]): Raster[MultibandTile] =
+    Raster(self, srcExtent).reproject(src, dest, resampleGrid)
 }

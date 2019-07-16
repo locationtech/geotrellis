@@ -20,20 +20,22 @@ import geotrellis.raster._
 import geotrellis.vector.Extent
 
 import spire.syntax.cfor._
+import spire.math.Integral
 
 trait SinglebandRasterResampleMethods extends RasterResampleMethods[SinglebandRaster] {
-  def resample(target: RasterExtent, method: ResampleMethod): SinglebandRaster = {
-    val (cols, rows) = (target.cols, target.rows)
+  def resample[N: Integral](resampleGrid: ResampleGrid[N], method: ResampleMethod = ResampleMethod.DEFAULT): SinglebandRaster = {
+    val targetRasterExtent = resampleGrid(self.rasterExtent.toGridType[N]).toRasterExtent
+
+    val (cols, rows) = (targetRasterExtent.cols, targetRasterExtent.rows)
     val targetTile = ArrayTile.empty(self.cellType, cols, rows)
-    val targetCS = CellSize(self.extent, cols, rows)
-    val resampler = Resample(method, self.tile, self.extent, targetCS)
+    val resampler = Resample(method, self.tile, self.extent, targetRasterExtent.cellSize)
 
     if(targetTile.cellType.isFloatingPoint) {
       val interpolate: (Double, Double) => Double = resampler.resampleDouble _
       cfor(0)(_ < rows, _ + 1) { row =>
         cfor(0)(_ < cols, _ + 1) { col =>
-          val x = target.gridColToMap(col)
-          val y = target.gridRowToMap(row)
+          val x = targetRasterExtent.gridColToMap(col)
+          val y = targetRasterExtent.gridRowToMap(row)
           val v = interpolate(x, y)
           targetTile.setDouble(col, row, v)
         }
@@ -42,14 +44,14 @@ trait SinglebandRasterResampleMethods extends RasterResampleMethods[SinglebandRa
       val interpolate: (Double, Double) => Int = resampler.resample _
       cfor(0)(_ < rows, _ + 1) { row =>
         cfor(0)(_ < cols, _ + 1) { col =>
-          val x = target.gridColToMap(col)
-          val y = target.gridRowToMap(row)
+          val x = targetRasterExtent.gridColToMap(col)
+          val y = targetRasterExtent.gridRowToMap(row)
           val v = interpolate(x, y)
           targetTile.set(col, row, v)
         }
       }
     }
 
-    Raster(targetTile, target.extent)
+    Raster(targetTile, targetRasterExtent.extent)
   }
 }

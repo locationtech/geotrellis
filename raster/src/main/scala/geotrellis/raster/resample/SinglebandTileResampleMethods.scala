@@ -19,10 +19,9 @@ package geotrellis.raster.resample
 import geotrellis.raster._
 import geotrellis.vector._
 
-trait SinglebandTileResampleMethods extends TileResampleMethods[Tile] {
-  def resample(extent: Extent, target: RasterExtent, method: ResampleMethod): Tile =
-    Raster(self, extent).resample(target, method).tile
+import spire.math.Integral
 
-  def resample(extent: Extent, targetCols: Int, targetRows: Int, method: ResampleMethod): Tile =
-    Raster(self, extent).resample(targetCols, targetRows, method).tile
+trait SinglebandTileResampleMethods extends TileResampleMethods[Tile] {
+  def resample[N: Integral](extent: Extent, resampleGrid: ResampleGrid[N], method: ResampleMethod = ResampleMethod.DEFAULT): Tile =
+    Raster(self, extent).resample(resampleGrid, method).tile
 }
