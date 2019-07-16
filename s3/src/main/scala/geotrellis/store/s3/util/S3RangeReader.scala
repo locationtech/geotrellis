@@ -39,18 +39,13 @@ class S3RangeReader(
   client: S3Client
 ) extends RangeReader {
 
-  lazy val metadata: HeadObjectResponse = {
-    val headRequest =
-      HeadObjectRequest
-        .builder()
-        .bucket(request.bucket)
-        .key(request.key)
-        .build()
+  lazy val totalLength: Long = {
+    val responseStream = client.getObject(request)
+    val length = responseStream.response.contentLength
 
-    client.headObject(headRequest)
+    responseStream.close()
+    length
   }
-
-  lazy val totalLength: Long = metadata.contentLength
 
   def readClippedRange(start: Long, length: Int): Array[Byte] = {
     val getRequest =
