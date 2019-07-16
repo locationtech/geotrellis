@@ -113,6 +113,7 @@ Fixes & Updates
 - ArrayTile equality will now check the cols, rows, and cellType of the two tiles (`#2991 <https://github.com/locationtech/geotrellis/pull/2991>`_).
 - Fix incorrect Deflate compressor usage (`#2997 <https://github.com/locationtech/geotrellis/pull/2997>`_).
 - Refactor IO thread pool usage (`#3007 <https://github.com/locationtech/geotrellis/pull/3007>`_).
+- ``S3RangeReader`` will now use a ``GetObjectResponse`` to compute the ``totalLength`` (`#3025 <https://github.com/locationtech/geotrellis/pull/3025>`_).
 
 2.3.0
 -----
