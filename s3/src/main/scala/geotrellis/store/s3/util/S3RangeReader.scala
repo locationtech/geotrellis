@@ -36,15 +36,27 @@ import java.net.URI
  */
 class S3RangeReader(
   request: => GetObjectRequest,
-  client: S3Client
+  client: S3Client,
+  readHeader: Boolean = true
 ) extends RangeReader {
 
   lazy val totalLength: Long = {
-    val responseStream = client.getObject(request)
-    val length = responseStream.response.contentLength
+    if (readHeader) {
+      val headRequest =
+        HeadObjectRequest
+          .builder()
+          .bucket(request.bucket)
+          .key(request.key)
+          .build()
 
-    responseStream.close()
-    length
+      client.headObject(headRequest).contentLength
+    } else {
+      val responseStream = client.getObject(request)
+      val length = responseStream.response.contentLength
+
+      responseStream.close()
+      length
+    }
   }
 
   def readClippedRange(start: Long, length: Int): Array[Byte] = {
