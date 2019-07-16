@@ -30,7 +30,7 @@ class MedianResampleSpec extends FunSpec with Matchers {
       val extent = Extent(0, 0, 10, 10)
       val cellsize = CellSize(extent, 10, 10)
       val resamp = new MedianResample(tile, extent, cellsize)
-      tile.resample(extent, 1, 1, Median).get(0, 0) should be (50)
+      tile.resample(extent, TargetDimensions(1, 1), Median).get(0, 0) should be (50)
     }
 
     it("should for a double tile compute nodata as most common value") {
@@ -38,7 +38,7 @@ class MedianResampleSpec extends FunSpec with Matchers {
       val extent = Extent(0, 0, 10, 10)
       val cellsize = CellSize(extent, 10, 10)
       val resamp = new MedianResample(tile, extent, cellsize)
-      tile.resample(extent, 1, 1, Median).getDouble(0, 0) should be (5.05)
+      tile.resample(extent, TargetDimensions(1, 1), Median).getDouble(0, 0) should be (5.05)
     }
 
     it("should return the mean of the two median-most values for an even set of contributing cells") {
@@ -46,7 +46,7 @@ class MedianResampleSpec extends FunSpec with Matchers {
       val extent = Extent(0, 0, 2, 1)
       val cellsize = CellSize(extent, 2, 1)
       val resamp = new MedianResample(tile, extent, cellsize)
-      tile.resample(extent, 1, 1, Median).get(0, 0) should be (15)
+      tile.resample(extent, TargetDimensions(1, 1), Median).get(0, 0) should be (15)
     }
 
   }

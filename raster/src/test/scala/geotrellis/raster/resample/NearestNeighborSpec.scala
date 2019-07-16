@@ -20,6 +20,7 @@ import geotrellis.raster._
 import geotrellis.vector.Extent
 
 import org.scalatest._
+import spire.math._
 
 class NearestNeighborResampleSpec extends FunSpec with Matchers with TestFiles {
 
@@ -38,53 +39,53 @@ class NearestNeighborResampleSpec extends FunSpec with Matchers with TestFiles {
       IntArrayTile(a, cols, rows)
     }
 
-    def resample(tile: Tile, srcExtent: Extent, dst: RasterExtent) =
-      tile.resample(srcExtent, dst, NearestNeighbor)
+    def resample[N: Integral](tile: Tile, srcExtent: Extent, resampleGrid: ResampleGrid[N]) =
+      tile.resample(srcExtent, resampleGrid, NearestNeighbor)
 
     it("should noop resample") {
       val dst = src
-      val rr = resample(tile, e, dst)
+      val rr = resample(tile, e, TargetRegion(dst))
       assert(rr === tile)
     }
 
     it("should crop via resample") {
       val dst = RasterExtent(Extent(0.0, 0.0, 40.0, 40.0), cw, ch, 2, 2)
-      val rr = resample(tile, e, dst)
+      val rr = resample(tile, e, TargetRegion(dst))
       //println(rr.asciiDraw)
       assert(rr === ints(Array(16, 17, 21, 22), 2, 2))
     }
 
     it("should distortion via resample") {
       val dst = RasterExtent(e, 100.0 / 3, 100.0 / 3, 3, 3)
-      val rr = resample(tile, e, dst)
+      val rr = resample(tile, e, TargetRegion(dst))
       //println(rr.asciiDraw)
       assert(rr.toArray === Array(1, 3, 5, 11, 13, 15, 21, 23, 25))
     }
 
     it("should northeast of src") {
       val dst = RasterExtent(Extent(200.0, 200.0, 300.0, 300.0), 50.0, 50.0, 2, 2)
-      val rr = resample(tile, e, dst)
+      val rr = resample(tile, e, TargetRegion(dst))
       //println(rr.asciiDraw)
       assert(rr === ints(Array(NODATA, NODATA, NODATA, NODATA), 2, 2))
     }
 
     it("should southwest of src") {
       val dst = RasterExtent(Extent(-100, -100, 0.0, 0.0), 50.0, 50.0, 2, 2)
-      val rr = resample(tile, e, dst)
+      val rr = resample(tile, e, TargetRegion(dst))
       //println(rr.asciiDraw)
       assert(rr === ints(Array(NODATA, NODATA, NODATA, NODATA), 2, 2))
     }
 
     it("should partially northeast of src") {
       val dst = RasterExtent(Extent(50.0, 50.0, 150.0, 150.0), 50.0, 50.0, 2, 2)
-      val rr = resample(tile, e, dst)
+      val rr = resample(tile, e, TargetRegion(dst))
       //println(rr.asciiDraw)
       assert(rr === ints(Array(NODATA, NODATA, 9, NODATA), 2, 2))
     }
 
     it("should partially southwest of src") {
       val dst = RasterExtent(Extent(-50.0, -50.0, 50.0, 50.0), 50.0, 50.0, 2, 2)
-      val rr = resample(tile, e, dst)
+      val rr = resample(tile, e, TargetRegion(dst))
       //println(rr.asciiDraw)
       assert(rr === ints(Array(NODATA, 17, NODATA, NODATA), 2, 2))
     }
@@ -94,9 +95,9 @@ class NearestNeighborResampleSpec extends FunSpec with Matchers with TestFiles {
       val re = RasterExtent(Extent(-9.5, 3.8, 150.5, 163.8), 4.0, 4.0, 40, 40)
       val src = loadTestArg("quad8").extent
       val r = loadTestArg("quad8").tile
-      val resize1 = r.resample(src, re)
+      val resize1 = r.resample(src, TargetRegion(re))
 
-      val resize2 = r.resample(src, re.withDimensions(40, 40))
+      val resize2 = r.resample(src, TargetRegion(re.withDimensions(40, 40)))
 
       List(resize1, resize2).foreach { r =>
         r.cols should be (40)
@@ -111,7 +112,7 @@ class NearestNeighborResampleSpec extends FunSpec with Matchers with TestFiles {
 
     it("should resize quad8 to 4x4") {
       val re = loadTestArg("quad8").rasterExtent
-      val raster = loadTestArg("quad8").tile.resample(re.extent, re.withDimensions(4, 4))
+      val raster = loadTestArg("quad8").tile.resample(re.extent, TargetRegion(re.withDimensions(4, 4)))
 
       raster.cols should be (4)
       raster.rows should be (4)

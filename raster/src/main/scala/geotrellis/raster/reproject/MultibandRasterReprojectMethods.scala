@@ -23,21 +23,20 @@ import geotrellis.vector.Polygon
 import geotrellis.proj4._
 
 import spire.syntax.cfor._
+import spire.math.Integral
 
 trait MultibandRasterReprojectMethods extends RasterReprojectMethods[MultibandRaster] {
-  import Reproject.Options
 
-  def reproject(
-    targetRasterExtent: RasterExtent,
+  def reproject[N: Integral](
     transform: Transform,
     inverseTransform: Transform,
-    options: Options
+    resampleGrid: ResampleGrid[N]
   ): MultibandRaster = {
     val Raster(tile, extent) = self
     val bands =
       for (bandIndex <- 0 until tile.bandCount ) yield
-        Raster(tile.band(bandIndex), extent).reproject(targetRasterExtent, transform, inverseTransform, options).tile
+        Raster(tile.band(bandIndex), extent).reproject(transform, inverseTransform, resampleGrid).tile
 
-    Raster(ArrayMultibandTile(bands.toArray), targetRasterExtent.extent)
+    Raster(ArrayMultibandTile(bands.toArray), resampleGrid(self.rasterExtent.toGridType[N]).extent)
   }
 }

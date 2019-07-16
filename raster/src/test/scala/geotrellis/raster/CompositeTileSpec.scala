@@ -134,7 +134,7 @@ class CompositeTileSpec extends FunSpec
 
       val (tile, extent) = {
         val (t, e) = (r.tile, rasterExtent.extent)
-        (t.resample(e, totalCols, totalRows), e)
+        (t.resample(e, TargetDimensions(totalCols, totalRows)), e)
       }
 
       val tileLayout = TileLayout(tileCols, tileRows, pixelCols, pixelRows)

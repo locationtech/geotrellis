@@ -17,6 +17,7 @@
 package geotrellis.raster.reproject
 
 import geotrellis.raster._
+import geotrellis.raster.resample._
 import geotrellis.vector._
 import geotrellis.proj4._
 
@@ -27,7 +28,6 @@ import spire.math.Integral
 
 
 object ReprojectRasterExtent {
-  import Reproject.Options
 
   /** A resolution is computed with the intent that the length of the
    * distance from the top left corner of the output imagery to the bottom right
@@ -41,66 +41,53 @@ object ReprojectRasterExtent {
    * This is a conceptual port of GDALSuggestedWarpOutput2, part of GDAL.
    * Docstring paraphrased from that code.
    */
-  def apply[N: Integral](ge: GridExtent[N], transform: Transform, options: Options): GridExtent[N] = {
+  def apply[N: Integral](ge: GridExtent[N], transform: Transform, resampleGrid: ResampleGrid[N]): GridExtent[N] = {
     val extent = ge.extent
     val newExtent = extent.reprojectAsPolygon(transform, 0.001).extent
 
-    options.parentGridExtent match {
-      case Some(parentGridExtent) =>
-        parentGridExtent.createAlignedGridExtent(newExtent).toGridType[N]
-
-      case None =>
-        val (pixelSizeX, pixelSizeY) =
-          options.targetCellSize match {
-            case Some(cellSize) =>
-              (cellSize.width, cellSize.height)
-            case None =>
-              val distance = newExtent.northWest.distance(newExtent.southEast)
-              val cols = ge.extent.width / ge.cellwidth
-              val rows = ge.extent.height / ge.cellheight
-              val pixelSize = distance / math.sqrt(cols * cols + rows * rows)
-              (pixelSize, pixelSize)
-          }
-
-        val newCols = (newExtent.width / pixelSizeX + 0.5).toLong
-        val newRows = (newExtent.height / pixelSizeY + 0.5).toLong
-
-        //Adjust the extent to match the pixel size.
-        val adjustedExtent = Extent(newExtent.xmin, newExtent.ymax - (pixelSizeY*newRows), newExtent.xmin + (pixelSizeX*newCols), newExtent.ymax)
-
-        // TODO: consider adding .withExtent and .withCellSize to GridExtent so we can parametrize this function on N, T <: GridExtent[N] and keep the type T
-        // ^ this would also remove the requirement of : Integral on N
-        new GridExtent[N](adjustedExtent, CellSize(pixelSizeX, pixelSizeY))
+    resampleGrid match {
+      case TargetGrid(grid) =>
+        grid.createAlignedGridExtent(newExtent).toGridType[N]
+      case TargetCellSize(cs) =>
+        reprojectedGridForCellSize(cs, newExtent)
+      case TargetDimensions(cols, rows) =>
+        ???  // Nope, not a sensible option
+      case TargetRegion(region) =>
+        region  // This feels kind of strange
+      case IdentityResampleGrid =>
+        // Obviously i'm not preserving the identity of the underlying gridextent
+        // not sure how the default case should be modeled with this resample target AST
+        val cs = {
+          val distance = newExtent.northWest.distance(newExtent.southEast)
+          val cols = ge.extent.width / ge.cellwidth
+          val rows = ge.extent.height / ge.cellheight
+          val pixelSize = distance / math.sqrt(cols * cols + rows * rows)
+          CellSize(pixelSize, pixelSize)
+        }
+        reprojectedGridForCellSize(cs, newExtent)
     }
   }
 
-  def apply[N: Integral](ge: GridExtent[N], transform: Transform): GridExtent[N] =
-    apply(ge, transform, Options.DEFAULT)
+  def apply[N: Integral](ge: GridExtent[N], src: CRS, dest: CRS, resampleGrid: ResampleGrid[N]): GridExtent[N] =
+    apply(ge, Transform(src, dest), resampleGrid)
 
-  def apply[N: Integral](ge: GridExtent[N], src: CRS, dest: CRS, options: Options): GridExtent[N] =
-    if(src == dest) {
-      ge
-    } else {
-      apply(ge, Transform(src, dest), options)
+  def apply[N: Integral](re: RasterExtent, transform: Transform, resampleGrid: ResampleGrid[N]): RasterExtent =
+    apply(re.toGridType[N]: GridExtent[N], transform, resampleGrid).toRasterExtent
+
+  def apply[N: Integral](re: RasterExtent, src: CRS, dest: CRS, resampleGrid: ResampleGrid[N]): RasterExtent =
+    apply(re, Transform(src, dest), resampleGrid)
+
+    private def reprojectedGridForCellSize[N: Integral](cs: CellSize, newExtent: Extent): GridExtent[N] = {
+      val newCols = (newExtent.width / cs.width + 0.5).toLong
+      val newRows = (newExtent.height / cs.height + 0.5).toLong
+
+      //Adjust the extent to match the pixel size.
+      val adjustedExtent =
+        Extent(newExtent.xmin, newExtent.ymax - (cs.height * newRows), newExtent.xmin + (cs.width * newCols), newExtent.ymax)
+
+      // TODO: consider adding .withExtent and .withCellSize to GridExtent so we can parametrize this function on N, T <: GridExtent[N] and keep the type T
+      // ^ this would also remove the requirement of : Integral on N
+      new GridExtent[N](adjustedExtent, cs)
     }
-
-  def apply[N: Integral](ge: GridExtent[N], src: CRS, dest: CRS): GridExtent[N] =
-    apply(ge, src, dest, Options.DEFAULT)
-
-  def apply(re: RasterExtent, transform: Transform, options: Reproject.Options): RasterExtent =
-    apply(re: GridExtent[Int], transform, options).toRasterExtent
-
-  def apply(re: RasterExtent, transform: Transform): RasterExtent =
-    apply(re, transform, Options.DEFAULT)
-
-  def apply(re: RasterExtent, src: CRS, dest: CRS, options: Options): RasterExtent =
-    if(src == dest) {
-      re
-    } else {
-      apply(re, Transform(src, dest), options)
-    }
-
-  def apply(re: RasterExtent, src: CRS, dest: CRS): RasterExtent =
-    apply(re, src, dest, Options.DEFAULT)
 
 }

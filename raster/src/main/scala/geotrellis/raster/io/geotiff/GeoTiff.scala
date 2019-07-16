@@ -18,10 +18,12 @@ package geotrellis.raster.io.geotiff
 
 import geotrellis.raster._
 import geotrellis.raster.crop._
-import geotrellis.raster.resample.{NearestNeighbor, ResampleMethod}
+import geotrellis.raster.resample.{ResampleGrid, NearestNeighbor, ResampleMethod}
 import geotrellis.raster.io.geotiff.writer.GeoTiffWriter
 import geotrellis.vector.{Extent, ProjectedExtent}
 import geotrellis.proj4.CRS
+
+import spire.math.Integral
 
 /**
  * Holds information on how the data is represented, projected, and any user
@@ -87,7 +89,11 @@ trait GeoTiff[T <: CellGrid[Int]] extends GeoTiffData {
   def withOverviews(overviews: Seq[GeoTiff[T]]): GeoTiff[T] = copy(overviews = overviews.toList)
 
   /** Chooses the best matching overviews and makes resample */
-  def resample(rasterExtent: RasterExtent, resampleMethod: ResampleMethod, strategy: OverviewStrategy): Raster[T]
+  def resample[N: Integral](
+    resampleGrid: ResampleGrid[N],
+    resampleMethod: ResampleMethod = NearestNeighbor,
+    strategy: OverviewStrategy = AutoHigherResolution
+  ): Raster[T]
 
   /** Chooses the best matching overviews and makes resample & crop */
   def crop(subExtent: Extent, cellSize: CellSize, resampleMethod: ResampleMethod, strategy: OverviewStrategy): Raster[T]

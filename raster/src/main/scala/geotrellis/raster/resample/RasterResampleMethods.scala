@@ -20,17 +20,8 @@ import geotrellis.raster._
 import geotrellis.vector.Extent
 import geotrellis.util.MethodExtensions
 
+import spire.math.Integral
 
 trait RasterResampleMethods[+T <: Raster[_]] extends MethodExtensions[T] {
-  def resample(target: RasterExtent, method: ResampleMethod): T
-
-  def resample(target: RasterExtent): T =
-    resample(target, ResampleMethod.DEFAULT)
-
-  def resample(targetCols: Int, targetRows: Int, method: ResampleMethod): T =
-    resample(RasterExtent(self.extent, targetCols, targetRows), method)
-
-  def resample(targetCols: Int, targetRows: Int): T =
-    resample(targetCols, targetRows, ResampleMethod.DEFAULT)
-
+  def resample[N: Integral](resampleGrid: ResampleGrid[N], method: ResampleMethod = ResampleMethod.DEFAULT): T
 }

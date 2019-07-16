@@ -23,24 +23,36 @@ import geotrellis.proj4._
 import geotrellis.vector.Polygon
 
 import spire.syntax.cfor._
+import spire.math.Integral
 
 trait SinglebandRasterReprojectMethods extends RasterReprojectMethods[SinglebandRaster] {
-  import Reproject.Options
 
-  def reproject(
-    targetRasterExtent: RasterExtent,
+  def reproject[N: Integral](
     transform: Transform,
     inverseTransform: Transform,
-    options: Options
+    resampleGrid: ResampleGrid[N]
+  ): SinglebandRaster = {
+    reproject(transform, inverseTransform, resampleGrid)
+  }
+
+  def reproject[N: Integral](
+    transform: Transform,
+    inverseTransform: Transform,
+    resampleGrid: ResampleGrid[N],
+    resampleMethod: ResampleMethod = NearestNeighbor,
+    errorThreshold: Double = 0.0
   ): SinglebandRaster = {
     val Raster(tile, extent) = self
+
+    val targetRasterExtent: RasterExtent = resampleGrid(self.rasterExtent.toGridType[N]).toRasterExtent
+
     val RasterExtent(newExtent, newCellWidth, newCellHeight, newCols, newRows) = targetRasterExtent
 
     val newTile = ArrayTile.empty(tile.cellType, newCols, newRows)
 
     val rowTransform: RowTransform =
-      if (options.errorThreshold != 0.0)
-        RowTransform.approximate(inverseTransform, options.errorThreshold)
+      if (errorThreshold != 0.0)
+        RowTransform.approximate(inverseTransform, errorThreshold)
       else
         RowTransform.exact(inverseTransform)
 
@@ -60,7 +72,7 @@ trait SinglebandRasterReprojectMethods extends RasterReprojectMethods[Singleband
     val srcX = Array.ofDim[Double](newCols)
     val srcY = Array.ofDim[Double](newCols)
 
-    val resampler = Resample(options.method, tile, extent, CellSize(newCellWidth, newCellHeight))
+    val resampler = Resample(resampleMethod, tile, extent, CellSize(newCellWidth, newCellHeight))
 
     if(tile.cellType.isFloatingPoint) {
       cfor(0)(_ < newRows, _ + 1) { row =>

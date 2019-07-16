@@ -30,7 +30,7 @@ class ModeResampleSpec extends FunSpec with Matchers {
       val extent = Extent(0, 0, 10, 10)
       val cellsize = CellSize(extent, 10, 10)
       val resamp = new ModeResample(tile, extent, cellsize)
-      tile.resample(extent, 1, 1, Mode).get(0, 0) should be (19)
+      tile.resample(extent, TargetDimensions(1, 1), Mode).get(0, 0) should be (19)
     }
 
     it("should for a double tile compute nodata as most common value") {
@@ -38,7 +38,7 @@ class ModeResampleSpec extends FunSpec with Matchers {
       val extent = Extent(0, 0, 3, 3)
       val cellsize = CellSize(extent, 3, 3)
       val resamp = new ModeResample(tile, extent, cellsize)
-      tile.resample(extent, 1, 1, Mode).getDouble(0, 0) should be (0.19)
+      tile.resample(extent, TargetDimensions(1, 1), Mode).getDouble(0, 0) should be (0.19)
     }
   }
 }

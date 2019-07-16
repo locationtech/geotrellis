@@ -17,6 +17,7 @@
 package geotrellis.raster.io.geotiff
 
 import geotrellis.raster._
+import geotrellis.raster.resample._
 import geotrellis.raster.resample.NearestNeighbor
 import geotrellis.raster.io.geotiff.reader._
 import geotrellis.raster.testkit.RasterMatchers
@@ -40,7 +41,7 @@ class MultibandGeoTiffSpec extends FunSpec with Matchers with RasterMatchers wit
     it("should match tile-wise resample") {
       for { i <- 1 to 5 } {
         val ovr = tiff.buildOverview(NearestNeighbor, i)
-        val expectedTile = tiff.raster.resample(ovr.rasterExtent, NearestNeighbor).tile
+        val expectedTile = tiff.raster.resample(TargetRegion(ovr.rasterExtent), NearestNeighbor).tile
         assertEqual(expectedTile, ovr.tile)
       }
     }

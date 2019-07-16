@@ -21,7 +21,9 @@ import geotrellis.raster._
 import geotrellis.vector.Extent
 import geotrellis.proj4.CRS
 import geotrellis.raster.crop.Crop
-import geotrellis.raster.resample.ResampleMethod
+import geotrellis.raster.resample.{ResampleMethod, TargetRegion, ResampleGrid}
+
+import spire.math.Integral
 
 case class MultibandGeoTiff(
   tile: MultibandTile,
@@ -69,20 +71,22 @@ case class MultibandGeoTiff(
   def crop(gridBounds: GridBounds[Int]): MultibandGeoTiff =
     crop(gridBounds.colMin, gridBounds.rowMin, gridBounds.colMax, gridBounds.rowMax)
 
-  def crop(subExtent: Extent, cellSize: CellSize, resampleMethod: ResampleMethod, strategy: OverviewStrategy): MultibandRaster =
+  def crop(subExtent: Extent, cellSize: CellSize, resampleMethod: ResampleMethod, strategy: OverviewStrategy): MultibandRaster = {
+    val targetRegion = TargetRegion(RasterExtent(subExtent, cellSize).toGridType[Int])
     getClosestOverview(cellSize, strategy)
       .crop(subExtent, Crop.Options(clamp = false))
-      .resample(RasterExtent(subExtent, cellSize), resampleMethod, strategy)
+      .resample(targetRegion, resampleMethod, strategy)
+  }
 
   def crop(windows: Seq[GridBounds[Int]]): Iterator[(GridBounds[Int], MultibandTile)] = tile match {
     case geotiffTile: GeoTiffMultibandTile => geotiffTile.crop(windows)
     case arrayTile: MultibandTile => arrayTile.crop(windows)
   }
 
-  def resample(rasterExtent: RasterExtent, resampleMethod: ResampleMethod, strategy: OverviewStrategy): MultibandRaster =
+  def resample[N: Integral](resampleGrid: ResampleGrid[N], resampleMethod: ResampleMethod, strategy: OverviewStrategy): MultibandRaster =
     getClosestOverview(cellSize, strategy)
       .raster
-      .resample(rasterExtent, resampleMethod)
+      .resample(resampleGrid, resampleMethod)
 
   def buildOverview(resampleMethod: ResampleMethod, decimationFactor: Int, blockSize: Int): MultibandGeoTiff = {
     val overviewRasterExtent = RasterExtent(
@@ -107,7 +111,7 @@ case class MultibandGeoTiff(
     }
 
     val segments: Seq[((Int, Int), MultibandTile)] = Raster(arrayTile, extent)
-      .resample(overviewRasterExtent, resampleMethod)
+      .resample(TargetRegion(overviewRasterExtent), resampleMethod)
       .tile
       .split(segmentLayout.tileLayout)
       .zipWithIndex

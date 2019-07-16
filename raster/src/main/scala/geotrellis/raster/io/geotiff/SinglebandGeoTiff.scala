@@ -21,8 +21,10 @@ import geotrellis.raster._
 import geotrellis.vector.Extent
 import geotrellis.proj4.CRS
 import geotrellis.raster.crop.Crop
-import geotrellis.raster.resample.ResampleMethod
+import geotrellis.raster.resample.{ResampleMethod, ResampleGrid, TargetRegion}
 import spire.syntax.cfor._
+
+import spire.math.Integral
 
 import java.nio.ByteBuffer
 
@@ -72,20 +74,22 @@ case class SinglebandGeoTiff(
 
   def crop(subExtent: Extent): SinglebandGeoTiff = crop(subExtent, Crop.Options.DEFAULT)
 
-  def crop(subExtent: Extent, cellSize: CellSize, resampleMethod: ResampleMethod, strategy: OverviewStrategy): SinglebandRaster =
+  def crop(subExtent: Extent, cellSize: CellSize, resampleMethod: ResampleMethod, strategy: OverviewStrategy): SinglebandRaster = {
+    val targetRegion = TargetRegion(RasterExtent(subExtent, cellSize).toGridType[Int])
     getClosestOverview(cellSize, strategy)
       .crop(subExtent, Crop.Options(clamp = false))
-      .resample(RasterExtent(subExtent, cellSize), resampleMethod, strategy)
+      .resample(targetRegion, resampleMethod, strategy)
+  }
 
   def crop(windows: Seq[GridBounds[Int]]): Iterator[(GridBounds[Int], Tile)] = tile match {
     case geotiffTile: GeoTiffTile => geotiffTile.crop(windows)
     case arrayTile: Tile => arrayTile.crop(windows)
   }
 
-  def resample(rasterExtent: RasterExtent, resampleMethod: ResampleMethod, strategy: OverviewStrategy): SinglebandRaster =
+  def resample[N: Integral](resampleGrid: ResampleGrid[N], resampleMethod: ResampleMethod, strategy: OverviewStrategy): SinglebandRaster =
     getClosestOverview(cellSize, strategy)
       .raster
-      .resample(rasterExtent, resampleMethod)
+      .resample(resampleGrid, resampleMethod)
 
   def buildOverview(resampleMethod: ResampleMethod, decimationFactor: Int, blockSize: Int): SinglebandGeoTiff = {
     val overviewRasterExtent = RasterExtent(
@@ -103,7 +107,7 @@ case class SinglebandGeoTiff(
 
     // force ArrayTile to avoid costly compressor thrashing in GeoTiff segments when resample will stride segments
     val segments: Seq[((Int, Int), Tile)] = Raster(tile.toArrayTile(), extent)
-      .resample(overviewRasterExtent, resampleMethod)
+      .resample(TargetRegion(overviewRasterExtent), resampleMethod)
       .tile
       .split(segmentLayout.tileLayout)
       .zipWithIndex

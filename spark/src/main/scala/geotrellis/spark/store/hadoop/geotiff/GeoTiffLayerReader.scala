@@ -22,11 +22,11 @@ import geotrellis.raster.resample.{RasterResampleMethods, ResampleMethod}
 import geotrellis.layer.{SpatialKey, ZoomedLayoutScheme}
 import geotrellis.vector.{Extent, ProjectedExtent}
 import geotrellis.raster.crop.Crop
-import geotrellis.raster.reproject.Reproject.{Options => ReprojectOptions}
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.raster.reproject.RasterReprojectMethods
 import geotrellis.raster.merge.RasterMergeMethods
 import geotrellis.util.RangeReader
+import geotrellis.spark.reproject.RasterReprojectOptions
 import geotrellis.util.annotations.experimental
 import geotrellis.store.LayerId
 import cats.effect.IO
@@ -79,7 +79,7 @@ import scala.reflect.ClassTag
               .getClosestOverview(layout.cellSize, strategy)
               .crop(ext, Crop.Options(clamp = false))
               .raster
-              .reproject(tiff.crs, layoutScheme.crs, ReprojectOptions(targetCellSize = Some(layout.cellSize)))
+              .reproject(tiff.crs, layoutScheme.crs, RasterReprojectOptions(targetCellSize = Some(layout.cellSize)))
               .resample(RasterExtent(keyExtent, layoutScheme.tileSize, layoutScheme.tileSize))
           }
       }
@@ -111,7 +111,7 @@ import scala.reflect.ClassTag
         tiff
           .crop(tiff.extent, layout.cellSize)
           .reproject(tiff.crs, layoutScheme.crs)
-          .resample(layoutScheme.tileSize, layoutScheme.tileSize)
+          .resample(layoutScheme.tileSize)
       }
     }
 

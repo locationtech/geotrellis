@@ -20,18 +20,18 @@ import geotrellis.raster._
 import geotrellis.vector.Extent
 
 import spire.syntax.cfor._
+import spire.math.Integral
 
 trait MultibandRasterResampleMethods extends RasterResampleMethods[MultibandRaster] {
-  def resample(target: RasterExtent, method: ResampleMethod): MultibandRaster = {
-    val tile = self.tile
-    val extent = self.extent
-    val bandCount = tile.bandCount
+  def resample[N: Integral](resampleGrid: ResampleGrid[N], method: ResampleMethod): MultibandRaster = {
+    val bandCount = self.tile.bandCount
     val resampledBands = Array.ofDim[Tile](bandCount)
+    val targetGrid = resampleGrid(self.rasterExtent.toGridType[N])
 
     cfor(0)(_ < bandCount, _ + 1) { b =>
-      resampledBands(b) = Raster(tile.band(b), extent).resample(target, method).tile
+      resampledBands(b) = Raster(self.tile.band(b), targetGrid.toRasterExtent.extent).resample(resampleGrid, method).tile
     }
 
-    Raster(ArrayMultibandTile(resampledBands), target.extent)
+    Raster(ArrayMultibandTile(resampledBands), targetGrid.toRasterExtent.extent)
   }
 }
