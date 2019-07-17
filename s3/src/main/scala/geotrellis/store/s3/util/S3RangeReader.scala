@@ -32,12 +32,13 @@ import java.net.URI
  *
  * @param request: A [[GetObjectRequest]] of the desired GeoTiff.
  * @param client: The [[S3Client]] that retrieves the data.
+ * @param readHeader: Whether the `HEAD` of the target object should be read or not. Default is `false`.
  * @return A new instance of S3RangeReader.
  */
 class S3RangeReader(
   request: => GetObjectRequest,
   client: S3Client,
-  readHeader: Boolean = true
+  readHeader: Boolean = false
 ) extends RangeReader {
 
   lazy val totalLength: Long = {
