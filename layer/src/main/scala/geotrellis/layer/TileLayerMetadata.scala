@@ -18,9 +18,9 @@ package geotrellis.layer
 
 import geotrellis.proj4.CRS
 import geotrellis.raster._
-import geotrellis.layer._
 import geotrellis.util._
 import geotrellis.vector.Extent
+import geotrellis.vector.io.json.CrsFormats._
 
 import cats.{Functor, Semigroup}
 import cats.syntax.functor._
@@ -87,8 +87,20 @@ case class TileLayerMetadata[K](
 }
 
 object TileLayerMetadata {
-  implicit def tileLayerMetadataEncoder[K: SpatialComponent: Encoder]: Encoder[TileLayerMetadata[K]] = deriveEncoder
-  implicit def tileLayerMetadataDecoder[K: SpatialComponent: Decoder]: Decoder[TileLayerMetadata[K]] = deriveDecoder
+  implicit def tileLayerMetadataEncoder[K: SpatialComponent: Encoder]: Encoder[TileLayerMetadata[K]] =
+    Encoder.forProduct5(
+      "cellType",
+      "layoutDefinition",
+      "extent",
+      "crs",
+      "bounds")(ld => (ld.cellType, ld.layout, ld.extent, ld.crs, ld.bounds))
+  implicit def tileLayerMetadataDecoder[K: SpatialComponent: Decoder]: Decoder[TileLayerMetadata[K]] =
+    Decoder.forProduct5(
+      "cellType",
+      "layoutDefinition",
+      "extent",
+      "crs",
+      "bounds")(TileLayerMetadata.apply)
 
   implicit def toLayoutDefinition(md: TileLayerMetadata[_]): LayoutDefinition =
     md.layout
