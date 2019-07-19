@@ -18,7 +18,7 @@ package geotrellis.layer.mapalgebra.focal
 
 import geotrellis.raster._
 import geotrellis.raster.Neighborhoods.Square
-import geotrellis.raster.mapalgebra.focal.{Kernel, Aspect, Sum, Max, Min, Mean, Median, Mode, StandardDeviation, Convolve, Slope}
+import geotrellis.raster.mapalgebra.focal.{Kernel, Aspect, Sum, Max, Min, Mean, Median, Mode, StandardDeviation, Convolve, Slope, ZFactor}
 
 trait FocalTileLayerCollectionMethods[K] extends CollectionFocalOperation[K] {
 
@@ -47,10 +47,12 @@ trait FocalTileLayerCollectionMethods[K] extends CollectionFocalOperation[K] {
    *
    * @see [[geotrellis.raster.mapalgebra.focal.Slope]]
    */
-  def slope(zFactor: Double = 1.0, target: TargetCell = TargetCell.All) = {
+  def slope(zFactor: ZFactor, target: TargetCell = TargetCell.All) = {
     val n = Square(1)
-    focalWithCellSize(n) { (tile, bounds, cellSize) =>
-      Slope(tile, n, bounds, cellSize, zFactor, target)
+    focalWithExtents(n) { (raster, bounds, cellSize) =>
+      val zValue = zFactor.fromExtent(raster.extent)
+
+      Slope(raster.tile, n, bounds, cellSize, zValue, target)
     }.mapContext(_.copy(cellType = DoubleConstantNoDataCellType))
   }
 }

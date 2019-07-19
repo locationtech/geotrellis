@@ -17,7 +17,6 @@
 package geotrellis.spark.mapalgebra.focal
 
 import geotrellis.raster._
-import geotrellis.raster.mapalgebra.focal._
 import geotrellis.spark._
 import geotrellis.spark.testkit._
 import geotrellis.raster.io.geotiff._
@@ -32,18 +31,19 @@ class PartitionerSpec extends FunSpec with TestEnvironment {
   val tile = SinglebandGeoTiff(new File(inputHomeLocalPath, "aspect.tif").getPath).tile.toArrayTile
   val (_, rasterRDD) = createTileLayerRDD(tile, 4, 3)
 
-  describe("Focal Partitioner Spec") {
+  val calculator = ZFactor((lat: Double) => lat)
 
+  describe("Focal Partitioner Spec") {
     it("should retain the partitioner of the parent RDD") {
       val partitionedParent = rasterRDD.withContext { _.partitionBy(new HashPartitioner(10)) }
-      val childRDD = partitionedParent.slope().focalMin(Square(1))
+      val childRDD = partitionedParent.slope(calculator).focalMin(Neighborhoods.Square(1))
 
       assert(childRDD.partitioner == partitionedParent.partitioner)
     }
 
     it("should retain its new partitioner") {
       val targetPartitioner = Some(new HashPartitioner(10))
-      val minRDD = rasterRDD.slope(partitioner = targetPartitioner).focalMin(Square(1))
+      val minRDD = rasterRDD.slope(zFactor = calculator, partitioner = targetPartitioner).focalMin(Neighborhoods.Square(1))
 
       assert(minRDD.partitioner == targetPartitioner)
     }
