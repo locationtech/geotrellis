@@ -22,6 +22,7 @@ import geotrellis.vector._
 import geotrellis.vector.io.json.CrsFormats
 
 import _root_.io.circe._
+import _root_.io.circe.parser._
 import _root_.io.circe.syntax._
 import cats.syntax.either._
 import org.apache.avro.Schema
@@ -99,9 +100,9 @@ trait Implicits extends KeyIndexFormats with CrsFormats {
     }
 
   implicit val schemaEncoder: Encoder[Schema] =
-    Encoder.encodeString.contramap[Schema] { _.toString }
+    Encoder.encodeJson.contramap[Schema] { schema => parse(schema.toString).valueOr(throw _) }
   implicit val schemaDecoder: Decoder[Schema] =
-    Decoder.decodeString.emap { str =>
-      Either.catchNonFatal((new Schema.Parser).parse(str)).leftMap(_ => "Schema expected")
+    Decoder.decodeJson.emap { json =>
+      Either.catchNonFatal((new Schema.Parser).parse(json.noSpaces)).leftMap(_ => "Schema expected")
     }
 }
