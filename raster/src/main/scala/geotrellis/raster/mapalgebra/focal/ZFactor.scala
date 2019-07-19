@@ -40,7 +40,7 @@ class ZFactor(produceZFactor: Double => Double) extends Serializable {
 
   /** Produces the associated ZFactor for the given `Point`'s Y coordinate. */
   def fromPoint(point: Point): Double =
-    fromLatitude(point.y)
+    fromLatitude(point.getY)
 
   def fromLatitude(lat: Double): Double =
     produceZFactor(lat)
