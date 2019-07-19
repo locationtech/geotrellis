@@ -32,25 +32,33 @@ import java.net.URI
  *
  * @param request: A [[GetObjectRequest]] of the desired GeoTiff.
  * @param client: The [[S3Client]] that retrieves the data.
+ * @param readHeader: Whether the `HEAD` of the target object should be read or not. Default is `false`.
  * @return A new instance of S3RangeReader.
  */
 class S3RangeReader(
   request: => GetObjectRequest,
-  client: S3Client
+  client: S3Client,
+  readHeader: Boolean = false
 ) extends RangeReader {
 
-  lazy val metadata: HeadObjectResponse = {
-    val headRequest =
-      HeadObjectRequest
-        .builder()
-        .bucket(request.bucket)
-        .key(request.key)
-        .build()
+  lazy val totalLength: Long = {
+    if (readHeader) {
+      val headRequest =
+        HeadObjectRequest
+          .builder()
+          .bucket(request.bucket)
+          .key(request.key)
+          .build()
 
-    client.headObject(headRequest)
+      client.headObject(headRequest).contentLength
+    } else {
+      val responseStream = client.getObject(request)
+      val length = responseStream.response.contentLength
+
+      responseStream.close()
+      length
+    }
   }
-
-  lazy val totalLength: Long = metadata.contentLength
 
   def readClippedRange(start: Long, length: Int): Array[Byte] = {
     val getRequest =
