@@ -117,6 +117,7 @@ Fixes & Updates
 - Fix incorrect Deflate compressor usage (`#2997 <https://github.com/locationtech/geotrellis/pull/2997>`_).
 - Refactor IO thread pool usage (`#3007 <https://github.com/locationtech/geotrellis/pull/3007>`_).
 - ``S3RangeReader`` will now optionally read the HEADER of an object (`#3025 <https://github.com/locationtech/geotrellis/pull/3025>`_).
+- ``FileRangeReaderProvider`` can now handle more types of ``URI``\s (`#3034 <https://github.com/locationtech/geotrellis/pull/3034>`_).
 
 2.3.0
 -----
