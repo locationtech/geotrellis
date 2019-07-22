@@ -27,6 +27,25 @@ class FileRangeReaderProvider extends RangeReaderProvider {
     case null => true // assume that the user is passing in the path to the catalog
   }
 
-  def rangeReader(uri: URI): FileRangeReader =
-    FileRangeReader(Paths.get(uri.toString).toFile)
+  def rangeReader(uri: URI): FileRangeReader = {
+    val containsScheme: Boolean =
+      uri.getScheme match {
+        case _: String => true
+        case null => false
+      }
+
+    val fileSchemeSize: Int = "file://".size
+
+    // Certain systems (like Linux) do not allow URIs to have
+    // Authorities when being passed to Paths.get, but others do.
+    // In order to simplify things, all URIs given will
+    // be formatted as a String and then passed to Paths.
+    val targetPath: String =
+      if (containsScheme)
+        uri.toString.slice(fileSchemeSize, uri.toString.size + 1)
+      else
+        uri.toString
+
+    FileRangeReader(Paths.get(targetPath).toFile)
+  }
 }

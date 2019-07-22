@@ -28,7 +28,7 @@ import java.nio.channels.FileChannel.MapMode._
  * @param file: A local File to read bytes from.
  * @return A new instance of FileRangeReader
  */
-class FileRangeReader(file: File) extends RangeReader {
+class FileRangeReader(val file: File) extends RangeReader {
   val totalLength: Long = file.length
 
   def readClippedRange(start: Long, length: Int): Array[Byte] = {
