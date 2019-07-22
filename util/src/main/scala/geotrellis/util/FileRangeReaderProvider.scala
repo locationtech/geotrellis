@@ -28,23 +28,21 @@ class FileRangeReaderProvider extends RangeReaderProvider {
   }
 
   def rangeReader(uri: URI): FileRangeReader = {
-    val containsScheme: Boolean =
-      uri.getScheme match {
-        case _: String => true
-        case null => false
-      }
+    // Paths.get has certain restrictions on how URIs that are
+    // passed to it are formatted. This sometimes prevents
+    // URIs that are correctly formatted from being used. To
+    // get around this, we will pass in the URI as a String
+    // instead without its Scheme (if it had one).
+    val targetPath: String = {
+      val uriString = uri.toString
 
-    val fileSchemeSize: Int = "file://".size
-
-    // Certain systems (like Linux) do not allow URIs to have
-    // Authorities when being passed to Paths.get, but others do.
-    // In order to simplify things, all URIs given will
-    // be formatted as a String and then passed to Paths.
-    val targetPath: String =
-      if (containsScheme)
-        uri.toString.slice(fileSchemeSize, uri.toString.size + 1)
+      if (uriString.startsWith("file://"))
+        uriString.slice("file://".size, uriString.size + 1)
+      else if (uriString.startsWith("file:"))
+        uriString.slice("file:".size, uriString.size + 1)
       else
-        uri.toString
+        uriString
+    }
 
     FileRangeReader(Paths.get(targetPath).toFile)
   }
