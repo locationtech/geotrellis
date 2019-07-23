@@ -120,12 +120,11 @@ package object internal {
     * }}}
     *
     */
-  private[vectortile] def toProjection(point: (Int, Int), topLeft: Point, resolution: Double): Point = {
+  private[vectortile] def toProjection(point: (Int, Int), topLeft: Point, resolution: Double): Point =
     Point(
       topLeft.x + (resolution * point._1),
       topLeft.y - (resolution * point._2)
     )
-  }
 
   /**
     * Translate [[Point]] coordinates within a CRS to those of a fixed
@@ -136,12 +135,11 @@ package object internal {
     * @param resolution How much of the CRS's units are covered by a single VT grid coordinate.
     * @return Grid coordinates in VectorTile space.
     */
-  private[vectortile] def fromProjection(point: Point, topLeft: Point, resolution: Double): (Int, Int) = {
+  private[vectortile] def fromProjection(point: Point, topLeft: Point, resolution: Double): (Int, Int) =
     (
       ((point.x - topLeft.x) / resolution).toInt,
       ((topLeft.y - point.y) / resolution).toInt
     )
-  }
 
   /** Instance definition of the ProtobufGeom typeclass for Points. */
   private[vectortile] implicit val protoPoint = new ProtobufGeom[Point, MultiPoint] {
