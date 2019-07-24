@@ -60,7 +60,7 @@ class OverzoomingValueReaderSpec
       val ex00 = ld.mapTransform(SpatialKey(0,0))
       val ex11 = layoutScheme.levelForZoom(1).layout.mapTransform(SpatialKey(1,1))
 
-      val resampled = tile00z0.resample(ex00, RasterExtent(ex11, 256, 256), ResampleMethod.DEFAULT)
+      val resampled = tile00z0.resample(ex00, TargetRegion(RasterExtent(ex11, 256, 256)), ResampleMethod.DEFAULT)
 
       // import geotrellis.raster.render._
       // val cm = ColorMap((0 to 511).toArray, ColorRamps.Plasma)

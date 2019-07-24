@@ -272,7 +272,7 @@ trait TileLayerRDDBuilders {
               rows = tileLayout.tileRows
             )
 
-          val subTile: Tile = adjustedTile.resample(extent, targetRasterExtent)
+          val subTile: Tile = adjustedTile.resample(extent, TargetRegion(targetRasterExtent))
 
           (SpaceTimeKey(col, row, time), subTile)
         }

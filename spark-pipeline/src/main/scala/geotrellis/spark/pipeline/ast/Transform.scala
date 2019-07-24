@@ -19,8 +19,8 @@ package geotrellis.spark.pipeline.ast
 import geotrellis.raster.crop.CropMethods
 import geotrellis.raster.merge.TileMergeMethods
 import geotrellis.raster.prototype.TilePrototypeMethods
-import geotrellis.raster.reproject.Reproject.{Options => RasterReprojectOptions}
-import geotrellis.raster.reproject.{RasterRegionReproject, TileReprojectMethods}
+import geotrellis.raster.reproject._
+import geotrellis.spark.reproject._
 import geotrellis.raster.stitch.Stitcher
 import geotrellis.raster.CellGrid
 import geotrellis.raster.resample.ResampleMethod

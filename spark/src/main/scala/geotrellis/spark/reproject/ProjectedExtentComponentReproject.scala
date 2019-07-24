@@ -20,6 +20,7 @@ import geotrellis.proj4._
 import geotrellis.raster._
 import geotrellis.raster.reproject._
 import geotrellis.raster.resample._
+import geotrellis.spark.resample._
 import geotrellis.spark._
 import geotrellis.spark.ingest._
 import geotrellis.vector._
@@ -30,7 +31,6 @@ import org.apache.spark.rdd._
 import scala.reflect.ClassTag
 
 object ProjectedExtentComponentReproject {
-  import geotrellis.raster.reproject.Reproject.Options
 
 
   /** Reproject the given RDD and modify the key with the new CRS and extent
@@ -38,12 +38,22 @@ object ProjectedExtentComponentReproject {
   def apply[K: Component[?, ProjectedExtent], V <: CellGrid[Int]: (? => TileReprojectMethods[V])](
     rdd: RDD[(K, V)],
     destCrs: CRS,
-    options: Options
+    options: RasterReprojectOptions
   ): RDD[(K, V)] =
     rdd.map { case (key, tile) =>
       val ProjectedExtent(extent, crs) = key.getComponent[ProjectedExtent]
-      val Raster(newTile , newExtent) =
-        tile.reproject(extent, crs, destCrs, options)
+      val Raster(newTile , newExtent) = {
+        // TODO revisit this before merge to make sure things work as expected
+        val resampleGrid =
+          if (options.targetRasterExtent.isDefined) {
+            TargetRegion[Long](options.targetRasterExtent.get.toGridType[Long])
+          } else if (options.targetCellSize.isDefined) {
+            TargetCellSize[Long](options.targetCellSize.get)
+          } else if (options.parentGridExtent.isDefined) {
+            TargetGrid[Long](options.parentGridExtent.get)
+          } else IdentityResampleGrid
+        tile.reproject(extent, crs, destCrs, resampleGrid)
+      }
       val newKey = key.setComponent(ProjectedExtent(newExtent, destCrs))
       (newKey, newTile)
     }

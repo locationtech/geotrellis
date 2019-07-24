@@ -17,6 +17,7 @@
 package geotrellis.spark.crop
 
 import geotrellis.raster._
+import geotrellis.raster.resample._
 import geotrellis.raster.crop.Crop.{Options => CropOptions}
 import geotrellis.raster.io.geotiff.SinglebandGeoTiff
 import geotrellis.spark._
@@ -30,7 +31,7 @@ class TileLayerRDDCropMethodsSpec extends FunSpec with TestEnvironment {
   describe("TileLayerRDD Crop Methods") {
     val path = "raster/data/aspect.tif"
     val gt = SinglebandGeoTiff(path)
-    val originalRaster = gt.raster.mapTile(_.toArrayTile).resample(500, 500)
+    val originalRaster = gt.raster.mapTile(_.toArrayTile).resample(TargetRegion(RasterExtent(gt.raster.extent, 500, 500)))
     val (_, rdd) = createTileLayerRDD(originalRaster, 5, 5, gt.crs)
     val md = rdd.metadata
     val overall = md.extent

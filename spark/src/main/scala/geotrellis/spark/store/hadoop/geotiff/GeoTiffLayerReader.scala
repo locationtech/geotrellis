@@ -18,7 +18,7 @@ package geotrellis.spark.store.hadoop.geotiff
 
 import geotrellis.raster.io.geotiff._
 import geotrellis.raster.{CellGrid, Raster, RasterExtent}
-import geotrellis.raster.resample.{RasterResampleMethods, ResampleMethod}
+import geotrellis.raster.resample.{RasterResampleMethods, ResampleMethod, TargetRegion, TargetCellSize}
 import geotrellis.store.LayerId
 import geotrellis.layer.{SpatialKey, ZoomedLayoutScheme}
 import geotrellis.vector.{Extent, ProjectedExtent}
@@ -85,8 +85,8 @@ import scala.reflect.ClassTag
               .getClosestOverview(layout.cellSize, strategy)
               .crop(ext, Crop.Options(clamp = false))
               .raster
-              .reproject(tiff.crs, layoutScheme.crs, RasterReprojectOptions(targetCellSize = Some(layout.cellSize)))
-              .resample(RasterExtent(keyExtent, layoutScheme.tileSize, layoutScheme.tileSize))
+              .reproject(tiff.crs, layoutScheme.crs, TargetCellSize[Long](layout.cellSize))
+              .resample(TargetRegion(RasterExtent(keyExtent, layoutScheme.tileSize, layoutScheme.tileSize)))
           }
       }
     }
@@ -117,7 +117,7 @@ import scala.reflect.ClassTag
         tiff
           .crop(tiff.extent, layout.cellSize)
           .reproject(tiff.crs, layoutScheme.crs)
-          .resample(layoutScheme.tileSize)
+          .resample(TargetRegion(RasterExtent(tiff.extent, layoutScheme.tileSize, layoutScheme.tileSize)))
       }
     }
 

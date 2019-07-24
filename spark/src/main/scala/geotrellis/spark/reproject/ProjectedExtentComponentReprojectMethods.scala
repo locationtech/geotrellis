@@ -17,7 +17,7 @@
 package geotrellis.spark.reproject
 
 import geotrellis.raster._
-import geotrellis.spark.reproject.RasterReprojectOptions
+import geotrellis.raster.reproject._
 import geotrellis.spark.ingest._
 import geotrellis.vector._
 import geotrellis.proj4._

@@ -17,7 +17,9 @@
 package geotrellis.doc.examples.raster
 
 import geotrellis.raster._
-import geotrellis.raster.reproject.Reproject
+import geotrellis.raster.reproject._
+import geotrellis.raster.resample._
+import geotrellis.spark.reproject._
 import geotrellis.vector.Extent
 
 object MatchingRasters {
@@ -34,8 +36,8 @@ object MatchingRasters {
 
     val cropped2 =
       raster2
-        .reproject(raster1.crs).raster
-        .resample(raster1.raster.rasterExtent)
+        .reproject(raster1.crs, IdentityResampleGrid).raster
+        .resample(TargetRegion(raster1.raster.rasterExtent))
         .crop(areaOfInterest)
 
     val result = cropped1.tile * w1 + cropped2.tile * w2
@@ -49,16 +51,12 @@ object MatchingRasters {
     // Weights for our weighted sum
     val (w1, w2): (Int, Int) = ???
 
-    val options = Reproject.Options(
-      targetRasterExtent = Some(raster1.raster.rasterExtent)
-    )
-
     val cropped1 =
       raster1.raster.crop(areaOfInterest)
 
     val cropped2 =
       raster2
-        .reproject(raster1.crs, options)
+        .reproject(raster1.crs, TargetRegion(raster1.raster.rasterExtent))
 
     val result = cropped1.tile * w1 + cropped2.tile * w2
   }
