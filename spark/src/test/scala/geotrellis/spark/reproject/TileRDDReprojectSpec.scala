@@ -20,7 +20,7 @@ import geotrellis.raster._
 import geotrellis.raster.io.geotiff._
 import geotrellis.raster.resample._
 import geotrellis.raster.reproject._
-import geotrellis.raster.reproject.Reproject.{Options => RasterReprojectOptions}
+import geotrellis.spark.reproject._
 import geotrellis.layer._
 import geotrellis.spark._
 import geotrellis.spark.reproject.Reproject.Options
@@ -39,7 +39,7 @@ class TileRDDReprojectSpec extends FunSpec with TestEnvironment {
   describe("TileRDDReproject") {
     val path = "raster/data/aspect.tif"
     val gt = SinglebandGeoTiff(path)
-    val originalRaster = gt.raster.mapTile(_.toArrayTile).resample(500, 500)
+    val originalRaster = gt.raster.mapTile(_.toArrayTile).resample(TargetRegion(RasterExtent(gt.raster.extent, 500, 500)))
 
     // import geotrellis.raster.render._
     // val rainbow = ColorMap((0.0 to 360.0 by 1.0).map{ deg => (deg, HSV.toRGB(deg, 1.0, 1.0)) }.toMap)
@@ -54,7 +54,7 @@ class TileRDDReprojectSpec extends FunSpec with TestEnvironment {
       val expected =
         ProjectedRaster(raster, gt.crs).reproject(
           LatLng,
-          RasterReprojectOptions(method = method, errorThreshold = 0)
+          IdentityResampleGrid
         )
 
       // expected.tile.renderPng(rainbow).write("expected.png")
@@ -164,7 +164,7 @@ class TileRDDReprojectSpec extends FunSpec with TestEnvironment {
       val expected =
         ProjectedRaster(raster, gt.crs).reproject(
           LatLng,
-          RasterReprojectOptions(NearestNeighbor, errorThreshold = 0)
+          IdentityResampleGrid
         )
 
       val mbrdd = ContextRDD(rdd.mapValues{ tile => MultibandTile(Array(tile)) }, rdd.metadata)
@@ -227,7 +227,7 @@ class TileRDDReprojectSpec extends FunSpec with TestEnvironment {
       val expected =
         ProjectedRaster(raster, gt.crs).reproject(
           LatLng,
-          RasterReprojectOptions(NearestNeighbor, errorThreshold = 0)
+          IdentityResampleGrid
         )
 
       val mbrdd = ContextRDD(rdd.mapValues { tile => TileFeature(tile, 1) }, rdd.metadata)

@@ -18,6 +18,7 @@ package geotrellis.spark.summary
 
 import geotrellis.vector._
 import geotrellis.raster._
+import geotrellis.raster.resample._
 import geotrellis.raster.io.geotiff._
 import geotrellis.layer._
 import geotrellis.layer.TileLayerCollection
@@ -106,7 +107,7 @@ class StatsTileCollectionMethodsSpec extends FunSpec with TestEnvironment with T
     it ("should find double histogram of aspect and match merged quantile breaks") {
       val path = "raster/data/aspect.tif"
       val gt = SinglebandGeoTiff(path)
-      val originalRaster = gt.raster.mapTile(_.toArrayTile).resample(500, 500)
+      val originalRaster = gt.raster.mapTile(_.toArrayTile).resample(TargetRegion(RasterExtent(gt.raster.extent, 500, 500)))
       val (_, rdd) = createTileLayerRDD(originalRaster, 5, 5, gt.crs)
       val collection = rdd.toCollection
 

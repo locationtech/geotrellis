@@ -21,6 +21,8 @@ import geotrellis.vector._
 import geotrellis.layer._
 import geotrellis.raster.{FloatConstantNoDataCellType, GridBounds, TileLayout}
 import geotrellis.raster.io.geotiff.SinglebandGeoTiff
+import geotrellis.raster._
+import geotrellis.raster.resample._
 import geotrellis.store._
 import geotrellis.spark._
 import geotrellis.spark.store._
@@ -82,7 +84,7 @@ class TileLayerRDDFilterMethodsSpec extends FunSpec with TestEnvironment {
   describe("Spatial TileLayerRDD Filter Methods") {
     val path = "raster/data/aspect.tif"
     val gt = SinglebandGeoTiff(path)
-    val originalRaster = gt.raster.mapTile(_.toArrayTile).resample(500, 500)
+    val originalRaster = gt.raster.mapTile(_.toArrayTile).resample(TargetRegion(RasterExtent(gt.raster.extent, 500, 500)))
     val (_, rdd) = createTileLayerRDD(originalRaster, 5, 5, gt.crs)
     val temporalRdd =
       rdd

@@ -19,7 +19,7 @@ package geotrellis.spark.ingest
 import geotrellis.proj4._
 import geotrellis.raster._
 import geotrellis.raster.resample.{NearestNeighbor, ResampleMethod}
-import geotrellis.raster.reproject.Reproject.{Options => RasterReprojectOptions}
+import geotrellis.raster.reproject._
 import geotrellis.layer._
 import geotrellis.spark._
 import geotrellis.spark.pyramid._
