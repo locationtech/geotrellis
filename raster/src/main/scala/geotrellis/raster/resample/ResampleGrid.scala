@@ -17,7 +17,6 @@
 package geotrellis.raster.resample
 
 import geotrellis.raster.{RasterExtent, GridExtent, GridBounds}
-import geotrellis.raster.reproject.Reproject
 import geotrellis.raster.CellSize
 
 import spire.math.Integral

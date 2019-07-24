@@ -42,7 +42,7 @@ object ReprojectRasterExtent {
    */
   def apply[N: Integral](ge: GridExtent[N], transform: Transform, options: RasterReprojectOptions): GridExtent[N] = {
     val extent = ge.extent
-    val newExtent = extent.reprojectAsPolygon(transform, 0.001).envelope
+    val newExtent = extent.reprojectAsPolygon(transform, 0.001).extent
 
     options.parentGridExtent match {
       case Some(parentGridExtent) =>

@@ -24,17 +24,6 @@ import geotrellis.util.MethodExtensions
 
 import spire.math.Integral
 
-//gt
-  //val gridExtent: GridExtent[Long],
-  //val resampleMethod: ResampleMethod = NearestNeighbor,
-  //val targetCellType: Option[TargetCellType] = None
-
-//tiff
-  //resampleGrid: ResampleGrid[Long],
-  //method: ResampleMethod = NearestNeighbor,
-  //strategy: OverviewStrategy = AutoHigherResolution,
-  //private[vlm] val targetCellType: Option[TargetCellType] = None
-
 trait TileReprojectMethods[T <: CellGrid[Int]] extends MethodExtensions[T] {
   def reproject[N: Integral](srcExtent: Extent, transform: Transform, inverseTransform: Transform, resampleGrid: ResampleGrid[N]): Raster[T]
 

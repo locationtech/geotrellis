@@ -31,8 +31,8 @@ class RasterizeReprojectSpec extends FunSpec
     it("should fill in only valid region") {
       val coloRaster: ProjectedRaster[Tile] = ProjectedRaster.apply(Raster[Tile](IntArrayTile.fill(1,700,400), Extent(-109,37,-102,41)), LatLng)
       val destRegion = coloRaster.projectedExtent.reprojectAsPolygon(ConusAlbers, 0.005)
-      val destRE = ProjectedRasterExtent(destRegion.envelope, ConusAlbers, 1000, 800)
-      val reprojected = coloRaster.regionReproject[Long](destRE, NearestNeighbor)
+      val destRE = ProjectedRasterExtent(destRegion.extent, ConusAlbers, 1000, 800)
+      val reprojected = coloRaster.regionReproject[Long](ConusAlbers, destRE, NearestNeighbor)
       val trans = Proj4Transform(ConusAlbers, LatLng)
 
       // Must ignore narrow strip near boundary of tile (resampler issues)
