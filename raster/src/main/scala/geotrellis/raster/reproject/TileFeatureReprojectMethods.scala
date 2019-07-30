@@ -18,7 +18,7 @@ package geotrellis.raster.reproject
 
 import geotrellis.proj4._
 import geotrellis.raster._
-import geotrellis.raster.resample.ResampleGrid
+import geotrellis.raster.resample.ResampleTarget
 import geotrellis.vector._
 import geotrellis.util.MethodExtensions
 
@@ -29,13 +29,13 @@ abstract class TileFeatureReprojectMethods[
   D
 ](val self: TileFeature[T, D]) extends TileReprojectMethods[TileFeature[T, D]] {
 
-  def reproject[N: Integral](srcExtent: Extent, transform: Transform, inverseTransform: Transform, resampleGrid: ResampleGrid[N]): Raster[TileFeature[T, D]] = {
-    val Raster(tile, extent) = self.tile.reproject(srcExtent, transform, inverseTransform, resampleGrid)
+  def reproject[N: Integral](srcExtent: Extent, transform: Transform, inverseTransform: Transform, resampleTarget: Option[ResampleTarget[N]]): Raster[TileFeature[T, D]] = {
+    val Raster(tile, extent) = self.tile.reproject(srcExtent, transform, inverseTransform, resampleTarget)
     Raster(TileFeature(tile, self.data), extent)
   }
 
-  def reproject[N: Integral](srcExtent: Extent, src: CRS, dest: CRS, resampleGrid: ResampleGrid[N]): Raster[TileFeature[T, D]] = {
-    val Raster(tile, extent) = self.tile.reproject(srcExtent, src, dest, resampleGrid)
+  def reproject[N: Integral](srcExtent: Extent, src: CRS, dest: CRS, resampleTarget: Option[ResampleTarget[N]]): Raster[TileFeature[T, D]] = {
+    val Raster(tile, extent) = self.tile.reproject(srcExtent, src, dest, resampleTarget)
     Raster(TileFeature(tile, self.data), extent)
   }
 }

@@ -18,7 +18,7 @@ package geotrellis.raster.reproject
 
 import geotrellis.proj4._
 import geotrellis.raster._
-import geotrellis.raster.resample.{ResampleGrid, TargetRegion}
+import geotrellis.raster.resample.ResampleTarget
 import geotrellis.util.MethodExtensions
 
 import spire.math.Integral
@@ -31,7 +31,7 @@ trait RasterReprojectMethods[+T <: Raster[_]] extends MethodExtensions[T] {
     val transform = Transform(src, dest)
     val inverseTransform = Transform(dest, src)
 
-    reproject(transform, inverseTransform, resampleGrid)
+    reproject(transform, inverseTransform, resampleTarget)
   }
 
   def reproject(gridBounds: GridBounds[Int], src: CRS, dest: CRS): T =

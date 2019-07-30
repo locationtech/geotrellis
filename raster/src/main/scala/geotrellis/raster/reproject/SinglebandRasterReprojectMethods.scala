@@ -30,21 +30,21 @@ trait SinglebandRasterReprojectMethods extends RasterReprojectMethods[Singleband
   def reproject[N: Integral](
     transform: Transform,
     inverseTransform: Transform,
-    resampleGrid: ResampleGrid[N]
+    resampleTarget: Option[ResampleTarget[N]]
   ): SinglebandRaster = {
-    reproject(transform, inverseTransform, resampleGrid)
+    reproject(transform, inverseTransform, resampleTarget)
   }
 
   def reproject[N: Integral](
     transform: Transform,
     inverseTransform: Transform,
-    resampleGrid: ResampleGrid[N],
+    resampleTarget: ResampleTarget[N],
     resampleMethod: ResampleMethod = NearestNeighbor,
     errorThreshold: Double = 0.0
   ): SinglebandRaster = {
     val Raster(tile, extent) = self
 
-    val targetRasterExtent: RasterExtent = resampleGrid(self.rasterExtent.toGridType[N]).toRasterExtent
+    val targetRasterExtent: RasterExtent = resampleTarget(self.rasterExtent.toGridType[N]).toRasterExtent
 
     val RasterExtent(newExtent, newCellWidth, newCellHeight, newCols, newRows) = targetRasterExtent
 

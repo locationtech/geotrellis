@@ -21,7 +21,7 @@ import geotrellis.raster._
 import geotrellis.vector.Extent
 import geotrellis.proj4.CRS
 import geotrellis.raster.crop.Crop
-import geotrellis.raster.resample.{ResampleMethod, TargetRegion, ResampleGrid}
+import geotrellis.raster.resample.{ResampleMethod, TargetGridExtent, ResampleTarget}
 
 import spire.math.Integral
 
@@ -72,10 +72,10 @@ case class MultibandGeoTiff(
     crop(gridBounds.colMin, gridBounds.rowMin, gridBounds.colMax, gridBounds.rowMax)
 
   def crop(subExtent: Extent, cellSize: CellSize, resampleMethod: ResampleMethod, strategy: OverviewStrategy): MultibandRaster = {
-    val targetRegion = TargetRegion(RasterExtent(subExtent, cellSize).toGridType[Int])
+    val targetGridExtent = TargetGridExtent(RasterExtent(subExtent, cellSize).toGridType[Int])
     getClosestOverview(cellSize, strategy)
       .crop(subExtent, Crop.Options(clamp = false))
-      .resample(targetRegion, resampleMethod, strategy)
+      .resample(targetGridExtent, resampleMethod, strategy)
   }
 
   def crop(windows: Seq[GridBounds[Int]]): Iterator[(GridBounds[Int], MultibandTile)] = tile match {
@@ -83,10 +83,10 @@ case class MultibandGeoTiff(
     case arrayTile: MultibandTile => arrayTile.crop(windows)
   }
 
-  def resample[N: Integral](resampleGrid: ResampleGrid[N], resampleMethod: ResampleMethod, strategy: OverviewStrategy): MultibandRaster =
+  def resample[N: Integral](resampleTarget: ResampleTarget[N], resampleMethod: ResampleMethod, strategy: OverviewStrategy): MultibandRaster =
     getClosestOverview(cellSize, strategy)
       .raster
-      .resample(resampleGrid, resampleMethod)
+      .resample(resampleTarget, resampleMethod)
 
   def buildOverview(resampleMethod: ResampleMethod, decimationFactor: Int, blockSize: Int): MultibandGeoTiff = {
     val overviewRasterExtent = RasterExtent(
@@ -111,7 +111,7 @@ case class MultibandGeoTiff(
     }
 
     val segments: Seq[((Int, Int), MultibandTile)] = Raster(arrayTile, extent)
-      .resample(TargetRegion(overviewRasterExtent), resampleMethod)
+      .resample(TargetGridExtent(overviewRasterExtent), resampleMethod)
       .tile
       .split(segmentLayout.tileLayout)
       .zipWithIndex
