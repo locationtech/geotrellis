@@ -18,7 +18,7 @@ package geotrellis.raster.io.geotiff
 
 import geotrellis.raster._
 import geotrellis.raster.crop._
-import geotrellis.raster.resample.{ResampleGrid, NearestNeighbor, ResampleMethod}
+import geotrellis.raster.resample.{ResampleTarget, NearestNeighbor, ResampleMethod}
 import geotrellis.raster.io.geotiff.writer.GeoTiffWriter
 import geotrellis.vector.{Extent, ProjectedExtent}
 import geotrellis.proj4.CRS
@@ -90,7 +90,7 @@ trait GeoTiff[T <: CellGrid[Int]] extends GeoTiffData {
 
   /** Chooses the best matching overviews and makes resample */
   def resample[N: Integral](
-    resampleGrid: ResampleGrid[N],
+    resampleTarget: ResampleTarget[N],
     resampleMethod: ResampleMethod = NearestNeighbor,
     strategy: OverviewStrategy = AutoHigherResolution
   ): Raster[T]

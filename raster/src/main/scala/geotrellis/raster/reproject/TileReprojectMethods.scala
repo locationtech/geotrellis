@@ -18,14 +18,14 @@ package geotrellis.raster.reproject
 
 import geotrellis.raster._
 import geotrellis.proj4._
-import geotrellis.raster.resample.{ResampleMethod, ResampleGrid}
+import geotrellis.raster.resample.{ResampleMethod, ResampleTarget}
 import geotrellis.vector.Extent
 import geotrellis.util.MethodExtensions
 
 import spire.math.Integral
 
 trait TileReprojectMethods[T <: CellGrid[Int]] extends MethodExtensions[T] {
-  def reproject[N: Integral](srcExtent: Extent, transform: Transform, inverseTransform: Transform, resampleGrid: ResampleGrid[N]): Raster[T]
+  def reproject[N: Integral](srcExtent: Extent, transform: Transform, inverseTransform: Transform, resampleTarget: Option[ResampleTarget[N]]): Raster[T]
 
-  def reproject[N: Integral](srcExtent: Extent, src: CRS, dest: CRS, resampleGrid: ResampleGrid[N]): Raster[T]
+  def reproject[N: Integral](srcExtent: Extent, src: CRS, dest: CRS, resampleTarget: Option[ResampleTarget[N]]): Raster[T]
 }

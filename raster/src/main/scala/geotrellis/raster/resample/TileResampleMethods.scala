@@ -23,5 +23,5 @@ import geotrellis.util.MethodExtensions
 import spire.math.Integral
 
 trait TileResampleMethods[T <: CellGrid[Int]] extends MethodExtensions[T] {
-  def resample[N: Integral](extent: Extent, resampleGrid: ResampleGrid[N], method: ResampleMethod = ResampleMethod.DEFAULT): T
+  def resample[N: Integral](extent: Extent, resampleTarget: ResampleTarget[N], method: ResampleMethod = ResampleMethod.DEFAULT): T
 }

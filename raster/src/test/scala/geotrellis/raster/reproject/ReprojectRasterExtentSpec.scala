@@ -45,7 +45,7 @@ class ReprojectRasterExtentSpec extends FunSpec
       val sourceRaster = sourceGt.raster
 
       val rea @ RasterExtent(actualExtent, actualCellWidth, actualCellHeight, actualCols, actualRows) =
-        ReprojectRasterExtent(sourceRaster.rasterExtent, sourceGt.crs, WebMercator, IdentityResampleGrid)
+        ReprojectRasterExtent(sourceRaster.rasterExtent, sourceGt.crs, WebMercator, IdentityResampleTarget)
 
       val ree @ RasterExtent(expectedExtent, expectedCellWidth, expectedCellHeight, expectedCols, expectedRows) =
         SinglebandGeoTiff(geoTiffPath("reproject/nlcd_tile_webmercator-nearestneighbor.tif")).raster.rasterExtent
@@ -70,7 +70,7 @@ class ReprojectRasterExtentSpec extends FunSpec
       val src = CRS.fromEpsgCode(32618)
       val dest = CRS.fromEpsgCode(3857)
 
-      val rea @ RasterExtent(actualExtent, actualCellWidth, actualCellHeight, actualCols, actualRows) = ReprojectRasterExtent(rasterExtent, src, dest, IdentityResampleGrid)
+      val rea @ RasterExtent(actualExtent, actualCellWidth, actualCellHeight, actualCols, actualRows) = ReprojectRasterExtent(rasterExtent, src, dest, IdentityResampleTarget)
 
       // println(formatExtent("GTA", rea))
       // println(formatExtent("EXP", ree))
@@ -92,7 +92,7 @@ class ReprojectRasterExtentSpec extends FunSpec
       val src = CRS.fromEpsgCode(32618)
       val dest = CRS.fromEpsgCode(4326)
 
-      val rea @ RasterExtent(actualExtent, _, _, actualCols, actualRows) = ReprojectRasterExtent(rasterExtent, src, dest, IdentityResampleGrid)
+      val rea @ RasterExtent(actualExtent, _, _, actualCols, actualRows) = ReprojectRasterExtent(rasterExtent, src, dest, IdentityResampleTarget)
 
       // println(formatExtent("GTA", rea))
       // println(formatExtent("EXP", ree))
@@ -107,7 +107,7 @@ class ReprojectRasterExtentSpec extends FunSpec
       val crs = CRS.fromString("+proj=lcc +lat_0=33.75 +lon_0=-79.0 +lat_1=36.16666666666666 +lat_2=34.33333333333334 +x_0=609601.22 +y_0=0.0 +datum=NAD83 +units=m ")
       val originalRE = RasterExtent(ex, 1500, 1350)
       val region = ProjectedExtent(ex, crs).reprojectAsPolygon(WebMercator, 0.001)
-      val destinationRE = ReprojectRasterExtent(originalRE, crs, WebMercator, IdentityResampleGrid)
+      val destinationRE = ReprojectRasterExtent(originalRE, crs, WebMercator, IdentityResampleTarget)
 
       assert(destinationRE.extent covers region)
       assert(destinationRE.extent.toPolygon intersects region)

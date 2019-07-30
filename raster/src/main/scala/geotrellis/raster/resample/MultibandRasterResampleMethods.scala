@@ -23,13 +23,13 @@ import spire.syntax.cfor._
 import spire.math.Integral
 
 trait MultibandRasterResampleMethods extends RasterResampleMethods[MultibandRaster] {
-  def resample[N: Integral](resampleGrid: ResampleGrid[N], method: ResampleMethod): MultibandRaster = {
+  def resample[N: Integral](resampleTarget: ResampleTarget[N], method: ResampleMethod): MultibandRaster = {
     val bandCount = self.tile.bandCount
     val resampledBands = Array.ofDim[Tile](bandCount)
-    val targetGrid = resampleGrid(self.rasterExtent.toGridType[N])
+    val targetGrid = resampleTarget(self.rasterExtent.toGridType[N])
 
     cfor(0)(_ < bandCount, _ + 1) { b =>
-      resampledBands(b) = Raster(self.tile.band(b), targetGrid.toRasterExtent.extent).resample(resampleGrid, method).tile
+      resampledBands(b) = Raster(self.tile.band(b), targetGrid.toRasterExtent.extent).resample(resampleTarget, method).tile
     }
 
     Raster(ArrayMultibandTile(resampledBands), targetGrid.toRasterExtent.extent)

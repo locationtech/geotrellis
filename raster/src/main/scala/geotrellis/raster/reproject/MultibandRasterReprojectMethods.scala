@@ -30,13 +30,14 @@ trait MultibandRasterReprojectMethods extends RasterReprojectMethods[MultibandRa
   def reproject[N: Integral](
     transform: Transform,
     inverseTransform: Transform,
-    resampleGrid: ResampleGrid[N]
+    resampleTarget: Option[ResampleTarget[N]]
   ): MultibandRaster = {
     val Raster(tile, extent) = self
     val bands =
       for (bandIndex <- 0 until tile.bandCount ) yield
-        Raster(tile.band(bandIndex), extent).reproject(transform, inverseTransform, resampleGrid).tile
+        Raster(tile.band(bandIndex), extent).reproject(transform, inverseTransform, resampleTarget).tile
 
-    Raster(ArrayMultibandTile(bands.toArray), resampleGrid(self.rasterExtent.toGridType[N]).extent)
+    val re = ReprojectRasterExtent(self.rasterExtent, transform, resampleTarget).extent
+    Raster(ArrayMultibandTile(bands.toArray), re)
   }
 }

@@ -84,11 +84,11 @@ object ZoomResample {
             boundsAtZoom(sourceZoom, rdd.metadata.bounds, targetZoom).get
 
           resampleKeyBounds.toGridBounds.intersection(tgb) match {
-            case Some(resampleGridBounds) => {
+            case Some(resampleTargetBounds) => {
               val resampled: RDD[(K, V)] = rdd.flatMap { case (key, tile) =>
                 val gbaz: Option[GridBounds[Int]] =
                   gridBoundsAtZoom(sourceZoom, key.getComponent[SpatialKey], targetZoom)
-                    .intersection(resampleGridBounds)
+                    .intersection(resampleTargetBounds)
 
                 gbaz.map { gb =>
                   gb.coordsIter
@@ -107,11 +107,11 @@ object ZoomResample {
               }
 
               val extent: Extent =
-                targetMapTransform(resampleGridBounds).intersection(rdd.metadata.extent).get
+                targetMapTransform(resampleTargetBounds).intersection(rdd.metadata.extent).get
 
               val md = rdd.metadata.copy(
                 layout = targetLayoutDefinition,
-                bounds = resampleKeyBounds.setSpatialBounds(resampleGridBounds),
+                bounds = resampleKeyBounds.setSpatialBounds(resampleTargetBounds),
                 extent = extent
               )
 

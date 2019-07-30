@@ -39,8 +39,8 @@ class NearestNeighborResampleSpec extends FunSpec with Matchers with TestFiles {
       IntArrayTile(a, cols, rows)
     }
 
-    def resample[N: Integral](tile: Tile, srcExtent: Extent, resampleGrid: ResampleGrid[N]) =
-      tile.resample(srcExtent, resampleGrid, NearestNeighbor)
+    def resample[N: Integral](tile: Tile, srcExtent: Extent, resampleTarget: ResampleTarget[N]) =
+      tile.resample(srcExtent, resampleTarget, NearestNeighbor)
 
     it("should noop resample") {
       val dst = src

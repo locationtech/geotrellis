@@ -27,17 +27,7 @@ import spire.math.Integral
 
 abstract class ProjectedRasterReprojectMethods[T <: CellGrid[Int]](val self: ProjectedRaster[T]) extends MethodExtensions[ProjectedRaster[T]] {
 
-  def reproject[N: Integral](dest: CRS, resampleGrid: ResampleGrid[N])(implicit ev: Raster[T] => RasterReprojectMethods[Raster[T]]): ProjectedRaster[T] =
-    ProjectedRaster(self.raster.reproject(self.crs, dest, resampleGrid), dest)
+  def reproject[N: Integral](dest: CRS, resampleTarget: Option[ResampleTarget[N]])(implicit ev: Raster[T] => RasterReprojectMethods[Raster[T]]): ProjectedRaster[T] =
+    ProjectedRaster(self.raster.reproject(self.crs, dest, resampleTarget), dest)
 
-  def regionReproject[N: Integral](dest: CRS, rasterExtent: RasterExtent, resampleMethod: ResampleMethod)
-               (implicit ev: RasterRegionReproject[T]): ProjectedRaster[T] = {
-    ProjectedRaster(
-      raster = ev.regionReproject(
-        self.raster, self.crs, dest, rasterExtent,
-        self.projectedExtent.reprojectAsPolygon(dest, 0.005),
-        resampleMethod),
-      crs = dest
-    )
-  }
 }
