@@ -63,7 +63,7 @@ class SinglebandGeoTiffSpec extends FunSpec with Matchers with RasterMatchers wi
     it("should match tile-wise resample") {
       for { i <- 1 to 10 } {
         val ovr = tiff.buildOverview(NearestNeighbor, i)
-        val expectedTile = tiff.raster.resample(TargetRegion(ovr.rasterExtent), NearestNeighbor).tile
+        val expectedTile = tiff.raster.resample(TargetGridExtent(ovr.rasterExtent), NearestNeighbor).tile
 
         assertEqual(expectedTile, ovr.tile)
       }

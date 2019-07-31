@@ -113,7 +113,7 @@ class TileMergeMethodsSpec extends FunSpec
         val largerExtent = Extent(0.0, 0.0, 10.0, 10.0)
 
         val expected =
-          tile.resample(largerExtent, TargetRegion(RasterExtent(smallerExtent, 10, 10)))
+          tile.resample(largerExtent, TargetGridExtent(RasterExtent(smallerExtent, 10, 10)))
 
         val proto = tile.prototype(ct, tile.cols, tile.rows)
         val merged = proto.merge(smallerExtent, largerExtent, tile)
