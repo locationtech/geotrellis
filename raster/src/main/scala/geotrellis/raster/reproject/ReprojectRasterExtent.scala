@@ -47,7 +47,9 @@ object ReprojectRasterExtent {
       case Some(TargetCellSize(cs)) =>
         reprojectedGridForCellSize(cs, newExtent)
       case Some(target: ResampleTarget[N]) =>
-        target.fromExtent(newExtent)
+        val cols = Integral[N].fromDouble(newExtent.width / ge.cellSize.width + 0.5)
+        val rows = Integral[N].fromDouble(newExtent.height / ge.cellSize.height + 0.5)
+        target(new GridExtent(newExtent, cols, rows))
       case None =>
         val cs = cellSizeHeuristic(ge, newExtent)
         reprojectedGridForCellSize(cs, newExtent)

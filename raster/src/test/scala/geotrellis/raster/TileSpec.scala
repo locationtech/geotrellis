@@ -220,7 +220,7 @@ class TileSpec extends FunSpec
         9, 4)
       val ext = Extent(0.0, 0.0, 9.0, 4.0)
       val nre = RasterExtent(Extent(0.0, 1.0, 4.0, 4.0), 4, 3)
-      rd.resample(ext, TargetRegion(nre)).toArray should be (Array(1, 10, 100, 1000,
+      rd.resample(ext, TargetGridExtent(nre)).toArray should be (Array(1, 10, 100, 1000,
                                                 2, 20, 200, 2000,
                                                 3, 30, 300, 3000))
     }
@@ -235,7 +235,7 @@ class TileSpec extends FunSpec
       val ext = Extent(0.0, 0.0, 9.0, 4.0)
       val nre = RasterExtent(Extent(-1.0, 2.0, 3.0, 5.0), 1.0, 1.0, 4, 3)
       val nd = NODATA
-      rd.resample(ext, TargetRegion(nre)).toArray should be (Array(nd, nd, nd, nd,
+      rd.resample(ext, TargetGridExtent(nre)).toArray should be (Array(nd, nd, nd, nd,
                                                 nd, 1, 10, 100,
                                                 nd, 2, 20, 200))
     }
@@ -249,7 +249,7 @@ class TileSpec extends FunSpec
         9, 4)
       val ext = Extent(0.0, 0.0, 9.0, 4.0)
       val nre = RasterExtent(Extent(0.0, 1.0, 9.0, 4.0), 3, 3)
-      rd.resample(ext, TargetRegion(nre)).toArray should be (Array(10, -2, 2,
+      rd.resample(ext, TargetGridExtent(nre)).toArray should be (Array(10, -2, 2,
                                                 20, -2, 2,
                                                 30, -2, 2))
     }
