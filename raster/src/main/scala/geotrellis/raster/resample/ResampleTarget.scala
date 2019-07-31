@@ -18,15 +18,39 @@ package geotrellis.raster.resample
 
 import geotrellis.raster.{RasterExtent, GridExtent, GridBounds}
 import geotrellis.raster.CellSize
-import geotrellis.vector.Extent
+import geotrellis.vector._
+import geotrellis.vector.io.json._
 
 import spire.math.Integral
 import spire.implicits._
+import _root_.io.circe.Json
 
 /** Represents a strategy/target for resampling */
 sealed trait ResampleTarget[N] {
   /** Provided a gridextent, construct a new [[GridExtent]] that satisfies target constraint(s) */
   def apply(source: => GridExtent[N]): GridExtent[N]
+
+  /** Create a geojson representation of this transformation designed for display on [[geojson.io]]
+   *
+   *  @note extremely large grids (input or output) likely won't work well; this method is suitable
+   *  for double-checking intuitions about resampling behavior
+   */
+  def visualize(source: => GridExtent[N]): Json = {
+    val sourceXs = source.extent.xmin to source.extent.xmax by source.cellSize.width
+    val sourceYs = source.extent.ymin to source.extent.ymax by source.cellSize.height
+    val sourceCols = sourceXs.map { x => LineString(Point(x, source.extent.ymin), Point(x, source.extent.ymax)) }
+    val sourceRows = sourceYs.map { y => LineString(Point(source.extent.xmin, y), Point(source.extent.xmax, y)) }
+    val sourceMLS = Feature(MultiLineString(sourceCols ++ sourceRows), Map("type" -> "source", "stroke" -> "#FF0000"))
+
+    val target = apply(source)
+    val targetXs = target.extent.xmin to target.extent.xmax by target.cellSize.width
+    val targetYs = target.extent.ymin to target.extent.ymax by target.cellSize.height
+    val targetCols = targetXs.map { x => LineString(Point(x, target.extent.ymin), Point(x, target.extent.ymax)) }
+    val targetRows = targetYs.map { y => LineString(Point(target.extent.xmin, y), Point(target.extent.xmax, y)) }
+    val targetMLS = Feature(MultiLineString(targetCols ++ targetRows), Map("type" -> "resampled", "stroke" -> "#0000FF"))
+
+    JsonFeatureCollection(List(sourceMLS, targetMLS)).asJson
+  }
 }
 
 /** Resample, aiming for a specific number of cell columns/rows */
