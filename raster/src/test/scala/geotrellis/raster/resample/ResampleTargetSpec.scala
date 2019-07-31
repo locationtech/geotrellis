@@ -57,5 +57,4 @@ class ResampleTargetSpec extends FlatSpec with Matchers {
     ge.cols should be (10)
     target(ge).cols should be (9)
   }
-
 }
