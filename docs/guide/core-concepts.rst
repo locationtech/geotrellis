@@ -982,7 +982,7 @@ be used with both ``SpatialKey`` and ``SpaceTimeKey``.
     val oneD: Long = i0.toIndex(k) /* A SpatialKey's 2D coords mapped to 1D */
 
 Hilbert
-~~~~~~~
+^^^^^^^
 
 .. figure:: https://upload.wikimedia.org/wikipedia/commons/a/a5/Hilbert_curve.svg
    :alt:
@@ -1053,7 +1053,7 @@ dimensions. If those three integers sum to more than 62 bits, an error
 will be thrown at runtime.
 
 Row Major
-~~~~~~~~~
+^^^^^^^^^
 
 .. figure:: ./images/row-major.png
    :alt:
@@ -1674,10 +1674,10 @@ within the file. The two methods are: Striped and Tiled.
 Striped
 ^^^^^^^
 
-Striped storage breaks the image into segments of long, vertical bands
+Striped storage breaks the image into segments of long, horizontal bands
 that stretch the entire width of the picture. Contained within them are
 columns of bitmapped image data. If your GeoTiff file was created before
-the realse of Tiff 6.0, then this is the data storage method in which it
+the release of Tiff 6.0, then this is the data storage method in which it
 most likely uses.
 
 If an image has strip storage, then its corresponding file directory
@@ -1691,7 +1691,7 @@ starts within the file. The last tag, ``ByteSegmentCount``, is also an
 array of values that contains the size of each strip in terms of Bytes.
 
 Tiled
-~~~~~
+^^^^^
 
 Tiff 6.0 introduced a new way to arrange and store data within a Tiff,
 tiled storage. These rectangular segments have both a height and a width
@@ -1720,8 +1720,8 @@ your Y value.
 
 The other method is to use the grid coordinate system. This technique of
 measurement uses Cols and Rows to describe the relative location of
-things. Cols run east to west whereas Rows run north to south. This then
-means that Cols increase as you go east to west, and rows increase as
+things. Cols run west to east whereas Rows run north to south. This then
+means that Cols increase as you go west to east, and rows increase as
 you go north to south.
 
 Each (X, Y) pair corresponds to some real location on the planet. Cols and
@@ -1750,7 +1750,7 @@ Cloud Optimized GeoTiffs (COGs for short) are a nascent subset of GeoTiff
 meant to increase their expressiveness, ease of use, and portability through
 further standardization. We call these GeoTiffs "cloud optimized" because
 the features they add allow for remote access to GeoTiff that, with the help
-of HTTP GET range requests, access the parts of a tiff you're interested
+of HTTP GET range requests, access the parts of a tiff you're interested in
 without consuming large portions of the image which are irrelevant to your
 computation.
 
@@ -1768,6 +1768,7 @@ required features are necessary to even support remotely reading
 subsets of the overall image data from some remote Tiff.
 
 COG requirements:
+
 - Tiled storage of image data
 - Overviews at different levels of resolution
 - Infrastructure capable of handling GET Range requests
@@ -1782,13 +1783,15 @@ COG requirements:
     val resampleMethod: ResampleMethod = ???
     val fullCog = almostCog.withOverviews(resampleMethod)
 
-> A note on sidecar files
-> The spec seems to indicate that overviews be part of the GeoTiff itself to
-> count as a COG. In practice, things are messier than that. Content providers
-> aren't always going to want to rewrite their tiffs to stuff generated
-> overviews into them. The practical upshot of this is that separate overview
-> files should be supported (GDAL will actually inspect some canonical relative
-> paths within the directory of the Tiff being read).
+A note on sidecar files
+^^^^^^^^^^^^^^^^^^^^^^^
+
+The spec seems to indicate that overviews be part of the GeoTiff itself to
+count as a COG. In practice, things are messier than that. Content providers
+aren't always going to want to rewrite their tiffs to stuff generated
+overviews into them. The practical upshot of this is that separate overview
+files should be supported (GDAL will actually inspect some canonical relative
+paths within the directory of the Tiff being read).
 
 .. code-block:: scala
 
@@ -1799,7 +1802,7 @@ COG requirements:
     val tileWithOverview = mainTile.withOverviews(List(overview1, overview2))
 
 Structured vs Unstructured COGs
--------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Historically, Geotrellis layers have been backed by specially encoded Avro
 layers which are were designed to maximize the performance of distributed
@@ -1817,6 +1820,7 @@ GeoTrellis programs to infer information about underlying, individual COG files
 without having to read multiple of them.
 
 Structured COG metadata:
+
 - cellType: Underlying Tiff celltype (width of cell representation and NoData strategy)
 - zoomRangeInfos: A map from some range of supported zoom levels to a collection of key extents
 - layoutScheme: The scheme by which individual COG tiles are cut for this layer
