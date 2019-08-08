@@ -149,7 +149,7 @@ class GridExtent[@specialized(Int, Long) N: Integral](
 
   /**
     * Gets the GridBounds aligned with this RasterExtent that is the
-    * smallest subgrid of containing all points within the extent. The
+    * smallest subgrid containing all points within the extent. The
     * extent is considered inclusive on it's north and west borders,
     * exclusive on it's east and south borders.  See [[RasterExtent]]
     * for a discussion of grid and extent boundary concepts.
@@ -265,7 +265,7 @@ class GridExtent[@specialized(Int, Long) N: Integral](
     * This is true when the extent is evenly divided by cellheight and cellwidth.
     */
   def isGridExtentAligned(): Boolean = {
-    def isWhole(x: Double) = math.abs(math.floor(x) - x) < geotrellis.util.Constants.DOUBLE_EPSILON
+    def isWhole(x: Double) = math.abs(math.round(x) - x) < geotrellis.util.Constants.FLOAT_EPSILON
     isWhole((extent.xmax - extent.xmin) / cellwidth) && isWhole((extent.ymax - extent.ymin) / cellheight)
   }
 
