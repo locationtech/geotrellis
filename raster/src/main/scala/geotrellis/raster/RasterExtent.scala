@@ -73,6 +73,7 @@ case class RasterExtent(
   cols: Int,
   rows: Int
 ) extends GridExtent(extent, cellwidth, cellheight) with Grid {
+  import RasterExtent.floorWithTolerance
 
   if (cols <= 0) throw GeoAttrsError(s"invalid cols: $cols")
   if (rows <= 0) throw GeoAttrsError(s"invalid rows: $rows")
@@ -81,15 +82,15 @@ case class RasterExtent(
     * Convert map coordinates (x, y) to grid coordinates (col, row).
     */
   final def mapToGrid(x: Double, y: Double): (Int, Int) = {
-    val col = math.floor((x - extent.xmin) / cellwidth).toInt
-    val row = math.floor((extent.ymax - y) / cellheight).toInt
+    val col = floorWithTolerance((x - extent.xmin) / cellwidth).toInt
+    val row = floorWithTolerance((extent.ymax - y) / cellheight).toInt
     (col, row)
   }
 
   /**
     * Convert map coordinate x to grid coordinate column.
     */
-  final def mapXToGrid(x: Double): Int = math.floor(mapXToGridDouble(x)).toInt
+  final def mapXToGrid(x: Double): Int = floorWithTolerance(mapXToGridDouble(x)).toInt
 
   /**
     * Convert map coordinate x to grid coordinate column.
@@ -99,7 +100,7 @@ case class RasterExtent(
   /**
     * Convert map coordinate y to grid coordinate row.
     */
-  final def mapYToGrid(y: Double): Int = math.floor(mapYToGridDouble(y)).toInt
+  final def mapYToGrid(y: Double): Int = floorWithTolerance(mapYToGridDouble(y)).toInt
 
   /**
     * Convert map coordinate y to grid coordinate row.
@@ -171,13 +172,13 @@ case class RasterExtent(
     // contains the point.
     val colMax = {
       val colMaxDouble = mapXToGridDouble(subExtent.xmax)
-      if(math.abs(colMaxDouble - math.floor(colMaxDouble)) < RasterExtent.epsilon) colMaxDouble.toInt - 1
+      if(math.abs(colMaxDouble - floorWithTolerance(colMaxDouble)) < RasterExtent.epsilon) colMaxDouble.toInt - 1
       else colMaxDouble.toInt
     }
 
     val rowMax = {
       val rowMaxDouble = mapYToGridDouble(subExtent.ymin)
-      if(math.abs(rowMaxDouble - math.floor(rowMaxDouble)) < RasterExtent.epsilon) rowMaxDouble.toInt - 1
+      if(math.abs(rowMaxDouble - floorWithTolerance(rowMaxDouble)) < RasterExtent.epsilon) rowMaxDouble.toInt - 1
       else rowMaxDouble.toInt
     }
 
@@ -299,5 +300,18 @@ object RasterExtent {
     */
   def apply(extent: Extent, tile: CellGrid): RasterExtent =
     apply(extent, tile.cols, tile.rows)
+
+  /**
+    * The same logic is used in QGIS: https://github.com/qgis/QGIS/blob/607664c5a6b47c559ed39892e736322b64b3faa4/src/analysis/raster/qgsalignraster.cpp#L38
+    * The search query: https://github.com/qgis/QGIS/search?p=2&q=floor&type=&utf8=%E2%9C%93
+    *
+    * GDAL uses smth like that, however it was a bit hard to track it down:
+    * https://github.com/OSGeo/gdal/blob/7601a637dfd204948d00f4691c08f02eb7584de5/gdal/frmts/vrt/vrtsources.cpp#L215
+    * */
+  def floorWithTolerance(value: Double): Double = {
+    val roundedValue = math.round(value)
+    if (math.abs(value - roundedValue) < epsilon) roundedValue
+    else math.floor(value)
+  }
 }
 
