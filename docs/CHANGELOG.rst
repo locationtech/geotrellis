@@ -1,6 +1,15 @@
 Changelog
 =========
 
+2.3.2
+-----
+*2019 Aug 12*
+
+Fixes & Updates
+^^^^^^^^^^^^^^^
+
+- Fix map{X|Y}ToGrid function behavior that could give a bit incorrect results (`#3049 <https://github.com/locationtech/geotrellis/pull/3049>`_).
+
 2.3.1
 -----
 *2019 Apr 26*
