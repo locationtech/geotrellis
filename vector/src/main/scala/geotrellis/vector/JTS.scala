@@ -12,8 +12,8 @@ object JTS {
   object Point extends PointConstructors
   object LineString extends LineStringConstructors
   object Polygon extends PolygonConstructors
-  object MultiPoint extends PointConstructors
-  object MultiLineString extends LineStringConstructors
-  object MultiPolygon extends PolygonConstructors
+  object MultiPoint extends MultiPointConstructors
+  object MultiLineString extends MultiLineStringConstructors
+  object MultiPolygon extends MultiPolygonConstructors
   object GeometryCollection extends GeometryCollectionConstructors
 }
