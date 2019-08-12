@@ -16,9 +16,11 @@
 
 package geotrellis.layer
 
-import geotrellis.raster.CellGrid
+import geotrellis.raster.{CellGrid, RasterSource, ResampleMethod}
 import geotrellis.util._
 import java.time.Instant
+
+import geotrellis.raster.resample.NearestNeighbor
 import geotrellis.vector.io.json.CrsFormats
 
 
@@ -53,4 +55,19 @@ trait Implicits extends merge.Implicits
 
   implicit class withCellGridLayoutCollectionMethods[K: SpatialComponent, V <: CellGrid[Int], M: GetComponent[?, LayoutDefinition]](val self: Seq[(K, V)] with Metadata[M])
     extends CellGridLayoutCollectionMethods[K, V, M]
+
+  implicit class TileToLayoutOps(val self: RasterSource) {
+    def tileToLayout[K: SpatialComponent](
+      layout: LayoutDefinition,
+      tileKeyTransform: SpatialKey => K,
+      resampleMethod: ResampleMethod = NearestNeighbor
+    ): LayoutTileSource[K] =
+      LayoutTileSource(self.resampleToGrid(layout, resampleMethod), layout, tileKeyTransform)
+
+    def tileToLayout(layout: LayoutDefinition, resampleMethod: ResampleMethod): LayoutTileSource[SpatialKey] =
+      tileToLayout(layout, identity, resampleMethod)
+
+    def tileToLayout(layout: LayoutDefinition): LayoutTileSource[SpatialKey] =
+      tileToLayout(layout, NearestNeighbor)
+  }
 }

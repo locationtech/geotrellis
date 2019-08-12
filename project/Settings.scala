@@ -665,6 +665,7 @@ object Settings {
       scaffeine,
       uzaygezenCore,
       pureconfig,
+      scalactic,
       scalatest % Test
     ),
     initialCommands in console :=

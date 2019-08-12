@@ -16,10 +16,13 @@
 
 package geotrellis.raster
 
+import geotrellis.proj4.{CRS, Transform}
+import geotrellis.raster.reproject.Reproject.Options
+import geotrellis.raster.reproject.ReprojectRasterExtent
 import geotrellis.vector._
 
-import scala.math.{min, max, ceil}
-import spire.math.{Integral}
+import scala.math.{ceil, max, min}
+import spire.math.Integral
 import spire.implicits._
 
 /**
@@ -390,5 +393,19 @@ object GridExtent {
     val roundedValue = math.round(value)
     if (math.abs(value - roundedValue) < GridExtent.epsilon) roundedValue
     else math.floor(value)
+  }
+
+  implicit class gridExtentMethods[N: Integral](self: GridExtent[N]) {
+    def reproject(src: CRS, dest: CRS, options: Options): GridExtent[N] =
+      if(src == dest) self
+      else {
+        val transform = Transform(src, dest)
+        options
+          .targetRasterExtent
+          .map(_.toGridType[N])
+          .getOrElse(ReprojectRasterExtent(self, transform, options = options))
+      }
+
+    def reproject(src: CRS, dest: CRS): GridExtent[N] = reproject(src, dest, Options.DEFAULT)
   }
 }

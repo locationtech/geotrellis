@@ -117,4 +117,5 @@ object Dependencies {
   val scalapbRuntime      = "com.thesamet.scalapb"        %% "scalapb-runtime"         % scalapb.compiler.Version.scalapbVersion
 
   val squants             = "org.typelevel"               %% "squants"                 % "1.4.0"
+  val scalactic           = "org.scalactic"               %% "scalactic"               % "3.0.8"
 }
