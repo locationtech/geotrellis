@@ -78,7 +78,8 @@ lazy val commonSettings = Seq(
   shellPrompt := { s => Project.extract(s).currentProject.id + " > " },
   resolvers ++= Seq(
     "geosolutions" at "http://maven.geo-solutions.it/",
-    "osgeo" at "http://download.osgeo.org/webdav/geotools/"
+    "osgeo" at "http://download.osgeo.org/webdav/geotools/",
+    "locationtech-snapshots" at "https://repo.locationtech.org/content/repositories/snapshots/"
   ),
   headerLicense := Some(HeaderLicense.ALv2("2018", "Azavea")),
   // preserve year of old headers

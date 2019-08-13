@@ -157,7 +157,8 @@ object Settings {
       Repositories.osgeo,
       Repositories.boundlessgeo,
       DefaultMavenRepository,
-      Repositories.ivy2Local
+      Repositories.ivy2Local,
+      Repositories.locationtechSnapshots
     ),
     initialCommands in console :=
       """
