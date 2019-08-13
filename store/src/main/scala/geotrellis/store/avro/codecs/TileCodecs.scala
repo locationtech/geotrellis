@@ -359,6 +359,36 @@ trait TileCodecs {
       ArrayMultibandTile(bands)
     }
   }
+
+  implicit def paddedTileCodec: AvroRecordCodec[PaddedTile] = new AvroRecordCodec[PaddedTile] {
+    def schema = SchemaBuilder
+      .record("PaddedTile").namespace("geotrellis.raster")
+      .fields()
+      .name("chunk").`type`(simpleTileUnionCodec.schema).noDefault()
+      .name("colOffset").`type`().intType().noDefault()
+      .name("rowOffset").`type`().intType().noDefault()
+      .name("cols").`type`().intType().noDefault()
+      .name("rows").`type`().intType().noDefault()
+      .endRecord()
+
+    def encode(tile: PaddedTile, rec: GenericRecord) = {
+      rec.put("chunk", simpleTileUnionCodec.encode(tile.chunk))
+      rec.put("colOffset", tile.colOffset)
+      rec.put("rowOffset", tile.rowOffset)
+      rec.put("cols", tile.cols)
+      rec.put("rows", tile.rows)
+    }
+
+    def decode(rec: GenericRecord) = {
+      val chunk     = simpleTileUnionCodec.decode(rec[GenericRecord]("chunk"))
+      val colOffset = rec[Int]("colOffset")
+      val rowOffset = rec[Int]("rowOffset")
+      val cols      = rec[Int]("cols")
+      val rows      = rec[Int]("rows")
+
+      PaddedTile(chunk, colOffset, rowOffset, cols, rows)
+    }
+  }
 }
 
 object TileCodecs extends TileCodecs

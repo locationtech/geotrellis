@@ -113,4 +113,21 @@ class TileCodecsSpec extends FunSpec with Matchers with AvroTools  {
       roundTripWithNoDataCheck(thing)
     }
   }
+
+  describe("PaddedTileCodecs") {
+    it("encode PaddedTile") {
+      roundTrip(PaddedTile(ByteArrayTile.fill(127,10,15), 0, 0, 10, 15))
+    }
+
+    it("encode multiband PaddedTile"){
+      val tile = MultibandTile(
+        ByteArrayTile.fill(127,10,15),
+        ByteArrayTile.fill(100,10,15),
+        ByteArrayTile.fill(50,10,15)
+      )
+      val ptile = tile.mapBands((_, tile) => PaddedTile(tile, 0, 0, 10, 15))
+
+      roundTrip(ptile)
+    }
+  }
 }
