@@ -84,9 +84,9 @@ the ``libraryDependencies`` list in your ``build.sbt``:
 .. code:: scala
 
     libraryDependencies ++= Seq(
-        "org.locationtech.geotrellis" %% "geotrellis-spark"  % "1.0.0",
-        "org.locationtech.geotrellis" %% "geotrellis-s3"     % "1.0.0", // now we can use Amazon S3!
-        "org.apache.spark"            %% "spark-core"        % "2.1.0" % "provided",
+        "org.locationtech.geotrellis" %% "geotrellis-spark"  % "2.3.1",
+        "org.locationtech.geotrellis" %% "geotrellis-s3"     % "2.3.1", // now we can use Amazon S3!
+        "org.apache.spark"            %% "spark-core"        % "2.4.1" % "provided",
         "org.scalatest"               %% "scalatest"         % "3.0.0" % "test"
     )
 
