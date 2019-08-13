@@ -118,4 +118,5 @@ object Dependencies {
 
   val squants             = "org.typelevel"               %% "squants"                 % "1.4.0"
   val scalactic           = "org.scalactic"               %% "scalactic"               % "3.0.8"
+  val scalaURI            = "io.lemonlabs"                %% "scala-uri"               % "1.4.10"
 }

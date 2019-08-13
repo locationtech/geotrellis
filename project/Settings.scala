@@ -414,6 +414,7 @@ object Settings {
       monocleCore,
       monocleMacro,
       scalaXml,
+      scalaURI,
       scalatest % Test,
       scalacheck % Test
     ),
