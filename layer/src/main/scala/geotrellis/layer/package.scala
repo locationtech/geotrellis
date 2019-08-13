@@ -16,16 +16,13 @@
 
 package geotrellis
 
-
-import geotrellis.layer.{KeyBounds, MapKeyTransform}
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.vector.Extent
 import geotrellis.proj4._
 import geotrellis.util._
-import org.locationtech.proj4j.UnsupportedParameterException
 
-import scala.util.{Failure, Success, Try}
+import org.locationtech.proj4j.UnsupportedParameterException
 
 package object layer extends Implicits {
   type TileBounds = GridBounds[Int]

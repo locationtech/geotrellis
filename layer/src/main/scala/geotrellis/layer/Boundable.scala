@@ -16,6 +16,9 @@
 
 package geotrellis.layer
 
+import jp.ne.opt.chronoscala.Imports._
+import java.time.ZonedDateTime
+
 /** This type class marks K as point that can be bounded in space.
   * It is used to construct bounding hypercube for a set of Ks.
   *
@@ -59,5 +62,17 @@ trait Boundable[K] extends Serializable {
 
   def intersects(b1: KeyBounds[K], b2: KeyBounds[K]): Boolean = {
     intersect(b1,b2).isDefined
+  }
+}
+
+object Boundable {
+  implicit val zonedDateTimeBoundable = new Boundable[ZonedDateTime] {
+    def minBound(p1: ZonedDateTime, p2: ZonedDateTime): ZonedDateTime = if(p1 <= p2) p1 else p2
+    def maxBound(p1: ZonedDateTime, p2: ZonedDateTime): ZonedDateTime = if(p1 > p2) p1 else p2
+  }
+
+  implicit val unitBoundable = new Boundable[Unit] {
+    def minBound(p1: Unit, p2: Unit): Unit = p1
+    def maxBound(p1: Unit, p2: Unit): Unit = p1
   }
 }
