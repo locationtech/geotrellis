@@ -238,8 +238,15 @@ case class Extent(
     intersection(other)
 
   /** Create a new extent using a buffer around this extent */
-  def buffer(d: Double): Extent =
-    Extent(xmin - d, ymin - d, xmax + d, ymax + d)
+  def buffer(d: Double): Extent = buffer(d, d)
+
+  def buffer(width: Double, height: Double): Extent =
+    Extent(
+      xmin = this.xmin - width,
+      ymin = this.ymin - height,
+      xmax = this.xmax + width,
+      ymax = this.ymax + height
+    )
 
   /** Orders two bounding boxes by their (geographically) lower-left corner. The bounding box
     * that is further south (or west in the case of a tie) comes first.

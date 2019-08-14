@@ -53,3 +53,5 @@ derby.log
 metastore_db/
 *.log
 
+spark/src/test/resources/vlm/*catalog*
+

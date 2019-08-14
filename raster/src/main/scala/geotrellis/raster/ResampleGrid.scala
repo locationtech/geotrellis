@@ -53,7 +53,7 @@ case object IdentityResampleGrid extends ResampleGrid[Long] {
 
 object ResampleGrid {
   /** Used when reprojecting to original RasterSource CRS, pick-out the grid */
-  private[raster] def fromReprojectOptions(options: Reproject.Options): ResampleGrid[Long] ={
+  private[geotrellis] def fromReprojectOptions(options: Reproject.Options): ResampleGrid[Long] ={
     if (options.targetRasterExtent.isDefined) {
       TargetRegion(options.targetRasterExtent.get.toGridType[Long])
     } else if (options.parentGridExtent.isDefined) {
@@ -66,7 +66,7 @@ object ResampleGrid {
   }
 
   /** Used when resampling on already reprojected RasterSource */
-  private[raster] def toReprojectOptions[N: Integral](
+  private[geotrellis] def toReprojectOptions[N: Integral](
     current: GridExtent[Long],
     resampleGrid: ResampleGrid[N],
     resampleMethod: ResampleMethod
