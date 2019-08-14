@@ -26,7 +26,7 @@ import geotrellis.raster.resample.NearestNeighbor
 import geotrellis.store._
 import geotrellis.vector.Extent
 
-import org.scalatest.{FunSpec, GivenWhenThen}
+import org.scalatest._
 
 class GeoTrellisRasterSourceSpec extends FunSpec with RasterMatchers with GivenWhenThen with CatalogTestEnvironment {
   val layerId = LayerId("landsat", 0)

@@ -36,7 +36,7 @@ class GeoTiffReprojectRasterSourceSpec extends FunSpec with RasterMatchers with 
   }
 
   describe("Reprojecting a RasterSource") {
-    lazy val uri = rasterGeoTiffPath("/aspect-tiled.tif")
+    lazy val uri = rasterGeoTiffPath("vlm/aspect-tiled.tif")
 
     lazy val rasterSource = GeoTiffRasterSource(uri)
     lazy val sourceTiff = GeoTiffReader.readMultiband(uri)

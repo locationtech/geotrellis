@@ -27,4 +27,5 @@
 ./sbt "project hbase" publishLocal && \
 ./sbt "project hbase-spark" publishLocal && \
 ./sbt "project s3" publishLocal && \
-./sbt "project s3-spark" publishLocal
+./sbt "project s3-spark" publishLocal && \
+./sbt "project gdal" publishLocal

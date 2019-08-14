@@ -43,7 +43,7 @@ class GDALRasterSourceRDDSpec extends FunSpec with TestEnvironment with BeforeAn
   import geotrellis.GDALTestUtils._
 
   val uri = gdalGeoTiffPath("vlm/aspect-tiled.tif")
-  def filePathByIndex(i: Int): String = sparkGeoTiffPath("vlm/aspect-tiled-$i.tif")
+  def filePathByIndex(i: Int): String = sparkGeoTiffPath(s"vlm/aspect-tiled-$i.tif")
   lazy val rasterSource = GeoTiffRasterSource(uri)
   val targetCRS = CRS.fromEpsgCode(3857)
   val scheme = ZoomedLayoutScheme(targetCRS)

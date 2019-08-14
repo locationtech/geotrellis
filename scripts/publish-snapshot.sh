@@ -23,4 +23,5 @@
       "project util" publish \
       "project vector" publish \
       "project vector-testkit" publish \
-      "project vectortile" publish
+      "project vectortile" publish \
+      "project gdal" publish

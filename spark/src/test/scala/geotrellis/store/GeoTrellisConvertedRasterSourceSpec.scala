@@ -35,7 +35,7 @@ class GeoTrellisConvertedRasterSourceSpec extends FunSpec with RasterMatchers wi
       .raster
 
   describe("Converting to a different CellType") {
-    val targetExtent = expectedRaster.extent
+    lazy val targetExtent = expectedRaster.extent
 
     lazy val expectedTile: MultibandTile = expectedRaster.tile
 
@@ -211,11 +211,9 @@ class GeoTrellisConvertedRasterSourceSpec extends FunSpec with RasterMatchers wi
   }
 
   describe("Chaining together operations") {
-    val targetCellType = DoubleConstantNoDataCellType
-
-    val targetExtent = expectedRaster.extent.reproject(source.crs, WebMercator)
-
-    val expectedTile: MultibandTile = expectedRaster.tile
+    lazy val targetCellType = DoubleConstantNoDataCellType
+    lazy val targetExtent = expectedRaster.extent.reproject(source.crs, WebMercator)
+    lazy val expectedTile: MultibandTile = expectedRaster.tile
 
     it("should have the correct CellType after reproject") {
       val actual = source.convert(targetCellType).reproject(WebMercator).read(targetExtent).get.cellType
