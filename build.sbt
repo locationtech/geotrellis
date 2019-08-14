@@ -310,7 +310,7 @@ lazy val bench = project
   .settings(Settings.bench)
 
 lazy val layer = project
-  .dependsOn(raster)
+  .dependsOn(raster, `raster-testkit` % Test)
   .settings(commonSettings)
   .settings(Settings.layer)
 

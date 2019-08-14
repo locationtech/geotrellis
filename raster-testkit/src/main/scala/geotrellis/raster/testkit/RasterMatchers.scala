@@ -21,16 +21,18 @@ import geotrellis.raster._
 import geotrellis.raster.io.geotiff.GeoTiff
 import geotrellis.raster.render.ascii.AsciiArtEncoder
 import geotrellis.raster.render.png.{PngColorEncoding, RgbaPngEncoding}
-
 import spire.implicits.cfor
 import spire.math.Integral
-
 import org.scalatest._
 import org.scalatest.matchers.{HavePropertyMatchResult, HavePropertyMatcher}
 import org.scalatest.tools.BetterPrinters
 
 import scala.reflect.ClassTag
 import java.nio.file.{Files, Paths}
+
+import geotrellis.vector.Extent
+
+import scala.util.Random
 
 trait RasterMatchers extends Matchers {
   import RasterMatchers._
@@ -350,6 +352,21 @@ trait RasterMatchers extends Matchers {
     outputDir: Option[String] = None
   ): Raster[MultibandTile] =
     raster.mapTile(writePngOutputTile(_, colorEncoding, band, name, discriminator, outputDir))
+
+  def randomExtentWithin(extent: Extent, sampleScale: Double = 0.10): Extent = {
+    assert(sampleScale > 0 && sampleScale <= 1)
+    val extentWidth = extent.xmax - extent.xmin
+    val extentHeight = extent.ymax - extent.ymin
+
+    val sampleWidth = extentWidth * sampleScale
+    val sampleHeight = extentHeight * sampleScale
+
+    val testRandom = Random.nextDouble()
+    val subsetXMin = (testRandom * (extentWidth - sampleWidth)) + extent.xmin
+    val subsetYMin = (Random.nextDouble() * (extentHeight - sampleHeight)) + extent.ymin
+
+    Extent(subsetXMin, subsetYMin, subsetXMin + sampleWidth, subsetYMin + sampleHeight)
+  }
 }
 
 

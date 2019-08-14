@@ -24,7 +24,7 @@ import geotrellis.util._
 
 import org.locationtech.proj4j.UnsupportedParameterException
 
-package object layer extends Implicits {
+package object layer extends layer.Implicits {
   type TileBounds = GridBounds[Int]
   type SpatialComponent[K] = Component[K, SpatialKey]
   type TemporalComponent[K] = Component[K, TemporalKey]
