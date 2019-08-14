@@ -16,8 +16,6 @@
 
 package geotrellis.raster.geotiff
 
-import geotrellis.raster.RasterSource
-
 import org.scalatest._
 
 class GeoTiffRasterSourceProviderSpec extends FunSpec {
@@ -42,10 +40,6 @@ class GeoTiffRasterSourceProviderSpec extends FunSpec {
 
     it("should not be able to process a GDAL prefixed path") {
       assert(!provider.canProcess("gdal+file:///tmp/temp-file.tif"))
-    }
-
-    it("should produce a GeoTiffRasterSource from a string") {
-      assert(RasterSource("file://dumping-ground/part-2/random/file.tiff").isInstanceOf[GeoTiffRasterSource])
     }
   }
 }

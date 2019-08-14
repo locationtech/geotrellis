@@ -26,12 +26,12 @@ import geotrellis.vector._
 import org.scalatest._
 
 class GeoTiffRasterSourceSpec extends FunSpec with RasterMatchers with GivenWhenThen with GeoTiffTestUtils {
-  lazy val url = s"$baseDataPath/vlm/aspect-tiled.tif"
+  lazy val url = baseGeoTiffPath("vlm/aspect-tiled.tif")
 
   lazy val source: GeoTiffRasterSource = GeoTiffRasterSource(url)
 
   it("should convert celltypes correctly") {
-    val rs = GeoTiffRasterSource(s"$baseDataPath/vlm/0_to_99.tif")
+    val rs = GeoTiffRasterSource(baseGeoTiffPath("vlm/0_to_99.tif"))
     val raster = rs.read(Extent(1,1,100,100)).get
     val interpreted = rs.interpretAs(IntUserDefinedNoDataCellType(0)).read(Extent(1,1,100,100)).get
     interpreted.tile.band(0).get(0,0) should be (Int.MinValue)

@@ -19,9 +19,8 @@ package geotrellis.raster.geotiff
 import geotrellis.raster.{RasterSource, RasterSourceProvider}
 
 class GeoTiffRasterSourceProvider extends RasterSourceProvider {
-  def canProcess(path: String): Boolean = {
+  def canProcess(path: String): Boolean =
     (!path.startsWith("gt+") && !path.startsWith("gdal+")) && path.nonEmpty && GeoTiffPath.parseOption(path).nonEmpty
-  }
 
   def rasterSource(path: String): RasterSource = GeoTiffRasterSource(path)
 }

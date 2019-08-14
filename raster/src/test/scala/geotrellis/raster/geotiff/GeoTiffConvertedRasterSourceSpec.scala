@@ -22,10 +22,11 @@ import geotrellis.raster.io.geotiff.GeoTiffTestUtils
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.raster.testkit._
 import geotrellis.vector._
+
 import org.scalatest._
 
 class GeoTiffConvertedRasterSourceSpec extends FunSpec with RasterMatchers with GeoTiffTestUtils with GivenWhenThen {
-  lazy val url = s"$baseDataPath/vlm/aspect-tiled.tif"
+  lazy val url = baseGeoTiffPath("vlm/aspect-tiled.tif")
 
   lazy val source: GeoTiffRasterSource = GeoTiffRasterSource(url)
 
@@ -36,8 +37,6 @@ class GeoTiffConvertedRasterSourceSpec extends FunSpec with RasterMatchers with 
 
   describe("Converting to a different CellType") {
     lazy val targetExtent = expectedRaster.extent
-
-    lazy val expectedTile: MultibandTile = expectedRaster.tile
 
     describe("Bit CellType") {
       it("should convert to: ByteCellType") {

@@ -20,14 +20,15 @@ import geotrellis.raster._
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.raster.resample._
 import geotrellis.raster.reproject._
-import geotrellis.raster.testkit.{RasterMatchers, Resource}
+import geotrellis.raster.testkit.RasterMatchers
 import geotrellis.proj4._
 import geotrellis.raster.io.geotiff.GeoTiffTestUtils
+
 import org.scalatest._
 
 class GeoTiffReprojectRasterSourceSpec extends FunSpec with RasterMatchers with GivenWhenThen with GeoTiffTestUtils {
   describe("Reprojecting a RasterSource") {
-    lazy val uri = s"$baseDataPath/vlm/aspect-tiled.tif"
+    lazy val uri = baseGeoTiffPath("vlm/aspect-tiled.tif")
 
     lazy val rasterSource = GeoTiffRasterSource(uri)
     lazy val sourceTiff = GeoTiffReader.readMultiband(uri)

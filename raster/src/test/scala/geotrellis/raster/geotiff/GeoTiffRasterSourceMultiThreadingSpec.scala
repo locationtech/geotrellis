@@ -30,7 +30,7 @@ import org.scalatest._
 import scala.concurrent.{ExecutionContext, Future}
 
 class GeoTiffRasterSourceMultiThreadingSpec extends AsyncFunSpec with GeoTiffTestUtils {
-  val url = s"$baseDataPath/vlm/aspect-tiled.tif"
+  lazy val url = baseGeoTiffPath("vlm/aspect-tiled.tif")
   val source = GeoTiffRasterSource(url)
 
   implicit val ec = ExecutionContext.global
