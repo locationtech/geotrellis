@@ -16,6 +16,8 @@
 
 package geotrellis.raster.geotiff
 
+import java.io.File
+
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.raster.resample._
@@ -23,12 +25,18 @@ import geotrellis.raster.reproject._
 import geotrellis.raster.testkit.RasterMatchers
 import geotrellis.proj4._
 import geotrellis.raster.io.geotiff.GeoTiffTestUtils
-
 import org.scalatest._
 
-class GeoTiffReprojectRasterSourceSpec extends FunSpec with RasterMatchers with GivenWhenThen with GeoTiffTestUtils {
+class GeoTiffReprojectRasterSourceSpec extends FunSpec with RasterMatchers with GivenWhenThen {
+  def rasterGeoTiffPath(name: String): String = {
+    def baseDataPath = "raster/data"
+    val path = s"$baseDataPath/$name"
+    require(new File(path).exists, s"$path does not exist, unzip the archive?")
+    path
+  }
+
   describe("Reprojecting a RasterSource") {
-    lazy val uri = baseGeoTiffPath("vlm/aspect-tiled.tif")
+    lazy val uri = rasterGeoTiffPath("/aspect-tiled.tif")
 
     lazy val rasterSource = GeoTiffRasterSource(uri)
     lazy val sourceTiff = GeoTiffReader.readMultiband(uri)

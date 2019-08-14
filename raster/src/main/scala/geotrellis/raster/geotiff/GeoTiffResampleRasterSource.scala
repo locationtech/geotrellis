@@ -61,7 +61,7 @@ case class GeoTiffResampleRasterSource(
     }
   }
 
-  @transient protected lazy val closestTiffOverview: GeoTiff[MultibandTile] =
+  @transient private[raster] lazy val closestTiffOverview: GeoTiff[MultibandTile] =
     tiff.getClosestOverview(gridExtent.cellSize, strategy)
 
   def reprojection(targetCRS: CRS, resampleGrid: ResampleGrid[Long] = IdentityResampleGrid, method: ResampleMethod = NearestNeighbor, strategy: OverviewStrategy = AutoHigherResolution): GeoTiffReprojectRasterSource =
