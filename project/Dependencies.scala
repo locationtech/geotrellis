@@ -119,4 +119,12 @@ object Dependencies {
   val squants             = "org.typelevel"               %% "squants"                 % "1.4.0"
   val scalactic           = "org.scalactic"               %% "scalactic"               % "3.0.8"
   val scalaURI            = "io.lemonlabs"                %% "scala-uri"               % "1.4.10"
+
+  val gdalBindings        = "org.gdal"                     % "gdal"                    % Version.gdal
+  val gdalWarp            = "com.azavea.gdal"              % "gdal-warp-bindings"      % Version.gdalWarp
+
+  val jacksonCore         = "com.fasterxml.jackson.core"    % "jackson-core"             % "2.6.7"
+  val jacksonDatabind     = "com.fasterxml.jackson.core"    % "jackson-databind"         % "2.6.7"
+  val jacksonAnnotations  = "com.fasterxml.jackson.core"    % "jackson-annotations"      % "2.6.7"
+  val jacksonModuleScala  = "com.fasterxml.jackson.module" %% "jackson-module-scala"     % "2.6.7"
 }

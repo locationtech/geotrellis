@@ -105,8 +105,8 @@ lazy val commonSettings = Seq(
   updateOptions := updateOptions.value.withGigahorse(false)
 )
 
-lazy val root = Project("geotrellis", file(".")).
-  aggregate(
+lazy val root = Project("geotrellis", file("."))
+  .aggregate(
     `accumulo`,
     `accumulo-spark`,
     `cassandra`,
@@ -130,20 +130,13 @@ lazy val root = Project("geotrellis", file(".")).
     util,
     vector,
     `vector-testkit`,
-    vectortile
-  ).
-  settings(commonSettings: _*).
-  enablePlugins(ScalaUnidocPlugin).
-  settings(
-    initialCommands in console :=
-      """
-      import geotrellis.raster._
-      import geotrellis.vector._
-      import geotrellis.proj4._
-      import geotrellis.spark._
-      """
-  ).
-  settings(unidocProjectFilter in (ScalaUnidoc, unidoc) := inAnyProject -- inProjects(geowave))
+    vectortile,
+    gdal,
+    `gdal-spark`
+  )
+  .settings(commonSettings: _*)
+  .enablePlugins(ScalaUnidocPlugin)
+  .settings(unidocProjectFilter in (ScalaUnidoc, unidoc) := inAnyProject -- inProjects(geowave))
 
 lazy val macros = project
   .settings(commonSettings)
@@ -318,3 +311,14 @@ lazy val store = project
   .dependsOn(layer)
   .settings(commonSettings)
   .settings(Settings.store)
+
+lazy val gdal = project
+  .dependsOn(raster, `raster-testkit` % Test)
+  .settings(commonSettings)
+  .settings(Settings.gdal)
+
+lazy val `gdal-spark` = project
+  .dependsOn(gdal, spark, `spark-testkit` % Test)
+  .settings(commonSettings)
+  .settings(publish / skip := true) // at this point we need this project only for tests
+  .settings(Settings.`gdal-spark`)

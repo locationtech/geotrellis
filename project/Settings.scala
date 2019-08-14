@@ -700,4 +700,44 @@ object Settings {
       scalatest % Test
     )
   )
+  
+  lazy val gdal = Seq(
+    name := "geotrellis-gdal",
+    libraryDependencies ++= Seq(
+      gdalWarp,
+      scalatest % Test,
+      gdalBindings % Test
+    ),
+    Test / fork := true,
+    Test / parallelExecution := false,
+    Test / testOptions += Tests.Argument("-oDF"),
+    javaOptions ++= Seq("-Djava.library.path=/usr/local/lib")
+  )
+
+  lazy val `gdal-spark` = Seq(
+    name := "geotrellis-gdal-spark",
+    libraryDependencies ++= Seq(
+      gdalWarp,
+      sparkCore % Provided,
+      sparkSQL % Test,
+      scalatest % Test
+    ),
+    // caused by the AWS SDK v2
+    dependencyOverrides ++= {
+      val deps = Seq(
+        jacksonCore,
+        jacksonDatabind,
+        jacksonAnnotations
+      )
+      CrossVersion.partialVersion(scalaVersion.value) match {
+        // if Scala 2.12+ is used
+        case Some((2, scalaMajor)) if scalaMajor >= 12 => deps
+        case _ => deps :+ jacksonModuleScala
+      }
+    },
+    Test / fork := true,
+    Test / parallelExecution := false,
+    Test / testOptions += Tests.Argument("-oDF"),
+    javaOptions ++= Seq("-Djava.library.path=/usr/local/lib")
+  )
 }
