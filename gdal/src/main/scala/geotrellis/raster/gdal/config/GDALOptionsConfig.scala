@@ -51,6 +51,6 @@ object GDALOptionsConfig extends Serializable {
   def setRegistryOptions: Unit = optionsRegistry.foreach { case (key, value) => GDALWarp.set_config_option(key, value) }
   def setOptions: Unit = { conf.set; setRegistryOptions }
 
-  lazy val conf: GDALOptionsConfig = pureconfig.loadConfigOrThrow[GDALOptionsConfig]("vlm.gdal")
+  lazy val conf: GDALOptionsConfig = pureconfig.loadConfigOrThrow[GDALOptionsConfig]("raster.gdal")
   implicit def gdalOptionsConfig(obj: GDALOptionsConfig.type): GDALOptionsConfig = conf
 }

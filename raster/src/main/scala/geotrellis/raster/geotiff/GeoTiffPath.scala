@@ -38,7 +38,10 @@ import java.net.MalformedURLException
  *
  *  @note Capitalization of the extension is not regarded.
  */
-case class GeoTiffPath(value: String) extends SourcePath
+case class GeoTiffPath(value: String) extends SourcePath {
+  /** Function that points to the file with external overviews. */
+  def externalOverviews: String = s"$value.ovr"
+}
 
 object GeoTiffPath {
   val PREFIX = "gtiff+"

@@ -38,7 +38,13 @@ case class GeoTiffReprojectRasterSource(
   def name: GeoTiffPath = dataPath
 
   @transient lazy val tiff: MultibandGeoTiff =
-    Option(baseTiff).flatten.getOrElse(GeoTiffReader.readMultiband(RangeReader(dataPath.value), streaming = true))
+    Option(baseTiff)
+      .flatten
+      .getOrElse(GeoTiffReader.readMultiband(
+        RangeReader(dataPath.value),
+        streaming = true, withOverviews = true,
+        RangeReader.option(dataPath.externalOverviews)
+      ))
 
   def bandCount: Int = tiff.bandCount
   def cellType: CellType = dstCellType.getOrElse(tiff.cellType)
