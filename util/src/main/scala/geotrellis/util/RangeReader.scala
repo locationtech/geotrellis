@@ -64,7 +64,8 @@ object RangeReader {
 
   def apply(uri: String): RangeReader = apply(new URI(uri))
 
-  def option(uri: URI): Option[RangeReader] = Try(apply(uri)).toOption
+  /** This function checks if the source is valid, by trying to read the first byte of the data. */
+  def validated(uri: URI): Option[RangeReader] = Try { apply(uri).readRange(0, 1); apply(uri) }.toOption
 
-  def option(uri: String): Option[RangeReader] = option(new URI(uri))
+  def validated(uri: String): Option[RangeReader] = validated(new URI(uri))
 }

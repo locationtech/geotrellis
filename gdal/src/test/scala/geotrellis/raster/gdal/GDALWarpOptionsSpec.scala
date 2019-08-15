@@ -52,11 +52,9 @@ class GDALWarpOptionsSpec extends FunSpec with RasterMatchers with GivenWhenThen
       targetCRS = None
     )
 
-  def rasterSourceFromUriOptions(uri: String, options: GDALWarpOptions) = {
-    GDALRasterSource(uri, options)
-  }
+  def rasterSourceFromUriOptions(uri: String, options: GDALWarpOptions): GDALRasterSource = GDALRasterSource(uri, options)
 
-  def dsreprojectOpt(uri: String) = {
+  def dsreprojectOpt(uri: String): GDALRasterSource = {
     val opts =
       GDALWarpOptions
         .EMPTY
@@ -69,7 +67,7 @@ class GDALWarpOptionsSpec extends FunSpec with RasterMatchers with GivenWhenThen
     rasterSourceFromUriOptions(uri, opts)
   }
 
-  def dsresampleOpt(uri: String) = {
+  def dsresampleOpt(uri: String): GDALRasterSource = {
     val opts =
       GDALWarpOptions
         .EMPTY
@@ -99,11 +97,10 @@ class GDALWarpOptionsSpec extends FunSpec with RasterMatchers with GivenWhenThen
         math.min(x1, x2),
         math.min(y1, y2),
         math.max(x1, x2),
-        math.max(y1, y2))
+        math.max(y1, y2)
+      )
 
-      RasterExtent(e,
-        math.abs(transform(1)), math.abs(transform(5)),
-        width, height)
+      RasterExtent(e, math.abs(transform(1)), math.abs(transform(5)), width, height)
     }
 
     it("optimized transformation should behave in a same way as a list of warp applications") {
@@ -112,17 +109,21 @@ class GDALWarpOptionsSpec extends FunSpec with RasterMatchers with GivenWhenThen
       val optimizedReproject = dsreprojectOpt(base)
       val optimizedResample = dsresampleOpt(base)
 
-      val (originalReproject, originalResample) = {
-        val reprojectWarpAppOptions = new WarpOptions(new java.util.Vector(reprojectOptions.toWarpOptionsList.asJava)) // This is probably a leak
-        val resampleWarpAppOptions = new WarpOptions(new java.util.Vector(resampleOptions.toWarpOptionsList.asJava)) // So is this
-        val underlying = org.gdal.gdal.gdal.Open(filePath, org.gdal.gdalconst.gdalconstConstants.GA_ReadOnly)
-        val originalReproject = org.gdal.gdal.gdal.Warp("/dev/null", Array(underlying), reprojectWarpAppOptions)
-        val originalResample = org.gdal.gdal.gdal.Warp("/dev/null", Array(originalReproject), resampleWarpAppOptions)
-        (originalReproject, originalResample)
-      }
+      val reprojectWarpAppOptions = new WarpOptions(new java.util.Vector(reprojectOptions.toWarpOptionsList.asJava))
+      val resampleWarpAppOptions = new WarpOptions(new java.util.Vector(resampleOptions.toWarpOptionsList.asJava))
+      val underlying = org.gdal.gdal.gdal.Open(filePath, org.gdal.gdalconst.gdalconstConstants.GA_ReadOnly)
+      val originalReproject = org.gdal.gdal.gdal.Warp("/dev/null", Array(underlying), reprojectWarpAppOptions)
+      val originalResample = org.gdal.gdal.gdal.Warp("/dev/null", Array(originalReproject), resampleWarpAppOptions)
 
       datasetToRasterExtent(originalReproject) shouldBe optimizedReproject.gridExtent.toRasterExtent
       datasetToRasterExtent(originalResample) shouldBe optimizedResample.gridExtent.toRasterExtent
+
+      // cleanup JNI objects
+      originalResample.delete()
+      originalReproject.delete()
+      underlying.delete()
+      resampleWarpAppOptions.delete()
+      reprojectWarpAppOptions.delete()
     }
 
     it("raster sources optimized transformations should behave in a same way as a single warp application") {
@@ -130,13 +131,12 @@ class GDALWarpOptionsSpec extends FunSpec with RasterMatchers with GivenWhenThen
 
       val optimizedRawResample = dsresampleOpt(base)
 
-      val originalRawResample = {
-        val reprojectWarpAppOptions = new WarpOptions(new java.util.Vector(reprojectOptions.toWarpOptionsList.asJava)) // ditto
-        val resampleWarpAppOptions = new WarpOptions(new java.util.Vector(resampleOptions.toWarpOptionsList.asJava)) // ditto
-        val underlying = org.gdal.gdal.gdal.Open(filePath, org.gdal.gdalconst.gdalconstConstants.GA_ReadOnly)
-        val reprojected = org.gdal.gdal.gdal.Warp("/dev/null", Array(underlying), reprojectWarpAppOptions)
-        org.gdal.gdal.gdal.Warp("/dev/null", Array(reprojected), resampleWarpAppOptions)
-      }
+      val reprojectWarpAppOptions = new WarpOptions(new java.util.Vector(reprojectOptions.toWarpOptionsList.asJava))
+      val resampleWarpAppOptions = new WarpOptions(new java.util.Vector(resampleOptions.toWarpOptionsList.asJava))
+      val underlying = org.gdal.gdal.gdal.Open(filePath, org.gdal.gdalconst.gdalconstConstants.GA_ReadOnly)
+      val reprojected = org.gdal.gdal.gdal.Warp("/dev/null", Array(underlying), reprojectWarpAppOptions)
+
+      val originalRawResample = org.gdal.gdal.gdal.Warp("/dev/null", Array(reprojected), resampleWarpAppOptions)
 
       val rs =
         GDALRasterSource(filePath)
@@ -151,6 +151,13 @@ class GDALWarpOptionsSpec extends FunSpec with RasterMatchers with GivenWhenThen
 
       optimizedRawResample.gridExtent shouldBe rs.gridExtent
       datasetToRasterExtent(originalRawResample) shouldBe rs.gridExtent.toRasterExtent
+
+      // cleanup JNI objects
+      originalRawResample.delete()
+      reprojected.delete()
+      underlying.delete()
+      resampleWarpAppOptions.delete()
+      reprojectWarpAppOptions.delete()
     }
   }
 

@@ -36,8 +36,8 @@ object Settings {
     val geowaveSnapshot       = "geowave-snapshot" at "http://geowave-maven.s3.amazonaws.com/snapshot"
     val ivy2Local             = Resolver.file("local", file(Path.userHome.absolutePath + "/.ivy2/local"))(Resolver.ivyStylePatterns)
     val mavenLocal            = Resolver.mavenLocal
-
     val local                 = Seq(ivy2Local, mavenLocal)
+    val azaveaBintray         = Resolver.bintrayRepo("azavea", "geotrellis")
   }
 
   lazy val noForkInTests = Seq(
@@ -708,6 +708,7 @@ object Settings {
       scalatest % Test,
       gdalBindings % Test
     ),
+    resolvers += Repositories.azaveaBintray,
     Test / fork := true,
     Test / parallelExecution := false,
     Test / testOptions += Tests.Argument("-oDF"),
@@ -735,6 +736,7 @@ object Settings {
         case _ => deps :+ jacksonModuleScala
       }
     },
+    resolvers += Repositories.azaveaBintray,
     Test / fork := true,
     Test / parallelExecution := false,
     Test / testOptions += Tests.Argument("-oDF"),

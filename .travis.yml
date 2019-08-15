@@ -49,7 +49,7 @@ cache:
   - $HOME/downloads
 
 script:
-  - .travis/build-and-test.sh
+  - .travis/build-and-test-docker.sh
 
 notifications:
   email:

@@ -42,7 +42,7 @@ case class GeoTiffResampleRasterSource(
       .getOrElse(GeoTiffReader.readMultiband(
         RangeReader(dataPath.value),
         streaming = true, withOverviews = true,
-        RangeReader.option(dataPath.externalOverviews)
+        RangeReader.validated(dataPath.externalOverviews)
       ))
 
   def bandCount: Int = tiff.bandCount
