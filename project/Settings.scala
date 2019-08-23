@@ -36,7 +36,7 @@ object Settings {
     val geowaveSnapshot       = "geowave-snapshot" at "http://geowave-maven.s3.amazonaws.com/snapshot"
     val ivy2Local             = Resolver.file("local", file(Path.userHome.absolutePath + "/.ivy2/local"))(Resolver.ivyStylePatterns)
     val mavenLocal            = Resolver.mavenLocal
-    
+
     val local                 = Seq(ivy2Local, mavenLocal)
   }
 
@@ -396,7 +396,11 @@ object Settings {
 
   lazy val proj4 = Seq(
     name := "geotrellis-proj4",
-    resolvers ++= Seq(Repositories.mavenLocal),
+    resolvers ++= Seq(
+      Repositories.locationtechReleases,
+      Repositories.locationtechSnapshots,
+      Repositories.mavenLocal
+    ),
     libraryDependencies ++= Seq(
       proj4j,
       openCSV,
