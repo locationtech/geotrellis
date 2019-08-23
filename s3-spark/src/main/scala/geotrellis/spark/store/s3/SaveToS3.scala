@@ -56,13 +56,13 @@ object SaveToS3 {
     * @param s3Client   A function which returns an S3 Client (real or mock) into-which to save the data
     * @param executionContext   A function to get execution context
     */
-  def apply[K](
-    rdd: RDD[(K, Array[Byte])],
+  def apply[K, V](
+    rdd: RDD[(K, V)],
     keyToUri: K => String,
     putObjectModifier: PutObjectRequest => PutObjectRequest = { p => p },
     s3Client: => S3Client = S3ClientProducer.get(),
     executionContext: => ExecutionContext = BlockingThreadPool.executionContext
-  ): Unit = {
+  )(implicit ev: V => Array[Byte]): Unit = {
     val keyToPrefix: K => (String, String) = key => {
       val uri = new URI(keyToUri(key))
       require(uri.getScheme == "s3", s"SaveToS3 only supports s3 scheme: $uri")
@@ -75,12 +75,13 @@ object SaveToS3 {
       val s3client = s3Client
       val requests: fs2.Stream[IO, (PutObjectRequest, RequestBody)] =
         fs2.Stream.fromIterator[IO, (PutObjectRequest, RequestBody)](
-          partition.map { case (key, bytes) =>
+          partition.map { case (key, data) =>
+            val bytes = ev(data)
             val (bucket, path) = keyToPrefix(key)
             val request = PutObjectRequest.builder()
               .bucket(bucket)
               .key(path)
-              .contentLength(bytes.length)
+              .contentLength(bytes.length.toLong)
               .build()
             val requestBody = RequestBody.fromBytes(bytes)
 
