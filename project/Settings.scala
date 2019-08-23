@@ -199,12 +199,8 @@ object Settings {
       // This is one finicky dependency. Being explicit in hopes it will stop hurting Travis.
       jaiCore % Test from "http://download.osgeo.org/webdav/geotools/javax/media/jai_core/1.1.3/jai_core-1.1.3.jar"
     ),
-    externalResolvers := Seq(
-      Repositories.geosolutions,
-      Repositories.osgeo,
-      Repositories.boundlessgeo,
-      DefaultMavenRepository,
-      Repositories.ivy2Local
+    externalResolvers ++= Seq(
+      Repositories.boundlessgeo
     ),
     initialCommands in console :=
       """
