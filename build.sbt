@@ -77,6 +77,7 @@ lazy val commonSettings = Seq(
 
   shellPrompt := { s => Project.extract(s).currentProject.id + " > " },
   resolvers ++= Seq(
+    Resolver.mavenLocal,
     Settings.Repositories.geosolutions,
     Settings.Repositories.osgeo,
     Settings.Repositories.locationtechReleases,
