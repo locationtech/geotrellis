@@ -265,7 +265,6 @@ class GeoTiffReaderSpec extends FunSpec
       val crs = SinglebandGeoTiff(s"$baseDataPath/slope.tif", streaming = true).crs
 
       val correctCRS = CRS.fromString("+proj=utm +zone=10 +datum=NAD27 +units=m +no_defs")
-
       crs should equal(correctCRS)
     }
 
@@ -282,7 +281,8 @@ class GeoTiffReaderSpec extends FunSpec
     it("should read econic.tif CS correctly") {
       val crs = SinglebandGeoTiff(s"$baseDataPath/econic.tif", streaming = true).crs
 
-      val correctProj4String = "+proj=eqdc +lat_0=33.76446202777777 +lon_0=-117.4745428888889 +lat_1=33.90363402777778 +lat_2=33.62529002777778 +x_0=0 +y_0=0 +datum=NAD27 +units=m +no_defs"
+      // pulled from file directly, gdalinfo lies and will round each paramete value to 17 characters for presentation
+      val correctProj4String = "+proj=eqdc +lat_1=33.90363402777778 +lat_2=33.62529002777778 +lat_0=33.764462027777775 +lon_0=-117.47454288888889 +x_0=0.0 +y_0=0.0 +datum=NAD27 +units=m"
 
       val correctCRS = CRS.fromString(correctProj4String)
 
