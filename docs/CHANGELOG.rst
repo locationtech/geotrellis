@@ -118,6 +118,7 @@ Fixes & Updates
 - Refactor IO thread pool usage (`#3007 <https://github.com/locationtech/geotrellis/pull/3007>`_).
 - ``S3RangeReader`` will now optionally read the HEADER of an object (`#3025 <https://github.com/locationtech/geotrellis/pull/3025>`_).
 - ``FileRangeReaderProvider`` can now handle more types of ``URI``\s (`#3034 <https://github.com/locationtech/geotrellis/pull/3034>`_).
+- Bump proj4 version to fix multiple performance issues (`#3039 <https://github.com/locationtech/geotrellis/pull/3039>`_).
 
 2.3.0
 -----

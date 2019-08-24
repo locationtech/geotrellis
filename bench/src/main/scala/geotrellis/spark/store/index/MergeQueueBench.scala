@@ -15,6 +15,7 @@
  */
 
 package geotrellis.spark.store.index
+import geotrellis.store.index.MergeQueue
 
 import org.openjdk.jmh.annotations._
 
