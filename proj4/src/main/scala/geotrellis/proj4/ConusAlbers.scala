@@ -21,5 +21,5 @@ import geotrellis.proj4.CRS.ObjectNameToString
 object ConusAlbers extends CRS with ObjectNameToString {
   lazy val proj4jCrs = factory.createFromName("EPSG:5070")
 
-  override def epsgCode: Option[Int] = Some(5070)
+  override val epsgCode: Option[Int] = Some(5070)
 }

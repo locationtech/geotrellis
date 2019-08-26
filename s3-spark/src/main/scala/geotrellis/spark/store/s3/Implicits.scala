@@ -21,6 +21,6 @@ import org.apache.spark.rdd.RDD
 
 object Implicits extends Implicits
 
-trait Implicits {
+trait Implicits extends Serializable {
   implicit class withSaveToS3Methods[K, V](rdd: RDD[(K, V)]) extends SaveToS3Methods(rdd)
 }

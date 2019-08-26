@@ -34,7 +34,10 @@ object Settings {
     val osgeo                 = "osgeo" at "http://download.osgeo.org/webdav/geotools/"
     val geowaveRelease        = "geowave-release" at "http://geowave-maven.s3.amazonaws.com/release"
     val geowaveSnapshot       = "geowave-snapshot" at "http://geowave-maven.s3.amazonaws.com/snapshot"
-    val local                 = Resolver.file("local", file(Path.userHome.absolutePath + "/.ivy2/local"))(Resolver.ivyStylePatterns)
+    val ivy2Local             = Resolver.file("local", file(Path.userHome.absolutePath + "/.ivy2/local"))(Resolver.ivyStylePatterns)
+    val mavenLocal            = Resolver.mavenLocal
+
+    val local                 = Seq(ivy2Local, mavenLocal)
   }
 
   lazy val noForkInTests = Seq(
@@ -196,12 +199,8 @@ object Settings {
       // This is one finicky dependency. Being explicit in hopes it will stop hurting Travis.
       jaiCore % Test from "http://download.osgeo.org/webdav/geotools/javax/media/jai_core/1.1.3/jai_core-1.1.3.jar"
     ),
-    externalResolvers := Seq(
-      Repositories.geosolutions,
-      Repositories.osgeo,
-      Repositories.boundlessgeo,
-      DefaultMavenRepository,
-      Repositories.local
+    externalResolvers ++= Seq(
+      Repositories.boundlessgeo
     ),
     initialCommands in console :=
       """
@@ -261,7 +260,6 @@ object Settings {
       scalatest % Test
     ),
     resolvers ++= Seq(
-      Resolver.mavenLocal,
       Repositories.boundlessgeoRelease,
       Repositories.geosolutions,
       Repositories.geowaveRelease,
@@ -393,7 +391,6 @@ object Settings {
 
   lazy val proj4 = Seq(
     name := "geotrellis-proj4",
-    resolvers ++= Seq(Resolver.mavenLocal),
     libraryDependencies ++= Seq(
       proj4j,
       openCSV,
