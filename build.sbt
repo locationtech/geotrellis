@@ -134,15 +134,6 @@ lazy val root = Project("geotrellis", file(".")).
   ).
   settings(commonSettings: _*).
   enablePlugins(ScalaUnidocPlugin).
-  settings(
-    initialCommands in console :=
-      """
-      import geotrellis.raster._
-      import geotrellis.vector._
-      import geotrellis.proj4._
-      import geotrellis.spark._
-      """
-  ).
   settings(unidocProjectFilter in (ScalaUnidoc, unidoc) := inAnyProject -- inProjects(geowave))
 
 lazy val macros = project
