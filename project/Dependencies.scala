@@ -17,9 +17,9 @@
 import sbt._
 
 object Dependencies {
-  val pureconfig          = "com.github.pureconfig"      %% "pureconfig"               % "0.10.2"
-  val logging             = "com.typesafe.scala-logging" %% "scala-logging"            % "3.9.0"
-  val scalatest           = "org.scalatest"              %% "scalatest"                % "3.0.7"
+  val pureconfig          = "com.github.pureconfig"      %% "pureconfig"               % "0.11.1"
+  val logging             = "com.typesafe.scala-logging" %% "scala-logging"            % "3.9.2"
+  val scalatest           = "org.scalatest"              %% "scalatest"                % "3.0.8"
   val scalacheck          = "org.scalacheck"             %% "scalacheck"               % "1.14.0"
   val scalaXml            = "org.scala-lang.modules"     %% "scala-xml"                % "1.2.0"
   val jts                 = "org.locationtech.jts"        % "jts-core"                 % "1.16.1"
@@ -28,7 +28,7 @@ object Dependencies {
   val monocleCore         = "com.github.julien-truffaut" %% "monocle-core"             % Version.monocle
   val monocleMacro        = "com.github.julien-truffaut" %% "monocle-macro"            % Version.monocle
 
-  val openCSV             = "com.opencsv"                 % "opencsv"                  % "4.5"
+  val openCSV             = "com.opencsv"                 % "opencsv"                  % "4.6"
 
   val spire               = "org.spire-math"            %% "spire"                    % Version.spire
   val spireMacro          = "org.spire-math"            %% "spire-macros"             % Version.spire
@@ -37,15 +37,15 @@ object Dependencies {
 
   val apacheMath          = "org.apache.commons"          % "commons-math3"            % "3.6.1"
 
-  val chronoscala         = "jp.ne.opt"                  %% "chronoscala"              % "0.3.0"
+  val chronoscala         = "jp.ne.opt"                  %% "chronoscala"              % "0.3.2"
 
-  val awsSdkS3            = "software.amazon.awssdk"      % "s3"                       % "2.5.29"
+  val awsSdkS3            = "software.amazon.awssdk"      % "s3"                       % "2.7.32"
 
-  val catsCore            = "org.typelevel"              %% "cats-core"                % "1.6.0"
-  val catsEffect          = "org.typelevel"              %% "cats-effect"              % "1.2.0"
+  val catsCore            = "org.typelevel"              %% "cats-core"                % "1.6.1"
+  val catsEffect          = "org.typelevel"              %% "cats-effect"              % "1.3.1"
 
-  val fs2Core             = "co.fs2"                     %% "fs2-core"                 % "1.0.4"
-  val fs2Io               = "co.fs2"                     %% "fs2-io"                   % "1.0.4"
+  val fs2Core             = "co.fs2"                     %% "fs2-core"                 % "1.0.5"
+  val fs2Io               = "co.fs2"                     %% "fs2-io"                   % "1.0.5"
 
   val sparkCore           = "org.apache.spark"           %% "spark-core"               % Version.spark
   val sparkSQL            = "org.apache.spark"           %% "spark-sql"                % Version.spark
@@ -58,9 +58,7 @@ object Dependencies {
 
   val jsonSchemaValidator = "com.networknt"               % "json-schema-validator"    % "0.1.23"
 
-  val scaffeine           = "com.github.blemale"         %% "scaffeine"                % "2.6.0"
-
-  val simulacrum          = "com.github.mpilquist"       %% "simulacrum"               % "0.17.0"
+  val scaffeine           = "com.github.blemale"         %% "scaffeine"                % "3.1.0"
 
   val circeCore           = "io.circe"                   %% "circe-core"               % Version.circe
   val circeGeneric        = "io.circe"                   %% "circe-generic"            % Version.circe
@@ -112,7 +110,7 @@ object Dependencies {
 
   val uzaygezenCore       = "com.google.uzaygezen"         % "uzaygezen-core"          % "0.2"
 
-  val scalaj              = "org.scalaj"                  %% "scalaj-http"             % "2.4.1"
+  val scalaj              = "org.scalaj"                  %% "scalaj-http"             % "2.4.2"
 
   val scalapbRuntime      = "com.thesamet.scalapb"        %% "scalapb-runtime"         % scalapb.compiler.Version.scalapbVersion
 

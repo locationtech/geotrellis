@@ -45,7 +45,7 @@ object Settings {
     parallelExecution in Test := false
   )
 
-  lazy val `accumulo` = Seq(
+  lazy val accumulo = Seq(
     name := "geotrellis-accumulo",
     libraryDependencies ++= Seq(
       accumuloCore
@@ -96,7 +96,7 @@ object Settings {
     // jmhExtraOptions := Some("-jvmArgsAppend -prof geotrellis.bench.GeotrellisFlightRecordingProfiler")
   )
 
-  lazy val `cassandra` = Seq(
+  lazy val cassandra = Seq(
     name := "geotrellis-cassandra",
     libraryDependencies ++= Seq(
       cassandraDriverCore
@@ -294,7 +294,7 @@ object Settings {
       """
   ) ++ noForkInTests
 
-  lazy val `hbase` = Seq(
+  lazy val hbase = Seq(
     name := "geotrellis-hbase",
     libraryDependencies ++= Seq(
       hbaseCommon exclude("javax.servlet", "servlet-api"),
@@ -444,7 +444,7 @@ object Settings {
     libraryDependencies += scalatest
   )
 
-  lazy val `s3` = Seq(
+  lazy val s3 = Seq(
     name := "geotrellis-s3",
     libraryDependencies ++= Seq(
       awsSdkS3,
@@ -624,7 +624,6 @@ object Settings {
       circeGenericExtras,
       circeParser,
       apacheMath,
-      simulacrum,
       spire,
       scalatest % Test,
       scalacheck % Test
