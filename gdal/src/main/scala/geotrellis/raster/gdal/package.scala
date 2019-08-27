@@ -19,7 +19,7 @@ package geotrellis.raster
 import geotrellis.raster.gdal.config.GDALOptionsConfig
 import geotrellis.raster.gdal.GDALDataset.DatasetType
 
-package object gdal extends gdal.Implicits {
+package object gdal {
   val acceptableDatasets: Set[DatasetType] = GDALOptionsConfig.getAcceptableDatasets
   val numberOfAttempts: Int = GDALOptionsConfig.getNumberOfAttempts
 }

@@ -251,6 +251,51 @@ case class GDALWarpOptions(
 
   def isEmpty: Boolean = this == GDALWarpOptions.EMPTY
   def datasetType: DatasetType = if(isEmpty) GDALDataset.SOURCE else GDALDataset.WARPED
+
+  /** Adjust GDAL options to represents reprojection with following parameters.
+   * This call matches semantics and arguments of {@see RasterSource#reproject}
+   */
+  def reproject(rasterExtent: GridExtent[Long], sourceCRS: CRS, targetCRS: CRS, resampleGrid: ResampleGrid[Long] = IdentityResampleGrid, resampleMethod: ResampleMethod = NearestNeighbor): GDALWarpOptions = {
+    val reprojectOptions = ResampleGrid.toReprojectOptions[Long](rasterExtent, resampleGrid, resampleMethod)
+    val re = rasterExtent.reproject(sourceCRS, targetCRS, reprojectOptions)
+
+    this.copy(
+      cellSize       = re.cellSize.some,
+      targetCRS      = targetCRS.some,
+      sourceCRS      = sourceCRS.some,
+      resampleMethod = reprojectOptions.method.some
+    )
+  }
+
+  /** Adjust GDAL options to represents resampling with following parameters .
+   * This call matches semantics and arguments of {@see RasterSource#resample}
+   */
+  def resample(gridExtent: => GridExtent[Long], resampleGrid: ResampleGrid[Long]): GDALWarpOptions = {
+    resampleGrid match {
+      case Dimensions(cols, rows) =>
+        this.copy(te = gridExtent.extent.some, cellSize = None, dimensions = (cols.toInt, rows.toInt).some)
+
+      case _ =>
+        val re = {
+          val targetRasterExtent = resampleGrid(gridExtent).toRasterExtent
+          if(this.alignTargetPixels) targetRasterExtent.alignTargetPixels else targetRasterExtent
+        }
+
+        this.copy(te = re.extent.some, cellSize = re.cellSize.some)
+    }
+  }
+  /** Adjust GDAL options to represents conversion to desired cell type.
+   * This call matches semantics and arguments of {@see RasterSource#convert}
+   */
+  def convert(targetCellType: TargetCellType, noDataValue: Option[Double], dimensions: Option[(Int, Int)]): GDALWarpOptions = {
+    val convertOptions =
+      GDALWarpOptions
+        .createConvertOptions(targetCellType, noDataValue)
+        .map(_.copy(dimensions = this.cellSize.fold(dimensions)(_ => None)))
+        .toList
+
+    (convertOptions :+ this).reduce(_ combine _)
+  }
 }
 
 object GDALWarpOptions {

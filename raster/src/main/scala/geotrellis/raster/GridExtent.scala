@@ -284,6 +284,28 @@ class GridExtent[@specialized(Int, Long) N: Integral](
     createAlignedGridExtent(targetExtent).toRasterExtent
 
   /**
+    * This method copies gdalwarp -tap logic:
+    *
+    * The actual code reference: https://github.com/OSGeo/gdal/blob/v2.3.2/gdal/apps/gdal_rasterize_lib.cpp#L402-L461
+    * The actual part with the -tap logic: https://github.com/OSGeo/gdal/blob/v2.3.2/gdal/apps/gdal_rasterize_lib.cpp#L455-L461
+    *
+    * The initial PR that introduced that feature in GDAL 1.8.0: https://trac.osgeo.org/gdal/attachment/ticket/3772/gdal_tap.patch
+    * A discussion thread related to it: https://lists.osgeo.org/pipermail/gdal-dev/2010-October/thread.html#26209
+    *
+    */
+  def alignTargetPixels: GridExtent[N] = {
+    val extent = this.extent
+    val cellSize @ CellSize(width, height) = this.cellSize
+
+    GridExtent[N](Extent(
+      xmin = math.floor(extent.xmin / width) * width,
+      ymin = math.floor(extent.ymin / height) * height,
+      xmax = math.ceil(extent.xmax / width) * width,
+      ymax = math.ceil(extent.ymax / height) * height
+    ), cellSize)
+  }
+
+  /**
     * Gets the Extent that matches the grid bounds passed in, aligned
     * with this RasterExtent.
     *
