@@ -296,6 +296,8 @@ case class GDALWarpOptions(
 
     (convertOptions :+ this).reduce(_ combine _)
   }
+
+  override def toString: String = s"GDALWarpOptions(${toWarpOptionsList.mkString(" ")})"
 }
 
 object GDALWarpOptions {
