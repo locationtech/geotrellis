@@ -24,7 +24,7 @@ import org.apache.spark.rdd.RDD
 
 import scala.concurrent.ExecutionContext
 
-class SaveToS3Methods[K](val self: RDD[(K, Array[Byte])]) extends MethodExtensions[RDD[(K, Array[Byte])]] {
+class SaveToS3Methods[K, V](val self: RDD[(K, V)]) extends MethodExtensions[RDD[(K, V)]] {
 
   /**
     * Saves each RDD value to an S3 key.
@@ -33,6 +33,7 @@ class SaveToS3Methods[K](val self: RDD[(K, Array[Byte])]) extends MethodExtensio
     * @param putObjectModifier  Function that will be applied ot S3 PutObjectRequests, so that they can be modified (e.g. to change the ACL settings)
     * @param executionContext   A function to get execution context
     */
-  def saveToS3(keyToUri: K => String, putObjectModifier: PutObjectRequest => PutObjectRequest = { p => p }, executionContext: => ExecutionContext = BlockingThreadPool.executionContext): Unit =
+  def saveToS3(keyToUri: K => String, putObjectModifier: PutObjectRequest => PutObjectRequest = { p => p }, executionContext: => ExecutionContext = BlockingThreadPool.executionContext)
+              (implicit ev: V => Array[Byte]): Unit =
     SaveToS3(self, keyToUri, putObjectModifier, executionContext = executionContext)
 }
