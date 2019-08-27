@@ -23,9 +23,9 @@ import geotrellis.raster.io.geotiff.{AutoHigherResolution, OverviewStrategy}
 import geotrellis.raster.resample.{NearestNeighbor, ResampleMethod}
 import geotrellis.vector._
 
-case class GDALRasterSource(
-  dataPath: GDALPath,
-  options: GDALWarpOptions = GDALWarpOptions.EMPTY,
+class GDALRasterSource(
+  val dataPath: GDALPath,
+  val options: GDALWarpOptions = GDALWarpOptions.EMPTY,
   private[raster] val targetCellType: Option[TargetCellType] = None
 ) extends RasterSource {
 
@@ -111,10 +111,10 @@ case class GDALRasterSource(
   }
 
   def reprojection(targetCRS: CRS, resampleGrid: ResampleGrid[Long] = IdentityResampleGrid, method: ResampleMethod = NearestNeighbor, strategy: OverviewStrategy = AutoHigherResolution): RasterSource =
-    GDALRasterSource(dataPath, options.reproject(gridExtent, crs, targetCRS, resampleGrid, method))
+    new GDALRasterSource(dataPath, options.reproject(gridExtent, crs, targetCRS, resampleGrid, method))
 
   def resample(resampleGrid: ResampleGrid[Long], method: ResampleMethod, strategy: OverviewStrategy): RasterSource =
-    GDALRasterSource(dataPath, options.resample(gridExtent, resampleGrid))
+    new GDALRasterSource(dataPath, options.resample(gridExtent, resampleGrid))
 
   /** Converts the contents of the GDALRasterSource to the [[TargetCellType]].
    *
@@ -143,7 +143,7 @@ case class GDALRasterSource(
    */
   def convert(targetCellType: TargetCellType): RasterSource = {
     /** To avoid incorrect warp cellSize transformation, we need explicitly set target dimensions. */
-    GDALRasterSource(dataPath, options.convert(targetCellType, noDataValue, Some(cols.toInt -> rows.toInt)), Some(targetCellType))
+    new GDALRasterSource(dataPath, options.convert(targetCellType, noDataValue, Some(cols.toInt -> rows.toInt)), Some(targetCellType))
   }
 
   def read(extent: Extent, bands: Seq[Int]): Option[Raster[MultibandTile]] = {
@@ -160,4 +160,18 @@ case class GDALRasterSource(
     val bounds = extents.map(gridExtent.gridBoundsFor(_, clamp = false))
     readBounds(bounds, 0 until bandCount)
   }
+
+  override def toString: String = {
+    s"GDALRasterSource(${dataPath.value},$options)"
+  }
+
+  override def equals(other: Any): Boolean = {
+    other match {
+      case that: GDALRasterSource =>
+        this.dataPath == that.dataPath && this.options == that.options && this.targetCellType == that.targetCellType
+      case _ => false
+    }
+  }
+
+  override def hashCode(): Int = java.util.Objects.hash(dataPath, options, targetCellType)
 }

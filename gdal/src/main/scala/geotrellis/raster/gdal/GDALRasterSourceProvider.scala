@@ -23,5 +23,5 @@ class GDALRasterSourceProvider extends RasterSourceProvider {
   def canProcess(path: String): Boolean =
     (!path.startsWith(GeoTiffPath.PREFIX) && !path.startsWith("gt+")) && GDALPath.parseOption(path).nonEmpty && path.nonEmpty
 
-  def rasterSource(path: String): GDALRasterSource = GDALRasterSource(path)
+  def rasterSource(path: String): GDALRasterSource = new GDALRasterSource(path)
 }
