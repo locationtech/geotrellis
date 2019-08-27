@@ -120,9 +120,6 @@ case class PaddedTile(chunk: Tile, colOffset: Int, rowOffset: Int, cols: Int, ro
     mutable(cellType)
 
   def mutable(targetCellType: CellType): MutableArrayTile = {
-    if(targetCellType.isFloatingPoint != cellType.isFloatingPoint)
-      logger.warn(s"Conversion from $cellType to $targetCellType may lead to data loss.")
-
     val tile = ArrayTile.alloc(targetCellType, cols, rows)
 
     if(!cellType.isFloatingPoint) {
