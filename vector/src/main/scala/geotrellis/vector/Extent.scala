@@ -241,6 +241,10 @@ case class Extent(
   def buffer(d: Double): Extent =
     Extent(xmin - d, ymin - d, xmax + d, ymax + d)
 
+  /** Create a new extent using a buffer around this extent */
+  def buffer(dx: Double, dy: Double): Extent =
+    Extent(xmin - dx, ymin - dy, xmax + dx, ymax + dy)
+
   /** Orders two bounding boxes by their (geographically) lower-left corner. The bounding box
     * that is further south (or west in the case of a tie) comes first.
     *
