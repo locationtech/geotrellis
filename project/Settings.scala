@@ -152,13 +152,8 @@ object Settings {
       // This is one finicky dependency. Being explicit in hopes it will stop hurting Travis.
       jaiCore % Test from "http://download.osgeo.org/webdav/geotools/javax/media/jai_core/1.1.3/jai_core-1.1.3.jar"
     ),
-    externalResolvers := Seq(
-      Repositories.geosolutions,
-      Repositories.osgeo,
-      Repositories.boundlessgeo,
-      DefaultMavenRepository,
-      Repositories.ivy2Local,
-      Repositories.locationtechSnapshots
+    externalResolvers ++= Seq(
+      Repositories.boundlessgeo
     ),
     initialCommands in console :=
       """
@@ -218,7 +213,6 @@ object Settings {
       scalatest % Test
     ),
     resolvers ++= Seq(
-      Repositories.mavenLocal,
       Repositories.boundlessgeoRelease,
       Repositories.geosolutions,
       Repositories.geowaveRelease,
@@ -308,7 +302,6 @@ object Settings {
 
   lazy val proj4 = Seq(
     name := "geotrellis-proj4",
-    resolvers ++= Seq(Repositories.mavenLocal),
     libraryDependencies ++= Seq(
       proj4j,
       openCSV,
