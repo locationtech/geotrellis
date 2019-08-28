@@ -121,7 +121,7 @@ trait CRS extends Serializable {
   def epsgCode: Option[Int] = {
     proj4jCrs.getName.split(":") match {
       case Array(name, code) if name.toUpperCase == "EPSG" => Try(code.toInt).toOption
-      case _ => CRS.getEpsgCode(toProj4String + " <>")
+      case _ => CRS.getEpsgCode(toProj4String)
     }
   }
 
