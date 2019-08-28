@@ -21,5 +21,5 @@ import geotrellis.proj4.CRS.ObjectNameToString
 object WebMercator extends CRS with ObjectNameToString {
   lazy val proj4jCrs = factory.createFromName("EPSG:3857")
 
-  override def epsgCode: Option[Int] = Some(3857)
+  override val epsgCode: Option[Int] = Some(3857)
 }

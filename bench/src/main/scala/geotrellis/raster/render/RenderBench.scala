@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package geotrellis.raster.render
 
 import org.openjdk.jmh.annotations._

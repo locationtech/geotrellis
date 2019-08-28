@@ -19,6 +19,7 @@ Fixes & Updates
 
 - Get the static DefaultAWSCredentialsProviderChain instance rather than constructing a new one every time (`#2895 <https://github.com/locationtech/geotrellis/pull/2895>`_).
 - Fix for improper handling of values in `ArrayTile.combine{Double}`'s default case (`#2908 <https://github.com/locationtech/geotrellis/pull/2908>`_).
+- Bump proj4 version to fix multiple performance issues (`#3039 <https://github.com/locationtech/geotrellis/pull/3039>`_).
 
 2.3.0
 -----
@@ -36,7 +37,7 @@ Fixes & Updates
 -----
 *2019 Jan 11*
 
-API Changes & Projects strucutre changes
+API Changes & Project structure changes
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - ``geotrellis.proj4j``
