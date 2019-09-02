@@ -175,3 +175,8 @@ class GDALRasterSource(
 
   override def hashCode(): Int = java.util.Objects.hash(dataPath, options, targetCellType)
 }
+
+object GDALRasterSource {
+  def apply(dataPath: GDALPath, options: GDALWarpOptions = GDALWarpOptions.EMPTY, targetCellType: Option[TargetCellType] = None): GDALRasterSource =
+    new GDALRasterSource(dataPath, options, targetCellType)
+}

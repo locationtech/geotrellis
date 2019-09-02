@@ -25,11 +25,11 @@ import geotrellis.raster.resample.{NearestNeighbor, ResampleMethod}
 import geotrellis.raster.io.geotiff.{AutoHigherResolution, GeoTiff, GeoTiffMultibandTile, MultibandGeoTiff, OverviewStrategy, Tags}
 import geotrellis.util.RangeReader
 
-case class GeoTiffResampleRasterSource(
-  dataPath: GeoTiffPath,
-  resampleGrid: ResampleGrid[Long],
-  method: ResampleMethod = NearestNeighbor,
-  strategy: OverviewStrategy = AutoHigherResolution,
+class GeoTiffResampleRasterSource(
+  val dataPath: GeoTiffPath,
+  val resampleGrid: ResampleGrid[Long],
+  val method: ResampleMethod = NearestNeighbor,
+  val strategy: OverviewStrategy = AutoHigherResolution,
   private[raster] val targetCellType: Option[TargetCellType] = None,
   @transient private[raster] val baseTiff: Option[MultibandGeoTiff] = None
 ) extends RasterSource {
@@ -136,4 +136,15 @@ case class GeoTiffResampleRasterSource(
       ).resample(targetRasterExtent.cols, targetRasterExtent.rows, method)
     }
   }
+}
+
+object GeoTiffResampleRasterSource {
+  def apply(
+    dataPath: GeoTiffPath,
+    resampleGrid: ResampleGrid[Long],
+    method: ResampleMethod = NearestNeighbor,
+    strategy: OverviewStrategy = AutoHigherResolution,
+    targetCellType: Option[TargetCellType] = None,
+    baseTiff: Option[MultibandGeoTiff] = None
+  ): GeoTiffResampleRasterSource = new GeoTiffResampleRasterSource(dataPath, resampleGrid, method, strategy, targetCellType, baseTiff)
 }

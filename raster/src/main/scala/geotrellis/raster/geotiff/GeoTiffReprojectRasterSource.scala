@@ -25,13 +25,13 @@ import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.raster.io.geotiff.{AutoHigherResolution, GeoTiff, GeoTiffMultibandTile, MultibandGeoTiff, OverviewStrategy, Tags}
 import geotrellis.util.RangeReader
 
-case class GeoTiffReprojectRasterSource(
-  dataPath: GeoTiffPath,
-  crs: CRS,
-  targetResampleGrid: ResampleGrid[Long] = IdentityResampleGrid,
-  resampleMethod: ResampleMethod = NearestNeighbor,
-  strategy: OverviewStrategy = AutoHigherResolution,
-  errorThreshold: Double = 0.125,
+class GeoTiffReprojectRasterSource(
+  val dataPath: GeoTiffPath,
+  val crs: CRS,
+  val targetResampleGrid: ResampleGrid[Long] = IdentityResampleGrid,
+  val resampleMethod: ResampleMethod = NearestNeighbor,
+  val strategy: OverviewStrategy = AutoHigherResolution,
+  val errorThreshold: Double = 0.125,
   private[raster] val targetCellType: Option[TargetCellType] = None,
   @transient private[raster] val baseTiff: Option[MultibandGeoTiff] = None
 ) extends RasterSource {
@@ -154,4 +154,17 @@ case class GeoTiffReprojectRasterSource(
 
   def convert(targetCellType: TargetCellType): RasterSource =
     GeoTiffReprojectRasterSource(dataPath, crs, targetResampleGrid, resampleMethod, strategy, targetCellType = Some(targetCellType))
+}
+
+object GeoTiffReprojectRasterSource {
+  def apply(
+    dataPath: GeoTiffPath,
+    crs: CRS,
+    targetResampleGrid: ResampleGrid[Long] = IdentityResampleGrid,
+    resampleMethod: ResampleMethod = NearestNeighbor,
+    strategy: OverviewStrategy = AutoHigherResolution,
+    errorThreshold: Double = 0.125,
+    targetCellType: Option[TargetCellType] = None,
+    baseTiff: Option[MultibandGeoTiff] = None
+  ): GeoTiffReprojectRasterSource = new GeoTiffReprojectRasterSource(dataPath, crs, targetResampleGrid, resampleMethod, strategy, errorThreshold, targetCellType, baseTiff)
 }

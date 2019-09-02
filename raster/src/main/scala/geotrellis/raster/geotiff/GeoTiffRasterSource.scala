@@ -24,8 +24,8 @@ import geotrellis.raster.io.geotiff._
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.util.RangeReader
 
-case class GeoTiffRasterSource(
-  dataPath: GeoTiffPath,
+class GeoTiffRasterSource(
+  val dataPath: GeoTiffPath,
   private[raster] val targetCellType: Option[TargetCellType] = None,
   @transient private[raster] val baseTiff: Option[MultibandGeoTiff] = None
 ) extends RasterSource {
@@ -99,4 +99,9 @@ case class GeoTiffRasterSource(
       convertRaster(Raster(tile, gridExtent.extentFor(gb.toGridType[Long], clamp = true)))
     }
   }
+}
+
+object GeoTiffRasterSource {
+  def apply(dataPath: GeoTiffPath, targetCellType: Option[TargetCellType] = None, baseTiff: Option[MultibandGeoTiff] = None): GeoTiffRasterSource =
+    new GeoTiffRasterSource(dataPath, targetCellType, baseTiff)
 }
