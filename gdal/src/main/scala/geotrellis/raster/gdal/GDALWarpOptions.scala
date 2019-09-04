@@ -168,10 +168,9 @@ case class GDALWarpOptions(
       val tr = List("-tr", s"${cz.width}", s"${cz.height}")
       if (alignTargetPixels) "-tap" +: tr else tr
     } ::: dimensions.toList.flatMap { case (c, r) => List("-ts", s"$c", s"$r") } :::
-    (sourceCRS, targetCRS).mapN { (source, target) =>
-      if(source != target) List("-s_srs", source.toProj4String, "-t_srs", target.toProj4String)
-      else Nil
-    }.toList.flatten ::: ovr.toList.flatMap { o => List("-ovr", GDALUtils.deriveOverviewStrategyString(o)) } :::
+    sourceCRS.toList.flatMap { source => List("-s_srs", source.toProj4String) } :::
+    targetCRS.toList.flatMap { target => List("-t_srs", target.toProj4String) } :::
+    ovr.toList.flatMap { o => List("-ovr", GDALUtils.deriveOverviewStrategyString(o)) } :::
     te.toList.flatMap { ext =>
       List("-te", s"${ext.xmin}", s"${ext.ymin}", s"${ext.xmax}", s"${ext.ymax}") :::
         teCRS.orElse(targetCRS).toList.flatMap { tcrs => List("-te_srs", s"${tcrs.toProj4String}") }
