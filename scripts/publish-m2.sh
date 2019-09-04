@@ -24,4 +24,5 @@
       "project util" +publishM2 \
       "project vector" +publishM2 \
       "project vector-testkit" +publishM2 \
-      "project vectortile" +publishM2
+      "project vectortile" +publishM2 \
+      "project gdal" +publishM2

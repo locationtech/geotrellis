@@ -41,7 +41,7 @@ trait Implicits
     uShortConstantTileCodec
   )
 
-  implicit def tileUnionCodec = new AvroUnionCodec[Tile](
+  def simpleTileUnionCodec = new AvroUnionCodec[Tile](
     byteArrayTileCodec,
     floatArrayTileCodec,
     doubleArrayTileCodec,
@@ -58,6 +58,26 @@ trait Implicits
     bitConstantTileCodec,
     uByteConstantTileCodec,
     uShortConstantTileCodec
+  )
+
+  implicit def tileUnionCodec = new AvroUnionCodec[Tile](
+    byteArrayTileCodec,
+    floatArrayTileCodec,
+    doubleArrayTileCodec,
+    shortArrayTileCodec,
+    intArrayTileCodec,
+    bitArrayTileCodec,
+    uByteArrayTileCodec,
+    uShortArrayTileCodec,
+    byteConstantTileCodec,
+    floatConstantTileCodec,
+    doubleConstantTileCodec,
+    shortConstantTileCodec,
+    intConstantTileCodec,
+    bitConstantTileCodec,
+    uByteConstantTileCodec,
+    uShortConstantTileCodec,
+    paddedTileCodec
   )
 
   implicit def tupleCodec[A: AvroRecordCodec, B: AvroRecordCodec]: TupleCodec[A, B] = TupleCodec[A, B]

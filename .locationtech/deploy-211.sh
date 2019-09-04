@@ -26,4 +26,5 @@
    && ./sbt "project vectortile" publish -no-colors \
    && ./sbt "project raster-testkit" publish -no-colors \
    && ./sbt "project vector-testkit" publish -no-colors \
-   && ./sbt "project spark-testkit" publish -no-colors
+   && ./sbt "project spark-testkit" publish -no-colors \
+   && ./sbt "project gdal" publish -no-colors

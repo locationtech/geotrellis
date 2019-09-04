@@ -21,6 +21,6 @@ object Environment {
     Properties.envOrElse(environmentVariable, default)
 
   lazy val hadoopVersion  = either("SPARK_HADOOP_VERSION", "2.8.5")
-  lazy val sparkVersion   = either("SPARK_VERSION", "2.4.1")
+  lazy val sparkVersion   = either("SPARK_VERSION", "2.4.3")
   lazy val versionSuffix  = either("GEOTRELLIS_VERSION_SUFFIX", "-SNAPSHOT")
 }

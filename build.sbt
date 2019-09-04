@@ -58,7 +58,7 @@ lazy val commonSettings = Seq(
     .filter(_.asFile.canRead)
     .map(Credentials(_)),
 
-  addCompilerPlugin("org.spire-math" % "kind-projector" % "0.9.10" cross CrossVersion.binary),
+  addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.10.3" cross CrossVersion.binary),
   addCompilerPlugin("org.scalamacros" %% "paradise" % "2.1.1" cross CrossVersion.full),
 
   pomExtra := (
@@ -105,23 +105,23 @@ lazy val commonSettings = Seq(
   updateOptions := updateOptions.value.withGigahorse(false)
 )
 
-lazy val root = Project("geotrellis", file(".")).
-  aggregate(
-    `accumulo`,
+lazy val root = Project("geotrellis", file("."))
+  .aggregate(
+    accumulo,
     `accumulo-spark`,
-    `cassandra`,
+    cassandra,
     `cassandra-spark`,
     `doc-examples`,
     geomesa,
     geotools,
     geowave,
-    `hbase`,
+    hbase,
     `hbase-spark`,
     macros,
     proj4,
     raster,
     `raster-testkit`,
-    `s3`,
+    s3,
     `s3-spark`,
     shapefile,
     spark,
@@ -130,20 +130,13 @@ lazy val root = Project("geotrellis", file(".")).
     util,
     vector,
     `vector-testkit`,
-    vectortile
-  ).
-  settings(commonSettings: _*).
-  enablePlugins(ScalaUnidocPlugin).
-  settings(
-    initialCommands in console :=
-      """
-      import geotrellis.raster._
-      import geotrellis.vector._
-      import geotrellis.proj4._
-      import geotrellis.spark._
-      """
-  ).
-  settings(unidocProjectFilter in (ScalaUnidoc, unidoc) := inAnyProject -- inProjects(geowave))
+    vectortile,
+    gdal,
+    `gdal-spark`
+  )
+  .settings(commonSettings: _*)
+  .enablePlugins(ScalaUnidocPlugin)
+  .settings(unidocProjectFilter in (ScalaUnidoc, unidoc) := inAnyProject -- inProjects(geowave))
 
 lazy val macros = project
   .settings(commonSettings)
@@ -204,24 +197,24 @@ lazy val `spark-testkit` = project
   .settings(commonSettings)
   .settings(Settings.`spark-testkit`)
 
-lazy val `s3` = project
+lazy val s3 = project
   .dependsOn(store)
   .settings(commonSettings)
-  .settings(Settings.`s3`)
+  .settings(Settings.s3)
 
 lazy val `s3-spark` = project
   .dependsOn(
     spark % "compile->compile;test->test",  // <-- spark-testkit update should simplify this
-    `s3`,
+    s3,
     `spark-testkit` % Test
   )
   .settings(commonSettings)
   .settings(Settings.`s3-spark`)
 
-lazy val `accumulo` = project
+lazy val accumulo = project
   .dependsOn(store)
   .settings(commonSettings)
-  .settings(Settings.`accumulo`)
+  .settings(Settings.accumulo)
 
 lazy val `accumulo-spark` = project
   .dependsOn(
@@ -232,29 +225,29 @@ lazy val `accumulo-spark` = project
   .settings(commonSettings)
   .settings(Settings.`accumulo-spark`)
 
-lazy val `cassandra` = project
+lazy val cassandra = project
   .dependsOn(store)
   .settings(commonSettings)
-  .settings(Settings.`cassandra`)
+  .settings(Settings.cassandra)
 
 lazy val `cassandra-spark` = project
   .dependsOn(
-    `cassandra`,
+    cassandra,
     spark % "compile->compile;test->test", // <-- spark-testkit update should simplify this
     `spark-testkit` % Test
   )
   .settings(commonSettings)
   .settings(Settings.`cassandra-spark`)
 
-lazy val `hbase` = project
+lazy val hbase = project
   .dependsOn(store)
   .settings(commonSettings) // HBase depends on its own protobuf version
-  .settings(Settings.`hbase`)
+  .settings(Settings.hbase)
   .settings(projectDependencies := { Seq((projectID in layer).value.exclude("com.google.protobuf", "protobuf-java")) })
 
 lazy val `hbase-spark` = project
   .dependsOn(
-    `hbase`,
+    hbase,
     spark % "compile->compile;test->test", // <-- spark-testkit update should simplify this
     `spark-testkit` % Test
   )
@@ -269,7 +262,7 @@ lazy val `spark-pipeline` = Project(id = "spark-pipeline", base = file("spark-pi
 
 lazy val geotools = project
   .dependsOn(raster, vector, proj4, `vector-testkit` % Test, `raster-testkit` % Test,
-    `raster` % "test->test" // <-- to get rid  of this, move `GeoTiffTestUtils` to the testkit.
+    raster % "test->test" // <-- to get rid  of this, move `GeoTiffTestUtils` to the testkit.
   )
   .settings(commonSettings)
   .settings(Settings.geotools)
@@ -310,7 +303,7 @@ lazy val bench = project
   .settings(Settings.bench)
 
 lazy val layer = project
-  .dependsOn(raster)
+  .dependsOn(raster, `raster-testkit` % Test)
   .settings(commonSettings)
   .settings(Settings.layer)
 
@@ -318,3 +311,14 @@ lazy val store = project
   .dependsOn(layer)
   .settings(commonSettings)
   .settings(Settings.store)
+
+lazy val gdal = project
+  .dependsOn(raster, `raster-testkit` % Test)
+  .settings(commonSettings)
+  .settings(Settings.gdal)
+
+lazy val `gdal-spark` = project
+  .dependsOn(gdal, spark, `spark-testkit` % Test)
+  .settings(commonSettings)
+  .settings(publish / skip := true) // at this point we need this project only for tests
+  .settings(Settings.`gdal-spark`)

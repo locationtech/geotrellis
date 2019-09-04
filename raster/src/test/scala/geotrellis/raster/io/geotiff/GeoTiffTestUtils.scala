@@ -35,6 +35,12 @@ trait GeoTiffTestUtils extends Matchers {
 
   def baseDataPath = "raster/data"
 
+  def baseGeoTiffPath(name: String): String = {
+    val path = s"$baseDataPath/$name"
+    require(new File(path).exists, s"$path does not exist, unzip the archive?")
+    path
+  }
+
   val Epsilon = 1e-9
 
   var writtenFiles = Vector[String]()

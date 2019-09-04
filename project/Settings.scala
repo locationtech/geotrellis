@@ -36,8 +36,8 @@ object Settings {
     val geowaveSnapshot       = "geowave-snapshot" at "http://geowave-maven.s3.amazonaws.com/snapshot"
     val ivy2Local             = Resolver.file("local", file(Path.userHome.absolutePath + "/.ivy2/local"))(Resolver.ivyStylePatterns)
     val mavenLocal            = Resolver.mavenLocal
-
     val local                 = Seq(ivy2Local, mavenLocal)
+    val azaveaBintray         = Resolver.bintrayRepo("azavea", "geotrellis")
   }
 
   lazy val noForkInTests = Seq(
@@ -45,7 +45,7 @@ object Settings {
     parallelExecution in Test := false
   )
 
-  lazy val `accumulo` = Seq(
+  lazy val accumulo = Seq(
     name := "geotrellis-accumulo",
     libraryDependencies ++= Seq(
       accumuloCore
@@ -96,7 +96,7 @@ object Settings {
     // jmhExtraOptions := Some("-jvmArgsAppend -prof geotrellis.bench.GeotrellisFlightRecordingProfiler")
   )
 
-  lazy val `cassandra` = Seq(
+  lazy val cassandra = Seq(
     name := "geotrellis-cassandra",
     libraryDependencies ++= Seq(
       cassandraDriverCore
@@ -294,7 +294,7 @@ object Settings {
       """
   ) ++ noForkInTests
 
-  lazy val `hbase` = Seq(
+  lazy val hbase = Seq(
     name := "geotrellis-hbase",
     libraryDependencies ++= Seq(
       hbaseCommon exclude("javax.servlet", "servlet-api"),
@@ -414,6 +414,7 @@ object Settings {
       monocleCore,
       monocleMacro,
       scalaXml,
+      scalaURI,
       scalatest % Test,
       scalacheck % Test
     ),
@@ -443,7 +444,7 @@ object Settings {
     libraryDependencies += scalatest
   )
 
-  lazy val `s3` = Seq(
+  lazy val s3 = Seq(
     name := "geotrellis-s3",
     libraryDependencies ++= Seq(
       awsSdkS3,
@@ -623,7 +624,6 @@ object Settings {
       circeGenericExtras,
       circeParser,
       apacheMath,
-      simulacrum,
       spire,
       scalatest % Test,
       scalacheck % Test
@@ -665,6 +665,7 @@ object Settings {
       scaffeine,
       uzaygezenCore,
       pureconfig,
+      scalactic,
       scalatest % Test
     ),
     initialCommands in console :=
@@ -697,5 +698,47 @@ object Settings {
       scalaXml,
       scalatest % Test
     )
+  )
+  
+  lazy val gdal = Seq(
+    name := "geotrellis-gdal",
+    libraryDependencies ++= Seq(
+      gdalWarp,
+      scalatest % Test,
+      gdalBindings % Test
+    ),
+    resolvers += Repositories.azaveaBintray,
+    Test / fork := true,
+    Test / parallelExecution := false,
+    Test / testOptions += Tests.Argument("-oDF"),
+    javaOptions ++= Seq("-Djava.library.path=/usr/local/lib")
+  )
+
+  lazy val `gdal-spark` = Seq(
+    name := "geotrellis-gdal-spark",
+    libraryDependencies ++= Seq(
+      gdalWarp,
+      sparkCore % Provided,
+      sparkSQL % Test,
+      scalatest % Test
+    ),
+    // caused by the AWS SDK v2
+    dependencyOverrides ++= {
+      val deps = Seq(
+        jacksonCore,
+        jacksonDatabind,
+        jacksonAnnotations
+      )
+      CrossVersion.partialVersion(scalaVersion.value) match {
+        // if Scala 2.12+ is used
+        case Some((2, scalaMajor)) if scalaMajor >= 12 => deps
+        case _ => deps :+ jacksonModuleScala
+      }
+    },
+    resolvers += Repositories.azaveaBintray,
+    Test / fork := true,
+    Test / parallelExecution := false,
+    Test / testOptions += Tests.Argument("-oDF"),
+    javaOptions ++= Seq("-Djava.library.path=/usr/local/lib")
   )
 }

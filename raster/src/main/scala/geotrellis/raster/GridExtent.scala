@@ -16,10 +16,13 @@
 
 package geotrellis.raster
 
+import geotrellis.proj4.{CRS, Transform}
+import geotrellis.raster.reproject.Reproject.Options
+import geotrellis.raster.reproject.ReprojectRasterExtent
 import geotrellis.vector._
 
-import scala.math.{min, max, ceil}
-import spire.math.{Integral}
+import scala.math.{ceil, max, min}
+import spire.math.Integral
 import spire.implicits._
 
 /**
@@ -281,6 +284,28 @@ class GridExtent[@specialized(Int, Long) N: Integral](
     createAlignedGridExtent(targetExtent).toRasterExtent
 
   /**
+    * This method copies gdalwarp -tap logic:
+    *
+    * The actual code reference: https://github.com/OSGeo/gdal/blob/v2.3.2/gdal/apps/gdal_rasterize_lib.cpp#L402-L461
+    * The actual part with the -tap logic: https://github.com/OSGeo/gdal/blob/v2.3.2/gdal/apps/gdal_rasterize_lib.cpp#L455-L461
+    *
+    * The initial PR that introduced that feature in GDAL 1.8.0: https://trac.osgeo.org/gdal/attachment/ticket/3772/gdal_tap.patch
+    * A discussion thread related to it: https://lists.osgeo.org/pipermail/gdal-dev/2010-October/thread.html#26209
+    *
+    */
+  def alignTargetPixels: GridExtent[N] = {
+    val extent = this.extent
+    val cellSize @ CellSize(width, height) = this.cellSize
+
+    GridExtent[N](Extent(
+      xmin = math.floor(extent.xmin / width) * width,
+      ymin = math.floor(extent.ymin / height) * height,
+      xmax = math.ceil(extent.xmax / width) * width,
+      ymax = math.ceil(extent.ymax / height) * height
+    ), cellSize)
+  }
+
+  /**
     * Gets the Extent that matches the grid bounds passed in, aligned
     * with this RasterExtent.
     *
@@ -390,5 +415,19 @@ object GridExtent {
     val roundedValue = math.round(value)
     if (math.abs(value - roundedValue) < GridExtent.epsilon) roundedValue
     else math.floor(value)
+  }
+
+  implicit class gridExtentMethods[N: Integral](self: GridExtent[N]) {
+    def reproject(src: CRS, dest: CRS, options: Options): GridExtent[N] =
+      if(src == dest) self
+      else {
+        val transform = Transform(src, dest)
+        options
+          .targetRasterExtent
+          .map(_.toGridType[N])
+          .getOrElse(ReprojectRasterExtent(self, transform, options = options))
+      }
+
+    def reproject(src: CRS, dest: CRS): GridExtent[N] = reproject(src, dest, Options.DEFAULT)
   }
 }

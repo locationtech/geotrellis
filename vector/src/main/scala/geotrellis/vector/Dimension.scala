@@ -16,8 +16,6 @@
 
 package geotrellis.vector
 
-import simulacrum._
-
 trait Dimension[G <: Geometry]
 
 trait AtLeastOneDimension[G <: Geometry] extends Dimension[G]

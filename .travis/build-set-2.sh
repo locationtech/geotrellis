@@ -2,6 +2,7 @@
 
 ./sbt "++$TRAVIS_SCALA_VERSION" \
   "project raster" test \
+  "project gdal" test \
   "project accumulo" test \
   "project accumulo-spark" test \
   "project s3" test \

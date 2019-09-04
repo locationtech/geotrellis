@@ -6,6 +6,8 @@ Changelog
 
 API Changes & Project structure changes
 
+- **New:** Add RasterSources API (`#3053 <https://github.com/locationtech/geotrellis/pull/3053>`_).
+
 - ``geotrellis-vector``
 
   - **Change:** We are now favoring direct use of JTS geometries for improved interoperability with other projects.  Scala wrapper classes for Geometry have been snuffed.  Many submodules of ``geotrellis.vector`` have also been sacked in favor of direct usage of the corresponding JTS functionality.  Extension methods and companion objects have been employed to maintain a crisp, candy shell around JTS to keep most interactions from messing up your fingers.  Import ``geotrellis.vector._`` to access these niceties; if it is required, ``import org.locationtech.jts.{geom => jts}`` to prevent namespace collisions.  In the REPL, geometries will need to be constructed via the duplicate definitions in the ``JTS`` object to avoid namespace clashes that appear to be buggy behavior on the part of the REPL (that is, use ``JTS.Point(0,0)`` to construct a point at the origin in interactive sessions, but in compiled code, ``Point(0,0)`` will suffice).
@@ -106,7 +108,6 @@ API Changes & Project structure changes
 Fixes & Updates
 ^^^^^^^^^^^^^^^
 
-- Update pureconfig to version 0.10.2 (`#2882 <https://github.com/locationtech/geotrellis/pull/2882>`_).
 - Update dependencies (`#2904 <https://github.com/locationtech/geotrellis/pull/2904>`_).
 - Bump ScalaPB version up with some API enhancements (`#2898 <https://github.com/locationtech/geotrellis/pull/2898>`_).
 - Artifacts in Viewshed have been addressed, the pixels/meter calculation has also been improved (`#2917 <https://github.com/locationtech/geotrellis/pull/2917>`_).
@@ -119,6 +120,7 @@ Fixes & Updates
 - ``S3RangeReader`` will now optionally read the HEADER of an object (`#3025 <https://github.com/locationtech/geotrellis/pull/3025>`_).
 - ``FileRangeReaderProvider`` can now handle more types of ``URI``\s (`#3034 <https://github.com/locationtech/geotrellis/pull/3034>`_).
 - Bump proj4 version to fix multiple performance issues (`#3039 <https://github.com/locationtech/geotrellis/pull/3039>`_).
+- Update dependencies (`#3053 <https://github.com/locationtech/geotrellis/pull/3053>`_).
 
 2.3.0
 -----
