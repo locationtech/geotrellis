@@ -383,4 +383,20 @@ class TileSpec extends FunSpec
                                  2, 3, 4, 2))
     }
   }
+
+  describe("percentile") {
+    it("should construct a numpy percentile for a Tile") {
+      val x = ArrayTile((0 until 8).map(_ * 0.5).toArray, 7, 1)
+
+      x.percentile(0) shouldBe 0d
+      x.percentile(100) shouldBe 3.5
+      x.percentile(50) shouldBe 1.75
+
+      val xmutable = x.mutable
+      xmutable.setDouble(1, 0, NODATA)
+      val xn = xmutable.toArrayTile
+
+      xn.percentile(0) shouldBe NODATA
+    }
+  }
 }
