@@ -8,6 +8,7 @@
   "project store" test \
   "project vector" test \
   "project vectortile" test \
+  "project gdal" test \
   "project hbase" test \
   "project hbase-spark" test \
   "project cassandra" test \
