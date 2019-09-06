@@ -610,6 +610,7 @@ object Settings {
     libraryDependencies ++= Seq(
       logging,
       pureconfig,
+      spire,
       scalatest % Test
     )
   )

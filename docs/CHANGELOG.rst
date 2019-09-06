@@ -105,6 +105,10 @@ API Changes & Project structure changes
   - **Add:** ``geotrellis.vectortile.MVTFeature`` which properly conforms to the MVT 2.0 spec. Specifically, MVTFeature adds support for an ``Option[Long]`` id property.
   - **Change:** The ``geotrellis.vectortile.{Layer, VectorTile}`` interfaces now uses ``MVTFeature`` instead of ``geotrellis.vector.Feature``. This better aligns these interfaces with the Mapbox Vector Tile specification.
 
+- ``geotrellis.util``
+
+  - **Add:** ``geotrellis.util.np`` package which contains ``linspace`` and ``percentile``methods that match numpy functionality. An implicit class was also added to ``geotrellis.raster`` which provides the ``percentile`` method for ``geotrellis.raster.Tile``.
+
 Fixes & Updates
 ^^^^^^^^^^^^^^^
 
