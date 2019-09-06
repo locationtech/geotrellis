@@ -8,6 +8,7 @@
   "project doc-examples" compile \
   "project vector" test \
   "project vectortile" test \
+  "project gdal" test \
   "project geowave" compile test:compile \
   "project hbase" compile \
   "project hbase-spark" test \
