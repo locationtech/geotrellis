@@ -406,21 +406,21 @@ object CellType {
    */
   def fromName(name: String): CellType = {
     name match {
-      case bool() | boolraw() => BitCellType // No NoData values
-      case int8raw() => ByteCellType
-      case uint8raw() => UByteCellType
-      case int16raw() => ShortCellType
-      case uint16raw() => UShortCellType
-      case float32raw() => FloatCellType
-      case float64raw() => DoubleCellType
-      case int8() => ByteConstantNoDataCellType // Constant NoData values
-      case uint8() => UByteConstantNoDataCellType
-      case int16() => ShortConstantNoDataCellType
-      case uint16() => UShortConstantNoDataCellType
-      case int32() => IntConstantNoDataCellType
-      case int32raw() => IntCellType
-      case float32() => FloatConstantNoDataCellType
-      case float64() => DoubleConstantNoDataCellType
+      case "bool" | "boolraw" => BitCellType // No NoData values
+      case "int8raw" => ByteCellType
+      case "uint8raw" => UByteCellType
+      case "int16raw" => ShortCellType
+      case "uint16raw" => UShortCellType
+      case "float32raw" => FloatCellType
+      case "float64raw" => DoubleCellType
+      case "int8" => ByteConstantNoDataCellType // Constant NoData values
+      case "uint8" => UByteConstantNoDataCellType
+      case "int16" => ShortConstantNoDataCellType
+      case "uint16" => UShortConstantNoDataCellType
+      case "int32" => IntConstantNoDataCellType
+      case "int32raw" => IntCellType
+      case "float32" => FloatConstantNoDataCellType
+      case "float64" => DoubleConstantNoDataCellType
       case int8ud(nd) => ByteUserDefinedNoDataCellType(nd.asInt.toByte)
       case uint8ud(nd) => UByteUserDefinedNoDataCellType(nd.asInt.toByte)
       case int16ud(nd) => ShortUserDefinedNoDataCellType(nd.asInt.toShort)
