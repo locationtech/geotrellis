@@ -109,6 +109,11 @@ API Changes & Project structure changes
 
   - **Add:** ``geotrellis.util.np`` package which contains ``linspace`` and ``percentile``methods that match numpy functionality. An implicit class was also added to ``geotrellis.raster`` which provides the ``percentile`` method for ``geotrellis.raster.Tile``.
 
+- ``geotrellis.proj4``
+
+  - **Change:** ``WKT`` object conversion methods to and from EPSG codes have changed. All now return `Option`s rather than silently unwrap. Methods that convert from EPSG code to WKT string are now prefixed consistently with `fromEpsg` and methods that convert from WKT string to EPSG code are now prefixed consistently with `toEpsg`.
+  - **Change:** ``CRS.fromWKT`` now returns `Option[CRS]` instead of `CRS` after silently unwrapping an optional internally.
+
 Fixes & Updates
 ^^^^^^^^^^^^^^^
 
