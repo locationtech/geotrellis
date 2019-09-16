@@ -29,6 +29,8 @@ import scala.util.Try
  * This class extends [[RangeReader]] by reading chunks out of a GeoTiff at the
  * specified HTTP location.
  *
+ * @throws [[HttpStatusException]] if the HTTP response code is 4xx or 5xx
+ *
  * @param url: A [[URL]] pointing to the desired GeoTiff.
  */
 class HttpRangeReader(url: URL, useHeadRequest: Boolean) extends RangeReader with LazyLogging {
@@ -47,6 +49,7 @@ class HttpRangeReader(url: URL, useHeadRequest: Boolean) extends RangeReader wit
           case Some(num) => num
           case None => -1L
         }
+    headers.throwError
 
     /**
      * "The Accept-Ranges response HTTP header is a marker used by the server

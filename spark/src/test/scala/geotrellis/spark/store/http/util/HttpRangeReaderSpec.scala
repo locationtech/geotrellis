@@ -16,14 +16,12 @@
 
 package geotrellis.spark.store.http.util
 
-import java.nio.file.{ Paths, Files }
+import java.nio.file.{Files, Paths}
 import java.nio.ByteBuffer
-import geotrellis.util._
-import spire.syntax.cfor._
-
-import org.apache.commons.io.IOUtils
 
 import org.scalatest._
+import scalaj.http.HttpStatusException
+import spire.syntax.cfor._
 
 /** These tests require running the container defined in scripts/nginxTestHttp.sh */
 class HttpRangeReaderSpec extends FunSpec with Matchers {
@@ -90,6 +88,17 @@ class HttpRangeReaderSpec extends FunSpec with Matchers {
       val result = testArrays(expected, actual)
 
       result.length should be (0)
+    }
+
+    it("should throw HttpStatusException for a 404 Not Found") {
+      val uri = "https://geotrellis.io/404thisdoesntexist"
+      assertThrows[HttpStatusException] {
+        HttpRangeReader(uri)
+      }
+
+      assertThrows[HttpStatusException] {
+       HttpRangeReader.withoutHeadRequest(uri)
+      }
     }
   }
 }
