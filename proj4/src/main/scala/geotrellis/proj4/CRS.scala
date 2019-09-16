@@ -67,7 +67,8 @@ object CRS {
     * well-known-text String.
     */
   def fromWKT(wktString: String): CRS = {
-    val epsgCode: String = WKT.getEpsgCode(wktString)
+    // TODO: Make this method Option[CRS] too?
+    val epsgCode: String = WKT.getEpsgStringCode(wktString).get
     fromName(epsgCode)
   }
 
@@ -139,7 +140,7 @@ trait CRS extends Serializable {
    * Returns the WKT representation of the Coordinate Reference
    * System.
    */
-  def toWKT(): Option[String] = epsgCode.map(WKT.fromEpsgCode(_))
+  def toWKT(): Option[String] = epsgCode.flatMap(WKT.fromEpsgCode(_))
 
 
   // TODO: Do these better once more things are ported
