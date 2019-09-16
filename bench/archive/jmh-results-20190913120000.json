@@ -1,0 +1,328 @@
+[
+    {
+        "jmhVersion" : "1.20",
+        "benchmark" : "geotrellis.raster.CellTypeEncodingBench.asString",
+        "mode" : "avgt",
+        "threads" : 1,
+        "forks" : 1,
+        "jvm" : "/Library/Java/JavaVirtualMachines/jdk1.8.0_171.jdk/Contents/Home/jre/bin/java",
+        "jvmArgs" : [
+            "-Xmx8G"
+        ],
+        "jdkVersion" : "1.8.0_171",
+        "vmVersion" : "25.171-b11",
+        "warmupIterations" : 5,
+        "warmupTime" : "1 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 5,
+        "measurementTime" : "1 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "cellTypeName" : "int16ud44"
+        },
+        "primaryMetric" : {
+            "score" : 0.14998175310758693,
+            "scoreError" : 0.0028316352648172405,
+            "scoreConfidence" : [
+                0.14715011784276968,
+                0.15281338837240419
+            ],
+            "scorePercentiles" : {
+                "0.0" : 0.14901794688353648,
+                "50.0" : 0.1503279095444336,
+                "90.0" : 0.15066068582352554,
+                "95.0" : 0.15066068582352554,
+                "99.0" : 0.15066068582352554,
+                "99.9" : 0.15066068582352554,
+                "99.99" : 0.15066068582352554,
+                "99.999" : 0.15066068582352554,
+                "99.9999" : 0.15066068582352554,
+                "100.0" : 0.15066068582352554
+            },
+            "scoreUnit" : "us/op",
+            "rawData" : [
+                [
+                    0.14901794688353648,
+                    0.14938037417995262,
+                    0.15052184910648644,
+                    0.1503279095444336,
+                    0.15066068582352554
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.20",
+        "benchmark" : "geotrellis.raster.CellTypeEncodingBench.asString",
+        "mode" : "avgt",
+        "threads" : 1,
+        "forks" : 1,
+        "jvm" : "/Library/Java/JavaVirtualMachines/jdk1.8.0_171.jdk/Contents/Home/jre/bin/java",
+        "jvmArgs" : [
+            "-Xmx8G"
+        ],
+        "jdkVersion" : "1.8.0_171",
+        "vmVersion" : "25.171-b11",
+        "warmupIterations" : 5,
+        "warmupTime" : "1 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 5,
+        "measurementTime" : "1 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "cellTypeName" : "uint8raw"
+        },
+        "primaryMetric" : {
+            "score" : 0.10307272332699886,
+            "scoreError" : 0.012671032653466988,
+            "scoreConfidence" : [
+                0.09040169067353188,
+                0.11574375598046585
+            ],
+            "scorePercentiles" : {
+                "0.0" : 0.10055485357153954,
+                "50.0" : 0.10249575043900128,
+                "90.0" : 0.10867708602010641,
+                "95.0" : 0.10867708602010641,
+                "99.0" : 0.10867708602010641,
+                "99.9" : 0.10867708602010641,
+                "99.99" : 0.10867708602010641,
+                "99.999" : 0.10867708602010641,
+                "99.9999" : 0.10867708602010641,
+                "100.0" : 0.10867708602010641
+            },
+            "scoreUnit" : "us/op",
+            "rawData" : [
+                [
+                    0.10283840688667711,
+                    0.10249575043900128,
+                    0.10055485357153954,
+                    0.10867708602010641,
+                    0.10079751971766995
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.20",
+        "benchmark" : "geotrellis.raster.CellTypeEncodingBench.asString",
+        "mode" : "avgt",
+        "threads" : 1,
+        "forks" : 1,
+        "jvm" : "/Library/Java/JavaVirtualMachines/jdk1.8.0_171.jdk/Contents/Home/jre/bin/java",
+        "jvmArgs" : [
+            "-Xmx8G"
+        ],
+        "jdkVersion" : "1.8.0_171",
+        "vmVersion" : "25.171-b11",
+        "warmupIterations" : 5,
+        "warmupTime" : "1 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 5,
+        "measurementTime" : "1 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "cellTypeName" : "float32"
+        },
+        "primaryMetric" : {
+            "score" : 0.14650939375534938,
+            "scoreError" : 0.2164515154320396,
+            "scoreConfidence" : [
+                -0.06994212167669023,
+                0.362960909187389
+            ],
+            "scorePercentiles" : {
+                "0.0" : 0.09640199727136349,
+                "50.0" : 0.1287350745048607,
+                "90.0" : 0.2220857392045379,
+                "95.0" : 0.2220857392045379,
+                "99.0" : 0.2220857392045379,
+                "99.9" : 0.2220857392045379,
+                "99.99" : 0.2220857392045379,
+                "99.999" : 0.2220857392045379,
+                "99.9999" : 0.2220857392045379,
+                "100.0" : 0.2220857392045379
+            },
+            "scoreUnit" : "us/op",
+            "rawData" : [
+                [
+                    0.1877785261083744,
+                    0.2220857392045379,
+                    0.1287350745048607,
+                    0.09640199727136349,
+                    0.09754563168761043
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.20",
+        "benchmark" : "geotrellis.raster.CellTypeEncodingBench.fromString",
+        "mode" : "avgt",
+        "threads" : 1,
+        "forks" : 1,
+        "jvm" : "/Library/Java/JavaVirtualMachines/jdk1.8.0_171.jdk/Contents/Home/jre/bin/java",
+        "jvmArgs" : [
+            "-Xmx8G"
+        ],
+        "jdkVersion" : "1.8.0_171",
+        "vmVersion" : "25.171-b11",
+        "warmupIterations" : 5,
+        "warmupTime" : "1 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 5,
+        "measurementTime" : "1 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "cellTypeName" : "int16ud44"
+        },
+        "primaryMetric" : {
+            "score" : 1.9754974826684637,
+            "scoreError" : 0.02513693310778422,
+            "scoreConfidence" : [
+                1.9503605495606795,
+                2.000634415776248
+            ],
+            "scorePercentiles" : {
+                "0.0" : 1.967864178190299,
+                "50.0" : 1.9766765223804368,
+                "90.0" : 1.9846366247378624,
+                "95.0" : 1.9846366247378624,
+                "99.0" : 1.9846366247378624,
+                "99.9" : 1.9846366247378624,
+                "99.99" : 1.9846366247378624,
+                "99.999" : 1.9846366247378624,
+                "99.9999" : 1.9846366247378624,
+                "100.0" : 1.9846366247378624
+            },
+            "scoreUnit" : "us/op",
+            "rawData" : [
+                [
+                    1.967864178190299,
+                    1.97071465830489,
+                    1.9846366247378624,
+                    1.9766765223804368,
+                    1.9775954297288298
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.20",
+        "benchmark" : "geotrellis.raster.CellTypeEncodingBench.fromString",
+        "mode" : "avgt",
+        "threads" : 1,
+        "forks" : 1,
+        "jvm" : "/Library/Java/JavaVirtualMachines/jdk1.8.0_171.jdk/Contents/Home/jre/bin/java",
+        "jvmArgs" : [
+            "-Xmx8G"
+        ],
+        "jdkVersion" : "1.8.0_171",
+        "vmVersion" : "25.171-b11",
+        "warmupIterations" : 5,
+        "warmupTime" : "1 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 5,
+        "measurementTime" : "1 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "cellTypeName" : "uint8raw"
+        },
+        "primaryMetric" : {
+            "score" : 0.5212922564929273,
+            "scoreError" : 0.5473940554144814,
+            "scoreConfidence" : [
+                -0.026101798921554065,
+                1.0686863119074088
+            ],
+            "scorePercentiles" : {
+                "0.0" : 0.37061139259550985,
+                "50.0" : 0.5441557420065543,
+                "90.0" : 0.665863282337316,
+                "95.0" : 0.665863282337316,
+                "99.0" : 0.665863282337316,
+                "99.9" : 0.665863282337316,
+                "99.99" : 0.665863282337316,
+                "99.999" : 0.665863282337316,
+                "99.9999" : 0.665863282337316,
+                "100.0" : 0.665863282337316
+            },
+            "scoreUnit" : "us/op",
+            "rawData" : [
+                [
+                    0.37061139259550985,
+                    0.6481287715332938,
+                    0.5441557420065543,
+                    0.665863282337316,
+                    0.37770209399196225
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.20",
+        "benchmark" : "geotrellis.raster.CellTypeEncodingBench.fromString",
+        "mode" : "avgt",
+        "threads" : 1,
+        "forks" : 1,
+        "jvm" : "/Library/Java/JavaVirtualMachines/jdk1.8.0_171.jdk/Contents/Home/jre/bin/java",
+        "jvmArgs" : [
+            "-Xmx8G"
+        ],
+        "jdkVersion" : "1.8.0_171",
+        "vmVersion" : "25.171-b11",
+        "warmupIterations" : 5,
+        "warmupTime" : "1 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 5,
+        "measurementTime" : "1 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "cellTypeName" : "float32"
+        },
+        "primaryMetric" : {
+            "score" : 1.2296222107716763,
+            "scoreError" : 0.023938922687456204,
+            "scoreConfidence" : [
+                1.20568328808422,
+                1.2535611334591326
+            ],
+            "scorePercentiles" : {
+                "0.0" : 1.2236472754426826,
+                "50.0" : 1.2268975772300774,
+                "90.0" : 1.238510161668518,
+                "95.0" : 1.238510161668518,
+                "99.0" : 1.238510161668518,
+                "99.9" : 1.238510161668518,
+                "99.99" : 1.238510161668518,
+                "99.999" : 1.238510161668518,
+                "99.9999" : 1.238510161668518,
+                "100.0" : 1.238510161668518
+            },
+            "scoreUnit" : "us/op",
+            "rawData" : [
+                [
+                    1.238510161668518,
+                    1.2254993346550704,
+                    1.2268975772300774,
+                    1.2236472754426826,
+                    1.233556704862034
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    }
+]
+
+
