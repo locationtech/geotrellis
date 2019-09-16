@@ -68,7 +68,7 @@ class CRSTest extends FunSpec with Inspectors {
   it("should have human friendly toString") {
     val samples = Seq(
       CRS.fromEpsgCode(3857),
-      CRS.fromWKT(WebMercator.toWKT().get),
+      CRS.fromWKT(WebMercator.toWKT().get).get,
       CRS.fromName("EPSG:4326"),
       CRS.fromString(Sinusoidal.toProj4String),
       LatLng, Sinusoidal, WebMercator, ConusAlbers

@@ -66,10 +66,8 @@ object CRS {
     * Creates a CoordinateReferenceSystem (CRS) from a
     * well-known-text String.
     */
-  def fromWKT(wktString: String): CRS = {
-    // TODO: Make this method Option[CRS] too?
-    val epsgCode: String = WKT.getEpsgStringCode(wktString).get
-    fromName(epsgCode)
+  def fromWKT(wktString: String): Option[CRS] = {
+    WKT.getEpsgStringCode(wktString).map(fromName(_))
   }
 
   /**
