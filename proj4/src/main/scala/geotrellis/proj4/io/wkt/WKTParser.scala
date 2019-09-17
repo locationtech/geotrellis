@@ -117,7 +117,8 @@ object WKTParser extends RegexParsers {
   def wktCS: Parser[WktCS] = localcs | projcs | geogcs | geoccs | compdcs | vertcs
 
   def apply(wktString: String) : WktCS = {
-    parseAll(wktCS, wktString) match {
+    val cleanWkt = wktString.replaceAll("\n", "")
+    parseAll(wktCS, cleanWkt) match {
       case Success(wktObject, _) =>
         wktObject
       case Failure(msg, tail) =>
