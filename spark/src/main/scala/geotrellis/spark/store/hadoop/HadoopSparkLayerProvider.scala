@@ -40,7 +40,7 @@ import java.net.URI
  * This Provider intentinally does not handle the `s3` scheme because the Hadoop implemintation is poor.
  * That support is provided by [[HadoopAttributeStore]]
  */
-class HadoopSparkLayerProvider extends HadoopCollectionLayerProvider with LayerReaderProvider with LayerWriterProvider {
+class HadoopSparkLayerProvider extends HadoopCollectionLayerProvider with LayerReaderProvider with LayerWriterProvider with Serializable {
 
   def layerReader(uri: URI, store: AttributeStore, sc: SparkContext): FilteringLayerReader[LayerId] = {
     // don't need uri because HadoopLayerHeader contains full path of the layer

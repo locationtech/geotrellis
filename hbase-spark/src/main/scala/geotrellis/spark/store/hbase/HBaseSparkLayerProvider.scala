@@ -33,8 +33,7 @@ import java.net.URI
  * Metadata table name is optional, not provided default value will be used.
  * Layers table name is required to instantiate a [[LayerWriter]]
  */
-class HBaseSparkLayerProvider extends HBaseCollectionLayerProvider
-    with LayerReaderProvider with LayerWriterProvider {
+class HBaseSparkLayerProvider extends HBaseCollectionLayerProvider with LayerReaderProvider with LayerWriterProvider with Serializable {
 
   def layerReader(uri: URI, store: AttributeStore, sc: SparkContext): FilteringLayerReader[LayerId] = {
     val instance = HBaseInstance(uri)

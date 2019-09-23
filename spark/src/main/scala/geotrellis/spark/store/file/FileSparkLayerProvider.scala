@@ -32,7 +32,7 @@ import java.io.File
  * The uri represents local path to catalog root.
  *  ex: `file:/tmp/catalog`
  */
-class FileSparkLayerProvider extends FileCollectionLayerProvider with LayerReaderProvider with LayerWriterProvider {
+class FileSparkLayerProvider extends FileCollectionLayerProvider with LayerReaderProvider with LayerWriterProvider with Serializable {
   def layerReader(uri: URI, store: AttributeStore, sc: SparkContext): FilteringLayerReader[LayerId] = {
     val file = new File(uri)
     new FileLayerReader(store, file.getCanonicalPath)(sc)

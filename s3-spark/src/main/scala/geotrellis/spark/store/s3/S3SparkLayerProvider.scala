@@ -30,7 +30,7 @@ import java.net.URI
  * The uri represents S3 bucket an prefix of catalog root.
  *  ex: `s3://<bucket>/<prefix-to-catalog>`
  */
-class S3SparkLayerProvider extends S3CollectionLayerProvider with LayerReaderProvider with LayerWriterProvider {
+class S3SparkLayerProvider extends S3CollectionLayerProvider with LayerReaderProvider with LayerWriterProvider with Serializable {
   def layerReader(uri: URI, store: AttributeStore, sc: SparkContext): FilteringLayerReader[LayerId] = {
     new S3LayerReader(store, s3Client)(sc)
   }

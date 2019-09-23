@@ -35,7 +35,7 @@ import java.net.URI
  * Attributes table name is optional, not provided default value will be used.
  * Layers table name is required to instantiate a [[LayerWriter]]
  */
-class AccumuloSparkLayerProvider extends AccumuloCollectionLayerProvider with LayerReaderProvider with LayerWriterProvider {
+class AccumuloSparkLayerProvider extends AccumuloCollectionLayerProvider with LayerReaderProvider with LayerWriterProvider with Serializable {
   def layerReader(uri: URI, store: AttributeStore, sc: SparkContext): FilteringLayerReader[LayerId] = {
     val instance = AccumuloInstance(uri)
 
