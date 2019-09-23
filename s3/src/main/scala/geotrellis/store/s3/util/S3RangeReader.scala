@@ -55,6 +55,7 @@ class S3RangeReader(
       val responseStream = client.getObject(request)
       val length = responseStream.response.contentLength
 
+      responseStream.abort()
       responseStream.close()
       length
     }
