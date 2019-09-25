@@ -33,6 +33,7 @@ import java.nio.file.{Files, Paths}
 import geotrellis.vector.Extent
 
 import scala.util.Random
+import scala.collection.JavaConverters._
 
 trait RasterMatchers extends Matchers {
   import RasterMatchers._
@@ -283,7 +284,7 @@ trait RasterMatchers extends Matchers {
     val asciiDiffs = diffs.map(_.renderAscii(palette))
 
     val joinedDiffs: String = asciiDiffs
-      .map(_.lines.toSeq)
+      .map(_.lines.iterator().asScala.toSeq)
       .transpose
       .map(_.mkString("\t"))
       .mkString("\n")

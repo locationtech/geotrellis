@@ -21,7 +21,6 @@ import geotrellis.raster._
 import geotrellis.vector.Extent
 import geotrellis.proj4.CRS
 import geotrellis.raster.crop.Crop
-import geotrellis.raster.resample.{ResampleMethod, ResampleTarget, TargetGridExtent}
 import spire.syntax.cfor._
 
 import spire.math.Integral
@@ -107,7 +106,7 @@ case class SinglebandGeoTiff(
 
     // force ArrayTile to avoid costly compressor thrashing in GeoTiff segments when resample will stride segments
     val segments: Seq[((Int, Int), Tile)] = Raster(tile.toArrayTile(), extent)
-      .resample(TargetGridExtent(overviewRasterExtent), resampleMethod)
+      .resample(TargetGridExtent[Int](overviewRasterExtent), resampleMethod)
       .tile
       .split(segmentLayout.tileLayout)
       .zipWithIndex

@@ -33,6 +33,8 @@ import geotrellis.spark.tiling._
 import geotrellis.vector._
 import geotrellis.util._
 
+import spire.math._
+
 import com.typesafe.scalalogging.LazyLogging
 
 import org.apache.spark.rdd._
@@ -41,7 +43,48 @@ import org.apache.spark._
 import scala.reflect.ClassTag
 
 object TileRDDReproject extends LazyLogging {
-  import Reproject.Options
+
+  def apply[
+    K: SpatialComponent: Boundable: ClassTag,
+    V <: CellGrid[Int]: ClassTag: RasterRegionReproject: (? => TileMergeMethods[V]): (? => TilePrototypeMethods[V]),
+    N: Integral
+  ](
+    bufferedTiles: RDD[(K, BufferedTile[V])],
+    metadata: TileLayerMetadata[K],
+    destCrs: CRS,
+    targetLayout: LayoutDefinition,
+    resampleTarget: Option[ResampleTarget[N]],
+    resampleMethod: ResampleMethod = ResampleMethods.NearestNeighbor,
+    partitioner: Option[Partitioner] = None
+  ): (Int, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]) = ???
+
+  def apply[
+    K: SpatialComponent: Boundable: ClassTag,
+    V <: CellGrid[Int]: ClassTag: RasterRegionReproject: Stitcher: (? => CropMethods[V]): (? => TileMergeMethods[V]): (? => TilePrototypeMethods[V]),
+    N: Integral
+  ](
+    rdd: RDD[(K, V)] with Metadata[TileLayerMetadata[K]],
+    destCrs: CRS,
+    targetLayout: LayoutDefinition,
+    resampleTarget: Option[ResampleTarget[N]],
+    resampleMethod: ResampleMethod = ResampleMethods.NearestNeighbor,
+    partitioner: Option[Partitioner] = None
+  ): (Int, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]) = ???
+
+  def apply[
+    K: SpatialComponent: Boundable: ClassTag,
+    V <: CellGrid[Int]: ClassTag: RasterRegionReproject: Stitcher: (? => CropMethods[V]): (? => TileMergeMethods[V]): (? => TilePrototypeMethods[V]),
+    N: Integral
+  ](
+    rdd: RDD[(K, V)] with Metadata[TileLayerMetadata[K]],
+    destCrs: CRS,
+    targetLayout: LayoutDefinition,
+    bufferSize: Int,
+    resampleTarget: Option[ResampleTarget[N]],
+    resampleMethod: ResampleMethod = ResampleMethods.NearestNeighbor,
+    partitioner: Option[Partitioner] = None
+  ): (Int, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]) = ???
+
 
   /** Reproject a set of buffered
     * @tparam           K           Key type; requires spatial component.
@@ -57,14 +100,16 @@ object TileRDDReproject extends LazyLogging {
     */
   def apply[
     K: SpatialComponent: Boundable: ClassTag,
-    V <: CellGrid[Int]: ClassTag: RasterRegionReproject: (? => TileMergeMethods[V]): (? => TilePrototypeMethods[V])
+    V <: CellGrid[Int]: ClassTag: RasterRegionReproject: (? => TileMergeMethods[V]): (? => TilePrototypeMethods[V]),
+    N: Integral
   ](
     bufferedTiles: RDD[(K, BufferedTile[V])],
     metadata: TileLayerMetadata[K],
     destCrs: CRS,
-    targetLayout: Either[LayoutScheme, LayoutDefinition],
-    options: Options,
-    partitioner: Option[Partitioner]
+    targetLayout: LayoutScheme,
+    resampleTarget: Option[ResampleTarget[N]],
+    resampleMethod: ResampleMethod = ResampleMethods.NearestNeighbor,
+    partitioner: Option[Partitioner] = None
   ): (Int, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]) = {
     val crs: CRS = metadata.crs
     val layout = metadata.layout
@@ -72,8 +117,7 @@ object TileRDDReproject extends LazyLogging {
     implicit val sc = bufferedTiles.context
 
     val sourceDataGridExtent = metadata.layout.createAlignedGridExtent(metadata.extent)
-    val passthroughGridExtent = ReprojectRasterExtent(sourceDataGridExtent, metadata.crs, destCrs)
-    val targetDataExtent = passthroughGridExtent.extent
+    val targetGridExtent = ReprojectRasterExtent(sourceDataGridExtent, metadata.crs, destCrs)
 
     val targetPartitioner: Option[Partitioner] = partitioner.orElse(bufferedTiles.partitioner)
 
@@ -86,78 +130,16 @@ object TileRDDReproject extends LazyLogging {
       })
     logger.debug(s"$reprojectSummary")
 
-    // First figure out where we're going through option yoga
-    // You'll want to read [[ReprojectRasterExtent]] to grok this
-    val LayoutLevel(targetZoom, targetLayerLayout) = targetLayout match {
-      case Right(layoutDefinition) =>
-        // A LayoutDefinition specifies a GridExtent.  The presence of this
-        // option indicates that the user knows exactly the grid to resample to.
-        LayoutLevel(0, layoutDefinition)
-
-      case Left(layoutScheme: FloatingLayoutScheme) =>
-        // FloatingLayoutScheme implies trying to match the resulting layout to
-        // the extent of the reprojected input region.  This may require snapping
-        // to a different GridExtent depending on the settings in
-        // rasterReprojectOptions.
-        if (options.matchLayerExtent) {
-          val tre = ReprojectRasterExtent(layout, crs, destCrs, options.rasterReprojectOptions)
-
-          layoutScheme.levelFor(tre.extent, tre.cellSize)
-        } else {
-          options.rasterReprojectOptions.parentGridExtent match {
-            case Some(ge) =>
-              layoutScheme.levelFor(targetDataExtent, ge.cellSize)
-
-            case None =>
-              options.rasterReprojectOptions.targetCellSize match {
-                case Some(ct) =>
-                  layoutScheme.levelFor(targetDataExtent, ct)
-
-                case None =>
-                  layoutScheme.levelFor(targetDataExtent, passthroughGridExtent.cellSize)
-              }
-          }
-        }
-
-      case Left(layoutScheme) =>
-        // Zoomed or user-defined layout.  Cannot snap to new grid.  Only need
-        // to find appropriate zoom level.
-        if (options.matchLayerExtent) {
-          val tre = ReprojectRasterExtent(
-            sourceDataGridExtent, crs, destCrs,
-            options.rasterReprojectOptions.copy(
-              parentGridExtent=None, targetCellSize=None, targetRasterExtent=None))
-
-          layoutScheme.levelFor(tre.extent, tre.cellSize)
-        } else {
-          val tre = ReprojectRasterExtent(
-            sourceDataGridExtent, crs, destCrs,
-            options.rasterReprojectOptions)
-
-          if (options.rasterReprojectOptions.targetCellSize.isDefined
-              || options.rasterReprojectOptions.parentGridExtent.isDefined) {
-            // options targetCellSize or parentGridExtent will have effected cellSize
-            layoutScheme.levelFor(tre.extent, tre.cellSize)
-          } else {
-            val cellSize: CellSize = reprojectSummary.cellSize
-            layoutScheme.levelFor(tre.extent, cellSize)
-          }
-        }
-    }
-
-    val rasterReprojectOptions = options.rasterReprojectOptions.copy(
-      parentGridExtent = Some(targetLayerLayout),
-      targetCellSize = None,
-      targetRasterExtent = None
-    )
+    val LayoutLevel(targetZoom, targetLayerLayout) =
+      targetLayout.levelFor(targetGridExtent.extent, targetGridExtent.cellSize)
 
     val newMetadata = {
       metadata.copy(
         crs = destCrs,
         layout = targetLayerLayout,
-        extent = targetDataExtent,
+        extent = targetGridExtent,
         bounds = metadata.bounds.setSpatialBounds(
-          KeyBounds(targetLayerLayout.mapTransform.extentToBounds(targetDataExtent)))
+          KeyBounds(targetLayerLayout.mapTransform.extentToBounds(targetGridExtent.extent)))
       )
     }
 
@@ -191,14 +173,14 @@ object TileRDDReproject extends LazyLogging {
 
     def createCombiner(tup: (Raster[V], RasterExtent, Polygon)) = {
         val (raster, destRE, destRegion) = tup
-        rrp.regionReproject(raster, crs, destCrs, destRE, destRegion, rasterReprojectOptions.method, rasterReprojectOptions.errorThreshold).tile
+        rrp.reproject(raster, crs, destCrs, destRE, destRegion, resampleMethod).tile
       }
 
     def mergeValues(reprojectedTile: V, toReproject: (Raster[V], RasterExtent, Polygon)) = {
       val (raster, destRE, destRegion) = toReproject
       val destRaster = Raster(reprojectedTile, destRE.extent)
       // RDD.combineByKey contract allows us to safely re-use and mutate the accumulator, reprojectedTile
-      rrp.regionReprojectMutable(raster, crs, destCrs, destRaster, destRegion, rasterReprojectOptions.method, rasterReprojectOptions.errorThreshold).tile
+      rrp.reproject(raster, crs, destCrs, destRaster, destRegion, resampleMethod).tile
     }
 
     def mergeCombiners(reproj1: V, reproj2: V) = reproj1.merge(reproj2)
@@ -226,25 +208,23 @@ object TileRDDReproject extends LazyLogging {
     */
   def apply[
     K: SpatialComponent: Boundable: ClassTag,
-    V <: CellGrid[Int]: ClassTag: RasterRegionReproject: Stitcher: (? => CropMethods[V]): (? => TileMergeMethods[V]): (? => TilePrototypeMethods[V])
+    V <: CellGrid[Int]: ClassTag: RasterRegionReproject: Stitcher: (? => CropMethods[V]): (? => TileMergeMethods[V]): (? => TilePrototypeMethods[V]),
+    N: Integral
   ](
     rdd: RDD[(K, V)] with Metadata[TileLayerMetadata[K]],
     destCrs: CRS,
-    targetLayout: Either[LayoutScheme, LayoutDefinition],
-    options: Options,
-    partitioner: Option[Partitioner]
+    targetLayout: LayoutScheme,
+    resampleTarget: Option[ResampleTarget[N]],
+    resampleMethod: ResampleMethod = ResampleMethods.NearestNeighbor,
+    partitioner: Option[Partitioner] = None
   ): (Int, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]) = {
     if(rdd.metadata.crs == destCrs) {
       val layout = rdd.metadata.layout
 
-      val (zoom, bail) =
-        targetLayout match {
-          case Left(layoutScheme) =>
-            val LayoutLevel(zoom, newLayout) = layoutScheme.levelFor(layout.extent, layout.cellSize)
-            (zoom, newLayout == layout)
-          case Right(layoutDefinition) =>
-            (0, layoutDefinition == layout)
-        }
+      val (zoom, bail) = {
+        val LayoutLevel(zoom, newLayout) = targetLayout.levelFor(layout.extent, layout.cellSize)
+        (zoom, newLayout == layout)
+      }
 
       if(bail) {
         // This is a no-op, just return the source
@@ -253,7 +233,7 @@ object TileRDDReproject extends LazyLogging {
         // We are tiling against a new layout but we
         // don't need to worry about buffers since the source and target are
         // in the same CRS.
-        apply(rdd, destCrs, targetLayout, bufferSize = 0, options = options, partitioner = partitioner)
+        apply(rdd, destCrs, targetLayout, bufferSize = 0, resampleTarget = resampleTarget, partitioner = partitioner)
       }
     } else {
       val crs = rdd.metadata.crs
@@ -284,7 +264,7 @@ object TileRDDReproject extends LazyLogging {
             )
           })
 
-      apply(bufferedTiles, rdd.metadata, destCrs, targetLayout, options, partitioner = partitioner)
+      apply(bufferedTiles, rdd.metadata, destCrs, targetLayout, resampleTarget, partitioner = partitioner)
     }
   }
 
@@ -307,20 +287,22 @@ object TileRDDReproject extends LazyLogging {
     */
   def apply[
     K: SpatialComponent: Boundable: ClassTag,
-    V <: CellGrid[Int]: ClassTag: RasterRegionReproject: Stitcher: (? => CropMethods[V]): (? => TileMergeMethods[V]): (? => TilePrototypeMethods[V])
+    V <: CellGrid[Int]: ClassTag: RasterRegionReproject: Stitcher: (? => CropMethods[V]): (? => TileMergeMethods[V]): (? => TilePrototypeMethods[V]),
+    N: Integral
   ](
     rdd: RDD[(K, V)] with Metadata[TileLayerMetadata[K]],
     destCrs: CRS,
-    targetLayout: Either[LayoutScheme, LayoutDefinition],
+    targetLayout: LayoutScheme,
     bufferSize: Int,
-    options: Options,
-    partitioner: Option[Partitioner]
+    resampleTarget: Option[ResampleTarget[N]],
+    resampleMethod: ResampleMethod = ResampleMethods.NearestNeighbor,
+    partitioner: Option[Partitioner] = None
   ): (Int, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]) =
     if(bufferSize == 0) {
       val fakeBuffers: RDD[(K, BufferedTile[V])] = rdd.withContext(_.mapValues { tile: V => BufferedTile(tile, GridBounds(0, 0, tile.cols - 1, tile.rows - 1)) })
-      apply(fakeBuffers, rdd.metadata, destCrs, targetLayout, options, partitioner)
+      apply(fakeBuffers, rdd.metadata, destCrs, targetLayout, resampleTarget, partitioner)
     } else
-      apply(rdd.bufferTiles(bufferSize), rdd.metadata, destCrs, targetLayout, options, partitioner)
+      apply(rdd.bufferTiles(bufferSize), rdd.metadata, destCrs, targetLayout, resampleTarget, partitioner)
 
 
   /** Match pixel resolution between two layouts in different projections such that

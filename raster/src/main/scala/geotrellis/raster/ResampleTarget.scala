@@ -14,20 +14,24 @@
  * limitations under the License.
  */
 
-package geotrellis.raster.resample
+package geotrellis.raster
 
-import geotrellis.raster.{RasterExtent, GridExtent, GridBounds}
-import geotrellis.raster.CellSize
 import geotrellis.vector._
 import geotrellis.vector.io.json._
+import geotrellis.raster.reproject.Reproject
+
+import _root_.io.circe._
+import _root_.io.circe.syntax._
 
 import spire.math.Integral
 import spire.implicits._
-import _root_.io.circe.Json
 
 /** Represents a strategy/target for resampling */
 sealed trait ResampleTarget[N] {
-  /** Provided a gridextent, construct a new [[GridExtent]] that satisfies target constraint(s) */
+  /**
+   * Provided a gridextent, construct a new [[GridExtent]] that satisfies target constraint(s)
+   * @param source a grid extent to be reshaped; call by name as it does not need to be called in all cases
+  */
   def apply(source: => GridExtent[N]): GridExtent[N]
 
   /** Create a geojson representation of this transformation designed for display on [[geojson.io]]
@@ -40,14 +44,16 @@ sealed trait ResampleTarget[N] {
     val sourceYs = source.extent.ymin to source.extent.ymax by source.cellSize.height
     val sourceCols = sourceXs.map { x => LineString(Point(x, source.extent.ymin), Point(x, source.extent.ymax)) }
     val sourceRows = sourceYs.map { y => LineString(Point(source.extent.xmin, y), Point(source.extent.xmax, y)) }
-    val sourceMLS = Feature(MultiLineString(sourceCols ++ sourceRows), Map("type" -> "source", "stroke" -> "#FF0000"))
+    val sourceData = Map("type" -> "source".asJson, "stroke" -> "#FF0000".asJson, "extent" -> source.extent.asJson, "cellsize" -> source.cellSize.asJson)
+    val sourceMLS = Feature(MultiLineString(sourceCols ++ sourceRows), sourceData)
 
     val target = apply(source)
     val targetXs = target.extent.xmin to target.extent.xmax by target.cellSize.width
     val targetYs = target.extent.ymin to target.extent.ymax by target.cellSize.height
     val targetCols = targetXs.map { x => LineString(Point(x, target.extent.ymin), Point(x, target.extent.ymax)) }
     val targetRows = targetYs.map { y => LineString(Point(target.extent.xmin, y), Point(target.extent.xmax, y)) }
-    val targetMLS = Feature(MultiLineString(targetCols ++ targetRows), Map("type" -> "resampled", "stroke" -> "#0000FF"))
+    val targetData = Map("type" -> "resampled".asJson, "stroke" -> "#0000FF".asJson, "extent" -> target.extent.asJson, "cellsize" -> target.cellSize.asJson)
+    val targetMLS = Feature(MultiLineString(targetCols ++ targetRows), targetData)
 
     JsonFeatureCollection(List(sourceMLS, targetMLS)).asJson
   }
@@ -59,12 +65,16 @@ case class TargetDimensions[N: Integral](cols: N, rows: N) extends ResampleTarge
     new GridExtent(source.extent, cols, rows)
 }
 
-/** Snap to a target grid - useful prior to comparison between rasters
+/**
+ * Snap to a target grid - useful prior to comparison between rasters
  * as a means of ensuring clear correspondence between underlying cell values
  */
 case class TargetGrid[N: Integral](grid: GridExtent[Long]) extends ResampleTarget[N] {
-  def apply(source: => GridExtent[N]): GridExtent[N] =
-    grid.createAlignedGridExtent(source.extent).toGridType[N]
+  def apply(source: => GridExtent[N]): GridExtent[N] = {
+    val res = grid.createAlignedGridExtent(source.extent).toGridType[N]
+    println("targetgrid", grid, source, res)
+    res
+  }
 }
 
 /** Resample, sampling values into a user-supplied [[GridExtent]] */
@@ -73,7 +83,8 @@ case class TargetGridExtent[N: Integral](gridExtent: GridExtent[N]) extends Resa
     gridExtent
 }
 
-/** Resample, aiming for a grid which has the provided [[CellSize]]
+/**
+ * Resample, aiming for a grid which has the provided [[CellSize]]
  *
  * @note Targetting a specific size for each cell in the grid has consequences for the
  * [[Extent]] because e.g. an extent's width *must* be evenly divisible by the width of
@@ -91,7 +102,7 @@ case class TargetCellSize[N: Integral](cellSize: CellSize) extends ResampleTarge
     val newCols = (source.extent.width / cellSize.width + 0.5).toLong
     val newRows = (source.extent.height / cellSize.height + 0.5).toLong
 
-    //Adjust the extent to match the pixel size.
+    // Adjust the extent to match the desired pixel size if the fit isn't perfect
     val adjustedExtent =
       Extent(source.extent.xmin, source.extent.ymax - (cellSize.height * newRows), source.extent.xmin + (cellSize.width * newCols), source.extent.ymax)
 
@@ -99,8 +110,56 @@ case class TargetCellSize[N: Integral](cellSize: CellSize) extends ResampleTarge
   }
 }
 
+case object IdentityResampleTarget extends ResampleTarget[Long] {
+  def apply(source: => GridExtent[Long]): GridExtent[Long] = source
+}
+
 /** Resample, targetting the exact boundary encoded in the provided [[GridBounds]] */
 case class TargetGridBounds[N: Integral](bounds: GridBounds[N]) extends ResampleTarget[N] {
   def apply(source: => GridExtent[N]): GridExtent[N] =
     source.createAlignedGridExtent(source.extentFor(bounds, clamp=false))
+}
+
+
+object ResampleTarget {
+  /** Used when reprojecting to original RasterSource CRS, pick-out the grid */
+  private[geotrellis] def fromReprojectOptions(options: Reproject.Options): ResampleTarget[Long] ={
+    if (options.targetRasterExtent.isDefined) {
+      TargetGridExtent(options.targetRasterExtent.get.toGridType[Long])
+    } else if (options.parentGridExtent.isDefined) {
+      TargetGrid(options.parentGridExtent.get)
+    } else if (options.targetCellSize.isDefined) {
+      ??? // TODO: convert from CellSize to Column count based on ... something
+    } else {
+      IdentityResampleTarget
+    }
+  }
+
+  /** Used when resampling on already reprojected RasterSource */
+  private[geotrellis] def toReprojectOptions[N: Integral](
+    current: GridExtent[Long],
+    resampleTarget: ResampleTarget[N],
+    resampleMethod: ResampleMethod
+  ): Reproject.Options = {
+    resampleTarget match {
+      case TargetDimensions(cols, rows) =>
+        val updated = current.withDimensions(cols.toLong, rows.toLong).toGridType[Int]
+        Reproject.Options(method = resampleMethod, targetRasterExtent = Some(updated.toRasterExtent))
+
+      case TargetGrid(grid) =>
+        Reproject.Options(method = resampleMethod, parentGridExtent = Some(grid.toGridType[Long]))
+
+      case TargetGridExtent(gridExtent) =>
+        Reproject.Options(method = resampleMethod, targetRasterExtent = Some(gridExtent.toGridType[Int].toRasterExtent))
+
+      case TargetCellSize(cellSize) =>
+        Reproject.Options(method = resampleMethod, targetCellSize = Some(cellSize))
+
+      case tgb@TargetGridBounds(bounds) =>
+        Reproject.Options(method = resampleMethod, targetRasterExtent = Some(tgb(current.toGridType[N]).toRasterExtent))
+
+      case IdentityResampleTarget =>
+        Reproject.Options.DEFAULT.copy(method = resampleMethod)
+    }
+  }
 }

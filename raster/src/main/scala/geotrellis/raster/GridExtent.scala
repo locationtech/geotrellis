@@ -425,7 +425,9 @@ object GridExtent {
         options
           .targetRasterExtent
           .map(_.toGridType[N])
-          .getOrElse(ReprojectRasterExtent(self, transform, options = options))
+          .getOrElse(ReprojectRasterExtent(self, transform, None))
+          // TODO revisit this
+          //options = options))
       }
 
     def reproject(src: CRS, dest: CRS): GridExtent[N] = reproject(src, dest, Options.DEFAULT)

@@ -47,7 +47,7 @@ trait ByteReader {
 object ByteReader {
   implicit def byteBuffer2ByteReader(byteBuffer: ByteBuffer): ByteReader = {
     new ByteReader() {
-      def position: Long = byteBuffer.position.toLong
+      def position: Long = byteBuffer.position().toLong
       def position(i: Long): ByteReader = { byteBuffer.position(i.toInt) ; this }
 
       def getBytes(length: Int): Array[Byte] = {

@@ -32,7 +32,7 @@ object RasterReprojectOptions {
 }
 
 object Reproject {
-  case class Options(
+  case class OldOptions(
     rasterReprojectOptions: RasterReprojectOptions = RasterReprojectOptions.DEFAULT,
     /** Attempts to match the total layer extent.
       * Warning: This should only be used on layers with smaller extents, and only
@@ -42,14 +42,4 @@ object Reproject {
       */
     matchLayerExtent: Boolean = false
   )
-
-  object Options {
-    def DEFAULT = Options()
-
-    implicit def rasterReprojectOptionsToOptions(rro: RasterReprojectOptions): Options =
-      Options(rasterReprojectOptions = rro)
-
-   implicit def resampleMethodToOptions(method: ResampleMethod): Options =
-      Options(rasterReprojectOptions = RasterReprojectOptions(method = method))
-  }
 }

@@ -31,20 +31,25 @@ trait SinglebandRasterReprojectMethods extends RasterReprojectMethods[Singleband
     transform: Transform,
     inverseTransform: Transform,
     resampleTarget: Option[ResampleTarget[N]]
-  ): SinglebandRaster = {
-    reproject(transform, inverseTransform, resampleTarget)
-  }
+  ): SinglebandRaster =
+    reproject(transform, inverseTransform, resampleTarget, NearestNeighbor, 0.0)
 
   def reproject[N: Integral](
     transform: Transform,
     inverseTransform: Transform,
-    resampleTarget: ResampleTarget[N],
+    resampleTarget: Option[ResampleTarget[N]],
     resampleMethod: ResampleMethod = NearestNeighbor,
     errorThreshold: Double = 0.0
   ): SinglebandRaster = {
     val Raster(tile, extent) = self
 
-    val targetRasterExtent: RasterExtent = resampleTarget(self.rasterExtent.toGridType[N]).toRasterExtent
+    val targetRasterExtent = (resampleTarget match {
+      case Some(rt) =>
+        rt(self.rasterExtent.toGridType[N]).toRasterExtent
+      case None =>
+        ReprojectRasterExtent(self.rasterExtent.toGridType[N], transform, None)
+    }).toRasterExtent
+    //val targetRasterExtent: RasterExtent = resampleTarget(self.rasterExtent.toGridType[N]).toRasterExtent
 
     val RasterExtent(newExtent, newCellWidth, newCellHeight, newCols, newRows) = targetRasterExtent
 
@@ -57,7 +62,7 @@ trait SinglebandRasterReprojectMethods extends RasterReprojectMethods[Singleband
         RowTransform.exact(inverseTransform)
 
     // The map coordinates of the destination raster
-    val (topLeftX, topLeftY) = targetRasterExtent.gridToMap(0,0)
+    val (topLeftX, topLeftY) = targetRasterExtent.gridToMap(0, 0)
     val destX = Array.ofDim[Double](newCols)
     var currX = topLeftX
     cfor(0)(_ < newCols, _ + 1) { i =>
