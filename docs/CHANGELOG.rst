@@ -131,6 +131,7 @@ Fixes & Updates
 - Bump proj4 version to fix multiple performance issues (`#3039 <https://github.com/locationtech/geotrellis/pull/3039>`_).
 - Update dependencies (`#3053 <https://github.com/locationtech/geotrellis/pull/3053>`_).
 - Fix HttpRangeReader swallows 404 error (`#3073 https://github.com/locationtech/geotrellis/pull/3073`_)
+- Add a ToSpatial function for the collections API (`#3082 https://github.com/locationtech/geotrellis/pull/3082`_)
 
 2.3.0
 -----
