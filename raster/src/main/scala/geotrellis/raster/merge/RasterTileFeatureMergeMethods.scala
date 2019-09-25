@@ -24,7 +24,7 @@ import cats.Semigroup
 
 
 abstract class RasterTileFeatureMergeMethods[
-  T <: CellGrid[Int] : (? => TileMergeMethods[T]),
+  T <: CellGrid[Int] : (* => TileMergeMethods[T]),
   D : Semigroup
 ](val self: TileFeature[Raster[T], D])(implicit ev0: Raster[T] => RasterMergeMethods[T]) extends MethodExtensions[TileFeature[Raster[T], D]] {
   import Implicits._

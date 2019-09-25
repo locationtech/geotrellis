@@ -35,7 +35,7 @@ import org.apache.spark.rdd._
 
 object CollectTileLayerMetadata {
   private def collectMetadata[
-    K: (? => TilerKeyMethods[K, K2]),
+    K: (* => TilerKeyMethods[K, K2]),
     V <: CellGrid[Int],
     K2: SpatialComponent: Boundable
   ](rdd: RDD[(K, V)]): (Extent, CellType, CellSize, KeyBounds[K2]) = {
@@ -59,7 +59,7 @@ object CollectTileLayerMetadata {
   }
 
   private def collectMetadataWithCRS[
-    K: GetComponent[?, ProjectedExtent]: (? => TilerKeyMethods[K, K2]),
+    K: GetComponent[*, ProjectedExtent]: (* => TilerKeyMethods[K, K2]),
     V <: CellGrid[Int],
     K2: SpatialComponent: Boundable
   ](rdd: RDD[(K, V)]): (Extent, CellType, CellSize, KeyBounds[K2], CRS) = {
@@ -91,7 +91,7 @@ object CollectTileLayerMetadata {
     * TileLayout.
     */
   def fromRDD[
-    K: (? => TilerKeyMethods[K, K2]),
+    K: (* => TilerKeyMethods[K, K2]),
     V <: CellGrid[Int],
     K2: SpatialComponent: Boundable
   ](rdd: RDD[(K, V)], crs: CRS, layout: LayoutDefinition): TileLayerMetadata[K2] = {
@@ -105,7 +105,7 @@ object CollectTileLayerMetadata {
     * create the LayoutDefinition.
     */
   def fromRDD[
-    K: (? => TilerKeyMethods[K, K2]) ,
+    K: (* => TilerKeyMethods[K, K2]) ,
     V <: CellGrid[Int],
     K2: SpatialComponent: Boundable
   ](rdd: RDD[(K, V)], crs: CRS, scheme: LayoutScheme): (Int, TileLayerMetadata[K2]) = {
@@ -121,7 +121,7 @@ object CollectTileLayerMetadata {
     * [[geotrellis.spark.tiling.LayoutDefinition]].
     */
   def fromRDD[
-    K: (? => TilerKeyMethods[K, K2]) ,
+    K: (* => TilerKeyMethods[K, K2]) ,
     V <: CellGrid[Int],
     K2: SpatialComponent: Boundable
   ](rdd: RDD[(K, V)], crs: CRS, scheme: ZoomedLayoutScheme):
@@ -134,7 +134,7 @@ object CollectTileLayerMetadata {
     * zoom value.
     */
   def fromRDD[
-    K: (? => TilerKeyMethods[K, K2]) ,
+    K: (* => TilerKeyMethods[K, K2]) ,
     V <: CellGrid[Int],
     K2: SpatialComponent: Boundable
   ](rdd: RDD[(K, V)], crs: CRS, scheme: ZoomedLayoutScheme, maxZoom: Int):
@@ -142,7 +142,7 @@ object CollectTileLayerMetadata {
       _fromRDD[K, V, K2](rdd, crs, scheme, Some(maxZoom))
 
   private def _fromRDD[
-    K: (? => TilerKeyMethods[K, K2]) ,
+    K: (* => TilerKeyMethods[K, K2]) ,
     V <: CellGrid[Int],
     K2: SpatialComponent: Boundable
   ](rdd: RDD[(K, V)], crs: CRS, scheme: ZoomedLayoutScheme, maxZoom: Option[Int]):
@@ -157,7 +157,7 @@ object CollectTileLayerMetadata {
   }
 
   def fromRDD[
-    K: GetComponent[?, ProjectedExtent]: (? => TilerKeyMethods[K, K2]),
+    K: GetComponent[*, ProjectedExtent]: (* => TilerKeyMethods[K, K2]),
     V <: CellGrid[Int],
     K2: SpatialComponent: Boundable
   ](rdd: RDD[(K, V)], scheme: LayoutScheme): (Int, TileLayerMetadata[K2]) = {
@@ -168,7 +168,7 @@ object CollectTileLayerMetadata {
   }
 
   def fromRDD[
-    K: GetComponent[?, ProjectedExtent]: (? => TilerKeyMethods[K, K2]),
+    K: GetComponent[*, ProjectedExtent]: (* => TilerKeyMethods[K, K2]),
     V <: CellGrid[Int],
     K2: SpatialComponent: Boundable
   ](rdd: RDD[(K, V)],  scheme: ZoomedLayoutScheme):
@@ -176,7 +176,7 @@ object CollectTileLayerMetadata {
       _fromRDD[K, V, K2](rdd, scheme, None)
 
   def fromRDD[
-    K: GetComponent[?, ProjectedExtent]: (? => TilerKeyMethods[K, K2]),
+    K: GetComponent[*, ProjectedExtent]: (* => TilerKeyMethods[K, K2]),
     V <: CellGrid[Int],
     K2: SpatialComponent: Boundable
   ](rdd: RDD[(K, V)], scheme: ZoomedLayoutScheme, maxZoom: Int):
@@ -184,7 +184,7 @@ object CollectTileLayerMetadata {
       _fromRDD[K, V, K2](rdd, scheme, Some(maxZoom))
 
   private def _fromRDD[
-    K: GetComponent[?, ProjectedExtent]: (? => TilerKeyMethods[K, K2]),
+    K: GetComponent[*, ProjectedExtent]: (* => TilerKeyMethods[K, K2]),
     V <: CellGrid[Int],
     K2: SpatialComponent: Boundable
   ](rdd: RDD[(K, V)], scheme: ZoomedLayoutScheme, maxZoom: Option[Int]):
@@ -199,7 +199,7 @@ object CollectTileLayerMetadata {
   }
 
   def fromRDD[
-    K: GetComponent[?, ProjectedExtent]: (? => TilerKeyMethods[K, K2]),
+    K: GetComponent[*, ProjectedExtent]: (* => TilerKeyMethods[K, K2]),
     V <: CellGrid[Int],
     K2: SpatialComponent: Boundable
   ](rdd: RDD[(K, V)], layoutDefinition: LayoutDefinition): TileLayerMetadata[K2] = {

@@ -73,7 +73,7 @@ object IterativeCostDistance {
     def value: Changes = list
   }
 
-  def computeResolution[K: (? => SpatialKey), V: (? => Tile)](
+  def computeResolution[K: (* => SpatialKey), V: (* => Tile)](
     friction: RDD[(K, V)] with Metadata[TileLayerMetadata[K]]
   ) = {
     val md = friction.metadata
@@ -86,7 +86,7 @@ object IterativeCostDistance {
     math.abs(meters / pixels)
   }
 
-  private def geometryToKeys[K: (? => SpatialKey)](
+  private def geometryToKeys[K: (* => SpatialKey)](
     md: TileLayerMetadata[K],
     g: Geometry
   ) = {
@@ -104,7 +104,7 @@ object IterativeCostDistance {
     keys.toList
   }
 
-  private def geometryMap[K: (? => SpatialKey)](
+  private def geometryMap[K: (* => SpatialKey)](
     md: TileLayerMetadata[K],
     gs: Seq[Geometry]
   ): Map[SpatialKey, Seq[Geometry]] = {
@@ -121,7 +121,7 @@ object IterativeCostDistance {
     * @param  geometries  The starting locations from-which to compute the cost of traveling
     * @param  maxCost     The maximum cost before pruning a path (in units of "seconds")
     */
-  def apply[K: (? => SpatialKey), V: (? => Tile)](
+  def apply[K: (* => SpatialKey), V: (* => Tile)](
     friction: RDD[(K, V)] with Metadata[TileLayerMetadata[K]],
     geometries: Seq[Geometry],
     maxCost: Double = Double.PositiveInfinity

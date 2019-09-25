@@ -22,7 +22,7 @@ import geotrellis.util.MethodExtensions
 
 
 abstract class RasterTileFeatureCropMethods[
-  T <: CellGrid[Int]: (? => TileCropMethods[T]),
+  T <: CellGrid[Int]: (* => TileCropMethods[T]),
   D
 ](val self: TileFeature[Raster[T], D])(implicit val ev: Raster[T] => RasterCropMethods[T]) extends CropMethods[TileFeature[Raster[T], D]] {
   import Crop.Options

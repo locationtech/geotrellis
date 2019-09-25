@@ -29,7 +29,7 @@ import scala.collection.mutable
 import scala.reflect.ClassTag
 
 
-abstract class RDDViewshedMethods[K: (? => SpatialKey): ClassTag, V: (? => Tile)]
+abstract class RDDViewshedMethods[K: (* => SpatialKey): ClassTag, V: (* => Tile)]
     extends MethodExtensions[RDD[(K, V)] with Metadata[TileLayerMetadata[K]]] {
 
   def viewshed(

@@ -128,7 +128,7 @@ object IterativeViewshed {
   /**
     * Compute the resolution (in meters per pixel) of a layer.
     */
-  private def computeResolution[K: (? => SpatialKey), V: (? => Tile)](
+  private def computeResolution[K: (* => SpatialKey), V: (* => Tile)](
     elevation: RDD[(K, V)] with Metadata[TileLayerMetadata[K]]
   ) = {
     val md = elevation.metadata
@@ -160,7 +160,7 @@ object IterativeViewshed {
   /**
     * Elaborate a point with information from the layer.
     */
-  private def pointInfo[K: (? => SpatialKey), V: (? => Tile)](
+  private def pointInfo[K: (* => SpatialKey), V: (* => Tile)](
     rdd: RDD[(K, V)] with Metadata[TileLayerMetadata[K]])(
     pi: (Viewpoint, Int)
   )= {
@@ -207,7 +207,7 @@ object IterativeViewshed {
     * @param  epsilon      Rays within this many radians of horizontal (vertical) are considered to be horizontal (vertical)
     * @param  scatter      Whether to allow light to move (one pixel) normal to the ray
     */
-  def apply[K: (? => SpatialKey): ClassTag, V: (? => Tile)](
+  def apply[K: (* => SpatialKey): ClassTag, V: (* => Tile)](
     elevation: RDD[(K, V)] with Metadata[TileLayerMetadata[K]],
     ps: Seq[Viewpoint],
     maxDistance: Double,

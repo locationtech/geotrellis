@@ -33,7 +33,7 @@ object FileLayerCopier {
       def copy[
         K: AvroRecordCodec: Boundable: Encoder: Decoder: ClassTag,
         V: AvroRecordCodec: ClassTag,
-        M: Encoder: Decoder: Component[?, Bounds[K]]
+        M: Encoder: Decoder: Component[*, Bounds[K]]
       ](from: LayerId, to: LayerId): Unit = {
         if(targetAttributeStore.layerExists(to))
           throw new LayerExistsError(to)

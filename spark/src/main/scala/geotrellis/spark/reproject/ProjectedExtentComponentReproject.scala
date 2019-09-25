@@ -35,7 +35,7 @@ object ProjectedExtentComponentReproject {
 
   /** Reproject the given RDD and modify the key with the new CRS and extent
     */
-  def apply[K: Component[?, ProjectedExtent], V <: CellGrid[Int]: (? => TileReprojectMethods[V])](
+  def apply[K: Component[*, ProjectedExtent], V <: CellGrid[Int]: (* => TileReprojectMethods[V])](
     rdd: RDD[(K, V)],
     destCrs: CRS,
     options: Options

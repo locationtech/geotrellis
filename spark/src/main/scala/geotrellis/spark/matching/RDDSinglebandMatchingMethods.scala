@@ -25,7 +25,7 @@ import org.apache.spark.rdd.RDD
 import scala.reflect.ClassTag
 
 
-abstract class RDDSinglebandMatchingMethods[K, V: (? => Tile)] extends MethodExtensions[RDD[(K, V)]] {
+abstract class RDDSinglebandMatchingMethods[K, V: (* => Tile)] extends MethodExtensions[RDD[(K, V)]] {
 
   /**
     * Given a target histogram, this function produces an RDD of

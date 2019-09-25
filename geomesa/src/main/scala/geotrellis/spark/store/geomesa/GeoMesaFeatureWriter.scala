@@ -36,7 +36,7 @@ import org.opengis.feature.simple.SimpleFeatureType
   logger.error("GeoMesa support is experimental")
 
   /** $experimental */
-  @experimental def write[G <: Geometry, D: ? => Seq[(String, Any)]: λ[α => Feature[G, α] => FeatureToGeoMesaSimpleFeatureMethods[G, α]]]
+  @experimental def write[G <: Geometry, D: * => Seq[(String, Any)]: λ[α => Feature[G, α] => FeatureToGeoMesaSimpleFeatureMethods[G, α]]]
     (layerId: LayerId, simpleFeatureType: SimpleFeatureType, rdd: RDD[Feature[G, D]]): Unit = {
 
     val (sftTypeName, sftAttributeCount) = simpleFeatureType.getTypeName -> simpleFeatureType.getAttributeCount

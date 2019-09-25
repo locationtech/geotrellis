@@ -47,7 +47,7 @@ case class PersistenceSpecLayerIds(
 abstract class PersistenceSpec[
   K: AvroRecordCodec: Boundable: Encoder: Decoder: ClassTag,
   V: AvroRecordCodec: ClassTag,
-  M: Encoder: Decoder: Component[?, Bounds[K]]
+  M: Encoder: Decoder: Component[*, Bounds[K]]
 ] extends FunSpec with Matchers with BeforeAndAfterAll {
 
   type TestReader = FilteringLayerReader[LayerId]

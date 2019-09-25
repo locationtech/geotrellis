@@ -63,7 +63,7 @@ object CollectionFocalOperation {
       apply(collection, neighborhood, rasterCollection.metadata.tileBounds)(calc)
     }
 
-  private def applyOnRaster[K: SpatialComponent: GetComponent[?, SpatialKey]](
+  private def applyOnRaster[K: SpatialComponent: GetComponent[*, SpatialKey]](
     bufferedTiles: Seq[(K, BufferedTile[Tile])],
     neighborhood: Neighborhood,
     keyToExtent: SpatialKey => Extent
@@ -77,7 +77,7 @@ object CollectionFocalOperation {
         key -> calc(Raster(tile, keyToExtent(spatialKey)), Some(gridBounds))
       }
 
-  def applyOnRaster[K: SpatialComponent: GetComponent[?, SpatialKey]](
+  def applyOnRaster[K: SpatialComponent: GetComponent[*, SpatialKey]](
     collection: Seq[(K, Tile)],
     neighborhood: Neighborhood,
     layerBounds: TileBounds,
@@ -91,7 +91,7 @@ object CollectionFocalOperation {
       keyToExtent
     )(calc)
 
-  def applyOnRaster[K: SpatialComponent: GetComponent[?, SpatialKey]](
+  def applyOnRaster[K: SpatialComponent: GetComponent[*, SpatialKey]](
     rasterCollection: TileLayerCollection[K],
     neighborhood: Neighborhood
   )(

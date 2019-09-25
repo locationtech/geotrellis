@@ -23,7 +23,7 @@ import geotrellis.util.MethodExtensions
 import org.apache.spark.rdd.RDD
 
 
-abstract class RDDSinglebandSigmoidalMethods[K, V: (? => Tile)] extends MethodExtensions[RDD[(K, V)]] {
+abstract class RDDSinglebandSigmoidalMethods[K, V: (* => Tile)] extends MethodExtensions[RDD[(K, V)]] {
 
   /**
     * Given parameters alpha and beta, return an RDD of tiles

@@ -34,7 +34,7 @@ object Filter {
     * @param  keyBounds A sequence of KeyBounds[K] objects
     * @return           A filtered TileLayerRDD
     */
-  def apply[K: Boundable, V, M: Component[?, Bounds[K]]](
+  def apply[K: Boundable, V, M: Component[*, Bounds[K]]](
     rdd: RDD[(K, V)] with Metadata[M],
     keyBounds: Seq[KeyBounds[K]]
   ): RDD[(K, V)] with Metadata[M] =
@@ -61,7 +61,7 @@ object Filter {
         rdd
   }
 
-  def apply[K: Boundable, V, M: Component[?, Bounds[K]]](
+  def apply[K: Boundable, V, M: Component[*, Bounds[K]]](
     rdd: RDD[(K, V)] with Metadata[M]
   ): BoundLayerQuery[K, M, RDD[(K, V)] with Metadata[M]] =
     new BoundLayerQuery(new LayerQuery, { q => apply(rdd, q(rdd.metadata)) })

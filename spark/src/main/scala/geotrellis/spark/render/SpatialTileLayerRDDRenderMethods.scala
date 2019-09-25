@@ -25,7 +25,7 @@ import geotrellis.spark._
 import geotrellis.util._
 import org.apache.spark.rdd.RDD
 
-abstract class SpatialTileLayerRDDRenderMethods[M: GetComponent[?, CRS]: GetComponent[?, LayoutDefinition]] extends MethodExtensions[RDD[(SpatialKey, Tile)] with Metadata[M]] {
+abstract class SpatialTileLayerRDDRenderMethods[M: GetComponent[*, CRS]: GetComponent[*, LayoutDefinition]] extends MethodExtensions[RDD[(SpatialKey, Tile)] with Metadata[M]] {
   /**
     * Renders each tile as a GeoTiff, represented by the bytes of the GeoTiff file.
     */
@@ -33,7 +33,7 @@ abstract class SpatialTileLayerRDDRenderMethods[M: GetComponent[?, CRS]: GetComp
     Render.renderGeoTiff(self)
 }
 
-abstract class SpatialMultiBandTileLayerRDDRenderMethods[M: GetComponent[?, CRS]: GetComponent[?, LayoutDefinition]] extends MethodExtensions[RDD[(SpatialKey, MultibandTile)] with Metadata[M]] {
+abstract class SpatialMultiBandTileLayerRDDRenderMethods[M: GetComponent[*, CRS]: GetComponent[*, LayoutDefinition]] extends MethodExtensions[RDD[(SpatialKey, MultibandTile)] with Metadata[M]] {
   /**
     * Renders each tile as a GeoTiff, represented by the bytes of the GeoTiff file.
     */

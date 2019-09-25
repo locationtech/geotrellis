@@ -31,7 +31,7 @@ import java.net.URI
 trait OverzoomingValueReader extends ValueReader[LayerId] {
   def overzoomingReader[
     K: AvroRecordCodec: Decoder: SpatialComponent: ClassTag,
-    V <: CellGrid[Int]: AvroRecordCodec: ? => TileResampleMethods[V]
+    V <: CellGrid[Int]: AvroRecordCodec: * => TileResampleMethods[V]
   ](layerId: LayerId, resampleMethod: ResampleMethod): Reader[K, V] = new Reader[K, V] {
     val LayerId(layerName, requestedZoom) = layerId
     val maxAvailableZoom = attributeStore.availableZoomLevels(layerName).max

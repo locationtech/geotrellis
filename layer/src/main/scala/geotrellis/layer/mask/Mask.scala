@@ -73,7 +73,7 @@ trait Mask {
   private def _mask[
     K: SpatialComponent,
     V,
-    M: GetComponent[?, LayoutDefinition]
+    M: GetComponent[*, LayoutDefinition]
   ](seq: Seq[(K, V)] with Metadata[M], masker: (Extent, V) => Option[V]): Seq[(K, V)] with Metadata[M] = {
     val mapTransform = seq.metadata.getComponent[LayoutDefinition].mapTransform
     val masked =
@@ -90,8 +90,8 @@ trait Mask {
 
   def apply[
     K: SpatialComponent,
-    V: (? => TileMaskMethods[V]),
-    M: GetComponent[?, LayoutDefinition]
+    V: (* => TileMaskMethods[V]),
+    M: GetComponent[*, LayoutDefinition]
   ](seq: Seq[(K, V)] with Metadata[M], geoms: Traversable[Polygon], options: Options): Seq[(K, V)] with Metadata[M] =
     _mask(seq, { case (tileExtent, tile) =>
       val tileGeoms = geoms.flatMap { g =>
@@ -107,8 +107,8 @@ trait Mask {
   /** Masks this raster by the given MultiPolygons. */
   def apply[
     K: SpatialComponent,
-    V: (? => TileMaskMethods[V]),
-    M: GetComponent[?, LayoutDefinition]
+    V: (* => TileMaskMethods[V]),
+    M: GetComponent[*, LayoutDefinition]
   ](seq: Seq[(K, V)] with Metadata[M], geoms: Traversable[MultiPolygon], options: Options)(implicit d: DummyImplicit): Seq[(K, V)] with Metadata[M] =
     _mask(seq, { case (tileExtent, tile) =>
       val tileGeoms = geoms.flatMap { g =>
@@ -124,8 +124,8 @@ trait Mask {
   /** Masks this raster by the given Extent. */
   def apply[
     K: SpatialComponent,
-    V: (? => TileMaskMethods[V]),
-    M: GetComponent[?, LayoutDefinition]
+    V: (* => TileMaskMethods[V]),
+    M: GetComponent[*, LayoutDefinition]
   ](seq: Seq[(K, V)] with Metadata[M], ext: Extent, options: Options): Seq[(K, V)] with Metadata[M] =
     _mask(seq, { case (tileExtent, tile) =>
       val tileExts = ext.intersection(tileExtent)
@@ -138,8 +138,8 @@ trait Mask {
 
   def apply[
     K: SpatialComponent,
-    V: (? => TileMaskMethods[V]),
-    M: GetComponent[?, LayoutDefinition]
+    V: (* => TileMaskMethods[V]),
+    M: GetComponent[*, LayoutDefinition]
   ](seq: Seq[(K, V)] with Metadata[M], ext: Extent): Seq[(K, V)] with Metadata[M] = {
     val options = Options.DEFAULT
     _mask(seq, {

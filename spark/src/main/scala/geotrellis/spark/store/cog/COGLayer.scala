@@ -65,7 +65,7 @@ object COGLayer {
     */
   def fromLayerRDD[
     K: SpatialComponent: Ordering: Encoder: ClassTag,
-    V <: CellGrid[Int]: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]: ? => TileCropMethods[V]: GeoTiffBuilder
+    V <: CellGrid[Int]: ClassTag: * => TileMergeMethods[V]: * => TilePrototypeMethods[V]: * => TileCropMethods[V]: GeoTiffBuilder
   ](
      rdd: RDD[(K, V)] with Metadata[TileLayerMetadata[K]],
      baseZoom: Int,
@@ -110,7 +110,7 @@ object COGLayer {
     */
   def fromLayerRDD[
     K: SpatialComponent: Ordering: Encoder: ClassTag,
-    V <: CellGrid[Int]: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]: ? => TileCropMethods[V]: GeoTiffBuilder
+    V <: CellGrid[Int]: ClassTag: * => TileMergeMethods[V]: * => TilePrototypeMethods[V]: * => TileCropMethods[V]: GeoTiffBuilder
   ](
      rdd: RDD[(K, V)] with Metadata[TileLayerMetadata[K]],
      baseZoom: Int,
@@ -145,7 +145,7 @@ object COGLayer {
 
   private def buildCOGLayer[
     K: SpatialComponent: Ordering: Encoder: ClassTag,
-    V <: CellGrid[Int]: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]: ? => TileCropMethods[V]: GeoTiffBuilder
+    V <: CellGrid[Int]: ClassTag: * => TileMergeMethods[V]: * => TilePrototypeMethods[V]: * => TileCropMethods[V]: GeoTiffBuilder
   ](
      rdd: RDD[(K, V)] with Metadata[TileLayerMetadata[K]],
      baseZoom: Int,
@@ -201,7 +201,7 @@ object COGLayer {
 
   private def generateGeoTiffRDD[
     K: SpatialComponent: Ordering: Encoder: ClassTag,
-    V <: CellGrid[Int]: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]: ? => TileCropMethods[V]: GeoTiffBuilder
+    V <: CellGrid[Int]: ClassTag: * => TileMergeMethods[V]: * => TilePrototypeMethods[V]: * => TileCropMethods[V]: GeoTiffBuilder
   ](
      rdd: RDD[(K, V)],
      zoomRange: ZoomRange ,
@@ -283,7 +283,7 @@ object COGLayer {
     * Merge two COGs, may be used in COG layer update.
     * Merge will happen on per-segment basis, avoiding decompressing all segments at once.
     */
-  def mergeCOGs[V <: CellGrid[Int]: ? => CropMethods[V]: ? => TileMergeMethods[V]: GeoTiffBuilder](
+  def mergeCOGs[V <: CellGrid[Int]: * => CropMethods[V]: * => TileMergeMethods[V]: GeoTiffBuilder](
     previous: GeoTiff[V],
     update: GeoTiff[V]
   ): GeoTiff[V] = {
