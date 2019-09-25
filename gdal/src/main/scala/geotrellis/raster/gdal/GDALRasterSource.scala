@@ -110,11 +110,11 @@ class GDALRasterSource(
       }
   }
 
-  def reprojection(targetCRS: CRS, resampleGrid: ResampleGrid[Long] = IdentityResampleGrid, method: ResampleMethod = NearestNeighbor, strategy: OverviewStrategy = AutoHigherResolution): RasterSource =
-    new GDALRasterSource(dataPath, options.reproject(gridExtent, crs, targetCRS, resampleGrid, method))
+  def reprojection(targetCRS: CRS, resampleTarget: ResampleTarget[Long] = IdentityResampleTarget, method: ResampleMethod = NearestNeighbor, strategy: OverviewStrategy = AutoHigherResolution): RasterSource =
+    new GDALRasterSource(dataPath, options.reproject(gridExtent, crs, targetCRS, resampleTarget, method))
 
-  def resample(resampleGrid: ResampleGrid[Long], method: ResampleMethod, strategy: OverviewStrategy): RasterSource =
-    new GDALRasterSource(dataPath, options.resample(gridExtent, resampleGrid))
+  def resample(resampleTarget: ResampleTarget[Long], method: ResampleMethod, strategy: OverviewStrategy): RasterSource =
+    new GDALRasterSource(dataPath, options.resample(gridExtent, resampleTarget))
 
   /** Converts the contents of the GDALRasterSource to the [[TargetCellType]].
    *

@@ -28,6 +28,8 @@ import geotrellis.util._
 
 import org.apache.spark.rdd._
 
+import spire.math.Integral
+
 import scala.reflect.ClassTag
 
 object ProjectedExtentComponentReproject {
@@ -38,22 +40,14 @@ object ProjectedExtentComponentReproject {
   def apply[K: Component[*, ProjectedExtent], V <: CellGrid[Int]: (* => TileReprojectMethods[V])](
     rdd: RDD[(K, V)],
     destCrs: CRS,
-    options: RasterReprojectOptions
+    resampleTarget: ResampleTarget,
+    resampleMethod: ResampleMethod = ResampleMethods.NearestNeighbor,
+    errorThreshold: Double = 0.125
   ): RDD[(K, V)] =
     rdd.map { case (key, tile) =>
       val ProjectedExtent(extent, crs) = key.getComponent[ProjectedExtent]
-      val Raster(newTile , newExtent) = {
-        // TODO revisit this before merge to make sure things work as expected
-        val resampleTarget =
-          if (options.targetRasterExtent.isDefined) {
-            TargetGridExtent[Long](options.targetRasterExtent.get.toGridType[Long])
-          } else if (options.targetCellSize.isDefined) {
-            TargetCellSize[Long](options.targetCellSize.get)
-          } else if (options.parentGridExtent.isDefined) {
-            TargetGrid[Long](options.parentGridExtent.get)
-          } else IdentityResampleTarget
+      val Raster(newTile , newExtent) =
         tile.reproject(extent, crs, destCrs, resampleTarget)
-      }
       val newKey = key.setComponent(ProjectedExtent(newExtent, destCrs))
       (newKey, newTile)
     }

@@ -21,7 +21,6 @@ import geotrellis.raster._
 import geotrellis.vector.Extent
 import geotrellis.proj4.CRS
 import geotrellis.raster.crop.Crop
-import geotrellis.raster.resample.{ResampleMethod, TargetGridExtent, ResampleTarget}
 
 import spire.math.Integral
 
@@ -111,7 +110,7 @@ case class MultibandGeoTiff(
     }
 
     val segments: Seq[((Int, Int), MultibandTile)] = Raster(arrayTile, extent)
-      .resample(TargetGridExtent(overviewRasterExtent), resampleMethod)
+      .resample(TargetGridExtent[Int](overviewRasterExtent), resampleMethod)
       .tile
       .split(segmentLayout.tileLayout)
       .zipWithIndex

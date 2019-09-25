@@ -61,7 +61,7 @@ class GeoTiffRasterSourceSpec extends FunSpec with RasterMatchers with GivenWhen
       GeoTiffReader
         .readMultiband(url, streaming = false)
         .raster
-        .resample((source.cols * 0.95).toInt , (source.rows * 0.95).toInt, NearestNeighbor)
+        .resample(TargetDimensions((source.cols * 0.95).toInt , (source.rows * 0.95).toInt), NearestNeighbor)
         // resample to 0.9 so we RasterSource picks the base layer and not an overview
 
     val resampledSource =

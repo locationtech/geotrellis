@@ -18,7 +18,7 @@ package geotrellis.raster.render.ascii
 
 import geotrellis.raster.io.geotiff.{GeoTiffTestUtils, SinglebandGeoTiff}
 import geotrellis.raster.render.ascii.AsciiArtEncoder.Palette
-import geotrellis.raster.resample.TargetDimensions
+import geotrellis.raster.TargetDimensions
 import geotrellis.raster.testkit.TileBuilders
 import org.scalatest.{FunSuite, Inspectors, Matchers}
 

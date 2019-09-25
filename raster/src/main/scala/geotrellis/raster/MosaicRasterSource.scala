@@ -19,7 +19,7 @@ package geotrellis.raster
 import geotrellis.vector._
 import geotrellis.raster._
 import geotrellis.raster.resample._
-import geotrellis.raster.reproject.Reproject
+import geotrellis.raster.reproject._
 import geotrellis.proj4.{CRS, WebMercator}
 import geotrellis.raster.io.geotiff.{AutoHigherResolution, OverviewStrategy}
 
@@ -81,17 +81,25 @@ trait MosaicRasterSource extends RasterSource {
     *
     * @see [[geotrellis.contrib.vlm.RasterSource.reproject]]
     */
-  def reprojection(targetCRS: CRS, resampleGrid: ResampleGrid[Long] = IdentityResampleGrid, method: ResampleMethod = NearestNeighbor, strategy: OverviewStrategy = AutoHigherResolution): RasterSource =
+  def reprojection(targetCRS: CRS, resampleTarget: ResampleTarget[Long] = IdentityResampleTarget, method: ResampleMethod = NearestNeighbor, strategy: OverviewStrategy = AutoHigherResolution): RasterSource =
     MosaicRasterSource(
-      sources map { _.reproject(targetCRS, resampleGrid, method, strategy) },
+      sources map { _.reproject(targetCRS, resampleTarget, method, strategy) },
       crs,
       gridExtent.reproject(this.crs, targetCRS, Reproject.Options.DEFAULT.copy(method = method)),
       name
     )
 
   def read(extent: Extent, bands: Seq[Int]): Option[Raster[MultibandTile]] = {
-    val rasters = sources map { _.read(extent, bands) }
-    rasters.reduce
+    val rasters = sources map {
+       _.read(extent, bands) }
+    rasters.map { raster =>
+      val r = raster.get
+      println(r.extent)
+      println(r.tile.band(0).asciiDraw())
+    }
+    var red = rasters.reduce
+    println(red.get.tile.band(0).asciiDraw())
+    red
   }
 
   def read(bounds: GridBounds[Long], bands: Seq[Int]): Option[Raster[MultibandTile]] = {
@@ -99,8 +107,8 @@ trait MosaicRasterSource extends RasterSource {
     rasters.reduce
   }
 
-  def resample(resampleGrid: ResampleGrid[Long], method: ResampleMethod, strategy: OverviewStrategy): RasterSource = MosaicRasterSource(
-    sources map { _.resample(resampleGrid, method, strategy) }, crs, name)
+  def resample(resampleTarget: ResampleTarget[Long], method: ResampleMethod, strategy: OverviewStrategy): RasterSource = MosaicRasterSource(
+    sources map { _.resample(resampleTarget, method, strategy) }, crs, name)
 
   def convert(targetCellType: TargetCellType): RasterSource =
     MosaicRasterSource(sources map { _.convert(targetCellType) }, crs, name)
@@ -115,7 +123,12 @@ object MosaicRasterSource {
         val targetRE = RasterExtent(
           l.rasterExtent.extent combine r.rasterExtent.extent,
           List(l.rasterExtent.cellSize, r.rasterExtent.cellSize).minBy(_.resolution))
-        val result = l.resample(targetRE) merge r.resample(targetRE)
+        val result = l.resample(TargetGridExtent(targetRE)) merge r.resample(TargetGridExtent(targetRE))
+        val lr = l.resample(TargetGridExtent(targetRE))
+        val rr = r.resample(TargetGridExtent(targetRE))
+
+        println(s"lr: ${lr.tile.band(0).asciiDraw()}")
+        println(s"rr: ${rr.tile.band(0).asciiDraw()}")
         result
       }
     }

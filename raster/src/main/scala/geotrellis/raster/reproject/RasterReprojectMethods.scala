@@ -18,7 +18,6 @@ package geotrellis.raster.reproject
 
 import geotrellis.proj4._
 import geotrellis.raster._
-import geotrellis.raster.resample.ResampleTarget
 import geotrellis.util.MethodExtensions
 
 import spire.math.Integral

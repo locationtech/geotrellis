@@ -55,11 +55,11 @@ class GeoTiffRasterSource(
   lazy val gridExtent: GridExtent[Long] = tiff.rasterExtent.toGridType[Long]
   lazy val resolutions: List[GridExtent[Long]] = gridExtent :: tiff.overviews.map(_.rasterExtent.toGridType[Long])
 
-  def reprojection(targetCRS: CRS, resampleGrid: ResampleGrid[Long] = IdentityResampleGrid, method: ResampleMethod = NearestNeighbor, strategy: OverviewStrategy = AutoHigherResolution): GeoTiffReprojectRasterSource =
-    GeoTiffReprojectRasterSource(dataPath, targetCRS, resampleGrid, method, strategy, targetCellType = targetCellType, baseTiff = Some(tiff))
+  def reprojection(targetCRS: CRS, resampleTarget: ResampleTarget[Long] = IdentityResampleTarget, method: ResampleMethod = NearestNeighbor, strategy: OverviewStrategy = AutoHigherResolution): GeoTiffReprojectRasterSource =
+    GeoTiffReprojectRasterSource(dataPath, targetCRS, resampleTarget, method, strategy, targetCellType = targetCellType, baseTiff = Some(tiff))
 
-  def resample(resampleGrid: ResampleGrid[Long], method: ResampleMethod, strategy: OverviewStrategy): GeoTiffResampleRasterSource =
-    GeoTiffResampleRasterSource(dataPath, resampleGrid, method, strategy, targetCellType, Some(tiff))
+  def resample(resampleTarget: ResampleTarget[Long], method: ResampleMethod, strategy: OverviewStrategy): GeoTiffResampleRasterSource =
+    GeoTiffResampleRasterSource(dataPath, resampleTarget, method, strategy, targetCellType, Some(tiff))
 
   def convert(targetCellType: TargetCellType): GeoTiffRasterSource =
     GeoTiffRasterSource(dataPath, Some(targetCellType), Some(tiff))
@@ -67,6 +67,7 @@ class GeoTiffRasterSource(
   def read(extent: Extent, bands: Seq[Int]): Option[Raster[MultibandTile]] = {
     val bounds = gridExtent.gridBoundsFor(extent, clamp = false).toGridType[Int]
     val geoTiffTile = tiff.tile.asInstanceOf[GeoTiffMultibandTile]
+    print(extent, bounds)
     val it = geoTiffTile.crop(List(bounds), bands.toArray).map { case (gb, tile) =>
       // TODO: shouldn't GridExtent give me Extent for types other than N ?
       Raster(tile, gridExtent.extentFor(gb.toGridType[Long], clamp = false))
@@ -79,6 +80,7 @@ class GeoTiffRasterSource(
   }
 
   def read(bounds: GridBounds[Long], bands: Seq[Int]): Option[Raster[MultibandTile]] = {
+    println("bounds", bounds)
     val it = readBounds(List(bounds), bands)
 
     tiff.synchronized { if (it.hasNext) Some(it.next) else None }

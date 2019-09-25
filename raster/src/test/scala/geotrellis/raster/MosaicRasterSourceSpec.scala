@@ -87,28 +87,32 @@ class MosaicRasterSourceSpec extends FunSpec with RasterMatchers with GeoTiffTes
       val extentRead = Extent(0, 0, 1.5, 1)
       val expectation = Raster(
         MultibandTile(
-          IntConstantNoDataArrayTile(Array(1, 2, 3, 4, 1, 2,
-                                           5, 6, 7, 8, 5, 6,
-                                           9, 10, 11, 12, 9, 10,
+          IntConstantNoDataArrayTile(Array(1,  2,  3,  4,  1,  2,
+                                           5,  6,  7,  8,  5,  6,
+                                           9,  10, 11, 12, 9,  10,
                                            13, 14, 15, 16, 13, 14),
                                      6, 4)),
         extentRead
       )
       val result = mosaicRasterSource.read(extentRead, Seq(0)).get
+      print("res",result.tile.band(0).toArray.toList)
+      print("expect",expectation.tile.band(0).toArray.toList)
       result shouldEqual expectation
     }
 
     it("should get the expected tile from a gridbounds-based read") {
       val expectation = Raster(
         MultibandTile(
-          IntConstantNoDataArrayTile(Array(1, 2, 3, 4, 1, 2, 3, 4,
-                                           5, 6, 7, 8, 5, 6, 7, 8,
-                                           9, 10, 11, 12, 9, 10, 11, 12,
+          IntConstantNoDataArrayTile(Array(1,  2,  3,  4,  1,  2,  3,  4,
+                                           5,  6,  7,  8,  5,  6,  7,  8,
+                                           9,  10, 11, 12, 9,  10, 11, 12,
                                            13, 14, 15, 16, 13, 14, 15, 16),
                                      8, 4)),
           mosaicRasterSource.gridExtent.extent
       )
       val result = mosaicRasterSource.read(mosaicRasterSource.gridBounds, Seq(0)).get
+      print("res2",result.tile.band(0).toArray.toList)
+      print("expect2",expectation.tile.band(0).toArray.toList)
       result shouldEqual expectation
       result.extent shouldEqual expectation.extent
     }
