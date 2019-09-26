@@ -29,8 +29,8 @@ object Implicits extends Implicits
 trait Implicits {
   implicit class withLayerRDDCropMethods[
     K: SpatialComponent,
-    V <: CellGrid[Int]: (? => TileCropMethods[V]),
-    M: Component[?, Bounds[K]]: GetComponent[?, Extent]: GetComponent[?, LayoutDefinition]
+    V <: CellGrid[Int]: (* => TileCropMethods[V]),
+    M: Component[*, Bounds[K]]: GetComponent[*, Extent]: GetComponent[*, LayoutDefinition]
   ](val self: RDD[(K, V)] with Metadata[M])
       extends LayerRDDCropMethods[K, V, M]
 }

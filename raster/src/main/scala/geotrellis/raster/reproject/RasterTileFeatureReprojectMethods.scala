@@ -23,7 +23,7 @@ import geotrellis.util.MethodExtensions
 
 
 abstract class RasterTileFeatureReprojectMethods[
-  T <: CellGrid[Int]: (? => TileReprojectMethods[T]),
+  T <: CellGrid[Int]: (* => TileReprojectMethods[T]),
   D
 ](val self: TileFeature[Raster[T], D]) extends MethodExtensions[TileFeature[Raster[T], D]] {
   import Reproject.Options

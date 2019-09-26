@@ -43,8 +43,8 @@ object Regrid {
 
   def apply[
     K: SpatialComponent: ClassTag,
-    V <: CellGrid[Int]: ClassTag: Stitcher: (? => CropMethods[V]),
-    M: Component[?, LayoutDefinition]: Component[?, Bounds[K]]
+    V <: CellGrid[Int]: ClassTag: Stitcher: (* => CropMethods[V]),
+    M: Component[*, LayoutDefinition]: Component[*, Bounds[K]]
   ](layer: RDD[(K, V)] with Metadata[M], tileCols: Int, tileRows: Int): RDD[(K, V)] with Metadata[M] = {
     val md = layer.metadata
     val ld = md.getComponent[LayoutDefinition]
@@ -137,8 +137,8 @@ object Regrid {
 
   def apply[
     K: SpatialComponent: ClassTag,
-    V <: CellGrid[Int]: ClassTag: Stitcher: (? => CropMethods[V]),
-    M: Component[?, LayoutDefinition]: Component[?, Bounds[K]]
+    V <: CellGrid[Int]: ClassTag: Stitcher: (* => CropMethods[V]),
+    M: Component[*, LayoutDefinition]: Component[*, Bounds[K]]
   ](layer: RDD[(K, V)] with Metadata[M], tileSize: Int): RDD[(K, V)] with Metadata[M] = apply(layer, tileSize, tileSize)
 
 }

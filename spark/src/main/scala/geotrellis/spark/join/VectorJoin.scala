@@ -35,7 +35,7 @@ object VectorJoin {
     * @param  gs  An iterator containing the contents of the RDD
     * @return     An Iterator containing one envelope
     */
-  def calculateEnvelope[T : ? => Geometry](gs: Iterator[T]): Iterator[Envelope] = {
+  def calculateEnvelope[T : * => Geometry](gs: Iterator[T]): Iterator[Envelope] = {
     val env = gs.foldLeft(new Envelope)({ (env: Envelope, g: T) =>
       val Extent(xmin, ymin, xmax, ymax) = Extent(g.getEnvelopeInternal)
       val env2 = new Envelope(xmin, xmax, ymin, ymax)
@@ -62,8 +62,8 @@ object VectorJoin {
     * @return        An RDD of L-R pairs
     */
   def apply[
-    L: ClassTag : ? => Geometry,
-    R: ClassTag : ? => Geometry
+    L: ClassTag : * => Geometry,
+    R: ClassTag : * => Geometry
   ](
     left: RDD[L],
     right: RDD[R],

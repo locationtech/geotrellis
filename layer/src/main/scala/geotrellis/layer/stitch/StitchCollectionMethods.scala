@@ -24,8 +24,8 @@ import geotrellis.vector._
 import geotrellis.util._
 
 abstract class SpatialTileLayoutCollectionStitchMethods[
-  V <: CellGrid[Int]: Stitcher: ? => TilePrototypeMethods[V],
-  M: GetComponent[?, LayoutDefinition]
+  V <: CellGrid[Int]: Stitcher: * => TilePrototypeMethods[V],
+  M: GetComponent[*, LayoutDefinition]
 ] extends MethodExtensions[Seq[(SpatialKey, V)] with Metadata[M]] {
 
   def stitch(): Raster[V] = {

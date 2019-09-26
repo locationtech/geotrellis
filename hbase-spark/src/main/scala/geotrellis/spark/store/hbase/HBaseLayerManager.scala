@@ -38,28 +38,28 @@ class HBaseLayerManager(attributeStore: HBaseAttributeStore, instance: HBaseInst
   def copy[
     K: AvroRecordCodec: Boundable: Encoder: Decoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: Encoder: Decoder: Component[?, Bounds[K]]
+    M: Encoder: Decoder: Component[*, Bounds[K]]
   ](from: LayerId, to: LayerId): Unit =
     HBaseLayerCopier(instance).copy[K, V, M](from, to)
 
   def move[
     K: AvroRecordCodec: Boundable: Encoder: Decoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: Encoder: Decoder: Component[?, Bounds[K]]
+    M: Encoder: Decoder: Component[*, Bounds[K]]
   ](from: LayerId, to: LayerId): Unit =
     HBaseLayerMover(instance).move[K, V, M](from, to)
 
   def reindex[
     K: AvroRecordCodec: Boundable: Encoder: Decoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: Encoder: Decoder: Component[?, Bounds[K]]
+    M: Encoder: Decoder: Component[*, Bounds[K]]
   ](id: LayerId, keyIndexMethod: KeyIndexMethod[K]): Unit =
     HBaseLayerReindexer(instance).reindex[K, V, M](id, keyIndexMethod)
 
   def reindex[
     K: AvroRecordCodec: Boundable: Encoder: Decoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: Encoder: Decoder: Component[?, Bounds[K]]
+    M: Encoder: Decoder: Component[*, Bounds[K]]
   ](id: LayerId, keyIndex: KeyIndex[K]): Unit =
     HBaseLayerReindexer(instance).reindex[K, V, M](id, keyIndex)
 }

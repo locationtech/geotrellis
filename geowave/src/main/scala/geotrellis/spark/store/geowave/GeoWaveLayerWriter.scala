@@ -85,7 +85,7 @@ import resource._
   @experimental def write[
     K <: SpatialKey: ClassTag,
     V: TileOrMultibandTile: ClassTag,
-    M: Encoder: GetComponent[?, Bounds[K]]
+    M: Encoder: GetComponent[*, Bounds[K]]
   ](
     coverageName: String,
     bits: Int,
@@ -265,7 +265,7 @@ import resource._
   @experimental def write[
     K <: SpatialKey: ClassTag,
     V: TileOrMultibandTile: ClassTag,
-    M: Encoder: GetComponent[?, Bounds[K]]
+    M: Encoder: GetComponent[*, Bounds[K]]
   ](id: LayerId, layer: RDD[(K, V)] with Metadata[M], bits: Int = 0): Unit =
     layer.metadata.getComponent[Bounds[K]] match {
       case keyBounds: KeyBounds[K] =>
@@ -278,7 +278,7 @@ import resource._
   @experimental protected def _write[
     K <: SpatialKey: ClassTag,
     V: TileOrMultibandTile: ClassTag,
-    M: Encoder: GetComponent[?, Bounds[K]]
+    M: Encoder: GetComponent[*, Bounds[K]]
   ](
     layerId: LayerId,
     rdd: RDD[(K, V)] with Metadata[M],

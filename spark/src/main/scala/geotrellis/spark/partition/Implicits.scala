@@ -29,7 +29,7 @@ trait Implicits {
   implicit class withSpatiallyPartitionLayerMethods[
     K: Boundable: PartitionerIndex: ClassTag,
     V: ClassTag,
-    M: GetComponent[?, Bounds[K]]
+    M: GetComponent[*, Bounds[K]]
   ](self: RDD[(K, V)] with Metadata[M])
     extends SpatiallyPartitionMethods[K, V, M](self)
 }

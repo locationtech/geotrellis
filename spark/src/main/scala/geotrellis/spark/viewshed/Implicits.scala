@@ -27,6 +27,6 @@ import scala.reflect.ClassTag
 object Implicits extends Implicits
 
 trait Implicits {
-  implicit class withRDDViewshedMethods[K: (? => SpatialKey): ClassTag, V: (? => Tile)](val self: RDD[(K, V)] with Metadata[TileLayerMetadata[K]])
+  implicit class withRDDViewshedMethods[K: (* => SpatialKey): ClassTag, V: (* => Tile)](val self: RDD[(K, V)] with Metadata[TileLayerMetadata[K]])
       extends RDDViewshedMethods[K, V]
 }

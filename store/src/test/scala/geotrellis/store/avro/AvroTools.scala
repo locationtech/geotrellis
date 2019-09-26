@@ -34,7 +34,7 @@ trait AvroTools { self: Matchers =>
     fromJson shouldBe thing
   }
 
-  def roundTripWithNoDataCheck[T : AvroRecordCodec : (? => AvroNoDataCheckMethods[T])](thing: T): Unit = {
+  def roundTripWithNoDataCheck[T : AvroRecordCodec : (* => AvroNoDataCheckMethods[T])](thing: T): Unit = {
     val bytes = AvroEncoder.toBinary(thing)
     val fromBytes = AvroEncoder.fromBinary[T](bytes)
     fromBytes shouldBe thing

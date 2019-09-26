@@ -25,8 +25,8 @@ import geotrellis.util._
 
 abstract class TileCollectionMaskMethods[
     K: SpatialComponent,
-    V: (? => TileMaskMethods[V]),
-    M: GetComponent[?, LayoutDefinition]
+    V: (* => TileMaskMethods[V]),
+    M: GetComponent[*, LayoutDefinition]
 ] extends MethodExtensions[Seq[(K, V)] with Metadata[M]] {
   /** Masks this raster by the given Polygon. */
   def mask(geom: Polygon): Seq[(K, V)] with Metadata[M] = mask(Seq(geom), Options.DEFAULT)

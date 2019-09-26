@@ -28,6 +28,6 @@ package object render {
   implicit class withSpatialTileRDDRenderMethods(val self: RDD[(SpatialKey, Tile)])
       extends SpatialTileRDDRenderMethods
 
-  implicit class withSpatialTileLayerRDDRenderMethods[M: GetComponent[?, CRS]: GetComponent[?, LayoutDefinition]](val self: RDD[(SpatialKey, Tile)] with Metadata[M])
+  implicit class withSpatialTileLayerRDDRenderMethods[M: GetComponent[*, CRS]: GetComponent[*, LayoutDefinition]](val self: RDD[(SpatialKey, Tile)] with Metadata[M])
       extends SpatialTileLayerRDDRenderMethods[M]
 }

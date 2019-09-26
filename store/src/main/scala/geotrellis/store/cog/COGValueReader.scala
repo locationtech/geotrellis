@@ -121,7 +121,7 @@ trait COGValueReader[ID] {
 
   def overzoomingReader[
     K: Decoder: SpatialComponent: ClassTag,
-    V <: CellGrid[Int]: GeoTiffReader: ? => TileResampleMethods[V]
+    V <: CellGrid[Int]: GeoTiffReader: * => TileResampleMethods[V]
   ](layerId: ID, resampleMethod: ResampleMethod = ResampleMethod.DEFAULT): COGReader[K, V]
 }
 

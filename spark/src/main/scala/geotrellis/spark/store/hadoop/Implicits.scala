@@ -86,7 +86,7 @@ trait Implicits {
     )(implicit sc: SparkContext): Reader[K, V] =
       new HadoopValueReader(attributeStore, sc.hadoopConfiguration).reader[K, V](layerId)
 
-    def apply[K: AvroRecordCodec: Decoder: SpatialComponent: ClassTag, V <: CellGrid[Int]: AvroRecordCodec: ? => TileResampleMethods[V]](
+    def apply[K: AvroRecordCodec: Decoder: SpatialComponent: ClassTag, V <: CellGrid[Int]: AvroRecordCodec: * => TileResampleMethods[V]](
       attributeStore: AttributeStore,
       layerId: LayerId,
       resampleMethod: ResampleMethod

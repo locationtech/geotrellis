@@ -29,6 +29,6 @@ object Implicits extends Implicits
 trait Implicits {
   implicit class withCollectionsBufferTilesMethodsWrapper[
     K: SpatialComponent,
-    V <: CellGrid[Int]: Stitcher: (? => CropMethods[V])
+    V <: CellGrid[Int]: Stitcher: (* => CropMethods[V])
   ](self: Seq[(K, V)]) extends CollectionBufferTilesMethods[K, V](self)
 }

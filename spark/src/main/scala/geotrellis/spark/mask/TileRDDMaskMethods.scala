@@ -31,8 +31,8 @@ import scala.reflect.ClassTag
 
 abstract class TileRDDMaskMethods[
     K: SpatialComponent: ClassTag,
-    V: (? => TileMaskMethods[V]),
-    M: GetComponent[?, LayoutDefinition]
+    V: (* => TileMaskMethods[V]),
+    M: GetComponent[*, LayoutDefinition]
 ] extends MethodExtensions[RDD[(K, V)] with Metadata[M]] {
   /** Masks this raster by the given Polygon. */
   def mask(geom: Polygon): RDD[(K, V)] with Metadata[M] = mask(Seq(geom), Options.DEFAULT)

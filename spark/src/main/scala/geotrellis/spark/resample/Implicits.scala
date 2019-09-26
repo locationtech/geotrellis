@@ -29,6 +29,6 @@ object Implicits extends Implicits
 trait Implicits {
   implicit class withLayerRDDZoomResampleMethods[
     K: SpatialComponent,
-    V <: CellGrid[Int]: (? => TileResampleMethods[V])
+    V <: CellGrid[Int]: (* => TileResampleMethods[V])
   ](self: RDD[(K, V)] with Metadata[TileLayerMetadata[K]]) extends LayerRDDZoomResampleMethods[K, V](self)
 }

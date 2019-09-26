@@ -69,7 +69,7 @@ object FileValueReader {
   ): Reader[K, V] =
     new FileValueReader(attributeStore, catalogPath).reader(layerId)
 
-  def apply[K: AvroRecordCodec: Decoder: SpatialComponent: ClassTag, V <: CellGrid[Int]: AvroRecordCodec: ? => TileResampleMethods[V]](
+  def apply[K: AvroRecordCodec: Decoder: SpatialComponent: ClassTag, V <: CellGrid[Int]: AvroRecordCodec: * => TileResampleMethods[V]](
     attributeStore: AttributeStore,
     catalogPath: String,
     layerId: LayerId,

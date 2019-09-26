@@ -38,7 +38,7 @@ trait BufferTiles {
   /** Collects tile neighbors by slicing the neighboring tiles to the given
     * buffer size
     */
-  def collectWithTileNeighbors[K: SpatialComponent, V <: CellGrid[Int]: (? => CropMethods[V])](
+  def collectWithTileNeighbors[K: SpatialComponent, V <: CellGrid[Int]: (* => CropMethods[V])](
     key: K,
     tile: V,
     includeKey: SpatialKey => Boolean,
@@ -155,7 +155,7 @@ trait BufferTiles {
     */
   def apply[
     K: SpatialComponent,
-    V <: CellGrid[Int]: Stitcher: (? => CropMethods[V])
+    V <: CellGrid[Int]: Stitcher: (* => CropMethods[V])
   ](seq: Seq[(K, V)], bufferSize: Int): Seq[(K, BufferedTile[V])] =
     apply(seq, bufferSize, GridBounds(Int.MinValue, Int.MinValue, Int.MaxValue, Int.MaxValue))
 
@@ -171,7 +171,7 @@ trait BufferTiles {
     */
   def apply[
     K: SpatialComponent,
-    V <: CellGrid[Int]: Stitcher: (? => CropMethods[V])
+    V <: CellGrid[Int]: Stitcher: (* => CropMethods[V])
   ](seq: Seq[(K, V)], getBufferSizes: K => BufferSizes): Seq[(K, BufferedTile[V])] =
     apply(seq, seq.map { case (key, _) =>  key -> getBufferSizes(key) })
 
@@ -187,7 +187,7 @@ trait BufferTiles {
     */
   def apply[
     K: SpatialComponent,
-    V <: CellGrid[Int]: Stitcher: (? => CropMethods[V])
+    V <: CellGrid[Int]: Stitcher: (* => CropMethods[V])
   ](seq: Seq[(K, V)], bufferSizesPerKey: Seq[(K, BufferSizes)]): Seq[(K, BufferedTile[V])] = {
     val surroundingBufferSizes: Seq[(K, Map[SpatialKey, BufferSizes])] = {
       val contributingKeys: Seq[(K, (SpatialKey, BufferSizes))] =
@@ -237,7 +237,7 @@ trait BufferTiles {
     */
   def apply[
     K: SpatialComponent,
-    V <: CellGrid[Int]: Stitcher: (? => CropMethods[V])
+    V <: CellGrid[Int]: Stitcher: (* => CropMethods[V])
   ](seq: Seq[(K, V)], bufferSize: Int, layerBounds: TileBounds): Seq[(K, BufferedTile[V])] = {
     val bufferSizes = BufferSizes(bufferSize, bufferSize, bufferSize, bufferSize)
     val grouped: Seq[(K, Seq[(raster.buffer.Direction, V)])] =

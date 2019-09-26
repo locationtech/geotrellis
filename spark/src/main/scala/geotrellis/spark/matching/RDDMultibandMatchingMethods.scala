@@ -25,7 +25,7 @@ import org.apache.spark.rdd.RDD
 import scala.reflect.ClassTag
 
 
-abstract class RDDMultibandMatchingMethods[K, V: (? => MultibandTile)] extends MethodExtensions[RDD[(K, V)]] {
+abstract class RDDMultibandMatchingMethods[K, V: (* => MultibandTile)] extends MethodExtensions[RDD[(K, V)]] {
 
   /**
     * Given a sequence of target histograms (of the bands of the

@@ -34,7 +34,7 @@ object MaskRDD extends Mask {
   private def _mask[
     K: SpatialComponent: ClassTag,
     V,
-    M: GetComponent[?, LayoutDefinition]
+    M: GetComponent[*, LayoutDefinition]
   ](rdd: RDD[(K, V)] with Metadata[M], masker: (Extent, V) => Option[V]): RDD[(K, V)] with Metadata[M] = {
     val mapTransform = rdd.metadata.getComponent[LayoutDefinition].mapTransform
     val masked =
@@ -52,8 +52,8 @@ object MaskRDD extends Mask {
 
   def apply[
     K: SpatialComponent: ClassTag,
-    V: (? => TileMaskMethods[V]),
-    M: GetComponent[?, LayoutDefinition]
+    V: (* => TileMaskMethods[V]),
+    M: GetComponent[*, LayoutDefinition]
   ](rdd: RDD[(K, V)] with Metadata[M], geoms: Traversable[Polygon], options: Options): RDD[(K, V)] with Metadata[M] =
     _mask(rdd, { case (tileExtent, tile) =>
       val tileGeoms = geoms.flatMap { g =>
@@ -69,8 +69,8 @@ object MaskRDD extends Mask {
   /** Masks this raster by the given MultiPolygons. */
   def apply[
     K: SpatialComponent: ClassTag,
-    V: (? => TileMaskMethods[V]),
-    M: GetComponent[?, LayoutDefinition]
+    V: (* => TileMaskMethods[V]),
+    M: GetComponent[*, LayoutDefinition]
   ](rdd: RDD[(K, V)] with Metadata[M], geoms: Traversable[MultiPolygon], options: Options)(implicit d: DummyImplicit): RDD[(K, V)] with Metadata[M] =
     _mask(rdd, { case (tileExtent, tile) =>
       val tileGeoms = geoms.flatMap { g =>
@@ -86,8 +86,8 @@ object MaskRDD extends Mask {
   /** Masks this raster by the given Extent. */
   def apply[
     K: SpatialComponent: ClassTag,
-    V: (? => TileMaskMethods[V]),
-    M: GetComponent[?, LayoutDefinition]
+    V: (* => TileMaskMethods[V]),
+    M: GetComponent[*, LayoutDefinition]
   ](rdd: RDD[(K, V)] with Metadata[M], ext: Extent, options: Options): RDD[(K, V)] with Metadata[M] =
     _mask(rdd, { case (tileExtent, tile) =>
       val tileExts = ext.intersection(tileExtent)
@@ -100,8 +100,8 @@ object MaskRDD extends Mask {
 
   def apply[
     K: SpatialComponent: ClassTag,
-    V: (? => TileMaskMethods[V]),
-    M: GetComponent[?, LayoutDefinition]
+    V: (* => TileMaskMethods[V]),
+    M: GetComponent[*, LayoutDefinition]
   ](rdd: RDD[(K, V)] with Metadata[M], ext: Extent): RDD[(K, V)] with Metadata[M] = {
     val options = Options.DEFAULT
     _mask(rdd, { case (tileExtent, tile) =>

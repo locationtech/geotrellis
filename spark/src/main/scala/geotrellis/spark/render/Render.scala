@@ -66,7 +66,7 @@ object Render {
     * @param  rdd   The RDD of spatial tiles to render.
     */
   def renderGeoTiff[
-    M: GetComponent[?, CRS]: GetComponent[?, LayoutDefinition]
+    M: GetComponent[*, CRS]: GetComponent[*, LayoutDefinition]
   ](rdd: RDD[(SpatialKey, Tile)] with Metadata[M]): RDD[(SpatialKey, SinglebandGeoTiff)] =
     rdd.mapPartitions({ partition =>
       val transform = rdd.metadata.getComponent[LayoutDefinition].mapTransform
@@ -82,7 +82,7 @@ object Render {
     * @param  rdd   The RDD of spatial multiband tiles to render.
     */
   def renderGeoTiff[
-    M: GetComponent[?, CRS]: GetComponent[?, LayoutDefinition]
+    M: GetComponent[*, CRS]: GetComponent[*, LayoutDefinition]
   ](rdd: RDD[(SpatialKey, MultibandTile)] with Metadata[M])(implicit d: DummyImplicit): RDD[(SpatialKey, MultibandGeoTiff)] =
     rdd.mapPartitions({ partition =>
       val transform = rdd.metadata.getComponent[LayoutDefinition].mapTransform

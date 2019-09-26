@@ -38,7 +38,7 @@ trait ValueReader[ID] {
 
   def overzoomingReader[
     K: AvroRecordCodec: Decoder: SpatialComponent: ClassTag,
-    V <: CellGrid[Int]: AvroRecordCodec: ? => TileResampleMethods[V]
+    V <: CellGrid[Int]: AvroRecordCodec: * => TileResampleMethods[V]
   ](layerId: ID, resampleMethod: ResampleMethod = ResampleMethod.DEFAULT): Reader[K, V]
 }
 

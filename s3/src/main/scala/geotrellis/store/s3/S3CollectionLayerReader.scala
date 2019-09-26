@@ -46,7 +46,7 @@ class S3CollectionLayerReader(
   def read[
     K: AvroRecordCodec: Boundable: Decoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: Decoder: Component[?, Bounds[K]]
+    M: Decoder: Component[*, Bounds[K]]
   ](id: LayerId, rasterQuery: LayerQuery[K, M], filterIndexOnly: Boolean) = {
     if(!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
 

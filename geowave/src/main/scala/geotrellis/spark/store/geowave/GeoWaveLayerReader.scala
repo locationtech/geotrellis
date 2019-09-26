@@ -206,7 +206,7 @@ object GeoWaveLayerReader {
   @experimental def read[
     K <: SpatialKey,
     V: TileOrMultibandTile: ClassTag,
-    M: Decoder: GetComponent[?, Bounds[K]]
+    M: Decoder: GetComponent[*, Bounds[K]]
   ](id: LayerId, rasterQuery: LayerQuery[K, M]) = {
     import GeoWaveLayerReader._
 
@@ -273,7 +273,7 @@ object GeoWaveLayerReader {
   @experimental def read[
     K <: SpatialKey: Boundable,
     V: TileOrMultibandTile: ClassTag,
-    M: Decoder: GetComponent[?, Bounds[K]]
+    M: Decoder: GetComponent[*, Bounds[K]]
   ](id: LayerId): RDD[(K, V)] with Metadata[M] =
     read(id, new LayerQuery[K, M])
 
@@ -281,7 +281,7 @@ object GeoWaveLayerReader {
   @experimental def query[
     K <: SpatialKey: Boundable,
     V: TileOrMultibandTile: ClassTag,
-    M: Decoder: GetComponent[?, Bounds[K]]
+    M: Decoder: GetComponent[*, Bounds[K]]
   ](layerId: LayerId): BoundLayerQuery[K, M, RDD[(K, V)] with Metadata[M]] =
     new BoundLayerQuery(new LayerQuery, read(layerId, _))
 }

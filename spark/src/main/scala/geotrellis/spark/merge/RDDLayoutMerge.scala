@@ -31,8 +31,8 @@ object RDDLayoutMerge {
   /** Merges an RDD with metadata that contains a layout definition into another. */
   def merge[
     K: SpatialComponent: ClassTag,
-    V <: CellGrid[Int]: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V],
-    M: (? => LayoutDefinition)
+    V <: CellGrid[Int]: ClassTag: * => TileMergeMethods[V]: * => TilePrototypeMethods[V],
+    M: (* => LayoutDefinition)
   ](left: RDD[(K, V)] with Metadata[M], right: RDD[(K, V)] with Metadata[M]) = {
     val thisLayout: LayoutDefinition = left.metadata
     val thatLayout: LayoutDefinition = right.metadata

@@ -82,7 +82,7 @@ object CassandraValueReader {
   ): Reader[K, V] =
     new CassandraValueReader(instance, attributeStore).reader[K, V](layerId)
 
-  def apply[K: AvroRecordCodec: Decoder: SpatialComponent: ClassTag, V <: CellGrid[Int]: AvroRecordCodec: ? => TileResampleMethods[V]](
+  def apply[K: AvroRecordCodec: Decoder: SpatialComponent: ClassTag, V <: CellGrid[Int]: AvroRecordCodec: * => TileResampleMethods[V]](
     instance: CassandraInstance,
     attributeStore: AttributeStore,
     layerId: LayerId,

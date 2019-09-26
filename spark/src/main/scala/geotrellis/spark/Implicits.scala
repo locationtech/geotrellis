@@ -95,7 +95,7 @@ trait Implicits
   implicit class withContextRDDMethods[
     K: ClassTag: SpatialComponent,
     V <: CellGrid[Int]: ClassTag,
-    M: GetComponent[?, LayoutDefinition]
+    M: GetComponent[*, LayoutDefinition]
   ](rdd: RDD[(K, V)] with Metadata[M]) extends ContextRDDMethods[K, V, M](rdd) {
 
     def toRasters: RDD[(K, Raster[V])] = {
@@ -144,10 +144,10 @@ trait Implicits
     }
   }
 
-  implicit class withCellGridLayoutRDDMethods[K: SpatialComponent: ClassTag, V <: CellGrid[Int], M: GetComponent[?, LayoutDefinition]](val self: RDD[(K, V)] with Metadata[M])
+  implicit class withCellGridLayoutRDDMethods[K: SpatialComponent: ClassTag, V <: CellGrid[Int], M: GetComponent[*, LayoutDefinition]](val self: RDD[(K, V)] with Metadata[M])
       extends CellGridLayoutRDDMethods[K, V, M]
 
-  implicit class withProjectedExtentRDDMethods[K: Component[?, ProjectedExtent], V <: CellGrid[Int]](val rdd: RDD[(K, V)]) {
+  implicit class withProjectedExtentRDDMethods[K: Component[*, ProjectedExtent], V <: CellGrid[Int]](val rdd: RDD[(K, V)]) {
     def toRasters: RDD[(K, Raster[V])] =
       rdd.mapPartitions({ partition =>
         partition.map { case (key, value) =>
@@ -156,7 +156,7 @@ trait Implicits
       }, preservesPartitioning = true)
   }
 
-  implicit class withTileProjectedExtentRDDMethods[K: Component[?, ProjectedExtent]: Component[?, CRS]](val rdd: RDD[(K, Tile)]) {
+  implicit class withTileProjectedExtentRDDMethods[K: Component[*, ProjectedExtent]: Component[*, CRS]](val rdd: RDD[(K, Tile)]) {
     def toGeoTiffs(
       tags: Tags = Tags.empty,
       options: GeoTiffOptions = GeoTiffOptions.DEFAULT
@@ -168,7 +168,7 @@ trait Implicits
       }, preservesPartitioning = true)
   }
 
-  implicit class withMultibandTileProjectedExtentRDDMethods[K: Component[?, ProjectedExtent]: Component[?, CRS]](val rdd: RDD[(K, MultibandTile)]) {
+  implicit class withMultibandTileProjectedExtentRDDMethods[K: Component[*, ProjectedExtent]: Component[*, CRS]](val rdd: RDD[(K, MultibandTile)]) {
     def toGeoTiffs(
       tags: Tags = Tags.empty,
       options: GeoTiffOptions = GeoTiffOptions.DEFAULT
@@ -214,12 +214,12 @@ trait Implicits
     def toRDD(implicit sc: SparkContext): RDD[(K, V)] with Metadata[M] = ContextRDD(sc.parallelize(seq), seq.metadata)
   }
 
-  implicit class withProjectedExtentTemporalTilerKeyMethods[K: Component[?, ProjectedExtent]: Component[?, TemporalKey]](val self: K) extends TilerKeyMethods[K, SpaceTimeKey] {
+  implicit class withProjectedExtentTemporalTilerKeyMethods[K: Component[*, ProjectedExtent]: Component[*, TemporalKey]](val self: K) extends TilerKeyMethods[K, SpaceTimeKey] {
     def extent = self.getComponent[ProjectedExtent].extent
     def translate(spatialKey: SpatialKey): SpaceTimeKey = SpaceTimeKey(spatialKey, self.getComponent[TemporalKey])
   }
 
-  implicit class withProjectedExtentTilerKeyMethods[K: Component[?, ProjectedExtent]](val self: K) extends TilerKeyMethods[K, SpatialKey] {
+  implicit class withProjectedExtentTilerKeyMethods[K: Component[*, ProjectedExtent]](val self: K) extends TilerKeyMethods[K, SpatialKey] {
     def extent = self.getComponent[ProjectedExtent].extent
     def translate(spatialKey: SpatialKey) = spatialKey
   }

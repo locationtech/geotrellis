@@ -25,7 +25,7 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkContext
 
 
-abstract class RDDCostDistanceMethods[K: (? => SpatialKey), V: (? => Tile)]
+abstract class RDDCostDistanceMethods[K: (* => SpatialKey), V: (* => Tile)]
     extends MethodExtensions[RDD[(K, V)] with Metadata[TileLayerMetadata[K]]] {
 
   def costdistance(

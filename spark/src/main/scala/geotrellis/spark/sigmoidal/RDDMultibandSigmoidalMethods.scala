@@ -23,7 +23,7 @@ import geotrellis.util.MethodExtensions
 import org.apache.spark.rdd.RDD
 
 
-abstract class RDDMultibandSigmoidalMethods[K, V: (? => MultibandTile)] extends MethodExtensions[RDD[(K, V)]] {
+abstract class RDDMultibandSigmoidalMethods[K, V: (* => MultibandTile)] extends MethodExtensions[RDD[(K, V)]] {
 
   /**
     * Given parameters alpha and beta, return an RDD of tiles where

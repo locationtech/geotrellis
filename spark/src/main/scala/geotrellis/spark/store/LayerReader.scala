@@ -39,20 +39,20 @@ trait LayerReader[ID] {
   def read[
     K: AvroRecordCodec: Boundable: Decoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: Decoder: Component[?, Bounds[K]]
+    M: Decoder: Component[*, Bounds[K]]
   ](id: ID, numPartitions: Int): RDD[(K, V)] with Metadata[M]
 
   def read[
     K: AvroRecordCodec: Boundable: Decoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: Decoder: Component[?, Bounds[K]]
+    M: Decoder: Component[*, Bounds[K]]
   ](id: ID): RDD[(K, V)] with Metadata[M] =
     read(id, defaultNumPartitions)
 
   def reader[
     K: AvroRecordCodec: Boundable: Decoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: Decoder: Component[?, Bounds[K]]
+    M: Decoder: Component[*, Bounds[K]]
   ]: Reader[ID, RDD[(K, V)] with Metadata[M]] =
     new Reader[ID, RDD[(K, V)] with Metadata[M]] {
       def read(id: ID): RDD[(K, V)] with Metadata[M] =
