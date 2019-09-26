@@ -159,6 +159,7 @@ object TiffTagsReader extends LazyLogging {
         byteReader.readLongsTag(tiffTags, tagMetadata)
       case (_, IFDOffset) =>
         byteReader.readLongsTag(tiffTags, tagMetadata)
+      case _ => TiffTags() // skip unsupported tags
     }
 
   implicit class ByteReaderTagReaderWrapper(val byteReader: ByteReader) extends AnyVal {
