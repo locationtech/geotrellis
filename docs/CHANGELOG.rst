@@ -133,6 +133,7 @@ Fixes & Updates
 - Fix HttpRangeReader swallows 404 error (`#3073 https://github.com/locationtech/geotrellis/pull/3073`_)
 - Add a ToSpatial function for the collections API (`#3082 https://github.com/locationtech/geotrellis/pull/3082`_)
 - Fix TIFFTagsReader to skip unsupported tags (`#3088 https://github.com/locationtech/geotrellis/pull/3088`_)
+- reprojectExtentAsPolygon should be more deterministic (`#3083 https://github.com/locationtech/geotrellis/pull/3083`_)
 
 2.3.0
 -----

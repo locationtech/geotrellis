@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-package geotrellis.vector
+package geotrellis.vector.reproject
 
 import geotrellis.proj4._
+import geotrellis.vector._
 import geotrellis.vector.testkit._
 
 import org.scalatest._
@@ -32,6 +33,21 @@ class ReprojectSpec extends FunSpec with Matchers {
       ll.reproject(LatLng, WebMercator) should matchGeom(wm, 0.00001)
       wm.reproject(WebMercator, LatLng) should matchGeom(ll, 0.00001)
       ll.reproject(LatLng, Sinusoidal).reproject(Sinusoidal, WebMercator) should matchGeom(wm, 0.00001)
+    }
+
+    // see issue https://github.com/locationtech/geotrellis/issues/3023
+    it("should not go into the infinite recursion stack") {
+      val ext = Extent(0.0, 0.0, 2606.0, 2208.0)
+      // we declare the extent as coords in LatLng, see issue #3023
+      // though valid
+      // - longitudes are in [-180, 180] degrees ragne
+      // - latitudes are in [-90, 90] degrees range
+
+      val transform = Transform(LatLng, WebMercator)
+      // should not fail into the recursion stack
+      intercept[IllegalArgumentException] {
+        Reproject.reprojectExtentAsPolygon(ext, transform, 0.001)
+      }
     }
   }
 }

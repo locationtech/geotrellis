@@ -100,7 +100,9 @@ object Reproject {
       val length = sqrt(pow(x0 - x1, 2) + pow(y0 - y1, 2))
 
       val p2 = m -> (x2, y2)
-      if (deflect / length < relError) {
+      if (java.lang.Double.isNaN(deflect)) {
+        throw new IllegalArgumentException(s"Encountered NaN during a refinement step: ($deflect / $length). Input $extent is likely not in source projection.")
+      } else if (deflect / length < relError) {
         List(p2)
       } else {
         refine(p0, p2) ++ (p2 :: refine(p2, p1))
