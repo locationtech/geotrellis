@@ -34,9 +34,6 @@ class FileCOGValueReader(
   val attributeStore: AttributeStore,
   catalogPath: String
 ) extends OverzoomingCOGValueReader {
-
-  implicit def getByteReader(uri: URI): ByteReader = byteReader(uri)
-
   def reader[
     K: Decoder : SpatialComponent : ClassTag,
     V <: CellGrid[Int] : GeoTiffReader

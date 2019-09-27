@@ -43,8 +43,6 @@ import scala.concurrent.ExecutionContext
   executionContext: ExecutionContext = BlockingThreadPool.executionContext
 ) extends GeoTiffLayerReader[M] {
   implicit lazy val ec: ExecutionContext = executionContext
-
-  implicit def getByteReader(uri: URI): ByteReader = byteReader(uri, s3Client)
 }
 
 @experimental object S3GeoTiffLayerReader {

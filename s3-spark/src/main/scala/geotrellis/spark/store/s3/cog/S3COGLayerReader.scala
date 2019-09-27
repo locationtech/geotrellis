@@ -53,8 +53,6 @@ class S3COGLayerReader(
 
   val defaultNumPartitions: Int = sc.defaultParallelism
 
-  implicit def getByteReader(uri: URI): ByteReader = byteReader(uri, s3Client)
-
   def pathExists(path: String): Boolean = s3Client.objectExists(path)
 
   def fullPath(path: String): URI = new URI(s"s3://$path")

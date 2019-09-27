@@ -56,8 +56,6 @@ class HadoopCOGLayerReader(
 
   val defaultNumPartitions: Int = sc.defaultParallelism
 
-  implicit def getByteReader(uri: URI): ByteReader = byteReader(uri, hadoopConfiguration.value)
-
   def pathExists(path: String): Boolean =
     HdfsUtils.pathExists(new Path(path), hadoopConfiguration.value)
 

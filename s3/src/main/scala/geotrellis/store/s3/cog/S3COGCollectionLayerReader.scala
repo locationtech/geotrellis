@@ -50,8 +50,6 @@ class S3COGCollectionLayerReader(
 
   @transient implicit lazy val ec = executionContext
 
-  implicit def getByteReader(uri: URI): ByteReader = byteReader(uri, s3Client)
-
   def read[
     K: SpatialComponent: Boundable: Decoder: ClassTag,
     V <: CellGrid[Int]: GeoTiffReader: ClassTag

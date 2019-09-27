@@ -34,7 +34,6 @@ import java.util.ServiceLoader
 trait COGValueReader[ID] {
   val attributeStore: AttributeStore
 
-  implicit def getByteReader(uri: URI): ByteReader
   implicit def getLayerId(id: ID): LayerId
 
   def reader[
@@ -65,7 +64,7 @@ trait COGValueReader[ID] {
       val uri = fullPath(keyPath(key.setComponent(spatialKey), maxWidth, baseKeyIndex, zoomRange))
 
       try {
-        GeoTiffReader[V].read(uri, streaming = true)
+        GeoTiffReader[V].read(RangeReader(uri), streaming = true)
           .getOverview(overviewIndex)
           .crop(gridBounds)
           .tile
@@ -84,7 +83,7 @@ trait COGValueReader[ID] {
       val maxWidth = Index.digits(baseKeyIndex.toIndex(baseKeyIndex.keyBounds.maxKey))
       val uri = fullPath(keyPath(key.setComponent(spatialKey), maxWidth, baseKeyIndex, zoomRange))
 
-      val sourceGeoTiff = GeoTiffReader.readMultiband(uri, streaming = true)
+      val sourceGeoTiff = GeoTiffReader.readMultiband(RangeReader(uri), streaming = true)
       val sourceTile = sourceGeoTiff.getOverview(overviewIndex).tile
 
       // We first must determine which bands are valid and which are not
