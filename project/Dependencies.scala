@@ -23,7 +23,7 @@ object Dependencies {
   val scalacheck          = "org.scalacheck"             %% "scalacheck"               % "1.14.0"
   val scalaXml            = "org.scala-lang.modules"     %% "scala-xml"                % "1.2.0"
   val jts                 = "org.locationtech.jts"        % "jts-core"                 % "1.16.1"
-  val proj4j              = "org.locationtech.proj4j"     % "proj4j"                   % "1.1.0-SNAPSHOT"
+  val proj4j              = "org.locationtech.proj4j"     % "proj4j"                   % "1.1.0"
 
   val monocleCore         = "com.github.julien-truffaut" %% "monocle-core"             % Version.monocle
   val monocleMacro        = "com.github.julien-truffaut" %% "monocle-macro"            % Version.monocle
