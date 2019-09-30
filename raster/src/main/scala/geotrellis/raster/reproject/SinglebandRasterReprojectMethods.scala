@@ -43,12 +43,7 @@ trait SinglebandRasterReprojectMethods extends RasterReprojectMethods[Singleband
   ): SinglebandRaster = {
     val Raster(tile, extent) = self
 
-    val targetRasterExtent = (resampleTarget match {
-      case Some(rt) =>
-        rt(self.rasterExtent)
-      case None =>
-        ReprojectRasterExtent(self.rasterExtent, transform, None)
-    }).toRasterExtent
+    val targetRasterExtent = ReprojectRasterExtent(self.rasterExtent, transform, resampleTarget)
     //val targetRasterExtent: RasterExtent = resampleTarget(self.rasterExtent.toGridType[N]).toRasterExtent
 
     val RasterExtent(newExtent, newCellWidth, newCellHeight, newCols, newRows) = targetRasterExtent
