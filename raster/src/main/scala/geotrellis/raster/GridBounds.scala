@@ -35,6 +35,7 @@ case class GridBounds[@specialized(Int, Long) N: Integral](
 ) {
   def width: N = colMax - colMin + 1
   def height: N = rowMax - rowMin + 1
+  def dimensions: (N, N) = (width, height)
   def size: N = width * height
   def isEmpty: Boolean = size == 0
 
