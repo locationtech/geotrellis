@@ -51,5 +51,26 @@ class FileRangeReaderProviderSpec extends FunSpec with Matchers {
 
       reader.asInstanceOf[FileRangeReader].file.toString should be (expectedPath)
     }
+
+    it("should be able to process a URI with a scheme and authority that's an absolute path") {
+      val expectedPath = "/data/path/to/my/data/blah.tif"
+      val reader = RangeReader(new URI(s"file://$expectedPath"))
+
+      reader.asInstanceOf[FileRangeReader].file.toString should be (expectedPath)
+    }
+
+    it("should be able to process a URI with a scheme and no authority that's an absolute path") {
+      val expectedPath = "/data/path/to/my/data/blah.tif"
+      val reader = RangeReader(new URI(s"file:$expectedPath"))
+
+      reader.asInstanceOf[FileRangeReader].file.toString should be (expectedPath)
+    }
+
+    it("should be able to process a URI that's an absolute path") {
+      val expectedPath = "/data/path/to/my/data/blah.tif"
+      val reader = RangeReader(new URI(s"$expectedPath"))
+
+      reader.asInstanceOf[FileRangeReader].file.toString should be (expectedPath)
+    }
   }
 }
