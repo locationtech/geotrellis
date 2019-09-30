@@ -59,8 +59,8 @@ object ReprojectRasterExtent {
   def apply[N: Integral](ge: GridExtent[N], src: CRS, dest: CRS, resampleTarget: Option[ResampleTarget]): GridExtent[N] =
     apply(ge, Transform(src, dest), resampleTarget)
 
-  def apply[N: Integral](re: RasterExtent, transform: Transform, resampleTarget: Option[ResampleTarget]): RasterExtent =
-    apply(re.toGridType[N]: GridExtent[N], transform, resampleTarget).toRasterExtent
+  def apply(re: RasterExtent, transform: Transform, resampleTarget: Option[ResampleTarget]): RasterExtent =
+    apply(re: GridExtent[Int], transform, resampleTarget).toRasterExtent
 
   def apply[N: Integral](re: RasterExtent, src: CRS, dest: CRS, resampleTarget: Option[ResampleTarget]): RasterExtent =
     apply(re, Transform(src, dest), resampleTarget)

@@ -46,15 +46,8 @@ class ResampleTargetSpec extends FlatSpec with Matchers {
 
   "Targetting a cellsize" should "decrease (stepwise) cols/rows as the cellsize increases" in {
     val ge = GridExtent(Extent(0, 0, 100, 100), 10, 10)
-    val target = TargetCellSize[Int](CellSize(11, 11))
+    val target = TargetCellSize(CellSize(11, 11))
     ge.cols should be (10)
     target(ge).cols should be < (10)
-  }
-
-  "Targetting gridbounds" should "cleanly cut a GridExtent at column/row boundaries" in {
-    val ge = GridExtent(Extent(0, 0, 100, 100), 10, 10)
-    val target = TargetGridBounds[Int](GridBounds(0, 0, 8, 8))
-    ge.cols should be (10)
-    target(ge).cols should be (9)
   }
 }
