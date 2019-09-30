@@ -219,11 +219,10 @@ object COGCollectionLayerReader {
       if (!pathExists(keyPath(index))) Vector()
       else {
         val uri = fullPath(keyPath(index))
-        val rangeReader: RangeReader = RangeReader(uri)
         val baseKey =
           parse(
             TiffTagsReader
-              .read(rangeReader)
+              .read(RangeReader(uri))
               .tags
               .headTags(GTKey)
           ).flatMap(_.as[K]).valueOr(throw _)
@@ -234,7 +233,7 @@ object COGCollectionLayerReader {
           .flatten
           .flatMap { case (spatialKey, overviewIndex, _, seq) =>
             val key = baseKey.setComponent(spatialKey)
-            val tiff = GeoTiffReader[V].read(rangeReader, streaming = true).getOverview(overviewIndex)
+            val tiff = GeoTiffReader[V].read(RangeReader(uri), streaming = true).getOverview(overviewIndex)
             val map = seq.map { case (gb, sk) => gb -> key.setComponent(sk) }.toMap
 
             tiff
