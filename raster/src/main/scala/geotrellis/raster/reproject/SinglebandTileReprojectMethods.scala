@@ -24,10 +24,10 @@ import spire.math.Integral
 
 trait SinglebandTileReprojectMethods extends TileReprojectMethods[Tile] {
 
-  def reproject[N: Integral](srcExtent: Extent, transform: Transform, inverseTransform: Transform, resampleTarget: Option[ResampleTarget]): Raster[Tile] =
+  def reproject(srcExtent: Extent, transform: Transform, inverseTransform: Transform, resampleTarget: Option[ResampleTarget]): Raster[Tile] =
     Raster(self, srcExtent).reproject(transform, inverseTransform, resampleTarget)
 
-  def reproject[N: Integral](srcExtent: Extent, src: CRS, dest: CRS, resampleTarget: Option[ResampleTarget]): Raster[Tile] =
+  def reproject(srcExtent: Extent, src: CRS, dest: CRS, resampleTarget: Option[ResampleTarget]): Raster[Tile] =
     Raster(self, srcExtent).reproject(src, dest, resampleTarget)
 
 }

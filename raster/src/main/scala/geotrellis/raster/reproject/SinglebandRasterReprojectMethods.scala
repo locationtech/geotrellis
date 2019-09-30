@@ -27,14 +27,14 @@ import spire.math.Integral
 
 trait SinglebandRasterReprojectMethods extends RasterReprojectMethods[SinglebandRaster] {
 
-  def reproject[N: Integral](
+  def reproject(
     transform: Transform,
     inverseTransform: Transform,
     resampleTarget: Option[ResampleTarget]
   ): SinglebandRaster =
     reproject(transform, inverseTransform, resampleTarget, NearestNeighbor, 0.0)
 
-  def reproject[N: Integral](
+  def reproject(
     transform: Transform,
     inverseTransform: Transform,
     resampleTarget: Option[ResampleTarget],

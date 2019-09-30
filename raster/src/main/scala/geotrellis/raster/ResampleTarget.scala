@@ -127,7 +127,7 @@ object ResampleTarget {
   }
 
   /** Used when resampling on already reprojected RasterSource */
-  private[geotrellis] def toReprojectOptions[N: Integral](
+  private[geotrellis] def toReprojectOptions(
     current: GridExtent[Long],
     resampleTarget: ResampleTarget,
     resampleMethod: ResampleMethod

@@ -27,7 +27,7 @@ import spire.math.Integral
 
 trait MultibandRasterReprojectMethods extends RasterReprojectMethods[MultibandRaster] {
 
-  def reproject[N: Integral](
+  def reproject(
     transform: Transform,
     inverseTransform: Transform,
     resampleTarget: Option[ResampleTarget]

@@ -74,8 +74,8 @@ class GeoTiffReprojectRasterSource(
       )
 
     resampleTarget match {
-      case targetGridExtent: TargetGridExtent[Long] => targetGridExtent.gridExtent
-      case targetGrid: TargetGrid[Long] => targetGrid(reprojectedRasterExtent)
+      case targetGridExtent: TargetGridExtent[_] => targetGridExtent.gridExtent.toGridType[Long]
+      case targetGrid: TargetGrid[_] => targetGrid(reprojectedRasterExtent)
       case dimensions: TargetDimensions => dimensions(reprojectedRasterExtent)
       case targetCellSize: TargetCellSize => targetCellSize(reprojectedRasterExtent)
       case _ => reprojectedRasterExtent

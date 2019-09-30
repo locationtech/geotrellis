@@ -284,7 +284,7 @@ trait RasterMatchers extends Matchers {
     val asciiDiffs = diffs.map(_.renderAscii(palette))
 
     val joinedDiffs: String = asciiDiffs
-      .map(_.lines.iterator().asScala.toSeq)
+      .map(_.lines.toSeq)
       .transpose
       .map(_.mkString("\t"))
       .mkString("\n")
