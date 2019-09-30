@@ -27,19 +27,19 @@ import spire.math.Integral
 import spire.implicits._
 
 /** Represents a strategy/target for resampling */
-sealed trait ResampleTarget[N] {
+sealed trait ResampleTarget {
   /**
    * Provided a gridextent, construct a new [[GridExtent]] that satisfies target constraint(s)
    * @param source a grid extent to be reshaped; call by name as it does not need to be called in all cases
   */
-  def apply(source: => GridExtent[N]): GridExtent[N]
+  def apply[N: Integral](source: => GridExtent[N]): GridExtent[N]
 
   /** Create a geojson representation of this transformation designed for display on [[geojson.io]]
    *
    *  @note extremely large grids (input or output) likely won't work well; this method is suitable
    *  for double-checking intuitions about resampling behavior
    */
-  def visualize(source: => GridExtent[N]): Json = {
+  def visualize[N: Integral](source: => GridExtent[N]): Json = {
     val sourceXs = source.extent.xmin to source.extent.xmax by source.cellSize.width
     val sourceYs = source.extent.ymin to source.extent.ymax by source.cellSize.height
     val sourceCols = sourceXs.map { x => LineString(Point(x, source.extent.ymin), Point(x, source.extent.ymax)) }
@@ -60,27 +60,25 @@ sealed trait ResampleTarget[N] {
 }
 
 /** Resample, aiming for a specific number of cell columns/rows */
-case class TargetDimensions[N: Integral](cols: N, rows: N) extends ResampleTarget[N] {
-  def apply(source: => GridExtent[N]): GridExtent[N] =
-    new GridExtent(source.extent, cols, rows)
+case class TargetDimensions(cols: Long, rows: Long) extends ResampleTarget {
+  def apply[N: Integral](source: => GridExtent[N]): GridExtent[N] =
+    new GridExtent(source.extent, Integral[N].fromLong(cols), Integral[N].fromLong(rows))
 }
 
 /**
  * Snap to a target grid - useful prior to comparison between rasters
  * as a means of ensuring clear correspondence between underlying cell values
  */
-case class TargetGrid[N: Integral](grid: GridExtent[Long]) extends ResampleTarget[N] {
-  def apply(source: => GridExtent[N]): GridExtent[N] = {
-    val res = grid.createAlignedGridExtent(source.extent).toGridType[N]
-    println("targetgrid", grid, source, res)
-    res
+case class TargetGrid[A](grid: GridExtent[A]) extends ResampleTarget {
+  def apply[N: Integral](source: => GridExtent[N]): GridExtent[N] = {
+    grid.createAlignedGridExtent(source.extent).toGridType[N]
   }
 }
 
 /** Resample, sampling values into a user-supplied [[GridExtent]] */
-case class TargetGridExtent[N: Integral](gridExtent: GridExtent[N]) extends ResampleTarget[N] {
-  def apply(source: => GridExtent[N]): GridExtent[N] =
-    gridExtent
+case class TargetGridExtent[A](gridExtent: GridExtent[A]) extends ResampleTarget {
+  def apply[N: Integral](source: => GridExtent[N]): GridExtent[N] =
+    gridExtent.toGridType[N]
 }
 
 /**
@@ -93,12 +91,12 @@ case class TargetGridExtent[N: Integral](gridExtent: GridExtent[N]) extends Resa
  * output resolution. Fine grained constraints on both resolution and extent will currently
  * need to be managed manually.
  */
-case class TargetCellSize[N: Integral](cellSize: CellSize) extends ResampleTarget[N] {
+case class TargetCellSize(cellSize: CellSize) extends ResampleTarget {
   // the logic in this method comes from RasterExtentReproject it avoids
   // issues related to remainder cellsize when the extent isn't evenly divided up
   // by slightly altering the output extent to accomodate the desired cell size
   // TODO: we should look into using this logic in `GridExtent.withResolution`
-  def apply(source: => GridExtent[N]): GridExtent[N] = {
+  def apply[N: Integral](source: => GridExtent[N]): GridExtent[N] = {
     val newCols = (source.extent.width / cellSize.width + 0.5).toLong
     val newRows = (source.extent.height / cellSize.height + 0.5).toLong
 
@@ -110,20 +108,13 @@ case class TargetCellSize[N: Integral](cellSize: CellSize) extends ResampleTarge
   }
 }
 
-case object IdentityResampleTarget extends ResampleTarget[Long] {
-  def apply(source: => GridExtent[Long]): GridExtent[Long] = source
+case object IdentityResampleTarget extends ResampleTarget {
+  def apply[N: Integral](source: => GridExtent[N]): GridExtent[N] = source
 }
-
-/** Resample, targetting the exact boundary encoded in the provided [[GridBounds]] */
-case class TargetGridBounds[N: Integral](bounds: GridBounds[N]) extends ResampleTarget[N] {
-  def apply(source: => GridExtent[N]): GridExtent[N] =
-    source.createAlignedGridExtent(source.extentFor(bounds, clamp=false))
-}
-
 
 object ResampleTarget {
   /** Used when reprojecting to original RasterSource CRS, pick-out the grid */
-  private[geotrellis] def fromReprojectOptions(options: Reproject.Options): ResampleTarget[Long] ={
+  private[geotrellis] def fromReprojectOptions(options: Reproject.Options): ResampleTarget ={
     if (options.targetRasterExtent.isDefined) {
       TargetGridExtent(options.targetRasterExtent.get.toGridType[Long])
     } else if (options.parentGridExtent.isDefined) {
@@ -138,7 +129,7 @@ object ResampleTarget {
   /** Used when resampling on already reprojected RasterSource */
   private[geotrellis] def toReprojectOptions[N: Integral](
     current: GridExtent[Long],
-    resampleTarget: ResampleTarget[N],
+    resampleTarget: ResampleTarget,
     resampleMethod: ResampleMethod
   ): Reproject.Options = {
     resampleTarget match {
@@ -155,8 +146,8 @@ object ResampleTarget {
       case TargetCellSize(cellSize) =>
         Reproject.Options(method = resampleMethod, targetCellSize = Some(cellSize))
 
-      case tgb@TargetGridBounds(bounds) =>
-        Reproject.Options(method = resampleMethod, targetRasterExtent = Some(tgb(current.toGridType[N]).toRasterExtent))
+      // case tgb@TargetGridBounds(bounds) =>
+        // Reproject.Options(method = resampleMethod, targetRasterExtent = Some(tgb(current.toGridType[N]).toRasterExtent))
 
       case IdentityResampleTarget =>
         Reproject.Options.DEFAULT.copy(method = resampleMethod)

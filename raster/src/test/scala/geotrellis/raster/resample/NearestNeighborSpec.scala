@@ -39,7 +39,7 @@ class NearestNeighborResampleSpec extends FunSpec with Matchers with TestFiles {
       IntArrayTile(a, cols, rows)
     }
 
-    def resample[N: Integral](tile: Tile, srcExtent: Extent, resampleTarget: ResampleTarget[N]) =
+    def resample(tile: Tile, srcExtent: Extent, resampleTarget: ResampleTarget) =
       tile.resample(srcExtent, resampleTarget, NearestNeighbor)
 
     it("should noop resample") {

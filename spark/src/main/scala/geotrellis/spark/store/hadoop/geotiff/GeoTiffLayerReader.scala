@@ -80,7 +80,7 @@ import scala.reflect.ClassTag
               .getClosestOverview(layout.cellSize, strategy)
               .crop(ext, Crop.Options(clamp = false))
               .raster
-              .reproject(tiff.crs, layoutScheme.crs, Some(TargetCellSize[Long](layout.cellSize)))
+              .reproject(tiff.crs, layoutScheme.crs, Some(TargetCellSize(layout.cellSize)))
               .resample(TargetGridExtent(RasterExtent(keyExtent, layoutScheme.tileSize, layoutScheme.tileSize)))
           }
       }

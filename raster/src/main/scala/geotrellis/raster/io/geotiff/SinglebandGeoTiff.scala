@@ -85,7 +85,7 @@ case class SinglebandGeoTiff(
     case arrayTile: Tile => arrayTile.crop(windows)
   }
 
-  def resample[N: Integral](resampleTarget: ResampleTarget[N], resampleMethod: ResampleMethod, strategy: OverviewStrategy): SinglebandRaster =
+  def resample(resampleTarget: ResampleTarget, resampleMethod: ResampleMethod, strategy: OverviewStrategy): SinglebandRaster =
     getClosestOverview(cellSize, strategy)
       .raster
       .resample(resampleTarget, resampleMethod)
@@ -106,7 +106,7 @@ case class SinglebandGeoTiff(
 
     // force ArrayTile to avoid costly compressor thrashing in GeoTiff segments when resample will stride segments
     val segments: Seq[((Int, Int), Tile)] = Raster(tile.toArrayTile(), extent)
-      .resample(TargetGridExtent[Int](overviewRasterExtent), resampleMethod)
+      .resample(TargetGridExtent(overviewRasterExtent), resampleMethod)
       .tile
       .split(segmentLayout.tileLayout)
       .zipWithIndex

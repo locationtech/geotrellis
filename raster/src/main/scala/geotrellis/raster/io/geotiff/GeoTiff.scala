@@ -89,8 +89,8 @@ trait GeoTiff[T <: CellGrid[Int]] extends GeoTiffData {
   def withOverviews(overviews: Seq[GeoTiff[T]]): GeoTiff[T] = copy(overviews = overviews.toList)
 
   /** Chooses the best matching overviews and makes resample */
-  def resample[N: Integral](
-    resampleTarget: ResampleTarget[N],
+  def resample(
+    resampleTarget: ResampleTarget,
     resampleMethod: ResampleMethod = NearestNeighbor,
     strategy: OverviewStrategy = AutoHigherResolution
   ): Raster[T]

@@ -22,6 +22,6 @@ import geotrellis.vector._
 import spire.math.Integral
 
 trait SinglebandTileResampleMethods extends TileResampleMethods[Tile] {
-  def resample[N: Integral](extent: Extent, resampleTarget: ResampleTarget[N], method: ResampleMethod = ResampleMethod.DEFAULT): Tile =
+  def resample(extent: Extent, resampleTarget: ResampleTarget, method: ResampleMethod = ResampleMethod.DEFAULT): Tile =
     Raster(self, extent).resample(resampleTarget, method).tile
 }

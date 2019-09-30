@@ -39,14 +39,14 @@ object ReprojectRasterExtent {
    * resolution of the input data.
    * @see [[reprojectedGridForCellSize]] defined below
    */
-  def apply[N: Integral](ge: GridExtent[N], transform: Transform, resampleTarget: Option[ResampleTarget[N]]): GridExtent[N] = {
+  def apply[N: Integral](ge: GridExtent[N], transform: Transform, resampleTarget: Option[ResampleTarget]): GridExtent[N] = {
     val extent = ge.extent
     val newExtent = extent.reprojectAsPolygon(transform, 0.001).extent
 
     resampleTarget match {
       case Some(TargetCellSize(cs)) =>
         reprojectedGridForCellSize(cs, newExtent)
-      case Some(target: ResampleTarget[N]) =>
+      case Some(target: ResampleTarget) =>
         val cols = Integral[N].fromDouble(newExtent.width / ge.cellSize.width + 0.5)
         val rows = Integral[N].fromDouble(newExtent.height / ge.cellSize.height + 0.5)
         target(new GridExtent(newExtent, cols, rows))
@@ -56,13 +56,13 @@ object ReprojectRasterExtent {
     }
   }
 
-  def apply[N: Integral](ge: GridExtent[N], src: CRS, dest: CRS, resampleTarget: Option[ResampleTarget[N]]): GridExtent[N] =
+  def apply[N: Integral](ge: GridExtent[N], src: CRS, dest: CRS, resampleTarget: Option[ResampleTarget]): GridExtent[N] =
     apply(ge, Transform(src, dest), resampleTarget)
 
-  def apply[N: Integral](re: RasterExtent, transform: Transform, resampleTarget: Option[ResampleTarget[N]]): RasterExtent =
+  def apply[N: Integral](re: RasterExtent, transform: Transform, resampleTarget: Option[ResampleTarget]): RasterExtent =
     apply(re.toGridType[N]: GridExtent[N], transform, resampleTarget).toRasterExtent
 
-  def apply[N: Integral](re: RasterExtent, src: CRS, dest: CRS, resampleTarget: Option[ResampleTarget[N]]): RasterExtent =
+  def apply[N: Integral](re: RasterExtent, src: CRS, dest: CRS, resampleTarget: Option[ResampleTarget]): RasterExtent =
     apply(re, Transform(src, dest), resampleTarget)
 
   /** A resolution is computed with the intent that the length of the

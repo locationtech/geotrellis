@@ -27,7 +27,7 @@ import geotrellis.util.RangeReader
 
 class GeoTiffResampleRasterSource(
   val dataPath: GeoTiffPath,
-  val resampleTarget: ResampleTarget[Long],
+  val resampleTarget: ResampleTarget,
   val method: ResampleMethod = NearestNeighbor,
   val strategy: OverviewStrategy = AutoHigherResolution,
   private[raster] val targetCellType: Option[TargetCellType] = None,
@@ -71,7 +71,7 @@ class GeoTiffResampleRasterSource(
   @transient private[raster] lazy val closestTiffOverview: GeoTiff[MultibandTile] =
     tiff.getClosestOverview(gridExtent.cellSize, strategy)
 
-  def reprojection(targetCRS: CRS, resampleTarget: ResampleTarget[Long] = IdentityResampleTarget, method: ResampleMethod = NearestNeighbor, strategy: OverviewStrategy = AutoHigherResolution): GeoTiffReprojectRasterSource =
+  def reprojection(targetCRS: CRS, resampleTarget: ResampleTarget = IdentityResampleTarget, method: ResampleMethod = NearestNeighbor, strategy: OverviewStrategy = AutoHigherResolution): GeoTiffReprojectRasterSource =
     new GeoTiffReprojectRasterSource(dataPath, targetCRS, resampleTarget, method, strategy, targetCellType = targetCellType) {
       override lazy val gridExtent: GridExtent[Long] = {
         val reprojectedRasterExtent =
@@ -85,14 +85,14 @@ class GeoTiffResampleRasterSource(
         resampleTarget match {
           case targetGridExtent: TargetGridExtent[Long] => targetGridExtent.gridExtent
           case targetGrid: TargetGrid[Long] => targetGrid(reprojectedRasterExtent)
-          case targetDimensions: TargetDimensions[Long] => targetDimensions(reprojectedRasterExtent)
-          case targetCellSize: TargetCellSize[Long] => targetCellSize(reprojectedRasterExtent)
+          case targetDimensions: TargetDimensions => targetDimensions(reprojectedRasterExtent)
+          case targetCellSize: TargetCellSize => targetCellSize(reprojectedRasterExtent)
           case _ => reprojectedRasterExtent
         }
       }
     }
 
-  def resample(resampleTarget: ResampleTarget[Long], method: ResampleMethod, strategy: OverviewStrategy): RasterSource =
+  def resample(resampleTarget: ResampleTarget, method: ResampleMethod, strategy: OverviewStrategy): RasterSource =
     GeoTiffResampleRasterSource(dataPath, resampleTarget, method, strategy, targetCellType, Some(tiff))
 
   def convert(targetCellType: TargetCellType): RasterSource =
@@ -145,7 +145,7 @@ class GeoTiffResampleRasterSource(
 object GeoTiffResampleRasterSource {
   def apply(
     dataPath: GeoTiffPath,
-    resampleTarget: ResampleTarget[Long],
+    resampleTarget: ResampleTarget,
     method: ResampleMethod = NearestNeighbor,
     strategy: OverviewStrategy = AutoHigherResolution,
     targetCellType: Option[TargetCellType] = None,

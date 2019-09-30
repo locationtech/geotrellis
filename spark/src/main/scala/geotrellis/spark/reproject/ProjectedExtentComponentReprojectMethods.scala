@@ -28,7 +28,7 @@ import org.apache.spark.rdd._
 class ProjectedExtentComponentReprojectMethods[K: Component[*, ProjectedExtent], V <: CellGrid[Int]: (* => TileReprojectMethods[V])](val self: RDD[(K, V)])
     extends MethodExtensions[RDD[(K, V)]] {
 
-  def reproject(destCrs: CRS, resampleTarget: Option[ResampleTarget[N]], resampleMethod: ResampleMethods.NearestNeighbor): RDD[(K, V)] = {
+  def reproject(destCrs: CRS, resampleTarget: Option[ResampleTarget], resampleMethod: ResampleMethods.NearestNeighbor): RDD[(K, V)] = {
     ProjectedExtentComponentReproject(self, destCrs, resampleTarget, resampleMethod)
   }
 

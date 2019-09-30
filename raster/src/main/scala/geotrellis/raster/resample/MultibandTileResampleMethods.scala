@@ -22,6 +22,6 @@ import geotrellis.vector._
 import spire.math.Integral
 
 trait MultibandTileResampleMethods extends TileResampleMethods[MultibandTile] {
-  def resample[N: Integral](extent: Extent, resampleTarget: ResampleTarget[N], method: ResampleMethod = ResampleMethod.DEFAULT): MultibandTile =
+  def resample(extent: Extent, resampleTarget: ResampleTarget, method: ResampleMethod = ResampleMethod.DEFAULT): MultibandTile =
     Raster(self, extent).resample(resampleTarget, method).tile
 }

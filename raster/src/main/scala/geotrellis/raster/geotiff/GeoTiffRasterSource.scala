@@ -55,10 +55,10 @@ class GeoTiffRasterSource(
   lazy val gridExtent: GridExtent[Long] = tiff.rasterExtent.toGridType[Long]
   lazy val resolutions: List[GridExtent[Long]] = gridExtent :: tiff.overviews.map(_.rasterExtent.toGridType[Long])
 
-  def reprojection(targetCRS: CRS, resampleTarget: ResampleTarget[Long] = IdentityResampleTarget, method: ResampleMethod = NearestNeighbor, strategy: OverviewStrategy = AutoHigherResolution): GeoTiffReprojectRasterSource =
+  def reprojection(targetCRS: CRS, resampleTarget: ResampleTarget = IdentityResampleTarget, method: ResampleMethod = NearestNeighbor, strategy: OverviewStrategy = AutoHigherResolution): GeoTiffReprojectRasterSource =
     GeoTiffReprojectRasterSource(dataPath, targetCRS, resampleTarget, method, strategy, targetCellType = targetCellType, baseTiff = Some(tiff))
 
-  def resample(resampleTarget: ResampleTarget[Long], method: ResampleMethod, strategy: OverviewStrategy): GeoTiffResampleRasterSource =
+  def resample(resampleTarget: ResampleTarget, method: ResampleMethod, strategy: OverviewStrategy): GeoTiffResampleRasterSource =
     GeoTiffResampleRasterSource(dataPath, resampleTarget, method, strategy, targetCellType, Some(tiff))
 
   def convert(targetCellType: TargetCellType): GeoTiffRasterSource =

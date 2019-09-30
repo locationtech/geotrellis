@@ -82,7 +82,7 @@ case class MultibandGeoTiff(
     case arrayTile: MultibandTile => arrayTile.crop(windows)
   }
 
-  def resample[N: Integral](resampleTarget: ResampleTarget[N], resampleMethod: ResampleMethod, strategy: OverviewStrategy): MultibandRaster =
+  def resample(resampleTarget: ResampleTarget, resampleMethod: ResampleMethod, strategy: OverviewStrategy): MultibandRaster =
     getClosestOverview(cellSize, strategy)
       .raster
       .resample(resampleTarget, resampleMethod)
@@ -110,7 +110,7 @@ case class MultibandGeoTiff(
     }
 
     val segments: Seq[((Int, Int), MultibandTile)] = Raster(arrayTile, extent)
-      .resample(TargetGridExtent[Int](overviewRasterExtent), resampleMethod)
+      .resample(TargetGridExtent(overviewRasterExtent), resampleMethod)
       .tile
       .split(segmentLayout.tileLayout)
       .zipWithIndex

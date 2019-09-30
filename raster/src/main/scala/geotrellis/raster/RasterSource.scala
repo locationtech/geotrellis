@@ -45,13 +45,13 @@ trait RasterSource extends CellGrid[Long] with RasterMetadata {
   /** All available RasterSource metadata */
   def metadata: RasterMetadata
 
-  protected def reprojection(targetCRS: CRS, resampleTarget: ResampleTarget[Long] = IdentityResampleTarget, method: ResampleMethod = NearestNeighbor, strategy: OverviewStrategy = AutoHigherResolution): RasterSource
+  protected def reprojection(targetCRS: CRS, resampleTarget: ResampleTarget = IdentityResampleTarget, method: ResampleMethod = NearestNeighbor, strategy: OverviewStrategy = AutoHigherResolution): RasterSource
 
   /** Reproject to different CRS with explicit sampling reprojectOptions.
     * @see [[geotrellis.raster.reproject.Reproject]]
     * @group reproject
     */
-  def reproject(targetCRS: CRS, resampleTarget: ResampleTarget[Long] = IdentityResampleTarget, method: ResampleMethod = NearestNeighbor, strategy: OverviewStrategy = AutoHigherResolution): RasterSource =
+  def reproject(targetCRS: CRS, resampleTarget: ResampleTarget = IdentityResampleTarget, method: ResampleMethod = NearestNeighbor, strategy: OverviewStrategy = AutoHigherResolution): RasterSource =
     if (targetCRS == this.crs) this
     else reprojection(targetCRS, resampleTarget, method, strategy)
 
@@ -76,7 +76,7 @@ trait RasterSource extends CellGrid[Long] with RasterMetadata {
     else if (targetCRS == this.crs) resampleToRegion(region.asInstanceOf[GridExtent[Long]], method)
     else reprojection(targetCRS, TargetGridExtent[Long](region.toGridType[Long]), method, strategy)
 
-  def resample(resampleTarget: ResampleTarget[Long], method: ResampleMethod, strategy: OverviewStrategy): RasterSource
+  def resample(resampleTarget: ResampleTarget, method: ResampleMethod, strategy: OverviewStrategy): RasterSource
 
   /** Sampling grid is defined of the footprint of the data with resolution implied by column and row count.
     * @group resample
@@ -191,8 +191,8 @@ trait RasterSource extends CellGrid[Long] with RasterMetadata {
      */
   def convert(targetCellType: CellType): RasterSource =
     convert(ConvertTargetCellType(targetCellType))
-  
-  def interpretAs(targetCellType: CellType): RasterSource = 
+
+  def interpretAs(targetCellType: CellType): RasterSource =
     convert(InterpretAsTargetCellType(targetCellType))
 }
 

@@ -23,8 +23,8 @@ import spire.syntax.cfor._
 import spire.math.Integral
 
 trait SinglebandRasterResampleMethods extends RasterResampleMethods[SinglebandRaster] {
-  def resample[N: Integral](resampleTarget: ResampleTarget[N], method: ResampleMethod = ResampleMethod.DEFAULT): SinglebandRaster = {
-    val targetRasterExtent = resampleTarget(self.rasterExtent.toGridType[N]).toRasterExtent
+  def resample(resampleTarget: ResampleTarget, method: ResampleMethod = ResampleMethod.DEFAULT): SinglebandRaster = {
+    val targetRasterExtent = resampleTarget(self.rasterExtent).toRasterExtent
 
     val (cols, rows) = (targetRasterExtent.cols, targetRasterExtent.rows)
     val targetTile = ArrayTile.empty(self.cellType, cols, rows)
