@@ -257,11 +257,9 @@ class ReprojectSpec extends FunSpec
       val raster = Raster(tile, rasterExtent.extent)
 
       val windowBounds = GridBounds(10, 10, 10 + rasterExtent.cols - 1, 10 + rasterExtent.rows - 1)
-      val windowExtent = expandedRaster.rasterExtent.extentFor(windowBounds)
-      val windowRasterExtent = RasterExtent(windowExtent, windowBounds.width, windowBounds.height)
 
       val regularReproject = raster.reproject(srcCRS, destCRS).resample(TargetGridExtent(destExtent2))
-      val windowedReproject = expandedRaster.reproject(srcCRS, destCRS, Some(TargetGridExtent(windowRasterExtent.toGridType[Long])))
+      val windowedReproject = expandedRaster.crop(windowBounds).reproject(srcCRS, destCRS, Some(TargetGridExtent(destExtent2)))
 
       windowedReproject.rasterExtent should be (regularReproject.rasterExtent)
     }
