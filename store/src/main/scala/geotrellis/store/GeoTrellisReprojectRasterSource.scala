@@ -33,7 +33,7 @@ class GeoTrellisReprojectRasterSource(
   val sourceLayers: Stream[Layer],
   val gridExtent: GridExtent[Long],
   val crs: CRS,
-  val resampleTarget: ResampleTarget = IdentityResampleTarget,
+  val resampleTarget: ResampleTarget = DefaultTarget,
   val resampleMethod: ResampleMethod = NearestNeighbor,
   val strategy: OverviewStrategy = AutoHigherResolution,
   val errorThreshold: Double = 0.125,
@@ -114,7 +114,7 @@ class GeoTrellisReprojectRasterSource(
   override def readBounds(bounds: Traversable[GridBounds[Long]], bands: Seq[Int]): Iterator[Raster[MultibandTile]] =
     bounds.toIterator.flatMap(_.intersection(this.gridBounds).flatMap(read(_, bands)))
 
-  def reprojection(targetCRS: CRS, resampleTarget: ResampleTarget = IdentityResampleTarget, method: ResampleMethod = NearestNeighbor, strategy: OverviewStrategy = AutoHigherResolution): RasterSource = {
+  def reprojection(targetCRS: CRS, resampleTarget: ResampleTarget = DefaultTarget, method: ResampleMethod = NearestNeighbor, strategy: OverviewStrategy = AutoHigherResolution): RasterSource = {
     if (targetCRS == sourceLayer.metadata.crs) {
       val resampledGridExtent = resampleTarget(this.sourceLayer.gridExtent)
       val closestLayer = GeoTrellisRasterSource.getClosestResolution(sourceLayers, resampledGridExtent.cellSize, strategy)(_.metadata.layout.cellSize).get

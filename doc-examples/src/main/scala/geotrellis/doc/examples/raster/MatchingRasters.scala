@@ -36,7 +36,7 @@ object MatchingRasters {
 
     val cropped2 =
       raster2
-        .reproject(raster1.crs, IdentityResampleTarget).raster
+        .reproject(raster1.crs, DefaultTarget).raster
         .resample(TargetRegion(raster1.raster.rasterExtent))
         .crop(areaOfInterest)
 

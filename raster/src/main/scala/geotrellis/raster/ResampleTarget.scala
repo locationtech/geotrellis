@@ -108,7 +108,13 @@ case class TargetCellSize(cellSize: CellSize) extends ResampleTarget {
   }
 }
 
-case object IdentityResampleTarget extends ResampleTarget {
+/** Default resample target used durting reprojection.
+ * It allows the use of a heuristic to determine the CellSize in target projections
+ * based on CellSize and coverage in source projection.
+ *
+ * @note If used as target of resample operation it acts as identity operation.
+ */
+case object DefaultTarget extends ResampleTarget {
   def apply[N: Integral](source: => GridExtent[N]): GridExtent[N] = source
 }
 
@@ -122,7 +128,7 @@ object ResampleTarget {
     } else if (options.targetCellSize.isDefined) {
       ??? // TODO: convert from CellSize to Column count based on ... something
     } else {
-      IdentityResampleTarget
+      DefaultTarget
     }
   }
 
@@ -146,10 +152,7 @@ object ResampleTarget {
       case TargetCellSize(cellSize) =>
         Reproject.Options(method = resampleMethod, targetCellSize = Some(cellSize))
 
-      // case tgb@TargetGridBounds(bounds) =>
-        // Reproject.Options(method = resampleMethod, targetRasterExtent = Some(tgb(current.toGridType[N]).toRasterExtent))
-
-      case IdentityResampleTarget =>
+      case DefaultTarget =>
         Reproject.Options.DEFAULT.copy(method = resampleMethod)
     }
   }

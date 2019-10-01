@@ -47,6 +47,8 @@ object ReprojectRasterExtent {
       case Some(TargetCellSize(cs)) =>
         reprojectedGridForCellSize(cs, newExtent)
       case Some(target: ResampleTarget) =>
+        // TODO: this doesn't seem correct.
+        // I think we should go through with the huristic and pass it through resampleTarget
         val cols = Integral[N].fromDouble(newExtent.width / ge.cellSize.width + 0.5)
         val rows = Integral[N].fromDouble(newExtent.height / ge.cellSize.height + 0.5)
         target(new GridExtent(newExtent, cols, rows))

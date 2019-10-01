@@ -54,7 +54,7 @@ class TileRDDReprojectSpec extends FunSpec with TestEnvironment {
       val expected =
         ProjectedRaster(raster, gt.crs).reproject(
           LatLng,
-          IdentityResampleTarget
+          DefaultTarget
         )
 
       // expected.tile.renderPng(rainbow).write("expected.png")
@@ -164,7 +164,7 @@ class TileRDDReprojectSpec extends FunSpec with TestEnvironment {
       val expected =
         ProjectedRaster(raster, gt.crs).reproject(
           LatLng,
-          IdentityResampleTarget
+          DefaultTarget
         )
 
       val mbrdd = ContextRDD(rdd.mapValues{ tile => MultibandTile(Array(tile)) }, rdd.metadata)
@@ -227,7 +227,7 @@ class TileRDDReprojectSpec extends FunSpec with TestEnvironment {
       val expected =
         ProjectedRaster(raster, gt.crs).reproject(
           LatLng,
-          IdentityResampleTarget
+          DefaultTarget
         )
 
       val mbrdd = ContextRDD(rdd.mapValues { tile => TileFeature(tile, 1) }, rdd.metadata)
