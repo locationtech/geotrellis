@@ -61,6 +61,7 @@ notifications:
 
 before_deploy:
   - export GEOTRELLIS_VERSION_SUFFIX="-${TRAVIS_COMMIT:0:7}"
+  - ./sbt unidoc
 
 deploy:
   - provider: script
@@ -68,6 +69,7 @@ deploy:
     skip_cleanup: true
     on:
       repo: locationtech/geotrellis
-      branch: master
-      jdk: oraclejdk8
+      branch: fixup/awf/deploy-scaladoc-latest
+      condition: "$RUN_SET = 3"
+      jdk: openjdk8
       scala: "2.11.12"
