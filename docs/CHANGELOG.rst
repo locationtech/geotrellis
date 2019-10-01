@@ -131,9 +131,11 @@ Fixes & Updates
 - Bump proj4 version to fix multiple performance issues (`#3039 <https://github.com/locationtech/geotrellis/pull/3039>`_).
 - Update dependencies (`#3053 <https://github.com/locationtech/geotrellis/pull/3053>`_).
 - Fix HttpRangeReader swallows 404 error (`#3073 https://github.com/locationtech/geotrellis/pull/3073`_)
-- Add a ToSpatial function for the collections API (`#3082 https://github.com/locationtech/geotrellis/pull/3082`_)
-- Fix TIFFTagsReader to skip unsupported tags (`#3088 https://github.com/locationtech/geotrellis/pull/3088`_)
-- reprojectExtentAsPolygon should be more deterministic (`#3083 https://github.com/locationtech/geotrellis/pull/3083`_)
+- Add a ToSpatial function for the collections API (`#3082 https://github.com/locationtech/geotrellis/pull/3082`_).
+- Fix TIFFTagsReader to skip unsupported tags (`#3088 https://github.com/locationtech/geotrellis/pull/3088`_).
+- reprojectExtentAsPolygon should be more deterministic (`#3083 https://github.com/locationtech/geotrellis/pull/3083`_).
+- AmazonS3URI.getKey() now returns an empty string instead of null if no key was provided (`#3096 https://github.com/locationtech/geotrellis/pull/3096`_).
+- Improved handling of null prefix for S3AttributeStore. Prefer use of `S3AttributeStore.apply` to take advantage of this improved handling (`#3096 https://github.com/locationtech/geotrellis/pull/3096`_).
 
 2.3.0
 -----

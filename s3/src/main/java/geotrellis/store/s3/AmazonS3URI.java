@@ -224,7 +224,11 @@ public class AmazonS3URI {
      * @return the key parsed from the URI (or null if no key specified)
      */
     public String getKey() {
-        return key;
+        if (key != null) {
+            return key;
+        } else {
+            return "";
+        }
     }
 
     /**
