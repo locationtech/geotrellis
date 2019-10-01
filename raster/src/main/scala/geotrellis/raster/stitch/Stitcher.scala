@@ -22,7 +22,7 @@ import cats.Semigroup
 /**
   * The Stitcher base trait.
   */
-trait Stitcher[T <: CellGrid[Int]] extends Serializable {
+trait Stitcher[T] extends Serializable {
 
   /**
     * Stitch an Iterable of tile, corner pairs into a new tile with
