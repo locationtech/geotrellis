@@ -51,7 +51,7 @@ abstract class COGCollectionLayerReader[ID] { self =>
     getKeyPath: (ZoomRange, Int) => BigInt => String,
     pathExists: String => Boolean, // check the path above exists
     fullPath: String => URI // add an fs prefix
-  )(implicit getByteReader: URI => ByteReader, idToLayerId: ID => LayerId): Seq[(K, V)] with Metadata[TileLayerMetadata[K]] = {
+  )(implicit idToLayerId: ID => LayerId): Seq[(K, V)] with Metadata[TileLayerMetadata[K]] = {
     val COGLayerStorageMetadata(cogLayerMetadata, keyIndexes) =
       try {
         attributeStore.readMetadata[COGLayerStorageMetadata[K]](LayerId(id.name, 0))
@@ -207,7 +207,7 @@ object COGCollectionLayerReader {
      decomposeBounds: KeyBounds[K] => Seq[(BigInt, BigInt)],
      readDefinitions: Map[SpatialKey, Seq[(SpatialKey, Int, TileBounds, Seq[(TileBounds, SpatialKey)])]],
      numPartitions: Option[Int] = None
-   )(implicit getByteReader: URI => ByteReader, ec: ExecutionContext): Seq[(K, V)] = {
+   )(implicit ec: ExecutionContext): Seq[(K, V)] = {
     if (baseQueryKeyBounds.isEmpty) return Seq.empty[(K, V)]
 
     val ranges = if (baseQueryKeyBounds.length > 1)
@@ -219,11 +219,10 @@ object COGCollectionLayerReader {
       if (!pathExists(keyPath(index))) Vector()
       else {
         val uri = fullPath(keyPath(index))
-        val byteReader: ByteReader = uri
         val baseKey =
           parse(
             TiffTagsReader
-              .read(byteReader)
+              .read(RangeReader(uri))
               .tags
               .headTags(GTKey)
           ).flatMap(_.as[K]).valueOr(throw _)
@@ -234,7 +233,7 @@ object COGCollectionLayerReader {
           .flatten
           .flatMap { case (spatialKey, overviewIndex, _, seq) =>
             val key = baseKey.setComponent(spatialKey)
-            val tiff = GeoTiffReader[V].read(uri, streaming = true).getOverview(overviewIndex)
+            val tiff = GeoTiffReader[V].read(RangeReader(uri), streaming = true).getOverview(overviewIndex)
             val map = seq.map { case (gb, sk) => gb -> key.setComponent(sk) }.toMap
 
             tiff

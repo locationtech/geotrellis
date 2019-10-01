@@ -44,8 +44,6 @@ class FileCOGCollectionLayerReader(
   executionContext: => ExecutionContext = BlockingThreadPool.executionContext
 ) extends COGCollectionLayerReader[LayerId] with LazyLogging {
 
-  implicit def getByteReader(uri: URI): ByteReader = byteReader(uri)
-
   @transient implicit lazy val ec: ExecutionContext = executionContext
 
   def read[

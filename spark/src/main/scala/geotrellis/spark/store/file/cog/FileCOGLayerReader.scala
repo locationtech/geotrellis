@@ -52,8 +52,6 @@ class FileCOGLayerReader(
 
   val defaultNumPartitions: Int = sc.defaultParallelism
 
-  implicit def getByteReader(uri: URI): ByteReader = byteReader(uri)
-
   def pathExists(path: String): Boolean =
     new File(path).isFile
 

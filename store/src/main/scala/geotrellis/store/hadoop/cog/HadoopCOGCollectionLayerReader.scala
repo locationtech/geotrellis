@@ -51,8 +51,6 @@ class HadoopCOGCollectionLayerReader(
 
   val serConf: SerializableConfiguration = SerializableConfiguration(conf)
 
-  implicit def getByteReader(uri: URI): ByteReader = byteReader(uri, conf)
-
   @transient implicit lazy val ec: ExecutionContext = executionContext
 
   def read[

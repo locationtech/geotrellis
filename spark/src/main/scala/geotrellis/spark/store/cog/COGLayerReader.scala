@@ -17,7 +17,6 @@
 package geotrellis.spark.store.cog
 
 import geotrellis.raster.{CellGrid, GridBounds, MultibandTile, Tile}
-import geotrellis.raster.crop._
 import geotrellis.raster.io.geotiff._
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.raster.io.geotiff.reader.TiffTagsReader
@@ -27,7 +26,6 @@ import geotrellis.store.cog._
 import geotrellis.store.index.{Index, IndexRanges, KeyIndex, MergeQueue}
 import geotrellis.store.util.IOUtils
 import geotrellis.spark._
-import geotrellis.spark.store._
 import geotrellis.spark.util.KryoWrapper
 import geotrellis.util._
 
@@ -35,7 +33,6 @@ import org.apache.spark.rdd._
 import org.apache.spark.SparkContext
 import io.circe._
 import io.circe.parser._
-import io.circe.syntax._
 import cats.syntax.either._
 
 import java.net.URI
@@ -225,7 +222,6 @@ abstract class COGLayerReader[ID] extends Serializable {
     tileQuery: LayerQuery[K, TileLayerMetadata[K]],
     numPartitions: Int
   )(implicit sc: SparkContext,
-             getByteReader: URI => ByteReader,
              idToLayerId: ID => LayerId
   ): RDD[(K, V)] with Metadata[TileLayerMetadata[K]] = {
 
@@ -273,7 +269,6 @@ abstract class COGLayerReader[ID] extends Serializable {
     tileQuery: LayerQuery[K, TileLayerMetadata[K]],
     numPartitions: Int
   )(implicit sc: SparkContext,
-             getByteReader: URI => ByteReader,
              idToLayerId: ID => LayerId
   ): RDD[(K, Array[Option[Tile]])] with Metadata[TileLayerMetadata[K]] = {
 
@@ -331,7 +326,6 @@ abstract class COGLayerReader[ID] extends Serializable {
     readGeoTiff: (GeoTiff[V], Seq[GridBounds[Int]]) => Iterator[(GridBounds[Int], R)],
     numPartitions: Int
   )(implicit sc: SparkContext,
-             getByteReader: URI => ByteReader,
              idToLayerId: ID => LayerId
   ): RDD[(K, R)] with Metadata[TileLayerMetadata[K]] = {
     val getKeyPath = produceGetKeyPath(id)
@@ -385,7 +379,7 @@ abstract class COGLayerReader[ID] extends Serializable {
      keyPath: BigInt => String, // keyPath
      readDefinitions: Map[SpatialKey, Seq[(SpatialKey, Int, GridBounds[Int], Seq[(GridBounds[Int], SpatialKey)])]],
      readGeoTiff: (GeoTiff[V], Seq[GridBounds[Int]]) => Iterator[(GridBounds[Int], R)]
-   )(implicit sc: SparkContext, getByteReader: URI => ByteReader): RDD[(K, R)] = {
+   )(implicit sc: SparkContext): RDD[(K, R)] = {
     val kwDecoder = KryoWrapper(implicitly[Decoder[K]])
 
     sc.parallelize(bins, bins.size)
@@ -397,11 +391,10 @@ abstract class COGLayerReader[ID] extends Serializable {
             if (!pathExists(keyPath(index))) Vector()
             else {
               val uri = fullPath(keyPath(index))
-              val byteReader: ByteReader = uri
               val baseKey =
                 parse(
                   TiffTagsReader
-                    .read(byteReader)
+                    .read(RangeReader(uri))
                     .tags
                     .headTags(GTKey)
                 ).flatMap(_.as[K](keyDecoder)).valueOr(throw _)
@@ -412,7 +405,7 @@ abstract class COGLayerReader[ID] extends Serializable {
                 .flatten
                 .flatMap { case (spatialKey, overviewIndex, _, seq) =>
                   val key = baseKey.setComponent(spatialKey)
-                  val tiff = GeoTiffReader[V].read(uri, streaming = true).getOverview(overviewIndex)
+                  val tiff = GeoTiffReader[V].read(RangeReader(uri), streaming = true).getOverview(overviewIndex)
                   val map = seq.map { case (gb, sk) => gb -> key.setComponent(sk) }.toMap
 
                   readGeoTiff(tiff, map.keys.toSeq)

@@ -25,14 +25,13 @@ import geotrellis.store._
 import geotrellis.store.cog.{COGLayerStorageMetadata, ZoomRange, _}
 import geotrellis.store.cog.vrt.VRT
 import geotrellis.store.cog.vrt.VRT.IndexedSimpleSource
-import geotrellis.store.hadoop.{HadoopLayerHeader, SerializableConfiguration, HadoopAttributeStore}
+import geotrellis.store.hadoop.{HadoopAttributeStore, HadoopLayerHeader, SerializableConfiguration}
 import geotrellis.store.hadoop.cog.byteReader
 import geotrellis.store.hadoop.util.HdfsUtils
 import geotrellis.store.index._
 import geotrellis.spark.store.cog._
 import geotrellis.spark.store.hadoop._
-import geotrellis.util.ByteReader
-
+import geotrellis.util.{ByteReader, RangeReader}
 import org.apache.hadoop.fs.Path
 import org.apache.spark.SparkContext
 import _root_.io.circe._
@@ -55,8 +54,6 @@ class HadoopCOGLayerWriter(
     def sc = cogLayer.layers.head._2.sparkContext
     val config = SerializableConfiguration(sc.hadoopConfiguration)
     val samplesAccumulator = sc.collectionAccumulator[IndexedSimpleSource](VRT.accumulatorName(layerName))
-
-    implicit def getByteReader(uri: URI): ByteReader = byteReader(uri, config.value)
 
     def catalogPath = new Path(rootPath)
     try {
@@ -113,7 +110,8 @@ class HadoopCOGLayerWriter(
               .foreach(samplesAccumulator.add)
 
           case Some(merge) if HdfsUtils.pathExists(path, config.value) =>
-            val old = GeoTiffReader[V].read(path.toUri(), streaming = true)
+            val rangeReader = RangeReader(path.toUri)
+            val old = GeoTiffReader[V].read(rangeReader, streaming = true)
             val merged = merge(cog, old)
             HdfsUtils.write(path, config.value) { new GeoTiffWriter(merged, _).write(true) }
             // collect VRT metadata

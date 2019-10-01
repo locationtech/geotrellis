@@ -25,7 +25,6 @@ import geotrellis.store._
 import geotrellis.store.cog._
 import geotrellis.store.index._
 import geotrellis.store.s3._
-import geotrellis.util._
 
 import software.amazon.awssdk.services.s3.model._
 import software.amazon.awssdk.services.s3.S3Client
@@ -37,8 +36,6 @@ class S3COGValueReader(
   val attributeStore: AttributeStore,
   s3Client: => S3Client = S3ClientProducer.get()
 ) extends OverzoomingCOGValueReader {
-
-  implicit def getByteReader(uri: URI): ByteReader = byteReader(uri, s3Client)
 
   def reader[
     K: Decoder: SpatialComponent : ClassTag,

@@ -24,8 +24,13 @@ import java.net.{URI, URL}
 class HttpRangeReaderProvider extends RangeReaderProvider {
   def canProcess(uri: URI): Boolean =
     try {
-      new URL(uri.toString)
-      true
+      val scheme = uri.getScheme
+      if (scheme == "http" || scheme == "https") {
+        new URL(uri.toString)
+        true
+      } else {
+        false
+      }
     } catch {
       case _: Throwable => false
     }

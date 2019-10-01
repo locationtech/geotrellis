@@ -37,5 +37,12 @@ class HttpRangeReaderProviderSpec extends FunSpec with Matchers {
 
       result should be (false)
     }
+
+    it("should fail to parse URIs with non-http schemes") {
+      val path = "file:/tmp/testFiles/1064996.tiff"
+      val result = new HttpRangeReaderProvider().canProcess(new URI(path))
+
+      result should be (false)
+    }
   }
 }

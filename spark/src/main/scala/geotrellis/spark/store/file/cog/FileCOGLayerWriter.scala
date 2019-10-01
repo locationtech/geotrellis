@@ -17,7 +17,6 @@
 package geotrellis.spark.store.file.cog
 
 import geotrellis.layer._
-
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.raster.io.geotiff._
@@ -27,23 +26,18 @@ import geotrellis.store.cog._
 import geotrellis.store.cog.vrt.VRT
 import geotrellis.store.cog.vrt.VRT.IndexedSimpleSource
 import geotrellis.store.file.{FileAttributeStore, FileLayerHeader, KeyPathGenerator}
-import geotrellis.store.file.cog.byteReader
 import geotrellis.store.index._
-import geotrellis.spark._
 import geotrellis.spark.store.cog._
-import geotrellis.spark.store.file._
-import geotrellis.util.{ByteReader, Filesystem}
-
+import geotrellis.util.{Filesystem, RangeReader}
 import _root_.io.circe._
-
 import java.io.File
+
 import scala.reflect.{ClassTag, classTag}
 
 class FileCOGLayerWriter(
   val attributeStore: AttributeStore,
   catalogPath: String
 ) extends COGLayerWriter {
-  implicit def getByteReader(uri: String): ByteReader = byteReader(uri)
   def uriExists(uri: String): Boolean = { val f = new File(uri); f.exists() && f.isFile }
 
   def writeCOGLayer[K: SpatialComponent: Ordering: Encoder: ClassTag, V <: CellGrid[Int]: GeoTiffReader: ClassTag](
@@ -106,7 +100,7 @@ class FileCOGLayerWriter(
               .foreach(samplesAccumulator.add)
 
           case Some(merge) if uriExists(path) =>
-            val old = GeoTiffReader[V].read(path, streaming = true)
+            val old = GeoTiffReader[V].read(RangeReader(path), streaming = true)
             val merged = merge(cog, old)
             merged.write(path, true)
             // collect VRT metadata
