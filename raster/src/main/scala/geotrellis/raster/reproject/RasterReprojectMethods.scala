@@ -56,11 +56,12 @@ trait RasterReprojectMethods[+T <: Raster[_]] extends MethodExtensions[T] {
     reproject(gridBounds, src, dest, Options.DEFAULT)
 
   def reproject(gridBounds: GridBounds[Int], transform: Transform, inverseTransform: Transform, options: Options): T = {
-    val rasterExtent = self.rasterExtent
-    val windowExtent = rasterExtent.extentFor(gridBounds)
-    val windowRasterExtent = RasterExtent(windowExtent, gridBounds.width, gridBounds.height)
+    val windowExtent = self.rasterExtent.extentFor(gridBounds)
+    val windowRasterExtent = RasterExtent(windowExtent, self.rasterExtent.cellSize)
 
-    val targetRasterExtent = options.targetRasterExtent.getOrElse(ReprojectRasterExtent(windowRasterExtent, transform, options = options))
+    val targetRasterExtent = options.targetRasterExtent.getOrElse {
+      ReprojectRasterExtent(windowRasterExtent, transform, options = options)
+    }
 
     reproject(targetRasterExtent, transform, inverseTransform, options)
   }
