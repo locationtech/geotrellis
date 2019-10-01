@@ -50,7 +50,7 @@ class S3COGLayerWriter(
 
   def writeCOGLayer[
     K: SpatialComponent: Ordering: Encoder: ClassTag,
-    V: GeoTiffReader: ClassTag
+    V <: CellGrid[Int]: GeoTiffReader: ClassTag
   ](
     layerName: String,
     cogLayer: COGLayer[K, V],
