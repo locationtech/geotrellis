@@ -69,5 +69,5 @@ deploy:
     on:
       repo: locationtech/geotrellis
       branch: master
-      jdk: oraclejdk8
+      jdk: openjdk8
       scala: "2.11.12"
