@@ -24,27 +24,16 @@ import spire.math.Integral
 
 trait RasterReprojectMethods[+T <: Raster[_]] extends MethodExtensions[T] {
 
-  def reproject(transform: Transform, inverseTransform: Transform, resampleGrid: ResampleGrid): T
+  def reproject(transform: Transform, inverseTransform: Transform, resampleTarget: ResampleTarget): T
 
-  def reproject(src: CRS, dest: CRS, resampleGrid: ResampleGrid): T = {
+  def reproject(src: CRS, dest: CRS, resampleTarget: ResampleTarget): T = {
     val transform = Transform(src, dest)
     val inverseTransform = Transform(dest, src)
 
     reproject(transform, inverseTransform, resampleTarget)
   }
 
-  def reproject(gridBounds: GridBounds[Int], src: CRS, dest: CRS): T =
-    reproject(gridBounds, src, dest, Options.DEFAULT)
-
-  def reproject(gridBounds: GridBounds[Int], transform: Transform, inverseTransform: Transform, options: Options): T = {
-    val windowExtent = self.rasterExtent.extentFor(gridBounds)
-    val windowRasterExtent = RasterExtent(windowExtent, self.rasterExtent.cellSize)
-
-    val targetRasterExtent = options.targetRasterExtent.getOrElse {
-      ReprojectRasterExtent(windowRasterExtent, transform, options = options)
-    }
-
-    reproject(targetRasterExtent, transform, inverseTransform, options)
-  }
+  def reproject(src: CRS, dest: CRS): T =
+    reproject(src, dest, DefaultTarget)
 
 }

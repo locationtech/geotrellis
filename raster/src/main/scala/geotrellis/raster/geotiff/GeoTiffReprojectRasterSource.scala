@@ -65,13 +65,7 @@ class GeoTiffReprojectRasterSource(
 
   override lazy val gridExtent: GridExtent[Long] = {
     lazy val reprojectedRasterExtent =
-      ReprojectRasterExtent(
-        baseGridExtent,
-        transform,
-        Some(resampleTarget)
-        // TODO revisit this to ensure assumptions are OK
-        //Reproject.Options.DEFAULT.copy(method = resampleMethod, errorThreshold = errorThreshold)
-      )
+      ReprojectRasterExtent(baseGridExtent, transform, resampleTarget)
 
     resampleTarget match {
       case targetGridExtent: TargetGridExtent[_] => targetGridExtent.gridExtent.toGridType[Long]
@@ -83,14 +77,14 @@ class GeoTiffReprojectRasterSource(
   }
 
   lazy val resolutions: List[GridExtent[Long]] =
-      gridExtent :: tiff.overviews.map(ovr => ReprojectRasterExtent(ovr.rasterExtent.toGridType[Long], transform, None))
+      gridExtent :: tiff.overviews.map(ovr => ReprojectRasterExtent(ovr.rasterExtent.toGridType[Long], transform, DefaultTarget))
 
   @transient private[raster] lazy val closestTiffOverview: GeoTiff[MultibandTile] = {
     resampleTarget match {
       case DefaultTarget => tiff.getClosestOverview(baseGridExtent.cellSize, strategy)
       case _ =>
         // we're asked to match specific target resolution, estimate what resolution we need in source to sample it
-        val estimatedSource = ReprojectRasterExtent(gridExtent, backTransform, None)
+        val estimatedSource = ReprojectRasterExtent(gridExtent, backTransform, DefaultTarget)
         tiff.getClosestOverview(estimatedSource.cellSize, strategy)
     }
   }

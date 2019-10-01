@@ -23,9 +23,9 @@ import geotrellis.vector.Extent
 import spire.math.Integral
 
 trait MultibandTileReprojectMethods extends TileReprojectMethods[MultibandTile] {
-  def reproject(srcExtent: Extent, transform: Transform, inverseTransform: Transform, resampleTarget: Option[ResampleTarget]): Raster[MultibandTile] =
+  def reproject(srcExtent: Extent, transform: Transform, inverseTransform: Transform, resampleTarget: ResampleTarget): Raster[MultibandTile] =
     Raster(self, srcExtent).reproject(transform, inverseTransform, resampleTarget)
 
-  def reproject(srcExtent: Extent, src: CRS, dest: CRS, resampleTarget: Option[ResampleTarget]): Raster[MultibandTile] =
+  def reproject(srcExtent: Extent, src: CRS, dest: CRS, resampleTarget: ResampleTarget): Raster[MultibandTile] =
     Raster(self, srcExtent).reproject(src, dest, resampleTarget)
 }

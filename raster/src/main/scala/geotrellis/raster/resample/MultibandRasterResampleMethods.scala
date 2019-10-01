@@ -29,7 +29,7 @@ trait MultibandRasterResampleMethods extends RasterResampleMethods[MultibandRast
     val targetGrid = resampleTarget(self.rasterExtent)
 
     cfor(0)(_ < bandCount, _ + 1) { b =>
-      resampledBands(b) = Raster(self.tile.band(b), targetGrid.toRasterExtent.extent).resample(resampleTarget, method).tile
+      resampledBands(b) = Raster(self.tile.band(b), self.extent).resample(resampleTarget, method).tile
     }
 
     Raster(ArrayMultibandTile(resampledBands), targetGrid.toRasterExtent.extent)

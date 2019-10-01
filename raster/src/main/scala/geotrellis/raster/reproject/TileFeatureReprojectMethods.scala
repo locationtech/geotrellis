@@ -28,12 +28,12 @@ abstract class TileFeatureReprojectMethods[
   D
 ](val self: TileFeature[T, D]) extends TileReprojectMethods[TileFeature[T, D]] {
 
-  def reproject(srcExtent: Extent, transform: Transform, inverseTransform: Transform, resampleTarget: Option[ResampleTarget]): Raster[TileFeature[T, D]] = {
+  def reproject(srcExtent: Extent, transform: Transform, inverseTransform: Transform, resampleTarget: ResampleTarget): Raster[TileFeature[T, D]] = {
     val Raster(tile, extent) = self.tile.reproject(srcExtent, transform, inverseTransform, resampleTarget)
     Raster(TileFeature(tile, self.data), extent)
   }
 
-  def reproject(srcExtent: Extent, src: CRS, dest: CRS, resampleTarget: Option[ResampleTarget]): Raster[TileFeature[T, D]] = {
+  def reproject(srcExtent: Extent, src: CRS, dest: CRS, resampleTarget: ResampleTarget): Raster[TileFeature[T, D]] = {
     val Raster(tile, extent) = self.tile.reproject(srcExtent, src, dest, resampleTarget)
     Raster(TileFeature(tile, self.data), extent)
   }

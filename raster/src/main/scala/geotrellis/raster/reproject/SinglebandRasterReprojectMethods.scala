@@ -30,14 +30,14 @@ trait SinglebandRasterReprojectMethods extends RasterReprojectMethods[Singleband
   def reproject(
     transform: Transform,
     inverseTransform: Transform,
-    resampleTarget: Option[ResampleTarget]
+    resampleTarget: ResampleTarget
   ): SinglebandRaster =
     reproject(transform, inverseTransform, resampleTarget, NearestNeighbor, 0.0)
 
   def reproject(
     transform: Transform,
     inverseTransform: Transform,
-    resampleTarget: Option[ResampleTarget],
+    resampleTarget: ResampleTarget,
     resampleMethod: ResampleMethod = NearestNeighbor,
     errorThreshold: Double = 0.0
   ): SinglebandRaster = {

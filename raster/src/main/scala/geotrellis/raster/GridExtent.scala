@@ -418,18 +418,7 @@ object GridExtent {
   }
 
   implicit class gridExtentMethods[N: Integral](self: GridExtent[N]) {
-    def reproject(src: CRS, dest: CRS, options: Options): GridExtent[N] =
-      if(src == dest) self
-      else {
-        val transform = Transform(src, dest)
-        options
-          .targetRasterExtent
-          .map(_.toGridType[N])
-          .getOrElse(ReprojectRasterExtent(self, transform, None))
-          // TODO revisit this
-          //options = options))
-      }
-
-    def reproject(src: CRS, dest: CRS): GridExtent[N] = reproject(src, dest, Options.DEFAULT)
+    def reproject(src: CRS, dest: CRS, resampleTarget: ResampleTarget = DefaultTarget): GridExtent[N] =
+      if (src == dest) self else ReprojectRasterExtent(self, Transform(src, dest), resampleTarget)
   }
 }

@@ -105,7 +105,7 @@ class GridExtentSpec extends FunSpec with Matchers {
         val result = aligned.extent.contains(ex) && isWhole(aligned.extent.width / cw) && isWhole(aligned.extent.height / ch) && aligned.isGridExtentAligned
 
         if (!result) {
-          println(s"Failed check: \n\tReference: $base\n\tOriginal extent: $ex\n\tAligned extent: ${aligned.extent}")
+          info(s"Failed check: \n\tReference: $base\n\tOriginal extent: $ex\n\tAligned extent: ${aligned.extent}")
         }
 
         result
@@ -130,7 +130,7 @@ class GridExtentSpec extends FunSpec with Matchers {
         val result = aligned.extent.contains(ex) && isWhole(aligned.extent.width) && isWhole(aligned.extent.height)
 
         if (!result) {
-          println(s"Failed check: \n\tReference: $base\n\tOriginal extent: $ex\n\tAligned extent: ${aligned.extent}")
+          info(s"Failed check: \n\tReference: $base\n\tOriginal extent: $ex\n\tAligned extent: ${aligned.extent}")
         }
 
         result

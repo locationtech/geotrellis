@@ -85,22 +85,14 @@ trait MosaicRasterSource extends RasterSource {
     MosaicRasterSource(
       sources map { _.reproject(targetCRS, resampleTarget, method, strategy) },
       crs,
-      gridExtent.reproject(this.crs, targetCRS, Reproject.Options.DEFAULT.copy(method = method)),
+      gridExtent.reproject(this.crs, targetCRS),
       name
     )
 
-  def read(extent: Extent, bands: Seq[Int]): Option[Raster[MultibandTile]] = {
-    val rasters = sources map {
-       _.read(extent, bands) }
-    rasters.map { raster =>
-      val r = raster.get
-      println(r.extent)
-      println(r.tile.band(0).asciiDraw())
-    }
-    var red = rasters.reduce
-    println(red.get.tile.band(0).asciiDraw())
-    red
-  }
+  def read(extent: Extent, bands: Seq[Int]): Option[Raster[MultibandTile]] =
+    sources
+      .map { _.read(extent, bands) }
+      .reduce
 
   def read(bounds: GridBounds[Long], bands: Seq[Int]): Option[Raster[MultibandTile]] = {
     val rasters = sources map { _.read(bounds, bands) }
@@ -123,13 +115,7 @@ object MosaicRasterSource {
         val targetRE = RasterExtent(
           l.rasterExtent.extent combine r.rasterExtent.extent,
           List(l.rasterExtent.cellSize, r.rasterExtent.cellSize).minBy(_.resolution))
-        val result = l.resample(TargetGridExtent(targetRE)) merge r.resample(TargetGridExtent(targetRE))
-        val lr = l.resample(TargetGridExtent(targetRE))
-        val rr = r.resample(TargetGridExtent(targetRE))
-
-        println(s"lr: ${lr.tile.band(0).asciiDraw()}")
-        println(s"rr: ${rr.tile.band(0).asciiDraw()}")
-        result
+        l.resample(TargetGridExtent(targetRE)) merge r.resample(TargetGridExtent(targetRE))
       }
     }
 

@@ -30,7 +30,7 @@ trait MultibandRasterReprojectMethods extends RasterReprojectMethods[MultibandRa
   def reproject(
     transform: Transform,
     inverseTransform: Transform,
-    resampleTarget: Option[ResampleTarget]
+    resampleTarget: ResampleTarget
   ): MultibandRaster = {
     val Raster(tile, extent) = self
     val bands =

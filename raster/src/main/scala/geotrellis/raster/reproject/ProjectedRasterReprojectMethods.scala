@@ -27,7 +27,7 @@ import spire.math.Integral
 
 abstract class ProjectedRasterReprojectMethods[T <: CellGrid[Int]](val self: ProjectedRaster[T]) extends MethodExtensions[ProjectedRaster[T]] {
 
-  def reproject(dest: CRS, resampleTarget: Option[ResampleTarget])(implicit ev: Raster[T] => RasterReprojectMethods[Raster[T]]): ProjectedRaster[T] =
+  def reproject(dest: CRS, resampleTarget: ResampleTarget)(implicit ev: Raster[T] => RasterReprojectMethods[Raster[T]]): ProjectedRaster[T] =
     ProjectedRaster(self.raster.reproject(self.crs, dest, resampleTarget), dest)
 
 }

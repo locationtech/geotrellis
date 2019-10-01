@@ -95,8 +95,6 @@ class MosaicRasterSourceSpec extends FunSpec with RasterMatchers with GeoTiffTes
         extentRead
       )
       val result = mosaicRasterSource.read(extentRead, Seq(0)).get
-      print("res",result.tile.band(0).toArray.toList)
-      print("expect",expectation.tile.band(0).toArray.toList)
       result shouldEqual expectation
     }
 
@@ -111,8 +109,6 @@ class MosaicRasterSourceSpec extends FunSpec with RasterMatchers with GeoTiffTes
           mosaicRasterSource.gridExtent.extent
       )
       val result = mosaicRasterSource.read(mosaicRasterSource.gridBounds, Seq(0)).get
-      print("res2",result.tile.band(0).toArray.toList)
-      print("expect2",expectation.tile.band(0).toArray.toList)
       result shouldEqual expectation
       result.extent shouldEqual expectation.extent
     }

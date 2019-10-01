@@ -58,7 +58,6 @@ class GeoTiffResampleRasterSource(
   def crs: CRS = tiff.crs
 
   override lazy val gridExtent: GridExtent[Long] = resampleTarget(tiff.rasterExtent.toGridType[Long])
-  println("ge", resampleTarget)
   lazy val resolutions: List[GridExtent[Long]] = {
     val ratio = gridExtent.cellSize.resolution / tiff.rasterExtent.cellSize.resolution
     gridExtent :: tiff.overviews.map { ovr =>
@@ -75,12 +74,7 @@ class GeoTiffResampleRasterSource(
     new GeoTiffReprojectRasterSource(dataPath, targetCRS, resampleTarget, method, strategy, targetCellType = targetCellType) {
       override lazy val gridExtent: GridExtent[Long] = {
         val reprojectedRasterExtent =
-          ReprojectRasterExtent(
-            baseGridExtent,
-            transform,
-            Some(resampleTarget)
-            //Reproject.Options.DEFAULT.copy(method = resampleMethod, errorThreshold = errorThreshold)
-          )
+          ReprojectRasterExtent(baseGridExtent, transform, resampleTarget)
 
         resampleTarget match {
           case targetGridExtent: TargetGridExtent[_] => targetGridExtent.gridExtent.toGridType[Long]
@@ -100,7 +94,6 @@ class GeoTiffResampleRasterSource(
 
   def read(extent: Extent, bands: Seq[Int]): Option[Raster[MultibandTile]] = {
     val bounds = gridExtent.gridBoundsFor(extent, clamp = false)
-    print("ext", extent, bounds, gridExtent)
 
     read(bounds, bands)
   }
@@ -133,7 +126,6 @@ class GeoTiffResampleRasterSource(
 
     geoTiffTile.crop(windows.keys.toSeq, bands.toArray).map { case (gb, tile) =>
       val targetRasterExtent = windows(gb)
-      print("gb", gb)
       Raster(
         tile = tile,
         extent = targetRasterExtent.extent

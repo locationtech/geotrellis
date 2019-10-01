@@ -168,7 +168,7 @@ class GeoTiffWriterSpec extends FunSpec
     it ("should read write raster correctly") {
       val geoTiff = SinglebandGeoTiff(geoTiffPath("econic_zlib_tiled_bandint_wm.tif"))
       val projectedRaster = geoTiff.projectedRaster
-      val ProjectedRaster(Raster(tile, extent), crs) = projectedRaster.reproject(LatLng, None)
+      val ProjectedRaster(Raster(tile, extent), crs) = projectedRaster.reproject(LatLng, DefaultTarget)
       val reprojGeoTiff = SinglebandGeoTiff(tile.asInstanceOf[Tile], extent, crs, geoTiff.tags, geoTiff.options)
 
       GeoTiffWriter.write(reprojGeoTiff, path)

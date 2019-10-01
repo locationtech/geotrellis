@@ -67,7 +67,6 @@ class GeoTiffRasterSource(
   def read(extent: Extent, bands: Seq[Int]): Option[Raster[MultibandTile]] = {
     val bounds = gridExtent.gridBoundsFor(extent, clamp = false).toGridType[Int]
     val geoTiffTile = tiff.tile.asInstanceOf[GeoTiffMultibandTile]
-    print(extent, bounds)
     val it = geoTiffTile.crop(List(bounds), bands.toArray).map { case (gb, tile) =>
       // TODO: shouldn't GridExtent give me Extent for types other than N ?
       Raster(tile, gridExtent.extentFor(gb.toGridType[Long], clamp = false))
@@ -80,7 +79,6 @@ class GeoTiffRasterSource(
   }
 
   def read(bounds: GridBounds[Long], bands: Seq[Int]): Option[Raster[MultibandTile]] = {
-    println("bounds", bounds)
     val it = readBounds(List(bounds), bands)
 
     tiff.synchronized { if (it.hasNext) Some(it.next) else None }

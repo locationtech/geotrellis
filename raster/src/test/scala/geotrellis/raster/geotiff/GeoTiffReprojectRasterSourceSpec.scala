@@ -42,7 +42,7 @@ class GeoTiffReprojectRasterSourceSpec extends FunSpec with RasterMatchers with 
     lazy val sourceTiff = GeoTiffReader.readMultiband(uri)
 
     lazy val expectedRasterExtent = {
-      val re = ReprojectRasterExtent(rasterSource.gridExtent, Transform(rasterSource.crs, LatLng), None)
+      val re = ReprojectRasterExtent(rasterSource.gridExtent, Transform(rasterSource.crs, LatLng), DefaultTarget)
       // stretch target raster extent slightly to avoid default case in ReprojectRasterExtent
       RasterExtent(re.extent, CellSize(re.cellheight * 1.1, re.cellwidth * 1.1))
     }

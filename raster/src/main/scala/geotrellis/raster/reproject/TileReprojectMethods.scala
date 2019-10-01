@@ -24,7 +24,7 @@ import geotrellis.util.MethodExtensions
 import spire.math.Integral
 
 trait TileReprojectMethods[T <: CellGrid[Int]] extends MethodExtensions[T] {
-  def reproject(srcExtent: Extent, transform: Transform, inverseTransform: Transform, resampleTarget: Option[ResampleTarget]): Raster[T]
+  def reproject(srcExtent: Extent, transform: Transform, inverseTransform: Transform, resampleTarget: ResampleTarget): Raster[T]
 
-  def reproject(srcExtent: Extent, src: CRS, dest: CRS, resampleTarget: Option[ResampleTarget]): Raster[T]
+  def reproject(srcExtent: Extent, src: CRS, dest: CRS, resampleTarget: ResampleTarget): Raster[T]
 }

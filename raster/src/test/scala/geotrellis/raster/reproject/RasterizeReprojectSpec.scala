@@ -34,7 +34,7 @@ class RasterizeReprojectSpec extends FunSpec
       val destRE = ProjectedRasterExtent(destRegion.extent, ConusAlbers, 1000, 800)
       // =================================================
       // TODO: figure out why this causes a stack overflow
-      val reprojected = coloRaster.reproject(ConusAlbers, Some(TargetGridExtent(destRE.toGridType[Long])))
+      val reprojected = coloRaster.reproject(ConusAlbers, TargetGridExtent(destRE.toGridType[Long]))
       // =================================================
       val trans = Proj4Transform(ConusAlbers, LatLng)
 
