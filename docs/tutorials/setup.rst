@@ -55,6 +55,8 @@ following:
 GeoTrellis Project Template
 ---------------------------
 
+TODO: Update to https://github.com/geotrellis/geotrellis-spark-job.g8
+
 The
 `geotrellis-sbt-template <https://github.com/geotrellis/geotrellis-sbt-template>`__
 repo provides a simple GeoTrellis project template. It can be used to
