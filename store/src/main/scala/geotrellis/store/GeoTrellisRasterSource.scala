@@ -196,7 +196,13 @@ object GeoTrellisRasterSource {
     }
   }
 
-  def readIntersecting(reader: CollectionLayerReader[LayerId], layerId: LayerId, metadata: TileLayerMetadata[SpatialKey], extent: Extent, bands: Seq[Int]): Option[Raster[MultibandTile]] = {
+  def readIntersecting(
+    reader: CollectionLayerReader[LayerId],
+    layerId: LayerId,
+    metadata: TileLayerMetadata[SpatialKey],
+    extent: Extent,
+    bands: Seq[Int]
+  ): Option[Raster[MultibandTile]] = {
     val tiles = readTiles(reader, layerId, extent, bands)
     sparseStitch(tiles, extent)
   }

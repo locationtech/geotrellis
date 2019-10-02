@@ -58,13 +58,13 @@ object MultibandIngest {
       case (layoutScheme: ZoomedLayoutScheme, Some(mz)) =>
         val LayoutLevel(zoom, layoutDefinition) = layoutScheme.levelForZoom(mz)
         (zoom, bufferSize match {
-          case Some(bs) => contextRdd.reproject(destCRS, layoutDefinition, bs, options = RasterReprojectOptions(method = resampleMethod, targetCellSize = Some(layoutDefinition.cellSize)))._2
-          case _ => contextRdd.reproject(destCRS, layoutDefinition, options = RasterReprojectOptions(method = resampleMethod, targetCellSize = Some(layoutDefinition.cellSize)))._2
+          case Some(bs) => contextRdd.reproject(destCRS, layoutDefinition, bs)._2
+          case _ => contextRdd.reproject(destCRS, layoutDefinition)._2
         })
 
       case _ => bufferSize match {
-        case Some(bs) => contextRdd.reproject(destCRS, layoutScheme, bs, resampleMethod)
-        case _ => contextRdd.reproject(destCRS, layoutScheme, resampleMethod)
+        case Some(bs) => contextRdd.reproject(destCRS, layoutScheme, bs, None)
+        case _ => contextRdd.reproject(destCRS, layoutScheme, None)
       }
     }
 

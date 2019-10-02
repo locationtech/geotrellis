@@ -23,7 +23,7 @@ import geotrellis.raster.reproject._
 import geotrellis.spark.reproject._
 import geotrellis.layer._
 import geotrellis.spark._
-import geotrellis.spark.reproject.Reproject.Options
+import geotrellis.spark.reproject.Reproject.OldOptions
 import geotrellis.spark.testkit._
 import geotrellis.vector._
 
@@ -39,7 +39,7 @@ class TileRDDReprojectSpec extends FunSpec with TestEnvironment {
   describe("TileRDDReproject") {
     val path = "raster/data/aspect.tif"
     val gt = SinglebandGeoTiff(path)
-    val originalRaster = gt.raster.mapTile(_.toArrayTile).resample(TargetRegion(RasterExtent(gt.raster.extent, 500, 500)))
+    val originalRaster = gt.raster.mapTile(_.toArrayTile).resample(TargetGridExtent(RasterExtent(gt.raster.extent, 500, 500)))
 
     // import geotrellis.raster.render._
     // val rainbow = ColorMap((0.0 to 360.0 by 1.0).map{ deg => (deg, HSV.toRGB(deg, 1.0, 1.0)) }.toMap)
@@ -52,33 +52,16 @@ class TileRDDReprojectSpec extends FunSpec with TestEnvironment {
 
     def testReproject(method: ResampleMethod, constantBuffer: Boolean): Unit = {
       val expected =
-        ProjectedRaster(raster, gt.crs).reproject(
-          LatLng,
-          DefaultTarget
-        )
+        ProjectedRaster(raster, gt.crs)
+          .reproject(LatLng, DefaultTarget)
 
       // expected.tile.renderPng(rainbow).write("expected.png")
 
       val (_, actualRdd) =
         if(constantBuffer) {
-          rdd.reproject(
-            LatLng,
-            FloatingLayoutScheme(25),
-            bufferSize = 2,
-            Options(
-              rasterReprojectOptions = RasterReprojectOptions(method = method, errorThreshold = 0),
-              matchLayerExtent = true
-            )
-          )
+          rdd.reproject(LatLng, FloatingLayoutScheme(25), bufferSize = 2)
         } else {
-          rdd.reproject(
-            LatLng,
-            FloatingLayoutScheme(25),
-            Options(
-              rasterReprojectOptions = RasterReprojectOptions(method = method, errorThreshold = 0),
-              matchLayerExtent = true
-            )
-          )
+          rdd.reproject(LatLng, FloatingLayoutScheme(25))
         }
 
       val actual =
@@ -162,20 +145,13 @@ class TileRDDReprojectSpec extends FunSpec with TestEnvironment {
 
     it("should function correctly for multiband tiles") {
       val expected =
-        ProjectedRaster(raster, gt.crs).reproject(
-          LatLng,
-          DefaultTarget
-        )
+        ProjectedRaster(raster, gt.crs).reproject(LatLng, DefaultTarget)
 
       val mbrdd = ContextRDD(rdd.mapValues{ tile => MultibandTile(Array(tile)) }, rdd.metadata)
       val (_, actualRdd) =
         mbrdd.reproject(
           LatLng,
-          FloatingLayoutScheme(25),
-          Options(
-            rasterReprojectOptions = RasterReprojectOptions(NearestNeighbor, errorThreshold = 0),
-            matchLayerExtent = true
-          )
+          FloatingLayoutScheme(25)
         )
 
       val actual: Raster[MultibandTile] =
@@ -254,11 +230,7 @@ class TileRDDReprojectSpec extends FunSpec with TestEnvironment {
       val (_, actualRdd) =
         mbrdd.reproject(
           LatLng,
-          FloatingLayoutScheme(25),
-          Options(
-            rasterReprojectOptions = RasterReprojectOptions(NearestNeighbor, errorThreshold = 0),
-            matchLayerExtent = true
-          )
+          FloatingLayoutScheme(25)
         )
 
       val actual: Raster[TileFeature[Tile, Int]] =

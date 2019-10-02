@@ -255,14 +255,14 @@ case class GDALWarpOptions(
    * This call matches semantics and arguments of {@see RasterSource#reproject}
    */
   def reproject(rasterExtent: GridExtent[Long], sourceCRS: CRS, targetCRS: CRS, resampleTarget: ResampleTarget = DefaultTarget, resampleMethod: ResampleMethod = NearestNeighbor): GDALWarpOptions = {
-    val reprojectOptions = ResampleTarget.toReprojectOptions[Long](rasterExtent, resampleTarget, resampleMethod)
-    val re = rasterExtent.reproject(sourceCRS, targetCRS, reprojectOptions)
+    val reprojectOptions = ResampleTarget.toReprojectOptions(rasterExtent, resampleTarget, resampleMethod)
+    val re = rasterExtent.reproject(sourceCRS, targetCRS, resampleTarget)
 
     this.copy(
       cellSize       = re.cellSize.some,
       targetCRS      = targetCRS.some,
       sourceCRS      = sourceCRS.some,
-      resampleMethod = reprojectOptions.method.some
+      resampleMethod = Some(resampleMethod)
     )
   }
 

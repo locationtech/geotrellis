@@ -50,7 +50,7 @@ class BufferTilesSpec extends FunSpec with TestEnvironment with RasterMatchers {
   describe("The BufferTiles functionality") {
     val path = "raster/data/aspect.tif"
     val gt = SinglebandGeoTiff(path)
-    val originalRaster = gt.mapTile(_.toArrayTile).raster.resample(TargetRegion(RasterExtent(gt.extent, 500, 500)))
+    val originalRaster = gt.mapTile(_.toArrayTile).raster.resample(TargetGridExtent(RasterExtent(gt.extent, 500, 500)))
     val (_, wholeRdd) = createTileLayerRDD(originalRaster, 5, 5, gt.crs)
     val metadata = wholeRdd.metadata
     val wholeCollection = wholeRdd.toCollection

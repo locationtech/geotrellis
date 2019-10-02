@@ -69,7 +69,7 @@ trait RasterRegionReproject[T <: CellGrid[Int]] extends Serializable {
   def regionReprojectMutable(raster: Raster[T], src: CRS, dest: CRS, target: Raster[T], region: Polygon, resampleMethod: ResampleMethod): Raster[T] =
     regionReprojectMutable(raster, src, dest, target, region, resampleMethod, 0.125) // This default comes from GDAL 1.11 code
 
-  @deprecated("Use regionReprojectMerge instead", "2.1")
+  @deprecated("Use regionReprojectMutable instead", "2.1")
   def mutableRegionReproject(target: T, raster: Raster[T], src: CRS, dest: CRS, rasterExtent: RasterExtent, region: Polygon, resampleMethod: ResampleMethod): Unit = {
     // method kept for binary compatibility only, relies on possible mutable side effects
     regionReprojectMutable(raster, src, dest, Raster(target, rasterExtent.extent), region, resampleMethod)

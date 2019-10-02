@@ -79,7 +79,7 @@ class GDALWarpOptionsSpec extends FunSpec with RasterMatchers with GivenWhenThen
         )
         .resample(
           GridExtent(Extent(-8769160.0, 4257700.0, -8750630.0, 4274460.0), CellSize(10, 10)),
-          TargetRegion(GridExtent(Extent(-8769160.0, 4257700.0, -8750630.0, 4274460.0), CellSize(22, 22)))
+          TargetGridExtent(GridExtent[Int](Extent(-8769160.0, 4257700.0, -8750630.0, 4274460.0), CellSize(22, 22)))
         )
     rasterSourceFromUriOptions(uri, opts)
   }
@@ -142,7 +142,7 @@ class GDALWarpOptionsSpec extends FunSpec with RasterMatchers with GivenWhenThen
         GDALRasterSource(filePath)
           .reproject(
             targetCRS    = WebMercator,
-            resampleGrid = TargetCellSize(CellSize(10, 10)),
+            resampleTarget = TargetCellSize(CellSize(10, 10)),
             strategy     = AutoHigherResolution
         )
         .resampleToRegion(

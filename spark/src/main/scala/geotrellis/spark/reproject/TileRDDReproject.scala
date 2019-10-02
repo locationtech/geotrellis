@@ -44,46 +44,6 @@ import scala.reflect.ClassTag
 
 object TileRDDReproject extends LazyLogging {
 
-  def apply[
-    K: SpatialComponent: Boundable: ClassTag,
-    V <: CellGrid[Int]: ClassTag: RasterRegionReproject: (? => TileMergeMethods[V]): (? => TilePrototypeMethods[V])
-  ](
-    bufferedTiles: RDD[(K, BufferedTile[V])],
-    metadata: TileLayerMetadata[K],
-    destCrs: CRS,
-    targetLayout: LayoutDefinition,
-    resampleTarget: ResampleTarget,
-    resampleMethod: ResampleMethod = ResampleMethods.NearestNeighbor,
-    partitioner: Option[Partitioner] = None
-  ): (Int, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]) = ???
-
-  def apply[
-    K: SpatialComponent: Boundable: ClassTag,
-    V <: CellGrid[Int]: ClassTag: RasterRegionReproject: Stitcher: (? => CropMethods[V]): (? => TileMergeMethods[V]): (? => TilePrototypeMethods[V])
-  ](
-    rdd: RDD[(K, V)] with Metadata[TileLayerMetadata[K]],
-    destCrs: CRS,
-    targetLayout: LayoutDefinition,
-    resampleTarget: ResampleTarget,
-    resampleMethod: ResampleMethod = ResampleMethods.NearestNeighbor,
-    partitioner: Option[Partitioner] = None
-  ): (Int, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]) = ???
-
-  def apply[
-    K: SpatialComponent: Boundable: ClassTag,
-    V <: CellGrid[Int]: ClassTag: RasterRegionReproject: Stitcher: (? => CropMethods[V]): (? => TileMergeMethods[V]): (? => TilePrototypeMethods[V]),
-    N: Integral
-  ](
-    rdd: RDD[(K, V)] with Metadata[TileLayerMetadata[K]],
-    destCrs: CRS,
-    targetLayout: LayoutDefinition,
-    bufferSize: Int,
-    resampleTarget: ResampleTarget,
-    resampleMethod: ResampleMethod = ResampleMethods.NearestNeighbor,
-    partitioner: Option[Partitioner] = None
-  ): (Int, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]) = ???
-
-
   /** Reproject a set of buffered
     * @tparam           K           Key type; requires spatial component.
     * @tparam           V           Tile type; requires the ability to stitch, crop, reproject, merge, and create.
@@ -103,10 +63,9 @@ object TileRDDReproject extends LazyLogging {
     bufferedTiles: RDD[(K, BufferedTile[V])],
     metadata: TileLayerMetadata[K],
     destCrs: CRS,
-    targetLayout: LayoutScheme,
-    resampleTarget: ResampleTarget,
-    resampleMethod: ResampleMethod = ResampleMethods.NearestNeighbor,
-    partitioner: Option[Partitioner] = None
+    targetLayout: Either[LayoutScheme, LayoutDefinition],
+    resampleMethod: ResampleMethod,
+    partitioner: Option[Partitioner]
   ): (Int, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]) = {
     val crs: CRS = metadata.crs
     val layout = metadata.layout
@@ -114,6 +73,8 @@ object TileRDDReproject extends LazyLogging {
     implicit val sc = bufferedTiles.context
 
     val sourceDataGridExtent = metadata.layout.createAlignedGridExtent(metadata.extent)
+    // target grid extent is not computed to determine the alignment of pixels. rather,
+    // it is here to determine the extent and cellsize of outputs
     val targetGridExtent = ReprojectRasterExtent(sourceDataGridExtent, metadata.crs, destCrs)
 
     val targetPartitioner: Option[Partitioner] = partitioner.orElse(bufferedTiles.partitioner)
@@ -127,21 +88,27 @@ object TileRDDReproject extends LazyLogging {
       })
     logger.debug(s"$reprojectSummary")
 
-    val LayoutLevel(targetZoom, targetLayerLayout) =
-      targetLayout.levelFor(targetGridExtent.extent, targetGridExtent.cellSize)
+    // First figure out where we're going through option yoga
+    // You'll want to read [[ReprojectRasterExtent]] to grok this
+    val LayoutLevel(targetZoom, targetLayerLayout) = targetLayout match {
+      case Right(layoutDefinition) =>
+        LayoutLevel(0, layoutDefinition)
+
+      case Left(layoutScheme) =>
+        layoutScheme.levelFor(targetGridExtent.extent, targetGridExtent.cellSize)
+    }
 
     val newMetadata = {
       metadata.copy(
         crs = destCrs,
         layout = targetLayerLayout,
-        extent = targetGridExtent,
+        extent = targetGridExtent.extent,
         bounds = metadata.bounds.setSpatialBounds(
           KeyBounds(targetLayerLayout.mapTransform.extentToBounds(targetGridExtent.extent)))
       )
     }
 
-    val newLayout = newMetadata.layout
-    val maptrans = newLayout.mapTransform
+    val maptrans = targetLayerLayout.mapTransform
 
     val rrp = implicitly[RasterRegionReproject[V]]
 
@@ -162,7 +129,7 @@ object TileRDDReproject extends LazyLogging {
             val destRegion = ProjectedExtent(innerExtent, crs).reprojectAsPolygon(destCrs, 0.05)
 
             maptrans.keysForGeometry(destRegion).map { newKey =>
-              val destRE = RasterExtent(maptrans(newKey), newLayout.tileLayout.tileCols, newLayout.tileLayout.tileRows)
+              val destRE = RasterExtent(maptrans(newKey), targetLayerLayout.tileLayout.tileCols, targetLayerLayout.tileLayout.tileRows)
               (key.setComponent[SpatialKey](newKey), (Raster(tile, outerExtent), destRE, destRegion))
             }
           }}
@@ -170,14 +137,14 @@ object TileRDDReproject extends LazyLogging {
 
     def createCombiner(tup: (Raster[V], RasterExtent, Polygon)) = {
         val (raster, destRE, destRegion) = tup
-        rrp.reproject(raster, crs, destCrs, destRE, destRegion, resampleMethod).tile
+        rrp.regionReproject(raster, crs, destCrs, destRE, destRegion, resampleMethod).tile
       }
 
     def mergeValues(reprojectedTile: V, toReproject: (Raster[V], RasterExtent, Polygon)) = {
       val (raster, destRE, destRegion) = toReproject
       val destRaster = Raster(reprojectedTile, destRE.extent)
       // RDD.combineByKey contract allows us to safely re-use and mutate the accumulator, reprojectedTile
-      rrp.reproject(raster, crs, destCrs, destRaster, destRegion, resampleMethod).tile
+      rrp.regionReprojectMutable(raster, crs, destCrs, destRaster, destRegion, resampleMethod).tile
     }
 
     def mergeCombiners(reproj1: V, reproj2: V) = reproj1.merge(reproj2)
@@ -209,18 +176,21 @@ object TileRDDReproject extends LazyLogging {
   ](
     rdd: RDD[(K, V)] with Metadata[TileLayerMetadata[K]],
     destCrs: CRS,
-    targetLayout: LayoutScheme,
-    resampleTarget: ResampleTarget,
-    resampleMethod: ResampleMethod = ResampleMethods.NearestNeighbor,
-    partitioner: Option[Partitioner] = None
+    targetLayout: Either[LayoutScheme, LayoutDefinition],
+    resampleMethod: ResampleMethod,
+    partitioner: Option[Partitioner]
   ): (Int, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]) = {
     if(rdd.metadata.crs == destCrs) {
       val layout = rdd.metadata.layout
 
-      val (zoom, bail) = {
-        val LayoutLevel(zoom, newLayout) = targetLayout.levelFor(layout.extent, layout.cellSize)
-        (zoom, newLayout == layout)
-      }
+      val (zoom, bail) =
+        targetLayout match {
+          case Left(layoutScheme) =>
+            val LayoutLevel(zoom, newLayout) = layoutScheme.levelFor(layout.extent, layout.cellSize)
+            (zoom, newLayout == layout)
+          case Right(layoutDefinition) =>
+            (0, layoutDefinition == layout)
+        }
 
       if(bail) {
         // This is a no-op, just return the source
@@ -229,7 +199,7 @@ object TileRDDReproject extends LazyLogging {
         // We are tiling against a new layout but we
         // don't need to worry about buffers since the source and target are
         // in the same CRS.
-        apply(rdd, destCrs, targetLayout, bufferSize = 0, resampleTarget = resampleTarget, partitioner = partitioner)
+        apply(rdd, destCrs, targetLayout, bufferSize = 0, resampleMethod, partitioner = partitioner)
       }
     } else {
       val crs = rdd.metadata.crs
@@ -260,7 +230,7 @@ object TileRDDReproject extends LazyLogging {
             )
           })
 
-      apply(bufferedTiles, rdd.metadata, destCrs, targetLayout, resampleTarget, partitioner = partitioner)
+      apply(bufferedTiles, rdd.metadata, destCrs, targetLayout, resampleMethod, partitioner = partitioner)
     }
   }
 
@@ -287,17 +257,16 @@ object TileRDDReproject extends LazyLogging {
   ](
     rdd: RDD[(K, V)] with Metadata[TileLayerMetadata[K]],
     destCrs: CRS,
-    targetLayout: LayoutScheme,
+    targetLayout: Either[LayoutScheme, LayoutDefinition],
     bufferSize: Int,
-    resampleTarget: ResampleTarget,
-    resampleMethod: ResampleMethod = ResampleMethods.NearestNeighbor,
-    partitioner: Option[Partitioner] = None
+    resampleMethod: ResampleMethod,
+    partitioner: Option[Partitioner]
   ): (Int, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]) =
     if(bufferSize == 0) {
       val fakeBuffers: RDD[(K, BufferedTile[V])] = rdd.withContext(_.mapValues { tile: V => BufferedTile(tile, GridBounds(0, 0, tile.cols - 1, tile.rows - 1)) })
-      apply(fakeBuffers, rdd.metadata, destCrs, targetLayout, resampleTarget, partitioner)
+      apply(fakeBuffers, rdd.metadata, destCrs, targetLayout, resampleMethod, partitioner)
     } else
-      apply(rdd.bufferTiles(bufferSize), rdd.metadata, destCrs, targetLayout, resampleTarget, partitioner)
+      apply(rdd.bufferTiles(bufferSize), rdd.metadata, destCrs, targetLayout, resampleMethod, partitioner)
 
 
   /** Match pixel resolution between two layouts in different projections such that

@@ -95,7 +95,7 @@ class GeoTrellisRasterSourceSpec extends FunSpec with RasterMatchers with GivenW
         GeoTiffReader
           .readMultiband(TestCatalog.filePath, streaming = false)
           .raster
-          .resample((sourceMultiband.cols * 0.95).toInt, (sourceMultiband.rows * 0.95).toInt, NearestNeighbor)
+          .resample(TargetDimensions((sourceMultiband.cols * 0.95).toInt, (sourceMultiband.rows * 0.95).toInt), NearestNeighbor)
           // resample to 0.9 so RasterSource picks the base layer and not an overview
 
       val resampledSource =

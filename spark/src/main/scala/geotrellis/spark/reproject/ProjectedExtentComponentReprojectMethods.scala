@@ -18,6 +18,7 @@ package geotrellis.spark.reproject
 
 import geotrellis.raster._
 import geotrellis.raster.reproject._
+import geotrellis.raster.resample._
 import geotrellis.spark.ingest._
 import geotrellis.vector._
 import geotrellis.proj4._
@@ -28,10 +29,10 @@ import org.apache.spark.rdd._
 class ProjectedExtentComponentReprojectMethods[K: Component[*, ProjectedExtent], V <: CellGrid[Int]: (* => TileReprojectMethods[V])](val self: RDD[(K, V)])
     extends MethodExtensions[RDD[(K, V)]] {
 
-  def reproject(destCrs: CRS, resampleTarget: ResampleTarget, resampleMethod: ResampleMethods.NearestNeighbor): RDD[(K, V)] = {
+  def reproject(destCrs: CRS, resampleTarget: ResampleTarget, resampleMethod: ResampleMethod = NearestNeighbor): RDD[(K, V)] = {
     ProjectedExtentComponentReproject(self, destCrs, resampleTarget, resampleMethod)
   }
 
   def reproject(destCrs: CRS): RDD[(K, V)] =
-    reproject(destCrs, RasterReprojectOptions.DEFAULT)
+    reproject(destCrs, DefaultTarget)
 }
