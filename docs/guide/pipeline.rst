@@ -3,7 +3,7 @@ The Pipeline Tool (an alternative ETL tool)
 
 TODO: Add to sidebar
 
-Pipelines are an idea originally inspired by [PDAL](https://pdal.io/pipeline.html) pipelines.
+Pipelines are an idea originally inspired by `PDAL <https://pdal.io/pipeline.html>`__ pipelines.
 Pipelines represent a set of instructions: how to read data, transform (process) said data, and
 write it. It is possible to do this with other parts of the GeoTrellis API, but the pipeline provides
 an alternative which could simplify some common processing tasks and to reduce the amount of code
