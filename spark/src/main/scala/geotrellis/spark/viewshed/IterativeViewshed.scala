@@ -127,6 +127,7 @@ object IterativeViewshed {
 
   /**
     * Compute the resolution (in meters per pixel) of a layer.
+    * This function also exists in IterativeCostDistance.scala
     */
   private def computeResolution[K: (* => SpatialKey), V: (* => Tile)](
     elevation: RDD[(K, V)] with Metadata[TileLayerMetadata[K]]

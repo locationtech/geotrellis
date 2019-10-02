@@ -73,6 +73,10 @@ object IterativeCostDistance {
     def value: Changes = list
   }
 
+  /**
+    * Compute the resolution (in meters per pixel) of a layer.
+    * This function also exists in IterativeViewshed.scala
+    */
   def computeResolution[K: (* => SpatialKey), V: (* => Tile)](
     friction: RDD[(K, V)] with Metadata[TileLayerMetadata[K]]
   ) = {
@@ -80,10 +84,15 @@ object IterativeCostDistance {
     val mt = md.mapTransform
     val key: SpatialKey = md.bounds.get.minKey
     val extent = mt(key).reproject(md.crs, LatLng)
-    val degrees = extent.xmax - extent.xmin
-    val meters = degrees * (6378137 * 2.0 * math.Pi) / 360.0
-    val pixels = md.layout.tileCols
-    math.abs(meters / pixels)
+
+    val latitude = (extent.ymax + extent.ymin) / 2.0
+    val degrees_per_key = extent.xmax - extent.xmin
+    // https://gis.stackexchange.com/questions/2951/algorithm-for-offsetting-a-latitude-longitude-by-some-amount-of-meters
+    val meters_per_degree = 111111 * math.cos(math.toRadians(latitude))
+    val meters_per_key = meters_per_degree * degrees_per_key
+    val keys_per_pixel = 1.0 / md.layout.tileCols
+
+    meters_per_key * keys_per_pixel
   }
 
   private def geometryToKeys[K: (* => SpatialKey)](
