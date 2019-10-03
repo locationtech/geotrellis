@@ -48,9 +48,13 @@ trait GeoTiffSegment {
   def convert(cellType: CellType): Array[Byte] =
     cellType match {
       case BitCellType =>
-        val bs = new BitSet(size)
-        cfor(0)(_ < size, _ + 1) { i => if ((getInt(i) & 1) == 0) { bs.set(i) } }
-        bs.toByteArray()
+        val dsize = size >> 3
+        val arr = Array.ofDim[Byte](dsize)
+        cfor(0)(_ < size, _ + 1) { i => BitArrayTile.update(arr, i, getInt(i))  }
+        // Our BitCellType rasters have the bits encoded in a order inside of each byte that is
+        // the reverse of what a GeoTiff wants.
+        cfor(0)(_ < dsize, _ + 1) { i => arr(i) = ((Integer.reverse(arr(i)) >>> 24) & 0xff).toByte }
+        arr
       case ByteCellType =>
         val arr = Array.ofDim[Byte](size)
         cfor(0)(_ < size, _ + 1) { i => getInt(i).toByte }
