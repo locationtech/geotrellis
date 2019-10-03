@@ -74,7 +74,7 @@ trait MosaicRasterSource extends RasterSource {
     *
     * @see [[geotrellis.contrib.vlm.RasterSource.resolutions]]
     */
-  def resolutions: List[GridExtent[Long]] = sources.map { _.resolutions }.reduce
+  def resolutions: List[CellSize] = sources.map { _.resolutions }.reduce
 
   /** Create a new MosaicRasterSource with sources transformed according to the provided
     * crs, options, and strategy, and a new crs

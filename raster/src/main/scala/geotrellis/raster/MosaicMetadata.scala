@@ -26,7 +26,7 @@ case class MosaicMetadata(
   bandCount: Int,
   cellType: CellType,
   gridExtent: GridExtent[Long],
-  resolutions: List[GridExtent[Long]],
+  resolutions: List[CellSize],
   list: NonEmptyList[RasterMetadata]
 ) extends RasterMetadata {
   /** Mosaic metadata usually doesn't contain a metadata that is common for all RasterSources */

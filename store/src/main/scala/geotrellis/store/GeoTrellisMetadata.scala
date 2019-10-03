@@ -26,10 +26,9 @@ case class GeoTrellisMetadata(
   bandCount: Int,
   cellType: CellType,
   gridExtent: GridExtent[Long],
-  resolutions: List[GridExtent[Long]],
+  resolutions: List[CellSize],
   attributes: Map[String, String]
 ) extends RasterMetadata {
   /** GeoTrellis metadata doesn't allow to query a per band metadata by default. */
   def attributesForBand(band: Int): Map[String, String] = Map.empty
 }
-

@@ -97,7 +97,7 @@ class GDALRasterSource(
     * These resolutions could represent actual overview as seen in source file
     * or overviews of VRT that was created as result of resample operations.
     */
-  lazy val resolutions: List[GridExtent[Long]] = dataset.resolutions(datasetType).map(_.toGridType[Long])
+  lazy val resolutions: List[CellSize] = dataset.resolutions(datasetType).map(_.toGridType[Long])
 
   override def readBounds(bounds: Traversable[GridBounds[Long]], bands: Seq[Int]): Iterator[Raster[MultibandTile]] = {
     bounds

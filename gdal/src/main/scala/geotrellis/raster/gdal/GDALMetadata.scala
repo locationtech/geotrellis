@@ -26,7 +26,7 @@ case class GDALMetadata(
   bandCount: Int,
   cellType: CellType,
   gridExtent: GridExtent[Long],
-  resolutions: List[GridExtent[Long]],
+  resolutions: List[CellSize],
   /** GDAL per domain metadata */
   baseMetadata: Map[GDALMetadataDomain, Map[String, String]] = Map.empty,
   /** GDAL per band per domain metadata */

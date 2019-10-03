@@ -18,7 +18,7 @@ package geotrellis.raster.geotiff
 
 import geotrellis.raster.{RasterMetadata, SourceName}
 import geotrellis.proj4.CRS
-import geotrellis.raster.{CellType, GridExtent}
+import geotrellis.raster.{CellType, GridExtent, CellSize}
 import geotrellis.raster.io.geotiff.Tags
 
 case class GeoTiffMetadata(
@@ -27,7 +27,7 @@ case class GeoTiffMetadata(
   bandCount: Int,
   cellType: CellType,
   gridExtent: GridExtent[Long],
-  resolutions: List[GridExtent[Long]],
+  resolutions: List[CellSize],
   tags: Tags
 ) extends RasterMetadata {
   /** Returns the GeoTiff head tags. */
