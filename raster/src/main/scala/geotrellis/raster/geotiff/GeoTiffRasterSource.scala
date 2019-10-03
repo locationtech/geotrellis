@@ -53,7 +53,7 @@ class GeoTiffRasterSource(
   def crs: CRS = tiff.crs
 
   lazy val gridExtent: GridExtent[Long] = tiff.rasterExtent.toGridType[Long]
-  lazy val resolutions: List[GridExtent[Long]] = gridExtent :: tiff.overviews.map(_.rasterExtent.toGridType[Long])
+  lazy val resolutions: List[CellSize] = cellSize :: tiff.overviews.map(_.cellSize)
 
   def reprojection(targetCRS: CRS, resampleTarget: ResampleTarget = DefaultTarget, method: ResampleMethod = NearestNeighbor, strategy: OverviewStrategy = AutoHigherResolution): GeoTiffReprojectRasterSource =
     GeoTiffReprojectRasterSource(dataPath, targetCRS, resampleTarget, method, strategy, targetCellType = targetCellType, baseTiff = Some(tiff))
@@ -93,7 +93,7 @@ class GeoTiffRasterSource(
   override def readBounds(bounds: Traversable[GridBounds[Long]], bands: Seq[Int]): Iterator[Raster[MultibandTile]] = {
     val geoTiffTile = tiff.tile.asInstanceOf[GeoTiffMultibandTile]
     val intersectingBounds: Seq[GridBounds[Int]] =
-      bounds.flatMap(_.intersection(this.gridBounds)).toSeq.map(_.toGridType[Int])
+      bounds.flatMap(_.intersection(this.dimensions)).toSeq.map(_.toGridType[Int])
 
     geoTiffTile.crop(intersectingBounds, bands.toArray).map { case (gb, tile) =>
       convertRaster(Raster(tile, gridExtent.extentFor(gb.toGridType[Long], clamp = true)))

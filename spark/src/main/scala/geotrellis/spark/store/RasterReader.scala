@@ -73,7 +73,7 @@ object RasterReader {
     def readWindows(gbs: Array[GridBounds[Int]], info: GeoTiffReader.GeoTiffInfo, options: Options) = {
       val geoTiff = GeoTiffReader.geoTiffSinglebandTile(info)
       val re = info.rasterExtent
-      geoTiff.crop(gbs.filter(geoTiff.gridBounds.intersects)).map { case (gb, tile) =>
+      geoTiff.crop(gbs.filter(_.intersects(geoTiff.dimensions))).map { case (gb, tile) =>
         (ProjectedExtent(re.extentFor(gb, clamp = false), options.crs.getOrElse(info.crs)), tile)
       }
     }
@@ -95,7 +95,7 @@ object RasterReader {
     def readWindows(gbs: Array[GridBounds[Int]], info: GeoTiffReader.GeoTiffInfo, options: Options) = {
       val geoTiff = GeoTiffReader.geoTiffMultibandTile(info)
       val re = info.rasterExtent
-      geoTiff.crop(gbs.filter(geoTiff.gridBounds.intersects)).map { case (gb, tile) =>
+      geoTiff.crop(gbs.filter(_.intersects(geoTiff.dimensions))).map { case (gb, tile) =>
         (ProjectedExtent(re.extentFor(gb, clamp = false), options.crs.getOrElse(info.crs)), tile)
       }
     }
@@ -121,7 +121,7 @@ object RasterReader {
     def readWindows(gbs: Array[GridBounds[Int]], info: GeoTiffReader.GeoTiffInfo, options: Options) = {
       val geoTiff = GeoTiffReader.geoTiffSinglebandTile(info)
       val re = info.rasterExtent
-      geoTiff.crop(gbs.filter(geoTiff.gridBounds.intersects)).map { case (gb, tile) =>
+      geoTiff.crop(gbs.filter(_.intersects(geoTiff.dimensions))).map { case (gb, tile) =>
         (TemporalProjectedExtent(
           extent = re.extentFor(gb, clamp = false),
           crs = options.crs.getOrElse(info.crs),
@@ -151,7 +151,7 @@ object RasterReader {
     def readWindows(gbs: Array[GridBounds[Int]], info: GeoTiffReader.GeoTiffInfo, options: Options) = {
       val geoTiff = GeoTiffReader.geoTiffMultibandTile(info)
       val re = info.rasterExtent
-      geoTiff.crop(gbs.filter(geoTiff.gridBounds.intersects)).map { case (gb, tile) =>
+      geoTiff.crop(gbs.filter(_.intersects(geoTiff.dimensions))).map { case (gb, tile) =>
         (TemporalProjectedExtent(
           extent = re.extentFor(gb, clamp = false ),
           crs = options.crs.getOrElse(info.crs),

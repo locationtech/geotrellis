@@ -75,7 +75,7 @@ class TestCatalogSpec extends FunSpec with CatalogTestEnvironment {
     it("preserves cell size") {
       info(reader.attributeStore.readMetadata[TileLayerMetadata[SpatialKey]](LayerId("landsat", 0)).cellSize.toString)
       // TODO: Make geotrellis.raster.CellSize sortable
-      val expectedCellSizes = rs.resolutions.map(_.cellSize).sortBy(_.resolution)
+      val expectedCellSizes = rs.resolutions.sortBy(_.resolution)
       info(expectedCellSizes.toString)
       val actualCellSizes = reader.attributeStore.layerIds.map(layerId => reader.attributeStore.readMetadata[TileLayerMetadata[SpatialKey]](layerId).cellSize).sortBy(_.resolution)
       info(actualCellSizes.toString)
@@ -93,4 +93,3 @@ class TestCatalogSpec extends FunSpec with CatalogTestEnvironment {
   }
 
 }
-

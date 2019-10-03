@@ -33,7 +33,7 @@ trait KernelStamper {
   /**
    * Given a (column, row) pair and a value, apply the kernel at the given point.
    */
-  def stampKernel(tup: (Int, Int), z: Int): Unit = { 
+  def stampKernel(tup: (Int, Int), z: Int): Unit = {
     val (col, row) = tup
     stampKernel(col, row, z)
   }
@@ -47,7 +47,7 @@ trait KernelStamper {
   /**
    * Given a (column, row) pair and a value, apply the kernel at the given point.
    */
-  def stampKernelDouble(tup: (Int, Int), z: Double): Unit = { 
+  def stampKernelDouble(tup: (Int, Int), z: Double): Unit = {
     val (col, row) = tup
     stampKernelDouble(col, row, z)
   }
@@ -77,7 +77,7 @@ case class DoubleKernelStamper(tile: MutableArrayTile, k: Kernel) extends Kernel
   val kernelrows = ktile.rows
 
   val cellType = tile.cellType
-  val (cols, rows) = tile.dimensions
+  val Dimensions(cols, rows) = tile.dimensions
 
   /**
     * Given a column, row, and value, apply the kernel at the given
@@ -200,7 +200,7 @@ case class IntKernelStamper(tile: MutableArrayTile, k: Kernel) extends KernelSta
   val kernelrows = ktile.rows
 
   val cellType = tile.cellType
-  val (cols, rows) = tile.dimensions
+  val Dimensions(cols, rows) = tile.dimensions
 
   /**
     * Given a column, row, and value, apply the kernel at the given

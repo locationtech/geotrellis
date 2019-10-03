@@ -28,7 +28,6 @@ case class TileFeature[+T <: CellGrid[Int], D](tile: T, data: D) extends CellGri
   def cols: Int = tile.cols
   def rows: Int = tile.rows
   override def size: Int = tile.size
-  override def gridBounds: GridBounds[Int] = tile.gridBounds
 }
 
 object TileFeature {

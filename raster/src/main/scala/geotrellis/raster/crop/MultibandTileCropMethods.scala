@@ -32,11 +32,11 @@ trait MultibandTileCropMethods extends TileCropMethods[MultibandTile] {
     * [[MultibandTile]] and return a new MultibandTile that contains the target area and bands.
     */
   def cropBands(gridBounds: GridBounds[Int], targetBands: Seq[Int], options: Options): MultibandTile = {
-    if (!gridBounds.intersects(self.gridBounds)) throw GeoAttrsError(s"Grid bounds do not intersect: ${self.gridBounds} crop $gridBounds")
+    if (!gridBounds.intersects(self.dimensions)) throw GeoAttrsError(s"$gridBounds do not intersect ${self.dimensions}")
     self match {
       case geotiffTile: GeoTiffMultibandTile =>
         val cropBounds =
-          if (options.clamp) gridBounds.intersection(self.gridBounds).get
+          if (options.clamp) gridBounds.intersection(self.dimensions).get
           else gridBounds
         geotiffTile.crop(cropBounds, targetBands.toArray)
       case _ =>
@@ -52,10 +52,10 @@ trait MultibandTileCropMethods extends TileCropMethods[MultibandTile] {
     self match {
       case geotiffTile: GeoTiffMultibandTile =>
         val cropBounds = gridBounds.map { gb =>
-            if (!gb.intersects(self.gridBounds))
-              throw GeoAttrsError(s"Grid bounds do not intersect: ${self.gridBounds} crop $gb")
+            if (!gb.intersects(self.dimensions))
+              throw GeoAttrsError(s"$gb do not intersect ${self.dimensions}")
 
-            if (options.clamp) gb.intersection(self.gridBounds).get
+            if (options.clamp) gb.intersection(self.dimensions).get
             else gb
         }
         geotiffTile.crop(cropBounds, targetBands.toArray)

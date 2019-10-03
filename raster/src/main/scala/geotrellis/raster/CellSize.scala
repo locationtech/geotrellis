@@ -56,8 +56,8 @@ object CellSize {
     * @param   dims    The numbers of columns and rows as a tuple
     * @return          The CellSize
     */
-  def apply(extent: Extent, dims: (Int, Int)): CellSize = {
-    val (cols, rows) = dims
+  def apply(extent: Extent, dims: Dimensions[Int]): CellSize = {
+    val Dimensions(cols, rows) = dims
     apply(extent, cols, rows)
   }
 

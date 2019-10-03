@@ -80,8 +80,9 @@ class GeoTiffReprojectRasterSource(
     }
   }
 
-  lazy val resolutions: List[GridExtent[Long]] =
-      gridExtent :: tiff.overviews.map(ovr => ReprojectRasterExtent(ovr.rasterExtent.toGridType[Long], transform))
+  lazy val resolutions: List[CellSize] =
+    ReprojectRasterExtent(tiff.rasterExtent, transform, Reproject.Options.DEFAULT).cellSize ::
+      tiff.overviews.map(ovr => ReprojectRasterExtent(ovr.rasterExtent, transform, Reproject.Options.DEFAULT).cellSize)
 
   @transient private[raster] lazy val closestTiffOverview: GeoTiff[MultibandTile] = {
     resampleTarget match {
@@ -115,7 +116,7 @@ class GeoTiffReprojectRasterSource(
     val geoTiffTile = closestTiffOverview.tile.asInstanceOf[GeoTiffMultibandTile]
     val intersectingWindows = { for {
       queryPixelBounds <- bounds
-      targetPixelBounds <- queryPixelBounds.intersection(this.gridBounds)
+      targetPixelBounds <- queryPixelBounds.intersection(this.dimensions)
     } yield {
       val targetRasterExtent = RasterExtent(
         extent = gridExtent.extentFor(targetPixelBounds, clamp = true),

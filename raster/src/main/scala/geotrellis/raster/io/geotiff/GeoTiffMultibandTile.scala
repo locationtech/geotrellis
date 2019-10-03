@@ -337,10 +337,12 @@ abstract class GeoTiffMultibandTile(
           val compressor = compression.createCompressor(segmentCount)
 
           getSegments(0 until segmentCount).foreach { case (segmentIndex, segment) =>
-            val (cols, rows) =
-              if (segmentLayout.isTiled) (segmentLayout.tileLayout.tileCols, segmentLayout.tileLayout.tileRows)
-              else getSegmentDimensions(segmentIndex)
-            val bytes = GeoTiffSegment.deinterleaveBitSegment(segment, cols, rows, bandCount, bandIndex)
+            val dims =
+              if (segmentLayout.isTiled)
+                Dimensions(segmentLayout.tileLayout.tileCols, segmentLayout.tileLayout.tileRows)
+              else
+                getSegmentDimensions(segmentIndex)
+            val bytes = GeoTiffSegment.deinterleaveBitSegment(segment, dims, bandCount, bandIndex)
             compressedBandBytes(segmentIndex) = compressor.compress(bytes, segmentIndex)
           }
 
@@ -376,7 +378,7 @@ abstract class GeoTiffMultibandTile(
   def bands: Vector[Tile] =
     _subsetBands(
       0 until bandCount,
-      (segment, cols, rows, bandCount, _) => GeoTiffSegment.deinterleaveBitSegment(segment, cols, rows, bandCount),
+      (segment, dims, bandCount, _) => GeoTiffSegment.deinterleaveBitSegment(segment, dims, bandCount),
       (bytes, bandCount, bytesPerSample, _) => GeoTiffSegment.deinterleave(bytes, bandCount, bytesPerSample)
     ).toVector
 
@@ -393,14 +395,14 @@ abstract class GeoTiffMultibandTile(
     new ArrayMultibandTile(
       _subsetBands(
         bandSequence,
-        (segment, cols, rows, bandCount, bandSequence) => GeoTiffSegment.deinterleaveBitSegment(segment, cols, rows, bandCount, bandSequence),
+        (segment, dims, bandCount, bandSequence) => GeoTiffSegment.deinterleaveBitSegment(segment, dims, bandCount, bandSequence),
         (bytes, bandCount, bytesPerSample, bandSequence) => GeoTiffSegment.deinterleave(bytes, bandCount, bytesPerSample, bandSequence)
       )
     )
 
   private def _subsetBands(
     bandSequence: Seq[Int],
-    deinterleaveBitSegment: (GeoTiffSegment, Int, Int, Int, Traversable[Int]) => Array[Array[Byte]],
+    deinterleaveBitSegment: (GeoTiffSegment, Dimensions[Int], Int, Traversable[Int]) => Array[Array[Byte]],
     deinterleave: (Array[Byte], Int, Int, Traversable[Int]) => Array[Array[Byte]]
   ): Array[Tile] = {
     val actualBandCount = bandSequence.size
@@ -413,10 +415,12 @@ abstract class GeoTiffMultibandTile(
       bandType match {
         case BitBandType =>
           getSegments(0 until segmentCount).foreach { case (segmentIndex, segment) =>
-            val (cols, rows) =
-              if (segmentLayout.isTiled) (segmentLayout.tileLayout.tileCols, segmentLayout.tileLayout.tileRows)
-              else getSegmentDimensions(segmentIndex)
-            val bytes = deinterleaveBitSegment(segment, cols, rows, bandCount, bandSequence)
+            val dims: Dimensions[Int] =
+              if (segmentLayout.isTiled)
+                Dimensions(segmentLayout.tileLayout.tileCols, segmentLayout.tileLayout.tileRows)
+              else
+                getSegmentDimensions(segmentIndex)
+            val bytes = deinterleaveBitSegment(segment, dims, bandCount, bandSequence)
             cfor(0)(_ < actualBandCount, _ + 1) { bandIndex =>
               bands(bandIndex)(segmentIndex) = compressor.compress(bytes(bandIndex), segmentIndex)
             }
@@ -485,7 +489,7 @@ abstract class GeoTiffMultibandTile(
     * Converts the GeoTiffMultibandTile to an
     * [[ArrayMultibandTile]] */
   def toArrayTile(): ArrayMultibandTile =
-    crop(this.gridBounds)
+    crop(GridBounds(this.dimensions))
 
   /**
    * Crop this tile to given pixel region.
@@ -505,7 +509,7 @@ abstract class GeoTiffMultibandTile(
    */
  def crop(bounds: GridBounds[Int], bandIndices: Array[Int]): ArrayMultibandTile = {
    val iter = crop(List(bounds), bandIndices)
-   if (iter.isEmpty) throw GeoAttrsError(s"No intersections of ${bounds} vs ${gridBounds}")
+   if (iter.isEmpty) throw GeoAttrsError(s"No intersections of ${bounds} vs ${dimensions}")
    else iter.next._2
  }
 

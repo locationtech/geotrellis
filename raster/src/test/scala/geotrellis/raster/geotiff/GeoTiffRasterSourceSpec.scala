@@ -72,13 +72,9 @@ class GeoTiffRasterSourceSpec extends FunSpec with RasterMatchers with GivenWhen
     val actual: Raster[MultibandTile] =
       resampledSource.read(GridBounds(0, 0, resampledSource.cols - 1, resampledSource.rows - 1)).get
 
-    // calculated expected resolutions of overviews
-    // it's a rough approximation there as we're not calculating resolutions like GDAL
-    val ratio = resampledSource.cellSize.resolution / source.cellSize.resolution
-    resampledSource.resolutions.zip (source.resolutions.map { re =>
-      val CellSize(cw, ch) = re.cellSize
-      RasterExtent(re.extent, CellSize(cw * ratio, ch * ratio))
-    }).map { case (rea, ree) => rea.cellSize.resolution shouldBe ree.cellSize.resolution +- 1e-7 }
+    resampledSource.resolutions.zip(source.resolutions).map { case (rea, ree) =>
+      rea.resolution shouldBe ree.resolution +- 1e-7
+    }
 
     withGeoTiffClue(actual, expected, resampledSource.crs)  {
       assertRastersEqual(actual, expected)

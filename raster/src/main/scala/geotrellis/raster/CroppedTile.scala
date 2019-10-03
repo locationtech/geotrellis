@@ -53,8 +53,10 @@ object CroppedTile {
 /**
   * The [[CroppedTile]] type.
   */
-case class CroppedTile(sourceTile: Tile,
-                       override val gridBounds: GridBounds[Int]) extends Tile {
+case class CroppedTile(
+  sourceTile: Tile,
+  gridBounds: GridBounds[Int]
+) extends Tile {
 
   val cols = gridBounds.width
   val rows = gridBounds.height
