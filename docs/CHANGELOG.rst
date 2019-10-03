@@ -137,6 +137,7 @@ Fixes & Updates
 - AmazonS3URI.getKey() now returns an empty string instead of null if no key was provided (`#3096 https://github.com/locationtech/geotrellis/pull/3096`_).
 - Improved handling of null prefix for S3AttributeStore. Prefer use of `S3AttributeStore.apply` to take advantage of this improved handling (`#3096 https://github.com/locationtech/geotrellis/pull/3096`_).
 - Fix Tiled TIFF BitCellType Segments conversion (`#3102 https://github.com/locationtech/geotrellis/pull/3102`_)
+- Updated computeResolution in IterativeCostDistance to match Iterative Viewshed (`#3106 https://github.com/locationtech/geotrellis/pull/3106`_)
 
 2.3.0
 -----

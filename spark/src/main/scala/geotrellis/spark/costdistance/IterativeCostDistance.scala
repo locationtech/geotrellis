@@ -22,16 +22,14 @@ import geotrellis.raster.costdistance.SimpleCostDistance
 import geotrellis.raster.rasterize.Rasterizer
 import geotrellis.layer._
 import geotrellis.spark._
-import geotrellis.util._
 import geotrellis.vector._
+
 import org.apache.log4j.Logger
 import org.apache.spark.rdd.RDD
-import org.apache.spark.SparkContext
 import org.apache.spark.storage.StorageLevel
 import org.apache.spark.util.AccumulatorV2
 
 import scala.collection.mutable
-
 
 /**
   * This Spark-enabled implementation of the standard cost-distance
@@ -53,6 +51,27 @@ object IterativeCostDistance {
   val logger = Logger.getLogger(IterativeCostDistance.getClass)
 
   /**
+    * Compute the resolution (in meters per pixel) of a layer.
+    */
+  private [spark] def computeResolution[K: (* => SpatialKey), V: (* => Tile)](
+    friction: RDD[(K, V)] with Metadata[TileLayerMetadata[K]]
+  ) = {
+    val md = friction.metadata
+    val mt = md.mapTransform
+    val key: SpatialKey = md.bounds.get.minKey
+    val extent = mt(key).reproject(md.crs, LatLng)
+
+    val latitude = (extent.ymax + extent.ymin) / 2.0
+    val degreesPerKey = extent.xmax - extent.xmin
+    // https://gis.stackexchange.com/questions/2951/algorithm-for-offsetting-a-latitude-longitude-by-some-amount-of-meters
+    val metersPerDegree = 111111 * math.cos(math.toRadians(latitude))
+    val metersPerKey = metersPerDegree * degreesPerKey
+    val keysPerPixel = 1.0 / md.layout.tileCols
+
+    metersPerKey * keysPerPixel
+  }
+
+  /**
     * An accumulator to hold lists of edge changes.
     */
   class ChangesAccumulator extends AccumulatorV2[KeyCostPair, Changes] {
@@ -71,19 +90,6 @@ object IterativeCostDistance {
       this.synchronized { list ++= other.value }
     def reset: Unit = this.synchronized { list.clear }
     def value: Changes = list
-  }
-
-  def computeResolution[K: (* => SpatialKey), V: (* => Tile)](
-    friction: RDD[(K, V)] with Metadata[TileLayerMetadata[K]]
-  ) = {
-    val md = friction.metadata
-    val mt = md.mapTransform
-    val key: SpatialKey = md.bounds.get.minKey
-    val extent = mt(key).reproject(md.crs, LatLng)
-    val degrees = extent.xmax - extent.xmin
-    val meters = degrees * (6378137 * 2.0 * math.Pi) / 360.0
-    val pixels = md.layout.tileCols
-    math.abs(meters / pixels)
   }
 
   private def geometryToKeys[K: (* => SpatialKey)](

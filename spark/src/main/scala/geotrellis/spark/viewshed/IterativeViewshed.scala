@@ -16,21 +16,17 @@
 
 package geotrellis.spark.viewshed
 
-import geotrellis.proj4.LatLng
 import geotrellis.raster._
-import geotrellis.raster.rasterize.Rasterizer
 import geotrellis.raster.viewshed.R2Viewshed
 import geotrellis.raster.viewshed.R2Viewshed._
 import geotrellis.layer._
 import geotrellis.spark._
-import geotrellis.spark.tiling._
-import geotrellis.util._
+import geotrellis.spark.costdistance.IterativeCostDistance._
 import geotrellis.vector._
 
-import org.locationtech.jts.{ geom => jts }
+import org.locationtech.jts.{geom => jts}
 import org.apache.log4j.Logger
 import org.apache.spark.rdd.RDD
-import org.apache.spark.SparkContext
 import org.apache.spark.storage.StorageLevel
 import org.apache.spark.util.AccumulatorV2
 
@@ -123,27 +119,6 @@ object IterativeViewshed {
     def reset: Unit = this.synchronized { messages.clear }
 
     def value: Messages = messages.toMap
-  }
-
-  /**
-    * Compute the resolution (in meters per pixel) of a layer.
-    */
-  private def computeResolution[K: (* => SpatialKey), V: (* => Tile)](
-    elevation: RDD[(K, V)] with Metadata[TileLayerMetadata[K]]
-  ) = {
-    val md = elevation.metadata
-    val mt = md.mapTransform
-    val key: SpatialKey = md.bounds.get.minKey
-    val extent = mt(key).reproject(md.crs, LatLng)
-
-    val latitude = (extent.ymax + extent.ymin) / 2.0
-    val degrees_per_key = extent.xmax - extent.xmin
-    // https://gis.stackexchange.com/questions/2951/algorithm-for-offsetting-a-latitude-longitude-by-some-amount-of-meters
-    val meters_per_degree = 111111 * math.cos(math.toRadians(latitude))
-    val meters_per_key = meters_per_degree * degrees_per_key
-    val keys_per_pixel = 1.0 / md.layout.tileCols
-
-    meters_per_key * keys_per_pixel
   }
 
   private case class PointInfo(
