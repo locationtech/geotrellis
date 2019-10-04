@@ -25,8 +25,8 @@ import geotrellis.spark.io.accumulo.AccumuloAttributeStore
 import geotrellis.util._
 import geotrellis.util.annotations.experimental
 import geotrellis.vector.Extent
-
-import com.typesafe.scalalogging.LazyLogging
+import org.slf4j.LoggerFactory
+import com.typesafe.scalalogging.Logger
 import org.locationtech.jts.geom._
 import mil.nga.giat.geowave.adapter.raster.adapter.RasterDataAdapter
 import mil.nga.giat.geowave.core.geotime.ingest._
@@ -127,9 +127,8 @@ import spray.json.DefaultJsonProtocol._
   val accumuloUser: String,
   val accumuloPass: String,
   val geowaveNamespace: String
-) extends DiscreteLayerAttributeStore with LazyLogging {
-
-  logger.error("GeoWave support is experimental")
+) extends DiscreteLayerAttributeStore {
+  @transient protected lazy val logger: Logger = Logger(LoggerFactory.getLogger(getClass.getName))
 
   val zkInstance = (new ZooKeeperInstance(accumuloInstance, zookeepers))
   val token = new PasswordToken(accumuloPass)

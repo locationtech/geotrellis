@@ -19,11 +19,13 @@ package geotrellis.spark.io.file
 import geotrellis.spark._
 import geotrellis.spark.io._
 
-import com.typesafe.scalalogging.LazyLogging
-
+import org.slf4j.LoggerFactory
+import com.typesafe.scalalogging.Logger
 import java.io.File
 
-class FileLayerDeleter(val attributeStore: FileAttributeStore) extends LazyLogging with LayerDeleter[LayerId] {
+class FileLayerDeleter(val attributeStore: FileAttributeStore) extends LayerDeleter[LayerId] {
+  @transient protected lazy val logger = Logger(LoggerFactory.getLogger(getClass.getName))
+
   def delete(id: LayerId): Unit =
     try {
       val header = attributeStore.readHeader[FileLayerHeader](id)

@@ -19,10 +19,12 @@ package geotrellis.spark.etl.accumulo
 import geotrellis.spark.etl.OutputPlugin
 import geotrellis.spark.etl.config.{AccumuloProfile, BackendProfile, EtlConf}
 import geotrellis.spark.io.accumulo.{AccumuloAttributeStore, AccumuloWriteStrategy, HdfsWriteStrategy, SocketWriteStrategy}
+import org.slf4j.LoggerFactory
+import com.typesafe.scalalogging.Logger
 
-import com.typesafe.scalalogging.LazyLogging
+trait AccumuloOutput[K, V, M] extends OutputPlugin[K, V, M] {
+  @transient protected lazy val logger = Logger(LoggerFactory.getLogger(getClass.getName))
 
-trait AccumuloOutput[K, V, M] extends OutputPlugin[K, V, M] with LazyLogging {
   val name = "accumulo"
 
   def strategy(profile: Option[BackendProfile]): AccumuloWriteStrategy = profile match {
@@ -45,6 +47,6 @@ trait AccumuloOutput[K, V, M] extends OutputPlugin[K, V, M] with LazyLogging {
     }
     case _ => throw new Exception("Backend profile not matches backend type")
   }
-  
+
   def attributes(conf: EtlConf) = AccumuloAttributeStore(getInstance(conf.outputProfile).connector)
 }

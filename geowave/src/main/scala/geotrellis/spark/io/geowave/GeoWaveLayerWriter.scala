@@ -27,8 +27,8 @@ import geotrellis.spark.io.index.KeyIndex
 import geotrellis.util._
 import geotrellis.util.annotations.experimental
 import geotrellis.vector.Extent
-
-import com.typesafe.scalalogging.LazyLogging
+import org.slf4j.LoggerFactory
+import com.typesafe.scalalogging.Logger
 import mil.nga.giat.geowave.adapter.raster.adapter.merge.RasterTileRowTransform
 import mil.nga.giat.geowave.adapter.raster.adapter.RasterDataAdapter
 import mil.nga.giat.geowave.core.geotime.index.dimension._
@@ -70,7 +70,8 @@ import mil.nga.giat.geowave.core.store.data.VisibilityWriter
 /**
   * @define experimental <span class="badge badge-red" style="float: right;">EXPERIMENTAL</span>@experimental
   */
-@experimental object GeoWaveLayerWriter extends LazyLogging {
+@experimental object GeoWaveLayerWriter {
+  @transient protected lazy val logger = Logger(LoggerFactory.getLogger(getClass.getName))
 
   /** $experimental */
   @experimental def write[
@@ -247,10 +248,8 @@ import mil.nga.giat.geowave.core.store.data.VisibilityWriter
 @experimental class GeoWaveLayerWriter(
   val attributeStore: GeoWaveAttributeStore,
   val accumuloWriter: AccumuloWriteStrategy
-)(implicit sc: SparkContext)
-    extends LazyLogging {
-
-  logger.error("GeoWave support is experimental")
+)(implicit sc: SparkContext) {
+  @transient protected lazy val logger: Logger = Logger(LoggerFactory.getLogger(getClass.getName))
 
   /** $experimental */
   @experimental def write[

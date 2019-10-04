@@ -25,8 +25,6 @@ import geotrellis.spark.io.LayerWriter
 import geotrellis.spark.io.avro.AvroRecordCodec
 import geotrellis.spark.tiling.LayoutDefinition
 import geotrellis.util.{Component, GetComponent}
-
-import com.typesafe.scalalogging.LazyLogging
 import org.apache.spark.rdd.RDD
 import spray.json.JsonFormat
 
@@ -34,7 +32,7 @@ import scala.reflect.ClassTag
 
 trait Output[T] extends Node[T]
 
-object Output extends LazyLogging {
+object Output {
   def write[
     K: SpatialComponent : AvroRecordCodec : JsonFormat : ClassTag,
     V <: CellGrid : AvroRecordCodec : ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V],

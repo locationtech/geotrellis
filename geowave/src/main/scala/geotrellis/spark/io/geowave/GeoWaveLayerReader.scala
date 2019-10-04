@@ -27,8 +27,6 @@ import geotrellis.spark.tiling.{LayoutDefinition, MapKeyTransform}
 import geotrellis.util._
 import geotrellis.util.annotations.experimental
 import geotrellis.vector.Extent
-
-import com.typesafe.scalalogging.LazyLogging
 import org.locationtech.jts.geom._
 import mil.nga.giat.geowave.adapter.raster.adapter.RasterDataAdapter
 import mil.nga.giat.geowave.core.geotime.ingest._
@@ -94,9 +92,7 @@ object GeoWaveLayerReader {
   * @define experimental <span class="badge badge-red" style="float: right;">EXPERIMENTAL</span>@experimental
   */
 @experimental class GeoWaveLayerReader(val attributeStore: AttributeStore)
-  (implicit sc: SparkContext) extends LazyLogging {
-
-  logger.error("GeoWave support is experimental")
+  (implicit sc: SparkContext) {
 
   val defaultNumPartitions = sc.defaultParallelism
 

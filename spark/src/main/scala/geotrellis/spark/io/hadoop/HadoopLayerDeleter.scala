@@ -18,13 +18,15 @@ package geotrellis.spark.io.hadoop
 
 import geotrellis.spark._
 import geotrellis.spark.io._
-
-import com.typesafe.scalalogging.LazyLogging
+import org.slf4j.LoggerFactory
+import com.typesafe.scalalogging.Logger
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import org.apache.spark._
 
-class HadoopLayerDeleter(val attributeStore: AttributeStore, conf: Configuration) extends LazyLogging with LayerDeleter[LayerId] {
+class HadoopLayerDeleter(val attributeStore: AttributeStore, conf: Configuration) extends LayerDeleter[LayerId] {
+  @transient protected lazy val logger = Logger(LoggerFactory.getLogger(getClass.getName))
+
   def delete(id: LayerId): Unit = {
     try {
       val header = attributeStore.readHeader[HadoopLayerHeader](id)

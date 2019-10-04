@@ -22,7 +22,6 @@ import geotrellis.spark.io.avro._
 import geotrellis.spark.io.index._
 import geotrellis.util._
 
-import com.typesafe.scalalogging.LazyLogging
 import org.apache.spark.SparkContext
 import spray.json.JsonFormat
 
@@ -39,7 +38,7 @@ import scala.reflect.ClassTag
 class FileLayerReader(
   val attributeStore: AttributeStore,
   catalogPath: String
-)(implicit sc: SparkContext) extends FilteringLayerReader[LayerId] with LazyLogging {
+)(implicit sc: SparkContext) extends FilteringLayerReader[LayerId] {
 
   val defaultNumPartitions = sc.defaultParallelism
 

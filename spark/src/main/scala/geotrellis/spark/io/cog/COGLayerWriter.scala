@@ -27,8 +27,8 @@ import geotrellis.raster.io.geotiff.compression.{Compression, NoCompression}
 import geotrellis.spark._
 import geotrellis.spark.io.{AttributeNotFoundError, AttributeStore, LayerNotFoundError, LayerOutOfKeyBoundsError, Writer}
 import geotrellis.spark.io.index._
-
-import com.typesafe.scalalogging.LazyLogging
+import org.slf4j.LoggerFactory
+import com.typesafe.scalalogging.Logger
 import org.apache.spark.rdd.RDD
 import spray.json._
 
@@ -37,8 +37,9 @@ import java.util.ServiceLoader
 
 import scala.reflect._
 
-trait COGLayerWriter extends LazyLogging with Serializable {
+trait COGLayerWriter extends Serializable {
   import COGLayerWriter.Options
+  @transient protected lazy val logger = Logger(LoggerFactory.getLogger(getClass.getName))
 
   val attributeStore: AttributeStore
 

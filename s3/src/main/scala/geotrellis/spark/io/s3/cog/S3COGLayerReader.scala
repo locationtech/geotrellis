@@ -26,7 +26,6 @@ import geotrellis.spark.io.cog._
 import geotrellis.spark.io.index._
 import geotrellis.util._
 
-import com.typesafe.scalalogging.LazyLogging
 import org.apache.spark.SparkContext
 import spray.json.JsonFormat
 import java.net.URI
@@ -42,7 +41,7 @@ class S3COGLayerReader(
   val attributeStore: AttributeStore,
   val getS3Client: () => S3Client = () => S3Client.DEFAULT,
   val defaultThreads: Int = S3COGLayerReader.defaultThreadCount
-)(@transient implicit val sc: SparkContext) extends COGLayerReader[LayerId] with LazyLogging {
+)(@transient implicit val sc: SparkContext) extends COGLayerReader[LayerId] {
 
   val defaultNumPartitions: Int = sc.defaultParallelism
 

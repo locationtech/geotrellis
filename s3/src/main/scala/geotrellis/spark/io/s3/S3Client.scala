@@ -16,7 +16,6 @@
 
 package geotrellis.spark.io.s3
 
-import com.typesafe.scalalogging.LazyLogging
 import com.amazonaws.auth._
 import com.amazonaws.services.s3.model.DeleteObjectsRequest.KeyVersion
 import com.amazonaws.retry.PredefinedRetryPolicies
@@ -26,7 +25,7 @@ import java.io.{InputStream, ByteArrayInputStream}
 import scala.annotation.tailrec
 import scala.collection.JavaConverters._
 
-trait S3Client extends LazyLogging with Serializable {
+trait S3Client extends Serializable {
 
   def doesBucketExist(bucket: String): Boolean
 

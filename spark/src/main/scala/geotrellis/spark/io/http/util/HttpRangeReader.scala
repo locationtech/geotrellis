@@ -19,8 +19,8 @@ package geotrellis.spark.io.http.util
 import geotrellis.util.RangeReader
 
 import scalaj.http.Http
-import com.typesafe.scalalogging.LazyLogging
-
+import org.slf4j.LoggerFactory
+import com.typesafe.scalalogging.Logger
 import java.net.{URL, URI}
 import scala.util.Try
 
@@ -31,7 +31,8 @@ import scala.util.Try
  *
  * @param url: A [[URL]] pointing to the desired GeoTiff.
  */
-class HttpRangeReader(url: URL, useHeadRequest: Boolean) extends RangeReader with LazyLogging {
+class HttpRangeReader(url: URL, useHeadRequest: Boolean) extends RangeReader {
+  @transient protected lazy val logger = Logger(LoggerFactory.getLogger(getClass.getName))
 
   val request = Http(url.toString)
 

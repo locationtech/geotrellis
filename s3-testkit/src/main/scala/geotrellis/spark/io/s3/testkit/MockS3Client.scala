@@ -17,8 +17,8 @@
 package geotrellis.spark.io.s3.testkit
 
 import geotrellis.spark.io.s3._
-
-import com.typesafe.scalalogging.LazyLogging
+import org.slf4j.LoggerFactory
+import com.typesafe.scalalogging.Logger
 import com.amazonaws.services.s3.model._
 import com.amazonaws.services.s3.internal.AmazonS3ExceptionBuilder
 import org.apache.commons.io.IOUtils
@@ -29,8 +29,10 @@ import scala.collection.immutable.TreeMap
 import scala.collection.JavaConverters._
 import scala.collection.mutable
 
-class MockS3Client() extends S3Client with LazyLogging {
+class MockS3Client() extends S3Client {
   import MockS3Client._
+
+  @transient protected lazy val logger = Logger(LoggerFactory.getLogger(getClass.getName))
 
   def doesBucketExist(bucket: String): Boolean = buckets.containsKey(bucket)
 

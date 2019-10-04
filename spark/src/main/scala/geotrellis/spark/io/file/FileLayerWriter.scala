@@ -23,8 +23,8 @@ import geotrellis.spark.io.avro.codecs._
 import geotrellis.spark.io.index._
 import geotrellis.spark.merge._
 import geotrellis.util._
-
-import com.typesafe.scalalogging.LazyLogging
+import org.slf4j.LoggerFactory
+import com.typesafe.scalalogging.Logger
 import org.apache.spark.rdd.RDD
 import spray.json._
 
@@ -47,7 +47,8 @@ import java.io.File
 class FileLayerWriter(
     val attributeStore: AttributeStore,
     catalogPath: String
-) extends LayerWriter[LayerId] with LazyLogging {
+) extends LayerWriter[LayerId] {
+  @transient protected lazy val logger = Logger(LoggerFactory.getLogger(getClass.getName))
 
   // Layer Updating
   def overwrite[
@@ -93,7 +94,7 @@ class FileLayerWriter(
 
         attributeStore.writeLayerAttributes(id, header, metadata, keyIndex, writerSchema)
         FileRDDWriter.update[K, V](rdd, layerPath, keyPath, Some(writerSchema), mergeFunc)
-        
+
       case None =>
         logger.warn(s"Skipping update with empty bounds for $id.")
     }

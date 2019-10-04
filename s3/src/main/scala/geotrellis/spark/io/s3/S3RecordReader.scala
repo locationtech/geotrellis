@@ -18,15 +18,17 @@ package geotrellis.spark.io.s3
 
 import geotrellis.spark.io.s3.util.S3RangeReader
 import geotrellis.util._
-
-import com.typesafe.scalalogging.LazyLogging
+import org.slf4j.LoggerFactory
+import com.typesafe.scalalogging.Logger
 import com.amazonaws.services.s3.model.GetObjectRequest
 import org.apache.hadoop.mapreduce.{InputSplit, TaskAttemptContext, RecordReader}
 import org.apache.commons.io.IOUtils
 
 /** This is the base class for readers that will create key value pairs for object requests.
   * Subclass must extend [readObjectRequest] method to map from S3 object requests to (K,V) */
-abstract class BaseS3RecordReader[K, V](s3Client: S3Client) extends RecordReader[K, V] with LazyLogging {
+abstract class BaseS3RecordReader[K, V](s3Client: S3Client) extends RecordReader[K, V] {
+  @transient protected lazy val logger = Logger(LoggerFactory.getLogger(getClass.getName))
+
   protected var bucket: String = _
   protected var keys: Iterator[String] = null
   protected var curKey: K = _

@@ -16,12 +16,11 @@
 
 package geotrellis.raster
 
-import com.typesafe.scalalogging.LazyLogging
 
 /**
   * Base trait for a Tile.
   */
-trait Tile extends CellGrid with IterableTile with MappableTile[Tile] with LazyLogging {
+trait Tile extends CellGrid with IterableTile with MappableTile[Tile] {
 
   /**
     * Execute a function at each pixel of a [[Tile]].  Two functions
@@ -97,7 +96,7 @@ trait Tile extends CellGrid with IterableTile with MappableTile[Tile] with LazyL
 
   /**
     * Returns a mutable instance of this tile.
-    * 
+    *
     * @note When the underlying class is an instance of [[MutableArrayTile]] it will return itself without performing a copy.
     *       This is used internally as a performance optimization when the ownership of the tile is controlled.
     */

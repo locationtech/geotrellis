@@ -17,14 +17,16 @@
 package geotrellis.spark.etl.config
 
 import geotrellis.spark.etl.config.json._
-
-import com.typesafe.scalalogging.LazyLogging
+import org.slf4j.LoggerFactory
+import com.typesafe.scalalogging.Logger
 import org.apache.spark.SparkContext
 import spray.json._
 
 import scala.collection.JavaConverters._
 
-trait BaseEtlConf extends ConfigParse with LazyLogging {
+trait BaseEtlConf extends ConfigParse {
+  @transient protected lazy val logger = Logger(LoggerFactory.getLogger(getClass.getName))
+
   private def loggerError(str: String, color: String = Console.RED) = logger.error(s"${color}${str}${Console.RESET}")
 
   val help = """

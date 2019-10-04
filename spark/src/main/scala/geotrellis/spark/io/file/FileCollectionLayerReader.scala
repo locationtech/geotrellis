@@ -22,7 +22,6 @@ import geotrellis.spark.io.avro._
 import geotrellis.spark.io.index._
 import geotrellis.util._
 
-import com.typesafe.scalalogging.LazyLogging
 import spray.json.JsonFormat
 
 import scala.reflect.ClassTag
@@ -38,7 +37,7 @@ import scala.reflect.ClassTag
 class FileCollectionLayerReader(
   val attributeStore: AttributeStore,
   catalogPath: String
-) extends CollectionLayerReader[LayerId] with LazyLogging {
+) extends CollectionLayerReader[LayerId] {
 
   def read[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
@@ -76,5 +75,3 @@ object FileCollectionLayerReader {
   def apply(attributeStore: FileAttributeStore): FileCollectionLayerReader =
     apply(attributeStore, attributeStore.catalogPath)
 }
-
-

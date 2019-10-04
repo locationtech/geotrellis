@@ -16,7 +16,8 @@
 
 package geotrellis.spark.io.hadoop
 
-import com.typesafe.scalalogging.LazyLogging
+import org.slf4j.LoggerFactory
+import com.typesafe.scalalogging.Logger
 import org.apache.hadoop.io.compress.CompressionCodecFactory
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs._
@@ -32,7 +33,8 @@ import scala.util.Random
 
 abstract class LineScanner extends Iterator[String] with java.io.Closeable
 
-object HdfsUtils extends LazyLogging {
+object HdfsUtils {
+  @transient protected lazy val logger = Logger(LoggerFactory.getLogger(getClass.getName))
 
   def pathExists(path: Path, conf: Configuration): Boolean =
     path.getFileSystem(conf).exists(path)

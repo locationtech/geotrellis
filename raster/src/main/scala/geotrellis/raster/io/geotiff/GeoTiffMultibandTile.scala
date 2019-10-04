@@ -19,7 +19,6 @@ package geotrellis.raster.io.geotiff
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff.compression._
 
-import com.typesafe.scalalogging.LazyLogging
 import spire.syntax.cfor._
 
 import scala.collection.mutable
@@ -276,7 +275,7 @@ object GeoTiffMultibandTile {
     val segmentPixelCols = segmentLayout.tileLayout.tileCols
     val segmentPixelRows = segmentLayout.tileLayout.tileRows
 
-    val segments: Iterator[((Int, Int), MultibandTile)] = 
+    val segments: Iterator[((Int, Int), MultibandTile)] =
       for {
         windowRowMin <- Iterator.range(start = 0, end = tile.rows, step = segmentPixelRows)
         windowColMin <- Iterator.range(start = 0, end = tile.cols, step = segmentPixelCols)
@@ -308,7 +307,7 @@ abstract class GeoTiffMultibandTile(
   val compression: Compression,
   val bandCount: Int,
   val overviews: List[GeoTiffMultibandTile] = Nil
-) extends MultibandTile with GeoTiffImageData with GeoTiffSegmentLayoutTransform with MacroGeotiffMultibandCombiners with LazyLogging {
+) extends MultibandTile with GeoTiffImageData with GeoTiffSegmentLayoutTransform with MacroGeotiffMultibandCombiners {
   val cellType: CellType
   val cols: Int = segmentLayout.totalCols
   val rows: Int = segmentLayout.totalRows

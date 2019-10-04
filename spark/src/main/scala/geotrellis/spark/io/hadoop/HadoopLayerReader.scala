@@ -21,7 +21,6 @@ import geotrellis.spark.io._
 import geotrellis.spark.io.avro._
 import geotrellis.util._
 
-import com.typesafe.scalalogging.LazyLogging
 import org.apache.hadoop.fs.Path
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
@@ -40,7 +39,7 @@ import scala.reflect.ClassTag
 class HadoopLayerReader(
   val attributeStore: AttributeStore
 )(implicit sc: SparkContext)
-  extends FilteringLayerReader[LayerId] with LazyLogging {
+  extends FilteringLayerReader[LayerId] {
 
   val defaultNumPartitions = sc.defaultParallelism
 

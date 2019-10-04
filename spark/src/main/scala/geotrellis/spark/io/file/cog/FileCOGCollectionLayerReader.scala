@@ -25,7 +25,6 @@ import geotrellis.spark.io.file.{FileAttributeStore, KeyPathGenerator}
 import geotrellis.spark.io.file.conf.FileConfig
 import geotrellis.util._
 
-import com.typesafe.scalalogging.LazyLogging
 import spray.json.JsonFormat
 import java.net.URI
 import java.io.File
@@ -42,7 +41,7 @@ class FileCOGCollectionLayerReader(
   val catalogPath: String,
   val defaultThreads: Int = FileCOGCollectionLayerReader.defaultThreadCount
 )
-  extends COGCollectionLayerReader[LayerId] with LazyLogging {
+  extends COGCollectionLayerReader[LayerId] {
 
   implicit def getByteReader(uri: URI): ByteReader = byteReader(uri)
 

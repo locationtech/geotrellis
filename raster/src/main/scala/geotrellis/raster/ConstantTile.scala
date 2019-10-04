@@ -75,9 +75,6 @@ trait ConstantTile extends Tile {
     * @return            The new Tile
     */
   def convert(newType: CellType): Tile = {
-    if(newType.isFloatingPoint != cellType.isFloatingPoint)
-      logger.warn(s"Conversion from $cellType to $newType may lead to data loss.")
-
     newType match {
       case BitCellType => new BitConstantTile(if (iVal == 0) false else true, cols, rows)
       case ct: ByteCells => ByteConstantTile(iVal.toByte, cols, rows, ct)

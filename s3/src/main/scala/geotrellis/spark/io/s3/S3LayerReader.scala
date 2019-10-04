@@ -22,7 +22,6 @@ import geotrellis.spark.io.avro._
 import geotrellis.spark.io.index._
 import geotrellis.util._
 
-import com.typesafe.scalalogging.LazyLogging
 import org.apache.spark.SparkContext
 import spray.json.JsonFormat
 
@@ -37,7 +36,7 @@ import scala.reflect.ClassTag
  * @tparam M              Type of Metadata associated with the RDD[(K,V)]
  */
 class S3LayerReader(val attributeStore: AttributeStore)(implicit sc: SparkContext)
-  extends FilteringLayerReader[LayerId] with LazyLogging {
+  extends FilteringLayerReader[LayerId] {
 
   val defaultNumPartitions = sc.defaultParallelism
 

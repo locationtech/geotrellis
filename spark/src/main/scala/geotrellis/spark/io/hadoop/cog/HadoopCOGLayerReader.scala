@@ -26,7 +26,6 @@ import geotrellis.spark.io.hadoop._
 import geotrellis.spark.io.hadoop.conf.HadoopConfig
 import geotrellis.util._
 
-import com.typesafe.scalalogging.LazyLogging
 import org.apache.hadoop.fs.Path
 import org.apache.spark.SparkContext
 import spray.json.JsonFormat
@@ -43,7 +42,7 @@ import scala.reflect.ClassTag
 class HadoopCOGLayerReader(
   val attributeStore: AttributeStore,
   val defaultThreads: Int = HadoopCOGLayerReader.defaultThreadCount
-)(@transient implicit val sc: SparkContext) extends COGLayerReader[LayerId] with LazyLogging {
+)(@transient implicit val sc: SparkContext) extends COGLayerReader[LayerId] {
 
   val hadoopConfiguration = SerializableConfiguration(sc.hadoopConfiguration)
 

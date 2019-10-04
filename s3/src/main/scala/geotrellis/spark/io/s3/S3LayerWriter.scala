@@ -23,8 +23,8 @@ import geotrellis.spark.io.avro.codecs._
 import geotrellis.spark.io.index._
 import geotrellis.spark.merge._
 import geotrellis.util._
-
-import com.typesafe.scalalogging.LazyLogging
+import org.slf4j.LoggerFactory
+import com.typesafe.scalalogging.Logger
 import org.apache.spark.rdd.RDD
 import com.amazonaws.services.s3.model.PutObjectRequest
 import spray.json._
@@ -48,7 +48,8 @@ class S3LayerWriter(
   bucket: String,
   keyPrefix: String,
   putObjectModifier: PutObjectRequest => PutObjectRequest = { p => p }
-) extends LayerWriter[LayerId] with LazyLogging {
+) extends LayerWriter[LayerId] {
+  @transient protected lazy val logger = Logger(LoggerFactory.getLogger(getClass.getName))
 
   def rddWriter: S3RDDWriter = S3RDDWriter
 

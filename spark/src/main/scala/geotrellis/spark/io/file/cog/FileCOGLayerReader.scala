@@ -25,7 +25,6 @@ import geotrellis.spark.io.file.{FileAttributeStore, FileLayerHeader, KeyPathGen
 import geotrellis.spark.io.file.conf.FileConfig
 import geotrellis.util._
 
-import com.typesafe.scalalogging.LazyLogging
 import org.apache.spark.SparkContext
 import spray.json.JsonFormat
 
@@ -43,7 +42,7 @@ class FileCOGLayerReader(
   val attributeStore: AttributeStore,
   val catalogPath: String,
   val defaultThreads: Int = FileCOGLayerReader.defaultThreadCount
-)(@transient implicit val sc: SparkContext) extends COGLayerReader[LayerId] with LazyLogging {
+)(@transient implicit val sc: SparkContext) extends COGLayerReader[LayerId] {
 
   val defaultNumPartitions: Int = sc.defaultParallelism
 

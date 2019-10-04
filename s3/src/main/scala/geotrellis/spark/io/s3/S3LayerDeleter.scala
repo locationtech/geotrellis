@@ -18,10 +18,11 @@ package geotrellis.spark.io.s3
 
 import geotrellis.spark.LayerId
 import geotrellis.spark.io._
+import org.slf4j.LoggerFactory
+import com.typesafe.scalalogging.Logger
 
-import com.typesafe.scalalogging.LazyLogging
-
-class S3LayerDeleter(val attributeStore: AttributeStore) extends LazyLogging with LayerDeleter[LayerId] {
+class S3LayerDeleter(val attributeStore: AttributeStore) extends LayerDeleter[LayerId] {
+  @transient protected lazy val logger = Logger(LoggerFactory.getLogger(getClass.getName))
 
   def getS3Client: () => S3Client = () => S3Client.DEFAULT
 

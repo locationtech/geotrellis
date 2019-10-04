@@ -16,7 +16,6 @@
 
 package geotrellis.vector.conf
 
-import com.typesafe.scalalogging.LazyLogging
 import org.locationtech.jts.geom.PrecisionModel
 import org.locationtech.jts.precision.GeometryPrecisionReducer
 
@@ -25,7 +24,7 @@ case class Simplification(scale: Double = 1e12) {
   lazy val simplifier: GeometryPrecisionReducer = new GeometryPrecisionReducer(new PrecisionModel(scale))
 }
 case class Precision(`type`: String = "floating")
-case class JtsConfig(precision: Precision = Precision(), simplification: Simplification = Simplification()) extends LazyLogging {
+case class JtsConfig(precision: Precision = Precision(), simplification: Simplification = Simplification()) {
   val precisionType: String = precision.`type`
   val precisionModel: PrecisionModel = precisionType match {
     case "floating" => new PrecisionModel()

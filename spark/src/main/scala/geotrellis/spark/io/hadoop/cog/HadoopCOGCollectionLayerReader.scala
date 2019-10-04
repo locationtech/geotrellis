@@ -26,7 +26,6 @@ import geotrellis.spark.io.hadoop.conf.HadoopConfig
 import geotrellis.spark.io.hadoop._
 import geotrellis.util._
 
-import com.typesafe.scalalogging.LazyLogging
 import spray.json.JsonFormat
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
@@ -47,7 +46,7 @@ class HadoopCOGCollectionLayerReader(
   val conf: SerializableConfiguration = SerializableConfiguration(new Configuration),
   val defaultThreads: Int = HadoopCOGCollectionLayerReader.defaultThreadCount
 )
-  extends COGCollectionLayerReader[LayerId] with LazyLogging {
+  extends COGCollectionLayerReader[LayerId] {
 
   implicit def getByteReader(uri: URI): ByteReader = byteReader(uri, conf.value)
 
@@ -84,4 +83,3 @@ object HadoopCOGCollectionLayerReader {
   def apply(rootPath: Path, conf: Configuration): HadoopCOGCollectionLayerReader =
     apply(HadoopAttributeStore(rootPath, conf))
 }
-

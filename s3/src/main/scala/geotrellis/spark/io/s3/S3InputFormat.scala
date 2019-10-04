@@ -17,8 +17,8 @@
 package geotrellis.spark.io.s3
 
 import geotrellis.spark.io.hadoop._
-
-import com.typesafe.scalalogging.LazyLogging
+import org.slf4j.LoggerFactory
+import com.typesafe.scalalogging.Logger
 import com.amazonaws.regions._
 import com.amazonaws.services.s3.model.{ListObjectsRequest, S3ObjectSummary}
 import org.apache.hadoop.conf.Configuration
@@ -34,8 +34,10 @@ import scala.util.matching.Regex
   *   - ProfileCredentialsProvider
   *   - InstanceProfileCredentialsProvider
   */
-abstract class S3InputFormat[K, V] extends InputFormat[K,V] with LazyLogging {
+abstract class S3InputFormat[K, V] extends InputFormat[K,V] {
   import S3InputFormat._
+
+  @transient protected lazy val logger = Logger(LoggerFactory.getLogger(getClass.getName))
 
   def getS3Client(context: JobContext): S3Client =
     S3InputFormat.getS3Client(context)
