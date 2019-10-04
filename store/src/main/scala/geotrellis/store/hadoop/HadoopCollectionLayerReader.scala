@@ -41,7 +41,7 @@ class HadoopCollectionLayerReader(
   conf: Configuration,
   maxOpenFiles: Int = 16,
   executionContext: => ExecutionContext = BlockingThreadPool.executionContext
-) extends CollectionLayerReader[LayerId] with LazyLogging {
+) extends CollectionLayerReader[LayerId] {
 
   @transient implicit lazy val ec: ExecutionContext = executionContext
 

@@ -18,15 +18,17 @@ package geotrellis.vector.io.wkb
 
 import geotrellis.vector.GeomFactory
 
-import com.typesafe.scalalogging.LazyLogging
 import org.locationtech.jts.geom._
 import org.locationtech.jts.{io => jts}
-
+import org.slf4j.LoggerFactory
+import com.typesafe.scalalogging.Logger
 
 /** A thread-safe wrapper for the [https://en.wikipedia.org/wiki/Well-known_text#Well-known_binary WKB]
   * Writer and Reader
   */
-object WKB extends LazyLogging {
+object WKB {
+  @transient protected lazy val logger = Logger(LoggerFactory.getLogger(getClass.getName))
+
   private val readerBox = new ThreadLocal[jts.WKBReader]
   private val writerBox = new ThreadLocal[WKBWriter]
 

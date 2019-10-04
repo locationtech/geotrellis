@@ -22,9 +22,8 @@ import geotrellis.store.avro.codecs._
 import geotrellis.store.hadoop._
 import geotrellis.store.hadoop.formats.FilterMapFileInputFormat
 import geotrellis.spark.util.KryoWrapper
-
-import com.typesafe.scalalogging.LazyLogging
-
+import org.slf4j.LoggerFactory
+import com.typesafe.scalalogging.Logger
 import org.apache.avro.Schema
 import org.apache.hadoop.io._
 import org.apache.hadoop.fs.Path
@@ -32,7 +31,8 @@ import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
-object HadoopRDDReader extends LazyLogging {
+object HadoopRDDReader {
+  @transient protected lazy val logger = Logger(LoggerFactory.getLogger(getClass.getName))
 
   def readFully[
     K: AvroRecordCodec: Boundable,

@@ -28,10 +28,10 @@ object Version {
   val geowave     = "0.9.3"
   val circe       = "0.11.1"
   val previousVersion = "2.2.0"
-  
+
   val gdal     = "2.4.0"
   val gdalWarp = "33.61199eb"
-  
+
   lazy val hadoop = Environment.hadoopVersion
   lazy val spark  = Environment.sparkVersion
 }

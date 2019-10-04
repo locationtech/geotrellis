@@ -19,10 +19,13 @@ package geotrellis.vector.io.wkt
 import geotrellis.vector._
 
 import org.locationtech.jts.io.{WKTReader, WKTWriter}
-import com.typesafe.scalalogging.LazyLogging
+import org.slf4j.LoggerFactory
+import com.typesafe.scalalogging.Logger
 
 /** A thread-safe wrapper for the WKT Writer and Reader */
-object WKT extends LazyLogging {
+object WKT {
+  @transient protected lazy val logger = Logger(LoggerFactory.getLogger(getClass.getName))
+
   private val readerBox = new ThreadLocal[WKTReader]
   private val writerBox = new ThreadLocal[WKTWriter]
 

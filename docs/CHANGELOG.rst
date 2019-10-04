@@ -2,6 +2,16 @@ Changelog
 =========
 
 3.0.0-SNAPSHOT
+=======
+
+2.3.3
+_____
+*2019 Oct 4*
+
+- Remove direct usage of `com.typesafe.scalalogging.LazyLogging` trait
+- Upgrade to Proj4J 1.1.0
+
+2.3.2
 -----
 
 API Changes & Project structure changes

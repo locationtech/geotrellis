@@ -26,8 +26,8 @@ import geotrellis.spark._
 import geotrellis.spark.store._
 import geotrellis.spark.merge._
 import geotrellis.util._
-
-import com.typesafe.scalalogging.LazyLogging
+import org.slf4j.LoggerFactory
+import com.typesafe.scalalogging.Logger
 import org.apache.spark.rdd.RDD
 import io.circe._
 import cats.Semigroup
@@ -50,7 +50,8 @@ import java.io.File
 class FileLayerWriter(
   val attributeStore: AttributeStore,
   catalogPath: String
-) extends LayerWriter[LayerId] with LazyLogging {
+) extends LayerWriter[LayerId] {
+  @transient protected lazy val logger = Logger(LoggerFactory.getLogger(getClass.getName))
 
   // Layer Updating
   def overwrite[

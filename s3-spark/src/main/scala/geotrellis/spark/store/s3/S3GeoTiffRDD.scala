@@ -25,9 +25,8 @@ import geotrellis.spark.store._
 import geotrellis.vector._
 
 import software.amazon.awssdk.services.s3.S3Client
-
-import com.typesafe.scalalogging.LazyLogging
-
+import org.slf4j.LoggerFactory
+import com.typesafe.scalalogging.Logger
 import org.apache.hadoop.conf.Configuration
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
@@ -39,9 +38,11 @@ import java.nio.ByteBuffer
 /**
  * The S3GeoTiffRDD object allows for the creation of whole or windowed RDD[(K, V)]s from files on S3.
  */
-object S3GeoTiffRDD extends LazyLogging {
+object S3GeoTiffRDD {
   final val GEOTIFF_TIME_TAG_DEFAULT = "TIFFTAG_DATETIME"
   final val GEOTIFF_TIME_FORMAT_DEFAULT = "yyyy:MM:dd HH:mm:ss"
+
+  @transient protected lazy val logger = Logger(LoggerFactory.getLogger(getClass.getName))
 
   /**
     * This case class contains the various parameters one can set when reading RDDs from S3 using Spark.

@@ -27,7 +27,8 @@ import geotrellis.spark._
 import geotrellis.spark.store._
 import geotrellis.util._
 import geotrellis.util.annotations.experimental
-
+import org.slf4j.LoggerFactory
+import com.typesafe.scalalogging.Logger
 import mil.nga.giat.geowave.adapter.raster.adapter.RasterDataAdapter
 import mil.nga.giat.geowave.core.geotime.ingest._
 import mil.nga.giat.geowave.core.geotime.store.statistics.BoundingBoxDataStatistics
@@ -119,9 +120,8 @@ import scala.collection.JavaConverters._
   val accumuloUser: String,
   val accumuloPass: String,
   val geowaveNamespace: String
-) extends DiscreteLayerAttributeStore with LazyLogging {
-
-  logger.error("GeoWave support is experimental")
+) extends DiscreteLayerAttributeStore {
+  @transient protected lazy val logger: Logger = Logger(LoggerFactory.getLogger(getClass.getName))
 
   val zkInstance = (new ZooKeeperInstance(accumuloInstance, zookeepers))
   val token = new PasswordToken(accumuloPass)

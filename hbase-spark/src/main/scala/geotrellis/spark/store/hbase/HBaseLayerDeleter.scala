@@ -21,12 +21,15 @@ import geotrellis.store._
 import geotrellis.store.hbase._
 import geotrellis.spark.store._
 import com.typesafe.scalalogging.LazyLogging
+import org.slf4j.LoggerFactory
+import com.typesafe.scalalogging.Logger
 import org.apache.hadoop.hbase.client._
 import org.apache.hadoop.hbase.filter.PrefixFilter
 
 import scala.collection.JavaConverters._
 
-class HBaseLayerDeleter(val attributeStore: AttributeStore, instance: HBaseInstance) extends LazyLogging with LayerDeleter[LayerId] {
+class HBaseLayerDeleter(val attributeStore: AttributeStore, instance: HBaseInstance) extends LayerDeleter[LayerId] {
+  @transient protected lazy val logger = Logger(LoggerFactory.getLogger(getClass.getName))
 
   def delete(id: LayerId): Unit = {
     try{

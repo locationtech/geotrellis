@@ -47,7 +47,7 @@ class S3COGLayerReader(
   val attributeStore: AttributeStore,
   s3Client: => S3Client = S3ClientProducer.get(),
   executionContext: => ExecutionContext = BlockingThreadPool.executionContext
-)(@transient implicit val sc: SparkContext) extends COGLayerReader[LayerId] with LazyLogging {
+)(@transient implicit val sc: SparkContext) extends COGLayerReader[LayerId] {
 
   @transient implicit lazy val ec: ExecutionContext = executionContext
 

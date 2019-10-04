@@ -18,8 +18,8 @@ package geotrellis.raster.io.geotiff
 
 import geotrellis.util._
 import geotrellis.raster.io.geotiff.tags._
-
-import com.typesafe.scalalogging.LazyLogging
+import org.slf4j.LoggerFactory
+import com.typesafe.scalalogging.Logger
 import monocle.syntax.apply._
 
 /**
@@ -38,8 +38,10 @@ class LazySegmentBytes(
   tiffTags: TiffTags,
   maxChunkSize: Int = 32 * 1024 * 1024,
   maxOffsetBetweenChunks: Int = 1024
-) extends SegmentBytes with LazyLogging {
+) extends SegmentBytes {
   import LazySegmentBytes.Segment
+
+  @transient protected lazy val logger = Logger(LoggerFactory.getLogger(getClass.getName))
 
   def length: Int = tiffTags.segmentCount
 

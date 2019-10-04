@@ -17,9 +17,8 @@
 package geotrellis.spark.pipeline.json
 
 import geotrellis.spark.pipeline.PipelineConstructor
-import com.typesafe.scalalogging.LazyLogging
 
-trait PipelineExpr extends LazyLogging {
+trait PipelineExpr {
   def ~(other: PipelineExpr): PipelineConstructor = this :: other :: Nil
 
   def ~(other: Option[PipelineExpr]): PipelineConstructor =

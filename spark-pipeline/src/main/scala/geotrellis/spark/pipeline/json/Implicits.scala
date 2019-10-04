@@ -28,7 +28,6 @@ import geotrellis.raster._
 import geotrellis.raster.resample._
 import geotrellis.vector._
 
-import com.typesafe.scalalogging.LazyLogging
 import _root_.io.circe.generic.extras.Configuration
 import _root_.io.circe._
 import _root_.io.circe.syntax._
@@ -42,7 +41,7 @@ import scala.util.Try
 
 object Implicits extends Implicits
 
-trait Implicits extends LazyLogging {
+trait Implicits {
   implicit val config: Configuration = Configuration.default.withDefaults.withSnakeCaseMemberNames
   val pipelineJsonPrinter: Printer = Printer.spaces2.copy(dropNullValues = true)
 

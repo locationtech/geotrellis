@@ -32,15 +32,16 @@ import geotrellis.spark.merge._
 import geotrellis.spark.tiling._
 import geotrellis.vector._
 import geotrellis.util._
-
-import com.typesafe.scalalogging.LazyLogging
-
+import org.slf4j.LoggerFactory
+import com.typesafe.scalalogging.Logger
 import org.apache.spark.rdd._
 import org.apache.spark._
 
 import scala.reflect.ClassTag
 
-object TileRDDReproject extends LazyLogging {
+object TileRDDReproject {
+  @transient protected lazy val logger = Logger(LoggerFactory.getLogger(getClass.getName))
+
   import Reproject.Options
 
   /** Reproject a set of buffered

@@ -25,8 +25,8 @@ import geotrellis.store.index._
 import geotrellis.spark.store._
 import geotrellis.spark.merge._
 import geotrellis.util._
-
-import com.typesafe.scalalogging.LazyLogging
+import org.slf4j.LoggerFactory
+import com.typesafe.scalalogging.Logger
 import org.apache.spark.rdd.RDD
 import io.circe._
 import cats.Semigroup
@@ -38,7 +38,8 @@ class AccumuloLayerWriter(
   instance: AccumuloInstance,
   table: String,
   options: AccumuloLayerWriter.Options
-) extends LayerWriter[LayerId] with LazyLogging {
+) extends LayerWriter[LayerId] {
+  @transient protected lazy val logger = Logger(LoggerFactory.getLogger(getClass.getName))
 
   // Layer Updating
   def overwrite[

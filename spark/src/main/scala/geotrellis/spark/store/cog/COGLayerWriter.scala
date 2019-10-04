@@ -29,8 +29,8 @@ import geotrellis.store._
 import geotrellis.store.cog.{COGLayerStorageMetadata, ZoomRange}
 import geotrellis.store.index._
 import geotrellis.spark._
-
-import com.typesafe.scalalogging.LazyLogging
+import org.slf4j.LoggerFactory
+import com.typesafe.scalalogging.Logger
 import org.apache.spark.rdd.RDD
 import _root_.io.circe._
 
@@ -39,8 +39,9 @@ import java.util.ServiceLoader
 
 import scala.reflect._
 
-trait COGLayerWriter extends LazyLogging with Serializable {
+trait COGLayerWriter extends Serializable {
   import COGLayerWriter.Options
+  @transient protected lazy val logger = Logger(LoggerFactory.getLogger(getClass.getName))
 
   val attributeStore: AttributeStore
 
