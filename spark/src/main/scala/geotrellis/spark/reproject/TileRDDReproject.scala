@@ -67,6 +67,7 @@ object TileRDDReproject extends LazyLogging {
     resampleMethod: ResampleMethod,
     partitioner: Option[Partitioner]
   ): (Int, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]) = {
+    println(metadata, destCrs, targetLayout, resampleMethod, partitioner)
     val crs: CRS = metadata.crs
     val layout = metadata.layout
     val tileLayout: TileLayout = layout.tileLayout
@@ -75,7 +76,7 @@ object TileRDDReproject extends LazyLogging {
     val sourceDataGridExtent = metadata.layout.createAlignedGridExtent(metadata.extent)
     // target grid extent is not computed to determine the alignment of pixels. rather,
     // it is here to determine the extent and cellsize of outputs
-    val targetGridExtent = ReprojectRasterExtent(sourceDataGridExtent, metadata.crs, destCrs)
+    val targetGridExtent = ReprojectRasterExtent(sourceDataGridExtent, Transform(metadata.crs, destCrs), DefaultTarget)
 
     val targetPartitioner: Option[Partitioner] = partitioner.orElse(bufferedTiles.partitioner)
 
@@ -88,14 +89,15 @@ object TileRDDReproject extends LazyLogging {
       })
     logger.debug(s"$reprojectSummary")
 
-    // First figure out where we're going through option yoga
-    // You'll want to read [[ReprojectRasterExtent]] to grok this
     val LayoutLevel(targetZoom, targetLayerLayout) = targetLayout match {
       case Right(layoutDefinition) =>
         LayoutLevel(0, layoutDefinition)
 
       case Left(layoutScheme) =>
-        layoutScheme.levelFor(targetGridExtent.extent, targetGridExtent.cellSize)
+      val tre = ReprojectRasterExtent(layout, crs, destCrs, DefaultTarget)
+
+      layoutScheme.levelFor(tre.extent, tre.cellSize)
+        //layoutScheme.levelFor(targetGridExtent.extent, targetGridExtent.cellSize)
     }
 
     val newMetadata = {
@@ -215,7 +217,7 @@ object TileRDDReproject extends LazyLogging {
           getBufferSizes = { key: K =>
             val extent = key.getComponent[SpatialKey].extent(layout)
             val srcRE = RasterExtent(extent, tileLayout.tileCols, tileLayout.tileRows)
-            val dstRE = ReprojectRasterExtent(srcRE, transform)
+            val dstRE = ReprojectRasterExtent(srcRE, transform, DefaultTarget)
 
             // Reproject the extent back into the original CRS,
             // to determine how many border pixels we need.
@@ -261,12 +263,13 @@ object TileRDDReproject extends LazyLogging {
     bufferSize: Int,
     resampleMethod: ResampleMethod,
     partitioner: Option[Partitioner]
-  ): (Int, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]) =
+  ): (Int, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]) = {
     if(bufferSize == 0) {
       val fakeBuffers: RDD[(K, BufferedTile[V])] = rdd.withContext(_.mapValues { tile: V => BufferedTile(tile, GridBounds(0, 0, tile.cols - 1, tile.rows - 1)) })
       apply(fakeBuffers, rdd.metadata, destCrs, targetLayout, resampleMethod, partitioner)
     } else
       apply(rdd.bufferTiles(bufferSize), rdd.metadata, destCrs, targetLayout, resampleMethod, partitioner)
+  }
 
 
   /** Match pixel resolution between two layouts in different projections such that
@@ -310,7 +313,7 @@ object TileRDDReproject extends LazyLogging {
                 subChunk.coordsIter
                   .map { case (col, row) =>
                     val source = getRasterExtent(col, row)
-                    val target = ReprojectRasterExtent(source, transform)
+                    val target = ReprojectRasterExtent(source, transform, DefaultTarget)
                     ReprojectSummary(
                       sourcePixels = source.size,
                       pixels = target.size,

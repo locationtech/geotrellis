@@ -27,11 +27,7 @@ import spire.math.Integral
 
 trait SinglebandRasterReprojectMethods extends RasterReprojectMethods[SinglebandRaster] {
 
-  def reproject(
-    transform: Transform,
-    inverseTransform: Transform,
-    resampleTarget: ResampleTarget
-  ): SinglebandRaster =
+  def reproject(transform: geotrellis.proj4.Transform, inverseTransform: geotrellis.proj4.Transform, resampleTarget: geotrellis.raster.ResampleTarget) =
     reproject(transform, inverseTransform, resampleTarget, NearestNeighbor, 0.0)
 
   def reproject(

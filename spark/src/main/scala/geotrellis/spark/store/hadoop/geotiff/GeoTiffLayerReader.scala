@@ -28,7 +28,6 @@ import geotrellis.raster.reproject.RasterReprojectMethods
 import geotrellis.raster.merge.RasterMergeMethods
 import geotrellis.raster.{TargetGridExtent, TargetCellSize}
 import geotrellis.util.RangeReader
-import geotrellis.spark.reproject.RasterReprojectOptions
 import geotrellis.util.annotations.experimental
 import geotrellis.store.LayerId
 import cats.effect.IO

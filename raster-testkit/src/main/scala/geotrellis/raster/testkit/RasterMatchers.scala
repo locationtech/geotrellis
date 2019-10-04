@@ -33,7 +33,6 @@ import java.nio.file.{Files, Paths}
 import geotrellis.vector.Extent
 
 import scala.util.Random
-import scala.collection.JavaConverters._
 
 trait RasterMatchers extends Matchers {
   import RasterMatchers._

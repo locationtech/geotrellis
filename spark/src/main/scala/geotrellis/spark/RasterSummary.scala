@@ -32,7 +32,7 @@ case class RasterSummary[M](
   extent: Extent,
   cells: Long,
   count: Long,
-  // for the internal usage only, required to collect non spatial bounds
+  // for internal usage only, required to collect non spatial bounds
   bounds: Bounds[M]
 ) extends LazyLogging with Serializable {
 

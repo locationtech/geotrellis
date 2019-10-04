@@ -91,14 +91,12 @@ class GeoTiffReprojectRasterSource(
 
   def read(extent: Extent, bands: Seq[Int]): Option[Raster[MultibandTile]] = {
     val bounds = gridExtent.gridBoundsFor(extent, clamp = false)
-    print("ext,bounds", extent, bounds)
 
     read(bounds, bands)
   }
 
   def read(bounds: GridBounds[Long], bands: Seq[Int]): Option[Raster[MultibandTile]] = {
     val it = readBounds(List(bounds), bands)
-    print("ext,bounds", bounds)
 
     closestTiffOverview.synchronized { if (it.hasNext) Some(it.next) else None }
   }

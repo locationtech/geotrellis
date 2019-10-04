@@ -107,7 +107,7 @@ class StatsTileCollectionMethodsSpec extends FunSpec with TestEnvironment with T
     it ("should find double histogram of aspect and match merged quantile breaks") {
       val path = "raster/data/aspect.tif"
       val gt = SinglebandGeoTiff(path)
-      val originalRaster = gt.raster.mapTile(_.toArrayTile).resample(TargetGridExtent(RasterExtent(gt.raster.extent, 500, 500)))
+      val originalRaster = gt.raster.mapTile(_.toArrayTile).resample(TargetDimensions(500, 500))
       val (_, rdd) = createTileLayerRDD(originalRaster, 5, 5, gt.crs)
       val collection = rdd.toCollection
 

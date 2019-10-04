@@ -87,6 +87,10 @@ class RasterSummarySpec extends FunSpec with TestEnvironment with RasterMatchers
       widthCollected shouldBe (widthResampled +- 1e-7)
       heightCollected shouldBe (heightResampled +- 1e-7)
 
+      //println("cs", summaryCollected.cellSize)
+      //println("sumColl re", summaryCollected.toGridExtent)
+      //println("sumResamp re2", summaryResampled.toGridExtent)
+      //println("manually targetted", TargetGrid(layout)(summaryCollected.toGridExtent))
       summaryCollected.extent shouldBe summaryResampled.extent
       summaryCollected.cells shouldBe summaryResampled.cells
       summaryCollected.count shouldBe summaryResampled.count

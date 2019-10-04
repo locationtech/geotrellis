@@ -19,7 +19,6 @@ package geotrellis.spark.ingest
 import geotrellis.proj4._
 import geotrellis.raster._
 import geotrellis.raster.resample.{ResampleMethod, NearestNeighbor}
-import geotrellis.spark.reproject.RasterReprojectOptions
 import geotrellis.layer._
 import geotrellis.spark._
 import geotrellis.spark.pyramid.Pyramid
@@ -89,8 +88,8 @@ object Ingest {
         })
 
       case _ => bufferSize match {
-        case Some(bs) => contextRdd.reproject(destCRS, layoutScheme, bs, None)
-        case _ => contextRdd.reproject(destCRS, layoutScheme, None)
+        case Some(bs) => contextRdd.reproject(destCRS, layoutScheme, bs, NearestNeighbor, None)
+        case _ => contextRdd.reproject(destCRS, layoutScheme, NearestNeighbor, None)
       }
     }
 

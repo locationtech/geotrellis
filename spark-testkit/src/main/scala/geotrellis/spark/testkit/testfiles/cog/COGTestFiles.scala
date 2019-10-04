@@ -41,7 +41,7 @@ trait COGTestFiles { self: TestEnvironment =>
     val tiledRdd = sourceTiles.tileToLayout(tileLayerMetadata, NearestNeighbor).cache()
     val contextRdd = new ContextRDD(tiledRdd, tileLayerMetadata)
 
-    contextRdd.reproject(WebMercator, layoutScheme, None)
+    contextRdd.reproject(WebMercator, layoutScheme)
   }
 
   lazy val temporalCea: TileLayerRDD[SpaceTimeKey] = {
@@ -63,7 +63,7 @@ trait COGTestFiles { self: TestEnvironment =>
     val tiledRdd = sourceTemporalTiles.tileToLayout(tileLayerMetadata, NearestNeighbor).cache()
     val contextRdd = new ContextRDD(tiledRdd, tileLayerMetadata)
 
-    contextRdd.reproject(WebMercator, layoutScheme, None)._2
+    contextRdd.reproject(WebMercator, layoutScheme)._2
   }
 
   def spatialTestFile(name: String) = COGTestFiles.generateSpatial(name)

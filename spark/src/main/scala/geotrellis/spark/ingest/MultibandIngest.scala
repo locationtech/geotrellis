@@ -63,8 +63,8 @@ object MultibandIngest {
         })
 
       case _ => bufferSize match {
-        case Some(bs) => contextRdd.reproject(destCRS, layoutScheme, bs, None)
-        case _ => contextRdd.reproject(destCRS, layoutScheme, None)
+        case Some(bs) => contextRdd.reproject(destCRS, layoutScheme, bs, NearestNeighbor, None)
+        case _ => contextRdd.reproject(destCRS, layoutScheme, NearestNeighbor, None)
       }
     }
 

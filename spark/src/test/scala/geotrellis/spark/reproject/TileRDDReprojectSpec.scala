@@ -23,7 +23,6 @@ import geotrellis.raster.reproject._
 import geotrellis.spark.reproject._
 import geotrellis.layer._
 import geotrellis.spark._
-import geotrellis.spark.reproject.Reproject.OldOptions
 import geotrellis.spark.testkit._
 import geotrellis.vector._
 
@@ -34,16 +33,16 @@ import spire.syntax.cfor._
 import org.apache.spark._
 import org.scalatest.FunSpec
 
+import geotrellis.raster.render.{ColorMap => CMAP, _}
 class TileRDDReprojectSpec extends FunSpec with TestEnvironment {
 
   describe("TileRDDReproject") {
     val path = "raster/data/aspect.tif"
     val gt = SinglebandGeoTiff(path)
-    val originalRaster = gt.raster.mapTile(_.toArrayTile).resample(TargetGridExtent(RasterExtent(gt.raster.extent, 500, 500)))
+    val originalRaster = gt.raster.mapTile(_.toArrayTile).resample(TargetDimensions(500, 500))
 
-    // import geotrellis.raster.render._
-    // val rainbow = ColorMap((0.0 to 360.0 by 1.0).map{ deg => (deg, HSV.toRGB(deg, 1.0, 1.0)) }.toMap)
-    // originalRaster.tile.renderPng(rainbow).write("original.png")
+    //val rainbow = ColorMap((0.0 to 360.0 by 1.0).map{ deg => (deg, HSV.toRGB(deg, 1.0, 1.0)) }.toMap)
+    //originalRaster.tile.renderPng(rainbow).write("original.png")
 
     val (raster, rdd) = {
       val (raster, rdd) = createTileLayerRDD(originalRaster, 10, 10, gt.crs)
@@ -53,15 +52,16 @@ class TileRDDReprojectSpec extends FunSpec with TestEnvironment {
     def testReproject(method: ResampleMethod, constantBuffer: Boolean): Unit = {
       val expected =
         ProjectedRaster(raster, gt.crs)
-          .reproject(LatLng, DefaultTarget)
+          .reproject(LatLng, DefaultTarget, method)
+      println("expected", expected)
 
       // expected.tile.renderPng(rainbow).write("expected.png")
 
       val (_, actualRdd) =
         if(constantBuffer) {
-          rdd.reproject(LatLng, FloatingLayoutScheme(25), bufferSize = 2)
+          rdd.reproject(LatLng, FloatingLayoutScheme(25), bufferSize = 2, method)
         } else {
-          rdd.reproject(LatLng, FloatingLayoutScheme(25))
+          rdd.reproject(LatLng, FloatingLayoutScheme(25), method)
         }
 
       val actual =
@@ -69,18 +69,18 @@ class TileRDDReprojectSpec extends FunSpec with TestEnvironment {
 
       actualRdd.map { case (_, tile) => tile.dimensions == (25, 25) }.reduce(_ && _) should be (true)
 
-      // actual.tile.renderPng(rainbow).write("actual.png")
-      // val errorTile = IntArrayTile.ofDim(expected.tile.cols, expected.tile.rows)
-      // cfor(0)(_ < expected.rows, _ + 1) { row =>
-      //   cfor(0)(_ < expected.cols, _ + 1) { col =>
-      //     val diff = math.abs(actual.tile.getDouble(col, row) - expected.tile.getDouble(col, row))
-      //     if (isNoData(actual.tile.getDouble(col, row)) || diff <= 1e-3)
-      //       errorTile.set(col, row, 0)
-      //     else
-      //       errorTile.set(col, row, 1)
-      //   }
-      // }
-      // errorTile.renderPng(ColorMap(0 -> 0x000000ff, 1 -> 0xff0000ff)).write("error.png")
+      //actual.tile.renderPng(rainbow).write("actual.png")
+       val errorTile = IntArrayTile.ofDim(expected.tile.cols, expected.tile.rows)
+       cfor(0)(_ < expected.rows, _ + 1) { row =>
+         cfor(0)(_ < expected.cols, _ + 1) { col =>
+           val diff = math.abs(actual.tile.getDouble(col, row) - expected.tile.getDouble(col, row))
+           if (isNoData(actual.tile.getDouble(col, row)) || diff <= 1e-3)
+             errorTile.set(col, row, 0)
+           else
+             errorTile.set(col, row, 1)
+         }
+       }
+       errorTile.renderPng(ColorMap(0 -> 0x000000ff, 1 -> 0xff0000ff)).write("error.png")
 
       // Account for tiles being a bit bigger then the actual result
       actual.extent.covers(expected.extent) should be (true)
@@ -144,22 +144,34 @@ class TileRDDReprojectSpec extends FunSpec with TestEnvironment {
     }
 
     it("should function correctly for multiband tiles") {
-      val expected =
-        ProjectedRaster(raster, gt.crs).reproject(LatLng, DefaultTarget)
+      val rrp = implicitly[RasterRegionReproject[Tile]]
+      val targetRE = ReprojectRasterExtent(raster.rasterExtent, Transform(gt.crs, LatLng), DefaultTarget)
+      val srcpoly = ProjectedExtent(raster.extent, gt.crs).reprojectAsPolygon(LatLng)
+      var expectedBEFORE = rrp.regionReproject(raster, gt.crs, LatLng, targetRE, srcpoly, NearestNeighbor)
+      import geotrellis.raster.crop._
+      var bufferedGB = GridBounds(0, 0, 574, 424)
+      val expected = ProjectedRaster(expectedBEFORE.crop(bufferedGB, Crop.Options(false)), gt.crs)
+
+      val expected2 =
+        ProjectedRaster(ProjectedRaster(raster, gt.crs).reproject(LatLng, DefaultTarget, NearestNeighbor).raster.crop(bufferedGB, Crop.Options(false)), gt.crs)
 
       val mbrdd = ContextRDD(rdd.mapValues{ tile => MultibandTile(Array(tile)) }, rdd.metadata)
       val (_, actualRdd) =
         mbrdd.reproject(
           LatLng,
-          FloatingLayoutScheme(25)
+          FloatingLayoutScheme(25),
+          NearestNeighbor
         )
+
 
       val actual: Raster[MultibandTile] =
         actualRdd.stitch
 
-      // actual.tile.renderPng(rainbow).write("actual.png")
+      //actual.tile.renderPng(rainbow).write("actual.png")
 
-      // Account for tiles being a bit bigger then the actual result
+      println("actualExtent", actual.rasterExtent)
+      println("expectedExtent", expected.rasterExtent)
+      // Account for tiles being a bit bigger than the actual result
       actual.extent.covers(expected.extent) should be (true)
       actual.rasterExtent.extent.xmin should be (expected.raster.rasterExtent.extent.xmin +- 0.00001)
       actual.rasterExtent.extent.ymax should be (expected.raster.rasterExtent.extent.ymax +- 0.00001)
@@ -169,8 +181,34 @@ class TileRDDReprojectSpec extends FunSpec with TestEnvironment {
       val expectedTile = expected.tile
       val actualTile = actual.tile
 
+      GeoTiff(raster, LatLng).write("/tmp/before-local.tif")
+      GeoTiff(expected, LatLng).write("/tmp/after-local.tif")
+      GeoTiff(expected2, LatLng).write("/tmp/after-local-rrp.tif")
+      GeoTiff(actual, LatLng).write("/tmp/after-rdd.tif")
+
+      //actual.tile.renderPng(rainbow).write("actual.png")
+       val errorTile = IntArrayTile.ofDim(expected.tile.cols, expected.tile.rows)
+       cfor(0)(_ < expected.rows, _ + 1) { row =>
+         cfor(0)(_ < expected.cols, _ + 1) { col =>
+           val diff = math.abs(actual.tile.band(0).getDouble(col, row) - expected.tile.getDouble(col, row))
+           if (isNoData(actual.tile.band(0).getDouble(col, row)) || diff <= 1e-3)
+             errorTile.set(col, row, 0)
+           else
+             errorTile.set(col, row, 1)
+         }
+       }
+       errorTile.renderPng(ColorMap(0 -> 0x000000ff, 1 -> 0xff0000ff)).write("/tmp/error.png")
+
+
+      //col 355
+      //row 32
+      val checkGridbounds = GridBounds(345, 20, 365, 40)
+
       actualTile.cols should be >= (expectedTile.cols)
       actualTile.rows should be >= (expectedTile.rows)
+      import geotrellis.raster.crop._
+      //println("actual", actualTile.band(0).crop(checkGridbounds, Crop.Options.DEFAULT).asciiDraw())
+      //println("expected", expectedTile.crop(checkGridbounds, Crop.Options.DEFAULT).asciiDraw())
 
       val tile = actual.tile.bandSafe(0).get
 
@@ -203,7 +241,8 @@ class TileRDDReprojectSpec extends FunSpec with TestEnvironment {
       val expected =
         ProjectedRaster(raster, gt.crs).reproject(
           LatLng,
-          DefaultTarget
+          DefaultTarget,
+          NearestNeighbor
         )
 
       val mbrdd = ContextRDD(rdd.mapValues { tile => TileFeature(tile, 1) }, rdd.metadata)
@@ -230,12 +269,13 @@ class TileRDDReprojectSpec extends FunSpec with TestEnvironment {
       val (_, actualRdd) =
         mbrdd.reproject(
           LatLng,
-          FloatingLayoutScheme(25)
+          FloatingLayoutScheme(25),
+          NearestNeighbor
         )
 
       val actual: Raster[TileFeature[Tile, Int]] =
         actualRdd.stitch
-
+      
       // Account for tiles being a bit bigger then the actual result
       actual.extent.covers(expected.extent) should be (true)
       actual.rasterExtent.extent.xmin should be (expected.raster.rasterExtent.extent.xmin +- 0.00001)
@@ -250,9 +290,11 @@ class TileRDDReprojectSpec extends FunSpec with TestEnvironment {
       actualTile.rows should be >= (expectedTile.rows)
 
       val tile = actual.tile.tile
+      println("actualtile", tile.asciiDraw())
 
       cfor(0)(_ < actual.rows, _ + 1) { row =>
         cfor(0)(_ < actual.cols, _ + 1) { col =>
+          println(col,row)
           val a = tile.getDouble(col, row)
           if(row >= expectedTile.rows || col >= expectedTile.cols) {
             isNoData(a) should be (true)
@@ -281,7 +323,7 @@ class TileRDDReprojectSpec extends FunSpec with TestEnvironment {
       val partitioner = new HashPartitioner(8)
       val expectedPartitioner = Some(partitioner)
       val repartitioned = rdd.withContext{ _.partitionBy(partitioner) }
-      val actualPartitioner = repartitioned.reproject(ZoomedLayoutScheme(LatLng))._2.partitioner
+      val actualPartitioner = repartitioned.reproject(LatLng, ZoomedLayoutScheme(LatLng))._2.partitioner
 
       actualPartitioner should be (expectedPartitioner)
     }
@@ -289,7 +331,7 @@ class TileRDDReprojectSpec extends FunSpec with TestEnvironment {
     it("should have the designated Partitioner") {
       val partitioner = new HashPartitioner(8)
       val expectedPartitioner = Some(partitioner)
-      val actualPartitioner = rdd.reproject(ZoomedLayoutScheme(LatLng), expectedPartitioner)._2.partitioner
+      val actualPartitioner = rdd.reproject(LatLng, ZoomedLayoutScheme(LatLng), NearestNeighbor, expectedPartitioner)._2.partitioner
 
       actualPartitioner should be (expectedPartitioner)
     }

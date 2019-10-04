@@ -17,7 +17,6 @@
 package geotrellis.raster
 
 import geotrellis.proj4.{CRS, Transform}
-import geotrellis.raster.reproject.Reproject.Options
 import geotrellis.raster.reproject.ReprojectRasterExtent
 import geotrellis.vector._
 
