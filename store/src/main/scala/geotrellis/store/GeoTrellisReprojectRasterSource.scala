@@ -103,7 +103,7 @@ class GeoTrellisReprojectRasterSource(
 
   def read(bounds: GridBounds[Long], bands: Seq[Int]): Option[Raster[MultibandTile]] =
     bounds
-      .intersection(this.gridBounds)
+      .intersection(this.dimensions)
       .map(gridExtent.extentFor(_).buffer(- cellSize.width / 2, - cellSize.height / 2))
       .flatMap(read(_, bands))
 
@@ -111,7 +111,7 @@ class GeoTrellisReprojectRasterSource(
     extents.toIterator.flatMap(read(_, bands))
 
   override def readBounds(bounds: Traversable[GridBounds[Long]], bands: Seq[Int]): Iterator[Raster[MultibandTile]] =
-    bounds.toIterator.flatMap(_.intersection(this.gridBounds).flatMap(read(_, bands)))
+    bounds.toIterator.flatMap(_.intersection(this.dimensions).flatMap(read(_, bands)))
 
   def reprojection(targetCRS: CRS, resampleTarget: ResampleTarget = DefaultTarget, method: ResampleMethod = NearestNeighbor, strategy: OverviewStrategy = AutoHigherResolution): RasterSource = {
     if (targetCRS == sourceLayer.metadata.crs) {

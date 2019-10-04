@@ -120,7 +120,7 @@ class ReprojectSpec extends FunSpec
 
     it("should reproject two landsat tiles into rasters that don't have nodata lines of NODATA") {
       def detectNoDataLine(tile: Tile): Unit = {
-        val (cols, rows) = tile.dimensions
+        val Dimensions(cols, rows) = tile.dimensions
         val noDataColCounts = Array.ofDim[Int](cols)
         cfor(0)(_ < rows, _ + 1) { row =>
           cfor(0)(_ < cols, _ + 1) { col =>

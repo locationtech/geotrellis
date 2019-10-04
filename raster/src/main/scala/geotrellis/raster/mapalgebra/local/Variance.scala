@@ -41,7 +41,7 @@ object Variance extends Serializable {
     if (layerCount == 0) sys.error(s"Can't compute variance of empty sequence.")
     else {
       val newCellType = rs.map(_.cellType).reduce(_.union(_))
-      val (cols, rows) = rs(0).dimensions
+      val Dimensions(cols, rows) = rs(0).dimensions
       val tile = ArrayTile.alloc(newCellType, cols, rows)
 
       cfor(0)(_ < rows, _ + 1) { row =>

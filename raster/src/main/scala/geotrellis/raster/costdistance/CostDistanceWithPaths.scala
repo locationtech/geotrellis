@@ -27,9 +27,9 @@ import scala.collection.mutable.ArrayBuffer
 case class CostDistanceWithPathsResult(
   res: Array[Seq[Int]],
   costs: Array[Double],
-  tileDimension: (Int, Int)) {
+  tileDimension: Dimensions[Int]) {
 
-  val (cols, rows) = tileDimension
+  val Dimensions(cols, rows) = tileDimension
 
   def getPath(dest: (Int, Int)): (Double, Seq[LineString]) = {
     val (col, row) = dest
@@ -76,7 +76,7 @@ private class CostDistanceWithPaths(cost: ArrayTile, source: (Int, Int)) {
 
   val Sqrt2 = math.sqrt(2)
 
-  val (cols, rows) = cost.dimensions
+  val Dimensions(cols, rows) = cost.dimensions
 
   @inline final def indexToCoordinates(idx: Int) = (idx % cols, idx / cols)
 

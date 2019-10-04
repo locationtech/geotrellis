@@ -88,7 +88,7 @@ class GDALWarpReadTileSpec extends FunSpec with RasterMatchers {
     it("should do window reads") {
       val dataset = GDALDataset(path)
       val gtiff = MultibandGeoTiff(path)
-      val gridBounds = dataset.rasterExtent.gridBounds.split(15, 21)
+      val gridBounds = GridBounds(dataset.dimensions).split(15, 21)
 
       gridBounds.foreach { gb =>
         val actualTile = dataset.readMultibandTile(gb)
@@ -114,7 +114,7 @@ class GDALWarpReadTileSpec extends FunSpec with RasterMatchers {
     val tiffDataset = GDALDataset(jpegTiffPath)
 
     val gridBounds: Iterator[GridBounds[Int]] =
-      jpegDataset.rasterExtent.gridBounds.split(20, 15)
+      GridBounds(jpegDataset.dimensions).split(20, 15)
 
     it("should read a JPEG2000 from a file") {
       val raster = Raster(jpegDataset.readMultibandTile(), jpegDataset.rasterExtent.extent)

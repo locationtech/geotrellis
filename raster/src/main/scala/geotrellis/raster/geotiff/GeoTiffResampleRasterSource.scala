@@ -110,7 +110,7 @@ class GeoTiffResampleRasterSource(
 
     val windows = { for {
       queryPixelBounds <- bounds
-      targetPixelBounds <- queryPixelBounds.intersection(this.gridBounds)
+      targetPixelBounds <- queryPixelBounds.intersection(this.dimensions)
     } yield {
       val targetExtent = gridExtent.extentFor(targetPixelBounds)
       val sourcePixelBounds = closestTiffOverview.rasterExtent.gridBoundsFor(targetExtent, clamp = true)

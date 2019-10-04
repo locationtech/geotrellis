@@ -114,7 +114,7 @@ class GeoTiffReprojectRasterSource(
     val geoTiffTile = closestTiffOverview.tile.asInstanceOf[GeoTiffMultibandTile]
     val intersectingWindows = { for {
       queryPixelBounds <- bounds
-      targetPixelBounds <- queryPixelBounds.intersection(this.gridBounds)
+      targetPixelBounds <- queryPixelBounds.intersection(this.dimensions)
     } yield {
       val targetRasterExtent = RasterExtent(
         extent = gridExtent.extentFor(targetPixelBounds, clamp = true),

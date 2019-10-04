@@ -73,8 +73,7 @@ class GeoTiffReaderSpec extends FunSpec
       val path = "modelTransformation.tiff"
       val compressed: SinglebandGeoTiff = SinglebandGeoTiff(geoTiffPath(path))
       val tile = compressed.tile
-      val bounds = tile.gridBounds
-      bounds.width should be(1121)
+      tile.cols should be(1121)
       compressed.crs should be(CRS.fromName("EPSG:4326"))
       if (compressed.extent.min.distance(Point(59.9955397, 30.0044603)) > 0.0001) {
         compressed.extent.min should be(Point(59.9955397, 30.0044603))

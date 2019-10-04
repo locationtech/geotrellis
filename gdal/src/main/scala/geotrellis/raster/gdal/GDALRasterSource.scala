@@ -97,12 +97,12 @@ class GDALRasterSource(
     * These resolutions could represent actual overview as seen in source file
     * or overviews of VRT that was created as result of resample operations.
     */
-  lazy val resolutions: List[CellSize] = dataset.resolutions(datasetType).map(_.toGridType[Long])
+  lazy val resolutions: List[CellSize] = dataset.resolutions(datasetType).map(_.cellSize)
 
   override def readBounds(bounds: Traversable[GridBounds[Long]], bands: Seq[Int]): Iterator[Raster[MultibandTile]] = {
     bounds
       .toIterator
-      .flatMap { gb => gridBounds.intersection(gb) }
+      .flatMap { _.intersection(this.dimensions) }
       .map { gb =>
         val tile = dataset.readMultibandTile(gb.toGridType[Int], bands.map(_ + 1), datasetType)
         val extent = this.gridExtent.extentFor(gb)
@@ -152,7 +152,7 @@ class GDALRasterSource(
   }
 
   def read(bounds: GridBounds[Long], bands: Seq[Int]): Option[Raster[MultibandTile]] = {
-    val it = readBounds(List(bounds).flatMap(_.intersection(this.gridBounds)), bands)
+    val it = readBounds(List(bounds).flatMap(_.intersection(this.dimensions)), bands)
     if (it.hasNext) Some(it.next) else None
   }
 

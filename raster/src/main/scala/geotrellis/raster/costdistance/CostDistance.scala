@@ -40,7 +40,7 @@ object CostDistance {
     *
     */
   def apply(cost: Tile, points: Seq[(Int, Int)]): Tile = {
-    val (cols, rows) = cost.dimensions
+    val Dimensions(cols, rows) = cost.dimensions
     val output = DoubleArrayTile.empty(cols, rows)
 
     for((c, r) <- points)

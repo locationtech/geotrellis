@@ -75,7 +75,7 @@ class GeoTrellisResampleRasterSource(
 
   def metadata: GeoTrellisMetadata = GeoTrellisMetadata(name, crs, bandCount, cellType, gridExtent, resolutions, attributes)
 
-  lazy val resolutions: List[CellSize] = sourceLayers.map(_.cellSize).toList
+  lazy val resolutions: List[CellSize] = sourceLayers.map(_.gridExtent.cellSize).toList
 
   def read(extent: Extent, bands: Seq[Int]): Option[Raster[MultibandTile]] = {
     val tileBounds = sourceLayer.metadata.mapTransform.extentToBounds(extent)
@@ -95,7 +95,7 @@ class GeoTrellisResampleRasterSource(
 
   def read(bounds: GridBounds[Long], bands: Seq[Int]): Option[Raster[MultibandTile]] = {
     bounds
-      .intersection(this.gridBounds)
+      .intersection(this.dimensions)
       .map(gridExtent.extentFor(_).buffer(- cellSize.width / 2, - cellSize.height / 2))
       .flatMap(read(_, bands))
   }
@@ -123,7 +123,7 @@ class GeoTrellisResampleRasterSource(
     extents.toIterator.flatMap(read(_, bands))
 
   override def readBounds(bounds: Traversable[GridBounds[Long]], bands: Seq[Int]): Iterator[Raster[MultibandTile]] =
-    bounds.toIterator.flatMap(_.intersection(this.gridBounds).flatMap(read(_, bands)))
+    bounds.toIterator.flatMap(_.intersection(this.dimensions).flatMap(read(_, bands)))
 
   override def toString: String =
     s"GeoTrellisResampleRasterSource(${dataPath.toString},$layerId,$gridExtent,$resampleMethod)"

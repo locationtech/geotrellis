@@ -748,41 +748,47 @@ class GeoTiffMultibandTileSpec extends FunSpec
     val bandStripedRasterExtent = RasterExtent(bandStripedGeoTiff.extent, bandStripedGeoTiff.cols, bandStripedGeoTiff.rows)
 
     it("should have the correct number of subset bands - pixel") {
-      val cropped = pixelStripedGeoTiff.tile.cropBands(pixelStripedRasterExtent.gridBounds, Array(1, 0))
+      val bounds = GridBounds(pixelStripedRasterExtent.dimensions)
+      val cropped = pixelStripedGeoTiff.tile.cropBands(bounds, Array(1, 0))
 
       cropped.bands.size should be (2)
     }
 
     it("should have the correct number of subset bands - band") {
-      val cropped = bandStripedGeoTiff.tile.cropBands(bandStripedRasterExtent.gridBounds, Array(1))
+      val bounds = GridBounds(bandStripedRasterExtent.dimensions)
+      val cropped = bandStripedGeoTiff.tile.cropBands(bounds, Array(1))
 
       cropped.bands.size should be (1)
     }
 
     it("should have the crop the correct area - pixel striped") {
-      val actual = pixelStripedGeoTiff.tile.cropBands(pixelStripedRasterExtent.gridBounds, Array(1, 0, 2))
-      val expected = pixelStripedGeoTiff.crop(pixelStripedRasterExtent.gridBounds).tile.subsetBands(1, 0, 2)
+      val bounds = GridBounds(pixelStripedRasterExtent.dimensions)
+      val actual = pixelStripedGeoTiff.tile.cropBands(bounds, Array(1, 0, 2))
+      val expected = pixelStripedGeoTiff.crop(bounds).tile.subsetBands(1, 0, 2)
 
       actual should be (expected)
     }
 
     it("should have the crop the correct area - pixel tiled") {
-      val actual = pixelTiledGeoTiff.tile.cropBands(pixelStripedRasterExtent.gridBounds, Array(1, 0, 2))
-      val expected = pixelTiledGeoTiff.crop(pixelStripedRasterExtent.gridBounds).tile.subsetBands(1, 0, 2)
+      val bounds = GridBounds(pixelStripedRasterExtent.dimensions)
+      val actual = pixelTiledGeoTiff.tile.cropBands(bounds, Array(1, 0, 2))
+      val expected = pixelTiledGeoTiff.crop(bounds).tile.subsetBands(1, 0, 2)
 
       actual should be (expected)
     }
 
     it("should have the crop the correct area - band striped") {
-      val actual = bandStripedGeoTiff.tile.cropBands(bandStripedRasterExtent.gridBounds, Array(1, 2, 0))
-      val expected = bandStripedGeoTiff.crop(bandStripedRasterExtent.gridBounds).tile.subsetBands(1, 2, 0)
+      val bounds = GridBounds(bandStripedRasterExtent.dimensions)
+      val actual = bandStripedGeoTiff.tile.cropBands(bounds, Array(1, 2, 0))
+      val expected = bandStripedGeoTiff.crop(bounds).tile.subsetBands(1, 2, 0)
 
       actual should be (expected)
     }
 
     it("should have the crop the correct area - band tiled") {
-      val actual = bandTiledGeoTiff.tile.cropBands(bandStripedRasterExtent.gridBounds, Array(1, 2, 0))
-      val expected = bandTiledGeoTiff.crop(bandStripedRasterExtent.gridBounds).tile.subsetBands(1, 2, 0)
+      val bounds = GridBounds(bandStripedRasterExtent.dimensions)
+      val actual = bandTiledGeoTiff.tile.cropBands(bounds, Array(1, 2, 0))
+      val expected = bandTiledGeoTiff.crop(bounds).tile.subsetBands(1, 2, 0)
 
       actual should be (expected)
     }

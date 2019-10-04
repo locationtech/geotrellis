@@ -39,7 +39,7 @@ object Variety extends Serializable {
     if(layerCount == 0) {
       sys.error(s"Can't compute variety of empty sequence")
     } else {
-      val (cols, rows) = rs(0).dimensions
+      val Dimensions(cols, rows) = rs(0).dimensions
       val tile = ArrayTile.alloc(IntConstantNoDataCellType, cols, rows)
 
       cfor(0)(_ < rows, _ + 1) { row =>

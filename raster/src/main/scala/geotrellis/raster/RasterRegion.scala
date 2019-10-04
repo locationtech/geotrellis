@@ -37,10 +37,10 @@ object RasterRegion {
     GridBoundsRasterRegion(source, bounds)
 
   case class GridBoundsRasterRegion(source: RasterSource, bounds: GridBounds[Long]) extends RasterRegion {
-    require(bounds.intersects(source.gridBounds), s"The given bounds: $bounds must intersect the given source: $source")
+    require(bounds.intersects(source.dimensions), s"The given bounds: $bounds must intersect the given source: $source")
     @transient lazy val raster: Option[Raster[MultibandTile]] =
       for {
-        intersection <- source.gridBounds.intersection(bounds)
+        intersection <- bounds.intersection(source.dimensions)
         raster <- source.read(intersection)
       } yield {
         if (raster.tile.cols == cols && raster.tile.rows == rows)

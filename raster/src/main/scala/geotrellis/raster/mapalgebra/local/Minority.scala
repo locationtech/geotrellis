@@ -46,7 +46,7 @@ object Minority extends Serializable {
       sys.error(s"Can't compute minority of empty sequence")
     } else {
       val newCellType = rs.map(_.cellType).reduce(_.union(_))
-      val (cols, rows) = rs.head.dimensions
+      val Dimensions(cols, rows) = rs.head.dimensions
       val tile = ArrayTile.alloc(newCellType, cols, rows)
 
       if(newCellType.isFloatingPoint) {

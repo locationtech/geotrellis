@@ -203,7 +203,7 @@ class RasterSourceRDDSpec extends FunSpec with TestEnvironment with RasterMatche
       val expected = expectedMultibandTile
 
       // random chip to test agains, to speed up tests
-      val gridBounds = RasterExtent(randomExtentWithin(actual.extent), actual.cellSize).gridBounds
+      val gridBounds = GridBounds(RasterExtent(randomExtentWithin(actual.extent), actual.cellSize).dimensions)
 
       expected.dimensions shouldBe actual.dimensions
 
@@ -228,7 +228,7 @@ class RasterSourceRDDSpec extends FunSpec with TestEnvironment with RasterMatche
       val actual = RasterSourceRDD.read(readingSources, floatingLayout).stitch()
 
       // random chip to test agains, to speed up tests
-      val gridBounds = RasterExtent(randomExtentWithin(actual.extent), actual.cellSize).gridBounds
+      val gridBounds = GridBounds(RasterExtent(randomExtentWithin(actual.extent), actual.cellSize).dimensions)
 
       assertEqual(expected.crop(gridBounds), actual.tile.crop(gridBounds))
     }
@@ -249,7 +249,7 @@ class RasterSourceRDDSpec extends FunSpec with TestEnvironment with RasterMatche
       val actual = RasterSourceRDD.read(readingSources, floatingLayout).stitch()
 
       // random chip to test agains, to speed up tests
-      val gridBounds = RasterExtent(randomExtentWithin(actual.extent), actual.cellSize).gridBounds
+      val gridBounds = GridBounds(RasterExtent(randomExtentWithin(actual.extent), actual.cellSize).dimensions)
 
       assertEqual(expected.crop(gridBounds), actual.tile.crop(gridBounds))
     }
@@ -275,7 +275,7 @@ class RasterSourceRDDSpec extends FunSpec with TestEnvironment with RasterMatche
       val actual = RasterSourceRDD.read(readingSources, floatingLayout).stitch()
 
       // random chip to test agains, to speed up tests
-      val gridBounds = RasterExtent(randomExtentWithin(actual.extent), actual.cellSize).gridBounds
+      val gridBounds = GridBounds(RasterExtent(randomExtentWithin(actual.extent), actual.cellSize).dimensions)
 
       assertEqual(expected.crop(gridBounds), actual.tile.crop(gridBounds))
     }

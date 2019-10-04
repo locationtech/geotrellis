@@ -108,7 +108,8 @@ class MosaicRasterSourceSpec extends FunSpec with RasterMatchers with GeoTiffTes
                                      8, 4)),
           mosaicRasterSource.gridExtent.extent
       )
-      val result = mosaicRasterSource.read(mosaicRasterSource.gridBounds, Seq(0)).get
+      val bounds = GridBounds(mosaicRasterSource.dimensions)
+      val result = mosaicRasterSource.read(bounds, Seq(0)).get
       result shouldEqual expectation
       result.extent shouldEqual expectation.extent
     }
