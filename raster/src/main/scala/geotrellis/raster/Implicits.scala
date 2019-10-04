@@ -126,4 +126,26 @@ trait Implicits
       np.percentile(tile.toArrayDouble.filter(isData(_)), pctBreak)
     }
   }
+
+  implicit class MultibandRasterFeatureExtractionMethods(val self: Raster[MultibandTile]) extends MethodExtensions[Raster[MultibandTile]] {
+    def features[G <: Geometry: FeatureExtraction[*, MultibandTile, D], D](geom: G, raster: Raster[MultibandTile]): Array[Array[PointFeature[D]]] =
+      FeatureExtraction[G, MultibandTile, D].features(geom, raster)
+
+    def featuresInt[G <: Geometry: FeatureExtraction[*, MultibandTile, Int]](geom: G, raster: Raster[MultibandTile]): Array[Array[PointFeature[Int]]] =
+      features[G, Int](geom, raster)
+
+    def featuresDouble[G <: Geometry: FeatureExtraction[*, MultibandTile, Double]](geom: G, raster: Raster[MultibandTile]): Array[Array[PointFeature[Double]]] =
+      features[G, Double](geom, raster)
+  }
+
+  implicit class rasterFeatureExtractionMethods(val self: Raster[Tile]) extends MethodExtensions[Raster[Tile]] {
+    def features[G <: Geometry: FeatureExtraction[*, Tile, D], D](geom: G, raster: Raster[Tile]): Array[PointFeature[D]] =
+      FeatureExtraction[G, Tile, D].features(geom, raster).head
+
+    def featuresInt[G <: Geometry: FeatureExtraction[*, Tile, Int]](geom: G, raster: Raster[Tile]): Array[PointFeature[Int]] =
+      features[G, Int](geom, raster)
+
+    def featuresDouble[G <: Geometry: FeatureExtraction[*, Tile, Double]](geom: G, raster: Raster[Tile]): Array[PointFeature[Double]] =
+      features[G, Double](geom, raster)
+  }
 }
