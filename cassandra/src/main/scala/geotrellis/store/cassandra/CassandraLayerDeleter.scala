@@ -18,7 +18,7 @@ package geotrellis.store.cassandra
 
 import geotrellis.store._
 
-import com.typesafe.scalalogging.LazyLogging
+import org.log4s._
 
 import com.datastax.driver.core.querybuilder.QueryBuilder
 import com.datastax.driver.core.querybuilder.QueryBuilder.{eq => eqs}
@@ -26,7 +26,8 @@ import com.datastax.driver.core.querybuilder.QueryBuilder.{eq => eqs}
 import scala.collection.JavaConverters._
 
 
-class CassandraLayerDeleter(val attributeStore: AttributeStore, instance: CassandraInstance) extends LazyLogging with LayerDeleter[LayerId] {
+class CassandraLayerDeleter(val attributeStore: AttributeStore, instance: CassandraInstance) extends LayerDeleter[LayerId] {
+  @transient private[this] lazy val logger = getLogger
 
   def delete(id: LayerId): Unit = {
     try {

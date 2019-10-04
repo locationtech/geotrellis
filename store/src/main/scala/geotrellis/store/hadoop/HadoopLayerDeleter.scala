@@ -22,12 +22,14 @@ import geotrellis.store.hadoop.util._
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 
-import com.typesafe.scalalogging.LazyLogging
+import org.log4s._
 
 class HadoopLayerDeleter(
   val attributeStore: AttributeStore,
   conf: Configuration
-) extends LazyLogging with LayerDeleter[LayerId] {
+) extends LayerDeleter[LayerId] {
+  @transient private[this] lazy val logger = getLogger
+
   def delete(id: LayerId): Unit = {
     try {
       val header = attributeStore.readHeader[HadoopLayerHeader](id)

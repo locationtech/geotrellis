@@ -20,14 +20,15 @@ import geotrellis.store._
 
 import software.amazon.awssdk.services.s3.model._
 import software.amazon.awssdk.services.s3.S3Client
-import com.typesafe.scalalogging.LazyLogging
+import org.log4s._
 
 import scala.collection.JavaConverters._
 
 class S3LayerDeleter(
   val attributeStore: AttributeStore,
   s3Client: => S3Client
-) extends LazyLogging with LayerDeleter[LayerId] {
+) extends LayerDeleter[LayerId] {
+  @transient private[this] lazy val logger = getLogger
 
   def delete(id: LayerId): Unit = {
     try {

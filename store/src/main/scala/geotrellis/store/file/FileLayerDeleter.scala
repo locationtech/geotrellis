@@ -18,11 +18,13 @@ package geotrellis.store.file
 
 import geotrellis.store.{LayerId, LayerDeleter, AttributeNotFoundError, LayerDeleteError}
 
-import com.typesafe.scalalogging.LazyLogging
+import org.log4s._
 
 import java.io.File
 
-class FileLayerDeleter(val attributeStore: FileAttributeStore) extends LazyLogging with LayerDeleter[LayerId] {
+class FileLayerDeleter(val attributeStore: FileAttributeStore) extends LayerDeleter[LayerId] {
+  @transient private[this] lazy val logger = getLogger
+
   def delete(id: LayerId): Unit =
     try {
       val header = attributeStore.readHeader[FileLayerHeader](id)

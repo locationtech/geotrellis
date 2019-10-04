@@ -23,7 +23,7 @@ import geotrellis.vector.Extent
 import geotrellis.util._
 
 import org.apache.spark.rdd.RDD
-import com.typesafe.scalalogging.LazyLogging
+import org.log4s._
 
 case class RasterSummary[M](
   crs: CRS,
@@ -34,7 +34,8 @@ case class RasterSummary[M](
   count: Long,
   // for the internal usage only, required to collect non spatial bounds
   bounds: Bounds[M]
-) extends LazyLogging with Serializable {
+) extends Serializable {
+  @transient private[this] lazy val logger = getLogger
 
   def estimatePartitionsNumber: Int = {
     import squants.information._

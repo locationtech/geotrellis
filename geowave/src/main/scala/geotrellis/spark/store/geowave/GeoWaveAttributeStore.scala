@@ -45,7 +45,7 @@ import mil.nga.giat.geowave.mapreduce.input.{GeoWaveInputKey, GeoWaveInputFormat
 
 import org.apache.accumulo.core.client.security.tokens.PasswordToken
 import org.apache.accumulo.core.client.ZooKeeperInstance
-import com.typesafe.scalalogging.LazyLogging
+import org.log4s._
 import org.locationtech.jts.geom._
 import _root_.io.circe._
 
@@ -119,9 +119,8 @@ import scala.collection.JavaConverters._
   val accumuloUser: String,
   val accumuloPass: String,
   val geowaveNamespace: String
-) extends DiscreteLayerAttributeStore with LazyLogging {
-
-  logger.error("GeoWave support is experimental")
+) extends DiscreteLayerAttributeStore {
+  @transient private[this] lazy val logger = getLogger
 
   val zkInstance = (new ZooKeeperInstance(accumuloInstance, zookeepers))
   val token = new PasswordToken(accumuloPass)

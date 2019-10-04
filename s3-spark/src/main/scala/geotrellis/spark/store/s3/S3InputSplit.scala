@@ -16,7 +16,6 @@
 
 package geotrellis.spark.store.s3
 
-import com.typesafe.scalalogging.LazyLogging
 import software.amazon.awssdk.services.s3.model.S3Object
 import org.apache.hadoop.io.Writable
 import org.apache.hadoop.mapreduce.InputSplit
@@ -27,7 +26,7 @@ import java.io.{DataOutput, DataInput}
  * Represents are batch of keys to be read from an S3 bucket.
  * AWS credentials have already been discovered and provided by the S3InputFormat.
  */
-class S3InputSplit extends InputSplit with Writable with LazyLogging
+class S3InputSplit extends InputSplit with Writable
 {
   var sessionToken: String = null
   var bucket: String = _

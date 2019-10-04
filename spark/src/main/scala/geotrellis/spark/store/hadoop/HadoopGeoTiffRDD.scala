@@ -27,7 +27,7 @@ import geotrellis.spark._
 import geotrellis.spark.store.RasterReader
 import geotrellis.spark.store.hadoop.formats._
 
-import com.typesafe.scalalogging.LazyLogging
+import org.log4s._
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
@@ -42,9 +42,10 @@ import java.nio.ByteBuffer
 /**
   * Allows for reading of whole or windowed GeoTiff as RDD[(K, V)]s through Hadoop FileSystem API.
   */
-object HadoopGeoTiffRDD extends LazyLogging {
+object HadoopGeoTiffRDD {
   final val GEOTIFF_TIME_TAG_DEFAULT = "TIFFTAG_DATETIME"
   final val GEOTIFF_TIME_FORMAT_DEFAULT = "yyyy:MM:dd HH:mm:ss"
+  @transient private[this] lazy val logger = getLogger
 
   /**
     * This case class contains the various parameters one can set when reading RDDs from Hadoop using Spark.

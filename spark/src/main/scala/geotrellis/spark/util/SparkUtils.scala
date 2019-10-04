@@ -16,14 +16,16 @@
 
 package geotrellis.spark.util
 
-import com.typesafe.scalalogging.LazyLogging
+import org.log4s._
 import org.apache.hadoop.conf.Configuration
 import org.apache.spark.SparkConf
 import org.apache.spark.SparkContext
 
 import java.io.File
 
-object SparkUtils extends LazyLogging {
+object SparkUtils {
+  @transient private[this] lazy val logger = getLogger
+
   def createSparkConf = new SparkConf()
 
   private val gtHomeLock = new Object()

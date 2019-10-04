@@ -26,7 +26,7 @@ import geotrellis.spark.store._
 import geotrellis.spark.merge._
 import geotrellis.util._
 
-import com.typesafe.scalalogging.LazyLogging
+import org.log4s._
 import org.apache.spark.rdd.RDD
 import io.circe._
 import cats.Semigroup
@@ -38,7 +38,8 @@ class CassandraLayerWriter(
   instance: CassandraInstance,
   keyspace: String,
   table: String
-) extends LayerWriter[LayerId] with LazyLogging {
+) extends LayerWriter[LayerId] {
+  @transient private[this] lazy val logger = getLogger
 
   // Layer updating
   def overwrite[

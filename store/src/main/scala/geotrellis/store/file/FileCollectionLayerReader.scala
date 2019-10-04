@@ -23,7 +23,7 @@ import geotrellis.store.avro.AvroRecordCodec
 import geotrellis.store.index.Index
 import geotrellis.util._
 
-import com.typesafe.scalalogging.LazyLogging
+import org.log4s._
 import io.circe.Decoder
 
 import scala.concurrent.ExecutionContext
@@ -41,7 +41,7 @@ class FileCollectionLayerReader(
   val attributeStore: AttributeStore,
   catalogPath: String,
   executionContext: => ExecutionContext = BlockingThreadPool.executionContext
-) extends CollectionLayerReader[LayerId] with LazyLogging {
+) extends CollectionLayerReader[LayerId] {
 
   @transient implicit lazy val ec = executionContext
 

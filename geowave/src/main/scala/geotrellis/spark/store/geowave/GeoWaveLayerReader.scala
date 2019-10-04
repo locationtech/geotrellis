@@ -46,7 +46,6 @@ import org.apache.spark.SparkContext
 import org.apache.avro.Schema
 import org.apache.hadoop.io.Text
 import org.geotools.coverage.grid._
-import com.typesafe.scalalogging.LazyLogging
 import org.locationtech.jts.geom._
 import _root_.io.circe._
 
@@ -94,9 +93,7 @@ object GeoWaveLayerReader {
   * @define experimental <span class="badge badge-red" style="float: right;">EXPERIMENTAL</span>@experimental
   */
 @experimental class GeoWaveLayerReader(val attributeStore: AttributeStore)
-  (implicit sc: SparkContext) extends LazyLogging {
-
-  logger.error("GeoWave support is experimental")
+  (implicit sc: SparkContext) {
 
   val defaultNumPartitions = sc.defaultParallelism
 

@@ -17,7 +17,6 @@
 package geotrellis.spark.store.geomesa
 
 import geotrellis.util.annotations.experimental
-import com.typesafe.scalalogging.LazyLogging
 import geotrellis.store.LayerId
 import org.geotools.data.DataStoreFinder
 import org.locationtech.geomesa.accumulo.data.AccumuloDataStore
@@ -28,8 +27,7 @@ import scala.collection.JavaConverters._
   * @define experimental <span class="badge badge-red" style="float: right;">EXPERIMENTAL</span>@experimental
   */
 @experimental class GeoMesaInstance(val conf: Map[String, String])
-    extends Serializable with LazyLogging {
-  logger.error("GeoMesa support is experimental")
+    extends Serializable {
 
   val SEP = "__.__"
 

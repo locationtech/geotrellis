@@ -27,7 +27,6 @@ import geotrellis.store.file.cog.byteReader
 import geotrellis.spark.store.cog._
 import geotrellis.util._
 
-import com.typesafe.scalalogging.LazyLogging
 import org.apache.spark.SparkContext
 import _root_.io.circe._
 
@@ -46,7 +45,7 @@ class FileCOGLayerReader(
   val attributeStore: AttributeStore,
   val catalogPath: String,
   executionContext: => ExecutionContext = BlockingThreadPool.executionContext
-)(@transient implicit val sc: SparkContext) extends COGLayerReader[LayerId] with LazyLogging {
+)(@transient implicit val sc: SparkContext) extends COGLayerReader[LayerId] {
 
   @transient implicit lazy val ec: ExecutionContext = executionContext
 

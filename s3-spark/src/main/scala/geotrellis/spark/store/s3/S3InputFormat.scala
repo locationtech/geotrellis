@@ -20,7 +20,7 @@ import geotrellis.store.s3.S3ClientProducer
 import geotrellis.store.hadoop._
 import geotrellis.spark.store.hadoop._
 
-import com.typesafe.scalalogging.LazyLogging
+import org.log4s._
 
 import software.amazon.awssdk.regions._
 import software.amazon.awssdk.services.s3.model.{ListObjectsV2Request, S3Object}
@@ -40,8 +40,9 @@ import scala.collection.JavaConverters._
   *   - ProfileCredentialsProvider
   *   - InstanceProfileCredentialsProvider
   */
-abstract class S3InputFormat[K, V] extends InputFormat[K,V] with LazyLogging {
+abstract class S3InputFormat[K, V] extends InputFormat[K,V] {
   import S3InputFormat._
+  @transient private[this] lazy val logger = getLogger
 
   def getS3Client(context: JobContext): S3Client =
     S3InputFormat.getS3Client(context)

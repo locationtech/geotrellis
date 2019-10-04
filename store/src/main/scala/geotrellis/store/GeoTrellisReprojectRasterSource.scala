@@ -23,7 +23,7 @@ import geotrellis.raster.resample._
 import geotrellis.proj4._
 import geotrellis.raster.io.geotiff.{AutoHigherResolution, OverviewStrategy}
 
-import com.typesafe.scalalogging.LazyLogging
+import org.log4s._
 import scala.io.AnsiColor._
 
 class GeoTrellisReprojectRasterSource(
@@ -38,7 +38,9 @@ class GeoTrellisReprojectRasterSource(
   val strategy: OverviewStrategy = AutoHigherResolution,
   val errorThreshold: Double = 0.125,
   val targetCellType: Option[TargetCellType]
-) extends RasterSource with LazyLogging {
+) extends RasterSource {
+  @transient private[this] lazy val logger = getLogger
+
   def name: GeoTrellisPath = dataPath
 
   lazy val reader = CollectionLayerReader(attributeStore, dataPath.value)

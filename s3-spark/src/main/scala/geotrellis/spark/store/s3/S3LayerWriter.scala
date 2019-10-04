@@ -29,7 +29,7 @@ import geotrellis.util._
 import software.amazon.awssdk.services.s3.model.PutObjectRequest
 import software.amazon.awssdk.services.s3.S3Client
 import org.apache.spark.rdd.RDD
-import com.typesafe.scalalogging.LazyLogging
+import org.log4s._
 import io.circe._
 import cats.Semigroup
 
@@ -53,7 +53,8 @@ class S3LayerWriter(
   putObjectModifier: PutObjectRequest => PutObjectRequest = identity,
   s3Client: => S3Client = S3ClientProducer.get(),
   executionContext: => ExecutionContext = BlockingThreadPool.executionContext
-) extends LayerWriter[LayerId] with LazyLogging {
+) extends LayerWriter[LayerId] {
+  @transient private[this] lazy val logger = getLogger
 
   def rddWriter: S3RDDWriter = new S3RDDWriter(s3Client, executionContext)
 

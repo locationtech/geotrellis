@@ -31,7 +31,7 @@ import geotrellis.util._
 import org.apache.spark.SparkContext
 import software.amazon.awssdk.services.s3._
 import software.amazon.awssdk.services.s3.model._
-import com.typesafe.scalalogging.LazyLogging
+import org.log4s._
 import io.circe._
 
 import scala.concurrent.ExecutionContext
@@ -47,8 +47,7 @@ class S3COGLayerReader(
   val attributeStore: AttributeStore,
   s3Client: => S3Client = S3ClientProducer.get(),
   executionContext: => ExecutionContext = BlockingThreadPool.executionContext
-)(@transient implicit val sc: SparkContext) extends COGLayerReader[LayerId] with LazyLogging {
-
+)(@transient implicit val sc: SparkContext) extends COGLayerReader[LayerId] {
   @transient implicit lazy val ec: ExecutionContext = executionContext
 
   val defaultNumPartitions: Int = sc.defaultParallelism
