@@ -117,6 +117,7 @@ API Changes & Project structure changes
 Fixes & Updates
 ^^^^^^^^^^^^^^^
 
+- Change from scala-logging to log4s (`#3116 <https://github.com/locationtech/geotrellis/pull/3116>`_)
 - Update dependencies (`#2904 <https://github.com/locationtech/geotrellis/pull/2904>`_).
 - Bump ScalaPB version up with some API enhancements (`#2898 <https://github.com/locationtech/geotrellis/pull/2898>`_).
 - Artifacts in Viewshed have been addressed, the pixels/meter calculation has also been improved (`#2917 <https://github.com/locationtech/geotrellis/pull/2917>`_).
