@@ -39,7 +39,7 @@ object ReprojectRasterExtent {
    * resolution of the input data.
    * @see [[reprojectedGridForCellSize]] defined below
    */
-  def apply[N: Integral](ge: GridExtent[N], transform: Transform, resampleTarget: ResampleTarget): GridExtent[N] = {
+  def apply[N: Integral](ge: GridExtent[N], transform: Transform, resampleTarget: ResampleTarget = DefaultTarget): GridExtent[N] = {
     // if ResampleTarget is TargetGridExtent, we won't need to compute this expensive thing
     lazy val newExtent = ge.extent.reprojectAsPolygon(transform, 0.001).extent
 
