@@ -61,6 +61,7 @@ notifications:
 
 before_deploy:
   - export GEOTRELLIS_VERSION_SUFFIX="-${TRAVIS_COMMIT:0:7}"
+  - sudo chown -R "$USER":"$USER" .
   - ./sbt unidoc
 
 deploy:
