@@ -24,51 +24,47 @@ import spire.syntax.cfor._
 import scala.collection.mutable.ListBuffer
 
 trait FeatureExtraction[I <: Geometry, T <: CellGrid[Int], O <: Geometry, D] {
-  def features(geom: I, raster: Raster[T]): Array[Array[Feature[O, D]]]
+  def features(geom: I, raster: Raster[T]): Array[Feature[O, Array[D]]]
 }
 
 object FeatureExtraction {
   def apply[I <: Geometry: FeatureExtraction[*, T, O, D], T <: CellGrid[Int], O <: Geometry, D] = implicitly[FeatureExtraction[I, T, O, D]]
 
   implicit def multibandTile[I <: Geometry] = new PointFeatureExtraction[I, MultibandTile, Int] {
-    def features(geom: I, raster: Raster[MultibandTile]): Array[Array[PointFeature[Int]]] = {
-      val arr = Array.ofDim[Array[PointFeature[Int]]](raster.tile.bandCount)
+    def features(geom: I, raster: Raster[MultibandTile]): Array[PointFeature[Array[Int]]] = {
+      val buffer = ListBuffer[PointFeature[Array[Int]]]()
 
-      cfor(0)(_ < raster.tile.bandCount, _ + 1) { i =>
-        val buffer = ListBuffer[PointFeature[Int]]()
-        Rasterizer.foreachCellByGeometry(geom, raster.rasterExtent) { case (col, row) =>
-          buffer += Feature(Point(raster.rasterExtent.gridToMap(col, row)), raster.tile.band(i).get(col, row))
-        }
-        arr(i) = buffer.toArray
+      Rasterizer.foreachCellByGeometry(geom, raster.rasterExtent) { case (col, row) =>
+        val values = Array.ofDim[Int](raster.tile.bandCount)
+        cfor(0)(_ < raster.tile.bandCount, _ + 1) { i => values(i) = raster.tile.band(i).get(col, row) }
+        buffer += Feature(Point(raster.rasterExtent.gridToMap(col, row)), values)
       }
 
-      arr
+      buffer.toArray
     }
   }
 
   implicit def multibandTileDouble[I <: Geometry] = new PointFeatureExtraction[I, MultibandTile, Double] {
-    def features(geom: I, raster: Raster[MultibandTile]): Array[Array[PointFeature[Double]]] = {
-      val arr = Array.ofDim[Array[PointFeature[Double]]](raster.tile.bandCount)
+    def features(geom: I, raster: Raster[MultibandTile]): Array[PointFeature[Array[Double]]] = {
+      val buffer = ListBuffer[PointFeature[Array[Double]]]()
 
-      cfor(0)(_ < raster.tile.bandCount, _ + 1) { i =>
-        val buffer = ListBuffer[PointFeature[Double]]()
-        Rasterizer.foreachCellByGeometry(geom, raster.rasterExtent) { case (col, row) =>
-          buffer += Feature(Point(raster.rasterExtent.gridToMap(col, row)), raster.tile.band(i).getDouble(col, row))
-        }
-        arr(i) = buffer.toArray
+      Rasterizer.foreachCellByGeometry(geom, raster.rasterExtent) { case (col, row) =>
+        val values = Array.ofDim[Double](raster.tile.bandCount)
+        cfor(0)(_ < raster.tile.bandCount, _ + 1) { i => values(i) = raster.tile.band(i).getDouble(col, row) }
+        buffer += Feature(Point(raster.rasterExtent.gridToMap(col, row)), values)
       }
 
-      arr
+      buffer.toArray
     }
   }
 
   implicit def tile[I <: Geometry] = new PointFeatureExtraction[I, Tile, Int] {
-    def features(geom: I, raster: Raster[Tile]): Array[Array[PointFeature[Int]]] =
+    def features(geom: I, raster: Raster[Tile]): Array[PointFeature[Array[Int]]] =
       multibandTile[I].features(geom, raster.mapTile(MultibandTile(_)))
   }
 
   implicit def tileDouble[I <: Geometry] = new PointFeatureExtraction[I, Tile, Double] {
-    def features(geom: I, raster: Raster[Tile]): Array[Array[PointFeature[Double]]] = {
+    def features(geom: I, raster: Raster[Tile]): Array[PointFeature[Array[Double]]] = {
       multibandTileDouble[I].features(geom, raster.mapTile(MultibandTile(_)))
     }
   }

@@ -127,7 +127,7 @@ trait Implicits
 
   implicit class MultibandRasterPointFeatureExtractionMethods(val self: Raster[MultibandTile]) extends MethodExtensions[Raster[MultibandTile]] {
     def pointFeatures[D] = new {
-      def apply[I <: Geometry: PointFeatureExtraction[*, MultibandTile, D]](geom: I): Array[Array[PointFeature[D]]] =
+      def apply[I <: Geometry: PointFeatureExtraction[*, MultibandTile, D]](geom: I): Array[PointFeature[Array[D]]] =
         FeatureExtraction[I, MultibandTile, Point, D].features(geom, self)
     }
   }
@@ -135,7 +135,7 @@ trait Implicits
   implicit class rasterPointFeatureExtractionMethods(val self: Raster[Tile]) extends MethodExtensions[Raster[Tile]] {
     def pointFeatures[D] = new {
       def apply[I <: Geometry: PointFeatureExtraction[*, Tile, D]](geom: I): Array[PointFeature[D]] =
-        FeatureExtraction[I, Tile, Point, D].features(geom, self).head
+        FeatureExtraction[I, Tile, Point, D].features(geom, self).map(_.mapData(_.head))
     }
   }
 }

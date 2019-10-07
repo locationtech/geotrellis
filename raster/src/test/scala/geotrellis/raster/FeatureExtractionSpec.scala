@@ -21,10 +21,7 @@ import geotrellis.raster.testkit._
 
 import org.scalatest._
 
-class FeatureExtractionSpec extends FunSpec
-                  with Matchers
-                  with RasterMatchers
-                  with TileBuilders {
+class FeatureExtractionSpec extends FunSpec with Matchers {
   describe("Tile") {
     it("should extract all int point features") {
       val ext = Extent(0.0, 0.0, 3.0, 3.0)
@@ -72,10 +69,9 @@ class FeatureExtractionSpec extends FunSpec
 
       val features = raster.pointFeatures[Int](ext.toPolygon)
 
-      features.map(_.map(_.data)) shouldBe data
-      features.zipWithIndex.foreach { case (features, i) =>
-        features.foreach { case feature @ Feature(point, _) =>
-          raster.pointFeatures[Int](point).apply(i).head shouldBe feature }
+      (0 until 3).map { b => features.map(_.data(b)) }.toArray shouldBe data
+      features.foreach { { case feature @ Feature(point, _) =>
+        raster.pointFeatures[Int](point).head.mapData(_.toList) shouldBe feature.mapData(_.toList) }
       }
     }
 
@@ -93,10 +89,9 @@ class FeatureExtractionSpec extends FunSpec
 
       val features = raster.pointFeatures[Double](ext.toPolygon)
 
-      features.map(_.map(_.data)) shouldBe data
-      features.zipWithIndex.foreach { case (features, i) =>
-        features.foreach { case feature @ Feature(point, _) =>
-          raster.pointFeatures[Double](point).apply(i).head shouldBe feature }
+      (0 until 3).map { b => features.map(_.data(b)) }.toArray shouldBe data
+      features.foreach { { case feature @ Feature(point, _) =>
+        raster.pointFeatures[Double](point).head.mapData(_.toList) shouldBe feature.mapData(_.toList) }
       }
     }
   }
