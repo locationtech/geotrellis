@@ -11,6 +11,7 @@ env:
     - RUN_SET=1
     - RUN_SET=2
     - RUN_SET=3
+    - RUN_SET=scaladoc
 
 language: scala
 
@@ -61,7 +62,6 @@ notifications:
 
 before_deploy:
   - export GEOTRELLIS_VERSION_SUFFIX="-${TRAVIS_COMMIT:0:7}"
-  - sudo chown -R "$USER":"$USER" .
   - ./sbt unidoc
 
 deploy:
@@ -71,6 +71,6 @@ deploy:
     on:
       repo: locationtech/geotrellis
       branch: fixup/awf/deploy-scaladoc-latest
-      condition: "$RUN_SET = 3"
+      condition: "$RUN_SET = 'scaladoc'"
       jdk: openjdk8
       scala: "2.11.12"
