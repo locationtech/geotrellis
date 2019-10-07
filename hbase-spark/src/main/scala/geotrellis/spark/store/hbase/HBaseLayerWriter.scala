@@ -27,7 +27,7 @@ import geotrellis.store.avro.codecs._
 import geotrellis.store.index._
 import geotrellis.util._
 
-import com.typesafe.scalalogging.LazyLogging
+import org.log4s._
 import org.apache.spark.rdd.RDD
 import io.circe._
 import cats.Semigroup
@@ -38,7 +38,8 @@ class HBaseLayerWriter(
   val attributeStore: AttributeStore,
   instance: HBaseInstance,
   table: String
-) extends LayerWriter[LayerId] with LazyLogging {
+) extends LayerWriter[LayerId] {
+  @transient private[this] lazy val logger = getLogger
 
   // Layer Updating
   def overwrite[

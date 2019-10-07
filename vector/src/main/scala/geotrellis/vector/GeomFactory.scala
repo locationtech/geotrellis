@@ -18,12 +18,11 @@ package geotrellis.vector
 
 import geotrellis.vector.conf.JtsConfig
 
-import com.typesafe.scalalogging.LazyLogging
 import org.locationtech.jts.geom
 import org.locationtech.jts.geom.{GeometryFactory, PrecisionModel}
 import org.locationtech.jts.precision.GeometryPrecisionReducer
 
-object GeomFactory extends LazyLogging {
+object GeomFactory {
   val precisionType: String = JtsConfig.precisionType
   val precisionModel: PrecisionModel = JtsConfig.precisionModel
   lazy val simplifier: GeometryPrecisionReducer = JtsConfig.simplifier

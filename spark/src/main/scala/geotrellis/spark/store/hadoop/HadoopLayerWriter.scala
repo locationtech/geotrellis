@@ -25,7 +25,7 @@ import geotrellis.store.index.KeyIndex
 import geotrellis.spark.store._
 import geotrellis.util._
 
-import com.typesafe.scalalogging.LazyLogging
+import org.log4s._
 import org.apache.hadoop.fs.Path
 import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkContext
@@ -39,7 +39,8 @@ class HadoopLayerWriter(
   rootPath: Path,
   val attributeStore: AttributeStore,
   indexInterval: Int = 4
-) extends LayerWriter[LayerId] with LazyLogging {
+) extends LayerWriter[LayerId] {
+  @transient private[this] lazy val logger = getLogger
 
   // Layer Updating
   def overwrite[

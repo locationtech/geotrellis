@@ -19,7 +19,7 @@ package geotrellis.store.accumulo
 import geotrellis.layer._
 import geotrellis.store._
 
-import com.typesafe.scalalogging.LazyLogging
+import org.log4s._
 
 import org.apache.accumulo.core.client.{BatchWriterConfig, Connector}
 import org.apache.accumulo.core.security.Authorizations
@@ -27,7 +27,8 @@ import org.apache.accumulo.core.data.{Range => AccumuloRange}
 
 import scala.collection.JavaConverters._
 
-class AccumuloLayerDeleter(val attributeStore: AttributeStore, connector: Connector) extends LazyLogging with LayerDeleter[LayerId] {
+class AccumuloLayerDeleter(val attributeStore: AttributeStore, connector: Connector) extends LayerDeleter[LayerId] {
+  @transient private[this] lazy val logger = getLogger
 
   def delete(id: LayerId): Unit = {
     try {

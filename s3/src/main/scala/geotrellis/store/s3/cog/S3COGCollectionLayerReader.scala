@@ -30,7 +30,6 @@ import geotrellis.util._
 
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.model._
-import com.typesafe.scalalogging.LazyLogging
 
 import java.net.URI
 
@@ -46,7 +45,7 @@ class S3COGCollectionLayerReader(
   val attributeStore: AttributeStore,
   s3Client: => S3Client = S3ClientProducer.get(),
   executionContext: => ExecutionContext = BlockingThreadPool.executionContext
-) extends COGCollectionLayerReader[LayerId] with LazyLogging {
+) extends COGCollectionLayerReader[LayerId] {
 
   @transient implicit lazy val ec = executionContext
 

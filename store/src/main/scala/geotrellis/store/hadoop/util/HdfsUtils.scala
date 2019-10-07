@@ -16,7 +16,7 @@
 
 package geotrellis.store.hadoop.util
 
-import com.typesafe.scalalogging.LazyLogging
+import org.log4s._
 
 import org.apache.hadoop.io.compress.CompressionCodecFactory
 import org.apache.hadoop.conf.Configuration
@@ -34,7 +34,9 @@ import scala.util.Random
 
 abstract class LineScanner extends Iterator[String] with java.io.Closeable
 
-object HdfsUtils extends LazyLogging {
+object HdfsUtils {
+  @transient private[this] lazy val logger = getLogger
+
   def trim(uri: URI): URI =
     if (uri.getScheme.startsWith("hdfs+"))
       new URI(uri.toString.stripPrefix("hdfs+"))

@@ -32,7 +32,7 @@ import geotrellis.util.annotations.experimental
 
 import _root_.io.circe._
 
-import com.typesafe.scalalogging.LazyLogging
+import org.log4s._
 
 import mil.nga.giat.geowave.adapter.raster.adapter.merge.RasterTileRowTransform
 import mil.nga.giat.geowave.adapter.raster.adapter.RasterDataAdapter
@@ -79,7 +79,8 @@ import resource._
 /**
   * @define experimental <span class="badge badge-red" style="float: right;">EXPERIMENTAL</span>@experimental
   */
-@experimental object GeoWaveLayerWriter extends LazyLogging {
+@experimental object GeoWaveLayerWriter {
+  @transient private[this] lazy val logger = getLogger
 
   /** $experimental */
   @experimental def write[
@@ -256,10 +257,8 @@ import resource._
 @experimental class GeoWaveLayerWriter(
   val attributeStore: GeoWaveAttributeStore,
   val accumuloWriter: AccumuloWriteStrategy
-)(implicit sc: SparkContext)
-    extends LazyLogging {
-
-  logger.error("GeoWave support is experimental")
+)(implicit sc: SparkContext) {
+  @transient private[this] lazy val logger = getLogger
 
   /** $experimental */
   @experimental def write[

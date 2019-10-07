@@ -22,7 +22,7 @@ import geotrellis.raster._
 import geotrellis.raster.resample.{NearestNeighbor, ResampleMethod}
 import geotrellis.raster.io.geotiff.{AutoHigherResolution, OverviewStrategy}
 
-import com.typesafe.scalalogging.LazyLogging
+import org.log4s._
 
 /** RasterSource that resamples on read from underlying GeoTrellis layer.
  *
@@ -47,7 +47,9 @@ class GeoTrellisResampleRasterSource(
   val gridExtent: GridExtent[Long],
   val resampleMethod: ResampleMethod = NearestNeighbor,
   val targetCellType: Option[TargetCellType] = None
-) extends RasterSource with LazyLogging {
+) extends RasterSource {
+  @transient private[this] lazy val logger = getLogger
+
   def name: GeoTrellisPath = dataPath
 
   lazy val reader = CollectionLayerReader(attributeStore, dataPath.value)

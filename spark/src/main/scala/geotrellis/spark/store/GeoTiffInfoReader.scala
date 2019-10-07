@@ -21,13 +21,15 @@ import geotrellis.raster.GridBounds
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader.GeoTiffInfo
 import geotrellis.raster.io.geotiff.GeoTiffSegmentLayoutTransform
 
-import com.typesafe.scalalogging.LazyLogging
+import org.log4s._
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
 import java.net.URI
 
-private [geotrellis] trait GeoTiffInfoReader extends LazyLogging with Serializable {
+private [geotrellis] trait GeoTiffInfoReader extends Serializable {
+  @transient private[this] lazy val logger = getLogger
+
   def geoTiffInfoRDD(implicit sc: SparkContext): RDD[String]
   def getGeoTiffInfo(uri: String): GeoTiffInfo
 
@@ -101,4 +103,3 @@ private [geotrellis] trait GeoTiffInfoReader extends LazyLogging with Serializab
     result
   }
 }
-

@@ -18,7 +18,7 @@ import sbt._
 
 object Dependencies {
   val pureconfig          = "com.github.pureconfig"      %% "pureconfig"               % "0.11.1"
-  val logging             = "com.typesafe.scala-logging" %% "scala-logging"            % "3.9.2"
+  val logging             = "org.log4s"                  %% "log4s"                    % "1.8.2"
   val scalatest           = "org.scalatest"              %% "scalatest"                % "3.0.8"
   val scalacheck          = "org.scalacheck"             %% "scalacheck"               % "1.14.0"
   val scalaXml            = "org.scala-lang.modules"     %% "scala-xml"                % "1.2.0"

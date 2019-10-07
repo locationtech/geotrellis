@@ -18,7 +18,7 @@ package geotrellis.vector.io.wkb
 
 import geotrellis.vector.GeomFactory
 
-import com.typesafe.scalalogging.LazyLogging
+import org.log4s._
 import org.locationtech.jts.geom._
 import org.locationtech.jts.{io => jts}
 
@@ -26,9 +26,10 @@ import org.locationtech.jts.{io => jts}
 /** A thread-safe wrapper for the [https://en.wikipedia.org/wiki/Well-known_text#Well-known_binary WKB]
   * Writer and Reader
   */
-object WKB extends LazyLogging {
+object WKB {
   private val readerBox = new ThreadLocal[jts.WKBReader]
   private val writerBox = new ThreadLocal[WKBWriter]
+  @transient private[this] lazy val logger = getLogger
 
   /** Convert Well Known Binary to Geometry */
   def read(value: Array[Byte]): Geometry = {

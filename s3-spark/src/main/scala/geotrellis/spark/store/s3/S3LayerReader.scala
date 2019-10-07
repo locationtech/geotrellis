@@ -26,7 +26,6 @@ import geotrellis.spark._
 import geotrellis.spark.store._
 import geotrellis.util._
 
-import com.typesafe.scalalogging.LazyLogging
 import org.apache.spark.SparkContext
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.model._
@@ -48,7 +47,7 @@ class S3LayerReader(
   s3Client: => S3Client = S3ClientProducer.get(),
   executionContext: => ExecutionContext = BlockingThreadPool.executionContext
 )(implicit sc: SparkContext)
-  extends FilteringLayerReader[LayerId] with LazyLogging {
+  extends FilteringLayerReader[LayerId] {
 
   val defaultNumPartitions = sc.defaultParallelism
 

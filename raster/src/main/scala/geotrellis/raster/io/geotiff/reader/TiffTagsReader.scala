@@ -23,13 +23,15 @@ import TiffFieldType._
 import geotrellis.util.{ByteReader, Filesystem}
 import geotrellis.raster.io.geotiff.util._
 
-import com.typesafe.scalalogging.LazyLogging
+import org.log4s._
 import spire.syntax.cfor._
 import monocle.syntax.apply._
 
 import java.nio.{ByteBuffer, ByteOrder}
 
-object TiffTagsReader extends LazyLogging {
+object TiffTagsReader {
+  @transient private[this] lazy val logger = getLogger
+
   def read(path: String): TiffTags =
     read(Filesystem.toMappedByteBuffer(path))
 

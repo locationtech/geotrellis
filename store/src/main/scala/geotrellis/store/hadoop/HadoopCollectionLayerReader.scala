@@ -26,7 +26,6 @@ import geotrellis.util._
 import io.circe._
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
-import com.typesafe.scalalogging.LazyLogging
 
 import scala.concurrent.ExecutionContext
 import scala.reflect.ClassTag
@@ -41,7 +40,7 @@ class HadoopCollectionLayerReader(
   conf: Configuration,
   maxOpenFiles: Int = 16,
   executionContext: => ExecutionContext = BlockingThreadPool.executionContext
-) extends CollectionLayerReader[LayerId] with LazyLogging {
+) extends CollectionLayerReader[LayerId] {
 
   @transient implicit lazy val ec: ExecutionContext = executionContext
 

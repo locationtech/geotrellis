@@ -28,7 +28,6 @@ import geotrellis.store.index.Index
 import geotrellis.util._
 
 import _root_.io.circe._
-import com.typesafe.scalalogging.LazyLogging
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 
@@ -47,7 +46,7 @@ class HadoopCOGCollectionLayerReader(
   val catalogPath: String,
   val conf: Configuration = new Configuration,
   executionContext: => ExecutionContext = BlockingThreadPool.executionContext
-) extends COGCollectionLayerReader[LayerId] with LazyLogging {
+) extends COGCollectionLayerReader[LayerId] {
 
   val serConf: SerializableConfiguration = SerializableConfiguration(conf)
 

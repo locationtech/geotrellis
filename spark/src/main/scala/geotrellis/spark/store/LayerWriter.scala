@@ -24,7 +24,6 @@ import geotrellis.store.index._
 import geotrellis.spark._
 import geotrellis.util._
 
-import com.typesafe.scalalogging.LazyLogging
 import org.apache.avro._
 import org.apache.spark.rdd.RDD
 import _root_.io.circe._
@@ -173,7 +172,7 @@ trait LayerWriter[ID] {
     }
 }
 
-object LayerWriter extends LazyLogging {
+object LayerWriter {
 
   /**
    * Produce LayerWriter instance based on URI description.
