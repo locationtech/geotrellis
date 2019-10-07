@@ -21,7 +21,7 @@ import geotrellis.raster.testkit._
 
 import org.scalatest._
 
-class FeatureExtractionSpec extends FunSpec with Matchers {
+class FeatureExtractorSpec extends FunSpec with Matchers {
   describe("Tile") {
     it("should extract all int point features") {
       val ext = Extent(0.0, 0.0, 3.0, 3.0)

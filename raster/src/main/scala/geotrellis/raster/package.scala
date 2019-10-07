@@ -185,7 +185,7 @@ package object raster extends Implicits {
     def fill(v: Double) = { java.util.Arrays.fill(arr, v) ; arr }
   }
 
-  type PointFeatureExtraction[I <: Geometry, T <: CellGrid[Int], D] = FeatureExtraction[I, T, Point, D]
+  type PointFeatureExtractor[I <: Geometry, T <: CellGrid[Int], D] = FeatureExtractor[I, T, Point, D]
 
   /* http://stackoverflow.com/questions/3508077/how-to-define-type-disjunction-union-types */
   sealed class TileOrMultibandTile[T]
