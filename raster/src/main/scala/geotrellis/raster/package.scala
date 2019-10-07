@@ -17,6 +17,7 @@
 package geotrellis
 
 import geotrellis.macros.{NoDataMacros, TypeConversionMacros}
+import geotrellis.vector.{Geometry, Point}
 import spire.math.Integral
 
 
@@ -183,6 +184,8 @@ package object raster extends Implicits {
   implicit class DoubleArrayFiller(val arr: Array[Double]) extends AnyVal {
     def fill(v: Double) = { java.util.Arrays.fill(arr, v) ; arr }
   }
+
+  type PointFeatureExtraction[I <: Geometry, T <: CellGrid[Int], D] = FeatureExtraction[I, T, Point, D]
 
   /* http://stackoverflow.com/questions/3508077/how-to-define-type-disjunction-union-types */
   sealed class TileOrMultibandTile[T]

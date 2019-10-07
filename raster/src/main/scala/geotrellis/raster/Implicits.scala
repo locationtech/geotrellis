@@ -17,10 +17,8 @@
 package geotrellis.raster
 
 import geotrellis.vector.Point
-import geotrellis.macros.{NoDataMacros, TypeConversionMacros}
 import geotrellis.vector._
 import geotrellis.util.{MethodExtensions, np}
-
 
 object Implicits extends Implicits
 
@@ -127,25 +125,17 @@ trait Implicits
     }
   }
 
-  implicit class MultibandRasterFeatureExtractionMethods(val self: Raster[MultibandTile]) extends MethodExtensions[Raster[MultibandTile]] {
-    def features[G <: Geometry: FeatureExtraction[*, MultibandTile, D], D](geom: G, raster: Raster[MultibandTile]): Array[Array[PointFeature[D]]] =
-      FeatureExtraction[G, MultibandTile, D].features(geom, raster)
-
-    def featuresInt[G <: Geometry: FeatureExtraction[*, MultibandTile, Int]](geom: G, raster: Raster[MultibandTile]): Array[Array[PointFeature[Int]]] =
-      features[G, Int](geom, raster)
-
-    def featuresDouble[G <: Geometry: FeatureExtraction[*, MultibandTile, Double]](geom: G, raster: Raster[MultibandTile]): Array[Array[PointFeature[Double]]] =
-      features[G, Double](geom, raster)
+  implicit class MultibandRasterPointFeatureExtractionMethods(val self: Raster[MultibandTile]) extends MethodExtensions[Raster[MultibandTile]] {
+    def pointFeatures[D] = new {
+      def apply[I <: Geometry: PointFeatureExtraction[*, MultibandTile, D]](geom: I): Array[Array[PointFeature[D]]] =
+        FeatureExtraction[I, MultibandTile, Point, D].features(geom, self)
+    }
   }
 
-  implicit class rasterFeatureExtractionMethods(val self: Raster[Tile]) extends MethodExtensions[Raster[Tile]] {
-    def features[G <: Geometry: FeatureExtraction[*, Tile, D], D](geom: G, raster: Raster[Tile]): Array[PointFeature[D]] =
-      FeatureExtraction[G, Tile, D].features(geom, raster).head
-
-    def featuresInt[G <: Geometry: FeatureExtraction[*, Tile, Int]](geom: G, raster: Raster[Tile]): Array[PointFeature[Int]] =
-      features[G, Int](geom, raster)
-
-    def featuresDouble[G <: Geometry: FeatureExtraction[*, Tile, Double]](geom: G, raster: Raster[Tile]): Array[PointFeature[Double]] =
-      features[G, Double](geom, raster)
+  implicit class rasterPointFeatureExtractionMethods(val self: Raster[Tile]) extends MethodExtensions[Raster[Tile]] {
+    def pointFeatures[D] = new {
+      def apply[I <: Geometry: PointFeatureExtraction[*, Tile, D]](geom: I): Array[PointFeature[D]] =
+        FeatureExtraction[I, Tile, Point, D].features(geom, self).head
+    }
   }
 }
