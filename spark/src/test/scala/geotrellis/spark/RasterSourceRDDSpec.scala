@@ -89,10 +89,10 @@ class RasterSourceRDDSpec extends FunSpec with TestEnvironment with RasterMatche
     val reprojectedExpectedRDD: MultibandTileLayerRDD[SpatialKey] = {
       geoTiffRDD
         .tileToLayout(md)
-        .reproject(
+        .reprojectToLayout(
           targetCRS,
           layout
-        )._2.persist()
+        ).persist()
     }
 
     def assertRDDLayersEqual(
@@ -135,7 +135,7 @@ class RasterSourceRDDSpec extends FunSpec with TestEnvironment with RasterMatche
       val rasterSourceRDD: MultibandTileLayerRDD[SpatialKey] = RasterSourceRDD.spatial(rasterSource, md.layout)
 
       // Complete the reprojection
-      val reprojectedSource = rasterSourceRDD.reproject(targetCRS, layout)._2
+      val reprojectedSource = rasterSourceRDD.reprojectToLayout(targetCRS, layout)
 
       assertRDDLayersEqual(reprojectedExpectedRDD, reprojectedSource)
     }

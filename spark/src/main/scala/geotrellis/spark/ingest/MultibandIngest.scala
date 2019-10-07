@@ -57,15 +57,11 @@ object MultibandIngest {
     val (zoom, tileLayerRdd) = (layoutScheme, maxZoom) match {
       case (layoutScheme: ZoomedLayoutScheme, Some(mz)) =>
         val LayoutLevel(zoom, layoutDefinition) = layoutScheme.levelForZoom(mz)
-        (zoom, bufferSize match {
-          case Some(bs) => contextRdd.reproject(destCRS, layoutDefinition, bs)._2
-          case _ => contextRdd.reproject(destCRS, layoutDefinition)._2
-        })
+        val layer = contextRdd.reprojectToLayout(destCRS, layoutDefinition, resampleMethod, partitioner, bufferSize)
+        (zoom, layer)
 
-      case _ => bufferSize match {
-        case Some(bs) => contextRdd.reproject(destCRS, layoutScheme, bs, NearestNeighbor, None)
-        case _ => contextRdd.reproject(destCRS, layoutScheme, NearestNeighbor, None)
-      }
+      case _ =>
+        contextRdd.reproject(destCRS, layoutScheme, resampleMethod, partitioner, bufferSize)
     }
 
     tileLayerRdd.persist(cacheLevel)

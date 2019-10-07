@@ -59,7 +59,7 @@ class TileRDDReprojectSpec extends FunSpec with TestEnvironment {
 
       val (_, actualRdd) =
         if(constantBuffer) {
-          rdd.reproject(LatLng, FloatingLayoutScheme(25), bufferSize = 2, method)
+          rdd.reproject(LatLng, FloatingLayoutScheme(25), method, bufferSize = Some(2))
         } else {
           rdd.reproject(LatLng, FloatingLayoutScheme(25), method)
         }
@@ -275,7 +275,7 @@ class TileRDDReprojectSpec extends FunSpec with TestEnvironment {
 
       val actual: Raster[TileFeature[Tile, Int]] =
         actualRdd.stitch
-      
+
       // Account for tiles being a bit bigger then the actual result
       actual.extent.covers(expected.extent) should be (true)
       actual.rasterExtent.extent.xmin should be (expected.raster.rasterExtent.extent.xmin +- 0.00001)

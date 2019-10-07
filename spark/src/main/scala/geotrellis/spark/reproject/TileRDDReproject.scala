@@ -44,19 +44,121 @@ import scala.reflect.ClassTag
 
 object TileRDDReproject extends LazyLogging {
 
-  /** Reproject a set of buffered
+  /** Reproject a keyed tile RDD.
+    *
     * @tparam           K           Key type; requires spatial component.
     * @tparam           V           Tile type; requires the ability to stitch, crop, reproject, merge, and create.
     *
-    * @param            bufferedTiles      An RDD of buffered tiles, created using the BufferTiles operation.
-    * @param            metadata           The raster metadata for this keyed tile set.
+    * @param            rdd                The keyed tile RDD.
     * @param            destCrs            The CRS to reproject to.
-    * @param            targetLayout       Either the layout scheme or layout definition to use when re-keying the reprojected layers.
-    * @param            options            Reprojection options.
+    * @param            targetLayout       The layout scheme to use when re-keying the reprojected layers.
+    * @param            bufferSize         Number of pixels to buffer the tile with. The tile will only be buffered by this amount on
+    *                                      any side if there is an adjacent, abutting tile to contribute the border pixels.
+    *
+    *
+    * @note             This is faster than computing the correct border size per key, so if you know that a specific border size will be sufficient
+    *                   to be accurate, e.g. if the CRS's are not very different and so the rasters will not skew heavily, then this method can be used
+    *                   for performance benefit.
     *
     * @return           The new zoom level and the reprojected keyed tile RDD.
     */
   def apply[
+    K: SpatialComponent: Boundable: ClassTag,
+    V <: CellGrid[Int]: ClassTag: RasterRegionReproject: Stitcher: (* => CropMethods[V]): (* => TileMergeMethods[V]): (* => TilePrototypeMethods[V])
+  ](
+    rdd: RDD[(K, V)] with Metadata[TileLayerMetadata[K]],
+    destCrs: CRS,
+    targetLayout: Either[LayoutScheme, LayoutDefinition],
+    resampleMethod: ResampleMethod = NearestNeighbor,
+    partitioner: Option[Partitioner] = None,
+    bufferSize: Option[Int] = None,
+    errorThreshold: Double = 0.125
+  ): (Int, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]) = {
+    // TODO: separate out logic for LayoutDefinition and LayoutScheme, scheme can generate definition
+
+    if(rdd.metadata.crs == destCrs) {
+      // We're reprojecting to same CRS, handle as special case, save a lot of work
+      val layout = rdd.metadata.layout
+      val (zoom, bail) =
+        targetLayout match {
+          case Left(layoutScheme) =>
+            val LayoutLevel(zoom, newLayout) = layoutScheme.levelFor(layout.extent, layout.cellSize)
+            (zoom, newLayout == layout)
+          case Right(layoutDefinition) =>
+            (0, layoutDefinition == layout)
+        }
+
+      if (bail) {
+        // This is a no-op, just return the source
+        (zoom, rdd)
+      } else {
+        // We are tiling against a new layout, don't worry about buffers
+        // TODO: this should be TileToLayout call somehow, why go through RasterRegionReproject logic ?
+        val bufferedTiles = rdd.withContext(_.mapValues { tile: V =>
+          BufferedTile(tile, GridBounds(0, 0, tile.cols - 1, tile.rows - 1))
+         })
+        fromBufferedTiles(bufferedTiles, rdd.metadata, destCrs, targetLayout, resampleMethod, partitioner = partitioner)
+      }
+    } else {
+      // Source and target CRS differ, figure do the real work of reprojection
+      val bufferedTiles = bufferSize match {
+        case None =>
+          val crs = rdd.metadata.crs
+          val layout = rdd.metadata.layout
+          val tileLayout = rdd.metadata.layout.tileLayout
+          // Avoid capturing instantiated Transform in closure because its not Serializable
+          lazy val transform = Transform(crs, destCrs)
+
+          BufferTilesRDD(
+            layer = rdd,
+            includeKey = rdd.metadata.bounds.includes(_: K),
+            getBufferSizes = { key: K =>
+              val extent = key.getComponent[SpatialKey].extent(layout)
+              val srcRE = RasterExtent(extent, tileLayout.tileCols, tileLayout.tileRows)
+              val dstRE = ReprojectRasterExtent(srcRE, transform, DefaultTarget)
+
+              // Reproject the extent back into the original CRS,
+              // to determine how many border pixels we need.
+              // Pad by one extra pixel.
+              val e = dstRE.extent.reproject(destCrs, crs)
+              val gb = srcRE.gridBoundsFor(e, clamp = false)
+              BufferSizes(
+                left   = 1 + (if(gb.colMin < 0) -gb.colMin else 0),
+                right  = 1 + (if(gb.colMax >= srcRE.cols) gb.colMax - (srcRE.cols - 1) else 0),
+                top    = 1 + (if(gb.rowMin < 0) -gb.rowMin else 0),
+                bottom = 1 + (if(gb.rowMax >= srcRE.rows) gb.rowMax - (srcRE.rows - 1) else 0)
+              )
+            })
+
+        case Some(0) =>
+          rdd.withContext(_.mapValues { tile: V => BufferedTile(tile, GridBounds(0, 0, tile.cols - 1, tile.rows - 1)) })
+
+        case Some(bs) =>
+          rdd.bufferTiles(bs)
+      }
+
+      fromBufferedTiles(bufferedTiles, rdd.metadata, destCrs, targetLayout, resampleMethod, partitioner, errorThreshold)
+    }
+  }
+
+  /** Reproject a set of buffered
+    *
+    * @tparam           K           Key type; requires spatial component.
+    * @tparam           V           Tile type; requires the ability to stitch, crop, reproject, merge, and create.
+    *
+    * @param            bufferedTiles      RDD of tiles with buffer of pixels values from their neighbors
+    * @param            metadata           Layer metadata for buffered tiles, passed separatly because of of API quirk
+    * @param            destCrs            Destination CRS for reproject operation
+    * @param            targetLayout       Either the layout scheme or layout definition to use when re-keying the reprojected tiles
+    * @param            resampleMethod     Pixel resample method to use during reprojection operation
+    * @param            partitioner        Partitioner for reprojected RDD. If None partitioner from {@code bufferedTiles} is used.
+    * @param            errorThreshold     Error threshold when using approximate row transformations in reprojection.
+    *
+    * @note If {@code targetLayout} is {@code LayoutDefinition} returned zoom level will be 0.
+    *
+    * @return           The new zoom level and the reprojected raster layer RDD
+    */
+  def fromBufferedTiles[
     K: SpatialComponent: Boundable: ClassTag,
     V <: CellGrid[Int]: ClassTag: RasterRegionReproject: (* => TileMergeMethods[V]): (* => TilePrototypeMethods[V])
   ](
@@ -64,14 +166,15 @@ object TileRDDReproject extends LazyLogging {
     metadata: TileLayerMetadata[K],
     destCrs: CRS,
     targetLayout: Either[LayoutScheme, LayoutDefinition],
-    resampleMethod: ResampleMethod,
-    partitioner: Option[Partitioner]
+    resampleMethod: ResampleMethod = NearestNeighbor,
+    partitioner: Option[Partitioner] = None,
+    errorThreshold: Double = 0.125
   ): (Int, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]) = {
-    println(metadata, destCrs, targetLayout, resampleMethod, partitioner)
+    implicit val sc = bufferedTiles.context
+
     val crs: CRS = metadata.crs
     val layout = metadata.layout
     val tileLayout: TileLayout = layout.tileLayout
-    implicit val sc = bufferedTiles.context
 
     val sourceDataGridExtent = metadata.layout.createAlignedGridExtent(metadata.extent)
     // target grid extent is not computed to determine the alignment of pixels. rather,
@@ -80,24 +183,22 @@ object TileRDDReproject extends LazyLogging {
 
     val targetPartitioner: Option[Partitioner] = partitioner.orElse(bufferedTiles.partitioner)
 
-    // inspect the change in spatial extent to get the pixel counts
-    val reprojectSummary = matchReprojectRasterExtent(
-      metadata.crs, destCrs,
-      metadata.layout,
-      metadata.bounds.toOption.map { case KeyBounds(s, e) =>
-        KeyBounds(s.getComponent[SpatialKey], e.getComponent[SpatialKey])
-      })
-    logger.debug(s"$reprojectSummary")
+    //// This used to be important, but somehow not anymore
+    // val reprojectSummary = matchReprojectRasterExtent(
+    //   metadata.crs, destCrs,
+    //   metadata.layout,
+    //   metadata.bounds.toOption.map { case KeyBounds(s, e) =>
+    //     KeyBounds(s.getComponent[SpatialKey], e.getComponent[SpatialKey])
+    //   })
+    // logger.debug(s"$reprojectSummary")
 
     val LayoutLevel(targetZoom, targetLayerLayout) = targetLayout match {
       case Right(layoutDefinition) =>
         LayoutLevel(0, layoutDefinition)
 
       case Left(layoutScheme) =>
-      val tre = ReprojectRasterExtent(layout, crs, destCrs, DefaultTarget)
-
-      layoutScheme.levelFor(tre.extent, tre.cellSize)
-        //layoutScheme.levelFor(targetGridExtent.extent, targetGridExtent.cellSize)
+        // Use the footprint of reprojected raster tiles to determine closest level in the scheme
+        layoutScheme.levelFor(targetGridExtent.extent, targetGridExtent.cellSize)
     }
 
     val newMetadata = {
@@ -139,138 +240,28 @@ object TileRDDReproject extends LazyLogging {
 
     def createCombiner(tup: (Raster[V], RasterExtent, Polygon)) = {
         val (raster, destRE, destRegion) = tup
-        rrp.regionReproject(raster, crs, destCrs, destRE, destRegion, resampleMethod).tile
+        rrp.regionReproject(raster, crs, destCrs, destRE, destRegion, resampleMethod, errorThreshold).tile
       }
 
     def mergeValues(reprojectedTile: V, toReproject: (Raster[V], RasterExtent, Polygon)) = {
       val (raster, destRE, destRegion) = toReproject
       val destRaster = Raster(reprojectedTile, destRE.extent)
       // RDD.combineByKey contract allows us to safely re-use and mutate the accumulator, reprojectedTile
-      rrp.regionReprojectMutable(raster, crs, destCrs, destRaster, destRegion, resampleMethod).tile
+      rrp.regionReprojectMutable(raster, crs, destCrs, destRaster, destRegion, resampleMethod, errorThreshold).tile
     }
 
     def mergeCombiners(reproj1: V, reproj2: V) = reproj1.merge(reproj2)
 
     val tiled: RDD[(K, V)] =
       targetPartitioner match {
-        case Some(part) => stagedTiles.combineByKey(createCombiner, mergeValues, mergeCombiners, partitioner = part)
-        case None => stagedTiles.combineByKey(createCombiner, mergeValues, mergeCombiners)
+        case Some(part) =>
+          stagedTiles.combineByKey(createCombiner, mergeValues, mergeCombiners, partitioner = part)
+        case None =>
+          stagedTiles.combineByKey(createCombiner, mergeValues, mergeCombiners)
       }
 
     (targetZoom, ContextRDD(tiled, newMetadata))
   }
-
-  /** Reproject a keyed tile RDD.
-    *
-    * @tparam           K           Key type; requires spatial component.
-    * @tparam           V           Tile type; requires the ability to stitch, crop, reproject, merge, and create.
-    *
-    * @param            rdd                The keyed tile RDD.
-    * @param            destCrs            The CRS to reproject to.
-    * @param            targetLayout       The layout scheme to use when re-keying the reprojected layers.
-    * @param            options            Reprojection options.
-    *
-    * @return           The new zoom level and the reprojected keyed tile RDD.
-    */
-  def apply[
-    K: SpatialComponent: Boundable: ClassTag,
-    V <: CellGrid[Int]: ClassTag: RasterRegionReproject: Stitcher: (* => CropMethods[V]): (* => TileMergeMethods[V]): (* => TilePrototypeMethods[V])
-  ](
-    rdd: RDD[(K, V)] with Metadata[TileLayerMetadata[K]],
-    destCrs: CRS,
-    targetLayout: Either[LayoutScheme, LayoutDefinition],
-    resampleMethod: ResampleMethod,
-    partitioner: Option[Partitioner]
-  ): (Int, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]) = {
-    if(rdd.metadata.crs == destCrs) {
-      val layout = rdd.metadata.layout
-
-      val (zoom, bail) =
-        targetLayout match {
-          case Left(layoutScheme) =>
-            val LayoutLevel(zoom, newLayout) = layoutScheme.levelFor(layout.extent, layout.cellSize)
-            (zoom, newLayout == layout)
-          case Right(layoutDefinition) =>
-            (0, layoutDefinition == layout)
-        }
-
-      if(bail) {
-        // This is a no-op, just return the source
-        (zoom, rdd)
-      } else {
-        // We are tiling against a new layout but we
-        // don't need to worry about buffers since the source and target are
-        // in the same CRS.
-        apply(rdd, destCrs, targetLayout, bufferSize = 0, resampleMethod, partitioner = partitioner)
-      }
-    } else {
-      val crs = rdd.metadata.crs
-      val layout = rdd.metadata.layout
-      val tileLayout = rdd.metadata.layout.tileLayout
-      // Avoid capturing instantiated Transform in closure because its not Serializable
-      lazy val transform = Transform(crs, destCrs)
-
-      val bufferedTiles =
-        BufferTilesRDD(
-          layer = rdd,
-          includeKey = rdd.metadata.bounds.includes(_: K),
-          getBufferSizes = { key: K =>
-            val extent = key.getComponent[SpatialKey].extent(layout)
-            val srcRE = RasterExtent(extent, tileLayout.tileCols, tileLayout.tileRows)
-            val dstRE = ReprojectRasterExtent(srcRE, transform, DefaultTarget)
-
-            // Reproject the extent back into the original CRS,
-            // to determine how many border pixels we need.
-            // Pad by one extra pixel.
-            val e = dstRE.extent.reproject(destCrs, crs)
-            val gb = srcRE.gridBoundsFor(e, clamp = false)
-            BufferSizes(
-              left   = 1 + (if(gb.colMin < 0) -gb.colMin else 0),
-              right  = 1 + (if(gb.colMax >= srcRE.cols) gb.colMax - (srcRE.cols - 1) else 0),
-              top    = 1 + (if(gb.rowMin < 0) -gb.rowMin else 0),
-              bottom = 1 + (if(gb.rowMax >= srcRE.rows) gb.rowMax - (srcRE.rows - 1) else 0)
-            )
-          })
-
-      apply(bufferedTiles, rdd.metadata, destCrs, targetLayout, resampleMethod, partitioner = partitioner)
-    }
-  }
-
-  /** Reproject this keyed tile RDD, using a constant border size for the operation.
-    * @tparam           K                  Key type; requires spatial component.
-    * @tparam           V                  Tile type; requires the ability to stitch, crop, reproject, merge, and create.
-    *
-    * @param            rdd                The keyed tile RDD.
-    * @param            destCrs            The CRS to reproject to.
-    * @param            targetLayout       The layout scheme to use when re-keying the reprojected layers.
-    * @param            bufferSize         Number of pixels to buffer the tile with. The tile will only be buffered by this amount on
-    *                                      any side if there is an adjacent, abutting tile to contribute the border pixels.
-    * @param            options            Reprojection options.
-    *
-    * @return           The new zoom level and the reprojected keyed tile RDD.
-    *
-    * @note             This is faster than computing the correct border size per key, so if you know that a specific border size will be sufficient
-    *                   to be accurate, e.g. if the CRS's are not very different and so the rasters will not skew heavily, then this method can be used
-    *                   for performance benefit.
-    */
-  def apply[
-    K: SpatialComponent: Boundable: ClassTag,
-    V <: CellGrid[Int]: ClassTag: RasterRegionReproject: Stitcher: (* => CropMethods[V]): (* => TileMergeMethods[V]): (* => TilePrototypeMethods[V])
-  ](
-    rdd: RDD[(K, V)] with Metadata[TileLayerMetadata[K]],
-    destCrs: CRS,
-    targetLayout: Either[LayoutScheme, LayoutDefinition],
-    bufferSize: Int,
-    resampleMethod: ResampleMethod,
-    partitioner: Option[Partitioner]
-  ): (Int, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]) = {
-    if(bufferSize == 0) {
-      val fakeBuffers: RDD[(K, BufferedTile[V])] = rdd.withContext(_.mapValues { tile: V => BufferedTile(tile, GridBounds(0, 0, tile.cols - 1, tile.rows - 1)) })
-      apply(fakeBuffers, rdd.metadata, destCrs, targetLayout, resampleMethod, partitioner)
-    } else
-      apply(rdd.bufferTiles(bufferSize), rdd.metadata, destCrs, targetLayout, resampleMethod, partitioner)
-  }
-
 
   /** Match pixel resolution between two layouts in different projections such that
     * cell size in target projection and layout matches the most resolute tile.

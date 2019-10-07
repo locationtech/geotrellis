@@ -43,98 +43,25 @@ class TileRDDReprojectMethods[
   V <: CellGrid[Int]: ClassTag: RasterRegionReproject: Stitcher: (* => CropMethods[V]): (* => TileMergeMethods[V]): (* => TilePrototypeMethods[V])
 ](val self: RDD[(K, V)] with Metadata[TileLayerMetadata[K]]) extends MethodExtensions[RDD[(K, V)] with Metadata[TileLayerMetadata[K]]] {
 
-  // LayoutScheme with buffer
   def reproject(
     destCrs: CRS,
     layoutScheme: LayoutScheme,
-    bufferSize: Int
-  ): (Int, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]) =
-    TileRDDReproject(self, destCrs, Left(layoutScheme), bufferSize, NearestNeighbor, None)
+    resampleMethod: ResampleMethod = NearestNeighbor,
+    partitioner: Option[Partitioner] = None,
+    bufferSize: Option[Int] = None,
+    errorThreshold: Double = 0.125
+  ): (Int, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]) = {
+    TileRDDReproject(self, destCrs, Left(layoutScheme), resampleMethod, partitioner, bufferSize, errorThreshold)
+  }
 
-  def reproject(
-    destCrs: CRS,
-    layoutScheme: LayoutScheme,
-    bufferSize: Int,
-    resampleMethod: ResampleMethod = NearestNeighbor
-  ): (Int, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]) =
-    TileRDDReproject(self, destCrs, Left(layoutScheme), bufferSize, resampleMethod, None)
-
-  def reproject(
-    destCrs: CRS,
-    layoutScheme: LayoutScheme,
-    bufferSize: Int,
-    resampleMethod: ResampleMethod,
-    partitioner: Option[Partitioner]
-  ): (Int, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]) =
-    TileRDDReproject(self, destCrs, Left(layoutScheme), bufferSize, resampleMethod, partitioner)
-
-  // LayoutScheme; no buffer
-  def reproject(
-    destCrs: CRS,
-    layoutScheme: LayoutScheme
-  ): (Int, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]) =
-    TileRDDReproject(self, destCrs, Left(layoutScheme), NearestNeighbor, None)
-
-  def reproject(
-    destCrs: CRS,
-    layoutScheme: LayoutScheme,
-    resampleMethod: ResampleMethod
-  ): (Int, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]) =
-    TileRDDReproject(self, destCrs, Left(layoutScheme), resampleMethod, None)
-
-  def reproject(
-    destCrs: CRS,
-    layoutScheme: LayoutScheme,
-    resampleMethod: ResampleMethod,
-    partitioner: Option[Partitioner]
-  ): (Int, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]) =
-    TileRDDReproject(self, destCrs, Left(layoutScheme), resampleMethod, partitioner)
-
-  // LayoutDefinition with buffer
-  def reproject(
+  def reprojectToLayout(
     destCrs: CRS,
     layoutDefinition: LayoutDefinition,
-    bufferSize: Int
-  ): (Int, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]) =
-    TileRDDReproject(self, destCrs, Right(layoutDefinition), bufferSize, NearestNeighbor, None)
-
-  def reproject(
-    destCrs: CRS,
-    layoutDefinition: LayoutDefinition,
-    bufferSize: Int,
-    resampleMethod: ResampleMethod
-  ): (Int, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]) =
-    TileRDDReproject(self, destCrs, Right(layoutDefinition), bufferSize, resampleMethod, None)
-
-  def reproject(
-    destCrs: CRS,
-    layoutDefinition: LayoutDefinition,
-    bufferSize: Int,
-    resampleMethod: ResampleMethod,
-    partitioner: Option[Partitioner]
-  ): (Int, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]) =
-    TileRDDReproject(self, destCrs, Right(layoutDefinition), bufferSize, resampleMethod, partitioner)
-
-  // LayoutDefinition; no buffer
-  def reproject(
-    destCrs: CRS,
-    layoutDefinition: LayoutDefinition
-  ): (Int, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]) =
-    TileRDDReproject(self, destCrs, Right(layoutDefinition), NearestNeighbor, None)
-
-  def reproject(
-    destCrs: CRS,
-    layoutDefinition: LayoutDefinition,
-    resampleMethod: ResampleMethod
-  ): (Int, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]) =
-    TileRDDReproject(self, destCrs, Right(layoutDefinition), resampleMethod, None)
-
-  def reproject(
-    destCrs: CRS,
-    layoutDefinition: LayoutDefinition,
-    resampleMethod: ResampleMethod,
-    partitioner: Option[Partitioner]
-  ): (Int, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]) =
-    TileRDDReproject(self, destCrs, Right(layoutDefinition), resampleMethod, partitioner)
-
+    resampleMethod: ResampleMethod = NearestNeighbor,
+    partitioner: Option[Partitioner] = None,
+    bufferSize: Option[Int] = None,
+    errorThreshold: Double = 0.125
+  ): RDD[(K, V)] with Metadata[TileLayerMetadata[K]] =  {
+    TileRDDReproject(self, destCrs, Right(layoutDefinition), resampleMethod, partitioner, bufferSize, errorThreshold)._2
+  }
 }
