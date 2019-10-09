@@ -86,8 +86,8 @@ case class RasterSummary[M](
     toTileLayerMetadata(layoutType.layoutDefinitionWithZoom(crs, extent, cellSize)._1, (_, sk) => sk)
 
   // TODO: probably this function should be removed in the future
-  def resample(resampleGrid: ResampleGrid[Long]): RasterSummary[M] = {
-    val re = resampleGrid(toGridExtent)
+  def resample(resampleTarget: ResampleTarget): RasterSummary[M] = {
+    val re = resampleTarget(toGridExtent)
     RasterSummary(
       crs      = crs,
       cellType = cellType,

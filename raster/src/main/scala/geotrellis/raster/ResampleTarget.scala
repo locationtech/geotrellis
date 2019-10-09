@@ -21,39 +21,39 @@ import geotrellis.raster.reproject.Reproject
 import spire.math.Integral
 import spire.implicits._
 
-sealed trait ResampleGrid[N] {
-  // this is a by name parameter, as we don't need to call the source in all ResampleGrid types
-  def apply(source: => GridExtent[N]): GridExtent[N]
+sealed trait ResampleTarget {
+  // this is a by name parameter, as we don't need to call the source in all ResampleTarget types
+  def apply[N: Integral](source: => GridExtent[N]): GridExtent[N]
 }
 
-case class Dimensions[N: Integral](cols: N, rows: N) extends ResampleGrid[N] {
-  def apply(source: => GridExtent[N]): GridExtent[N] =
-    new GridExtent(source.extent, cols, rows)
+case class TargetDimensions(cols: Long, rows: Long) extends ResampleTarget {
+  def apply[N: Integral](source: => GridExtent[N]): GridExtent[N] =
+    new GridExtent(source.extent, cols, rows).toGridType[N]
 }
 
-case class TargetGrid[N: Integral](grid: GridExtent[Long]) extends ResampleGrid[N] {
-  def apply(source: => GridExtent[N]): GridExtent[N] =
+case class TargetGrid(grid: GridExtent[_]) extends ResampleTarget {
+  def apply[N: Integral](source: => GridExtent[N]): GridExtent[N] =
     grid.createAlignedGridExtent(source.extent).toGridType[N]
 }
 
-case class TargetRegion[N: Integral](region: GridExtent[N]) extends ResampleGrid[N] {
-  def apply(source: => GridExtent[N]): GridExtent[N] =
-    region
+case class TargetRegion(region: GridExtent[_]) extends ResampleTarget {
+  def apply[N: Integral](source: => GridExtent[N]): GridExtent[N] =
+    region.toGridType[N]
 }
 
-case class TargetCellSize[N: Integral](cellSize: CellSize) extends ResampleGrid[N] {
-  def apply(source: => GridExtent[N]): GridExtent[N] =
+case class TargetCellSize(cellSize: CellSize) extends ResampleTarget {
+  def apply[N: Integral](source: => GridExtent[N]): GridExtent[N] =
     source.withResolution(cellSize)
 }
 
-case object IdentityResampleGrid extends ResampleGrid[Long] {
-  def apply(source: => GridExtent[Long]): GridExtent[Long] = source
+case object DefaultResampleTarget extends ResampleTarget {
+  def apply[N: Integral](source: => GridExtent[N]): GridExtent[N] = source
 }
 
 
-object ResampleGrid {
+object ResampleTarget {
   /** Used when reprojecting to original RasterSource CRS, pick-out the grid */
-  private[geotrellis] def fromReprojectOptions(options: Reproject.Options): ResampleGrid[Long] ={
+  private[geotrellis] def fromReprojectOptions(options: Reproject.Options): ResampleTarget ={
     if (options.targetRasterExtent.isDefined) {
       TargetRegion(options.targetRasterExtent.get.toGridType[Long])
     } else if (options.parentGridExtent.isDefined) {
@@ -61,18 +61,18 @@ object ResampleGrid {
     } else if (options.targetCellSize.isDefined) {
       ??? // TODO: convert from CellSize to Column count based on ... something
     } else {
-      IdentityResampleGrid
+      DefaultResampleTarget
     }
   }
 
   /** Used when resampling on already reprojected RasterSource */
-  private[geotrellis] def toReprojectOptions[N: Integral](
+  private[geotrellis] def toReprojectOptions(
     current: GridExtent[Long],
-    resampleGrid: ResampleGrid[N],
+    resampleTarget: ResampleTarget,
     resampleMethod: ResampleMethod
   ): Reproject.Options = {
-    resampleGrid match {
-      case Dimensions(cols, rows) =>
+    resampleTarget match {
+      case TargetDimensions(cols, rows) =>
         val updated = current.withDimensions(cols.toLong, rows.toLong).toGridType[Int]
         Reproject.Options(method = resampleMethod, targetRasterExtent = Some(updated.toRasterExtent))
 
@@ -85,7 +85,7 @@ object ResampleGrid {
       case TargetCellSize(cellSize) =>
         Reproject.Options(method = resampleMethod, targetCellSize = Some(cellSize))
 
-      case IdentityResampleGrid =>
+      case DefaultResampleTarget =>
         Reproject.Options.DEFAULT.copy(method = resampleMethod)
     }
   }
