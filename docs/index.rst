@@ -123,6 +123,7 @@ Ready? `Setup a GeoTrellis development environment. <tutorials/setup.html>`__
    Using Vectors <guide/vectors>
    Spark and GeoTrellis <guide/spark>
    Ingesting a Raster Layer <guide/ingests>
+   Pipelines (ETL Replacement) <guide/pipeline>
    Extending GeoTrellis Types <guide/extending-geotrellis>
    GeoTrellis Module Hierarchy <guide/module-hierarchy>
    Tile Layer Backends <guide/tile-backends>
