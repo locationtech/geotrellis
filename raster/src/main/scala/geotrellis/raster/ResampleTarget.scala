@@ -21,31 +21,57 @@ import geotrellis.raster.reproject.Reproject
 import spire.math.Integral
 import spire.implicits._
 
+/** Represents a strategy/target for resampling */
 sealed trait ResampleTarget {
-  // this is a by name parameter, as we don't need to call the source in all ResampleTarget types
+  /**
+   * Provided a gridextent, construct a new [[GridExtent]] that satisfies target constraint(s)
+   * @param source a grid extent to be reshaped; call by name as it does not need to be called in all cases
+   */
   def apply[N: Integral](source: => GridExtent[N]): GridExtent[N]
 }
 
+/** Resample, aiming for a specific number of cell columns/rows */
 case class TargetDimensions(cols: Long, rows: Long) extends ResampleTarget {
   def apply[N: Integral](source: => GridExtent[N]): GridExtent[N] =
     new GridExtent(source.extent, cols, rows).toGridType[N]
 }
 
+/**
+ * Snap to a target grid - useful prior to comparison between rasters
+ * as a means of ensuring clear correspondence between underlying cell values
+ */
 case class TargetGrid(grid: GridExtent[_]) extends ResampleTarget {
   def apply[N: Integral](source: => GridExtent[N]): GridExtent[N] =
     grid.createAlignedGridExtent(source.extent).toGridType[N]
 }
 
+/** Resample, sampling values into a user-supplied [[GridExtent]] */
 case class TargetRegion(region: GridExtent[_]) extends ResampleTarget {
   def apply[N: Integral](source: => GridExtent[N]): GridExtent[N] =
     region.toGridType[N]
 }
 
+/**
+ * Resample, aiming for a grid which has the provided [[CellSize]]
+ *
+ * @note Targetting a specific size for each cell in the grid has consequences for the
+ * [[Extent]] because e.g. an extent's width *must* be evenly divisible by the width of
+ * the cells within it. Consequently, we have two options: either modify the resolution
+ * to accomodate the output extent or modify the overall extent to preserve the desired
+ * output resolution. Fine grained constraints on both resolution and extent will currently
+ * need to be managed manually.
+ */
 case class TargetCellSize(cellSize: CellSize) extends ResampleTarget {
   def apply[N: Integral](source: => GridExtent[N]): GridExtent[N] =
     source.withResolution(cellSize)
 }
 
+/**
+ * The default resample target is used during reprojection.
+ * A heuristic will be used to determine the best target proportions
+ *
+ * @note If used as target of resample operation it acts as identity operation.
+ */
 case object DefaultResampleTarget extends ResampleTarget {
   def apply[N: Integral](source: => GridExtent[N]): GridExtent[N] = source
 }
