@@ -28,7 +28,7 @@ import geotrellis.util.RangeReader
 class GeoTiffReprojectRasterSource(
   val dataPath: GeoTiffPath,
   val crs: CRS,
-  val resampleTarget: ResampleTarget = DefaultResampleTarget,
+  val resampleTarget: ResampleTarget = DefaultTarget,
   val resampleMethod: ResampleMethod = NearestNeighbor,
   val strategy: OverviewStrategy = AutoHigherResolution,
   val errorThreshold: Double = 0.125,
@@ -85,7 +85,7 @@ class GeoTiffReprojectRasterSource(
 
   @transient private[raster] lazy val closestTiffOverview: GeoTiff[MultibandTile] = {
     resampleTarget match {
-      case DefaultResampleTarget => tiff.getClosestOverview(baseGridExtent.cellSize, strategy)
+      case DefaultTarget => tiff.getClosestOverview(baseGridExtent.cellSize, strategy)
       case _ =>
         // we're asked to match specific target resolution, estimate what resolution we need in source to sample it
         val estimatedSource = ReprojectRasterExtent(gridExtent, backTransform)
@@ -146,7 +146,7 @@ class GeoTiffReprojectRasterSource(
     }.map { convertRaster }
   }
 
-  def reprojection(targetCRS: CRS, resampleTarget: ResampleTarget = DefaultResampleTarget, method: ResampleMethod = NearestNeighbor, strategy: OverviewStrategy = AutoHigherResolution): RasterSource =
+  def reprojection(targetCRS: CRS, resampleTarget: ResampleTarget = DefaultTarget, method: ResampleMethod = NearestNeighbor, strategy: OverviewStrategy = AutoHigherResolution): RasterSource =
     GeoTiffReprojectRasterSource(dataPath, targetCRS, resampleTarget, method, strategy, targetCellType = targetCellType, baseTiff = Some(tiff))
 
   def resample(resampleTarget: ResampleTarget, method: ResampleMethod, strategy: OverviewStrategy): RasterSource =
@@ -160,7 +160,7 @@ object GeoTiffReprojectRasterSource {
   def apply(
     dataPath: GeoTiffPath,
     crs: CRS,
-    resampleTarget: ResampleTarget = DefaultResampleTarget,
+    resampleTarget: ResampleTarget = DefaultTarget,
     resampleMethod: ResampleMethod = NearestNeighbor,
     strategy: OverviewStrategy = AutoHigherResolution,
     errorThreshold: Double = 0.125,

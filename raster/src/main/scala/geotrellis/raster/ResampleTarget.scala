@@ -21,7 +21,14 @@ import geotrellis.raster.reproject.Reproject
 import spire.math.Integral
 import spire.implicits._
 
-/** Represents a strategy/target for resampling */
+/**
+ *  A strategy to use when constructing a grid that will be used during resampling
+ * 
+ *  Various tradeoffs exist when attempting to resize an image. Subclasses of ResampleTarget
+ *  encode these various tradeoffs in terms of the proportions/alignment desired at the end
+ *  of resampling. E.g. [[TargetCellSize]] tells any resampling function to resample in such 
+ *  a way as to approximately match the specified [[CellSize]] in any resulting operations.
+ */
 sealed trait ResampleTarget {
   /**
    * Provided a gridextent, construct a new [[GridExtent]] that satisfies target constraint(s)
@@ -72,7 +79,7 @@ case class TargetCellSize(cellSize: CellSize) extends ResampleTarget {
  *
  * @note If used as target of resample operation it acts as identity operation.
  */
-case object DefaultResampleTarget extends ResampleTarget {
+case object DefaultTarget extends ResampleTarget {
   def apply[N: Integral](source: => GridExtent[N]): GridExtent[N] = source
 }
 
@@ -87,7 +94,7 @@ object ResampleTarget {
     } else if (options.targetCellSize.isDefined) {
       ??? // TODO: convert from CellSize to Column count based on ... something
     } else {
-      DefaultResampleTarget
+      DefaultTarget
     }
   }
 
@@ -111,7 +118,7 @@ object ResampleTarget {
       case TargetCellSize(cellSize) =>
         Reproject.Options(method = resampleMethod, targetCellSize = Some(cellSize))
 
-      case DefaultResampleTarget =>
+      case DefaultTarget =>
         Reproject.Options.DEFAULT.copy(method = resampleMethod)
     }
   }

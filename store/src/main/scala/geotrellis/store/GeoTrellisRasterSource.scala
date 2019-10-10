@@ -97,7 +97,7 @@ class GeoTrellisRasterSource(
   override def readBounds(bounds: Traversable[GridBounds[Long]], bands: Seq[Int]): Iterator[Raster[MultibandTile]] =
     bounds.toIterator.flatMap(_.intersection(this.gridBounds).flatMap(read(_, bands)))
 
-  def reprojection(targetCRS: CRS, resampleTarget: ResampleTarget = DefaultResampleTarget, method: ResampleMethod = NearestNeighbor, strategy: OverviewStrategy = AutoHigherResolution): RasterSource = {
+  def reprojection(targetCRS: CRS, resampleTarget: ResampleTarget = DefaultTarget, method: ResampleMethod = NearestNeighbor, strategy: OverviewStrategy = AutoHigherResolution): RasterSource = {
     if (targetCRS != this.crs) {
       val reprojectOptions = ResampleTarget.toReprojectOptions(this.gridExtent, resampleTarget, method)
       val (closestLayerId, targetGridExtent) = GeoTrellisReprojectRasterSource.getClosestSourceLayer(targetCRS, sourceLayers, reprojectOptions, strategy)
@@ -105,7 +105,7 @@ class GeoTrellisRasterSource(
     } else {
       // TODO: add unit tests for this in particular, the behavior feels murky
       resampleTarget match {
-        case DefaultResampleTarget =>
+        case DefaultTarget =>
           // I think I was asked to do nothing
           this
         case resampleTarget =>
