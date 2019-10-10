@@ -64,7 +64,7 @@ trait RasterSource extends CellGrid[Long] with RasterMetadata {
   def reprojectToGrid(targetCRS: CRS, grid: GridExtent[Long], method: ResampleMethod = NearestNeighbor, strategy: OverviewStrategy = AutoHigherResolution): RasterSource =
     if (targetCRS == this.crs && grid == this.gridExtent) this
     else if (targetCRS == this.crs) resampleToGrid(grid, method)
-    else reprojection(targetCRS, TargetGrid(grid), method, strategy)
+    else reprojection(targetCRS, TargetAlignment(grid), method, strategy)
 
   /** Sampling grid and resolution is defined by given [[RasterExtent]] region.
     * The extent of the result is also taken from given [[RasterExtent]],
@@ -90,7 +90,7 @@ trait RasterSource extends CellGrid[Long] with RasterMetadata {
     * @group resample
     */
   def resampleToGrid(grid: GridExtent[Long], method: ResampleMethod = NearestNeighbor, strategy: OverviewStrategy = AutoHigherResolution): RasterSource =
-    resample(TargetGrid(grid), method, strategy)
+    resample(TargetAlignment(grid), method, strategy)
 
   /** Sampling grid and resolution is defined by given [[RasterExtent]] region.
     * The extent of the result is also taken from given [[RasterExtent]],

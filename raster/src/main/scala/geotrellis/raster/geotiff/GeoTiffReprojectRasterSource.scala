@@ -62,7 +62,7 @@ class GeoTiffReprojectRasterSource(
   // TODO: remove transient notation with Proj4 1.1 release
   @transient protected lazy val transform = Transform(baseCRS, crs)
   @transient protected lazy val backTransform = Transform(crs, baseCRS)
-  
+
   override lazy val gridExtent: GridExtent[Long] = {
     lazy val reprojectedRasterExtent =
       ReprojectRasterExtent(
@@ -73,7 +73,7 @@ class GeoTiffReprojectRasterSource(
 
     resampleTarget match {
       case targetRegion: TargetRegion => targetRegion.region.toGridType[Long]
-      case targetGrid: TargetGrid => targetGrid(reprojectedRasterExtent)
+      case targetAlignment: TargetAlignment => targetAlignment(reprojectedRasterExtent)
       case targetDimensions: TargetDimensions => targetDimensions(reprojectedRasterExtent)
       case targetCellSize: TargetCellSize => targetCellSize(reprojectedRasterExtent)
       case _ => reprojectedRasterExtent

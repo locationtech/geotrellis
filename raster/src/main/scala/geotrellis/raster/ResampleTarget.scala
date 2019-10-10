@@ -17,9 +17,7 @@
 package geotrellis.raster
 
 import geotrellis.raster.reproject.Reproject
-
 import spire.math.Integral
-import spire.implicits._
 
 /**
  *  A strategy to use when constructing a grid that will be used during resampling
@@ -47,7 +45,7 @@ case class TargetDimensions(cols: Long, rows: Long) extends ResampleTarget {
  * Snap to a target grid - useful prior to comparison between rasters
  * as a means of ensuring clear correspondence between underlying cell values
  */
-case class TargetGrid(grid: GridExtent[_]) extends ResampleTarget {
+case class TargetAlignment(grid: GridExtent[_]) extends ResampleTarget {
   def apply[N: Integral](source: => GridExtent[N]): GridExtent[N] =
     grid.createAlignedGridExtent(source.extent).toGridType[N]
 }
@@ -90,7 +88,7 @@ object ResampleTarget {
     if (options.targetRasterExtent.isDefined) {
       TargetRegion(options.targetRasterExtent.get.toGridType[Long])
     } else if (options.parentGridExtent.isDefined) {
-      TargetGrid(options.parentGridExtent.get)
+      TargetAlignment(options.parentGridExtent.get)
     } else if (options.targetCellSize.isDefined) {
       ??? // TODO: convert from CellSize to Column count based on ... something
     } else {
@@ -109,7 +107,7 @@ object ResampleTarget {
         val updated = current.withDimensions(cols.toLong, rows.toLong).toGridType[Int]
         Reproject.Options(method = resampleMethod, targetRasterExtent = Some(updated.toRasterExtent))
 
-      case TargetGrid(grid) =>
+      case TargetAlignment(grid) =>
         Reproject.Options(method = resampleMethod, parentGridExtent = Some(grid.toGridType[Long]))
 
       case TargetRegion(region) =>

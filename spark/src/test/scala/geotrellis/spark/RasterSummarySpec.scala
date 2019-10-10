@@ -70,7 +70,7 @@ class RasterSummarySpec extends FunSpec with TestEnvironment with RasterMatchers
       val tiledLayoutSource = sourceRDD.map(_.tileToLayout(layout, method))
 
       val summaryCollected = RasterSummary.fromRDD(tiledLayoutSource.map(_.source))
-      val summaryResampled = summary.resample(TargetGrid(layout))
+      val summaryResampled = summary.resample(TargetAlignment(layout))
 
       val metadata = summary.toTileLayerMetadata(layout)
       val metadataResampled = summaryResampled.toTileLayerMetadata(GlobalLayout(256, zoom, 0.1))

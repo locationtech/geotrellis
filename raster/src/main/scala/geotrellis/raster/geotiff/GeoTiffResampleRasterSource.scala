@@ -82,7 +82,7 @@ class GeoTiffResampleRasterSource(
 
         resampleTarget match {
           case targetRegion: TargetRegion => targetRegion.region.toGridType[Long]
-          case targetGrid: TargetGrid => targetGrid(reprojectedRasterExtent)
+          case targetAlignment: TargetAlignment => targetAlignment(reprojectedRasterExtent)
           case targetDimensions: TargetDimensions => targetDimensions(reprojectedRasterExtent)
           case targetCellSize: TargetCellSize => targetCellSize(reprojectedRasterExtent)
           case _ => reprojectedRasterExtent
