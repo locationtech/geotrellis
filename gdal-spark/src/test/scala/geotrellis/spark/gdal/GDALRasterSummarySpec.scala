@@ -74,7 +74,7 @@ class GDALRasterSummarySpec extends FunSpec with TestEnvironment with GivenWhenT
       val tiledRDD = sourceRDD.map(_.tileToLayout(layout, method))
 
       val summaryCollected = RasterSummary.fromRDD(tiledRDD.map(_.source))
-      val summaryResampled = summary.resample(TargetGrid(layout))
+      val summaryResampled = summary.resample(TargetAlignment(layout))
 
       val metadata = summary.toTileLayerMetadata(layout)
       val metadataResampled = summaryResampled.toTileLayerMetadata(GlobalLayout(256, zoom, 0.1))
