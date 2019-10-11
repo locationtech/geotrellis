@@ -254,8 +254,8 @@ case class GDALWarpOptions(
   /** Adjust GDAL options to represents reprojection with following parameters.
    * This call matches semantics and arguments of {@see RasterSource#reproject}
    */
-  def reproject(rasterExtent: GridExtent[Long], sourceCRS: CRS, targetCRS: CRS, resampleGrid: ResampleGrid[Long] = IdentityResampleGrid, resampleMethod: ResampleMethod = NearestNeighbor): GDALWarpOptions = {
-    val reprojectOptions = ResampleGrid.toReprojectOptions[Long](rasterExtent, resampleGrid, resampleMethod)
+  def reproject(rasterExtent: GridExtent[Long], sourceCRS: CRS, targetCRS: CRS, resampleTarget: ResampleTarget = DefaultTarget, resampleMethod: ResampleMethod = NearestNeighbor): GDALWarpOptions = {
+    val reprojectOptions = ResampleTarget.toReprojectOptions(rasterExtent, resampleTarget, resampleMethod)
     val re = rasterExtent.reproject(sourceCRS, targetCRS, reprojectOptions)
 
     this.copy(
@@ -269,14 +269,14 @@ case class GDALWarpOptions(
   /** Adjust GDAL options to represents resampling with following parameters .
    * This call matches semantics and arguments of {@see RasterSource#resample}
    */
-  def resample(gridExtent: => GridExtent[Long], resampleGrid: ResampleGrid[Long]): GDALWarpOptions = {
-    resampleGrid match {
-      case Dimensions(cols, rows) =>
+  def resample(gridExtent: => GridExtent[Long], resampleTarget: ResampleTarget): GDALWarpOptions = {
+    resampleTarget match {
+      case TargetDimensions(cols, rows) =>
         this.copy(te = gridExtent.extent.some, cellSize = None, dimensions = (cols.toInt, rows.toInt).some)
 
       case _ =>
         val re = {
-          val targetRasterExtent = resampleGrid(gridExtent).toRasterExtent
+          val targetRasterExtent = resampleTarget(gridExtent).toRasterExtent
           if(this.alignTargetPixels) targetRasterExtent.alignTargetPixels else targetRasterExtent
         }
 

@@ -81,9 +81,14 @@ trait MosaicRasterSource extends RasterSource {
     *
     * @see [[geotrellis.contrib.vlm.RasterSource.reproject]]
     */
-  def reprojection(targetCRS: CRS, resampleGrid: ResampleGrid[Long] = IdentityResampleGrid, method: ResampleMethod = NearestNeighbor, strategy: OverviewStrategy = AutoHigherResolution): RasterSource =
+  def reprojection(
+    targetCRS: CRS,
+    resampleTarget: ResampleTarget = DefaultTarget,
+    method: ResampleMethod = NearestNeighbor,
+    strategy: OverviewStrategy = AutoHigherResolution
+  ): RasterSource =
     MosaicRasterSource(
-      sources map { _.reproject(targetCRS, resampleGrid, method, strategy) },
+      sources map { _.reproject(targetCRS, resampleTarget, method, strategy) },
       crs,
       gridExtent.reproject(this.crs, targetCRS, Reproject.Options.DEFAULT.copy(method = method)),
       name
@@ -99,8 +104,12 @@ trait MosaicRasterSource extends RasterSource {
     rasters.reduce
   }
 
-  def resample(resampleGrid: ResampleGrid[Long], method: ResampleMethod, strategy: OverviewStrategy): RasterSource = MosaicRasterSource(
-    sources map { _.resample(resampleGrid, method, strategy) }, crs, name)
+  def resample(
+    resampleTarget: ResampleTarget,
+    method: ResampleMethod,
+    strategy: OverviewStrategy
+  ): RasterSource = MosaicRasterSource(
+    sources map { _.resample(resampleTarget, method, strategy) }, crs, name)
 
   def convert(targetCellType: TargetCellType): RasterSource =
     MosaicRasterSource(sources map { _.convert(targetCellType) }, crs, name)

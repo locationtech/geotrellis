@@ -33,7 +33,7 @@ class GeoTrellisReprojectRasterSource(
   val sourceLayers: Stream[Layer],
   val gridExtent: GridExtent[Long],
   val crs: CRS,
-  val targetResampleGrid: ResampleGrid[Long] = IdentityResampleGrid,
+  val resampleTarget: ResampleTarget = DefaultTarget,
   val resampleMethod: ResampleMethod = NearestNeighbor,
   val strategy: OverviewStrategy = AutoHigherResolution,
   val errorThreshold: Double = 0.125,
@@ -98,7 +98,7 @@ class GeoTrellisReprojectRasterSource(
         targetRasterExtent,
         transform,
         backTransform,
-        ResampleGrid.toReprojectOptions[Long](targetRasterExtent.toGridType[Long], targetResampleGrid, resampleMethod)
+        ResampleTarget.toReprojectOptions(targetRasterExtent.toGridType[Long], resampleTarget, resampleMethod)
       )
       convertRaster(reprojected)
     }
@@ -116,9 +116,9 @@ class GeoTrellisReprojectRasterSource(
   override def readBounds(bounds: Traversable[GridBounds[Long]], bands: Seq[Int]): Iterator[Raster[MultibandTile]] =
     bounds.toIterator.flatMap(_.intersection(this.gridBounds).flatMap(read(_, bands)))
 
-  def reprojection(targetCRS: CRS, resampleGrid: ResampleGrid[Long] = IdentityResampleGrid, method: ResampleMethod = NearestNeighbor, strategy: OverviewStrategy = AutoHigherResolution): RasterSource = {
+  def reprojection(targetCRS: CRS, resampleTarget: ResampleTarget = DefaultTarget, method: ResampleMethod = NearestNeighbor, strategy: OverviewStrategy = AutoHigherResolution): RasterSource = {
     if (targetCRS == sourceLayer.metadata.crs) {
-      val resampledGridExtent = resampleGrid(this.sourceLayer.gridExtent)
+      val resampledGridExtent = resampleTarget(this.sourceLayer.gridExtent)
       val closestLayer = GeoTrellisRasterSource.getClosestResolution(sourceLayers, resampledGridExtent.cellSize, strategy)(_.metadata.layout.cellSize).get
       // TODO: if closestLayer is w/in some marging of desired CellSize, return GeoTrellisRasterSource instead
       new GeoTrellisResampleRasterSource(attributeStore, dataPath, closestLayer.id, sourceLayers, resampledGridExtent, resampleMethod, targetCellType)
@@ -129,7 +129,7 @@ class GeoTrellisReprojectRasterSource(
           .getClosestSourceLayer(
             targetCRS,
             sourceLayers,
-            ResampleGrid.toReprojectOptions[Long](this.gridExtent, targetResampleGrid, resampleMethod),
+            ResampleTarget.toReprojectOptions(this.gridExtent, resampleTarget, resampleMethod),
             strategy
           )
       new GeoTrellisReprojectRasterSource(
@@ -139,21 +139,21 @@ class GeoTrellisReprojectRasterSource(
         sourceLayers,
         gridExtent,
         targetCRS,
-        resampleGrid,
+        resampleTarget,
         resampleMethod,
         targetCellType = targetCellType
       )
     }
   }
 
-  def resample(resampleGrid: ResampleGrid[Long], method: ResampleMethod, strategy: OverviewStrategy): RasterSource = {
-    val newReprojectOptions = ResampleGrid.toReprojectOptions(this.gridExtent, resampleGrid, method)
+  def resample(resampleTarget: ResampleTarget, method: ResampleMethod, strategy: OverviewStrategy): RasterSource = {
+    val newReprojectOptions = ResampleTarget.toReprojectOptions(this.gridExtent, resampleTarget, method)
     val (closestLayerId, newGridExtent) = GeoTrellisReprojectRasterSource.getClosestSourceLayer(crs, sourceLayers, newReprojectOptions, strategy)
-    new GeoTrellisReprojectRasterSource(attributeStore, dataPath, closestLayerId, sourceLayers, newGridExtent, crs, resampleGrid, targetCellType = targetCellType)
+    new GeoTrellisReprojectRasterSource(attributeStore, dataPath, closestLayerId, sourceLayers, newGridExtent, crs, resampleTarget, targetCellType = targetCellType)
   }
 
   def convert(targetCellType: TargetCellType): RasterSource = {
-    new GeoTrellisReprojectRasterSource(attributeStore, dataPath, layerId, sourceLayers, gridExtent, crs, targetResampleGrid, targetCellType = Some(targetCellType))
+    new GeoTrellisReprojectRasterSource(attributeStore, dataPath, layerId, sourceLayers, gridExtent, crs, resampleTarget, targetCellType = Some(targetCellType))
   }
 
   override def toString: String =
