@@ -18,6 +18,7 @@ API Changes & Project structure changes
 
   - **Change:** ``geotrellis.raster.summary.polygonal.[Multi]TilePolygonalSummaryHandler`` replaced with ``geotrellis.raster.summary.polygonal.PolygonalSummary. Users should expect to implement concrete subclasses of ``geotrellis.raster.summary.GridVisitor`` and pass those to the new polygonalSummary methods. There are a number of default GridVisitor implementations provided for simple operations in `geotrellis.raster.summary.visitors``
   - **New:** Created the ``geotrellis.raster.mapalgebra.focal.ZFactor`` to improve slope calculations (`#3014 <https://github.com/locationtech/geotrellis/pull/3014>`_).
+  - **Change:** ``Grid.dimensions`` is now ``Dimensions[N]`` instead of ``(N, N)`` (`#3124 <https://github.com/locationtech/geotrellis/pull/3124> _)
 
 - ``geotrellis.layer``
 
