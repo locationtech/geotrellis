@@ -34,6 +34,7 @@ lazy val commonSettings = Seq(
   publishMavenStyle := true,
   publishArtifact in Test := false,
   pomIncludeRepository := { _ => false },
+  autoAPIMappings := true,
 
   publishTo := {
     val sonatype = "https://oss.sonatype.org/"
