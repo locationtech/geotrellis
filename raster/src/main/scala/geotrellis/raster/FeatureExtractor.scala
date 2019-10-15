@@ -23,15 +23,15 @@ import spire.syntax.cfor._
 
 import scala.collection.mutable.ListBuffer
 
-trait FeatureExtractor[I <: Geometry, T <: CellGrid[Int], O <: Geometry, D] {
-  def features(geom: I, raster: Raster[T]): Array[Feature[O, D]]
+trait FeatureExtractor[T <: CellGrid[Int], O <: Geometry, D] {
+  def features(geom: Geometry, raster: Raster[T]): Array[Feature[O, D]]
 }
 
 object FeatureExtractor {
-  def apply[I <: Geometry: FeatureExtractor[*, T, O, D], T <: CellGrid[Int], O <: Geometry, D] = implicitly[FeatureExtractor[I, T, O, D]]
+  def apply[T <: CellGrid[Int], O <: Geometry, D](implicit ev: FeatureExtractor[T, O, D]) = ev
 
-  implicit def multibandTile[I <: Geometry] = new PointFeatureExtractor[I, MultibandTile, Array[Int]] {
-    def features(geom: I, raster: Raster[MultibandTile]): Array[PointFeature[Array[Int]]] = {
+  implicit def multibandTile = new PointFeatureExtractor[MultibandTile, Array[Int]] {
+    def features(geom: Geometry, raster: Raster[MultibandTile]): Array[PointFeature[Array[Int]]] = {
       val buffer = ListBuffer[PointFeature[Array[Int]]]()
 
       Rasterizer.foreachCellByGeometry(geom, raster.rasterExtent) { case (col, row) =>
@@ -44,8 +44,8 @@ object FeatureExtractor {
     }
   }
 
-  implicit def multibandTileDouble[I <: Geometry] = new PointFeatureExtractor[I, MultibandTile, Array[Double]] {
-    def features(geom: I, raster: Raster[MultibandTile]): Array[PointFeature[Array[Double]]] = {
+  implicit def multibandTileDouble = new PointFeatureExtractor[MultibandTile, Array[Double]] {
+    def features(geom: Geometry, raster: Raster[MultibandTile]): Array[PointFeature[Array[Double]]] = {
       val buffer = ListBuffer[PointFeature[Array[Double]]]()
 
       Rasterizer.foreachCellByGeometry(geom, raster.rasterExtent) { case (col, row) =>
@@ -58,14 +58,14 @@ object FeatureExtractor {
     }
   }
 
-  implicit def tile[I <: Geometry] = new PointFeatureExtractor[I, Tile, Int] {
-    def features(geom: I, raster: Raster[Tile]): Array[PointFeature[Int]] =
-      multibandTile[I].features(geom, raster.mapTile(MultibandTile(_))).map(_.mapData(_.head))
+  implicit val tileInt = new PointFeatureExtractor[Tile, Int] {
+    def features(geom: Geometry, raster: Raster[Tile]): Array[PointFeature[Int]] =
+      multibandTile.features(geom, raster.mapTile(MultibandTile(_))).map(_.mapData(_.head))
   }
 
-  implicit def tileDouble[I <: Geometry] = new PointFeatureExtractor[I, Tile, Double] {
-    def features(geom: I, raster: Raster[Tile]): Array[PointFeature[Double]] = {
-      multibandTileDouble[I].features(geom, raster.mapTile(MultibandTile(_))).map(_.mapData(_.head))
+  implicit val tileDouble = new PointFeatureExtractor[Tile, Double] {
+    def features(geom: Geometry, raster: Raster[Tile]): Array[PointFeature[Double]] = {
+      multibandTileDouble.features(geom, raster.mapTile(MultibandTile(_))).map(_.mapData(_.head))
     }
   }
 }
