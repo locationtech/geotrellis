@@ -34,8 +34,8 @@ class FeatureExtractorSpec extends FunSpec with Matchers {
 
       val features = raster.pointFeatures[Int](ext.toPolygon)
 
-      features.map(_.data) shouldBe data
-      features.foreach { case feature @ Feature(point, _) => raster.pointFeatures[Int](point).head shouldBe feature }
+      features.map(_.data).toList should contain theSameElementsAs data
+      features.foreach { case feature @ Feature(point, _) => raster.pointFeatures[Int](point).next shouldBe feature }
     }
 
     it("should extract all double point features") {
@@ -49,8 +49,8 @@ class FeatureExtractorSpec extends FunSpec with Matchers {
 
       val features = raster.pointFeatures[Double](ext.toPolygon)
 
-      features.map(_.data) shouldBe data
-      features.foreach { case feature @ Feature(point, _) => raster.pointFeatures[Double](point).head shouldBe feature }
+      features.map(_.data).toList should contain theSameElementsAs data
+      features.foreach { case feature @ Feature(point, _) => raster.pointFeatures[Double](point).next shouldBe feature }
     }
   }
 
@@ -67,11 +67,11 @@ class FeatureExtractorSpec extends FunSpec with Matchers {
       val data = Array(b1, b2, b3)
       val raster = Raster(MultibandTile(data.map(ArrayTile(_, 3, 3))), ext)
 
-      val features = raster.pointFeatures[Int](ext.toPolygon)
+      val features = raster.pointFeatures[Int](ext.toPolygon).toArray
 
-      (0 until 3).map { b => features.map(_.data(b)) }.toArray shouldBe data
+      (0 until 3).map { b => features.map(_.data(b)) } should contain theSameElementsAs data
       features.foreach { { case feature @ Feature(point, _) =>
-        raster.pointFeatures[Int](point).head.mapData(_.toList) shouldBe feature.mapData(_.toList) }
+        raster.pointFeatures[Int](point).next.mapData(_.toList) shouldBe feature.mapData(_.toList) }
       }
     }
 
@@ -87,11 +87,11 @@ class FeatureExtractorSpec extends FunSpec with Matchers {
       val data = Array(b1, b2, b3)
       val raster = Raster(MultibandTile(data.map(ArrayTile(_, 3, 3))), ext)
 
-      val features = raster.pointFeatures[Double](ext.toPolygon)
+      val features = raster.pointFeatures[Double](ext.toPolygon).toArray
 
       (0 until 3).map { b => features.map(_.data(b)) }.toArray shouldBe data
       features.foreach { { case feature @ Feature(point, _) =>
-        raster.pointFeatures[Double](point).head.mapData(_.toList) shouldBe feature.mapData(_.toList) }
+        raster.pointFeatures[Double](point).next.mapData(_.toList) shouldBe feature.mapData(_.toList) }
       }
     }
   }

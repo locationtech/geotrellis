@@ -24,47 +24,59 @@ import spire.syntax.cfor._
 import scala.collection.mutable.ListBuffer
 
 trait FeatureExtractor[T <: CellGrid[Int], O <: Geometry, D] {
-  def features(geom: Geometry, raster: Raster[T]): Array[Feature[O, D]]
+  def features(geom: Geometry, raster: Raster[T]): Iterator[Feature[O, D]]
 }
 
 object FeatureExtractor {
   def apply[T <: CellGrid[Int], O <: Geometry, D](implicit ev: FeatureExtractor[T, O, D]) = ev
 
   implicit def multibandTile = new PointFeatureExtractor[MultibandTile, Array[Int]] {
-    def features(geom: Geometry, raster: Raster[MultibandTile]): Array[PointFeature[Array[Int]]] = {
-      val buffer = ListBuffer[PointFeature[Array[Int]]]()
-
+    def features(geom: Geometry, raster: Raster[MultibandTile]): Iterator[PointFeature[Array[Int]]] = {
+      // val options: Rasterizer.Options = ???
+      val mask = BitArrayTile.empty(cols = raster.cols, rows = raster.rows)
       Rasterizer.foreachCellByGeometry(geom, raster.rasterExtent) { case (col, row) =>
-        val values = Array.ofDim[Int](raster.tile.bandCount)
-        cfor(0)(_ < raster.tile.bandCount, _ + 1) { i => values(i) = raster.tile.band(i).get(col, row) }
-        buffer += Feature(Point(raster.rasterExtent.gridToMap(col, row)), values)
+        mask.set(col, row, 1)
       }
 
-      buffer.toArray
+      for {
+        row <- Iterator.range(0, raster.rows)
+        col <- Iterator.range(0, raster.cols)
+          if mask.get(col, row) == 1
+      } yield {
+        val values = Array.ofDim[Int](raster.tile.bandCount)
+        cfor(0)(_ < raster.tile.bandCount, _ + 1) { i => values(i) = raster.tile.band(i).get(col, row) }
+        Feature(Point(raster.rasterExtent.gridToMap(col, row)), values)
+      }
     }
   }
 
   implicit def multibandTileDouble = new PointFeatureExtractor[MultibandTile, Array[Double]] {
-    def features(geom: Geometry, raster: Raster[MultibandTile]): Array[PointFeature[Array[Double]]] = {
-      val buffer = ListBuffer[PointFeature[Array[Double]]]()
-
+    def features(geom: Geometry, raster: Raster[MultibandTile]): Iterator[PointFeature[Array[Double]]] = {
+      // val options: Rasterizer.Options = ???
+      val mask = BitArrayTile.empty(cols = raster.cols, rows = raster.rows)
       Rasterizer.foreachCellByGeometry(geom, raster.rasterExtent) { case (col, row) =>
-        val values = Array.ofDim[Double](raster.tile.bandCount)
-        cfor(0)(_ < raster.tile.bandCount, _ + 1) { i => values(i) = raster.tile.band(i).getDouble(col, row) }
-        buffer += Feature(Point(raster.rasterExtent.gridToMap(col, row)), values)
+        mask.set(col, row, 1)
       }
 
-      buffer.toArray
+      for {
+        row <- Iterator.range(0, raster.rows)
+        col <- Iterator.range(0, raster.cols)
+          if mask.get(col, row) == 1
+      } yield {
+        val values = Array.ofDim[Double](raster.tile.bandCount)
+        cfor(0)(_ < raster.tile.bandCount, _ + 1) { i => values(i) = raster.tile.band(i).getDouble(col, row) }
+        Feature(Point(raster.rasterExtent.gridToMap(col, row)), values)
+      }
     }
   }
 
   implicit val tileInt = new PointFeatureExtractor[Tile, Int] {
-    def features(geom: Geometry, raster: Raster[Tile]): Array[PointFeature[Int]] =
+    def features(geom: Geometry, raster: Raster[Tile]): Iterator[PointFeature[Int]] =
       multibandTile.features(geom, raster.mapTile(MultibandTile(_))).map(_.mapData(_.head))
   }
 
   implicit val tileDouble = new PointFeatureExtractor[Tile, Double] {
-    def features(geom: Geometry, raster: Raster[Tile]): Array[PointFeature[Double]] = {
+    def features(geom: Geometry, raster: Raster[Tile]): Iterator[PointFeature[Double]] = {
       multibandTileDouble.features(geom, raster.mapTile(MultibandTile(_))).map(_.mapData(_.head))
     }
   }
