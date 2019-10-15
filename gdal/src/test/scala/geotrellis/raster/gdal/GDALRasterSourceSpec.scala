@@ -18,6 +18,7 @@ package geotrellis.raster.gdal
 
 import geotrellis.raster.geotiff.GeoTiffRasterSource
 import geotrellis.raster._
+import geotrellis.raster.io.geotiff.AutoHigherResolution
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.raster.resample._
 import geotrellis.raster.testkit._
@@ -61,12 +62,8 @@ class GDALRasterSourceSpec extends FunSpec with RasterMatchers with GivenWhenThe
       info(s"Source CellSize: ${source.cellSize}")
       info(s"Target CellSize: ${resampledSource.cellSize}")
 
-      // calculated expected resolutions of overviews
-      // it's a rough approximation there as we're not calculating resolutions like GDAL
-      val ratio = resampledSource.cellSize.resolution / source.cellSize.resolution
-      resampledSource.resolutions.zip (source.resolutions.map { case CellSize(cw, ch) =>
-        CellSize(cw * ratio, ch * ratio)
-      }).map { case (rea, ree) => rea.resolution shouldBe ree.resolution +- 3e-1 }
+      // overviews are not resampled, the idea of overview is to minimize IO / to prevent unnecessary resample steps
+      resampledSource.resolutions shouldBe source.resolutions
 
       val actual: Raster[MultibandTile] =
         resampledSource.read(GridBounds(0, 0, resampledSource.cols - 1, resampledSource.rows - 1)).get
@@ -107,6 +104,12 @@ class GDALRasterSourceSpec extends FunSpec with RasterMatchers with GivenWhenThe
     it("should read the same metadata as GeoTiffRasterSource") {
       lazy val tsource = GeoTiffRasterSource(uri)
       source.metadata.attributes.mapValues(_.toUpperCase) shouldBe tsource.metadata.attributes.mapValues(_.toUpperCase)
+    }
+
+    it("should have the same resolutions after a resample step") {
+      val source = GDALRasterSource(uri)
+      val resampled = source.resample(TargetCellSize(CellSize(25, 25)), NearestNeighbor, AutoHigherResolution)
+      source.resolutions shouldBe (resampled.resolutions)
     }
   }
 }
