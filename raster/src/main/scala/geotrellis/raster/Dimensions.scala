@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Azavea
+ * Copyright 2019 Azavea
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,20 +16,16 @@
 
 package geotrellis.raster
 
-/**
-  * The TileFeature Type.  This is used for packaging a CellGrid (a
-  * Tile or MultibandTile) together with some metadata.
-  *
-  * @param  tile  The CellGrid-derived tile
-  * @param  data  The additional metadata
-  */
-case class TileFeature[+T <: CellGrid[Int], D](tile: T, data: D) extends CellGrid[Int] {
-  def cellType: CellType = tile.cellType
-  def cols: Int = tile.cols
-  def rows: Int = tile.rows
-  override def size: Int = tile.size
+import spire.math.Integral
+import spire.implicits._
+
+case class Dimensions[@specialized(Byte, Short, Int, Long) N: Integral](cols: N, rows: N) extends Product2[N, N] with Serializable {
+  def _1 = cols
+  def _2 = rows
+  def size: Long = Integral[N].toType[Long](cols) * Integral[N].toType[Long](rows)
+  override def toString = s"${cols}x${rows}"
 }
 
-object TileFeature {
-  implicit def tileFeatureToCellGrid[T <: CellGrid[Int], D](tf: TileFeature[T, D]): T = tf.tile
+object Dimensions {
+  implicit def apply[N: Integral](tup: (N, N)) = new Dimensions(tup._1, tup._2)
 }

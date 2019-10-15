@@ -16,6 +16,8 @@
 
 package geotrellis.raster.io.geotiff
 
+import geotrellis.raster.Dimensions
+
 private [geotiff] trait SegmentTransform {
   def segmentIndex: Int
   def segmentLayoutTransform: GeoTiffSegmentLayoutTransform
@@ -32,7 +34,7 @@ private [geotiff] trait SegmentTransform {
   protected def layoutCol: Int = segmentIndex % layoutCols
   protected def layoutRow: Int = segmentIndex / layoutCols
 
-  val (segmentCols, segmentRows) =
+  val Dimensions(segmentCols, segmentRows) =
     segmentLayoutTransform.getSegmentDimensions(segmentIndex)
 
   /** The col of the source raster that this index represents. Can produce invalid cols */

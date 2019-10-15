@@ -52,7 +52,7 @@ class LayoutTileSource[K: SpatialComponent](
       rowMax = (row+1) * layout.tileRows - 1 - sourceRowOffset
     )
 
-    if (source.gridBounds.intersects(sourcePixelBounds))
+    if (sourcePixelBounds.intersects(source.dimensions))
       Some(RasterRegion(source, sourcePixelBounds))
     else
       None
@@ -77,7 +77,7 @@ class LayoutTileSource[K: SpatialComponent](
     )
 
     for {
-      bounds <- sourcePixelBounds.intersection(source.gridBounds)
+      bounds <- sourcePixelBounds.intersection(source.dimensions)
       raster <- source.read(bounds, bands)
     } yield {
       if (raster.tile.cols == layout.tileCols && raster.tile.rows == layout.tileRows) {
@@ -110,7 +110,7 @@ class LayoutTileSource[K: SpatialComponent](
         colMax = (col+1) * layout.tileCols - 1 - sourceColOffset,
         rowMax = (row+1) * layout.tileRows - 1 - sourceRowOffset
       )
-      bounds <- sourcePixelBounds.intersection(source.gridBounds)
+      bounds <- sourcePixelBounds.intersection(source.dimensions)
       raster <- source.read(bounds, bands)
     } yield {
       val tile =

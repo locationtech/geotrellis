@@ -18,7 +18,7 @@ package geotrellis.store
 
 import geotrellis.layer.{LayoutDefinition, SpatialKey}
 import geotrellis.raster.geotiff.GeoTiffRasterSource
-import geotrellis.raster.{ArrayMultibandTile, MultibandTile}
+import geotrellis.raster.{ArrayMultibandTile, MultibandTile, RasterExtent}
 import geotrellis.spark.store.file.FileLayerWriter
 import geotrellis.spark._
 import geotrellis.store.file.FileAttributeStore
@@ -45,7 +45,8 @@ object TestCatalog {
     val writer = FileLayerWriter(attributeStore)
 
     val rs = GeoTiffRasterSource(TestCatalog.filePath)
-    rs.resolutions.sortBy(_.cellSize.resolution).zipWithIndex.foreach { case (rasterExtent, index) =>
+    rs.resolutions.sortBy(_.resolution).zipWithIndex.foreach { case (cellSize, index) =>
+      val rasterExtent = RasterExtent(rs.extent, cellSize)
       val layout = LayoutDefinition(rasterExtent, tileSize = 256)
 
       val rdd: MultibandTileLayerRDD[SpatialKey] =
@@ -68,7 +69,8 @@ object TestCatalog {
     val writer = FileLayerWriter(attributeStore)
 
     val rs = GeoTiffRasterSource(TestCatalog.filePath)
-    rs.resolutions.sortBy(_.cellSize.resolution).zipWithIndex.foreach { case (rasterExtent, index) =>
+    rs.resolutions.sortBy(_.resolution).zipWithIndex.foreach { case (cellSize, index) =>
+      val rasterExtent = RasterExtent(rs.extent, cellSize)
       val layout = LayoutDefinition(rasterExtent, tileSize = 256)
 
       val rdd: TileLayerRDD[SpatialKey] =

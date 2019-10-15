@@ -44,7 +44,7 @@ object CutTiles {
   ): RDD[(K2, V)] = {
     logger.debug(s"CutTiles($rdd, $cellType, $resampleMethod)")
     val mapTransform = layoutDefinition.mapTransform
-    val (tileCols, tileRows) = layoutDefinition.tileLayout.tileDimensions
+    val Dimensions(tileCols, tileRows) = layoutDefinition.tileLayout.tileDimensions
 
     rdd
       .flatMap { tup =>

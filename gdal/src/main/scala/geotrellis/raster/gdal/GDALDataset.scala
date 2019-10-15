@@ -123,6 +123,8 @@ case class GDALDataset(token: Long) extends AnyVal {
 
   def rasterExtent: RasterExtent = rasterExtent(GDALDataset.WARPED)
 
+  def dimensions: Dimensions[Int] = rasterExtent.dimensions
+
   def rasterExtent(datasetType: DatasetType): RasterExtent = {
     require(acceptableDatasets contains datasetType)
     val transform = Array.ofDim[Double](6)
@@ -305,7 +307,7 @@ case class GDALDataset(token: Long) extends AnyVal {
     GDALUtils.dataTypeToCellType(datatype = dt, noDataValue = nd, minMaxValues = mm)
   }
 
-  def readTile(gb: GridBounds[Int] = rasterExtent.gridBounds, band: Int, datasetType: DatasetType = GDALDataset.WARPED): Tile = {
+  def readTile(gb: GridBounds[Int] = GridBounds(dimensions), band: Int, datasetType: DatasetType = GDALDataset.WARPED): Tile = {
     require(acceptableDatasets contains datasetType)
     val GridBounds(xmin, ymin, xmax, ymax) = gb
     val srcWindow: Array[Int] = Array(xmin, ymin, xmax - xmin + 1, ymax - ymin + 1)
@@ -327,10 +329,10 @@ case class GDALDataset(token: Long) extends AnyVal {
     ArrayTile.fromBytes(bytes, ct, dstWindow(0), dstWindow(1))
   }
 
-  def readMultibandTile(gb: GridBounds[Int] = rasterExtent.gridBounds, bands: Seq[Int] = 1 to bandCount, datasetType: DatasetType = GDALDataset.WARPED): MultibandTile =
+  def readMultibandTile(gb: GridBounds[Int] = GridBounds(dimensions), bands: Seq[Int] = 1 to bandCount, datasetType: DatasetType = GDALDataset.WARPED): MultibandTile =
     MultibandTile(bands.map { readTile(gb, _, datasetType) })
 
-  def readMultibandRaster(gb: GridBounds[Int] = rasterExtent.gridBounds, bands: Seq[Int] = 1 to bandCount, datasetType: DatasetType = GDALDataset.WARPED): Raster[MultibandTile] =
+  def readMultibandRaster(gb: GridBounds[Int] = GridBounds(dimensions), bands: Seq[Int] = 1 to bandCount, datasetType: DatasetType = GDALDataset.WARPED): Raster[MultibandTile] =
     Raster(readMultibandTile(gb, bands, datasetType), rasterExtent.rasterExtentFor(gb).extent)
 }
 

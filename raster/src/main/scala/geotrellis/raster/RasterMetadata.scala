@@ -34,7 +34,7 @@ trait RasterMetadata extends Serializable {
 
   def gridExtent: GridExtent[Long]
 
-  /** All available resolutions for this raster source
+  /** All available overview resolutions for this raster source
     *
     * <li> For base [[RasterSource]] instance this will be resolutions of available overviews.
     * <li> For reprojected [[RasterSource]] these resolutions represent an estimate where
@@ -43,10 +43,8 @@ trait RasterMetadata extends Serializable {
     * When reading raster data the underlying implementation will have to sample from one of these resolutions.
     * It is possible that a read request for a small bounding box will results in significant IO request when the target
     * cell size is much larger than closest available resolution.
-    *
-    * __Note__: It is expected but not guaranteed that the extent each [[RasterExtent]] in this list will be the same.
     */
-  def resolutions: List[GridExtent[Long]]
+  def resolutions: List[CellSize]
 
   def extent: Extent = gridExtent.extent
 

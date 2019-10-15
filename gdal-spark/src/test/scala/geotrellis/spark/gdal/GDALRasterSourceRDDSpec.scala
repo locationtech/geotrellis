@@ -317,7 +317,7 @@ class GDALRasterSourceRDDSpec extends FunSpec with TestEnvironment with BeforeAn
       val actual = RasterSourceRDD.read(readingSources, floatingLayout).stitch()
 
       // random chip to test agains, to speed up tests
-      val gridBounds = RasterExtent(randomExtentWithin(actual.extent), actual.cellSize).gridBounds
+      val gridBounds = actual.rasterExtent.gridBoundsFor(randomExtentWithin(actual.extent))
 
       expected.dimensions shouldBe actual.dimensions
 
@@ -343,7 +343,7 @@ class GDALRasterSourceRDDSpec extends FunSpec with TestEnvironment with BeforeAn
       val actual = RasterSourceRDD.read(readingSources, floatingLayout).stitch()
 
       // random chip to test agains, to speed up tests
-      val gridBounds = RasterExtent(randomExtentWithin(actual.extent), actual.cellSize).gridBounds
+      val gridBounds = actual.rasterExtent.gridBoundsFor(randomExtentWithin(actual.extent))
 
       expected.dimensions shouldBe actual.dimensions
 
@@ -365,7 +365,7 @@ class GDALRasterSourceRDDSpec extends FunSpec with TestEnvironment with BeforeAn
       val actual = RasterSourceRDD.read(readingSources, floatingLayout).stitch()
 
       // random chip to test agains, to speed up tests
-      val gridBounds = RasterExtent(randomExtentWithin(actual.extent), actual.cellSize).gridBounds
+      val gridBounds = actual.rasterExtent.gridBoundsFor(randomExtentWithin(actual.extent))
 
       expected.dimensions shouldBe actual.dimensions
 
@@ -393,7 +393,7 @@ class GDALRasterSourceRDDSpec extends FunSpec with TestEnvironment with BeforeAn
       val actual = RasterSourceRDD.read(readingSources, floatingLayout).stitch()
 
       // random chip to test agains, to speed up tests
-      val gridBounds = RasterExtent(randomExtentWithin(actual.extent), actual.cellSize).gridBounds
+      val gridBounds = actual.rasterExtent.gridBoundsFor(randomExtentWithin(actual.extent))
 
       expected.dimensions shouldBe actual.dimensions
 
@@ -401,4 +401,3 @@ class GDALRasterSourceRDDSpec extends FunSpec with TestEnvironment with BeforeAn
     }
   }
 }
-

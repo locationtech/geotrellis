@@ -728,7 +728,7 @@ abstract class GeoTiffTile(
    */
   def crop(bounds: GridBounds[Int]): MutableArrayTile = {
     val iter = crop(List(bounds))
-    if(iter.isEmpty) throw GeoAttrsError(s"No intersections of ${bounds} vs ${gridBounds}")
+    if(iter.isEmpty) throw GeoAttrsError(s"No intersections of ${bounds} vs ${dimensions}")
     else iter.next._2
   }
 

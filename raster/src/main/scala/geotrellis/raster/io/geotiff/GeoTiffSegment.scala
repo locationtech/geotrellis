@@ -225,7 +225,9 @@ object GeoTiffSegment {
     * @param bandCount Number of bit interleaved into each pixel
     */
   private[raster]
-  def deinterleaveBitSegment(segment: GeoTiffSegment, cols: Int, rows: Int, bandCount: Int): Array[Array[Byte]] = {
+  def deinterleaveBitSegment(segment: GeoTiffSegment, dims: Dimensions[Int], bandCount: Int): Array[Array[Byte]] = {
+    val cols = dims.cols
+    val rows = dims.rows
     val paddedCols = {
       val bytesWidth = (cols + 7) / 8
       bytesWidth * 8
@@ -256,11 +258,13 @@ object GeoTiffSegment {
   }
 
   private[raster]
-  def deinterleaveBitSegment(segment: GeoTiffSegment, cols: Int, rows: Int, bandCount: Int, index: Int): Array[Byte] =
-    deinterleaveBitSegment(segment, cols, rows, bandCount, index :: Nil).head
+  def deinterleaveBitSegment(segment: GeoTiffSegment, dims: Dimensions[Int], bandCount: Int, index: Int): Array[Byte] =
+    deinterleaveBitSegment(segment, dims, bandCount, index :: Nil).head
 
   private[raster]
-  def deinterleaveBitSegment(segment: GeoTiffSegment, cols: Int, rows: Int, bandCount: Int, indices: Traversable[Int]): Array[Array[Byte]] = {
+  def deinterleaveBitSegment(segment: GeoTiffSegment, dims: Dimensions[Int], bandCount: Int, indices: Traversable[Int]): Array[Array[Byte]] = {
+    val cols = dims.cols
+    val rows = dims.rows
     val paddedCols = {
       val bytesWidth = (cols + 7) / 8
       bytesWidth * 8

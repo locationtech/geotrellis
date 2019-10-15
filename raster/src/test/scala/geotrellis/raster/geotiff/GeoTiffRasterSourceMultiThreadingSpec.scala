@@ -16,7 +16,7 @@
 
 package geotrellis.raster.geotiff
 
-import geotrellis.raster.RasterSource
+import geotrellis.raster.{RasterSource, GridBounds}
 import geotrellis.proj4.CRS
 import geotrellis.raster.resample._
 import geotrellis.raster.io.geotiff.GeoTiffTestUtils
@@ -48,9 +48,10 @@ class GeoTiffRasterSourceMultiThreadingSpec extends AsyncFunSpec with GeoTiffTes
     }
 
     it("readBounds") {
+      val bounds = GridBounds(rs.dimensions)
       val res =
         iterations
-          .map { _ => Future { rs.read(rs.gridBounds, 0 until rs.bandCount) } }
+          .map { _ => Future { rs.read(bounds, 0 until rs.bandCount) } }
           .sequence
           .map(_.flatten)
 
