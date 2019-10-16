@@ -17,6 +17,7 @@
 package geotrellis.raster.io.geotiff.tags
 
 import monocle.macros.Lenses
+import io.circe._, io.circe.generic.semiauto._
 
 @Lenses("_")
 case class GeoTiffTags(
@@ -29,3 +30,8 @@ case class GeoTiffTags(
   metadata: Option[String] = None,
   gdalInternalNoData: Option[Double] = None
 )
+
+object GeoTiffTags {
+  implicit val geotiffTagsDecoder: Decoder[GeoTiffTags] = deriveDecoder[GeoTiffTags]
+  implicit val geotiffTagsEncoder: Encoder[GeoTiffTags] = deriveEncoder[GeoTiffTags]
+}

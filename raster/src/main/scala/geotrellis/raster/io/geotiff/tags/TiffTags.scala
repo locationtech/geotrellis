@@ -36,16 +36,10 @@ import xml._
 
 import monocle.syntax.apply._
 import monocle.macros.Lenses
-
+import _root_.io.circe._
+import _root_.io.circe.generic.semiauto._
+import _root_.io.circe.generic.JsonCodec
 import spire.syntax.cfor._
-
-object TiffTags {
-  def apply(path: String): TiffTags =
-    TiffTagsReader.read(path)
-
-  def apply(byteReader: ByteReader): TiffTags =
-    TiffTagsReader.read(byteReader)
-}
 
 @Lenses("_")
 case class TiffTags(
@@ -575,4 +569,15 @@ case class TiffTags(
           throw new MalformedGeoTiffException("No TileOffsets information.")
       }
     }
+}
+
+object TiffTags {
+  def read(path: String): TiffTags =
+    TiffTagsReader.read(path)
+
+  def read(byteReader: ByteReader): TiffTags =
+    TiffTagsReader.read(byteReader)
+
+  implicit val tiffTagsEncoder: Encoder[TiffTags] = deriveEncoder[TiffTags]
+  implicit val tiffTagsDecoder: Decoder[TiffTags] = deriveDecoder[TiffTags]
 }

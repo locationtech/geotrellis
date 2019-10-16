@@ -17,8 +17,10 @@
 package geotrellis.raster.io.geotiff.tags
 
 import monocle.macros.Lenses
+import io.circe.generic.JsonCodec
 
 @Lenses("_")
+@JsonCodec
 case class DocumentationTags(
   documentName: Option[String] = None,
   pageName: Option[String] = None,
@@ -26,3 +28,5 @@ case class DocumentationTags(
   xPositions: Option[Array[(Long, Long)]] = None,
   yPositions: Option[Array[(Long, Long)]] = None
 )
+
+object DocumentationTags

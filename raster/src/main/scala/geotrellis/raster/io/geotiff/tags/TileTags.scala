@@ -17,6 +17,7 @@
 package geotrellis.raster.io.geotiff.tags
 
 import monocle.macros.Lenses
+import io.circe._, io.circe.generic.semiauto._
 
 @Lenses("_")
 case class TileTags(
@@ -25,3 +26,8 @@ case class TileTags(
   tileOffsets: Option[Array[Long]] = None,
   tileByteCounts: Option[Array[Long]] = None
 )
+
+object TileTags {
+  implicit val tileTagsEncoder: Encoder[TileTags] = deriveEncoder[TileTags]
+  implicit val tileTagsDecoder: Decoder[TileTags] = deriveDecoder[TileTags]
+}

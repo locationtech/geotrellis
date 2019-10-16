@@ -17,9 +17,11 @@
 package geotrellis.raster.io.geotiff.tags
 
 import monocle.macros.Lenses
+import io.circe.generic.JsonCodec
 
 import spire.syntax.cfor._
 
+@JsonCodec
 @Lenses("_")
 case class MetadataTags(
   artist: Option[String] = None,
@@ -31,3 +33,5 @@ case class MetadataTags(
   model: Option[String] = None,
   software: Option[String] = None
 )
+
+object MetadataTags

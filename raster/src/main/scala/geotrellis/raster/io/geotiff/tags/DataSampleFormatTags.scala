@@ -17,6 +17,7 @@
 package geotrellis.raster.io.geotiff.tags
 
 import monocle.macros.Lenses
+import io.circe._, io.circe.generic.semiauto._
 
 @Lenses("_")
 case class DataSampleFormatTags(
@@ -24,3 +25,8 @@ case class DataSampleFormatTags(
   maxSampleValue: Option[Array[Long]] = None,
   minSampleValue: Option[Array[Long]] = None
 )
+
+object DataSampleFormatTags {
+  implicit val dataSampleFormatTagsDecoder: Decoder[DataSampleFormatTags] = deriveDecoder[DataSampleFormatTags]
+  implicit val dataSampleFormatTagsEncoder: Encoder[DataSampleFormatTags] = deriveEncoder[DataSampleFormatTags]
+}

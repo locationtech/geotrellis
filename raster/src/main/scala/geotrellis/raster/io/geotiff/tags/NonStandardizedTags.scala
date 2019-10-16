@@ -17,6 +17,7 @@
 package geotrellis.raster.io.geotiff.tags
 
 import monocle.macros.Lenses
+import io.circe._, io.circe.generic.semiauto._
 
 import scala.collection.immutable.HashMap
 
@@ -28,3 +29,8 @@ case class NonStandardizedTags(
   undefinedMap: HashMap[Int, Array[Byte]] = HashMap[Int, Array[Byte]](),
   doublesMap: HashMap[Int, Array[Double]] = HashMap[Int, Array[Double]]()
 )
+
+object NonStandardizedTags {
+  implicit val nonStandardizedTagsEncoder: Encoder[NonStandardizedTags] = deriveEncoder[NonStandardizedTags]
+  implicit val nonStandardizedTagsDecoder: Decoder[NonStandardizedTags] = deriveDecoder[NonStandardizedTags]
+}

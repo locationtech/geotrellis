@@ -16,6 +16,8 @@
 
 package geotrellis.raster.io.geotiff
 
+import io.circe._
+
 abstract sealed class TiffType extends Serializable { val code: Char }
 
 case object Tiff extends TiffType { val code: Char = 42 }
@@ -26,4 +28,16 @@ object TiffType {
     case Tiff.code => Tiff
     case BigTiff.code => BigTiff
   }
+
+  implicit val tiffTypeEncoder: Encoder[TiffType] =
+    Encoder.encodeString.contramap[TiffType](_.toString)
+
+  implicit val tiffTypeDecoder: Decoder[TiffType] =
+    Decoder.decodeString.emap { str =>
+      str match {
+        case "Tiff" => Right(Tiff)
+        case "BigTiff" => Right(BigTiff)
+        case _ => Left(s"Invalid type: $str")
+      }
+    }
 }

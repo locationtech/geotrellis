@@ -17,6 +17,7 @@
 package geotrellis.raster.io.geotiff.tags
 
 import monocle.macros.Lenses
+import io.circe._, io.circe.generic.semiauto._
 
 @Lenses("_")
 case class NonBasicTags(
@@ -38,3 +39,8 @@ case class NonBasicTags(
   halftoneHints: Option[Array[Int]] = None,
   predictor: Option[Int] = None
 )
+
+object NonBasicTags {
+  implicit val nonBasicTagsEncoder: Encoder[NonBasicTags] = deriveEncoder[NonBasicTags]
+  implicit val nonBasicTagsDecoder: Decoder[NonBasicTags] = deriveDecoder[NonBasicTags]
+}
