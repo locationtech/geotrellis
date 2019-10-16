@@ -24,5 +24,4 @@ package object geotiff extends Implicits {
   val Deflate = DeflateCompression
 
   val GeoTiffReader = reader.GeoTiffReader
-  val TiffTagsReader = reader.TiffTagsReader
 }

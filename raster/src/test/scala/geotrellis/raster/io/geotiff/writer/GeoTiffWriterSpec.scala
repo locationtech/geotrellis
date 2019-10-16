@@ -211,7 +211,7 @@ class GeoTiffWriterSpec extends FunSpec
 
       addToPurge(path)
 
-      val tags = TiffTags(path)
+      val tags = TiffTags.read(path)
       tags.compression should be (geotrellis.raster.io.geotiff.tags.codes.CompressionType.ZLibCoded)
 
       val gt = MultibandGeoTiff(path)

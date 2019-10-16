@@ -161,7 +161,7 @@ class GeoTiffReaderSpec extends FunSpec
   describe("match tiff tags and geokeys correctly") {
 
     it("must match aspect.tif tiff tags") {
-      val tiffTags = TiffTagsReader.read(s"$baseDataPath/aspect.tif")
+      val tiffTags = TiffTags.read(s"$baseDataPath/aspect.tif")
 
       tiffTags.cols should equal (1500L)
 
@@ -236,7 +236,7 @@ class GeoTiffReaderSpec extends FunSpec
     }
 
     it("must match aspect.tif geokeys") {
-      val tiffTags = TiffTagsReader.read(s"$baseDataPath/aspect.tif")
+      val tiffTags = TiffTags.read(s"$baseDataPath/aspect.tif")
 
       tiffTags.tags.headTags("AREA_OR_POINT") should be ("AREA")
 

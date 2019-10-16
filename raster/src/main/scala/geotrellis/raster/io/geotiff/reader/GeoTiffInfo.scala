@@ -143,11 +143,11 @@ object GeoTiffInfo {
         tiffType match {
           case Tiff =>
             val smallStart = byteReader.getInt
-            TiffTagsReader.read(byteReader, smallStart.toLong)(IntTiffTagOffsetSize)
+            TiffTags.read(byteReader, smallStart.toLong)(IntTiffTagOffsetSize)
           case _ =>
             byteReader.position(8)
             val bigStart = byteReader.getLong
-            TiffTagsReader.read(byteReader, bigStart)(LongTiffTagOffsetSize)
+            TiffTags.read(byteReader, bigStart)(LongTiffTagOffsetSize)
         }
 
       // IFD overviews may contain not all tags required for a proper work with it
@@ -159,13 +159,13 @@ object GeoTiffInfo {
             case Tiff =>
               var ifdOffset = byteReader.getInt
               while (ifdOffset > 0) {
-                tiffTagsBuffer += TiffTagsReader.read(byteReader, ifdOffset)(IntTiffTagOffsetSize)
+                tiffTagsBuffer += TiffTags.read(byteReader, ifdOffset)(IntTiffTagOffsetSize)
                 ifdOffset = byteReader.getInt
               }
             case _ =>
               var ifdOffset = byteReader.getLong
               while (ifdOffset > 0) {
-                tiffTagsBuffer += TiffTagsReader.read(byteReader, ifdOffset)(LongTiffTagOffsetSize)
+                tiffTagsBuffer += TiffTags.read(byteReader, ifdOffset)(LongTiffTagOffsetSize)
                 ifdOffset = byteReader.getLong
               }
           }

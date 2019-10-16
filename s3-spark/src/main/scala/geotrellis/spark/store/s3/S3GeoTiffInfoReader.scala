@@ -78,7 +78,7 @@ class S3GeoTiffInfoReader(
       else None
 
     val s3rr = S3RangeReader(bucket, key, s3Client)
-    GeoTiffReader.readGeoTiffInfo(s3rr, streaming, true, ovrReader)
+    GeoTiffInfo.read(s3rr, streaming, true, ovrReader)
   }
 }
 

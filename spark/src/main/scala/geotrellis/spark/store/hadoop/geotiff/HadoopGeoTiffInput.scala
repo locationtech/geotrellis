@@ -17,7 +17,7 @@
 package geotrellis.spark.store.hadoop.geotiff
 
 import geotrellis.store.hadoop.util.{HdfsUtils, HdfsRangeReader}
-import geotrellis.raster.io.geotiff.reader.TiffTagsReader
+import geotrellis.raster.io.geotiff.tags.TiffTags
 import geotrellis.util.annotations.experimental
 
 import org.apache.hadoop.conf.Configuration
@@ -38,7 +38,7 @@ import java.net.URI
     HdfsUtils
       .listFiles(new Path(uri), conf)
       .map { p =>
-        val tiffTags = TiffTagsReader.read(HdfsRangeReader(p, conf))
+        val tiffTags = TiffTags.read(HdfsRangeReader(p, conf))
         GeoTiffMetadata(tiffTags.extent, tiffTags.crs, name, uri)
       }
   }

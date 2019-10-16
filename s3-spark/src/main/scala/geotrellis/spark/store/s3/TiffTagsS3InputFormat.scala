@@ -17,7 +17,6 @@
 package geotrellis.spark.store.s3
 
 import geotrellis.util.ByteReader
-import geotrellis.raster.io.geotiff.reader.TiffTagsReader
 import geotrellis.raster.io.geotiff.tags.TiffTags
 
 import org.apache.hadoop.mapreduce.{InputSplit, TaskAttemptContext}
@@ -48,7 +47,7 @@ class TiffTagsS3InputFormat extends S3InputFormat[GetObjectRequest, TiffTags] {
           .bucket(bucket)
           .key(key)
           .build()
-        val tiffTags = TiffTagsReader.read(reader)
+        val tiffTags = TiffTags.read(reader)
         (request, tiffTags)
       }
     }
