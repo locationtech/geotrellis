@@ -18,6 +18,7 @@ package geotrellis.raster
 
 import geotrellis.vector.Point
 import geotrellis.vector._
+import geotrellis.raster.rasterize.Rasterizer
 import geotrellis.util.{MethodExtensions, np}
 
 object Implicits extends Implicits
@@ -127,15 +128,15 @@ trait Implicits
 
   implicit class MultibandRasterPointFeatureExtractorMethods(val self: Raster[MultibandTile]) extends MethodExtensions[Raster[MultibandTile]] {
     def pointFeatures[D] = new {
-      def apply(geom: Geometry)(implicit ev: PointFeatureExtractor[MultibandTile, Array[D]]): Iterator[PointFeature[Array[D]]] =
-        FeatureExtractor[MultibandTile, Point, Array[D]].features(geom, self)
+      def apply(geom: Geometry, options: Rasterizer.Options = Rasterizer.Options.DEFAULT)(implicit ev: PointFeatureExtractor[MultibandTile, Array[D]]): Iterator[PointFeature[Array[D]]] =
+        FeatureExtractor[MultibandTile, Point, Array[D]].features(self, geom, options)
     }
   }
 
   implicit class RasterPointFeatureExtractorMethods(val self: Raster[Tile]) extends MethodExtensions[Raster[Tile]] {
     def pointFeatures[D] = new {
-      def apply(geom: Geometry)(implicit ev: PointFeatureExtractor[Tile, D]): Iterator[PointFeature[D]] =
-        FeatureExtractor[Tile, Point, D].features(geom, self)
+      def apply(geom: Geometry, options: Rasterizer.Options = Rasterizer.Options.DEFAULT)(implicit ev: PointFeatureExtractor[Tile, D]): Iterator[PointFeature[D]] =
+        FeatureExtractor[Tile, Point, D].features(self, geom, options)
     }
   }
 }
