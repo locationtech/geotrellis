@@ -126,17 +126,6 @@ trait Implicits
     }
   }
 
-  implicit class MultibandRasterPointFeatureExtractorMethods(val self: Raster[MultibandTile]) extends MethodExtensions[Raster[MultibandTile]] {
-    def pointFeatures[D] = new {
-      def apply(geom: Geometry, options: Rasterizer.Options = Rasterizer.Options.DEFAULT)(implicit ev: PointFeatureExtractor[MultibandTile, Array[D]]): Iterator[PointFeature[Array[D]]] =
-        FeatureExtractor[MultibandTile, Point, Array[D]].features(self, geom, options)
-    }
-  }
+  implicit class withCellFeaturesMethods[R](val self: R) extends CellFeatures.Methods[R]
 
-  implicit class RasterPointFeatureExtractorMethods(val self: Raster[Tile]) extends MethodExtensions[Raster[Tile]] {
-    def pointFeatures[D] = new {
-      def apply(geom: Geometry, options: Rasterizer.Options = Rasterizer.Options.DEFAULT)(implicit ev: PointFeatureExtractor[Tile, D]): Iterator[PointFeature[D]] =
-        FeatureExtractor[Tile, Point, D].features(self, geom, options)
-    }
-  }
 }
