@@ -16,11 +16,11 @@
 
 package geotrellis.raster.io.geotiff.tags
 
+import io.circe._
+import io.circe.generic.semiauto._
 import monocle.macros.Lenses
-import io.circe.generic.JsonCodec
 
 @Lenses("_")
-@JsonCodec
 case class DocumentationTags(
   documentName: Option[String] = None,
   pageName: Option[String] = None,
@@ -29,4 +29,7 @@ case class DocumentationTags(
   yPositions: Option[Array[(Long, Long)]] = None
 )
 
-object DocumentationTags
+object DocumentationTags {
+  implicit val documentationTagsDecoder: Decoder[DocumentationTags] = deriveDecoder[DocumentationTags]
+  implicit val documentationTagsEncoder: Encoder[DocumentationTags] = deriveEncoder[DocumentationTags]
+}

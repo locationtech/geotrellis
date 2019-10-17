@@ -16,7 +16,8 @@
 
 package geotrellis.raster.io.geotiff.compression
 
-import _root_.io.circe._
+import io.circe._
+import io.circe.syntax._
 import cats.syntax.either._
 
 trait Compression extends Serializable {
@@ -27,18 +28,13 @@ object Compression {
   implicit val compressionDecoder: Decoder[Compression] =
     new Decoder[Compression] {
       final def apply(c: HCursor): Decoder.Result[Compression] = {
-        for {
-          compressionType <- c.downField("compressionType").as[String]
-        } yield {
-          compressionType match {
-            case "NoCompression" => NoCompression
-            case _ => {
-              c.downField("level").as[Int] match {
-                case Left(_)  => DeflateCompression()
-                case Right(i) => DeflateCompression(i)
-              }
+        c.downField("compressionType").as[String].map {
+          case "NoCompression" => NoCompression
+          case _ =>
+            c.downField("level").as[Int] match {
+              case Left(_)  => DeflateCompression()
+              case Right(i) => DeflateCompression(i)
             }
-          }
         }
       }
     }
@@ -47,10 +43,9 @@ object Compression {
     new Encoder[Compression] {
       final def apply(a: Compression): Json = a match {
         case NoCompression =>
-          Json.obj(("compressionType", Json.fromString("NoCompression")))
+          Json.obj(("compressionType", "NoCompression".asJson))
         case d: DeflateCompression =>
-          Json.obj(("compressionType", Json.fromString("Deflate")),
-                   ("level", Json.fromInt(d.level)))
+          Json.obj(("compressionType", "Deflate".asJson), ("level", d.level.asJson))
       }
     }
 }

@@ -31,11 +31,9 @@ object InterleaveMethod {
     Encoder.encodeString.contramap[InterleaveMethod](_.toString)
 
   implicit val interleaveMethodDecoder: Decoder[InterleaveMethod] =
-    Decoder.decodeString.emap { str =>
-      str match {
-        case "PixelInterleave" => Right(PixelInterleave)
-        case "BandInterleave" => Right(BandInterleave)
-        case _ => Left(s"Invalid Interleave: $str")
-      }
+    Decoder.decodeString.emap {
+      case "PixelInterleave" => Right(PixelInterleave)
+      case "BandInterleave" => Right(BandInterleave)
+      case str => Left(s"Invalid Interleave: $str")
     }
 }

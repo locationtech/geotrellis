@@ -16,8 +16,8 @@
 
 package geotrellis.raster.io.geotiff.tags
 
-import _root_.io.circe._
-import _root_.io.circe.generic.semiauto._
+import io.circe._
+import io.circe.generic.semiauto._
 import geotrellis.proj4.{CRS, LatLng}
 import geotrellis.vector.Extent
 import geotrellis.raster._

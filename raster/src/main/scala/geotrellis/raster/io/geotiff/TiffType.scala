@@ -33,11 +33,9 @@ object TiffType {
     Encoder.encodeString.contramap[TiffType](_.toString)
 
   implicit val tiffTypeDecoder: Decoder[TiffType] =
-    Decoder.decodeString.emap { str =>
-      str match {
-        case "Tiff" => Right(Tiff)
-        case "BigTiff" => Right(BigTiff)
-        case _ => Left(s"Invalid type: $str")
-      }
+    Decoder.decodeString.emap {
+      case "Tiff" => Right(Tiff)
+      case "BigTiff" => Right(BigTiff)
+      case str => Left(s"Invalid type: $str")
     }
 }

@@ -16,8 +16,8 @@
 
 package geotrellis.raster.io.geotiff
 
-import geotrellis.raster._
-import _root_.io.circe._
+import io.circe._
+import io.circe.syntax._
 import cats.syntax.either._
 
 abstract sealed class StorageMethod extends Serializable
@@ -58,30 +58,16 @@ object StorageMethod {
   implicit val storageMethodDecoder: Decoder[StorageMethod] =
     new Decoder[StorageMethod] {
       final def apply(c: HCursor): Decoder.Result[StorageMethod] = {
-        for {
-          storageType <- c.downField("storageType").as[String]
-        } yield {
-          storageType match {
-            case "striped" => {
-              val rowsPerStrip =
-                c.downField("rowsPerStrip").as[Option[Int]] match {
-                  case Left(_)  => None
-                  case Right(v) => v
-                }
-              new Striped(rowsPerStrip)
+        c.downField("storageType").as[String].flatMap {
+          case "striped" =>
+            val rowsPerStrip = c.downField("rowsPerStrip").as[Option[Int]].getOrElse(None)
+            Right(new Striped(rowsPerStrip))
+          case _ =>
+            (c.downField("cols").as[Int], c.downField("rows").as[Int]) match {
+              case (Right(cols), Right(rows)) => Right(Tiled(cols, rows))
+              case _ =>
+                Left(DecodingFailure(s"No cols / rows were specified for the Tiled storage method.", c.history))
             }
-            case _ => {
-              val cols = c.downField("cols").as[Int] match {
-                case Left(_)  => 256
-                case Right(v) => v
-              }
-              val rows = c.downField("rows").as[Int] match {
-                case Left(_)  => 256
-                case Right(v) => v
-              }
-              Tiled(cols, rows)
-            }
-          }
         }
       }
     }
@@ -89,11 +75,12 @@ object StorageMethod {
   implicit val storageMethodEncoder: Encoder[StorageMethod] =
     new Encoder[StorageMethod] {
       final def apply(a: StorageMethod): Json = a match {
-        case _: Striped => Json.obj(("storageType", Json.fromString("striped")))
-        case Tiled(cols, rows) =>
-          Json.obj(("storageType", Json.fromString("tiled")),
-                   ("cols", Json.fromInt(cols)),
-                   ("rows", Json.fromInt(rows)))
+        case _: Striped => Json.obj(("storageType", "striped".asJson))
+        case Tiled(cols, rows) => Json.obj(
+          ("storageType", "tiled".asJson),
+          ("cols", cols.asJson),
+          ("rows", rows.asJson)
+        )
       }
     }
 }
