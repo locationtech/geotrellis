@@ -17,6 +17,8 @@
 package geotrellis.raster.io.geotiff.tags
 
 import monocle.macros.Lenses
+import io.circe._
+import io.circe.generic.semiauto._
 
 @Lenses("_")
 case class ColimetryTags(
@@ -26,3 +28,8 @@ case class ColimetryTags(
   transferRange: Option[Array[Int]] = None,
   referenceBlackWhite: Option[Array[Long]] = None
 )
+
+object ColimetryTags {
+  implicit val colimetryTagsEncoder: Encoder[ColimetryTags] = deriveEncoder[ColimetryTags]
+  implicit val colimetryTagsDecoder: Decoder[ColimetryTags] = deriveDecoder[ColimetryTags]
+}

@@ -16,9 +16,9 @@
 
 package geotrellis.raster.io.geotiff.tags
 
+import io.circe._
+import io.circe.generic.semiauto._
 import monocle.macros.Lenses
-
-import spire.syntax.cfor._
 
 @Lenses("_")
 case class MetadataTags(
@@ -31,3 +31,8 @@ case class MetadataTags(
   model: Option[String] = None,
   software: Option[String] = None
 )
+
+object MetadataTags {
+  implicit val metadataTagsDecoder: Decoder[MetadataTags] = deriveDecoder[MetadataTags]
+  implicit val metadataTagsEncoder: Encoder[MetadataTags] = deriveEncoder[MetadataTags]
+}

@@ -19,6 +19,7 @@ package geotrellis.raster.io.geotiff
 import geotrellis.util._
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff.reader._
+import geotrellis.raster.io.geotiff.tags.TiffTags
 import geotrellis.raster.testkit._
 
 import org.scalatest._
@@ -27,7 +28,7 @@ trait Tester {
   def paths: List[String]
 
   class Tester(path: String) {
-    val tiffTags = TiffTagsReader.read(path)
+    val tiffTags = TiffTags.read(path)
     val byteBuffer= Filesystem.toMappedByteBuffer(path)
     val arraySegmentBytes: ArraySegmentBytes =
       ArraySegmentBytes(byteBuffer, tiffTags)
@@ -102,7 +103,7 @@ class SegmentBytesSpec extends FunSpec
       assert(tester.bufferSegmentBytes.size == tester.tiffTags.segmentCount)
     }
     it("should read in a large file") {
-      val tiffTags = TiffTagsReader.read(largeFile)
+      val tiffTags = TiffTags.read(largeFile)
       val byteBuffer = Filesystem.toMappedByteBuffer(largeFile)
       LazySegmentBytes(byteBuffer, tiffTags)
     }

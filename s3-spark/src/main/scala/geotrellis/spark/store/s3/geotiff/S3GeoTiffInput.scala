@@ -16,10 +16,10 @@
 
 package geotrellis.spark.store.s3.geotiff
 
-import geotrellis.raster.io.geotiff.reader.TiffTagsReader
 import geotrellis.store.s3.{S3ClientProducer, AmazonS3URI}
 import geotrellis.store.s3.util.S3RangeReader
 import geotrellis.spark.store.hadoop.geotiff.GeoTiffMetadata
+import geotrellis.raster.io.geotiff.tags.TiffTags
 import geotrellis.util.StreamingByteReader
 import geotrellis.util.annotations.experimental
 
@@ -73,7 +73,7 @@ import java.net.URI
           case _ => None
         }
       }).map({ bucketAndKey: (String, String) =>
-        val tiffTags = TiffTagsReader.read(StreamingByteReader(
+        val tiffTags = TiffTags.read(StreamingByteReader(
           S3RangeReader(
             bucket = bucketAndKey._1,
             key = bucketAndKey._2,

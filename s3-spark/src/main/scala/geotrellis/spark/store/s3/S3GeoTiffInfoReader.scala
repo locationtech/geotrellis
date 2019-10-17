@@ -17,7 +17,7 @@
 package geotrellis.spark.store.s3
 
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
-import geotrellis.raster.io.geotiff.reader.GeoTiffReader.GeoTiffInfo
+import geotrellis.raster.io.geotiff.reader.GeoTiffInfo
 import geotrellis.raster.io.geotiff.tags.TiffTags
 import geotrellis.store.s3._
 import geotrellis.store.s3.util.S3RangeReader
@@ -78,7 +78,7 @@ class S3GeoTiffInfoReader(
       else None
 
     val s3rr = S3RangeReader(bucket, key, s3Client)
-    GeoTiffReader.readGeoTiffInfo(s3rr, streaming, true, ovrReader)
+    GeoTiffInfo.read(s3rr, streaming, true, ovrReader)
   }
 }
 

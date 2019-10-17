@@ -17,6 +17,7 @@
 package geotrellis.raster.io.geotiff
 
 import geotrellis.raster._
+import _root_.io.circe._
 
 abstract sealed class InterleaveMethod
 
@@ -24,3 +25,15 @@ abstract sealed class InterleaveMethod
 case object PixelInterleave extends InterleaveMethod
 /** Band Interleave: The pixels of each band are in separate segments */
 case object BandInterleave extends InterleaveMethod
+
+object InterleaveMethod {
+  implicit val interleaveMethodEncoder: Encoder[InterleaveMethod] =
+    Encoder.encodeString.contramap[InterleaveMethod](_.toString)
+
+  implicit val interleaveMethodDecoder: Decoder[InterleaveMethod] =
+    Decoder.decodeString.emap {
+      case "PixelInterleave" => Right(PixelInterleave)
+      case "BandInterleave" => Right(BandInterleave)
+      case str => Left(s"Invalid Interleave: $str")
+    }
+}

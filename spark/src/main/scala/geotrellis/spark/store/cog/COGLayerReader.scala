@@ -19,7 +19,7 @@ package geotrellis.spark.store.cog
 import geotrellis.raster.{CellGrid, GridBounds, MultibandTile, Tile}
 import geotrellis.raster.io.geotiff._
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
-import geotrellis.raster.io.geotiff.reader.TiffTagsReader
+import geotrellis.raster.io.geotiff.tags.TiffTags
 import geotrellis.layer._
 import geotrellis.store._
 import geotrellis.store.cog._
@@ -393,7 +393,7 @@ abstract class COGLayerReader[ID] extends Serializable {
               val uri = fullPath(keyPath(index))
               val baseKey =
                 parse(
-                  TiffTagsReader
+                  TiffTags
                     .read(RangeReader(uri))
                     .tags
                     .headTags(GTKey)

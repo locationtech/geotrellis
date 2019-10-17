@@ -17,6 +17,8 @@
 package geotrellis.raster.io.geotiff.tags
 
 import monocle.macros.Lenses
+import io.circe._
+import io.circe.generic.semiauto._
 
 @Lenses("_")
 case class JpegTags(
@@ -31,3 +33,8 @@ case class JpegTags(
   jpegDCTables: Option[Array[Long]] = None,
   jpegACTables: Option[Array[Long]] = None
 )
+
+object JpegTags {
+  implicit val jpegTagsEncoder: Encoder[JpegTags] = deriveEncoder[JpegTags]
+  implicit val jpegTagsDecoder: Decoder[JpegTags] = deriveDecoder[JpegTags]
+}

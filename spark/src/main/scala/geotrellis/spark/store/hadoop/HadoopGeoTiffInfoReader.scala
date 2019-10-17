@@ -17,7 +17,7 @@
 package geotrellis.spark.store.hadoop
 
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
-import geotrellis.raster.io.geotiff.reader.GeoTiffReader.GeoTiffInfo
+import geotrellis.raster.io.geotiff.reader.GeoTiffInfo
 import geotrellis.raster.io.geotiff.tags.TiffTags
 import geotrellis.store.hadoop.SerializableConfiguration
 import geotrellis.store.hadoop.util.{HdfsUtils, HdfsRangeReader}
@@ -53,6 +53,6 @@ case class HadoopGeoTiffInfoReader(
     val ovrReader: Option[ByteReader] =
       if (HdfsUtils.pathExists(ovrPath, config.value)) Some(HdfsRangeReader(ovrPath, config.value)) else None
 
-    GeoTiffReader.readGeoTiffInfo(rr, streaming, true, ovrReader)
+    GeoTiffInfo.read(rr, streaming, true, ovrReader)
   }
 }

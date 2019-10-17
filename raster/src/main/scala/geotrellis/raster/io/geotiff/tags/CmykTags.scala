@@ -17,6 +17,8 @@
 package geotrellis.raster.io.geotiff.tags
 
 import monocle.macros.Lenses
+import io.circe._
+import io.circe.generic.semiauto._
 
 @Lenses("_")
 case class CmykTags(
@@ -26,3 +28,8 @@ case class CmykTags(
   dotRange: Option[Array[Int]] = None,
   targetPrinters: Option[String] = None
 )
+
+object CmykTags {
+  implicit val cmykTagsEncoder: Encoder[CmykTags] = deriveEncoder[CmykTags]
+  implicit val cmykTagsDecoder: Decoder[CmykTags] = deriveDecoder[CmykTags]
+}

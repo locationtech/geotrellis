@@ -16,6 +16,8 @@
 
 package geotrellis.raster.io.geotiff.tags
 
+import io.circe.generic.JsonCodec
+
 object Pixel3D {
 
   def fromArray(v: Array[Double]): Pixel3D =
@@ -26,4 +28,5 @@ object Pixel3D {
 
 }
 
+@JsonCodec
 case class Pixel3D(x: Double, y: Double, z: Double)

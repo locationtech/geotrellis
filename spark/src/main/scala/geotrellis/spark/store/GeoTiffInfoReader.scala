@@ -18,7 +18,7 @@ package geotrellis.spark.store
 
 import geotrellis.vector.Geometry
 import geotrellis.raster.GridBounds
-import geotrellis.raster.io.geotiff.reader.GeoTiffReader.GeoTiffInfo
+import geotrellis.raster.io.geotiff.reader.GeoTiffInfo
 import geotrellis.raster.io.geotiff.GeoTiffSegmentLayoutTransform
 
 import org.log4s._

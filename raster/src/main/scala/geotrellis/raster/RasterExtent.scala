@@ -16,8 +16,8 @@
 
 package geotrellis.raster
 
-import geotrellis.vector.{Extent, Point}
-import scala.math.{min, max, ceil}
+import geotrellis.vector.Extent
+import scala.math.ceil
 
 import _root_.io.circe.generic.JsonCodec
 

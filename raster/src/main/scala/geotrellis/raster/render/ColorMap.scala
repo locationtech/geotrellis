@@ -21,6 +21,7 @@ import geotrellis.raster.histogram.Histogram
 import geotrellis.util._
 import spire.syntax.cfor._
 import spire.std.any._
+import _root_.io.circe._
 
 import scala.util.Try
 
@@ -372,4 +373,11 @@ object IndexedColorMap {
 
   /** Flattens the given colormap into an indexed variant, throwing away any defined boundaries. */
   def fromColorMap(cm: ColorMap) = new IndexedColorMap(cm.colors)
+
+  implicit val indexedColorMapDecoder: Decoder[IndexedColorMap] =
+    Decoder.decodeSeq[Int].emap { s =>
+      Right(new IndexedColorMap(s))
+    }
+  implicit val indexedColorMapEncoder: Encoder[IndexedColorMap] =
+    Encoder.encodeSeq[Int].contramapArray(_.colors.toSeq)
 }

@@ -16,6 +16,9 @@
 
 package geotrellis.raster.io.geotiff.tags
 
+import io.circe.generic.JsonCodec
+
+@JsonCodec
 case class TiffTagMetadata(
   tag: Int,
   fieldType: Int,

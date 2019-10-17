@@ -18,8 +18,8 @@ package geotrellis.raster.io.json
 
 import geotrellis.raster.histogram._
 
-import _root_.io.circe._
-import _root_.io.circe.syntax._
+import io.circe._
+import io.circe.syntax._
 import cats.implicits._
 
 import scala.collection.mutable.ArrayBuffer

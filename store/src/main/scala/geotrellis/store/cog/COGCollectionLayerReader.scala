@@ -17,7 +17,8 @@
 package geotrellis.store.cog
 
 import geotrellis.layer._
-import geotrellis.raster.io.geotiff.reader.{TiffTagsReader, _}
+import geotrellis.raster.io.geotiff.reader._
+import geotrellis.raster.io.geotiff.tags.TiffTags
 import geotrellis.raster.{CellGrid, RasterExtent}
 import geotrellis.store._
 import geotrellis.store.index.{Index, MergeQueue}
@@ -221,7 +222,7 @@ object COGCollectionLayerReader {
         val uri = fullPath(keyPath(index))
         val baseKey =
           parse(
-            TiffTagsReader
+            TiffTags
               .read(RangeReader(uri))
               .tags
               .headTags(GTKey)

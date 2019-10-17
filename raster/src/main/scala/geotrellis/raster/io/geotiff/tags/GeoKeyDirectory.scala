@@ -22,6 +22,8 @@ import geotrellis.raster.io.geotiff.util._
 
 import monocle.syntax._
 import monocle.macros.Lenses
+import io.circe._
+import io.circe.generic.semiauto._
 
 import scala.collection.immutable.HashMap
 
@@ -93,6 +95,11 @@ case class ConfigKeys(
   gtCitation: Option[Array[String]] = None
 )
 
+object ConfigKeys {
+  implicit val configKeysEncoder: Encoder[ConfigKeys] = deriveEncoder[ConfigKeys]
+  implicit val configKeysDecoder: Decoder[ConfigKeys] = deriveDecoder[ConfigKeys]
+}
+
 @Lenses("_")
 case class GeogCSParameterKeys(
   geogType: Option[Int] = None,
@@ -110,6 +117,11 @@ case class GeogCSParameterKeys(
   geogAzimuthUnits: Option[Int] = None,
   geogPrimeMeridianLong: Option[Double] = None
 )
+
+object GeogCSParameterKeys {
+  implicit val geogCSParameterKeysEncoder: Encoder[GeogCSParameterKeys] = deriveEncoder[GeogCSParameterKeys]
+  implicit val geogCSParameterKeysDecoder: Decoder[GeogCSParameterKeys] = deriveDecoder[GeogCSParameterKeys]
+}
 
 @Lenses("_")
 case class ProjectedCSParameterKeys(
@@ -135,6 +147,11 @@ case class ProjectedCSParameterKeys(
   projRectifiedGridAngle: Option[Double] = None
 )
 
+object ProjectedCSParameterKeys {
+  implicit val projectedCSParameterKeysDecoder: Decoder[ProjectedCSParameterKeys] = deriveDecoder[ProjectedCSParameterKeys]
+  implicit val projectedCSParameterKeysEncoder: Encoder[ProjectedCSParameterKeys] = deriveEncoder[ProjectedCSParameterKeys]
+}
+
 @Lenses("_")
 case class ProjectedFalsings(
   projFalseEasting: Option[Double] = None,
@@ -145,6 +162,11 @@ case class ProjectedFalsings(
   projFalseOriginNorthing: Option[Double] = None
 )
 
+object ProjectedFalsings {
+  implicit val projectedFalsingsDecoder: Decoder[ProjectedFalsings] = deriveDecoder[ProjectedFalsings]
+  implicit val projectedFalsingsEncoder: Encoder[ProjectedFalsings] = deriveEncoder[ProjectedFalsings]
+}
+
 @Lenses("_")
 case class VerticalCSKeys(
   verticalCSType: Option[Int] = None,
@@ -153,12 +175,22 @@ case class VerticalCSKeys(
   verticalUnits: Option[Int] = None
 )
 
+object VerticalCSKeys {
+  implicit val verticalCSKeysDecoder: Decoder[VerticalCSKeys] = deriveDecoder[VerticalCSKeys]
+  implicit val verticalCSKeysEncoder: Encoder[VerticalCSKeys] = deriveEncoder[VerticalCSKeys]
+}
+
 @Lenses("_")
 case class NonStandardizedKeys(
   shortMap: HashMap[Int, Int] = HashMap[Int, Int](),
   doublesMap: HashMap[Int, Array[Double]] = HashMap[Int, Array[Double]](),
   asciisMap: HashMap[Int, Array[String]] = HashMap[Int, Array[String]]()
 )
+
+object NonStandardizedKeys {
+  implicit val nonStandardizedKeysDecoder: Decoder[NonStandardizedKeys] = deriveDecoder[NonStandardizedKeys]
+  implicit val nonStandardizedKeysEncoder: Encoder[NonStandardizedKeys] = deriveEncoder[NonStandardizedKeys]
+}
 
 @Lenses("_")
 case class GeoKeyDirectory(
@@ -185,6 +217,10 @@ case class GeoKeyDirectory(
   def getDoubleFromMaps(key: Int) = getDoublesArrayFromMaps(key)(0)
 
 }
+object GeoKeyDirectory {
+  implicit val geoKeyDirectoryTagsEncoder: Encoder[GeoKeyDirectory] = deriveEncoder[GeoKeyDirectory]
+  implicit val geoKeyDirectoryTagsDecoder: Decoder[GeoKeyDirectory] = deriveDecoder[GeoKeyDirectory]
+}
 
 case class GeoKeyDirectoryMetadata(
   version: Int,
@@ -193,9 +229,19 @@ case class GeoKeyDirectoryMetadata(
   numberOfKeys: Int
 )
 
+object GeoKeyDirectoryMetadata {
+  implicit val geoKeyDirectoryMetadataEncoder: Encoder[GeoKeyDirectoryMetadata] = deriveEncoder[GeoKeyDirectoryMetadata]
+  implicit val geoKeyDirectoryMetadataDecoder: Decoder[GeoKeyDirectoryMetadata] = deriveDecoder[GeoKeyDirectoryMetadata]
+}
+
 case class GeoKeyMetadata(
   keyID: Int,
   tiffTagLocation: Int,
   count: Int,
   valueOffset: Int
 )
+
+object GeoKeyMetadata {
+  implicit val geoKeyMetadataEncoder: Encoder[GeoKeyMetadata] = deriveEncoder[GeoKeyMetadata]
+  implicit val geoKeyMetadataDecoder: Decoder[GeoKeyMetadata] = deriveDecoder[GeoKeyMetadata]
+}

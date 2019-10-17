@@ -17,7 +17,7 @@
 package geotrellis
 
 import geotrellis.raster._
-import geotrellis.raster.io.geotiff.reader.GeoTiffReader
+import geotrellis.raster.io.geotiff.reader.GeoTiffInfo
 import geotrellis.vector.Extent
 import geotrellis.proj4._
 import geotrellis.util._
@@ -43,7 +43,7 @@ package object layer extends layer.Implicits {
       new ContextCollection(seq, metadata)
   }
 
-  implicit class GeoTiffInfoMethods(that: GeoTiffReader.GeoTiffInfo) {
+  implicit class GeoTiffInfoMethods(that: GeoTiffInfo) {
     def mapTransform =
       MapKeyTransform(
         extent = that.extent,
