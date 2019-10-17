@@ -17,10 +17,9 @@
 package geotrellis.raster
 
 import geotrellis.vector.Point
-import geotrellis.macros.{NoDataMacros, TypeConversionMacros}
 import geotrellis.vector._
+import geotrellis.raster.rasterize.Rasterizer
 import geotrellis.util.{MethodExtensions, np}
-
 
 object Implicits extends Implicits
 
@@ -126,4 +125,7 @@ trait Implicits
       np.percentile(tile.toArrayDouble.filter(isData(_)), pctBreak)
     }
   }
+
+  implicit class withCellFeaturesMethods[R](val self: R) extends CellFeatures.Methods[R]
+
 }

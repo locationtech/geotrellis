@@ -101,6 +101,8 @@ API Changes & Project structure changes
 
     ``import geotrellis.raster._``
 
+  - **New:** Raster conversion to Cell Features (`#3117 <https://github.com/locationtech/geotrellis/pull/3117>`_):
+
 - ``geotrellis.vectortile``
 
   - **Add:** ``geotrellis.vectortile.MVTFeature`` which properly conforms to the MVT 2.0 spec. Specifically, MVTFeature adds support for an ``Option[Long]`` id property.
