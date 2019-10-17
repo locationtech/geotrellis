@@ -101,7 +101,7 @@ API Changes & Project structure changes
 
     ``import geotrellis.raster._``
 
-  - **New:** Rasters FeatureExtraction (`#3117 <https://github.com/locationtech/geotrellis/pull/3117>`_):
+  - **New:** Raster conversion to Cell Features (`#3117 <https://github.com/locationtech/geotrellis/pull/3117>`_):
 
 - ``geotrellis.vectortile``
 
