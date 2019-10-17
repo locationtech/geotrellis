@@ -22,7 +22,8 @@ import geotrellis.raster.io.geotiff.util._
 
 import monocle.syntax._
 import monocle.macros.Lenses
-import io.circe._, io.circe.generic.semiauto._
+import io.circe._
+import io.circe.generic.semiauto._
 
 import scala.collection.immutable.HashMap
 
