@@ -1,17 +1,25 @@
-IMG  := geotrellis/publish-geotrellis-container
-TAG  := latest
-RELEASE_TAG := 2.0
+IMG                       := geotrellis/publish-geotrellis-container
+TAG                       := latest
+RELEASE_TAG               := v3.0.0
+GEOTRELLIS_VERSION_SUFFIX := ""
+PGPKEYS_PATH              := ~/.gnupg
+CREDENTIALS_PATH          := ~/.ivy2
 
 build: Dockerfile
-	docker build \
-	--build-arg RELEASE_TAG=$(RELEASE_TAG) \
-	--no-cache -t ${IMG}:${TAG} .
+	docker build --build-arg RELEASE_TAG=${RELEASE_TAG} --no-cache -t ${IMG}:${TAG} .
 
 run:
-	docker run -it --rm \
-	-v ~/.ivy2/.credentials:/home/geotrellis/.ivy2/.credentials \
-	-v ~/.gnupg:/home/geotrellis/.gnupg \
-	$(IMG):$(TAG) /bin/bash
+	docker run -e GEOTRELLIS_VERSION_SUFFIX=${GEOTRELLIS_VERSION_SUFFIX} -it --rm \
+	-v ${PWD}/gpg.sbt:/home/geotrellis/.sbt/1.0/plugins/gpg.sbt \
+	-v ${PWD}/global.sbt:/home/geotrellis/.sbt/1.0/global.sbt \
+	-v ${CREDENTIALS_PATH}/.credentials:/home/geotrellis/.ivy2/.credentials \
+	-v ${PGPKEYS_PATH}:/home/geotrellis/.gnupg \
+	${IMG}:${TAG} /bin/bash
 
 publish:
-	docker run -it $(IMG):$(TAG) publish/publish-to-sonatype.sh
+	docker run -e GEOTRELLIS_VERSION_SUFFIX=${GEOTRELLIS_VERSION_SUFFIX} -it --rm \
+	-v ${PWD}/gpg.sbt:/home/geotrellis/.sbt/1.0/plugins/gpg.sbt \
+	-v ${PWD}/global.sbt:/home/geotrellis/.sbt/1.0/global.sbt \
+    -v ${CREDENTIALS_PATH}/.credentials:/home/geotrellis/.ivy2/.credentials \
+    -v ${PGPKEYS_PATH}:/home/geotrellis/.gnupg \
+	${IMG}:${TAG} publish/publish-to-sonatype.sh
