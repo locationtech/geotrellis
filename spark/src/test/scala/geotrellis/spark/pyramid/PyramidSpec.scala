@@ -91,7 +91,7 @@ class PyramidSpec extends FunSpec with Matchers with TestEnvironment {
         val multi =
           if(key.temporalKey.instant == dt1.toInstant.toEpochMilli) 1
           else 10
-        key.spatialKey match {
+        (key.spatialKey: @unchecked) match {
           case SpatialKey(0, 0) =>
             tile.toArray.distinct should be (Array(1 * multi))
           case SpatialKey(1, 0) =>
@@ -190,7 +190,7 @@ class PyramidSpec extends FunSpec with Matchers with TestEnvironment {
         val multi =
           if(key.temporalKey.instant == dt1.toInstant.toEpochMilli) 1
           else 10
-        key.spatialKey match {
+        (key.spatialKey: @unchecked) match {
           case SpatialKey(0, 0) =>
             tile.toArray.distinct should be (Array(1 * multi))
           case SpatialKey(1, 0) =>

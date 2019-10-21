@@ -112,7 +112,7 @@ class EuclideanDistanceSpec extends FunSpec
         Extent(xmin + w * col, ymax - h * (row + 1), xmin + w * (col + 1), ymax - h * row)
       }
 
-      def keyToDirection(key: SpatialKey): Direction = key match {
+      def keyToDirection(key: SpatialKey): Direction = (key: @unchecked) match {
         case SpatialKey(0, 0) => TopLeft
         case SpatialKey(1, 0) => Top
         case SpatialKey(2, 0) => TopRight

@@ -94,7 +94,7 @@ object RDDHistogramMatching {
     sourceHistograms: Seq[Histogram[T1]],
     targetHistograms: Seq[Histogram[T2]]
   ): RDD[(K, MultibandTile)] =
-    rdd.map({ case (key, tile: MultibandTile) =>
+    rdd.map({ case (key, tile) =>
       (key, HistogramMatching(tile, sourceHistograms, targetHistograms)) })
 
   /**

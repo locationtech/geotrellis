@@ -49,7 +49,7 @@ package object zcurve {
       val bits = i/dims+1
       val dim  = i%dims
 
-      ( bit(xd, i), bit(zmin, i), bit(zmax, i) ) match {
+      (( bit(xd, i), bit(zmin, i), bit(zmax, i) ): @unchecked) match {
         case (0, 0, 0) =>
           // continue
 

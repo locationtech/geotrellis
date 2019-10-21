@@ -42,7 +42,7 @@ object RDDSigmoidalContrast {
     rdd: RDD[(K, V)],
     alpha: Double, beta: Double
   ): RDD[(K, Tile)] =
-    rdd.map({ case (key, tile: Tile) => (key, SigmoidalContrast(tile, alpha, beta)) })
+    rdd.map({ case (key, tile) => (key, SigmoidalContrast(tile, alpha, beta)) })
 
   /**
     * Given an RDD of MultibandTile objects and parameters alpha and
@@ -61,6 +61,6 @@ object RDDSigmoidalContrast {
     rdd: RDD[(K, V)],
     alpha: Double, beta: Double
   ): RDD[(K, MultibandTile)] =
-      rdd.map({ case (key, tile: MultibandTile) => (key, SigmoidalContrast(tile, alpha, beta)) })
+      rdd.map({ case (key, tile) => (key, SigmoidalContrast(tile, alpha, beta)) })
 
 }

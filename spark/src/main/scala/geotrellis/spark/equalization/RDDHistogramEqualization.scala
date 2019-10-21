@@ -45,7 +45,7 @@ object RDDHistogramEqualization {
     rdd: RDD[(K, V)] with Metadata[M]
   ): RDD[(K, Tile)] with Metadata[M] = {
     val histogram = rdd
-      .map({ case (_, tile: Tile) => StreamingHistogram.fromTile(tile, 1<<17)  })
+      .map({ case (_, tile) => StreamingHistogram.fromTile(tile, 1<<17)  })
       .reduce(_ + _)
 
     singleband(rdd, histogram)
@@ -64,7 +64,7 @@ object RDDHistogramEqualization {
     histogram: Histogram[T]
   ): RDD[(K, Tile)] with Metadata[M] = {
     ContextRDD(
-      rdd.map({ case (key, tile: Tile) =>
+      rdd.map({ case (key, tile) =>
         (key, HistogramEqualization(tile, histogram)) }),
       rdd.metadata
     )
@@ -82,7 +82,7 @@ object RDDHistogramEqualization {
     rdd: RDD[(K, V)] with Metadata[M]
   ): RDD[(K, MultibandTile)] with Metadata[M] = {
     val histograms = rdd
-      .map({ case (_, tile: MultibandTile) =>
+      .map({ case (_, tile) =>
         tile.bands
           .map({ band => StreamingHistogram.fromTile(band, 1<<17) })
           .toArray })
@@ -106,7 +106,7 @@ object RDDHistogramEqualization {
     histograms: Array[Histogram[T]]
   ): RDD[(K, MultibandTile)] with Metadata[M] = {
     ContextRDD(
-      rdd.map({ case (key, tile: MultibandTile) =>
+      rdd.map({ case (key, tile) =>
         (key, HistogramEqualization(tile, histograms)) }),
       rdd.metadata
     )

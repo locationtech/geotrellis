@@ -71,7 +71,7 @@ private[vectortile] object Command {
   def commands(cmds: Seq[Int]): ListBuffer[Command] = {
     @tailrec def work(cmds: Seq[Int], curr: ListBuffer[Command]): ListBuffer[Command] = cmds match {
       case Nil => curr
-      case ns => parseCmd(ns.head) match {
+      case ns => (parseCmd(ns.head): @unchecked) match {
         case (1, count) => {
           val (ps, rest) = ns.tail.splitAt(count * 2)
           val res = new Array[(Int, Int)](count)
