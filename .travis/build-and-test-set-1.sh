@@ -10,9 +10,7 @@
   "project vectortile" test \
   "project util" test \
   "project gdal" test \
-  "project geowave" compile test:compile \
   "project hbase" compile \
   "project hbase-spark" test \
-  "project geomesa" compile test:compile \
   "project cassandra" compile \
   "project cassandra-spark" test || { exit 1; }

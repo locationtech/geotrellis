@@ -4,9 +4,7 @@
       "project accumulo-spark" publish -J-Drelease=locationtech \
       "project cassandra" publish -J-Drelease=locationtech \
       "project cassandra-spark" publish -J-Drelease=locationtech \
-      "project geomesa" publish -J-Drelease=locationtech \
       "project geotools" publish -J-Drelease=locationtech \
-      "project geowave" publish -J-Drelease=locationtech \
       "project hbase" publish -J-Drelease=locationtech \
       "project macros" publish -J-Drelease=locationtech \
       "project proj4" publish -J-Drelease=locationtech \

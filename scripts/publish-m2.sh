@@ -4,9 +4,7 @@
       "project accumulo-spark" +publishM2 \
       "project cassandra" +publishM2 \
       "project cassandra-spark" +publishM2 \
-      "project geomesa" +publishM2 \
       "project geotools" +publishM2 \
-      "project geowave" +publishM2 \
       "project hbase" +publishM2 \
       "project hbase-spark" +publishM2 \
       "project macros" +publishM2 \

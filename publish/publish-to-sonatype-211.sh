@@ -15,7 +15,6 @@
    && ./sbt "project hbase-spark" publishSigned -no-colors -J-Drelease=sonatype \
    && ./sbt "project cassandra" publishSigned -no-colors -J-Drelease=sonatype \
    && ./sbt "project cassandra-spark" publishSigned -no-colors -J-Drelease=sonatype \
-   && ./sbt "project geomesa" publishSigned -no-colors -J-Drelease=sonatype \
    && ./sbt "project geotools" publishSigned -no-colors -J-Drelease=sonatype \
    && ./sbt "project shapefile" publishSigned -no-colors -J-Drelease=sonatype \
    && ./sbt "project layer" publishSigned -no-colors -J-Drelease=sonatype \
