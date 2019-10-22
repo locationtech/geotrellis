@@ -27,7 +27,7 @@ import spire.syntax.cfor._
 /**
   * The trait underlying constant tile types.
   */
-trait ConstantTile extends Tile {
+abstract class ConstantTile extends Tile {
 
   /** Precomputed view of tile cells as seen by [[get]] method */
   protected val iVal: Int
