@@ -18,6 +18,9 @@ fast batch processing of large raster data sets.
 Please visit the `project site <http://geotrellis.io>`__ for more
 information as well as some interactive demos.
 
+Review the `Changelog <https://github.com/locationtech/geotrellis/blob/master/CHANGELOG.md>`__
+for information on latest releases.
+
 Why GeoTrellis?
 ---------------
 
@@ -97,9 +100,7 @@ Ready? `Setup a GeoTrellis development environment. <tutorials/setup.html>`__
    :caption: Home
    :hidden:
 
-   Changelog <CHANGELOG>
    Contributing <CONTRIBUTING>
-   Create a Contribution Questionnaire <CQ>
 
 .. toctree::
    :maxdepth: 3
