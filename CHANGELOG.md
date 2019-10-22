@@ -1,5 +1,6 @@
-<!-- markdownlint-disable MD022 MD024 MD032 -->
+<!-- markdownlint-disable MD024 -->
 # Changelog
+
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
@@ -8,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [3.0.0] - 2019-10-18
 
 ### Added
+
 - RasterSources API [#3053](https://github.com/locationtech/geotrellis/pull/3053)
 - `geotrellis.layer` package to group functionality related to tiled layers.
   - `SpatialKey`, `SpaceTimeKey`, `TemporalKey`, `Bounds`, `Boundable`, `EmptyBounds`, `KeyBounds`, `TemporalProjectedExtent`, `EmptyBoundsError`, `SpatialComponent`, `TemporalComponent`, `LayoutDefinition`, `LayoutScheme`, `LayoutLevel`, `LocalLayoutScheme`, `FloatingLayoutScheme`, `ZoomedLayoutScheme`, `MapKeyTransform`, etc.
@@ -26,6 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `io.circe` JSON encoders and decoders for `GeoTiffInfo` and related classes [#3128](https://github.com/locationtech/geotrellis/pull/3128)
 
 ### Changed
+
 - `geotrellis.raster.summary.polygonal.[Multi]TilePolygonalSummaryHandler` replaced with `geotrellis.raster.summary.polygonal.PolygonalSummary`. Users should expect to implement concrete subclasses of `geotrellis.raster.summary.GridVisitor` and pass those to the new polygonalSummary methods. There are a number of default implementations provided for simple operations in `geotrellis.raster.summary.visitors`
 - Polygonal summaries on raster RDDs of `RDD[(SpatialKey, T <: Grid[Int])] with Metadata[TileLayerMetadata[SpatialKey]]` can now be performed with far less boilerplate using the same visitor pattern as the new raster polygonal summary API. See `RDDPolygonalSummary.scala` for additional details.
 - `geotrellis.raster.Grid.dimensions` is now `Dimensions[N]` instead of `(N, N)` [#3124](https://github.com/locationtech/geotrellis/pull/3124)
@@ -61,6 +64,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated `computeResolution` in `IterativeCostDistance` to match Iterative Viewshed [#3106](https://github.com/locationtech/geotrellis/pull/3106)
 
 ### Removed
+
 - Scala wrappers of JTS Geometry in `geotrellis.vector` [#2932](https://github.com/locationtech/geotrellis/pull/2932)
 - `geotrellis.etl` package has been removed. The code has been archived at <https://github.com/geotrellis/spark-etl> [#2969](https://github.com/locationtech/geotrellis/pull/2969).
 - The `S3Client` wrapper that was used to support AWS SDK v1 has been removed in favor of directly using AWS SDK S3Client [#2911](https://github.com/locationtech/geotrellis/pull/2911).
@@ -70,6 +74,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [2.3.0] - 2019-04-18
 
 ### Changed
+
 - Fix Accumulo and HBase `AttributeStore` performance ([#2899](https://github.com/locationtech/geotrellis/pull/2899)).
   - Fix Cassandra AttributeStore performance ([#2901](https://github.com/locationtech/geotrellis/pull/2901)).
   - Fix `createAlignedGridExtent` function actually to align to GridExtents ([#2878](https://github.com/locationtech/geotrellis/pull/2878)).
@@ -78,6 +83,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [2.2.0] - 2019-01-11
 
 ### Changed
+
 - Extract Proj4J to `org.locationtech.proj4j` ([#2846](https://github.com/locationtech/geotrellis/pull/2846)).
 - Fix {Backend}LayerCopy exception handling ([#2860](https://github.com/locationtech/geotrellis/pull/2860)).
 - Fix cache level in Ingest objects ([#2854](https://github.com/locationtech/geotrellis/pull/2854)).
@@ -99,10 +105,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [2.1.0] - 2018-10-02
 
 ### Added
+
 - `geotrellis.spark.etl.TemporalIngest` main method ([#2709](https://github.com/locationtech/geotrellis/pull/2709)).
 - Add `bbox` field to all GeoJSON Features ([#2811](https://github.com/locationtech/geotrellis/pull/2811)).
 
 ### Changed
+
 - `TileRDDReproject` now works on RDD of `TileFeature[T, D]` ([#2803](https://github.com/locationtech/geotrellis/pull/2803)).
 - `TileRDDReproject` now uses `Reproject.Options.errorThreshold` value ([#2803](https://github.com/locationtech/geotrellis/pull/2803)).
 - `geotrellis.spark.testkit.TestEnvironment` now includes `SparkSession` ([#2808](https://github.com/locationtech/geotrellis/pull/2808)).
@@ -117,6 +125,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [2.0.0] 2019-01-11
 
 ### Added
+
 - All focal operations now except an optional `partitioner` parameter.
 - `BufferTiles.apply` methods and the `bufferTiles` methods now except an optional `partitioner` parameter.
 - `CollectionLayerReader` now has an SPI interface.
@@ -141,6 +150,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `Output.bufferSize` option to set up a custom buffer size for the buffered reprojection.
 
 ### Changed
+
 - The length of the key (the space-filling curve index or address) used for layer reading and writing has been extended from a fixed length of 8 bytes to an arbitrary length. This change affects not only the `geotrellis.spark` package, but all backends (excluding `geotrellis.geowave` and `geotrellis.geomesa`).
 - Reprojection has improved performance due to one less shuffle stage and lower memory usage. `TileRDDReproject` loses dependency on `TileReprojectMethods` in favor of `RasterRegionReproject`
 - The Ascii draw methods are now method extensions of `Tile`.
@@ -188,6 +198,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Improved performance of `COGValueReader.readSubsetBands` when reading from S3.
 
 ### Removed
+
 - `LayerUpdater` with its functionality covered by `LayerWriter` ([#2663](https://github.com/locationtech/geotrellis/pull/2663)).
 
 ## [1.2.1] - 2018-01-03
@@ -253,7 +264,7 @@ large collection of Geometries into a proper GeoTrellis layer, where the
 sections of each Geometry are clipped to fit inside their enclosing
 Extents.
 
-![](img/cliptogrid.png)
+![Clipping Geometry to Grid](img/cliptogrid.png)
 
 Here we can see a large `Line` being clipped into nine sublines. It's
 one method call:
@@ -316,7 +327,7 @@ val viewshed: TileLayerRDD[SpatialKey] = layer.viewshed(Seq(point))
 We use *Euclidean Distance* to render a collection of points into a
 heat-map of proximities of some area. Say, of two roads crossing:
 
-![](img/euclid.png)
+![Euclidean Distance Diagram](img/euclid.png)
 
 Prior to GeoTrellis 1.2, this was possible at the individual `Tile`
 level but not the Layer (`RDD`) level. Now it is.
@@ -385,7 +396,7 @@ Have you ever wanted to "redraw" a grid over an established GeoTrellis
 layer? Say, this 16-tile Layer into a 4-tile one, both of 1024x1024
 total pixels:
 
-![](img/regrid.png)
+![Regrid Diagram](img/regrid.png)
 
 Prior to GeoTrellis 1.2, there was no official way to do this. Now you
 can use `.regrid`:
@@ -446,7 +457,7 @@ val tile: Tile = SinglebandGeoTiff("path/to/tiff.tiff").tile
 println(tile.renderAscii(AsciiArtEncoder.Palette.STIPLED))
 ```
 
-```
+```console
             ▚▖
             ▚▚▜▚▚
             ▚▖▚▜▚▖▚▚
@@ -518,6 +529,7 @@ to configure this to your application's needs. [See here for the
 specifics.](guide/vectors.html#numerical-precision-and-topology-exceptions)
 
 ### Added
+
 - [Kerberos authentication is available for properly configured Accumulo clusters](https://github.com/locationtech/geotrellis/pull/2510)
 - [Polygonal Summaries for MultibandTiles](https://github.com/locationtech/geotrellis/pull/2374)
 - [Filter GeoTiffRDDs by Geometry](https://github.com/locationtech/geotrellis/pull/2409)
@@ -526,6 +538,7 @@ specifics.](guide/vectors.html#numerical-precision-and-topology-exceptions)
 - [Can Resample via Sum operation](https://github.com/locationtech/geotrellis/pull/2326)
 
 ### Changed
+
 - [Negative grid bounds bug](https://github.com/locationtech/geotrellis/pull/2364)
 - [getSignedByteArray BugFix - fixes certain read problems](https://github.com/locationtech/geotrellis/pull/2270)
 - [Allow Merge Queue To Handle Larger Inputs](https://github.com/locationtech/geotrellis/pull/2400)
@@ -551,6 +564,7 @@ specifics.](guide/vectors.html#numerical-precision-and-topology-exceptions)
 ## [1.1.0] - 2017-06-22
 
 ### Added
+
 - [Spark Enabled Cost Distance](https://github.com/locationtech/geotrellis/pull/1999)
 - [Conforming Delaunay Triangulation](https://github.com/locationtech/geotrellis/pull/1848)
 - Added a fractional-pixel rasterizer for [polygons](https://github.com/locationtech/geotrellis/pull/1873) and [multipolygons](https://github.com/locationtech/geotrellis/pull/1894)
@@ -587,6 +601,7 @@ specifics.](guide/vectors.html#numerical-precision-and-topology-exceptions)
 - [Support for the ability to specify output CRS via proj4 string.](https://github.com/locationtech/geotrellis/pull/2169)
 
 ### Changes
+
 - [Fixed issues that made GeoTiff streaming off of S3 slow and broken](https://github.com/locationtech/geotrellis/pull/1905)
 - [Give a better error message for CRS write failures](https://github.com/locationtech/geotrellis/pull/1874)
 - [Fix clipping logic during polygon layer query](https://github.com/locationtech/geotrellis/pull/2213)
@@ -744,6 +759,7 @@ While we are trying to stick strictly to [SemVer](http://semver.org/), there are
   - Fixed Non-Point Pixel + Partial Cell Rasterizer Bug [#1804](https://github.com/locationtech/geotrellis/pull/1804)
 
 ### New Committers
+
 - metasim
 - lokifacio
 - aeffrig
@@ -823,7 +839,7 @@ subproject, with more basic and core subprojects higher in the list, and
 the subprojects that rely on that core functionality later in the list,
 along with a high level description of each subproject.
 
-**geotrellis-proj4**
+### geotrellis-proj4
 
 - Represent a Coordinate Reference System (CRS) based on Ellipsoid,
   Datum, and Projection.
@@ -831,7 +847,7 @@ along with a high level description of each subproject.
 - Lookup CRS's based on EPSG and other codes.
 - Transform `(x, y)` coordinates from one CRS to another.
 
-**geotrellis-vector**
+### geotrellis-vector
 
 - Provides a scala idiomatic wrapper around JTS types: Point, Line
   (LineString in JTS), Polygon, MultiPoint, MultiLine (MultiLineString
@@ -848,13 +864,13 @@ along with a high level description of each subproject.
 - Perform Kriging interpolation on point values.
 - Perform affine transformations of geometries
 
-**geotrellis-vector-testkit**
+### geotrellis-vector-testkit
 
 - GeometryBuilder for building test geometries
 - GeometryMatcher for scalatest unit tests, which aides in testing
   equality in geometries with an optional threshold.
 
-**geotrellis-raster**
+### geotrellis-raster
 
 - Provides types to represent single- and multi-band rasters,
   supporting Bit, Byte, UByte, Short, UShort, Int, Float, and Double
@@ -897,12 +913,12 @@ along with a high level description of each subproject.
 - Viewshed operation.
 - RegionGroup operation.
 
-**geotrellis-raster-testkit**
+### geotrellis-raster-testkit
 
 - Build test raster data.
 - Assert raster data matches Array data or other rasters in scalatest.
 
-**geotrellis-spark**
+### geotrellis-spark
 
 - Generic way to represent key value RDDs as layers, where the key
   represents a coordinate in space based on some uniform grid layout,
@@ -938,30 +954,30 @@ along with a high level description of each subproject.
 - Utilities around creating spark contexts for applications using
   GeoTrellis, including a Kryo registrator that registers most types.
 
-**geotrellis-spark-testkit**
+### geotrellis-spark-testkit
 
 - Utility code to create test RDDs of raster data.
 - Matching methods to test equality of RDDs of raster data in
   scalatest unit tests.
 
-**geotrellis-accumulo**
+### geotrellis-accumulo
 
 - Save and load layers to and from Accumulo. Query large layers
   efficiently using the layer query API.
 
-**geotrellis-cassandra**
+### geotrellis-cassandra
 
 Save and load layers to and from Casandra. Query large layers
 efficiently using the layer query API.
 
-**geotrellis-s3**
+### geotrellis-s3
 
 - Save/load raster layers to/from the local filesystem or HDFS using
   Spark's IO API.
 - Save spatially keyed RDDs of byte arrays to z/x/y files in S3.
   Useful for saving PNGs off for use as map layers in web maps.
 
-**geotrellis-etl**
+### geotrellis-etl
 
 - Parse command line options for input and output of ETL (Extract, Transform, and Load) applications
 - Utility methods that make ETL applications easier for the user to
@@ -972,11 +988,11 @@ efficiently using the layer query API.
 - Transform input rasters into layers based on a ZXY layout scheme
 - Save layers into Accumulo, S3, HDFS or the local file system.
 
-**geotrellis-shapefile**
+### geotrellis-shapefile
 
 - Read geometry and feature data from shapefiles into GeoTrellis types using GeoTools.
 
-**geotrellis-slick**
+### geotrellis-slick
 
 - Save and load geometry and feature data to and from PostGIS using
   the slick scala database library.
