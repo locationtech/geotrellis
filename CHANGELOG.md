@@ -1,3 +1,4 @@
+<!-- markdownlint-disable MD022 MD024 MD032 -->
 # Changelog
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
@@ -35,7 +36,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The implicit/package structure of the `geotrellis.raster` package has changed such that it's now possible to import almost all features/extensions with `import geotrellis.raster._` [#2891](https://github.com/locationtech/geotrellis/pull/2891)
 - `geotrellis.pro4j.WKT` object conversion methods to and from EPSG codes have changed. All now return Options rather than silently unwrap. Methods that convert from EPSG code to WKT string are now prefixed consistently with `fromEpsg` and methods that convert from WKT string to EPSG code are now prefixed consistently with `toEpsg`.
 - `geotrellis.util.CRS.fromWKT` now returns `Option[CRS]` instead of `CRS` after silently unwrapping an optional internally
- - The `geotrellis.vectortile.{Layer, VectorTile}` interfaces now uses `MVTFeature` instead of `geotrellis.vector.Feature`.
+  - The `geotrellis.vectortile.{Layer, VectorTile}` interfaces now uses `MVTFeature` instead of `geotrellis.vector.Feature`.
 - Change from `scala-logging` to `log4s` [#3116](https://github.com/locationtech/geotrellis/pull/3116)
 - Update dependencies [#2904](https://github.com/locationtech/geotrellis/pull/2904).
 - Update dependencies [#3053](https://github.com/locationtech/geotrellis/pull/3053).
@@ -69,7 +70,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [2.3.0] - 2019-04-18
 
 ### Changed
-  - Fix Accumulo and HBase `AttributeStore` performance ([#2899](https://github.com/locationtech/geotrellis/pull/2899)).
+- Fix Accumulo and HBase `AttributeStore` performance ([#2899](https://github.com/locationtech/geotrellis/pull/2899)).
   - Fix Cassandra AttributeStore performance ([#2901](https://github.com/locationtech/geotrellis/pull/2901)).
   - Fix `createAlignedGridExtent` function actually to align to GridExtents ([#2878](https://github.com/locationtech/geotrellis/pull/2878)).
   - Fix to `rasterRegionReproject` function ([#2880](https://github.com/locationtech/geotrellis/pull/2880)).
@@ -77,7 +78,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [2.2.0] - 2019-01-11
 
 ### Changed
-
 - Extract Proj4J to `org.locationtech.proj4j` ([#2846](https://github.com/locationtech/geotrellis/pull/2846)).
 - Fix {Backend}LayerCopy exception handling ([#2860](https://github.com/locationtech/geotrellis/pull/2860)).
 - Fix cache level in Ingest objects ([#2854](https://github.com/locationtech/geotrellis/pull/2854)).
@@ -190,7 +190,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 - `LayerUpdater` with its functionality covered by `LayerWriter` ([#2663](https://github.com/locationtech/geotrellis/pull/2663)).
 
-
 ## [1.2.1] - 2018-01-03
 
 ### Changed
@@ -208,27 +207,26 @@ The team would like to thank him, along with our newest contributors [Aaron Sant
 ### Changed
 
 - `geotrellis.raster`
-    - **Deprecation:** `GridBounds.size` in favor of `GridBounds.sizeLong`.
-    - **Deprecation:** `GridBounds.coords` in favor of `GridBounds.coordsIter`.
-    - **New:** `GridBounds.offset` and `GridBounds.buffer` for creating a modified `GridBounds` from an existing one.
-    - **New:** `ColorRamps.greyscale: Int => ColorRamp`, which will generate a ramp when given some number of stops.
-    - **New:** `ConstantTile.fromBytes` to create any type of `ConstantTile` from an `Array[Byte]`.
-    - **New:** `Tile.rotate90: Int => Tile`, `Tile.flipVertical: Tile` and `Tile.flipHorizontal: Tile`.
+  - **Deprecation:** `GridBounds.size` in favor of `GridBounds.sizeLong`.
+  - **Deprecation:** `GridBounds.coords` in favor of `GridBounds.coordsIter`.
+  - **New:** `GridBounds.offset` and `GridBounds.buffer` for creating a modified `GridBounds` from an existing one.
+  - **New:** `ColorRamps.greyscale: Int => ColorRamp`, which will generate a ramp when given some number of stops.
+  - **New:** `ConstantTile.fromBytes` to create any type of `ConstantTile` from an `Array[Byte]`.
+  - **New:** `Tile.rotate90: Int => Tile`, `Tile.flipVertical: Tile` and `Tile.flipHorizontal: Tile`.
 - `geotrellis.vector`
-    - **New:** `Geometry.isEmpty: Boolean`. This incurs much less overhead than previous ways of determining emptiness.
-    - **New:** `Line.head` and `Line.last` for **efficiently** grabbing the first or last `Point` in the `Line`.
+  - **New:** `Geometry.isEmpty: Boolean`. This incurs much less overhead than previous ways of determining emptiness.
+  - **New:** `Line.head` and `Line.last` for **efficiently** grabbing the first or last `Point` in the `Line`.
 - `geotrellis.spark`
-    - **Deprecation:** The `LayerUpdater` trait hierarchy. Use `LayerWriter.update` or `LayerWriter.overwrite` instead.
-    - **Deprecation:** Every cache provided by `geotrellis.spark.util.cache`. These will be removed in favor of a pluggable cache in 2.0.
-    - **New:** `SpatialKey.extent: LayoutDefinition => Extent`
-    - **New:** `ValueReader.attributeStore: AttributeStore`
-    - **New:** `TileLayerRDD.toSpatialReduce: ((V, V) => V) => TileLayerRDD[SpatialKey]` for smarter folding of 3D tile layers into 2D tile layers.
-    - The often-used `apply` method overloads in `MapKeyTransform` have been given more descriptive aliases.
-    - **Change:** Querying a layer will now produce a result whose metadata will have an `Extent` and `KeyBounds` of the queried region and not of the whole layer.
+  - **Deprecation:** The `LayerUpdater` trait hierarchy. Use `LayerWriter.update` or `LayerWriter.overwrite` instead.
+  - **Deprecation:** Every cache provided by `geotrellis.spark.util.cache`. These will be removed in favor of a pluggable cache in 2.0.
+  - **New:** `SpatialKey.extent: LayoutDefinition => Extent`
+  - **New:** `ValueReader.attributeStore: AttributeStore`
+  - **New:** `TileLayerRDD.toSpatialReduce: ((V, V) => V) => TileLayerRDD[SpatialKey]` for smarter folding of 3D tile layers into 2D tile layers.
+  - The often-used `apply` method overloads in `MapKeyTransform` have been given more descriptive aliases.
+  - **Change:** Querying a layer will now produce a result whose metadata will have an `Extent` and `KeyBounds` of the queried region and not of the whole layer.
 - `geotrellis.vectortile` (experimental)
-    - **New:** `VectorTile.toGeoJson` and `VectorTile.toIterable`.
-    - Library simplified by assuming the codec backend will always be
-      protobuf.
+  - **New:** `VectorTile.toGeoJson` and `VectorTile.toIterable`.
+  - Library simplified by assuming the codec backend will always be protobuf.
 
 ### Added
 
@@ -238,7 +236,7 @@ Finally, the full marriage of the `vector`, `raster`, and `spark`
 packages! You can now transform an `RDD[Geometry]` into a writable
 GeoTrellis layer of `(SpatialKey, Tile)`!
 
-``` scala
+```scala
 val geoms: RDD[Geometry] = ...
 val celltype: CellType = ...
 val layout: LayoutDefinition = ...
@@ -260,7 +258,7 @@ Extents.
 Here we can see a large `Line` being clipped into nine sublines. It's
 one method call:
 
-``` scala
+```scala
 import geotrellis.spark._
 
 val layout: LayoutDefinition = ...  /* The definition of your grid */
@@ -281,7 +279,7 @@ A [Viewshed](https://en.wikipedia.org/wiki/Viewshed) shows "visibility" from som
 
 First, we need to think about the `Viewpoint` type:
 
-``` scala
+```scala
 import geotrellis.spark.viewshed._
 
 val point: Viewpoint(
@@ -296,7 +294,7 @@ val point: Viewpoint(
 
 In other words:
 
-  - x, y, viewHeight: where are we?
+- x, y, viewHeight: where are we?
   - angle: what direction are we looking?
   - fieldOfView: how wide are we looking?
   - altitude: how high/low is the "target" of our viewing?
@@ -304,7 +302,7 @@ In other words:
 Given a `Seq[Viewpoint]` (the algorithm supports multiple simultaneous
 view points), we can do:
 
-``` scala
+```scala
 // Recall this common alias:
 //   type TileLayerRDD[K] = RDD[(K, Tile)] with Metadata[TileLayerMetadata[K]]
 
@@ -323,7 +321,7 @@ heat-map of proximities of some area. Say, of two roads crossing:
 Prior to GeoTrellis 1.2, this was possible at the individual `Tile`
 level but not the Layer (`RDD`) level. Now it is.
 
-``` scala
+```scala
 /* Result of previous work. Potentially millions of points per SpatialKey. */
 val points: RDD[(SpatialKey, Array[Coordinate])] = ...
 val layout: LayoutDefinition = ...  /* The definition of your grid */
@@ -335,7 +333,7 @@ val layer: RDD[(SpatialKey, Tile)] = points.euclideanDistance(layout)
 
 The following was possible prior to GeoTrellis 1.2:
 
-``` scala
+```scala
 val layer: TileLayerRDD[SpatialKey] = ...
 val polygon: Polgyon = ...
 
@@ -346,7 +344,7 @@ val summary: Double = layer.polygonalMaxDouble(polygon)
 The above is also now possible for layers keyed by `SpaceTimeKey` to
 form a "time series":
 
-``` scala
+```scala
 val layer: TileLayerRDD[SpaceTimeKey] = ...
 val polygon: MultiPolygon = ...
 
@@ -359,7 +357,7 @@ val summary: Map[ZonedDateTime, Double] = layer.maxSeries(polygon)
 A GeoTrellis `ValueReader` connects to some layer catalog and lets you
 read individual values (usually Tiles):
 
-``` scala
+```scala
 import geotrellis.spark.io.s3._
 
 val store: AttributeStore = ...
@@ -372,7 +370,7 @@ However `.reader` is limited to zoom levels that actually exist for the
 given layer. Now you can use `.overzoomingReader` to go as deep as you
 like:
 
-``` scala
+```scala
 import geotrellis.raster.resample._
 
 val reader: Reader[SpatialKey, Tile] =
@@ -392,7 +390,7 @@ total pixels:
 Prior to GeoTrellis 1.2, there was no official way to do this. Now you
 can use `.regrid`:
 
-``` scala
+```scala
 /* The result of some previous work. Say each Tile is 256x256. */
 val layer: TileLayerRDD[SpatialKey] = ...
 
@@ -405,7 +403,7 @@ val regridded: TileLayerRDD[SpatialKey] = layer.regrid(512)
 
 You can also regrid to non-rectangular sizes:
 
-``` scala
+```scala
 val regridded: TileLayerRDD[SpatialKey] = layer.regrid(tileCols = 100, tileRows = 300)
 ```
 
@@ -414,7 +412,7 @@ val regridded: TileLayerRDD[SpatialKey] = layer.regrid(tileCols = 100, tileRows 
 It's common to find a subset of Tiles in a layer that are touched by
 some given `Polygon`:
 
-``` scala
+```scala
 val poly: Polygon = ???
 
 val rdd: TileLayerRDD[SpatialKey] =
@@ -437,7 +435,7 @@ numbers.
 
 The new `Tile.renderAscii: Palette => String` method fulfills your heart's desire:
 
-``` scala
+```scala
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff._
 import geotrellis.raster.render.ascii._
@@ -447,6 +445,7 @@ val tile: Tile = SinglebandGeoTiff("path/to/tiff.tiff").tile
 // println(tile.renderAscii())  // the default
 println(tile.renderAscii(AsciiArtEncoder.Palette.STIPLED))
 ```
+
 ```
             ▚▖
             ▚▚▜▚▚
@@ -628,7 +627,6 @@ specifics.](guide/vectors.html#numerical-precision-and-topology-exceptions)
 - [Fix writing multiband GeoTiff with compression](https://github.com/locationtech/geotrellis/pull/2246)
 - [Fixed issue with BigTiff vs non-BigTiff offset value packing](https://github.com/locationtech/geotrellis/pull/2247)
 
-
 While we are trying to stick strictly to [SemVer](http://semver.org/), there are slight API changes in this release. We felt that while this does break SemVer in the strictest sense, the change were not enough to warrant a 2.0 release. Our hope is in the future to be more cognizant of API changes for future releases.
 
 - Made EPSG capitalization [consistent in method names](https://github.com/locationtech/geotrellis/commit/343588b4b066851ea6b35a7d9cc671f4a6d47f2c):
@@ -653,61 +651,61 @@ While we are trying to stick strictly to [SemVer](http://semver.org/), there are
 
 ### Added
 
-  - GeoTools support
-      - Add Support for GeoTools SimpleFeature [#1495](https://github.com/locationtech/geotrellis/pull/1495)
-      - Conversions between GeoTools GridCoverage2D and GeoTrellis Raster types [#1502](https://github.com/locationtech/geotrellis/pull/1502)
-  - Streaming GeoTiff reading [#1559](https://github.com/locationtech/geotrellis/pull/1559)
-  - Windowed GeoTiff ingests into GeoTrellis layers, allowing users to ingest large GeoTiffs
-    [#1763](https://github.com/locationtech/geotrellis/pull/1763)
-      - Reading TiffTags via MappedByteBuffer [#1541](https://github.com/locationtech/geotrellis/pull/1541)
-      - Cropped Windowed GeoTiff Reading [#1559](https://github.com/locationtech/geotrellis/pull/1559)
-      - Added documentation to the GeoTiff* files [#1560](https://github.com/locationtech/geotrellis/pull/1560)
-      - Windowed GeoTiff Docs [#1616](https://github.com/locationtech/geotrellis/pull/1616)
-  - GeoWave Raster/Vector support (experimental)
-      - Create GeoWave Subproject [#1542](https://github.com/locationtech/geotrellis/pull/1542)
-      - Add vector capabilities to GeoWave support [#1581](https://github.com/locationtech/geotrellis/pull/1581)
-      - Fix GeoWave Tests [#1665](https://github.com/locationtech/geotrellis/pull/1665)
-  - GeoMesa Vector support (experimental)
-      - Create GeoMesa subproject [#1621](https://github.com/locationtech/geotrellis/pull/1621)
-  - Moved to a JSON-configuration ETL process
-      - ETL Refactor [#1553](https://github.com/locationtech/geotrellis/pull/1553)
-      - ETL Improvements and other issues fixes [#1647](https://github.com/locationtech/geotrellis/pull/1647)
-  - Vector Tile reading and writing, file-based and as GeoTrellis layers in RDDs. [#1622](https://github.com/locationtech/geotrellis/pull/1622)
-  - File Backends
-      - Cassandra support [#1452](https://github.com/locationtech/geotrellis/pull/1452)
-      - HBase support [#1586](https://github.com/locationtech/geotrellis/pull/1586)
-  - Collections API [#1606](https://github.com/locationtech/geotrellis/pull/1606)
-      - Collections polygonal summary functions [#1614](https://github.com/locationtech/geotrellis/pull/1614)
-      - Collections mapalgebra focal functions [#1619](https://github.com/locationtech/geotrellis/pull/1619)
-  - Add `TileFeature` Type [#1429](https://github.com/locationtech/geotrellis/pull/1429)
-  - Added Focal calculation target type [#1601](https://github.com/locationtech/geotrellis/pull/1601)
-  - Triangulation
-      - Voronoi diagrams and Delaunay triangulations [#1545](https://github.com/locationtech/geotrellis/pull/1545), [#1699](https://github.com/locationtech/geotrellis/pull/1699)
-      - Conforming Delaunay Triangulation [#1848](https://github.com/locationtech/geotrellis/pull/1848)
-  - Euclidean distance tiles [#1552](https://github.com/locationtech/geotrellis/pull/1552)
-  - Spark, Scala and Java version version support
-      - Move to Spark 2; Scala 2.10 deprecation [#1628](https://github.com/locationtech/geotrellis/pull/1628)
-      - Java 7 deprecation [#1640](https://github.com/locationtech/geotrellis/pull/1640)
-  - Color correction features:
-      - Histogram Equalization [#1668](https://github.com/locationtech/geotrellis/pull/1668)
-      - Sigmoidal Contrast [#1681](https://github.com/locationtech/geotrellis/pull/1681)
-      - Histogram matching [#1769](https://github.com/locationtech/geotrellis/pull/1769)
-  - `CollectNeighbors` feature, allowing users to group arbitrary values by the neighbor keys according to their SpatialComponent [#1860](https://github.com/locationtech/geotrellis/pull/1860)
-  - **Documentation:** We moved to ReadTheDocs, and put a lot of work into making our docs significantly better. [See them here.](http://geotrellis.readthedocs.io/en/1.0/)
+- GeoTools support
+  - Add Support for GeoTools SimpleFeature [#1495](https://github.com/locationtech/geotrellis/pull/1495)
+  - Conversions between GeoTools GridCoverage2D and GeoTrellis Raster types [#1502](https://github.com/locationtech/geotrellis/pull/1502)
+- Streaming GeoTiff reading [#1559](https://github.com/locationtech/geotrellis/pull/1559)
+- Windowed GeoTiff ingests into GeoTrellis layers, allowing users to ingest large GeoTiffs
+  [#1763](https://github.com/locationtech/geotrellis/pull/1763)
+  - Reading TiffTags via MappedByteBuffer [#1541](https://github.com/locationtech/geotrellis/pull/1541)
+  - Cropped Windowed GeoTiff Reading [#1559](https://github.com/locationtech/geotrellis/pull/1559)
+  - Added documentation to the GeoTiff* files [#1560](https://github.com/locationtech/geotrellis/pull/1560)
+  - Windowed GeoTiff Docs [#1616](https://github.com/locationtech/geotrellis/pull/1616)
+- GeoWave Raster/Vector support (experimental)
+  - Create GeoWave Subproject [#1542](https://github.com/locationtech/geotrellis/pull/1542)
+  - Add vector capabilities to GeoWave support [#1581](https://github.com/locationtech/geotrellis/pull/1581)
+  - Fix GeoWave Tests [#1665](https://github.com/locationtech/geotrellis/pull/1665)
+- GeoMesa Vector support (experimental)
+  - Create GeoMesa subproject [#1621](https://github.com/locationtech/geotrellis/pull/1621)
+- Moved to a JSON-configuration ETL process
+  - ETL Refactor [#1553](https://github.com/locationtech/geotrellis/pull/1553)
+  - ETL Improvements and other issues fixes [#1647](https://github.com/locationtech/geotrellis/pull/1647)
+- Vector Tile reading and writing, file-based and as GeoTrellis layers in RDDs. [#1622](https://github.com/locationtech/geotrellis/pull/1622)
+- File Backends
+  - Cassandra support [#1452](https://github.com/locationtech/geotrellis/pull/1452)
+  - HBase support [#1586](https://github.com/locationtech/geotrellis/pull/1586)
+- Collections API [#1606](https://github.com/locationtech/geotrellis/pull/1606)
+  - Collections polygonal summary functions [#1614](https://github.com/locationtech/geotrellis/pull/1614)
+  - Collections mapalgebra focal functions [#1619](https://github.com/locationtech/geotrellis/pull/1619)
+- Add `TileFeature` Type [#1429](https://github.com/locationtech/geotrellis/pull/1429)
+- Added Focal calculation target type [#1601](https://github.com/locationtech/geotrellis/pull/1601)
+- Triangulation
+  - Voronoi diagrams and Delaunay triangulations [#1545](https://github.com/locationtech/geotrellis/pull/1545), [#1699](https://github.com/locationtech/geotrellis/pull/1699)
+  - Conforming Delaunay Triangulation [#1848](https://github.com/locationtech/geotrellis/pull/1848)
+- Euclidean distance tiles [#1552](https://github.com/locationtech/geotrellis/pull/1552)
+- Spark, Scala and Java version version support
+  - Move to Spark 2; Scala 2.10 deprecation [#1628](https://github.com/locationtech/geotrellis/pull/1628)
+  - Java 7 deprecation [#1640](https://github.com/locationtech/geotrellis/pull/1640)
+- Color correction features:
+  - Histogram Equalization [#1668](https://github.com/locationtech/geotrellis/pull/1668)
+  - Sigmoidal Contrast [#1681](https://github.com/locationtech/geotrellis/pull/1681)
+  - Histogram matching [#1769](https://github.com/locationtech/geotrellis/pull/1769)
+- `CollectNeighbors` feature, allowing users to group arbitrary values by the neighbor keys according to their SpatialComponent [#1860](https://github.com/locationtech/geotrellis/pull/1860)
+- **Documentation:** We moved to ReadTheDocs, and put a lot of work into making our docs significantly better. [See them here.](http://geotrellis.readthedocs.io/en/1.0/)
 
 ### Minor Additions
 
 - Documentation improvements: Quickstart,  Examples
-    - Added example for translating from `SpaceTimeKey` to `SpatialKey` [#1549](https://github.com/locationtech/geotrellis/pull/1549)
-    - doc-examples subproject; example for tiling to GeoTiff [#1564](https://github.com/locationtech/geotrellis/pull/1564)
-    - Added example for focal operation on multiband layer. [#1577](https://github.com/locationtech/geotrellis/pull/1577)
-    - Projections, Extents, and Layout Definitions doc [#1608](https://github.com/locationtech/geotrellis/pull/1608)
-    - Added example of turning a list of features into GeoJSON [#1609](https://github.com/locationtech/geotrellis/pull/1609)
-    - Example: `ShardingKeyIndex[K]` [#1633](https://github.com/locationtech/geotrellis/pull/1633)
-    - Example: `VoxelKey` [#1639](https://github.com/locationtech/geotrellis/pull/1639)
+  - Added example for translating from `SpaceTimeKey` to `SpatialKey` [#1549](https://github.com/locationtech/geotrellis/pull/1549)
+  - doc-examples subproject; example for tiling to GeoTiff [#1564](https://github.com/locationtech/geotrellis/pull/1564)
+  - Added example for focal operation on multiband layer. [#1577](https://github.com/locationtech/geotrellis/pull/1577)
+  - Projections, Extents, and Layout Definitions doc [#1608](https://github.com/locationtech/geotrellis/pull/1608)
+  - Added example of turning a list of features into GeoJSON [#1609](https://github.com/locationtech/geotrellis/pull/1609)
+  - Example: `ShardingKeyIndex[K]` [#1633](https://github.com/locationtech/geotrellis/pull/1633)
+  - Example: `VoxelKey` [#1639](https://github.com/locationtech/geotrellis/pull/1639)
 - Introduce ADR concept
-    - ADR: HDFS Raster Layers [#1582](https://github.com/locationtech/geotrellis/pull/1582)
-    - ADR: Readers / Writers Multithreading [#1613](https://github.com/locationtech/geotrellis/pull/1613)
+  - ADR: HDFS Raster Layers [#1582](https://github.com/locationtech/geotrellis/pull/1582)
+  - ADR: Readers / Writers Multithreading [#1613](https://github.com/locationtech/geotrellis/pull/1613)
 - Fixed some markdown docs [#1625](https://github.com/locationtech/geotrellis/pull/1625)
 - `parseGeoJson` lives in `geotrellis.vector.io` [#1649](https://github.com/locationtech/geotrellis/pull/1649)
 - Parallelize reads for S3, File, and Cassandra backends [#1607](https://github.com/locationtech/geotrellis/pull/1607)
@@ -731,10 +729,10 @@ While we are trying to stick strictly to [SemVer](http://semver.org/), there are
 
 ### Fixes / Optimizations
 
-  - Fixed GeoTiff bug in reading NoData value if len = 4 [#1490](https://github.com/locationtech/geotrellis/pull/1490)
+- Fixed GeoTiff bug in reading NoData value if len = 4 [#1490](https://github.com/locationtech/geotrellis/pull/1490)
   - Add detail to avro exception message [#1505](https://github.com/locationtech/geotrellis/pull/1505)
   - Fix: The `toSpatial` method gives metadata of type `TileLayerMetadata[SpaceTimeKey]`
-      - Custom `Functor` Typeclass [#1643](https://github.com/locationtech/geotrellis/pull/1643)
+    - Custom `Functor` Typeclass [#1643](https://github.com/locationtech/geotrellis/pull/1643)
   - Allow `Intersects(polygon: Polygon)` in layer query [#1644](https://github.com/locationtech/geotrellis/pull/1644)
   - Optimize `ColorMap` [#1648](https://github.com/locationtech/geotrellis/pull/1648)
   - Make regex for s3 URLs handle s3/s3a/s3n [#1652](https://github.com/locationtech/geotrellis/pull/1652)
@@ -746,21 +744,20 @@ While we are trying to stick strictly to [SemVer](http://semver.org/), there are
   - Fixed Non-Point Pixel + Partial Cell Rasterizer Bug [#1804](https://github.com/locationtech/geotrellis/pull/1804)
 
 ### New Committers
-  - metasim
-  - lokifacio
-  - aeffrig
-  - jpolchlo
-  - jbouffard
-  - vsimko
-  - longcmu
-  - miafg
+- metasim
+- lokifacio
+- aeffrig
+- jpolchlo
+- jbouffard
+- vsimko
+- longcmu
+- miafg
 
 ## [0.10.3]
 
 - [PR #1611](https://github.com/geotrellis/geotrellis/pull/1611) Any `RDD` of `Tile`s can utilize Polygonal Summary methods. (@fosskers)
 - [PR #1573](https://github.com/geotrellis/geotrellis/pull/1573) New `foreach` for `MultibandTile` which maps over each band at once. (@hjaekel)
 - [PR #1600](https://github.com/geotrellis/geotrellis/pull/1600) New `mapBands` method to map more cleanly over the bands of a `MultibandTile`.
-
 
 ## [0.10.2]
 
