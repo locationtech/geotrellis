@@ -31,10 +31,11 @@ import java.nio.{ByteOrder, ByteBuffer}
   *
   * @param rangeReader: A [[RangeReader]] instance
   * @param chunkSize: The size of chunks that will be streamed from the source
+  * @param initialChunk: The chunk size that will be pre-loaded from the source
   *
   * @return A new instance of StreamingByteReader
   */
-class StreamingByteReader(rangeReader: RangeReader, chunkSize: Int = 45876) extends ByteReader {
+class StreamingByteReader(rangeReader: RangeReader, chunkSize: Int = 45876, initialChunk: Int = 0) extends ByteReader {
 // 1. position change does not trigger any reading action
 // 2. chunks are read in increments
 // 3. if loaded chunk intersects the read range, incorporate it
@@ -45,6 +46,8 @@ class StreamingByteReader(rangeReader: RangeReader, chunkSize: Int = 45876) exte
   private var chunkRange: NumericRange[Long] = 1l to 0l // empty
   private var filePosition: Long = 0l
   private var byteOrder: ByteOrder = ByteOrder.BIG_ENDIAN
+
+  if (initialChunk > 0) ensureChunk(initialChunk)
 
   def position: Long = filePosition
 
@@ -102,8 +105,11 @@ class StreamingByteReader(rangeReader: RangeReader, chunkSize: Int = 45876) exte
     }
   }
 
-  /** Ensure we can read given number of bytes from current filePosition */
-  private def ensureChunk(length: Int): Unit = {
+  /**
+   *  Ensure we can read given number of bytes from current filePosition
+   *  Returns the length of bytes which have been successfully ensured
+   */
+  private def ensureChunk(length: Int): Int = {
     val trimmed: Long = math.min(length.toLong, rangeReader.totalLength - filePosition)
     if (!chunkRange.contains(filePosition) || !chunkRange.contains(filePosition + trimmed - 1)) {
       val len: Long = math.min(math.max(length, chunkSize), rangeReader.totalLength - filePosition)
@@ -112,13 +118,14 @@ class StreamingByteReader(rangeReader: RangeReader, chunkSize: Int = 45876) exte
 
     if (filePosition != chunkRange.start + chunkBuffer.position)
       chunkBuffer.position((filePosition - chunkRange.start).toInt)
+    trimmed.toInt
   }
 
   def getBytes(length: Int): Array[Byte] = {
-    ensureChunk(length)
-    val bytes = Array.ofDim[Byte](length)
+    val ensuredLength = ensureChunk(length)
+    val bytes = Array.ofDim[Byte](ensuredLength)
     chunkBuffer.get(bytes)
-    filePosition += length
+    filePosition += ensuredLength
     bytes
   }
 
@@ -178,4 +185,7 @@ object StreamingByteReader {
 
   def apply(rangeReader: RangeReader, chunkSize: Int): StreamingByteReader =
     new StreamingByteReader(rangeReader, chunkSize)
+
+  def apply(rangeReader: RangeReader, chunkSize: Int, initialChunk: Int): StreamingByteReader =
+    new StreamingByteReader(rangeReader, chunkSize, initialChunk)
 }

@@ -1,7 +1,16 @@
 Changelog
 =========
 
-3.0.0-SNAPSHOT
+Unreleased
+-----
+
+API Changes & Project structure changes
+
+- ``geotrellis-util``
+
+  - **Change:** StreamingByteReader instances now optionally take an ``initialChunk`` argument, allowing for chunks larger than the default ``chunkSize`` to be loaded. Useful for tuning metadata and file header read performance 
+
+3.0.0
 -----
 
 API Changes & Project structure changes

@@ -111,5 +111,15 @@ class StreamingByteReaderSpec extends FunSpec with Matchers {
       mockRangeReader.numberOfReads should be (1)
       result.toSeq should be (Seq(122, 123, 124, 125, 126))
     }
+
+    it("should allow retrieval of an initial chunk of the specified size") {
+      val mockRangeReader = new MockRangeReader(arr)
+      val br = new StreamingByteReader(mockRangeReader, chunkSize = 10, initialChunk = 40)
+
+      br.getBytes(40)
+      mockRangeReader.numberOfReads should be (1)
+      br.getBytes(1)
+      mockRangeReader.numberOfReads should be (2)
+    }
   }
 }

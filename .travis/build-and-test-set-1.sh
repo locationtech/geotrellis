@@ -9,6 +9,7 @@
   "project vector" test \
   "project vectortile" test \
   "project gdal" test \
+  "project util" test \
   "project geowave" compile test:compile \
   "project hbase" compile \
   "project hbase-spark" test \
