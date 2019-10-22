@@ -23,7 +23,7 @@ import spire.syntax.cfor._
   * tile.  Designed to be a near drop-in replacement for Array in many
   * cases.
   */
-trait ArrayTile extends Tile with Serializable {
+abstract class ArrayTile extends Tile with Serializable {
 
   /**
     * Return the [[ArrayTile]] equivalent of this ArrayTile.
