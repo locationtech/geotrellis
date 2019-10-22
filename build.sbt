@@ -108,11 +108,14 @@ lazy val root = Project("geotrellis", file("."))
     cassandra,
     `cassandra-spark`,
     `doc-examples`,
+    gdal,
+    `gdal-spark`,
     geomesa,
     geotools,
     geowave,
     hbase,
     `hbase-spark`,
+    layer,
     macros,
     proj4,
     raster,
@@ -123,12 +126,11 @@ lazy val root = Project("geotrellis", file("."))
     spark,
     `spark-pipeline`,
     `spark-testkit`,
+    store,
     util,
     vector,
     `vector-testkit`,
-    vectortile,
-    gdal,
-    `gdal-spark`
+    vectortile
   )
   .settings(commonSettings: _*)
   .enablePlugins(ScalaUnidocPlugin)
