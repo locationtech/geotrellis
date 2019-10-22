@@ -41,7 +41,7 @@ import java.util.ServiceLoader
   * @groupdesc reproject Functions to resample raster data in target projection.
   * @groupprio reproject 2
   */
-trait RasterSource extends CellGrid[Long] with RasterMetadata {
+abstract class RasterSource extends CellGrid[Long] with RasterMetadata {
   /** All available RasterSource metadata */
   def metadata: RasterMetadata
 

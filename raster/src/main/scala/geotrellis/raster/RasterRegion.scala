@@ -22,7 +22,7 @@ import geotrellis.vector.Extent
 /**
   * Reference to a pixel region in a [[RasterSource]] that may be read at a later time.
   */
-trait RasterRegion extends ProjectedRasterLike with Serializable {
+abstract class RasterRegion extends ProjectedRasterLike with Serializable {
   def raster: Option[Raster[MultibandTile]]
 }
 

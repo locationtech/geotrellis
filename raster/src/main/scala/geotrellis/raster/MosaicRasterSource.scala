@@ -38,7 +38,7 @@ import spire.math.Integral
   * whether they'll have the same CRS. crs allows specifying the CRS on read instead of
   * having to make sure at compile time that you're threading CRSes through everywhere correctly.
   */
-trait MosaicRasterSource extends RasterSource {
+abstract class MosaicRasterSource extends RasterSource {
 
   val sources: NonEmptyList[RasterSource]
   val crs: CRS
