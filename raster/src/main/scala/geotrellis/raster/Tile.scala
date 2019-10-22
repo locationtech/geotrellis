@@ -19,7 +19,7 @@ package geotrellis.raster
 /**
   * Base trait for a Tile.
   */
-trait Tile extends CellGrid[Int] with IterableTile with MappableTile[Tile] {
+abstract class Tile extends CellGrid[Int] with IterableTile with MappableTile[Tile] {
   /**
     * Execute a function at each pixel of a [[Tile]].  Two functions
     * are given: an integer version which is used if the tile is an
