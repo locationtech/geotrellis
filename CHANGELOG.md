@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+Fix `StreamingByteReader` over-allocation when reading past EOF [#3138](https://github.com/locationtech/geotrellis/pull/3138)
+
 ## [3.0.0] - 2019-10-18
 
 ### Added
