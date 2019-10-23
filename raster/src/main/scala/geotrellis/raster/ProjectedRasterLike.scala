@@ -22,7 +22,9 @@ import geotrellis.vector.Extent
 /**
   * Conformance interface for entities that are tile-like with a projected extent.
   */
-trait ProjectedRasterLike { _: CellGrid[Int] =>
+trait ProjectedRasterLike {
   def crs: CRS
   def extent: Extent
+  def cols: Int
+  def rows: Int
 }
