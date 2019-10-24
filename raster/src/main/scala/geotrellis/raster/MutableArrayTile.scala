@@ -16,8 +16,6 @@
 
 package geotrellis.raster
 
-import geotrellis.vector._
-
 import spire.syntax.cfor._
 
 
@@ -25,7 +23,7 @@ import spire.syntax.cfor._
   * [[MutableArrayTile]] is an [[ArrayTile]] whose cells can be
   * written to (mutated).
   */
-trait MutableArrayTile extends ArrayTile {
+abstract class MutableArrayTile extends ArrayTile {
   def mutable = this
 
   /**

@@ -17,15 +17,7 @@
 package geotrellis.raster
 
 import geotrellis.macros._
-import geotrellis.raster.summary._
-import geotrellis.vector.Extent
-
 import spire.syntax.cfor._
-
-import java.util.Locale
-
-import math.BigDecimal
-
 
 object MultibandTile {
   /**
@@ -51,7 +43,7 @@ object MultibandTile {
     ArrayMultibandTile(bands)
 }
 
-trait MultibandTile extends CellGrid[Int] with MacroCombinableMultibandTile[Tile] with MacroCombineFunctions[Tile, MultibandTile] {
+abstract class MultibandTile extends CellGrid[Int] with MacroCombinableMultibandTile[Tile] with MacroCombineFunctions[Tile, MultibandTile] {
   def bandCount: Int
 
   /**
