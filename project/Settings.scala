@@ -43,6 +43,75 @@ object Settings {
     parallelExecution in Test := false
   )
 
+  val commonScalacOptions = Seq(
+    "-deprecation",
+    "-unchecked",
+    "-feature",
+    "-language:implicitConversions",
+    "-language:reflectiveCalls",
+    "-language:higherKinds",
+    "-language:postfixOps",
+    "-language:existentials",
+    "-language:experimental.macros",
+    "-feature",
+    "-Ypartial-unification", // Required by Cats
+    "-target:jvm-1.8")
+
+  lazy val commonSettings = Seq(
+    description := "geographic data processing library for high performance applications",
+    licenses := Seq("Apache-2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0.html")),
+    homepage := Some(url("http://geotrellis.io")),
+    scmInfo := Some(ScmInfo(url("https://github.com/locationtech/geotrellis"), "scm:git:git@github.com:locationtech/geotrellis.git"
+    )),
+    scalacOptions ++= commonScalacOptions,
+    publishMavenStyle := true,
+    publishArtifact in Test := false,
+    pomIncludeRepository := { _ => false },
+    autoAPIMappings := true,
+
+    publishTo := {
+      val sonatype = "https://oss.sonatype.org/"
+      val locationtech = "https://repo.locationtech.org/content/repositories"
+
+      System.getProperty("release") match {
+        case "locationtech" if isSnapshot.value =>
+          Some("LocationTech Snapshot Repository" at s"${locationtech}/geotrellis-snapshots")
+        case "locationtech" =>
+          Some("LocationTech Release Repository" at s"${locationtech}/geotrellis-releases")
+        case _ =>
+          Some("Sonatype Release Repository" at s"${sonatype}service/local/staging/deploy/maven2")
+      }
+    },
+
+    credentials ++= List(Path.userHome / ".ivy2" / ".credentials")
+      .filter(_.asFile.canRead)
+      .map(Credentials(_)),
+
+    addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.10.3" cross CrossVersion.binary),
+    addCompilerPlugin("org.scalamacros" %% "paradise" % "2.1.1" cross CrossVersion.full),
+
+    pomExtra := (
+      <developers>
+        <developer>
+          <id>echeipesh</id>
+          <name>Eugene Cheipesh</name>
+          <url>http://github.com/echeipesh/</url>
+        </developer>
+        <developer>
+          <id>lossyrob</id>
+          <name>Rob Emanuele</name>
+          <url>http://github.com/lossyrob/</url>
+        </developer>
+      </developers>),
+
+    resolvers ++= Seq(
+      Resolver.mavenLocal,
+      Settings.Repositories.geosolutions,
+      Settings.Repositories.osgeo,
+      Settings.Repositories.locationtechReleases
+    )
+  )
+
   lazy val accumulo = Seq(
     name := "geotrellis-accumulo",
     libraryDependencies ++= Seq(
@@ -61,7 +130,7 @@ object Settings {
       import geotrellis.layer._
       import geotrellis.store.accumulo._
       """
-  ) ++ noForkInTests
+  ) ++ commonSettings ++ noForkInTests
 
   lazy val `accumulo-spark` = Seq(
     name := "geotrellis-accumulo-spark",
@@ -69,9 +138,8 @@ object Settings {
       accumuloCore
         exclude("org.jboss.netty", "netty")
         exclude("org.apache.hadoop", "hadoop-client"),
-      sparkCore % Provided,
+      sparkCore % Provided, sparkSql % Test,
       spire,
-      sparkSQL % Test,
       scalatest % Test
     ),
     initialCommands in console :=
@@ -84,7 +152,7 @@ object Settings {
       import geotrellis.spark._
       import geotrellis.spark.store.accumulo._
       """
-  ) ++ noForkInTests
+  ) ++ commonSettings ++ noForkInTests
 
   lazy val bench = Seq(
     libraryDependencies += sl4jnop,
@@ -115,7 +183,7 @@ object Settings {
       import geotrellis.store.util._
       import geotrellis.store.cassandra._
       """
-  ) ++ noForkInTests
+  ) ++ commonSettings ++ noForkInTests
 
   lazy val `cassandra-spark` = Seq(
     name := "geotrellis-cassandra-spark",
@@ -125,9 +193,8 @@ object Settings {
         ExclusionRule("org.jboss.netty"), ExclusionRule("io.netty"),
         ExclusionRule("org.slf4j"), ExclusionRule("com.typesafe.akka")
       ) exclude("org.apache.hadoop", "hadoop-client"),
-      sparkCore % Provided,
+      sparkCore % Provided, sparkSql % Test,
       spire,
-      sparkSQL % Test,
       scalatest % Test
     ),
     initialCommands in console :=
@@ -141,17 +208,18 @@ object Settings {
       import geotrellis.spark.util._
       import geotrellis.spark.store.cassandra._
       """
-  ) ++ noForkInTests
+  ) ++ noForkInTests ++ commonSettings
 
 
   lazy val `doc-examples` = Seq(
     name := "geotrellis-doc-examples",
     publish / skip := true,
+    scalacOptions ++= commonScalacOptions,
     libraryDependencies ++= Seq(
       sparkCore,
       logging,
       scalatest % Test,
-      sparkSQL % Test
+      sparkSql % Test
     )
   )
 
@@ -161,9 +229,7 @@ object Settings {
       geomesaAccumuloJobs,
       geomesaAccumuloDatastore,
       geomesaUtils,
-      sparkCore % Provided,
       spire,
-      sparkSQL % Test,
       scalatest % Test
     ),
     resolvers ++= Seq(
@@ -180,7 +246,7 @@ object Settings {
       import geotrellis.spark.util._
       import geotrellis.spark.io.geomesa._
       """
-  ) ++ noForkInTests
+  ) ++ commonSettings ++ noForkInTests
 
   lazy val geotools = Seq(
     name := "geotrellis-geotools",
@@ -211,7 +277,7 @@ object Settings {
       import org.geotools.gce.geotiff._
       """,
     testOptions in Test += Tests.Setup { () => Unzip.geoTiffTestFiles() }
-  ) ++ noForkInTests
+  ) ++ commonSettings ++ noForkInTests
 
   lazy val geowave = Seq(
     name := "geotrellis-geowave",
@@ -254,7 +320,7 @@ object Settings {
       kryoShaded,
       sparkCore % Provided,
       spire,
-      sparkSQL % Test,
+      sparkSql % Test,
       scalatest % Test
     ),
     resolvers ++= Seq(
@@ -284,11 +350,8 @@ object Settings {
           case _ => MergeStrategy.first
         }
       case _ => MergeStrategy.first
-    },
-    initialCommands in console :=
-      """
-      """
-  ) ++ noForkInTests
+    }
+  ) ++ commonSettings ++ noForkInTests
 
   lazy val hbase = Seq(
     name := "geotrellis-hbase",
@@ -304,7 +367,7 @@ object Settings {
       hbaseZooKeeper exclude("javax.servlet", "servlet-api"),
       jacksonCoreAsl,
       spire,
-      sparkSQL % Test,
+      sparkSql % Test,
       scalatest % Test
     ),
     /** https://github.com/lucidworks/spark-solr/issues/179 */
@@ -329,7 +392,7 @@ object Settings {
       import geotrellis.store.util._
       import geotrellis.store.hbase._
       """
-  ) ++ noForkInTests
+  ) ++ commonSettings ++ noForkInTests
 
   lazy val `hbase-spark` = Seq(
     name := "geotrellis-hbase-spark",
@@ -346,7 +409,7 @@ object Settings {
       jacksonCoreAsl,
       sparkCore % Provided,
       spire,
-      sparkSQL % Test,
+      sparkSql % Test,
       scalatest % Test
     ),
     /** https://github.com/lucidworks/spark-solr/issues/179 */
@@ -373,7 +436,7 @@ object Settings {
       import geotrellis.spark.store.hbase._
       import geotrellis.store.hbase._
       """
-  ) ++ noForkInTests
+  ) ++ commonSettings ++ noForkInTests
 
   lazy val macros = Seq(
     name := "geotrellis-macros",
@@ -397,20 +460,19 @@ object Settings {
     ),
     // https://github.com/sbt/sbt/issues/4609
     fork in Test := true
-  )
+  ) ++ commonSettings
 
   lazy val raster = Seq(
     name := "geotrellis-raster",
     libraryDependencies ++= Seq(
       pureconfig,
       jts,
-      catsCore,
+      cats("core").value,
       spire,
       squants,
-      monocleCore,
-      monocleMacro,
+      monocle("core").value, monocle("macro").value,
       scalaXml,
-      scalaURI,
+      scalaURI.value,
       scalatest % Test,
       scalacheck % Test
     ),
@@ -433,12 +495,12 @@ object Settings {
         Unzip(testArchive, "raster/data")
       }
     }
-  )
+  ) ++ commonSettings
 
   lazy val `raster-testkit` = Seq(
     name := "geotrellis-raster-testkit",
     libraryDependencies += scalatest
-  )
+  ) ++ commonSettings
 
   lazy val s3 = Seq(
     name := "geotrellis-s3",
@@ -471,7 +533,7 @@ object Settings {
       import geotrellis.layer._
       import geotrellis.store.s3._
       """
-  ) ++ noForkInTests
+  ) ++ noForkInTests ++ commonSettings
 
   lazy val `s3-spark` = Seq(
     name := "geotrellis-s3-spark",
@@ -480,7 +542,7 @@ object Settings {
       awsSdkS3,
       spire,
       scaffeine,
-      sparkSQL % Test,
+      sparkSql % Test,
       scalatest % Test
     ),
     dependencyOverrides ++= {
@@ -509,7 +571,7 @@ object Settings {
       import geotrellis.spark._
       import geotrellis.spark.store.s3._
       """
-  ) ++ noForkInTests
+  ) ++ noForkInTests ++ commonSettings
 
   lazy val shapefile = Seq(
     name := "geotrellis-shapefile",
@@ -520,7 +582,7 @@ object Settings {
     ),
     resolvers += Repositories.osgeo,
     fork in Test := false
-  )
+  ) ++ commonSettings
 
   lazy val spark = Seq(
     name := "geotrellis-spark",
@@ -531,13 +593,8 @@ object Settings {
       scalaj,
       avro,
       spire,
-      monocleCore, monocleMacro,
       chronoscala,
-      catsCore,
-      catsEffect,
-      fs2Core,
-      fs2Io,
-      sparkSQL % Test,
+      sparkSql % Test,
       scalatest % Test,
       logging,
       scaffeine
@@ -555,17 +612,13 @@ object Settings {
       import geotrellis.spark._
       import geotrellis.spark.util._
       """
-  ) ++ noForkInTests
+  ) ++ noForkInTests ++ commonSettings
 
   lazy val `spark-pipeline` = Seq(
     name := "geotrellis-spark-pipeline",
     libraryDependencies ++= Seq(
-      circeCore,
-      circeGeneric,
-      circeGenericExtras,
-      circeParser,
-      sparkCore % Provided,
-      sparkSQL % Test,
+      circe("core").value, circe("generic").value, circe("generic-extras").value, circe("parser").value,
+      sparkCore % Provided, sparkSql % Test,
       scalatest % Test
     ),
     test in assembly := {},
@@ -588,18 +641,17 @@ object Settings {
       case "META-INF/ECLIPSEF.RSA" | "META-INF/ECLIPSEF.SF" => MergeStrategy.discard
       case _ => MergeStrategy.first
     }
-  )
+  ) ++ commonSettings
 
   lazy val `spark-testkit` = Seq(
     name := "geotrellis-spark-testkit",
     libraryDependencies ++= Seq(
-      sparkCore % Provided,
-      sparkSQL % Provided,
+      sparkCore % Provided, sparkSql % Provided,
       hadoopClient % Provided,
       scalatest,
       chronoscala
     )
-  )
+  ) ++ commonSettings
 
   lazy val util = Seq(
     name := "geotrellis-util",
@@ -609,28 +661,25 @@ object Settings {
       spire,
       scalatest % Test
     )
-  )
+  ) ++ commonSettings
 
   lazy val vector = Seq(
     name := "geotrellis-vector",
     libraryDependencies ++= Seq(
       jts,
       pureconfig,
-      circeCore,
-      circeGeneric,
-      circeGenericExtras,
-      circeParser,
+      circe("core").value, circe("generic").value, circe("parser").value,
       apacheMath,
       spire,
       scalatest % Test,
       scalacheck % Test
     )
-  )
+  ) ++ commonSettings
 
   lazy val `vector-testkit` = Seq(
     name := "geotrellis-vector-testkit",
     libraryDependencies += scalatest
-  )
+  ) ++ commonSettings
 
   lazy val vectortile = Seq(
     name := "geotrellis-vectortile",
@@ -642,7 +691,7 @@ object Settings {
     PB.targets in Compile := Seq(
       scalapb.gen(flatPackage = true, grpc = false) -> (sourceManaged in Compile).value
     )
-  )
+  ) ++ commonSettings
 
   lazy val layer = Seq(
     name := "geotrellis-layer",
@@ -651,13 +700,7 @@ object Settings {
       apacheIO,
       avro,
       spire,
-      monocleCore,
-      monocleMacro,
       chronoscala,
-      catsEffect,
-      spire,
-      fs2Core,
-      fs2Io,
       logging,
       scaffeine,
       uzaygezenCore,
@@ -672,7 +715,7 @@ object Settings {
       import geotrellis.proj4._
       import geotrellis.layer._
       """
-  )
+  ) ++ commonSettings
 
   lazy val store = Seq(
     name := "geotrellis-store",
@@ -681,13 +724,9 @@ object Settings {
       apacheIO,
       avro,
       spire,
-      monocleCore,
-      monocleMacro,
       chronoscala,
-      catsEffect,
       spire,
-      fs2Core,
-      fs2Io,
+      fs2("core").value, fs2("io").value,
       logging,
       scaffeine,
       uzaygezenCore,
@@ -695,7 +734,7 @@ object Settings {
       scalaXml,
       scalatest % Test
     )
-  )
+  ) ++ commonSettings
 
   lazy val gdal = Seq(
     name := "geotrellis-gdal",
@@ -709,14 +748,13 @@ object Settings {
     Test / parallelExecution := false,
     Test / testOptions += Tests.Argument("-oDF"),
     javaOptions ++= Seq("-Djava.library.path=/usr/local/lib")
-  )
+  ) ++ commonSettings
 
   lazy val `gdal-spark` = Seq(
     name := "geotrellis-gdal-spark",
     libraryDependencies ++= Seq(
       gdalWarp,
-      sparkCore % Provided,
-      sparkSQL % Test,
+      sparkCore % Provided, sparkSql % Test,
       scalatest % Test
     ),
     // caused by the AWS SDK v2
@@ -737,5 +775,5 @@ object Settings {
     Test / parallelExecution := false,
     Test / testOptions += Tests.Argument("-oDF"),
     javaOptions ++= Seq("-Djava.library.path=/usr/local/lib")
-  )
+  ) ++ commonSettings
 }

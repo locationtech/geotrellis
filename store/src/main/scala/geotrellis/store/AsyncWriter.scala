@@ -17,6 +17,7 @@
 package geotrellis.store
 
 import geotrellis.store.util.BlockingThreadPool
+import geotrellis.store.compact.FS2Utils
 
 import cats.effect.IO
 import cats.syntax.apply._
@@ -46,7 +47,7 @@ abstract class AsyncWriter[Client, V, E](executionContext: => ExecutionContext =
     implicit val timer = IO.timer(ec)
     implicit val cs    = IO.contextShift(ec)
 
-    val rows: fs2.Stream[IO, (String, V)] = fs2.Stream.fromIterator[IO, (String, V)](partition)
+    val rows: fs2.Stream[IO, (String, V)] = FS2Utils.fromIterator[IO](partition)
 
     def elaborateRow(row: (String, V)): fs2.Stream[IO, (String, V)] = {
       val foldUpdate: ((String, V)) => (String, V) = { case newRecord @ (key, newValue) =>
