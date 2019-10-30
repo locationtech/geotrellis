@@ -142,9 +142,9 @@ class SinglebandGeoTiffReaderSpec extends FunSpec
         val CellSize(w, h) = cellSize
 
         val seq = for {
-          wp <- (w / 2 + w / 4) until (w - w / 100) by 100
-          hp <- (h / 2 + h / 4) until (h - h / 100) by 100
-        } yield CellSize(wp, hp)
+          wp <- Range.BigDecimal(w / 2 + w / 4, w - w / 100, 100)
+          hp <- Range.BigDecimal(h / 2 + h / 4, h - h / 100, 100)
+        } yield CellSize(wp.toDouble, hp.toDouble)
 
         seq.toList
       }

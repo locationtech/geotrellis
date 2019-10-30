@@ -76,17 +76,13 @@ class ShardingKeyIndexSpec extends FunSpec with Matchers {
     it("H-Space Isomorphism") {
       val index: KeyIndex[SpatialKey] = new ShardingKeyIndex(hspace, 5)
 
-      index.asJson.as[KeyIndex[SpatialKey]] match {
-        case Left(err) => fail(err.message)
-      }
+      index.asJson.as[KeyIndex[SpatialKey]].toTry.get
     }
 
     it("H-Time Isomorphism") {
       val index: KeyIndex[SpaceTimeKey] = new ShardingKeyIndex(hspaceTime, 5)
 
-      index.asJson.as[KeyIndex[SpaceTimeKey]] match {
-        case Left(err) => fail(err.message)
-      }
+      index.asJson.as[KeyIndex[SpaceTimeKey]].toTry.get
     }
   }
 }
