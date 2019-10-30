@@ -2,18 +2,14 @@ import Dependencies._
 import de.heikoseeberger.sbtheader._
 import sbt.Keys._
 
-scalaVersion := Version.scala
-
-scalaVersion in ThisBuild := Version.scala
+ThisBuild / scalaVersion := "2.12.8"
+ThisBuild / crossScalaVersions := List("2.12.8", "2.11.12")
+ThisBuild / organization := "org.locationtech.geotrellis"
 
 lazy val commonSettings = Seq(
-  version := Version.geotrellis,
-  scalaVersion := Version.scala,
-  crossScalaVersions := Version.crossScala,
   description := Info.description,
-  organization := "org.locationtech.geotrellis",
   licenses := Seq("Apache-2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0.html")),
-  homepage := Some(url(Info.url)),
+  homepage := Some(url("http://geotrellis.io")),
   scmInfo := Some(ScmInfo(
     url("https://github.com/locationtech/geotrellis"), "scm:git:git@github.com:locationtech/geotrellis.git"
   )),
@@ -110,9 +106,7 @@ lazy val root = Project("geotrellis", file("."))
     `doc-examples`,
     gdal,
     `gdal-spark`,
-    geomesa,
     geotools,
-    geowave,
     hbase,
     `hbase-spark`,
     layer,
@@ -132,9 +126,8 @@ lazy val root = Project("geotrellis", file("."))
     `vector-testkit`,
     vectortile
   )
-  .settings(commonSettings: _*)
   .enablePlugins(ScalaUnidocPlugin)
-  .settings(unidocProjectFilter in (ScalaUnidoc, unidoc) := inAnyProject -- inProjects(geowave))
+  .settings(unidocProjectFilter in (ScalaUnidoc, unidoc) := inAnyProject)
 
 lazy val macros = project
   .settings(commonSettings)
@@ -265,20 +258,20 @@ lazy val geotools = project
   .settings(commonSettings)
   .settings(Settings.geotools)
 
-lazy val geomesa = project
-  .dependsOn(`spark-testkit` % Test, spark, geotools, `accumulo-spark`)
-  .settings(commonSettings)
-  .settings(Settings.geomesa)
-  .settings(crossScalaVersions := Seq(scalaVersion.value))
+// lazy val geomesa = project
+//   .dependsOn(`spark-testkit` % Test, spark, geotools, `accumulo-spark`)
+//   .settings(commonSettings)
+//   .settings(Settings.geomesa)
+//   .settings(crossScalaVersions := Seq(scalaVersion.value))
 
-lazy val geowave = project
-  .dependsOn(
-    spark % "compile->compile;test->test", // <-- spark-testkit update should simplify this
-    `spark-testkit` % Test, geotools, `accumulo-spark`
-  )
-  .settings(commonSettings)
-  .settings(Settings.geowave)
-  .settings(crossScalaVersions := Seq(scalaVersion.value))
+// lazy val geowave = project
+//   .dependsOn(
+//     proj4, raster, layer, store, accumulo,
+//     `spark-testkit` % Test, geotools
+//   )
+//   .settings(commonSettings)
+//   .settings(Settings.geowave)
+//   .settings(crossScalaVersions := Seq(scalaVersion.value))
 
 lazy val shapefile = project
   .dependsOn(raster, `raster-testkit` % Test)

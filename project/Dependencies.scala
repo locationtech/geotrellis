@@ -16,6 +16,23 @@
 
 import sbt._
 
+object Version {
+  val geotools    = "21.2"
+  val monocle     = "1.5.1-cats"
+  val spire       = "0.13.0"
+  val accumulo    = "1.9.3"
+  val cassandra   = "3.7.2"
+  val hbase       = "2.2.0"
+  val geomesa     = "2.3.1"
+  val geowave     = "0.9.3"
+  val circe       = "0.11.1"
+  val gdal        = "2.4.0"
+  val gdalWarp    = "33.61199eb"
+  val hadoop      = "2.8.5"
+  val spark       = "2.4.4"
+  val previousVersion = "2.2.0"
+}
+
 object Dependencies {
   val pureconfig          = "com.github.pureconfig"      %% "pureconfig"               % "0.11.1"
   val logging             = "org.log4s"                  %% "log4s"                    % "1.8.2"

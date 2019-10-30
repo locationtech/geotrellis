@@ -32,8 +32,6 @@ object Settings {
     val boundlessgeoRelease   = "boundless" at "https://repo.boundlessgeo.com/release"
     val geosolutions          = "geosolutions" at "http://maven.geo-solutions.it/"
     val osgeo                 = "osgeo" at "http://download.osgeo.org/webdav/geotools/"
-    val geowaveRelease        = "geowave-release" at "http://geowave-maven.s3.amazonaws.com/release"
-    val geowaveSnapshot       = "geowave-snapshot" at "http://geowave-maven.s3.amazonaws.com/snapshot"
     val ivy2Local             = Resolver.file("local", file(Path.userHome.absolutePath + "/.ivy2/local"))(Resolver.ivyStylePatterns)
     val mavenLocal            = Resolver.mavenLocal
     val local                 = Seq(ivy2Local, mavenLocal)
@@ -160,7 +158,6 @@ object Settings {
   lazy val geomesa = Seq(
     name := "geotrellis-geomesa",
     libraryDependencies ++= Seq(
-      geomesaJobs,
       geomesaAccumuloJobs,
       geomesaAccumuloDatastore,
       geomesaUtils,
@@ -263,8 +260,6 @@ object Settings {
     resolvers ++= Seq(
       Repositories.boundlessgeoRelease,
       Repositories.geosolutions,
-      Repositories.geowaveRelease,
-      Repositories.geowaveSnapshot,
       Repositories.osgeo
     ),
     assemblyMergeStrategy in assembly := {
@@ -578,9 +573,9 @@ object Settings {
       val shadePackage = "com.azavea.shaded.demo"
       Seq(
         ShadeRule.rename("com.google.common.**" -> s"$shadePackage.google.common.@1")
-          .inLibrary("com.azavea.geotrellis" %% "geotrellis-cassandra" % Version.geotrellis).inAll,
+          .inLibrary("com.azavea.geotrellis" %% "geotrellis-cassandra" % version.value).inAll,
         ShadeRule.rename("io.netty.**" -> s"$shadePackage.io.netty.@1")
-          .inLibrary("com.azavea.geotrellis" %% "geotrellis-hbase" % Version.geotrellis).inAll,
+          .inLibrary("com.azavea.geotrellis" %% "geotrellis-hbase" % version.value).inAll,
         ShadeRule.rename("com.fasterxml.jackson.**" -> s"$shadePackage.com.fasterxml.jackson.@1")
           .inLibrary(jsonSchemaValidator).inAll,
         ShadeRule.rename("shapeless.**" -> s"$shadePackage.shapeless.@1").inAll
@@ -701,7 +696,7 @@ object Settings {
       scalatest % Test
     )
   )
-  
+
   lazy val gdal = Seq(
     name := "geotrellis-gdal",
     libraryDependencies ++= Seq(
