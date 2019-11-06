@@ -53,9 +53,8 @@ object Hillshade {
       val sinAz = sin(azimuth)
 
       def setValue(x: Int, y: Int, s: SurfacePoint) {
-        val slope = s.slope(zFactor)
-        val aspect = s.aspect
-
+        s.`dz/dx` = s.`dz/dx` * zFactor
+        s.`dz/dy` = s.`dz/dy` * zFactor
         val c = cosAz * s.cosAspect + sinAz * s.sinAspect // cos(azimuth - aspect)
         val v = (cosZ * s.cosSlope) + (sinZ * s.sinSlope * c)
         resultTile.set(x, y, round(127.0 * max(0.0, v)).toInt)
