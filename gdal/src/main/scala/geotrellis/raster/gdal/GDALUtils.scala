@@ -43,17 +43,19 @@ object GDALUtils {
           case Some(bits) if bits == 1 => BitCellType
           case _ =>
             minMaxValues match {
-              case Some((mi, ma)) if (mi.toInt >= 0 && mi <= 255) && (ma.toInt >= 0 && ma <= 255) =>
-                noDataValue match {
-                  case Some(nd) if nd.toInt > 0 && nd <= 255 => UByteUserDefinedNoDataCellType(nd.toByte)
-                  case Some(nd) if nd.toInt == 0 => UByteConstantNoDataCellType
-                  case _ => UByteCellType
-                }
-              case _ =>
+              case Some((mi, ma)) if mi >= -128 && mi < 128 && ma >= -128 && ma < 128 =>
+                // signed Byte
                 noDataValue match {
                   case Some(nd) if nd.toInt > Byte.MinValue.toInt && nd <= Byte.MaxValue.toInt => ByteUserDefinedNoDataCellType(nd.toByte)
                   case Some(nd) if nd.toInt == Byte.MinValue.toInt => ByteConstantNoDataCellType
                   case _ => ByteCellType
+                }
+              case _ ⇒
+                // unsigned Byte
+                noDataValue match {
+                  case Some(nd) if nd.toInt > 0 && nd <= 255 => UByteUserDefinedNoDataCellType(nd.toByte)
+                  case Some(nd) if nd.toInt == 0 => UByteConstantNoDataCellType
+                  case _ => UByteCellType
                 }
             }
         }
