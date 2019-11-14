@@ -28,13 +28,12 @@ import geotrellis.util._
 
 import _root_.io.circe._
 import _root_.io.circe.syntax._
-import _root_.io.circe.generic.JsonCodec
+import _root_.io.circe.generic.semiauto._
 import cats.syntax.either._
 
 // --- //
 
 /** A three-dimensional spatial key. A ''voxel'' is the 3D equivalent of a pixel. */
-@JsonCodec
 case class VoxelKey(x: Int, y: Int, z: Int)
 
 /** Typeclass instances. These (particularly [[Boundable]]) are necessary
@@ -66,6 +65,9 @@ object VoxelKey {
       (k, sk) => VoxelKey(sk.col, sk.row, k.z)
     )
   }
+
+  implicit val voxelKeyEncoder: Encoder[VoxelKey] = deriveEncoder[VoxelKey]
+  implicit val voxelKeyDecoder: Decoder[VoxelKey] = deriveDecoder[VoxelKey]
 }
 
 /** A [[KeyIndex]] based on [[VoxelKey]]. */
