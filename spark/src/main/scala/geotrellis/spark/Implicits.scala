@@ -254,7 +254,7 @@ trait Implicits
     }
   }
 
-  implicit class withGetBoundsMethod[K: Boundable, V <: CellGrid[Int]](rdd: RDD[(K, V)]) {
+  implicit class withGetBoundsMethod[K: Boundable, V <: CellGrid[Int]](rdd: RDD[(K, V)]) extends Serializable {
     def getBounds: Bounds[K] =
       rdd
         .map { case (k, tile) => Bounds(k, k) }
