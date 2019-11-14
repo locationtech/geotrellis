@@ -1,3 +1,5 @@
+resolvers += sbt.Resolver.bintrayIvyRepo("typesafe", "sbt-plugins")
+
 addSbtPlugin("net.virtual-void" % "sbt-dependency-graph" % "0.9.2")
 addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "0.14.10")
 addSbtPlugin("com.eed3si9n" % "sbt-unidoc" % "0.4.2")
