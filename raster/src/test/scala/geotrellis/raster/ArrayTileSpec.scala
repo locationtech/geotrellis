@@ -196,18 +196,21 @@ class ArrayTileSpec extends FunSpec
 
         def add(l: Int, r: Int) = if(isNoData(l) || isNoData(r)) NODATA else l + r
         assertEqual(at.combine(fauxTile)(add), twice)
+        assertEqual(twice, at.combine(fauxTile)(add))
       }
 
       withClue("DoubleArrayTile with NoData") {
         val at = injectNoData(4)(createValueTile(10, 10.2))
+          .convert(DoubleUserDefinedNoDataCellType(33.2))
 
         val twice = at * 2
         val fauxTile = new DelegatingTile {
           override protected def delegate: Tile = at
         }
 
-        assertEqual(at.combineDouble(fauxTile)((z1, z2) => z1 + z2), twice)
-        assertEqual(fauxTile.combineDouble(at)((z1, z2) => z1 + z2), twice)
+        def add(l: Double, r: Double) = if(isNoData(l) || isNoData(r)) doubleNODATA else l + r
+        assertEqual(at.combineDouble(fauxTile)(add), twice)
+        assertEqual(fauxTile.combineDouble(at)(add), twice)
       }
 
       withClue("delegation of NoData semantics") {
