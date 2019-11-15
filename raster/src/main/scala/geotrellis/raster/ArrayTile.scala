@@ -229,14 +229,7 @@ abstract class ArrayTile extends Tile with Serializable {
       case ct: CroppedTile =>
         ct.combine(this)((z1, z2) => f(z2, z1))
       case t =>
-        this.map((col, row, z) => {
-          if (isNoData(z)) z
-          else {
-            val v = t.get(col, row)
-            if (isNoData(v)) v
-            else f(z, v)
-          }
-        })
+        this.map((col, row, z) => f(z, t.get(col, row)))
   }
 
   /**

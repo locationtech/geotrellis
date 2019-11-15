@@ -16,6 +16,8 @@
 
 package geotrellis.raster
 
+import geotrellis.raster.ArrayTileSpec.{BiasedAdd, CountData}
+import geotrellis.raster.mapalgebra.local.{Add, LocalTileBinaryOp}
 import geotrellis.raster.testkit._
 import org.scalatest._
 
@@ -186,18 +188,19 @@ class ArrayTileSpec extends FunSpec
 
       withClue("IntArrayTile with NoData") {
         val at = injectNoData(4)(createConsecutiveTile(10))
-          .convert(DoubleUserDefinedNoDataCellType(98))
+          .convert(IntUserDefinedNoDataCellType(98))
         val twice = at * 2
         val fauxTile = new DelegatingTile {
           override protected def delegate: Tile = at
         }
 
-        assertEqual(at.combine(fauxTile)((z1, z2) => z1 + z2), twice)
+        def add(l: Int, r: Int) = if(isNoData(l) || isNoData(r)) NODATA else l + r
+        assertEqual(at.combine(fauxTile)(add), twice)
       }
 
       withClue("DoubleArrayTile with NoData") {
         val at = injectNoData(4)(createValueTile(10, 10.2))
-          .convert(DoubleUserDefinedNoDataCellType(33.2))
+
         val twice = at * 2
         val fauxTile = new DelegatingTile {
           override protected def delegate: Tile = at
@@ -205,6 +208,29 @@ class ArrayTileSpec extends FunSpec
 
         assertEqual(at.combineDouble(fauxTile)((z1, z2) => z1 + z2), twice)
         assertEqual(fauxTile.combineDouble(at)((z1, z2) => z1 + z2), twice)
+      }
+
+      withClue("delegation of NoData semantics") {
+        val t1 = injectNoData(1)(createConsecutiveTile(2))
+        val t2 = createConsecutiveTile(2)
+        val d1 = new DelegatingTile {
+          override protected def delegate: Tile = t1
+        }
+
+        val d2 = new DelegatingTile {
+          override protected def delegate: Tile = t2
+        }
+
+        // Standard Add evaluates `x + NoData` as `NoData`
+        CountData(Add(d1, d2)) should be (3L)
+        CountData(Add(t2, t1)) should be (3L)
+
+        // With BiasedAdd, all cells should be data cells
+        CountData(BiasedAdd(t1, t2)) should be (4L)
+        CountData(BiasedAdd(d1, d2)) should be (4L)
+        // Should be commutative.
+        CountData(BiasedAdd(t2, t1)) should be (4L)
+        CountData(BiasedAdd(d2, d1)) should be (4L)
       }
     }
   }
@@ -228,6 +254,45 @@ class ArrayTileSpec extends FunSpec
       val other = IntArrayTile(Array.ofDim[Int](4 * 4).fill(0), 4, 4)
 
       assert(at == other)
+    }
+  }
+}
+
+object ArrayTileSpec {
+  /** BiasedAdd is evaluates `x + NoData` as `x` */
+  case object BiasedAdd extends LocalTileBinaryOp {
+    def op(z1: Int, z2: Int): Int = z1 + z2
+    def op(z1: Double, z2: Double): Double = z1+z2
+
+    def combine(z1: Int, z2: Int): Int =
+      if (isNoData(z1) && isNoData(z2)) NODATA
+      else if (isNoData(z1))
+        z2
+      else if (isNoData(z2))
+        z1
+      else
+        op(z1, z2)
+
+    def combine(z1: Double, z2: Double): Double =
+      if (isNoData(z1) && isNoData(z2)) doubleNODATA
+      else if (isNoData(z1))
+        z2
+      else if (isNoData(z2))
+        z1
+      else
+        op(z1, z2)
+  }
+
+  /** Counts the number of non-NoData cells in a tile */
+  case object CountData {
+    def apply(t: Tile) = {
+      var count: Long = 0
+      t.dualForeach(
+        z ⇒ if(isData(z)) count = count + 1
+      ) (
+        z ⇒ if(isData(z)) count = count + 1
+      )
+      count
     }
   }
 }
