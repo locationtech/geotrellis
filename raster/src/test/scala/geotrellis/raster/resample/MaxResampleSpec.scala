@@ -35,12 +35,13 @@ class MaxResampleSpec extends FunSpec with Matchers {
     }
 
     it("should for a nodata double tile compute nodata as max value") {
-      val tile = DoubleArrayTile(Array(NODATA, NODATA, NODATA,
-                                       NODATA, NODATA, NODATA,
-                                       NODATA, NODATA, NODATA), 3, 3)
+      val tile = DoubleArrayTile(Array(doubleNODATA, doubleNODATA, doubleNODATA,
+                                       doubleNODATA, doubleNODATA, doubleNODATA,
+                                       doubleNODATA, doubleNODATA, doubleNODATA), 3, 3)
       val extent = Extent(0, 0, 10, 10)
       val cellsize = CellSize(extent, 10, 10)
-      tile.resample(extent, 1, 1, Max).get(0, 0) should be (NODATA)
+      tile.resample(extent, 1, 1, Max).getDouble(0, 0).isNaN shouldBe true
+      tile.resample(extent, 1, 1, Max).get(0,0) should be (NODATA)
     }
 
     it("should for an integer tile compute the correct maximum value") {
