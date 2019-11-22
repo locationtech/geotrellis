@@ -5,7 +5,6 @@
 ./sbt -J-Xmx2G "project cassandra" test  || { exit 1; }
 ./sbt -J-Xmx2G "project cassandra-spark" test  || { exit 1; }
 ./sbt -J-Xmx2G "project doc-examples" compile || { exit 1; }
-# ./sbt -J-Xmx2G "project geomesa" test || { exit 1; }
 ./sbt -J-Xmx2G "project geotools" test || { exit 1; }
 ./sbt -J-Xmx2G "project hbase" test  || { exit 1; }
 ./sbt -J-Xmx2G "project hbase-spark" test  || { exit 1; }
