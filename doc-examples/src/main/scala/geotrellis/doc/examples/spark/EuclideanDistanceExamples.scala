@@ -58,7 +58,7 @@ object EuclideanDistanceExamples {
     val tileRDD: RDD[(SpatialKey, Tile)] = inputRDD.euclideanDistance(ld)
 
     val maxDistance = tileRDD.map(_._2.findMinMaxDouble).collect.foldLeft(-1.0/0.0){ (max, minMax) => scala.math.max(max, minMax._2) }
-    val cm = ColorMap((0.0 to maxDistance by (maxDistance/512)).toArray, ColorRamps.BlueToRed)
+    val cm = ColorMap(Range.BigDecimal.inclusive(0.0, maxDistance, maxDistance/512).map(_.toDouble).toArray, ColorRamps.BlueToRed)
     tileRDD.stitch().renderPng(cm).write("schools.png")
   }
 

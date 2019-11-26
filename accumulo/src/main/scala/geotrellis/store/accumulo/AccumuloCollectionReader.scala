@@ -20,11 +20,12 @@ import geotrellis.layer._
 import geotrellis.store.avro.codecs.KeyValueRecordCodec
 import geotrellis.store.avro.{AvroEncoder, AvroRecordCodec}
 import geotrellis.store.util.BlockingThreadPool
-
+import geotrellis.store.compact.FS2Utils
 import org.apache.accumulo.core.data.{Range => AccumuloRange}
 import org.apache.accumulo.core.security.Authorizations
 import org.apache.avro.Schema
 import org.apache.hadoop.io.Text
+
 import cats.effect._
 import cats.syntax.apply._
 import cats.syntax.either._
@@ -53,7 +54,7 @@ object AccumuloCollectionReader {
     implicit val ec = executionContext
     implicit val cs = IO.contextShift(ec)
 
-    val range: fs2.Stream[IO, AccumuloRange] = fs2.Stream.fromIterator[IO, AccumuloRange](ranges)
+    val range: fs2.Stream[IO, AccumuloRange] = FS2Utils.fromIterator[IO](ranges)
 
     val read = { range: AccumuloRange => fs2.Stream eval IO.shift(ec) *> IO {
       val scanner = instance.connector.createScanner(table, new Authorizations())

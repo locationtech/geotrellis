@@ -13,5 +13,3 @@
   "project hbase-spark" test \
   "project cassandra" test \
   "project cassandra-spark" test || { exit 1; }
-  # "project geomesa" test
-  # "project geowave" compile test:compile

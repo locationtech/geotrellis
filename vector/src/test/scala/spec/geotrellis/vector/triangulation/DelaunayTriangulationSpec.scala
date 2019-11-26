@@ -89,7 +89,7 @@ class DelaunayTriangulationSpec extends FunSpec with Matchers {
       // this is equally a test of the robustness of the predicates and of the
       // triangulator's logic vis-a-vis linear triangulations
 
-      val pts: Array[Coordinate] = (for (v <- 0.0 to 100.0 by 1.0) yield { new Coordinate(v,v) }).toArray
+      val pts: Array[Coordinate] = (for (v <- 0 to 100 by 1) yield { new Coordinate(v,v) }).toArray
       val dt = DelaunayTriangulation(pts)
       import dt.halfEdgeTable._
 
@@ -246,18 +246,18 @@ class DelaunayTriangulationSpec extends FunSpec with Matchers {
       }
       def surfacePoint(x: Double, y: Double) = new Coordinate(x, y, f(x, y))
 
-      val grid = 100.0
+      val grid = 100
       val pts = Array(
         surfacePoint(0, 0),
         surfacePoint(0, 1),
         surfacePoint(1, 0),
         surfacePoint(1, 1)) ++
-        (for (i <- (0.0 until grid by 1.0).toArray) yield surfacePoint(0, (i.toDouble + Random.nextDouble)/ grid)) ++
-        (for (i <- (0.0 until grid by 1.0).toArray) yield surfacePoint(1, (i.toDouble + Random.nextDouble)/ grid)) ++
-        (for (i <- (0.0 until grid by 1.0).toArray) yield surfacePoint((i.toDouble + Random.nextDouble)/ grid, 0)) ++
-        (for (i <- (0.0 until grid by 1.0).toArray) yield surfacePoint((i.toDouble + Random.nextDouble)/ grid, 1)) ++
-        ((0.0 until grid by 1.0).toArray).flatMap { i =>
-           (0.0 until grid by 1.0).toArray.map { j =>
+        (for (i <- (0 until grid by 1).toArray) yield surfacePoint(0, (i.toDouble + Random.nextDouble)/ grid)) ++
+        (for (i <- (0 until grid by 1).toArray) yield surfacePoint(1, (i.toDouble + Random.nextDouble)/ grid)) ++
+        (for (i <- (0 until grid by 1).toArray) yield surfacePoint((i.toDouble + Random.nextDouble)/ grid, 0)) ++
+        (for (i <- (0 until grid by 1).toArray) yield surfacePoint((i.toDouble + Random.nextDouble)/ grid, 1)) ++
+        ((0 until grid by 1).toArray).flatMap { i =>
+           (0 until grid by 1).toArray.map { j =>
              val x = (i.toDouble + Random.nextDouble) / grid
              val y = (j.toDouble + Random.nextDouble) / grid
              surfacePoint(x, y)

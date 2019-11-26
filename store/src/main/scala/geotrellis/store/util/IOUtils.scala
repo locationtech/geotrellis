@@ -16,6 +16,8 @@
 
 package geotrellis.store.util
 
+import geotrellis.store.compact.FS2Utils
+
 import cats.effect._
 import cats.syntax.all._
 
@@ -63,7 +65,7 @@ object IOUtils {
       (start to end).toIterator
     }
 
-    val index: fs2.Stream[IO, BigInt] = fs2.Stream.fromIterator[IO, BigInt](indices)
+    val index: fs2.Stream[IO, BigInt] = FS2Utils.fromIterator[IO](indices)
 
     val readRecord: BigInt => fs2.Stream[IO, Vector[(K, V)]] = { index =>
       fs2.Stream eval IO.shift(ec) *> IO { readFunc(index) }.retryEBO { backOffPredicate }

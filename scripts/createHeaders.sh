@@ -7,7 +7,6 @@
       "project doc-examples" createHeaders test:createHeaders \
       "project geomesa" createHeaders test:createHeaders \
       "project geotools" createHeaders test:createHeaders \
-      "project geowave" createHeaders test:createHeaders \
       "project hbase" createHeaders  test:createHeaders  \
       "project hbase-spark" createHeaders  test:createHeaders  \
       "project proj4" createHeaders test:createHeaders \

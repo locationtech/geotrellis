@@ -23,6 +23,7 @@ import geotrellis.store.avro.codecs.KeyValueRecordCodec
 import geotrellis.store.s3._
 import geotrellis.spark.util.KryoWrapper
 import geotrellis.store.util.BlockingThreadPool
+import geotrellis.store.compact.FS2Utils
 
 import cats.effect.IO
 import cats.syntax.apply._
@@ -85,7 +86,7 @@ class S3RDDWriter(
         implicit val cs    = IO.contextShift(ec)
 
         val rows: fs2.Stream[IO, (String, Vector[(K, V)])] =
-          fs2.Stream.fromIterator[IO, (String, Vector[(K, V)])](
+          FS2Utils.fromIterator[IO](
             partition.map { case (key, value) => (key, value.toVector) }
           )
 

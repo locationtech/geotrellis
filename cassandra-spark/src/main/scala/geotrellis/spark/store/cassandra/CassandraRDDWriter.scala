@@ -24,6 +24,7 @@ import geotrellis.store.cassandra._
 import geotrellis.spark.store._
 import geotrellis.spark.util.KryoWrapper
 import geotrellis.store.util.BlockingThreadPool
+import geotrellis.store.compact.FS2Utils
 
 import com.datastax.driver.core.DataType._
 import com.datastax.driver.core.querybuilder.QueryBuilder
@@ -110,7 +111,7 @@ object CassandraRDDWriter {
               val writeStatement = session.prepare(writeQuery)
 
               val rows: fs2.Stream[IO, (BigInt, Vector[(K,V)])] =
-                fs2.Stream.fromIterator[IO, (BigInt, Vector[(K, V)])](
+                FS2Utils.fromIterator[IO](
                   partition.map { case (key, value) => (key, value.toVector) }
                 )
 

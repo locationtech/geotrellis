@@ -25,4 +25,4 @@
    && ./sbt -212 "project raster-testkit" publishSigned -no-colors -J-Drelease=sonatype \
    && ./sbt -212 "project vector-testkit" publishSigned -no-colors -J-Drelease=sonatype \
    && ./sbt -212 "project spark-testkit" publishSigned -no-colors -J-Drelease=sonatype \
-   && ./sbt -212 "project gdal" publishSigned -no-colors -J-Drelease=sonatype 
+   && ./sbt -212 "project gdal" publishSigned -no-colors -J-Drelease=sonatype
