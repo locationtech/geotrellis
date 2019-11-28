@@ -23,7 +23,7 @@ git config --global user.name "azaveaci"
 rm -rf "$SCALADOCS_CHECKOUT_DIR"
 git clone "$SCALADOCS_REPO" "$SCALADOCS_CHECKOUT_DIR"
 rm -rf "$SCALADOCS_CHECKOUT_DIR/latest"
-mv "target/scala-2.11/unidoc" "$SCALADOCS_CHECKOUT_DIR/latest"
+mv "target/scala-2.12/unidoc" "$SCALADOCS_CHECKOUT_DIR/latest"
 
 pushd "$SCALADOCS_CHECKOUT_DIR"
 git remote add originAuth https://$CI_GH_TOKEN@github.com/geotrellis/scaladocs.git
