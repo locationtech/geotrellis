@@ -35,6 +35,7 @@ lazy val root = Project("geotrellis", file("."))
     vectortile
   )
   .enablePlugins(ScalaUnidocPlugin)
+  .settings(Settings.commonSettings)
   .settings(unidocProjectFilter in (ScalaUnidoc, unidoc) := inAnyProject)
 
 lazy val macros = project

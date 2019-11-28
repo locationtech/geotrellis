@@ -446,7 +446,7 @@ object Settings {
       "org.scala-lang" % "scala-reflect" % scalaVersion.value
     ),
     resolvers += Resolver.sonatypeRepo("snapshots")
-  )
+  ) ++ commonSettings
 
   lazy val proj4 = Seq(
     name := "geotrellis-proj4",
