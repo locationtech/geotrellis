@@ -36,6 +36,7 @@ lazy val root = Project("geotrellis", file("."))
   )
   .enablePlugins(ScalaUnidocPlugin)
   .settings(Settings.commonSettings)
+  .settings(publish / skip := true)
   .settings(unidocProjectFilter in (ScalaUnidoc, unidoc) := inAnyProject)
 
 lazy val macros = project

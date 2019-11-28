@@ -6,9 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.2.0] - 2019-11-19
+
 ### Changed
 
-- Preserve NODATA values for double cell types when resampling with Max or Min resampler (#3144)
+- Preserve NODATA values for double cell types when resampling with Max or Min resampler [#3144](https://github.com/locationtech/geotrellis/pull/3144)
+- Update dependency versions for Scala 2.12 cross build [#3132](https://github.com/locationtech/geotrellis/pull/3132)
 
 ## [3.1.0] - 2019-10-25
 
