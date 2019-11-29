@@ -137,7 +137,7 @@ object Dependencies {
 
 
   val gdalBindings        = "org.gdal"                     % "gdal"                    % Version.gdal
-  val gdalWarp            = "com.azavea.gdal"              % "gdal-warp-bindings"      % Version.gdalWarp
+  val gdalWarp            = "com.azavea.geotrellis"        % "gdal-warp-bindings"      % Version.gdalWarp
 
   val jacksonCore         = "com.fasterxml.jackson.core"    % "jackson-core"             % "2.6.7"
   val jacksonDatabind     = "com.fasterxml.jackson.core"    % "jackson-databind"         % "2.6.7"
