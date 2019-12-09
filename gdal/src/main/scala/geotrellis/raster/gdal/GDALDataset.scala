@@ -288,7 +288,8 @@ case class GDALDataset(token: Long) extends AnyVal {
     require(acceptableDatasets contains datasetType)
     val nd = noDataValue(datasetType)
     val dt = GDALDataType.intToGDALDataType(this.dataType(datasetType))
-    val mm = {
+    // This is declared lazy to avoid eval if the by-name param in GDALUtils.dataTypeToCellType is not needed
+    lazy val mm = {
       val minmax = Array.ofDim[Double](2)
       val success = Array.ofDim[Int](1)
 
