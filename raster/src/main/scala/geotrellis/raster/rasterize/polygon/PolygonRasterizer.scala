@@ -23,6 +23,9 @@ import geotrellis.vector._
 
 import org.locationtech.jts.geom.Envelope
 import org.locationtech.jts.index.strtree.STRtree
+
+import spire.math.Fractional
+import spire.syntax.fractional._
 import spire.syntax.cfor._
 
 import scala.collection.JavaConverters._
@@ -101,8 +104,7 @@ object PolygonRasterizer {
    * @param y     The y-value for a line parallel to the x-axis
    */
   private def lineAxisIntersection(line: Segment, y: Double, precisely: Boolean = false) = {
-    import spire.syntax.fractional._
-    def calculate[A: spire.math.Fractional](x1: A, y1: A, x2: A, y2: A, y: A) =
+    def calculate[@specialized(Double) A: Fractional](x1: A, y1: A, x2: A, y2: A, y: A) =
       if (y == y1) (x1.toDouble, 1) // Top endpoint
       else if (y == y2) (x2.toDouble, -1) // Bottom endpoint
       else if ((y1 min y2) <= y && y <= (y1 max y2)) { // Between endpoints
