@@ -36,7 +36,7 @@ jdk:
 
 scala:
   - "2.11.12"
-  - "2.12.7"
+  - "2.12.10"
 
 before_cache:
   # Cleanup the cached directories to avoid unnecessary cache updates

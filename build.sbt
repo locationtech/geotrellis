@@ -1,7 +1,7 @@
 import sbt.Keys._
 import de.heikoseeberger.sbtheader._
 
-ThisBuild / scalaVersion := "2.12.8"
+ThisBuild / scalaVersion := "2.12.10"
 ThisBuild / organization := "org.locationtech.geotrellis"
 ThisBuild / crossScalaVersions := List("2.12.8", "2.11.12")
 
@@ -50,7 +50,7 @@ lazy val vector = project
   .dependsOn(proj4, util)
   .settings(Settings.vector)
   .settings(
-    unmanagedClasspath in Test ++= (fullClasspath in (LocalProject("vector-testkit"), Compile)).value
+    Test / unmanagedClasspath ++= (fullClasspath in (LocalProject("vector-testkit"), Compile)).value
   )
 
 lazy val `vector-testkit` = project
@@ -65,10 +65,10 @@ lazy val raster = project
   .dependsOn(util, macros, vector)
   .settings(Settings.raster)
   .settings(
-    unmanagedClasspath in Test ++= (fullClasspath in (LocalProject("raster-testkit"), Compile)).value
+    Test / unmanagedClasspath ++= (fullClasspath in (LocalProject("raster-testkit"), Compile)).value
   )
   .settings(
-    unmanagedClasspath in Test ++= (fullClasspath in (LocalProject("vector-testkit"), Compile)).value
+    Test / unmanagedClasspath ++= (fullClasspath in (LocalProject("vector-testkit"), Compile)).value
   )
 
 lazy val `raster-testkit` = project
@@ -82,7 +82,7 @@ lazy val spark = project
     // This takes care of a pseudo-cyclic dependency between the `spark` test scope, `spark-testkit`,
     // and `spark` main (compile) scope. sbt is happy with this. IntelliJ requires that `spark-testkit`
     // be added to the `spark` module dependencies manually (via "Open Module Settings" context menu for "spark" module).
-    unmanagedClasspath in Test ++= (fullClasspath in (LocalProject("spark-testkit"), Compile)).value
+    Test / unmanagedClasspath ++= (fullClasspath in (LocalProject("spark-testkit"), Compile)).value
   )
 
 lazy val `spark-testkit` = project
@@ -128,7 +128,7 @@ lazy val `cassandra-spark` = project
 lazy val hbase = project
   .dependsOn(store)
   .settings(Settings.hbase)
-  .settings(projectDependencies := { Seq((projectID in layer).value.exclude("com.google.protobuf", "protobuf-java")) })
+  .settings(projectDependencies := { Seq((layer / projectID).value.exclude("com.google.protobuf", "protobuf-java")) })
 
 lazy val `hbase-spark` = project
   .dependsOn(
@@ -137,7 +137,7 @@ lazy val `hbase-spark` = project
     `spark-testkit` % Test
   )
   .settings(Settings.`hbase-spark`)
-  .settings(projectDependencies := { Seq((projectID in spark).value.exclude("com.google.protobuf", "protobuf-java")) })
+  .settings(projectDependencies := { Seq((spark / projectID).value.exclude("com.google.protobuf", "protobuf-java")) })
 
 lazy val `spark-pipeline` = Project(id = "spark-pipeline", base = file("spark-pipeline")).
   dependsOn(spark, `s3-spark`, `spark-testkit` % "test").
