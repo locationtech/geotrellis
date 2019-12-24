@@ -28,10 +28,10 @@ object Settings {
   object Repositories {
     val locationtechReleases  = "locationtech-releases" at "https://repo.locationtech.org/content/repositories/releases/"
     val locationtechSnapshots = "locationtech-snapshots" at "https://repo.locationtech.org/content/repositories/snapshots/"
-    val boundlessgeo          = "boundlessgeo" at "http://repo.boundlessgeo.com/main/"
+    val boundlessgeo          = "boundlessgeo" at "https://repo.boundlessgeo.com/main/"
     val boundlessgeoRelease   = "boundless" at "https://repo.boundlessgeo.com/release"
-    val geosolutions          = "geosolutions" at "http://maven.geo-solutions.it/"
-    val osgeo                 = "osgeo" at "http://download.osgeo.org/webdav/geotools/"
+    val geosolutions          = "geosolutions" at "https://maven.geo-solutions.it/"
+    val osgeo                 = "osgeo" at "https://download.osgeo.org/webdav/geotools/"
     val ivy2Local             = Resolver.file("local", file(Path.userHome.absolutePath + "/.ivy2/local"))(Resolver.ivyStylePatterns)
     val mavenLocal            = Resolver.mavenLocal
     val local                 = Seq(ivy2Local, mavenLocal)
@@ -39,8 +39,8 @@ object Settings {
   }
 
   lazy val noForkInTests = Seq(
-    fork in Test := false,
-    parallelExecution in Test := false
+    Test / fork := false,
+    Test / parallelExecution := false
   )
 
   val commonScalacOptions = Seq(
@@ -60,14 +60,15 @@ object Settings {
   lazy val commonSettings = Seq(
     description := "geographic data processing library for high performance applications",
     licenses := Seq("Apache-2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0.html")),
-    homepage := Some(url("http://geotrellis.io")),
-    scmInfo := Some(ScmInfo(url("https://github.com/locationtech/geotrellis"), "scm:git:git@github.com:locationtech/geotrellis.git"
-    )),
+    homepage := Some(url("https://geotrellis.io")),
+    scmInfo := Some(ScmInfo(url("https://github.com/locationtech/geotrellis"), "scm:git:git@github.com:locationtech/geotrellis.git")),
     scalacOptions ++= commonScalacOptions,
     publishMavenStyle := true,
-    publishArtifact in Test := false,
+    Test / publishArtifact := false,
     pomIncludeRepository := { _ => false },
     autoAPIMappings := true,
+    useCoursier := false,
+    Global / cancelable := true,
 
     publishTo := {
       val sonatype = "https://oss.sonatype.org/"
@@ -83,11 +84,9 @@ object Settings {
       }
     },
 
-    credentials ++= List(Path.userHome / ".ivy2" / ".credentials")
-      .filter(_.asFile.canRead)
-      .map(Credentials(_)),
+    credentials ++= List(Path.userHome / ".ivy2" / ".credentials").filter(_.asFile.canRead).map(Credentials(_)),
 
-    addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.10.3" cross CrossVersion.binary),
+    addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.11.0" cross CrossVersion.full),
     addCompilerPlugin("org.scalamacros" %% "paradise" % "2.1.1" cross CrossVersion.full),
 
     pomExtra := (
@@ -95,14 +94,15 @@ object Settings {
         <developer>
           <id>echeipesh</id>
           <name>Eugene Cheipesh</name>
-          <url>http://github.com/echeipesh/</url>
+          <url>https://github.com/echeipesh/</url>
         </developer>
         <developer>
           <id>lossyrob</id>
           <name>Rob Emanuele</name>
-          <url>http://github.com/lossyrob/</url>
+          <url>https://github.com/lossyrob/</url>
         </developer>
-      </developers>),
+      </developers>
+    ),
 
     resolvers ++= Seq(
       Resolver.mavenLocal,
@@ -122,7 +122,7 @@ object Settings {
       scalatest % Test,
       hadoopClient % Provided
     ),
-    initialCommands in console :=
+    console / initialCommands :=
       """
       import geotrellis.proj4._
       import geotrellis.vector._
@@ -142,7 +142,7 @@ object Settings {
       spire,
       scalatest % Test
     ),
-    initialCommands in console :=
+    console / initialCommands :=
       """
       import geotrellis.raster._
       import geotrellis.vector._
@@ -174,7 +174,7 @@ object Settings {
       spire,
       scalatest % Test
     ),
-    initialCommands in console :=
+    console / initialCommands :=
       """
       import geotrellis.proj4._
       import geotrellis.vector._
@@ -197,7 +197,7 @@ object Settings {
       spire,
       scalatest % Test
     ),
-    initialCommands in console :=
+    console / initialCommands :=
       """
       import geotrellis.raster._
       import geotrellis.vector._
@@ -236,7 +236,7 @@ object Settings {
       Repositories.boundlessgeo,
       Repositories.locationtechReleases
     ),
-    initialCommands in console :=
+    console / initialCommands :=
       """
       import geotrellis.raster._
       import geotrellis.vector._
@@ -261,12 +261,12 @@ object Settings {
       geotoolsShapefile % Test,
       scalatest % Test,
       // This is one finicky dependency. Being explicit in hopes it will stop hurting Travis.
-      jaiCore % Test from "http://download.osgeo.org/webdav/geotools/javax/media/jai_core/1.1.3/jai_core-1.1.3.jar"
+      jaiCore % Test from "https://download.osgeo.org/webdav/geotools/javax/media/jai_core/1.1.3/jai_core-1.1.3.jar"
     ),
     externalResolvers ++= Seq(
       Repositories.boundlessgeo
     ),
-    initialCommands in console :=
+    console / initialCommands :=
       """
       import geotrellis.geotools._
       import geotrellis.raster._
@@ -276,7 +276,7 @@ object Settings {
       import org.geotools.coverage.grid.io._
       import org.geotools.gce.geotiff._
       """,
-    testOptions in Test += Tests.Setup { () => Unzip.geoTiffTestFiles() }
+    Test / testOptions += Tests.Setup { () => Unzip.geoTiffTestFiles() }
   ) ++ commonSettings ++ noForkInTests
 
   lazy val geowave = Seq(
@@ -328,7 +328,7 @@ object Settings {
       Repositories.geosolutions,
       Repositories.osgeo
     ),
-    assemblyMergeStrategy in assembly := {
+    assembly / assemblyMergeStrategy := {
       case "reference.conf" => MergeStrategy.concat
       case "application.conf" => MergeStrategy.concat
       case PathList("META-INF", xs@_*) =>
@@ -383,7 +383,7 @@ object Settings {
         case _ => deps :+ "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.6.7"
       }
     },
-    initialCommands in console :=
+    console / initialCommands :=
       """
       import geotrellis.raster._
       import geotrellis.vector._
@@ -425,7 +425,7 @@ object Settings {
         case _ => deps :+ "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.6.7"
       }
     },
-    initialCommands in console :=
+    console / initialCommands :=
       """
       import geotrellis.raster._
       import geotrellis.vector._
@@ -440,7 +440,7 @@ object Settings {
 
   lazy val macros = Seq(
     name := "geotrellis-macros",
-    sourceGenerators in Compile += (sourceManaged in Compile).map(Boilerplate.genMacro).taskValue,
+    Compile / sourceGenerators += (Compile / sourceManaged).map(Boilerplate.genMacro).taskValue,
     libraryDependencies ++= Seq(
       spireMacro,
       "org.scala-lang" % "scala-reflect" % scalaVersion.value
@@ -459,7 +459,7 @@ object Settings {
       scaffeine
     ),
     // https://github.com/sbt/sbt/issues/4609
-    fork in Test := true
+    Test / fork := true
   ) ++ commonSettings
 
   lazy val raster = Seq(
@@ -479,8 +479,8 @@ object Settings {
     mimaPreviousArtifacts := Set(
       "org.locationtech.geotrellis" %% "geotrellis-raster" % Version.previousVersion
     ),
-    sourceGenerators in Compile += (sourceManaged in Compile).map(Boilerplate.genRaster).taskValue,
-    initialCommands in console :=
+    Compile / sourceGenerators += (Compile / sourceManaged).map(Boilerplate.genRaster).taskValue,
+    console / initialCommands :=
       """
       import geotrellis.raster._
       import geotrellis.raster.resample._
@@ -488,7 +488,7 @@ object Settings {
       import geotrellis.raster.io.geotiff._
       import geotrellis.raster.render._
       """,
-    testOptions in Test += Tests.Setup { () =>
+    Test / testOptions += Tests.Setup { () =>
       val testArchive = "raster/data/geotiff-test-files.zip"
       val testDirPath = "raster/data/geotiff-test-files"
       if (!(new File(testDirPath)).exists) {
@@ -525,7 +525,7 @@ object Settings {
     mimaPreviousArtifacts := Set(
       "org.locationtech.geotrellis" %% "geotrellis-s3" % Version.previousVersion
     ),
-    initialCommands in console :=
+    console / initialCommands :=
       """
       import geotrellis.raster._
       import geotrellis.vector._
@@ -560,7 +560,7 @@ object Settings {
     mimaPreviousArtifacts := Set(
       "org.locationtech.geotrellis" %% "geotrellis-s3" % Version.previousVersion
     ),
-    initialCommands in console :=
+    console / initialCommands :=
       """
       import geotrellis.raster._
       import geotrellis.vector._
@@ -578,10 +578,10 @@ object Settings {
     libraryDependencies ++= Seq(
       geotoolsShapefile,
       // This is one finicky dependency. Being explicit in hopes it will stop hurting Travis.
-      jaiCore from "http://download.osgeo.org/webdav/geotools/javax/media/jai_core/1.1.3/jai_core-1.1.3.jar"
+      jaiCore from "https://download.osgeo.org/webdav/geotools/javax/media/jai_core/1.1.3/jai_core-1.1.3.jar"
     ),
     resolvers += Repositories.osgeo,
-    fork in Test := false
+    Test / fork := false
   ) ++ commonSettings
 
   lazy val spark = Seq(
@@ -602,8 +602,8 @@ object Settings {
     mimaPreviousArtifacts := Set(
       "org.locationtech.geotrellis" %% "geotrellis-spark" % Version.previousVersion
     ),
-    testOptions in Test += Tests.Argument("-oD"),
-    initialCommands in console :=
+    Test / testOptions += Tests.Argument("-oD"),
+    console / initialCommands :=
       """
       import geotrellis.raster._
       import geotrellis.vector._
@@ -621,8 +621,8 @@ object Settings {
       sparkCore % Provided, sparkSql % Test,
       scalatest % Test
     ),
-    test in assembly := {},
-    assemblyShadeRules in assembly := {
+    assembly / test := {},
+    assembly / assemblyShadeRules := {
       val shadePackage = "com.azavea.shaded.demo"
       Seq(
         ShadeRule.rename("com.google.common.**" -> s"$shadePackage.google.common.@1")
@@ -634,7 +634,7 @@ object Settings {
         ShadeRule.rename("shapeless.**" -> s"$shadePackage.shapeless.@1").inAll
       )
     },
-    assemblyMergeStrategy in assembly := {
+    assembly / assemblyMergeStrategy := {
       case s if s.startsWith("META-INF/services") => MergeStrategy.concat
       case "reference.conf" | "application.conf"  => MergeStrategy.concat
       case "META-INF/MANIFEST.MF" | "META-INF\\MANIFEST.MF" => MergeStrategy.discard
@@ -687,9 +687,9 @@ object Settings {
       scalatest % Test,
       scalapbRuntime % "protobuf"
     ),
-    PB.protoSources in Compile := Seq(file("vectortile/data")),
-    PB.targets in Compile := Seq(
-      scalapb.gen(flatPackage = true, grpc = false) -> (sourceManaged in Compile).value
+    Compile / PB.protoSources:= Seq(file("vectortile/data")),
+    Compile / PB.targets := Seq(
+      scalapb.gen(flatPackage = true, grpc = false) -> (Compile / sourceManaged).value
     )
   ) ++ commonSettings
 
@@ -708,7 +708,7 @@ object Settings {
       scalactic,
       scalatest % Test
     ),
-    initialCommands in console :=
+    console / initialCommands :=
       """
       import geotrellis.raster._
       import geotrellis.vector._
