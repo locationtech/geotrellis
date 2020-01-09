@@ -82,7 +82,7 @@ class SpatialJoinRDDSpec extends FunSpec with Matchers with TestEnvironment {
     info(s"SpaceRDD join partitioner: ${res.partitioner}")
     info(s"  number of partitions: ${res.partitions.length}")
     res.partitioner.get should be (part1)
-    res.collect() sameElements expected.collect()
+    res.collect() should contain theSameElementsAs expected.collect()
     maxPartitionSize(res) should be <= 4
   }
 
@@ -90,13 +90,13 @@ class SpatialJoinRDDSpec extends FunSpec with Matchers with TestEnvironment {
     val res = pr1.leftOuterJoin(pr3)
     val expected = pr1.mapValues(v => (v, None))
 
-    res.collect() sameElements expected.collect()
+    res.collect() should contain theSameElementsAs expected.collect()
   }
 
    it("left join to empty SpaceRDD") {
      val res = prEmpty.leftOuterJoin(pr3)
      val records = res.collect()
-     records sameElements Array[(SpatialKey, Int)]()
+     records shouldBe empty
      info("records: " + records.length)
    }
 
@@ -107,14 +107,14 @@ class SpatialJoinRDDSpec extends FunSpec with Matchers with TestEnvironment {
     info(s"PairRDDFunctions partitioner: ${expected.partitioner}")
     info(s"SpaceRDD join partitioner: ${res.partitioner}")
     res.partitioner.get should be equals SpacePartitioner(KeyBounds(SpatialKey(5,5), SpatialKey(10,10)))
-    res.collect() sameElements expected.collect()
+    res.collect() should contain theSameElementsAs expected.collect()
     maxPartitionSize(res) should be <= 4
   }
 
   it("inner join non intersecting rdds") {
     val res = pr1.join(pr3)
     val records =res.collect()
-    records sameElements Array[(SpatialKey, Int)]()
+    records shouldBe empty
     info("records: " + records.length)
   }
 
