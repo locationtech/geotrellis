@@ -118,4 +118,26 @@ class SpatialJoinRDDSpec extends FunSpec with Matchers with TestEnvironment {
     info("records: " + records.length)
   }
 
+  it("left join with custom partitioner index") {
+    import geotrellis.spark.partition.CustomPartitioning
+    // Build contextRDDs with explicit partitioning
+    val pr1 = ContextRDD(rdd1.partitionBy(part1), part1.bounds)
+    val part2Custom = CustomPartitioning.getCustomSpacePartitioner(bounds2)
+    val pr2Custom = ContextRDD(rdd2.partitionBy(part2Custom), part2Custom.bounds)
+    val expected = new PairRDDFunctions(rdd1).leftOuterJoin(rdd2)
+    val res = pr1.spatialLeftOuterJoin(pr2Custom)
+    res.collect() should contain theSameElementsAs expected.collect()
+  }
+
+  it("join with custom partitioner index") {
+    import geotrellis.spark.partition.CustomPartitioning
+    // Build contextRDDs with explicit partitioning
+    val pr1 = ContextRDD(rdd1.partitionBy(part1), part1.bounds)
+    val part2Custom = CustomPartitioning.getCustomSpacePartitioner(bounds2)
+    val pr2Custom = ContextRDD(rdd2.partitionBy(part2Custom), part2Custom.bounds)
+    val expected = new PairRDDFunctions(rdd1).join(rdd2)
+    val res = pr1.spatialJoin(pr2Custom)
+    res.collect() should contain theSameElementsAs expected.collect()
+  }
+
 }

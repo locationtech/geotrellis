@@ -28,7 +28,7 @@ import scala.collection.mutable.ArrayBuffer
 import scala.reflect._
 
 case class SpacePartitioner[K: Boundable: ClassTag](bounds: Bounds[K])
-  (implicit index: PartitionerIndex[K]) extends Partitioner {
+  (implicit val index: PartitionerIndex[K]) extends Partitioner {
 
   val regions: Array[BigInt] =
     bounds match {
@@ -62,16 +62,24 @@ case class SpacePartitioner[K: Boundable: ClassTag](bounds: Bounds[K])
     if (i > -1) Some(i) else None
   }
 
+
+  /**
+    * Is another space partitioner compatible in the sense of key to index mapping?
+    */
+  def hasSameIndex(other: SpacePartitioner[K]): Boolean = {
+    index == other.index
+  }
+
   /**
     * Use this partitioner as a partitioner for rdd.
     * The rdd may have a SpacePartitioner already.
-    * If it is in sync with Bounds in the Metadata we assume it to be valid .
+    * If it is in sync with Bounds in the Metadata and PartitionIndex we assume it to be valid .
     * Otherwise we assume it has degraded to be a hash partitioner and we must perform a shuffle.
     */
   def apply[V: ClassTag, M: GetComponent[*, Bounds[K]]](rdd: RDD[(K, V)] with Metadata[M]): RDD[(K, V)] with Metadata[Bounds[K]] = {
     val kb: Bounds[K] = rdd.metadata.getComponent[Bounds[K]]
     rdd.partitioner match {
-      case Some(part: SpacePartitioner[K]) if part.bounds == kb =>
+      case Some(part: SpacePartitioner[K]) if (part.bounds == kb && hasSameIndex(part)) =>
         ContextRDD(
           new ReorderedSpaceRDD(rdd.filter(r => containsKey(r._1)), this),
           bounds)

@@ -67,4 +67,12 @@ class ReorderedRDDSpec extends FunSpec with Matchers with TestEnvironment {
     }
     res.collect() shouldBe empty
   }
+
+  it("should fail when different spatial region indexers are in play") {
+    val customPartitioner = CustomPartitioning.getCustomSpacePartitioner(bounds2)
+    customPartitioner.hasSameIndex(rdd1.partitioner.get.asInstanceOf[SpacePartitioner[SpatialKey]]) shouldBe false
+    val key = SpatialKey(1, 2)
+    part1.index.toIndex(key) should not be customPartitioner.index.toIndex(key)
+    an [IllegalArgumentException] should be thrownBy new ReorderedSpaceRDD(rdd1, customPartitioner)
+  }
 }

@@ -34,3 +34,26 @@ object TestImplicits {
       zCurveIndex.indexRanges((rescale(r._1), rescale(r._2)))
   }
 }
+
+
+object CustomPartitioning {
+
+  implicit object AnotherPartitionerIndex extends PartitionerIndex[SpatialKey] {
+    private val zCurveIndex = new ZSpatialKeyIndex(KeyBounds(SpatialKey(0, 0), SpatialKey(100, 100)))
+
+    def rescale(key: SpatialKey): SpatialKey =
+      SpatialKey(10 + key.col / 3, 10 + key.row / 3)
+
+    override def toIndex(key: SpatialKey): BigInt =
+      zCurveIndex.toIndex(rescale(key))
+
+    override def indexRanges(r: (SpatialKey, SpatialKey)): Seq[(BigInt, BigInt)] =
+      zCurveIndex.indexRanges((rescale(r._1), rescale(r._2)))
+  }
+
+  def getCustomSpacePartitioner(bounds: KeyBounds[SpatialKey]): SpacePartitioner[SpatialKey] = {
+    // This space partitioner will use AnotherPartitionerIndex implicitly
+    SpacePartitioner(bounds)
+  }
+
+}
