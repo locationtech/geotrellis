@@ -32,9 +32,10 @@ class ReorderedDependency[T](rdd: RDD[T], f: Int => Option[Int]) extends NarrowD
 
 class ReorderedSpaceRDD[K, V](rdd: RDD[(K, V)], part: SpacePartitioner[K]) extends RDD[(K, V)](rdd.context, Nil) {
   val sourcePart = {
-    val msg =  s"ReorderedSpaceRDD requires that $rdd has a SpacePartitioner[K]"
+    val msg =  s"ReorderedSpaceRDD requires that $rdd has a SpacePartitioner[K] with same indexing"
     require(rdd.partitioner.isDefined, msg)
     require(rdd.partitioner.get.isInstanceOf[SpacePartitioner[_]], msg)
+    require(rdd.partitioner.get.asInstanceOf[SpacePartitioner[K]].hasSameIndex(part), msg)
     rdd.partitioner.get.asInstanceOf[SpacePartitioner[K]]
   }
 
