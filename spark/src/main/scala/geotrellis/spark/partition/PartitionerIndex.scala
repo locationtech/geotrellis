@@ -23,7 +23,7 @@ import geotrellis.store.index.zcurve.{Z3, Z2, ZSpatialKeyIndex}
 
 /** Coarse KeyIndex to be used for partitioning of RDDs.
   * Coarseness means that multiple keys will be mapped to a single SFC value.
-  * This many to one mapping forms spatially relate key blocks
+  * This many to one mapping forms spatially related key blocks
   */
 trait PartitionerIndex[K] extends Serializable {
   def toIndex(key: K): BigInt
@@ -34,7 +34,7 @@ object PartitionerIndex {
 
   /**
     * This is a reasonable default value. Operating on 512x512 tiles of Doubles
-    * This partitioner will produces partitions of approximately half a gigabyte.
+    * This partitioner will produces partitions of approximately half a gigabyte (16x16 blocks of 512x512 tiles of 64bit)
     */
   implicit object SpatialPartitioner extends  PartitionerIndex[SpatialKey] {
     private def toZ(key: SpatialKey): Z2 = Z2(key.col >> 4, key.row >> 4)

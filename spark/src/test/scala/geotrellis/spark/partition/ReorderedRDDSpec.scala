@@ -49,7 +49,10 @@ class ReorderedRDDSpec extends FunSpec with Matchers with TestEnvironment {
 
   it("should reorder partitions"){
     val res = new ReorderedSpaceRDD(rdd1, SpacePartitioner(bounds2))
-    res.collect() should not be empty
+    val keys = res.collect().map(r => r._1)
+    // Key range of `bounds2` covers `5 to 10` ranges, but `4` is in same partition of `5`, so it's also covered
+    val expected = for {c <- 4 to 10; r <- 4 to 10} yield SpatialKey(c, r)
+    keys should contain theSameElementsAs expected
   }
 
   it("should reorder to empty"){
