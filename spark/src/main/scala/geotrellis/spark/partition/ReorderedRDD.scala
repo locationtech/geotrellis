@@ -41,15 +41,17 @@ class ReorderedSpaceRDD[K, V](rdd: RDD[(K, V)], part: SpacePartitioner[K]) exten
 
   override val partitioner = Some(part)
 
-  override def getDependencies: Seq[Dependency[_]] = {
-    List(new ReorderedDependency(rdd, { i => sourcePart.regionIndex(part.regions(i)) }))
+  private def getSourcePartitionId(targetPartitionId: Int): Option[Int] = {
+    sourcePart.regionIndex(part.regions(targetPartitionId))
   }
 
-  override def getPartitions = {
+  override def getDependencies: Seq[Dependency[_]] = {
+    List(new ReorderedDependency(rdd, { i => getSourcePartitionId(i) }))
+  }
+
+  override def getPartitions: Array[Partition]= {
     for (index <- 0 until part.numPartitions) yield {
-      val targetRegion = part.regions(index)
-      val sourceRegion = sourcePart.regionIndex(targetRegion)
-      new ReorderedPartition(index, for (i <- sourceRegion) yield rdd.partitions(i))
+      new ReorderedPartition(index, for (i <- getSourcePartitionId(index)) yield rdd.partitions(i))
     }
   }.toArray
 

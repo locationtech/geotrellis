@@ -56,6 +56,9 @@ case class SpacePartitioner[K: Boundable: ClassTag](bounds: Bounds[K])
     regions.indexOf(i) > -1
   }
 
+  /**
+    * Map given spatial region index to offset in region array (aka partition id)
+    */
   def regionIndex(region: BigInt): Option[Int] = {
     // Note: Consider future design where region can overlap several partitions, would change Option -> List
     val i = regions.indexOf(region)
