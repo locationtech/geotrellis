@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [3.2.0] - 2019-11-19
 
+- Update `gdal-warp-bindings` to version 33.60a6918 [#3177](https://github.com/locationtech/geotrellis/pull/3177)
+
 ### Changed
 
 - Preserve NODATA values for double cell types when resampling with Max or Min resampler [#3144](https://github.com/locationtech/geotrellis/pull/3144)
