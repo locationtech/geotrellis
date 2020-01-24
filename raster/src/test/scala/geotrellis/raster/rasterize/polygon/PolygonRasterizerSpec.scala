@@ -107,6 +107,20 @@ class PolygonRasterizerSpec extends FunSuite
     assert(sum === 65536)
   }
 
+  test("Should not fail because of a Double-related issue") {
+    val poly = Polygon(LineString(Seq[(Double, Double)](
+      (-156.7523879306299, 21.545279181475966),
+      (-156.75200324049055, 21.545438525349006),
+      (-156.75110930806937, 21.5432559342482),
+      (-156.7523879306299, 21.545279181475966)
+    )))
+    val re = RasterExtent(
+      Extent(-157.026672, 21.545119837602627, -156.75185966180015, 21.559142098430257),
+      CellSize(3.3310586448311594E-4, 6.37375492151282E-4)
+    )
+    Rasterizer.rasterizeWithValue(poly, re, 1)
+  }
+
   test("polygon rasterization: more complex polygons") {
     val p1 = Polygon (LineString(Seq[(Double,Double)]((-74.6229572569999, 41.5930024740001),
       (-74.6249086829999, 41.5854607480001),
