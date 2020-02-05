@@ -174,25 +174,43 @@ object GeoTrellisRasterSource {
   }
 
   def readTiles(reader: CollectionLayerReader[LayerId], layerId: LayerId, extent: Extent, bands: Seq[Int]): Seq[(SpatialKey, MultibandTile)] with Metadata[TileLayerMetadata[SpatialKey]] = {
+    def spatialTileRead =
+      reader.query[SpatialKey, Tile, TileLayerMetadata[SpatialKey]](layerId)
+        .where(Intersects(extent))
+        .result
+        .withContext(tiles =>
+          // Convert single band tiles to multiband
+          tiles.map { case (key, tile) => (key, MultibandTile(tile)) }
+        )
+
+    def spatialMultibandTileRead =
+      reader.query[SpatialKey, MultibandTile, TileLayerMetadata[SpatialKey]](layerId)
+        .where(Intersects(extent))
+        .result
+        .withContext(tiles =>
+          tiles.map { case (key, tile) => (key, tile.subsetBands(bands)) }
+        )
+
     val header = reader.attributeStore.readHeader[LayerHeader](layerId)
-    (Class.forName(header.keyClass), Class.forName(header.valueClass)) match {
-      case (SpatialKeyClass, TileClass) =>
-        reader.query[SpatialKey, Tile, TileLayerMetadata[SpatialKey]](layerId)
-          .where(Intersects(extent))
-          .result
-          .withContext(tiles =>
-            // Convert single band tiles to multiband
-            tiles.map{ case(key, tile) => (key, MultibandTile(tile)) }
-          )
-      case (SpatialKeyClass, MultibandTileClass) =>
-        reader.query[SpatialKey, MultibandTile, TileLayerMetadata[SpatialKey]](layerId)
-          .where(Intersects(extent))
-          .result
-          .withContext(tiles =>
-            tiles.map{ case(key, tile) => (key, tile.subsetBands(bands)) }
-          )
-      case _ =>
-        throw new Exception(s"Unable to read single or multiband tiles from file: ${(header.keyClass, header.valueClass)}")
+
+    if (!header.keyClass.contains("spark")) {
+      (Class.forName(header.keyClass), Class.forName(header.valueClass)) match {
+        case (SpatialKeyClass, TileClass) => spatialTileRead
+        case (SpatialKeyClass, MultibandTileClass) => spatialMultibandTileRead
+        case _ =>
+          throw new Exception(s"Unable to read single or multiband tiles from file: ${(header.keyClass, header.valueClass)}")
+      }
+    } else {
+      /**
+        * Legacy GeoTrellis Layers compact
+        * TODO: remove in GT 4.0
+        */
+      (header.keyClass, header.valueClass) match {
+        case ("geotrellis.spark.SpatialKey", "geotrellis.raster.Tile") => spatialTileRead
+        case ("geotrellis.spark.SpatialKey", "geotrellis.raster.MultibandTile") => spatialMultibandTileRead
+        case _ =>
+          throw new Exception(s"Unable to read single or multiband tiles from file: ${(header.keyClass, header.valueClass)}")
+      }
     }
   }
 

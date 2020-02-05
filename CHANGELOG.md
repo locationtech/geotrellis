@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Fix `PolygonRasterizer` failure on some inputs [#3160](https://github.com/locationtech/geotrellis/issues/3160)
+- Add `GeoTrellisRasterSources` compatibility with GeoTrellis 1.x and 2.x layers [#3180](https://github.com/locationtech/geotrellis/issues/31680)
 
 ## [3.2.0] - 2019-11-19
 
