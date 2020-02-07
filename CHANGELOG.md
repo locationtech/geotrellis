@@ -10,6 +10,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fix `PolygonRasterizer` failure on some inputs [#3160](https://github.com/locationtech/geotrellis/issues/3160)
 
+### Removed
+
+- Removed duplicate JSON codecs for `TileLayout` [#3181](https://github.com/locationtech/geotrellis/pull/3181)
+- Removed `private` restriction for TiffTag `read` overload [#3181](https://github.com/locationtech/geotrellis/pull/3181)
+
 ## [3.2.0] - 2019-11-19
 
 ### Changed
