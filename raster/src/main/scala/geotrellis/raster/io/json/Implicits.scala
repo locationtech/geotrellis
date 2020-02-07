@@ -33,6 +33,4 @@ trait Implicits extends HistogramJsonFormats {
       Either.catchNonFatal(CellType.fromName(str)).leftMap(_ => "Expected CellType")
     }
 
-  implicit val tileLayoutEncoder: Encoder[TileLayout] = deriveEncoder
-  implicit val tileLayoutDecoder: Decoder[TileLayout] = deriveDecoder
 }
