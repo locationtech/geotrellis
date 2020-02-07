@@ -22,6 +22,8 @@ import sbtassembly.AssemblyPlugin.autoImport.{MergeStrategy, assemblyMergeStrate
 import sbtassembly.AssemblyKeys._
 import sbtassembly.{PathList, ShadeRule}
 import com.typesafe.tools.mima.plugin.MimaKeys._
+import de.heikoseeberger.sbtheader.{CommentCreator, CommentStyle, FileType}
+import de.heikoseeberger.sbtheader.HeaderPlugin.autoImport.{HeaderLicense, headerLicense, headerMappings}
 import sbtprotoc.ProtocPlugin.autoImport.PB
 
 object Settings {
@@ -109,6 +111,21 @@ object Settings {
       Settings.Repositories.geosolutions,
       Settings.Repositories.osgeo,
       Settings.Repositories.locationtechReleases
+    ),
+    headerLicense := Some(HeaderLicense.ALv2(java.time.Year.now.getValue.toString, "Azavea")),
+    headerMappings := Map(
+      FileType.scala -> CommentStyle.cStyleBlockComment.copy(commentCreator = new CommentCreator() {
+        val Pattern = "(?s).*?(\\d{4}(-\\d{4})?).*".r
+        def findYear(header: String): Option[String] = header match {
+          case Pattern(years, _) => Some(years)
+          case _                 => None
+        }
+        def apply(text: String, existingText: Option[String]): String = {
+          // preserve year of old headers
+          val newText = CommentStyle.cStyleBlockComment.commentCreator.apply(text, existingText)
+          existingText.flatMap(_ => existingText.map(_.trim)).getOrElse(newText)
+        }
+      })
     )
   )
 
@@ -161,7 +178,7 @@ object Settings {
     jmhExtraOptions := Some("-jvmArgsAppend -Xmx8G")
     //jmhExtraOptions := Some("-jvmArgsAppend -Xmx8G -prof jmh.extras.JFR")
     //jmhExtraOptions := Some("-jvmArgsAppend -prof geotrellis.bench.GeotrellisFlightRecordingProfiler")
-  )
+  ) ++ commonSettings
 
   lazy val cassandra = Seq(
     name := "geotrellis-cassandra",

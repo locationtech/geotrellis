@@ -1,5 +1,4 @@
 import sbt.Keys._
-import de.heikoseeberger.sbtheader._
 
 ThisBuild / scalaVersion := "2.12.10"
 ThisBuild / organization := "org.locationtech.geotrellis"
@@ -200,24 +199,3 @@ lazy val `gdal-spark` = project
   .dependsOn(gdal, spark, `spark-testkit` % Test)
   .settings(publish / skip := true) // at this point we need this project only for tests
   .settings(Settings.`gdal-spark`)
-
-ThisBuild / headerLicense := Some(HeaderLicense.ALv2("2019", "Azavea"))
-ThisBuild / headerMappings := Map(
-  FileType.scala -> CommentStyle.cStyleBlockComment.copy(commentCreator = new CommentCreator() {
-    val Pattern = "(?s).*?(\\d{4}(-\\d{4})?).*".r
-    def findYear(header: String): Option[String] = header match {
-      case Pattern(years, _) => Some(years)
-      case _                 => None
-    }
-    override def apply(text: String, existingText: Option[String]): String = {
-      // preserve year of old headers
-      val newText = CommentStyle.cStyleBlockComment.commentCreator.apply(text, existingText)
-      existingText.flatMap { text =>
-        if (text.contains("Azavea")) {
-          findYear(text).map(year => newText.replace("2019", year))
-        } else {
-          existingText.map(_.trim)
-        }
-      }.getOrElse(newText)
-  }})
-)
