@@ -3,7 +3,7 @@ import de.heikoseeberger.sbtheader._
 
 ThisBuild / scalaVersion := "2.12.10"
 ThisBuild / organization := "org.locationtech.geotrellis"
-ThisBuild / crossScalaVersions := List("2.12.8", "2.11.12")
+ThisBuild / crossScalaVersions := List("2.12.10", "2.11.12")
 
 lazy val root = Project("geotrellis", file("."))
   .aggregate(
