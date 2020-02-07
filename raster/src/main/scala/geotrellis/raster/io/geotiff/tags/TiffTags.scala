@@ -593,7 +593,7 @@ object TiffTags {
     }
   }
 
-  private[geotrellis] def read(byteReader: ByteReader, tagsStartPosition: Long)(implicit ttos: TiffTagOffsetSize): TiffTags = {
+  def read(byteReader: ByteReader, tagsStartPosition: Long)(implicit ttos: TiffTagOffsetSize): TiffTags = {
     val tagCount =
       ttos match {
         case IntTiffTagOffsetSize =>
