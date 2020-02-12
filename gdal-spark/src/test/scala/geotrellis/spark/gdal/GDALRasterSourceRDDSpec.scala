@@ -51,6 +51,41 @@ class GDALRasterSourceRDDSpec extends FunSpec with TestEnvironment with BeforeAn
 
   lazy val reprojectedSource = rasterSource.reprojectToGrid(targetCRS, layout)
 
+  describe("JP2K BUG") {
+    it("JP2K bug should fail") {
+      val path = "https://s22s-rasterframes-integration-tests.s3.amazonaws.com/B08.jp2"
+
+      import cats.effect._
+      import cats.implicits._
+
+      val i = 1000
+      val n = 200
+      val pool = Executors.newFixedThreadPool(n)
+      val ec = ExecutionContext.fromExecutor(pool)
+      implicit val cs = IO.contextShift(ec)
+
+      val res = (0 to 1000).toList.map(_ => path).map { uri => IO {
+        val rs = GDALRasterSource(uri)
+        val grid = GridBounds(0, 0, rs.cols - 1, rs.rows - 1)
+        val tileBounds = grid.split(256, 256).toSeq
+        rs.readBounds(tileBounds)
+      } }.parSequence.unsafeRunSync()
+
+
+      /*ssc
+        .range(1000)
+        .rdd
+        .map(_ => path)
+        .flatMap { uri =>
+          val rs = GDALRasterSource(uri)
+          val grid = GridBounds(0, 0, rs.cols - 1, rs.rows - 1)
+          val tileBounds = grid.split(256, 256).toSeq
+          rs.readBounds(tileBounds)
+        }
+        .foreach(r => ())*/
+    }
+  }
+
   describe("reading in GeoTiffs as RDDs") {
 
     it("should have the right number of tiles") {
