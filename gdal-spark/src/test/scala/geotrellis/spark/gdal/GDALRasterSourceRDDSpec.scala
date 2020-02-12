@@ -55,7 +55,7 @@ class GDALRasterSourceRDDSpec extends FunSpec with TestEnvironment with BeforeAn
     it("JP2K bug should fail") {
       val path = "https://s22s-rasterframes-integration-tests.s3.amazonaws.com/B08.jp2"
 
-      import cats.effect._
+      /*import cats.effect._
       import cats.implicits._
 
       val i = 1000
@@ -69,10 +69,10 @@ class GDALRasterSourceRDDSpec extends FunSpec with TestEnvironment with BeforeAn
         val grid = GridBounds(0, 0, rs.cols - 1, rs.rows - 1)
         val tileBounds = grid.split(256, 256).toSeq
         rs.readBounds(tileBounds)
-      } }.parSequence.unsafeRunSync()
+      } }.parSequence.unsafeRunSync()*/
 
 
-      /*ssc
+      ssc
         .range(1000)
         .rdd
         .map(_ => path)
@@ -82,7 +82,7 @@ class GDALRasterSourceRDDSpec extends FunSpec with TestEnvironment with BeforeAn
           val tileBounds = grid.split(256, 256).toSeq
           rs.readBounds(tileBounds)
         }
-        .foreach(r => ())*/
+        .foreach(r => ())
     }
   }
 
