@@ -17,8 +17,8 @@
 package geotrellis.raster.io.geotiff
 
 import geotrellis.raster.testkit.{RasterMatchers, TileBuilders}
-import geotrellis.raster.IntCellType
-import org.scalatest.{BeforeAndAfterAll, Matchers, FunSpec}
+import geotrellis.raster.{IntCellType, UByteCellType}
+import org.scalatest.{BeforeAndAfterAll, FunSpec, Matchers}
 
 class UInt16GeoTiffTileSpec extends FunSpec
 with Matchers
@@ -33,5 +33,13 @@ with TileBuilders {
 
      assertEqual(actualImage, expectedImage)
    }
+
+    it("should convert landsat8 into UByte correctly") {
+      val tiff = SinglebandGeoTiff(geoTiffPath(s"ls8_uint16.tif")).tile
+      val expectedImage = tiff.toArrayTile().rescale(0, 255).convert(UByteCellType)
+      val actualImage = tiff.rescale(0, 255).convert(UByteCellType)
+
+      assertEqual(actualImage, expectedImage)
+    }
   }
 }
