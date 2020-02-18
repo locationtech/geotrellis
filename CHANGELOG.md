@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Fix `PolygonRasterizer` failure on some inputs [#3160](https://github.com/locationtech/geotrellis/issues/3160)
-- Fix Fix GeoTiff Byte and UByte CellType conversions [#3189](https://github.com/locationtech/geotrellis/issues/3189)
+- Fix GeoTiff Byte and UByte CellType conversions [#3189](https://github.com/locationtech/geotrellis/issues/3189)
 
 ### Removed
 
