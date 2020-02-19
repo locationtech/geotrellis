@@ -57,11 +57,11 @@ trait GeoTiffSegment {
         arr
       case ByteCellType =>
         val arr = Array.ofDim[Byte](size)
-        cfor(0)(_ < size, _ + 1) { i => getInt(i).toByte }
+        cfor(0)(_ < size, _ + 1) { i => arr(i) = getInt(i).toByte }
         arr
       case UByteCellType =>
         val arr = Array.ofDim[Byte](size)
-        cfor(0)(_ < size, _ + 1) { i => i2ub(getInt(i)) }
+        cfor(0)(_ < size, _ + 1) { i => arr(i) = i2ub(getInt(i)) }
         arr
       case ShortCellType =>
         val arr = Array.ofDim[Short](size)
