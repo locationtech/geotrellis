@@ -23,6 +23,9 @@ import geotrellis.vector._
 
 import org.locationtech.jts.geom.Envelope
 import org.locationtech.jts.index.strtree.STRtree
+
+import spire.math.Fractional
+import spire.syntax.fractional._
 import spire.syntax.cfor._
 
 import scala.collection.JavaConverters._
@@ -100,15 +103,19 @@ object PolygonRasterizer {
    * @param line  A line segment
    * @param y     The y-value for a line parallel to the x-axis
    */
-  private def lineAxisIntersection(line: Segment, y: Double) = {
+  private def lineAxisIntersection(line: Segment, y: Double, precisely: Boolean = false) = {
+    def calculate[@specialized(Double) A: Fractional](x1: A, y1: A, x2: A, y2: A, y: A) =
+      if (y == y1) (x1.toDouble, 1) // Top endpoint
+      else if (y == y2) (x2.toDouble, -1) // Bottom endpoint
+      else if ((y1 min y2) <= y && y <= (y1 max y2)) { // Between endpoints
+        ((((x1-x2)*y-(x1*y2-y1*x2))/(y1-y2)).toDouble, 0)
+      }
+      else (Double.NegativeInfinity, Int.MaxValue) // No intersection
+
     val (x1, y1, x2, y2) = line
 
-    if (y == y1) (x1,1) // Top endpoint
-    else if (y == y2) (x2,-1) // Bottom endpoint
-    else if ((min(y1,y2) <= y) && (y <= max(y1,y2))) { // Between endpoints
-      (((x1-x2)*y-(x1*y2-y1*x2))/(y1-y2),0)
-    }
-    else (Double.NegativeInfinity, Int.MaxValue) // No intersection
+    if (precisely) calculate(x1.toRational, y1.toRational, x2.toRational, y2.toRational, y.toRational)
+    else calculate(x1, y1, x2, y2, y)
   }
 
   /**
@@ -124,7 +131,7 @@ object PolygonRasterizer {
     val rtree = new STRtree
 
     /** Find the outer ring's segments */
-    val coords = poly.jtsGeom.getExteriorRing.getCoordinates
+    val coords = poly.getExteriorRing.getCoordinates
     cfor(1)(_ < coords.length, _ + 1) { ci =>
       val coord1 = coords(ci - 1)
       val coord2 = coords(ci)
@@ -142,8 +149,8 @@ object PolygonRasterizer {
     }
 
     /** Find the segments for the holes */
-    cfor(0)(_ < poly.numberOfHoles, _ + 1) { i =>
-      val coords = poly.jtsGeom.getInteriorRingN(i).getCoordinates
+    cfor(0)(_ < poly.getNumInteriorRing, _ + 1) { i =>
+      val coords = poly.getInteriorRingN(i).getCoordinates
       cfor(1)(_ < coords.length, _ + 1) { ci =>
         val coord1 = coords(ci - 1)
         val coord2 = coords(ci)
@@ -174,16 +181,15 @@ object PolygonRasterizer {
     * This routine ASSUMES that the polygon is closed, is of finite
     * area, and that its boundary does not self-intersect.
     *
-    * @param edges  A list of active edges
+    * @param rtree  An STRtree with active edges
     * @param y      The y-value of the vertical scanline
     * @param maxX   The maximum-possible x-coordinate
     */
   private def runsPoint(rtree: STRtree, y: Int, maxX: Int): Array[Double] = {
     val row = y + 0.5
-    val xcoordsMap = mutable.Map[Double, Int]()
     val xcoordsList = mutable.ListBuffer[Double]()
 
-    val segments = {
+    def segments(precisely: Boolean) = {
       var nonHorizontal = 0
       var horizontal = false
 
@@ -194,7 +200,7 @@ object PolygonRasterizer {
           .flatMap({ edgeObj =>
             val edge = edgeObj.asInstanceOf[Segment]
             if (edge._2 != edge._4) {
-              val (xcoord, parity) = lineAxisIntersection(edge,row)
+              val (xcoord, parity) = lineAxisIntersection(edge, row, precisely)
               nonHorizontal += 1
               if (parity != Int.MaxValue) Some((xcoord, parity))
               else None
@@ -229,12 +235,25 @@ object PolygonRasterizer {
       else segments
     }
 
-    segments.foreach({ case (xcoord, parity) =>
-      if (xcoordsMap.contains(xcoord)) xcoordsMap(xcoord) += parity
-      else xcoordsMap(xcoord) = parity
-    })
+    def xcoordsMap(precisely: Boolean): mutable.Map[Double, Int] = {
+      val map = mutable.Map[Double, Int]()
 
-    xcoordsMap.foreach({ case (xcoord, parity) =>
+      var containsIntersections = false
+      segments(precisely).foreach { case (xcoord, parity) =>
+        if (map.contains(xcoord)) {
+          map(xcoord) += parity
+          containsIntersections = true
+        }
+        else map(xcoord) = parity
+      }
+
+      /** If an intersaction was found, recalculate precisely.
+        * It might be distinct points, merged due to a Double calc error.
+        */
+      if (containsIntersections && !precisely) xcoordsMap(true) else map
+    }
+
+    xcoordsMap(false).foreach({ case (xcoord, parity) =>
       /**
         * This is where the ASSUMPTION is used.  Given the assumption,
         * this intersection  should be used as  the open or close  of a
@@ -261,7 +280,7 @@ object PolygonRasterizer {
     * This routine ASSUMES that the polygon is closed, is of finite
     * area, and that its boundary does not self-intersect.
     *
-    * @param edges    A list of active edges
+    * @param rtree    An STRtree with active edges
     * @param y        The y-value of the bottom of the vertical scan-rectangle
     * @param maxX     The maximum-possible x-coordinate
     * @param partial  True if all intersected cells are to be reported, otherwise only those on the interior of the polygon

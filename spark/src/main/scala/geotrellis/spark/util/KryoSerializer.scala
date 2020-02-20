@@ -36,7 +36,7 @@ object KryoSerializer {
         .map(_.conf)
         .getOrElse(
           new SparkConf()
-            .set("spark.kryo.registrator", classOf[geotrellis.spark.io.kryo.KryoRegistrator].getName)
+            .set("spark.kryo.registrator", classOf[geotrellis.spark.store.kryo.KryoRegistrator].getName)
          )
 
     new SparkKryoSerializer(sparkConf)

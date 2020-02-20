@@ -1,12 +1,25 @@
+/*
+ * Copyright 2019 Azavea
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package geotrellis.vector.triangulation
 
 import org.locationtech.jts.geom.Coordinate
 import spire.syntax.cfor._
 
 import geotrellis.vector._
-import geotrellis.raster._
-import geotrellis.raster.rasterize._
-import geotrellis.raster.render._
 
 import scala.util.Random
 
@@ -76,7 +89,7 @@ class DelaunayTriangulationSpec extends FunSpec with Matchers {
       // this is equally a test of the robustness of the predicates and of the
       // triangulator's logic vis-a-vis linear triangulations
 
-      val pts: Array[Coordinate] = (for (v <- 0.0 to 100.0 by 1.0) yield { new Coordinate(v,v) }).toArray
+      val pts: Array[Coordinate] = (for (v <- 0 to 100 by 1) yield { new Coordinate(v,v) }).toArray
       val dt = DelaunayTriangulation(pts)
       import dt.halfEdgeTable._
 
@@ -102,10 +115,10 @@ class DelaunayTriangulationSpec extends FunSpec with Matchers {
       var overlapping = false
       cfor(0)(_ < ntris - 1, _ + 1){ i => {
         val (a0,b0,c0) = tris(i)
-        val basetri = Polygon(Point.jtsCoord2Point(trans(a0)), Point.jtsCoord2Point(trans(b0)), Point.jtsCoord2Point(trans(c0)), Point.jtsCoord2Point(trans(a0)))
+        val basetri = Polygon(Point(trans(a0)), Point(trans(b0)), Point(trans(c0)), Point(trans(a0)))
         cfor(i+1)(_ < ntris, _ + 1){ j => {
           val (a1,b1,c1) = tris(j)
-          val testtri = Polygon(Point.jtsCoord2Point(trans(a1)), Point.jtsCoord2Point(trans(b1)), Point.jtsCoord2Point(trans(c1)), Point.jtsCoord2Point(trans(a1)))
+          val testtri = Polygon(Point(trans(a1)), Point(trans(b1)), Point(trans(c1)), Point(trans(a1)))
 
           overlapping = overlapping || (basetri.intersects(testtri) && !basetri.touches(testtri))
         }}
@@ -233,18 +246,18 @@ class DelaunayTriangulationSpec extends FunSpec with Matchers {
       }
       def surfacePoint(x: Double, y: Double) = new Coordinate(x, y, f(x, y))
 
-      val grid = 100.0
+      val grid = 100
       val pts = Array(
         surfacePoint(0, 0),
         surfacePoint(0, 1),
         surfacePoint(1, 0),
         surfacePoint(1, 1)) ++
-        (for (i <- (0.0 until grid by 1.0).toArray) yield surfacePoint(0, (i.toDouble + Random.nextDouble)/ grid)) ++
-        (for (i <- (0.0 until grid by 1.0).toArray) yield surfacePoint(1, (i.toDouble + Random.nextDouble)/ grid)) ++
-        (for (i <- (0.0 until grid by 1.0).toArray) yield surfacePoint((i.toDouble + Random.nextDouble)/ grid, 0)) ++
-        (for (i <- (0.0 until grid by 1.0).toArray) yield surfacePoint((i.toDouble + Random.nextDouble)/ grid, 1)) ++
-        ((0.0 until grid by 1.0).toArray).flatMap { i =>
-           (0.0 until grid by 1.0).toArray.map { j =>
+        (for (i <- (0 until grid by 1).toArray) yield surfacePoint(0, (i.toDouble + Random.nextDouble)/ grid)) ++
+        (for (i <- (0 until grid by 1).toArray) yield surfacePoint(1, (i.toDouble + Random.nextDouble)/ grid)) ++
+        (for (i <- (0 until grid by 1).toArray) yield surfacePoint((i.toDouble + Random.nextDouble)/ grid, 0)) ++
+        (for (i <- (0 until grid by 1).toArray) yield surfacePoint((i.toDouble + Random.nextDouble)/ grid, 1)) ++
+        ((0 until grid by 1).toArray).flatMap { i =>
+           (0 until grid by 1).toArray.map { j =>
              val x = (i.toDouble + Random.nextDouble) / grid
              val y = (j.toDouble + Random.nextDouble) / grid
              surfacePoint(x, y)

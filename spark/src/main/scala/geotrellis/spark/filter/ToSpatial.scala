@@ -16,9 +16,9 @@
 
 package geotrellis.spark.filter
 
+import geotrellis.layer._
 import geotrellis.spark._
 import geotrellis.util._
-
 import cats.Functor
 import cats.implicits._
 import org.apache.spark.Partitioner

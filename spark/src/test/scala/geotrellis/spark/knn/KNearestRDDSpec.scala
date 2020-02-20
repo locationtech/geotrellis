@@ -42,7 +42,7 @@ class KNearestRDDSpec extends FunSpec
                           (-2, 1), (-1, 1), (0, 1),         (2, 1),
                           (-2, 0), (-1, 0),         (1, 0), (2, 0),
                           (-2,-1),          (0,-1), (1,-1), (2,-1),
-                                   (-1,-2), (0,-2), (1,-2)).map { p => PointFeature(Point(p.x, p.y), 0) }
+                                   (-1,-2), (0,-2), (1,-2)).map { p => PointFeature(Point(p._1, p._2), 0) }
 
       val resinex = res.forall { x => expected contains x }
       val exinres = expected.forall { x => res contains x }

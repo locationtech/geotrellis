@@ -19,21 +19,12 @@ package geotrellis.proj4
 import geotrellis.proj4.io.wkt.WKT
 
 import org.locationtech.proj4j._
-import com.github.blemale.scaffeine.Scaffeine
+import org.locationtech.proj4j.util.CRSCache
 
-import scala.io.Source
 import scala.util.Try
 
-
 object CRS {
-  private lazy val proj4ToEpsgMap =
-    Scaffeine()
-      .recordStats()
-      .build[String, Option[String]]()
-
-  //  new Memoize[String, Option[String]](readEpsgCodeFromFile)
-  private val crsFactory = new CRSFactory
-  private val filePrefix = "/proj4/nad/"
+  private val crsFactory = new CRSCache()
 
   /**
     * Creates a CoordinateReferenceSystem
@@ -48,15 +39,12 @@ object CRS {
     * @return              The specified CoordinateReferenceSystem
     */
   def fromString(proj4Params: String): CRS =
-    new CRS {
-      val proj4jCrs: CoordinateReferenceSystem = crsFactory.createFromParameters(null, proj4Params)
-    }
+    new CRS { val proj4jCrs: CoordinateReferenceSystem = crsFactory.createFromParameters(null, proj4Params) }
 
   /**
     * Returns the numeric EPSG code of a proj4string.
     */
-  def getEpsgCode(proj4String: String): Option[Int] =
-    proj4ToEpsgMap.get(proj4String, { key => readEpsgCodeFromFile(key) }).map(_.toInt)
+  def getEpsgCode(proj4String: String): Option[Int] = readEpsgFromParameters(proj4String).map(_.toInt)
 
   /**
     * Creates a CoordinateReferenceSystem
@@ -72,18 +60,14 @@ object CRS {
     * @return              The specified CoordinateReferenceSystem
     */
   def fromString(name: String, proj4Params: String): CRS =
-    new CRS {
-      val proj4jCrs: CoordinateReferenceSystem = crsFactory.createFromParameters(name, proj4Params)
-    }
+    new CRS { val proj4jCrs: CoordinateReferenceSystem = crsFactory.createFromParameters(name, proj4Params) }
 
   /**
     * Creates a CoordinateReferenceSystem (CRS) from a
     * well-known-text String.
     */
-  def fromWKT(wktString: String): CRS = {
-    val epsgCode: String = WKT.getEpsgCode(wktString)
-
-    fromName(epsgCode)
+  def fromWKT(wktString: String): Option[CRS] = {
+    WKT.getEpsgStringCode(wktString).map(fromName(_))
   }
 
   /**
@@ -112,39 +96,15 @@ object CRS {
     * @return        The CoordinateReferenceSystem corresponding to the given name
    */
   def fromName(name: String): CRS =
-    new CRS {
-      val proj4jCrs: CoordinateReferenceSystem = crsFactory.createFromName(name)
-    }
+    new CRS { val proj4jCrs: CoordinateReferenceSystem = crsFactory.createFromName(name) }
 
   /**
     * Creates a CoordinateReferenceSystem (CRS) from an EPSG code.
     */
-  def fromEpsgCode(epsgCode: Int) =
-    fromName(s"EPSG:$epsgCode")
+  def fromEpsgCode(epsgCode: Int) = fromName(s"EPSG:$epsgCode")
 
-  private def readEpsgCodeFromFile(proj4String: String): Option[String] = {
-    // TODO: move this functinality to org.locationtech.proj4j.Proj4FileReaeder
-    val stream = crsFactory.getClass.getResourceAsStream(s"${filePrefix}epsg")
-
-    try {
-      Source.fromInputStream(stream)
-        .getLines
-        .find { line =>
-          !line.startsWith("#") && {
-            // FIX this match is sensative to white spaces and ordering
-            val proj4Body = line.split("proj")(1)
-            s"+proj$proj4Body" == proj4String
-          }
-        }.flatMap { l =>
-          val array = l.split(" ")
-          val length = array(0).length
-          // read the int ...
-          Some(array(0).substring(1, length - 1))
-        }
-    } finally {
-      stream.close()
-    }
-  }
+  def readEpsgFromParameters(proj4String: String): Option[String] =
+    Option(crsFactory.readEpsgFromParameters(proj4String))
 
   /** Mix-in for singleton CRS implementations where distinguished string should be the name of the object. */
   private[proj4] trait ObjectNameToString { self: CRS ⇒
@@ -159,10 +119,8 @@ trait CRS extends Serializable {
 
   def epsgCode: Option[Int] = {
     proj4jCrs.getName.split(":") match {
-      case Array(name, code) if name.toUpperCase == "EPSG" =>
-        Try(code.toInt).toOption
-      case _ =>
-        CRS.getEpsgCode(toProj4String + " <>")
+      case Array(name, code) if name.toUpperCase == "EPSG" => Try(code.toInt).toOption
+      case _ => CRS.getEpsgCode(toProj4String)
     }
   }
 
@@ -180,58 +138,21 @@ trait CRS extends Serializable {
    * Returns the WKT representation of the Coordinate Reference
    * System.
    */
-  def toWKT(): Option[String] = epsgCode.map(WKT.fromEpsgCode(_))
+  def toWKT(): Option[String] = epsgCode.flatMap(WKT.fromEpsgCode(_))
 
 
   // TODO: Do these better once more things are ported
-  override
-  def hashCode = toProj4String.hashCode
+  override def hashCode = toProj4String.hashCode
 
   def toProj4String: String = proj4jCrs.getParameterString
 
   def isGeographic: Boolean = proj4jCrs.isGeographic
 
-  override
-  def equals(o: Any): Boolean =
+  override def equals(o: Any): Boolean =
     o match {
-      case other: CRS => compareProj4Strings(other.toProj4String, toProj4String)
+      case other: CRS => proj4jCrs == other.proj4jCrs
       case _ => false
     }
-
-  private def compareProj4Strings(p1: String, p2: String) = {
-    def toProj4Map(s: String): Map[String, String] =
-      s.trim.split(" ").map(x =>
-        if (x.startsWith("+")) x.substring(1) else x).map(x => {
-        val index = x.indexOf('=')
-        if (index != -1) (x.substring(0, index) -> Some(x.substring(index + 1)))
-        else (x -> None)
-      }).groupBy(_._1).map { case (a, b) => (a, b.head._2) }
-        .filter { case (a, b) => !b.isEmpty }.map { case (a, b) => (a -> b.get) }
-        .map { case (a, b) => if (b == "latlong") (a -> "longlat") else (a, b) }
-        .filter { case (a, b) => (a != "to_meter" || b != "1.0") }
-
-    val m1 = toProj4Map(p1)
-    val m2 = toProj4Map(p2)
-
-    m1.map {
-      case (key, v1) => m2.get(key) match {
-        case Some(v2) => compareValues(v1, v2)
-        case None => false
-      }
-    }.forall(_ != false)
-  }
-
-  private def compareValues(s1: String, s2: String) = {
-    def isNumber(s: String) = s.filter(c => !List('.', '-').contains(c)) forall Character.isDigit
-
-    val s2IsNumber = isNumber(s1)
-    val s1IsNumber = isNumber(s2)
-
-    if (s1IsNumber == s2IsNumber) {
-      if (s1IsNumber) math.abs(s1.toDouble - s2.toDouble) < Epsilon
-      else s1 == s2
-    } else false
-  }
 
   protected def factory = CRS.crsFactory
 

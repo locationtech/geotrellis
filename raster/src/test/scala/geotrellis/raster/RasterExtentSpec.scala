@@ -484,5 +484,22 @@ class RasterExtentSpec extends FunSpec with Matchers
       }
     }
 
+    it("should handle a negative extent with north and west round func instead of floor applied") {
+      val extent = Extent(-60, -30, -50, -20)
+      val rasterExtent = RasterExtent(extent, 0.00025, 0.00025, 40000, 40000)
+
+      val internalExtent = Extent(-51.6, -26.5, -51.5, -26.4)
+      val internalExtent2 = Extent(-51.4, -26.3, -51.3, -26.2)
+      val bounds = rasterExtent.gridBoundsFor(internalExtent)
+
+      val height = (bounds.rowMin to bounds.rowMax).length
+      val width = (bounds.colMin to bounds.colMax).length
+
+      height shouldBe 400
+      width shouldBe 400
+
+      rasterExtent.mapXToGrid(internalExtent2.xmin) shouldBe 34400
+      rasterExtent.mapYToGrid(internalExtent2.ymax) shouldBe 24800
+    }
   }
 }

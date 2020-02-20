@@ -1,4 +1,23 @@
+/*
+ * Copyright 2019 Azavea
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package geotrellis.doc.examples.spark
+
+import geotrellis.layer._
+import geotrellis.store._
 
 object COGSparkExamples {
   def `Having an RDD[(ProjectedExtent, Tile)] ingest it as a Structured COG layer and query it` = {
@@ -6,11 +25,13 @@ object COGSparkExamples {
     import geotrellis.raster.io.geotiff._
     import geotrellis.raster.resample._
     import geotrellis.spark._
-    import geotrellis.spark.io._
-    import geotrellis.spark.io.index.ZCurveKeyIndexMethod
-    import geotrellis.spark.io.file._
-    import geotrellis.spark.io.file.cog._
-    import geotrellis.spark.tiling._
+    import geotrellis.spark.store._
+    import geotrellis.store.index.ZCurveKeyIndexMethod
+    import geotrellis.layer._
+    import geotrellis.store.file._
+    import geotrellis.store.file.cog._
+    import geotrellis.spark.store.file.cog._
+    import geotrellis.spark.tiling.Tiler
     import geotrellis.vector._
     import geotrellis.proj4.WebMercator
     import geotrellis.raster.io.geotiff.writer.GeoTiffWriter
@@ -122,9 +143,9 @@ object COGSparkExamples {
     import geotrellis.raster._
     import geotrellis.raster.resample._
     import geotrellis.raster.io.geotiff.Auto
+    import geotrellis.layer.ZoomedLayoutScheme
     import geotrellis.spark._
-    import geotrellis.spark.tiling._
-    import geotrellis.spark.io.file.geotiff._
+    import geotrellis.spark.store.file.geotiff._
     import geotrellis.proj4.WebMercator
     import java.net.URI
 

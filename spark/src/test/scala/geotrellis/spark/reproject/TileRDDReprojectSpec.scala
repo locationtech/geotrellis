@@ -21,9 +21,9 @@ import geotrellis.raster.io.geotiff._
 import geotrellis.raster.resample._
 import geotrellis.raster.reproject._
 import geotrellis.raster.reproject.Reproject.{Options => RasterReprojectOptions}
+import geotrellis.layer._
 import geotrellis.spark._
 import geotrellis.spark.reproject.Reproject.Options
-import geotrellis.spark.tiling._
 import geotrellis.spark.testkit._
 import geotrellis.vector._
 
@@ -84,7 +84,7 @@ class TileRDDReprojectSpec extends FunSpec with TestEnvironment {
       val actual =
         actualRdd.stitch
 
-      actualRdd.map { case (_, tile) => tile.dimensions == (25, 25) }.reduce(_ && _) should be (true)
+      actualRdd.map { case (_, tile) => tile.dimensions == Dimensions(25, 25) }.reduce(_ && _) should be (true)
 
       // actual.tile.renderPng(rainbow).write("actual.png")
       // val errorTile = IntArrayTile.ofDim(expected.tile.cols, expected.tile.rows)
@@ -243,7 +243,7 @@ class TileRDDReprojectSpec extends FunSpec with TestEnvironment {
       // import geotrellis.raster.crop._
       // import geotrellis.raster.merge._
       // import geotrellis.raster.prototype._
-       
+
       // val st1 = implicitly[Stitcher[Tile]]
       // val st2 = implicitly[Stitcher[TileFeature[Tile, Int]]]
       // val st3 = implicitly[RasterRegionReproject[TileFeature[Tile, Int]]]

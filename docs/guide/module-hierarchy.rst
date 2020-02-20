@@ -8,41 +8,59 @@ them as you want in your ``build.sbt``.
 geotrellis-accumulo
 -------------------
 
-Allows the use of `Apache Accumulo <https://accumulo.apache.org/>`__ as
-a Tile layer backend.
+Implements ``geotrellis.store`` types for `Apache Accumulo <https://accumulo.apache.org/>`__.
 
-*Provides:* ``geotrellis.spark.io.accumulo.*``
+*Provides:* ``geotrellis.store.accumulo.*``
 
 -  Save and load layers to and from Accumulo. Query large layers
    efficiently using the layer query API.
 
+geotrellis-accumulo-spark
+-------------------------
+
+Implements ``geotrellis.spark.store`` types for `Apache Accumulo <https://accumulo.apache.org/>`__,
+extending ``geotrellis-accumulo``.
+
+*Provides:* ``geotrellis.spark.store.accumulo.*``
+
+-  Save and load layers to and from Accumulo within a Spark Context using RDDs.
+-  Supoort Accumulo backend for TileLayerRDDs.
+
 geotrellis-cassandra
---------------------
+-------------------
 
-Allows the use of `Apache Cassandra <http://cassandra.apache.org/>`__ as
-a Tile layer backend.
+Implements ``geotrellis.store`` types for `Apache Cassandra <http://cassandra.apache.org/>`__.
 
-*Provides:* ``geotrellis.spark.io.cassandra.*``
+*Provides:* ``geotrellis.store.cassandra.*``
 
 -  Save and load layers to and from Cassandra. Query large layers
    efficiently using the layer query API.
 
-geotrellis-etl
---------------
+geotrellis-cassandra-spark
+-------------------------
 
-A command-line tool for streamlining the ingest process.
+Implements ``geotrellis.spark.store`` types for `Apache Cassandra <https://cassandra.apache.org/>`__,
+extending ``geotrellis-cassandra``.
 
-*Provides:* ``geotrellis.spark.etl.*``
+*Provides:* ``geotrellis.spark.store.cassandra.*``
 
--  Parse command line options for input and output of ETL (Extract,
-   Transform, and Load) applications
--  Utility methods that make ETL applications easier for the user to
-   build.
--  Work with input rasters from the local file system, HDFS, or S3
--  Reproject input rasters using a per-tile reproject or a seamless
-   reprojection that takes into account neighboring tiles.
--  Transform input rasters into layers based on a ZXY layout scheme
--  Save layers into Accumulo, S3, HDFS or the local file system.
+-  Save and load layers to and from Cassandra within a Spark Context using RDDs.
+-  Supoort Accumulo backend for TileLayerRDDs.
+
+geotrellis-gdal
+-------------------------
+
+Implements GeoTrellis `GDAL <https://gdal.org/>`__ support.
+
+*Provides:* ``geotrellis.raster.gdal.*``
+
+-  Implements GDALRasterSources to read, reproject, resample, convert rasters.
+   Performs all transformations via GDALWarp.
+
+geotrellis-gdal-spark
+-------------------------
+
+Contains geotrellis.raster.gdal.* integration tests for Spark.
 
 geotrellis-geomesa
 ------------------
@@ -50,20 +68,78 @@ geotrellis-geomesa
 *Experimental.* GeoTrellis compatibility for the distributed feature
 store `GeoMesa <http://www.geomesa.org/>`__.
 
-*Provides:* ``geotrellis.spark.io.geomesa.*``
+*Provides:* ``geotrellis.geomesa.geotools.*``
+*Provides:* ``geotrellis.spark.store.geomesa.*``
 
 -  Save and load ``RDD``\ s of features to and from GeoMesa.
 
+geotrellis-geotools
+-------------------
+
+*Provides:* ``geotrellis.geotools.*``
+
+-  Conversion functions between GeoTrellis, OpenGIS and GeoTools ``Features``.
+
+*Provides:* ``geotrellis.geotools.*``
+
+geotrellis-geowave
+------------------
+
+*Experimental.* GeoTrellis compatibility for the distributed feature
+store `GeoWave <https://github.com/ngageoint/geowave>`__.
+
+*Provides:* ``geotrellis.spark.io.geowave.*``
+
+-  Save and load ``RDD``\ s of features to and from GeoWave.
+
 geotrellis-hbase
-----------------
+-------------------
 
-Allows the use of `Apache HBase <http://hbase.apache.org/>`__ as a Tile
-layer backend.
+Implements ``geotrellis.store`` types for `Apache HBase <http://hbase.apache.org/>`__.
 
-*Provides:* ``geotrellis.spark.io.hbase.*``
+*Provides:* ``geotrellis.store.hbase.*``
 
 -  Save and load layers to and from HBase. Query large layers
    efficiently using the layer query API.
+
+geotrellis-hbase-spark
+-------------------------
+
+Implements ``geotrellis.spark.store`` types for `Apache hbase <https://hbase.apache.org/>`__,
+extending ``geotrellis-hbase``.
+
+*Provides:* ``geotrellis.spark.store.hbase.*``
+
+-  Save and load layers to and from HBase within a Spark Context using RDDs.
+-  Supoort Accumulo backend for TileLayerRDDs.
+
+geotrellis-layer
+----------------
+
+Datatypes to describe Layers (sets of spatially referenced rasters).
+
+*Provides:* ``geotrellis.layer.*``
+
+-  Generic way to represent key value ``Seq``s as layers, where the key
+   represents a coordinate in space based on some uniform grid layout,
+   optionally with a temporal component.
+-  Contains data types to describe ``LayoutSchemes`` and ``LayoutDefinitions``,
+   ``KeyBounds``, layer key types (``SpatialKey``, ``SpaceTimeKey``) and ``TileLayerMetadata``
+   layer metadata type.
+-  Implements ``SpaceTimeKey`` ``collection layer`` projection to the ``SpatialKey`` space.
+-  MapAlgebra (focal and local) for ``collection layers``.
+-  Mask and Stitch operations for ``collection layers``.
+-  Implements tiling for ``RasterSources``.
+
+geotrellis-macros
+-----------------
+
+The intention of this package is to keep API both performant and expressive enough.
+
+*Provides:* ``geotrellis.macros.*``
+
+-  Contains inline macro implementations for ``Tile`` ``NoData``, ``foreach``, ``map`` and some
+   type conversions.
 
 geotrellis-proj4
 ----------------
@@ -112,8 +188,8 @@ Types and algorithms for Raster processing.
    Conway's Game of Life, Max, Mean, Median, Mode, Min, MoransI,
    StandardDeviation, Sum
 -  Zonal Map Algebra operations: ZonalHistogram, ZonalPercentage
--  Operations that summarize raster data intersecting polygons: Min,
-   Mean, Max, Sum.
+-  Polygonal Summary operations that summarize raster data intersecting polygons: Min,
+   Mean, Max, Sum, Histogram.
 -  Cost distance operation based on a set of starting points and a
    friction raster.
 -  Hydrology operations: Accumulation, Fill, and FlowDirection.
@@ -123,6 +199,15 @@ Types and algorithms for Raster processing.
 -  Kriging Interpolation of point data into rasters.
 -  Viewshed operation.
 -  RegionGroup operation.
+-  Kernel density estimation.
+-  Raster histogram equalization and matching methods.
+-  Delaunay triangulation rasterizer.
+-  Provides an abstract, higher order API for reading ``RasterSources``
+   from different sources. ``RasterSource`` is an abstraction over I/O implementations.
+   Other ``GeoTrellis`` packages provide concrete ``RasterSource`` implementations,
+   such as ``GDALRasterSource`` in a ``geotrellis.raster.gdal`` package.
+-  Implements lazy RasterSource transformation operations:
+   reprojection, resampling and cellType conversion.
 
 geotrellis-raster-testkit
 -------------------------
@@ -135,15 +220,27 @@ Integration tests for ``geotrellis-raster``.
 geotrellis-s3
 -------------
 
+Implements the ``geotrellis.store`` types for the AWS Simple Storage Service (S3) backend.
+
 Allows the use of `Amazon S3 <https://aws.amazon.com/s3/>`__ as a Tile
 layer backend.
 
-*Provides:* ``geotrellis.spark.io.s3.*``
+*Provides:* ``geotrellis.store.s3.*``
 
--  Save/load raster layers to/from the local filesystem or HDFS using
-   Spark's IO API.
--  Save spatially keyed RDDs of byte arrays to z/x/y files in S3. Useful
-   for saving PNGs off for use as map layers in web maps.
+-  Save/load raster layers to/from S3
+-  Save/load Cloud Optimized GeoTiffs (COGs) to/from S3
+
+geotrellis-s3-spark
+-------------------
+
+Implements ``geotrellis.store`` and ``geotrellis.spark`` types for interoperability between
+GeoTrellis, Spark and S3.
+
+*Provides:* ``geotrellis.spark.store.s3.*``
+
+-  Save/load Spark RDD Tile layers to/from S3
+-  Support S3 operations on GeoTiff, COG and Slippy tiles
+-  Use SaveToS3 to save pyramided image and vector tile layers in X/Y/Z format
 
 geotrellis-shapefile
 --------------------
@@ -193,6 +290,25 @@ Spark <http://spark.apache.org/>`__.
    coordinates.
 -  Utilities around creating spark contexts for applications using
    GeoTrellis, including a Kryo registrator that registers most types.
+-  Implements GeoTrellis ``COGLayer`` creation, persistence and query mechanisms.
+
+geotrellis-spark-pipeline
+-------------------------
+
+Pipelines are the operative construct in GeoTrellis,
+the original idea was taken from `PDAL <https://pdal.io/pipeline.html>`__.
+Pipelines represent a set of instructions rather than a simple ETL process:
+how to read data, transform (process), write it. The result of the Pipeline
+should not always be writing, it can also be some intermediate transformation result,
+or just a raw data.
+
+*Provides:* ``geotrellis.spark.pipeline.*``
+
+-  Provides a JSON DSL that represents a set of instructions performed on some data source.
+-  Provides a Scala DSL that abstracts over GeoTrellis pipeline operations. It also allows
+   users to avoid manually writing the JSON DSL.
+-  Allows reads (from local file system, s3, hdfs, etc), transformations (tile-to-layout,
+   reproject, pyramid) and writes (all supported GeoTrellis stores).
 
 geotrellis-spark-testkit
 ------------------------
@@ -203,10 +319,33 @@ Integration tests for ``geotrellis-spark``.
 -  Matching methods to test equality of RDDs of raster data in scalatest
    unit tests.
 
-geotrellis-geotools
--------------------
+geotrellis-store
+----------------
 
-*Provides:* ``geotrellis.geotools.*``
+Types and interfaces for interacting with a number of different storage backends in an abstract way.
+
+In older versions of GeoTrellis, ``store`` implementations were referred to as ``backends``.
+
+*Provides:* ``geotrellis.store.*``
+
+-  Contains interfaces for ``LayerReaders``, ``LayerWriters`` and ``ValueReaders``.
+-  Avro ``Tile`` codecs.
+-  Local file system and HDFS ``COG`` and ``GeoTrellis`` ``Value`` and ``Collection`` readers implementation.
+-  Indexing strategies implementation: ZCurve and HilbertCurve.
+-  GeoTrellisRasterSources that implement access to GeoTrellis layers through the new API.
+
+geotrellis-util
+---------------
+
+Plumbing for other GeoTrellis modules.
+
+*Provides:* ``geotrellis.util.*``
+
+-  Constants
+-  Data structures missing from Scala, such as BTree
+-  Haversine implementation
+-  Lenses
+-  RangeReader for reading contiguous subsets of data from a source
 
 geotrellis-vector
 -----------------
@@ -215,12 +354,11 @@ Types and algorithms for processing Vector data.
 
 *Provides:* ``geotrellis.vector.*``
 
--  Provides a scala idiomatic wrapper around JTS types: Point, Line
-   (LineString in JTS), Polygon, MultiPoint, MultiLine (MultiLineString
-   in JTS), MultiPolygon, GeometryCollection
+-  Provides idiomatic helpers for the JTS types: Point, LineString,
+   Polygon, MultiPoint, MultiLineString, MultiPolygon, GeometryCollection
 -  Methods for geometric operations supported in JTS, with results that
    provide a type-safe way to match over possible results of geometries.
--  Provides a Feature type that is the composition of a geometry and a
+-  Provides a Feature type that is the composition of an id, geometry and a
    generic data type.
 -  Read and write geometries and features to and from GeoJSON.
 -  Read and write geometries to and from WKT and WKB.
@@ -241,31 +379,9 @@ Integration tests for ``geotrellis-vector``.
 geotrellis-vectortile
 ---------------------
 
-*Experimental.* A full `Mapbox
-VectorTile <https://www.mapbox.com/vector-tiles/>`__ codec.
+*Experimental.* A full `Mapbox VectorTile <https://www.mapbox.com/vector-tiles/>`__ codec.
 
 *Provides:* ``geotrellis.vectortile.*``
 
 -  Lazy decoding
 -  Read/write ``VectorTile`` tile layers from any tile backend
-
-geotrellis-util
----------------
-
-Plumbing for other GeoTrellis modules.
-
-*Provides:* ``geotrellis.util.*``
-
--  Data structures missing from Scala
--  Lenses
--  Constants
-
-geotrellis-geowave
-------------------
-
-*Experimental.* GeoTrellis compatibility for the distributed feature
-store `GeoWave <https://github.com/ngageoint/geowave>`__.
-
-*Provides:* ``geotrellis.spark.io.geowave.*``
-
--  Save and load ``RDD``\ s of features to and from GeoWave.

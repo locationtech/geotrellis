@@ -23,6 +23,9 @@ import geotrellis.raster.io.geotiff._
 import geotrellis.raster.io.geotiff.tags._
 import geotrellis.raster.io.geotiff.tags.codes.ColorSpace
 import geotrellis.raster.render.RGB
+import geotrellis.raster.summary.polygonal._
+import geotrellis.raster.summary.polygonal.visitors._
+import geotrellis.raster.summary.types.{MaxValue, MinValue}
 import geotrellis.raster.testkit._
 import geotrellis.vector.{Extent, Point}
 import monocle.syntax.apply._
@@ -70,8 +73,7 @@ class GeoTiffReaderSpec extends FunSpec
       val path = "modelTransformation.tiff"
       val compressed: SinglebandGeoTiff = SinglebandGeoTiff(geoTiffPath(path))
       val tile = compressed.tile
-      val bounds = tile.gridBounds
-      bounds.width should be(1121)
+      tile.cols should be(1121)
       compressed.crs should be(CRS.fromName("EPSG:4326"))
       if (compressed.extent.min.distance(Point(59.9955397, 30.0044603)) > 0.0001) {
         compressed.extent.min should be(Point(59.9955397, 30.0044603))
@@ -159,7 +161,7 @@ class GeoTiffReaderSpec extends FunSpec
   describe("match tiff tags and geokeys correctly") {
 
     it("must match aspect.tif tiff tags") {
-      val tiffTags = TiffTagsReader.read(s"$baseDataPath/aspect.tif")
+      val tiffTags = TiffTags.read(s"$baseDataPath/aspect.tif")
 
       tiffTags.cols should equal (1500L)
 
@@ -234,7 +236,7 @@ class GeoTiffReaderSpec extends FunSpec
     }
 
     it("must match aspect.tif geokeys") {
-      val tiffTags = TiffTagsReader.read(s"$baseDataPath/aspect.tif")
+      val tiffTags = TiffTags.read(s"$baseDataPath/aspect.tif")
 
       tiffTags.tags.headTags("AREA_OR_POINT") should be ("AREA")
 
@@ -262,7 +264,6 @@ class GeoTiffReaderSpec extends FunSpec
       val crs = SinglebandGeoTiff(s"$baseDataPath/slope.tif", streaming = true).crs
 
       val correctCRS = CRS.fromString("+proj=utm +zone=10 +datum=NAD27 +units=m +no_defs")
-
       crs should equal(correctCRS)
     }
 
@@ -279,7 +280,8 @@ class GeoTiffReaderSpec extends FunSpec
     it("should read econic.tif CS correctly") {
       val crs = SinglebandGeoTiff(s"$baseDataPath/econic.tif", streaming = true).crs
 
-      val correctProj4String = "+proj=eqdc +lat_0=33.76446202777777 +lon_0=-117.4745428888889 +lat_1=33.90363402777778 +lat_2=33.62529002777778 +x_0=0 +y_0=0 +datum=NAD27 +units=m +no_defs"
+      // pulled from file directly, gdalinfo lies and will round each paramete value to 17 characters for presentation
+      val correctProj4String = "+proj=eqdc +lat_1=33.90363402777778 +lat_2=33.62529002777778 +lat_0=33.764462027777775 +lon_0=-117.47454288888889 +x_0=0.0 +y_0=0.0 +datum=NAD27 +units=m"
 
       val correctCRS = CRS.fromString(correctProj4String)
 
@@ -349,11 +351,16 @@ class GeoTiffReaderSpec extends FunSpec
     val MeanEpsilon = 1e-8
 
     def testMinMaxAndMean(min: Double, max: Double, mean: Double, file: String) {
-      val SinglebandGeoTiff(tile, extent, _, _, _, _) = SinglebandGeoTiff(file)
 
-      tile.polygonalMax(extent, extent.toPolygon) should be (max)
-      tile.polygonalMin(extent, extent.toPolygon) should be (min)
-      tile.polygonalMean(extent, extent.toPolygon) should be (mean +- MeanEpsilon)
+      val geotiff = SinglebandGeoTiff(file)
+      val extent = geotiff.extent
+
+      geotiff.raster.polygonalSummary(extent.toPolygon, MaxVisitor) should be (Summary(MaxValue(max)))
+      geotiff.raster.polygonalSummary(extent.toPolygon, MinVisitor) should be (Summary(MinValue(min)))
+      geotiff.raster.polygonalSummary(extent.toPolygon, MeanVisitor) match {
+        case Summary(result) => result.mean should be (mean +- MeanEpsilon)
+        case _ => fail("failed to compute PolygonalSummaryResult")
+      }
     }
 
     it("should read UINT 16 little endian files correctly") {
@@ -375,16 +382,15 @@ class GeoTiffReaderSpec extends FunSpec
     }
 
     it("should read GeoTiff without GeoKey Directory correctly") {
-      val SinglebandGeoTiff(tile, extent, crs, _, _, _) = SinglebandGeoTiff(geoTiffPath("no-geokey-dir.tif"))
+      val file = geoTiffPath("no-geokey-dir.tif")
+      val geotiff = SinglebandGeoTiff(file)
+      val extent = geotiff.extent
 
-      crs should be (LatLng)
+      geotiff.crs should be (LatLng)
       extent should be (Extent(307485, 3911490, 332505, 3936510))
 
       val (max, min, mean) = (74032, -20334, 17.023709809131)
-
-      tile.polygonalMax(extent, extent.toPolygon) should be (max)
-      tile.polygonalMin(extent, extent.toPolygon) should be (min)
-      tile.polygonalMean(extent, extent.toPolygon) should be (mean +- MeanEpsilon)
+      testMinMaxAndMean(min, max, mean, file)
     }
 
     it("should read GeoTiff with incorrect GeoKey Directory header correctly (NumberOfKeys is wrong)") {
@@ -417,7 +423,7 @@ class GeoTiffReaderSpec extends FunSpec
       cfor(0)(_ < 4, _ + 1) { i =>
         val tile = mbTile.band(i)
         tile.cellType should be (UByteCellType)
-        tile.dimensions should be ((500, 500))
+        tile.dimensions shouldBe Dimensions(500, 500)
       }
     }
 

@@ -17,18 +17,16 @@
 package geotrellis.spark.summary.polygonal
 
 import geotrellis.spark._
-import geotrellis.spark.io.hadoop._
-import geotrellis.spark.testkit.testfiles._
-import geotrellis.raster.summary.polygonal._
+import geotrellis.spark.store.hadoop._
 import geotrellis.spark.testkit._
-
+import geotrellis.spark.testkit.testfiles.TestFiles
+import geotrellis.raster.summary.polygonal._
 import geotrellis.raster._
+import geotrellis.raster.summary.polygonal.visitors.MeanVisitor
 import geotrellis.vector._
-
 import org.scalatest.FunSpec
 
 class MeanSpec extends FunSpec with TestEnvironment with TestFiles {
-
   describe("Mean Zonal Summary Operation") {
     val inc = IncreasingTestFile
     val multi = inc.withContext { _.mapValues { tile => MultibandTile(tile, tile) } }
@@ -38,11 +36,11 @@ class MeanSpec extends FunSpec with TestEnvironment with TestFiles {
     val totalExtent = inc.metadata.extent
 
     it("should get correct mean over whole raster extent") {
-      inc.polygonalMean(totalExtent.toPolygon) should be((count - 1) / 2.0)
+      inc.polygonalSummaryValue(totalExtent.toPolygon, MeanVisitor).toOption.get.mean should be((count - 1) / 2.0)
     }
 
     it("should get correct mean over whole raster extent for a MultibandTileRDD") {
-      multi.polygonalMean(totalExtent.toPolygon) map { _ should be((count - 1) / 2.0) }
+      multi.polygonalSummaryValue(totalExtent.toPolygon, MeanVisitor).toOption.get map { _.mean should be((count - 1) / 2.0) }
     }
 
     it("should get correct mean over a quarter of the extent") {
@@ -55,10 +53,10 @@ class MeanSpec extends FunSpec with TestEnvironment with TestFiles {
         totalExtent.xmin + xd / 2,
         totalExtent.ymin + yd / 2
       )
-      val result = inc.polygonalMean(quarterExtent.toPolygon)
-      val expected = inc.stitch.tile.polygonalMean(totalExtent, quarterExtent.toPolygon)
+      val result = inc.polygonalSummaryValue(quarterExtent.toPolygon, MeanVisitor).toOption.get
+      val expected = inc.stitch.polygonalSummary(quarterExtent.toPolygon, MeanVisitor).toOption.get
 
-      result should be (expected)
+      result.mean should be (expected.mean)
     }
 
     it("should get correct mean over a quarter of the extent for a MultibandTileRDD") {
@@ -71,31 +69,31 @@ class MeanSpec extends FunSpec with TestEnvironment with TestFiles {
         totalExtent.xmin + xd / 2,
         totalExtent.ymin + yd / 2
       )
-      val result = multi.polygonalMean(quarterExtent.toPolygon)
-      val expected = multi.stitch.tile.polygonalMean(totalExtent, quarterExtent.toPolygon)
+      val result = multi.polygonalSummaryValue(quarterExtent.toPolygon, MeanVisitor).toOption.get
+      val expected = multi.stitch.polygonalSummary(quarterExtent.toPolygon, MeanVisitor).toOption.get
 
       result.size should be (expected.size)
 
       result zip expected map { case (res, exp) =>
-        res should be (exp)
+        res.mean should be (exp.mean)
       }
     }
   }
 
   describe("Mean Zonal Summary Operation (collections api)") {
-    val inc = IncreasingTestFile.toCollection
+    val inc = IncreasingTestFile
     val multi = IncreasingTestFile.withContext { _.mapValues { tile => MultibandTile(tile, tile) } }
 
     val tileLayout = inc.metadata.tileLayout
-    val count = inc.length * tileLayout.tileCols * tileLayout.tileRows
+    val count = inc.toCollection.length * tileLayout.tileCols * tileLayout.tileRows
     val totalExtent = inc.metadata.extent
 
     it("should get correct mean over whole raster extent") {
-      inc.polygonalMean(totalExtent.toPolygon) should be((count - 1) / 2.0)
+      inc.polygonalSummaryValue(totalExtent.toPolygon, MeanVisitor).toOption.get.mean should be((count - 1) / 2.0)
     }
 
     it("should get correct mean over whole raster extent for MultibandTiles") {
-      multi.polygonalMean(totalExtent.toPolygon) map { _ should be((count - 1) / 2.0) }
+      multi.polygonalSummaryValue(totalExtent.toPolygon, MeanVisitor).toOption.get map { _.mean should be((count - 1) / 2.0) }
     }
 
     it("should get correct mean over a quarter of the extent") {
@@ -108,10 +106,10 @@ class MeanSpec extends FunSpec with TestEnvironment with TestFiles {
         totalExtent.xmin + xd / 2,
         totalExtent.ymin + yd / 2
       )
-      val result = inc.polygonalMean(quarterExtent.toPolygon)
-      val expected = inc.stitch.tile.polygonalMean(totalExtent, quarterExtent.toPolygon)
+      val result = inc.polygonalSummaryValue(quarterExtent.toPolygon, MeanVisitor).toOption.get
+      val expected = inc.stitch.polygonalSummary(quarterExtent.toPolygon, MeanVisitor).toOption.get
 
-      result should be (expected)
+      result.mean should be (expected.mean)
     }
 
     it("should get correct mean over a quarter of the extent for MultibandTiles") {
@@ -124,13 +122,13 @@ class MeanSpec extends FunSpec with TestEnvironment with TestFiles {
         totalExtent.xmin + xd / 2,
         totalExtent.ymin + yd / 2
       )
-      val result = multi.polygonalMean(quarterExtent.toPolygon)
-      val expected = multi.stitch.tile.polygonalMean(totalExtent, quarterExtent.toPolygon)
+      val result = multi.polygonalSummaryValue(quarterExtent.toPolygon, MeanVisitor).toOption.get
+      val expected = multi.stitch.polygonalSummary(quarterExtent.toPolygon, MeanVisitor).toOption.get
 
       result.size should be (expected.size)
 
       result zip expected map { case (res, exp) =>
-        res should be (exp)
+        res.mean should be (exp.mean)
       }
     }
   }

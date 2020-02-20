@@ -22,12 +22,12 @@ import geotrellis.raster.merge._
 import geotrellis.raster.prototype._
 import geotrellis.raster.reproject._
 import geotrellis.raster.stitch._
+import geotrellis.layer._
 import geotrellis.spark._
-import geotrellis.spark.tiling._
+import geotrellis.spark.buffer._
 import geotrellis.spark.ingest._
 import geotrellis.proj4._
 import geotrellis.util.MethodExtensions
-
 import org.apache.spark._
 import org.apache.spark.rdd._
 
@@ -36,7 +36,7 @@ import scala.reflect.ClassTag
 
 class TileRDDReprojectMethods[
   K: SpatialComponent: Boundable: ClassTag,
-  V <: CellGrid[Int]: ClassTag: RasterRegionReproject: Stitcher: (? => CropMethods[V]): (? => TileMergeMethods[V]): (? => TilePrototypeMethods[V])
+  V <: CellGrid[Int]: ClassTag: RasterRegionReproject: Stitcher: (* => CropMethods[V]): (* => TileMergeMethods[V]): (* => TilePrototypeMethods[V])
 ](val self: RDD[(K, V)] with Metadata[TileLayerMetadata[K]]) extends MethodExtensions[RDD[(K, V)] with Metadata[TileLayerMetadata[K]]] {
   import Reproject.Options
 

@@ -16,7 +16,7 @@
 
 package geotrellis.spark
 
-import geotrellis.spark.io.kryo.GeoWaveKryoRegistrator
+import geotrellis.spark.store.kryo.GeoWaveKryoRegistrator
 import geotrellis.spark.testkit.TestEnvironment
 
 import org.apache.spark.SparkConf

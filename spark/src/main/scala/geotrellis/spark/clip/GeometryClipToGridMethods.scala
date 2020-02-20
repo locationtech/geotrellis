@@ -17,7 +17,7 @@
 package geotrellis.spark.clip
 
 import geotrellis.spark._
-import geotrellis.spark.tiling.LayoutDefinition
+import geotrellis.layer.{SpatialKey, LayoutDefinition}
 import geotrellis.util.MethodExtensions
 import geotrellis.vector._
 

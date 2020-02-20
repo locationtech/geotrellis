@@ -94,7 +94,7 @@ object MaxN extends Serializable {
       sys.error(s"Not enough values to compute Nth")
     } else {
       val newCellType = rs.map(_.cellType).reduce(_.union(_))
-      val (cols, rows) = rs.head.dimensions
+      val Dimensions(cols, rows) = rs.head.dimensions
       val tile = ArrayTile.alloc(newCellType, cols, rows)
 
       cfor(0)(_ < rows, _ + 1) { row =>

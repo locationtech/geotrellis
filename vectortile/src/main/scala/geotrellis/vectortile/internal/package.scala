@@ -120,12 +120,11 @@ package object internal {
     * }}}
     *
     */
-  private[vectortile] def toProjection(point: (Int, Int), topLeft: Point, resolution: Double): Point = {
+  private[vectortile] def toProjection(point: (Int, Int), topLeft: Point, resolution: Double): Point =
     Point(
       topLeft.x + (resolution * point._1),
       topLeft.y - (resolution * point._2)
     )
-  }
 
   /**
     * Translate [[Point]] coordinates within a CRS to those of a fixed
@@ -136,12 +135,11 @@ package object internal {
     * @param resolution How much of the CRS's units are covered by a single VT grid coordinate.
     * @return Grid coordinates in VectorTile space.
     */
-  private[vectortile] def fromProjection(point: Point, topLeft: Point, resolution: Double): (Int, Int) = {
+  private[vectortile] def fromProjection(point: Point, topLeft: Point, resolution: Double): (Int, Int) =
     (
       ((point.x - topLeft.x) / resolution).toInt,
       ((topLeft.y - point.y) / resolution).toInt
     )
-  }
 
   /** Instance definition of the ProtobufGeom typeclass for Points. */
   private[vectortile] implicit val protoPoint = new ProtobufGeom[Point, MultiPoint] {
@@ -171,17 +169,17 @@ package object internal {
   }
 
   /** Instance definition of the ProtobufGeom typeclass for Lines. */
-  private[vectortile] implicit val protoLine = new ProtobufGeom[Line, MultiLine] {
+  private[vectortile] implicit val protoLine = new ProtobufGeom[LineString, MultiLineString] {
     def fromCommands(
       cmds: Seq[Command],
       topLeft: Point,
       resolution: Double
-    ): Either[Line, MultiLine] = {
-      @tailrec def work(cs: Seq[Command], lines: ListBuffer[Line], cursor: (Int, Int)): ListBuffer[Line] = cs match {
+    ): Either[LineString, MultiLineString] = {
+      @tailrec def work(cs: Seq[Command], lines: ListBuffer[LineString], cursor: (Int, Int)): ListBuffer[LineString] = cs match {
         case MoveTo(p) +: LineTo(ps) +: rest => {
           val points = expand(p ++ ps, cursor)
           val nextCursor: (Int, Int) = points.last
-          val line = Line(points.map(p => toProjection(p, topLeft, resolution)))
+          val line = LineString(points.map(p => toProjection(p, topLeft, resolution)))
 
           work(rest, lines += line, nextCursor)
         }
@@ -189,17 +187,17 @@ package object internal {
         case _ => throw CommandSequenceError("Expected: [ MoveTo(p +: Nil), LineTo(ps), ... ]")
       }
 
-      val lines = work(cmds, new ListBuffer[Line], (0, 0))
+      val lines = work(cmds, new ListBuffer[LineString], (0, 0))
 
-      if (lines.length == 1) Left(lines.head) else Right(MultiLine(lines))
+      if (lines.length == 1) Left(lines.head) else Right(MultiLineString(lines))
     }
 
     def toCommands(
-      line: Either[Line, MultiLine],
+      line: Either[LineString, MultiLineString],
       topLeft: Point,
       resolution: Double
     ): Seq[Command] = {
-      def work(lines: Array[Line]): Seq[Command] = {
+      def work(lines: Array[LineString]): Seq[Command] = {
         var curs: (Int, Int) = (0, 0)
         var buff = new ListBuffer[Command]
 
@@ -210,7 +208,7 @@ package object internal {
           )
 
           /* Find new cursor position */
-          curs = fromProjection(l.last, topLeft, resolution)
+          curs = fromProjection(l.getEndPoint, topLeft, resolution)
 
           buff.appendAll(Seq(MoveTo(Array(diffs.head)), LineTo(diffs.tail)))
         })
@@ -264,13 +262,13 @@ package object internal {
       )
 
       /* Translate a [[Line]] to CRS coordinates */
-      def tr(line: ListBuffer[(Int, Int)]): Line =
-        Line(line.map(p => toProjection(p, topLeft, resolution)))
+      def tr(line: ListBuffer[(Int, Int)]): LineString =
+        LineString(line.map(p => toProjection(p, topLeft, resolution)))
 
       /* Process interior rings */
       var polys = new ListBuffer[Polygon]
       var currL: ListBuffer[(Int,Int)] = lines.head
-      var holes = new ListBuffer[Line]
+      var holes = new ListBuffer[LineString]
 
       lines.tail.foreach({ line =>
         val area = surveyor(line)
@@ -283,7 +281,7 @@ package object internal {
 
           /* Reset the state */
           currL = line
-          holes = new ListBuffer[Line]
+          holes = new ListBuffer[LineString]
         }
       })
 
@@ -298,7 +296,7 @@ package object internal {
       topLeft: Point,
       resolution: Double
     ): Seq[Command] = {
-      def work(polys: Array[Line]): Seq[Command] = {
+      def work(polys: Array[LineString]): Seq[Command] = {
         var curs: (Int, Int) = (0, 0)
         var buff = new ListBuffer[Command]
 

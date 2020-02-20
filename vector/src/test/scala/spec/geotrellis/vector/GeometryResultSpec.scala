@@ -19,44 +19,49 @@ package geotrellis.vector
 import org.scalatest.FunSpec
 import org.scalatest.Matchers
 
-import geotrellis.vector.affine._
+import org.locationtech.jts.geom.util.AffineTransformation
 
 class GeometryResultSpec extends FunSpec with Matchers {
+  val affine = new AffineTransformation
+
   describe("GeometryResult") {
     it("should return Some(Geometry) for intersection") {
-      val p = Polygon(Line(List[(Double,Double)]((0,0),(1,0),(1,1),(0,1),(0,0))))
-      val p2 = p.translate(0.5, 0.5)
+      val p = Polygon(LineString(List[(Double,Double)]((0,0),(1,0),(1,1),(0,1),(0,0))))
+      val p2 = affine.translate(0.5, 0.5).transform(p).asInstanceOf[Polygon]
 
       (p & p2).toGeometry.isDefined should be (true)
     }
 
     it("should return None for empty intersection") {
-      val p = Polygon(Line(List[(Double,Double)]((0,0),(1,0),(1,1),(0,1),(0,0))))
-      val p2 = p.translate(5.0, 5.0)
+      val p = Polygon(LineString(List[(Double,Double)]((0,0),(1,0),(1,1),(0,1),(0,0))))
+      val p2 = affine.translate(5.0, 5.0).transform(p).asInstanceOf[Polygon]
       (p & p2).toGeometry.isDefined should be (false)
     }
 
     it("should use asMultiLine to be able to union over a set of lines") {
-      val lines = 
+      val lines =
         Seq(
-          Line((0,0), (2,2)),
-          Line((1,1), (3,3)),
-          Line((0,2), (2,0))
+          LineString((0.0,0.0), (2.0,2.0)),
+          LineString((1.0,1.0), (3.0,3.0)),
+          LineString((0.0,2.0), (2.0,0.0))
         )
 
-      val result = 
-        lines.foldLeft(None: Option[MultiLine]) { (union, line) =>
+      val result =
+        lines.foldLeft(None: Option[MultiLineString]) { (union, line) =>
           union match {
-            case Some(l1) => (l1 | line).asMultiLine
-            case None => Some(MultiLine(line))
+            case Some(l1) => (l1 | line).asMultiLineString
+            case None => Some(MultiLineString(line))
           }
         }
       result.isDefined should be (true)
-      result.get should be (
-        MultiLine(
-          Line((0,0), (3,3)),
-          Line((0,2), (2,0))
-        )
+      result.get.normalized should be (
+        MultiLineString(
+          LineString((0.0,0.0), (1.0,1.0)),
+          LineString((1.0,1.0), (2.0,2.0)),
+          LineString((2.0,2.0), (3.0,3.0)),
+          LineString((0.0,2.0), (1.0,1.0)),
+          LineString((1.0,1.0), (2.0,0.0))
+        ).normalized
       )
     }
   }

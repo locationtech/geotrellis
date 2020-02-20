@@ -53,8 +53,10 @@ object CroppedTile {
 /**
   * The [[CroppedTile]] type.
   */
-case class CroppedTile(sourceTile: Tile,
-                       override val gridBounds: GridBounds[Int]) extends Tile {
+case class CroppedTile(
+  sourceTile: Tile,
+  gridBounds: GridBounds[Int]
+) extends Tile {
 
   val cols = gridBounds.width
   val rows = gridBounds.height
@@ -138,9 +140,6 @@ case class CroppedTile(sourceTile: Tile,
     * @return  An MutableArrayTile
     */
   def mutable(targetCellType: CellType): MutableArrayTile = {
-    if(targetCellType.isFloatingPoint != cellType.isFloatingPoint)
-      logger.warn(s"Conversion from $cellType to $targetCellType may lead to data loss.")
-
     val tile = ArrayTile.alloc(targetCellType, cols, rows)
 
     if(!cellType.isFloatingPoint) {

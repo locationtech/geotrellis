@@ -72,7 +72,7 @@ object BoundaryDelaunay {
 
       !valid || {
         val ppd = new PointPairDistance
-        DistanceToPoint.computeDistance(extent.toPolygon.jtsGeom, center, ppd)
+        DistanceToPoint.computeDistance(extent.toPolygon, center, ppd)
         ppd.getDistance < radius
       }
     }
@@ -360,7 +360,7 @@ case class BoundaryDelaunay(
   isLinear: Boolean
 ) extends Serializable {
   def trianglesFromVertices: MultiPolygon = {
-    val indexToCoord = { i: Int => Point.jtsCoord2Point(pointSet.getCoordinate(i)) }
+    val indexToCoord = { i: Int => Point(pointSet.getCoordinate(i)) }
     geotrellis.vector.MultiPolygon(
       triangleMap
         .triangleVertices
@@ -371,7 +371,7 @@ case class BoundaryDelaunay(
   }
 
   def trianglesFromEdges: MultiPolygon = {
-    val indexToCoord = { i: Int => Point.jtsCoord2Point(pointSet.getCoordinate(i)) }
+    val indexToCoord = { i: Int => Point(pointSet.getCoordinate(i)) }
     import halfEdgeTable._
     geotrellis.vector.MultiPolygon(
       triangleMap
@@ -382,7 +382,7 @@ case class BoundaryDelaunay(
     )
   }
   def writeWkt(wktFile: String) = {
-    val indexToCoord = { i: Int => Point.jtsCoord2Point(pointSet.getCoordinate(i)) }
+    val indexToCoord = { i: Int => Point(pointSet.getCoordinate(i)) }
     val mp = geotrellis.vector.MultiPolygon(triangleMap.triangleVertices.map{ case (i,j,k) => Polygon(indexToCoord(i), indexToCoord(j), indexToCoord(k), indexToCoord(i)) })
     val wktString = geotrellis.vector.io.wkt.WKT.write(mp)
     new java.io.PrintWriter(wktFile) { write(wktString); close }

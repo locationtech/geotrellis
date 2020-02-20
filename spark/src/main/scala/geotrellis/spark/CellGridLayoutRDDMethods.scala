@@ -17,14 +17,13 @@
 package geotrellis.spark
 
 import geotrellis.raster._
-import geotrellis.spark.tiling.LayoutDefinition
+import geotrellis.layer._
 import geotrellis.util._
-
 import org.apache.spark.rdd._
 
 import scala.reflect.ClassTag
 
-abstract class CellGridLayoutRDDMethods[K: SpatialComponent: ClassTag, V <: CellGrid[Int], M: GetComponent[?, LayoutDefinition]]
+abstract class CellGridLayoutRDDMethods[K: SpatialComponent: ClassTag, V <: CellGrid[Int], M: GetComponent[*, LayoutDefinition]]
     extends MethodExtensions[RDD[(K, V)] with Metadata[M]] {
   def asRasters(): RDD[(K, Raster[V])] = {
     val layout = self.metadata.getComponent[LayoutDefinition]

@@ -1,77 +1,26 @@
+/*
+ * Copyright 2019 Azavea
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package geotrellis.doc.examples.distance
 
 object ClipToGridExamples {
-  def `Performing a polygonal sum from an RDD of Polygons to GeoTiffs on S3`: Unit = {
-    import geotrellis.raster._
-    import geotrellis.spark._
-    import geotrellis.spark.tiling._
-    import geotrellis.vector._
-
-    import org.apache.spark.HashPartitioner
-    import org.apache.spark.rdd.RDD
-
-    import java.net.URI
-    import java.util.UUID
-
-    // The extends of the GeoTiffs, along with the URIs
-    val geoTiffUris: RDD[Feature[Polygon, URI]] = ???
-    val polygons: RDD[Feature[Polygon, UUID]] = ???
-
-    // Choosing the appropriately resolute layout for the data is here considered a client concern.
-    val layout: LayoutDefinition = ???
-
-    // Abbreviation for the code to read the window of the GeoTiff off of S3
-    def read(uri: URI, window: Extent): Raster[Tile] = ???
-
-    val groupedPolys: RDD[(SpatialKey, Iterable[MultiPolygonFeature[UUID]])] =
-      polygons
-        .clipToGrid(layout)
-        .flatMap { case (key, feature) =>
-          val mpFeature: Option[MultiPolygonFeature[UUID]] =
-            feature.geom match {
-              case p: Polygon => Some(feature.mapGeom(_ => MultiPolygon(p)))
-              case mp: MultiPolygon => Some(feature.mapGeom(_ => mp))
-              case _ => None
-            }
-          mpFeature.map { mp => (key, mp) }
-        }
-        .groupByKey(new HashPartitioner(1000))
-
-    val rastersToKeys: RDD[(SpatialKey, URI)] =
-      geoTiffUris
-        .clipToGrid(layout)
-        .flatMap { case (key, feature) =>
-          // Filter out any non-polygonal intersections.
-          // Also, we will do the window read from the SpatialKey extent, so throw out polygon.
-          feature.geom match {
-            case p: Polygon => Some((key, feature.data))
-            case mp: MultiPolygon => Some((key, feature.data))
-            case _ => None
-          }
-        }
-
-    val joined: RDD[(SpatialKey, (Iterable[MultiPolygonFeature[UUID]], URI))] =
-      groupedPolys
-        .join(rastersToKeys)
-
-    val totals: Map[UUID, Long] =
-      joined
-        .flatMap { case (key, (features, uri)) =>
-          val raster = read(uri, layout.mapTransform.keyToExtent(key))
-
-          features.map { case Feature(mp, uuid) =>
-            (uuid, raster.tile.polygonalSum(raster.extent, mp).toLong)
-          }
-        }
-        .reduceByKey(_ + _)
-        .collect
-        .toMap
-  }
-
   def `Performing a count of points that lie in regular polygon grid`: Unit = {
     import geotrellis.raster._
+    import geotrellis.layer.{SpatialKey, LayoutDefinition}
     import geotrellis.spark._
-    import geotrellis.spark.tiling._
     import geotrellis.vector._
 
     import org.apache.spark.HashPartitioner
@@ -93,7 +42,7 @@ object ClipToGridExamples {
     val (extent, totalHeight, totalWidth, totalCount) =
       squareGridRdd
         .map { poly =>
-          val e = poly.envelope
+          val e = poly.extent
           (e, e.height, e.width, 1)
         }
         .reduce { case ((extent1, height1, width1, count1), (extent2, height2, width2, count2)) =>

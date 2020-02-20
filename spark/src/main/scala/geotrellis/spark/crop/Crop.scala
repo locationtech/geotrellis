@@ -19,18 +19,17 @@ package geotrellis.spark.crop
 import geotrellis.raster._
 import geotrellis.raster.crop.TileCropMethods
 import geotrellis.raster.crop.Crop.Options
+import geotrellis.layer._
 import geotrellis.spark._
-import geotrellis.spark.tiling.LayoutDefinition
 import geotrellis.util._
 import geotrellis.vector.Extent
-
 import org.apache.spark.rdd._
 
 object Crop {
   def apply[
     K: SpatialComponent,
-    V <: CellGrid[Int]: (? => TileCropMethods[V]),
-    M: Component[?, Bounds[K]]: GetComponent[?, Extent]: GetComponent[?, LayoutDefinition]
+    V <: CellGrid[Int]: (* => TileCropMethods[V]),
+    M: Component[*, Bounds[K]]: GetComponent[*, Extent]: GetComponent[*, LayoutDefinition]
   ](rdd: RDD[(K, V)] with Metadata[M], extent: Extent, options: Options): RDD[(K, V)] with Metadata[M] =
     rdd.metadata.getComponent[Extent].intersection(extent) match {
       case Some(intersectionExtent) =>

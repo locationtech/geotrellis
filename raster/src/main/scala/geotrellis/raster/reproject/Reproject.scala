@@ -17,7 +17,7 @@
 package geotrellis.raster.reproject
 
 import geotrellis.raster._
-import geotrellis.raster.resample._
+import geotrellis.raster.resample.ResampleMethod
 
 object Reproject {
   /** Reprojection options.
@@ -33,7 +33,7 @@ object Reproject {
     *
     */
   case class Options(
-    method: ResampleMethod = NearestNeighbor,
+    method: ResampleMethod = ResampleMethods.NearestNeighbor,
     errorThreshold: Double = 0.125,
     parentGridExtent: Option[GridExtent[Long]] = None,
     targetRasterExtent: Option[RasterExtent] = None,

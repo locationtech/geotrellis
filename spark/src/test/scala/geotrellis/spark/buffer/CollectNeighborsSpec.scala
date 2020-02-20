@@ -16,16 +16,16 @@
 
 package geotrellis.spark.buffer
 
-import geotrellis.spark._
-import geotrellis.spark.io._
+import geotrellis.layer._
+import geotrellis.raster.buffer.Direction
+import geotrellis.raster.buffer.Direction._
 import geotrellis.raster.io.geotiff.SinglebandGeoTiff
+import geotrellis.spark._
+import geotrellis.spark.store._
 import geotrellis.spark.testkit._
 
 import org.apache.spark.rdd.RDD
-
 import org.scalatest.FunSpec
-
-import Direction._
 
 class CollectNeighborsSpec extends FunSpec with TestEnvironment {
 

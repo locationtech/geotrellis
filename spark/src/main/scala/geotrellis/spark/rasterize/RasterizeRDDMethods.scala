@@ -18,11 +18,11 @@ package geotrellis.spark.rasterize
 
 import geotrellis.raster._
 import geotrellis.raster.rasterize._
+import geotrellis.layer._
 import geotrellis.spark._
-import geotrellis.spark.tiling._
 import geotrellis.spark.rasterize._
 import geotrellis.util.MethodExtensions
-import geotrellis.vector.{Geometry, Feature}
+import geotrellis.vector.{Feature, Geometry}
 import org.apache.spark._
 import org.apache.spark.rdd._
 

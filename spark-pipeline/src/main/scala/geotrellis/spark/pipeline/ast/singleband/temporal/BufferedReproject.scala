@@ -19,6 +19,7 @@ package geotrellis.spark.pipeline.ast.singleband.temporal
 import io.circe.syntax._
 
 import geotrellis.raster._
+import geotrellis.layer.SpaceTimeKey
 import geotrellis.spark._
 import geotrellis.spark.pipeline.ast._
 import geotrellis.spark.pipeline.json.transform

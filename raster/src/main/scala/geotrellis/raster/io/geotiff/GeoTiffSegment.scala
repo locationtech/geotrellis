@@ -48,16 +48,20 @@ trait GeoTiffSegment {
   def convert(cellType: CellType): Array[Byte] =
     cellType match {
       case BitCellType =>
-        val bs = new BitSet(size)
-        cfor(0)(_ < size, _ + 1) { i => if ((getInt(i) & 1) == 0) { bs.set(i) } }
-        bs.toByteArray()
+        val dsize = (size + 7) / 8
+        val arr = Array.ofDim[Byte](dsize)
+        cfor(0)(_ < size, _ + 1) { i => BitArrayTile.update(arr, i, getInt(i))  }
+        // Our BitCellType rasters have the bits encoded in a order inside of each byte that is
+        // the reverse of what a GeoTiff wants.
+        cfor(0)(_ < dsize, _ + 1) { i => arr(i) = invertByte(arr(i)) }
+        arr
       case ByteCellType =>
         val arr = Array.ofDim[Byte](size)
-        cfor(0)(_ < size, _ + 1) { i => getInt(i).toByte }
+        cfor(0)(_ < size, _ + 1) { i => arr(i) = getInt(i).toByte }
         arr
       case UByteCellType =>
         val arr = Array.ofDim[Byte](size)
-        cfor(0)(_ < size, _ + 1) { i => i2ub(getInt(i)) }
+        cfor(0)(_ < size, _ + 1) { i => arr(i) = i2ub(getInt(i)) }
         arr
       case ShortCellType =>
         val arr = Array.ofDim[Short](size)
@@ -221,7 +225,9 @@ object GeoTiffSegment {
     * @param bandCount Number of bit interleaved into each pixel
     */
   private[raster]
-  def deinterleaveBitSegment(segment: GeoTiffSegment, cols: Int, rows: Int, bandCount: Int): Array[Array[Byte]] = {
+  def deinterleaveBitSegment(segment: GeoTiffSegment, dims: Dimensions[Int], bandCount: Int): Array[Array[Byte]] = {
+    val cols = dims.cols
+    val rows = dims.rows
     val paddedCols = {
       val bytesWidth = (cols + 7) / 8
       bytesWidth * 8
@@ -252,11 +258,13 @@ object GeoTiffSegment {
   }
 
   private[raster]
-  def deinterleaveBitSegment(segment: GeoTiffSegment, cols: Int, rows: Int, bandCount: Int, index: Int): Array[Byte] =
-    deinterleaveBitSegment(segment, cols, rows, bandCount, index :: Nil).head
+  def deinterleaveBitSegment(segment: GeoTiffSegment, dims: Dimensions[Int], bandCount: Int, index: Int): Array[Byte] =
+    deinterleaveBitSegment(segment, dims, bandCount, index :: Nil).head
 
   private[raster]
-  def deinterleaveBitSegment(segment: GeoTiffSegment, cols: Int, rows: Int, bandCount: Int, indices: Traversable[Int]): Array[Array[Byte]] = {
+  def deinterleaveBitSegment(segment: GeoTiffSegment, dims: Dimensions[Int], bandCount: Int, indices: Traversable[Int]): Array[Array[Byte]] = {
+    val cols = dims.cols
+    val rows = dims.rows
     val paddedCols = {
       val bytesWidth = (cols + 7) / 8
       bytesWidth * 8

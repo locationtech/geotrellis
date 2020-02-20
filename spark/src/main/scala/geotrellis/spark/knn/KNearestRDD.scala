@@ -94,7 +94,7 @@ object KNearestRDD {
       implicit val ord = new Ord[G](h(center), g)
       BoundedPriorityQueue[G](k)
     }
-    def zipWith[A, T](l: Seq[A], r: Seq[A])(f: (A, A) => T): Seq[T] = {
+    def zipWith[A, T](l: List[A], r: List[A])(f: (A, A) => T): List[T] = {
       (l, r) match {
         case (Nil, _) => Nil
         case (_, Nil) => Nil
@@ -109,8 +109,7 @@ object KNearestRDD {
       result
     }
 
-    val result = rdd.aggregate(zero)({ (bpqs, toAdd) => bpqs.map { _ += toAdd } }, { (a, b) => zipWith(a.toSeq, b.toSeq)(merge).toTraversable })
+    val result = rdd.aggregate(zero)({ (bpqs, toAdd) => bpqs.map { _ += toAdd } }, { (a, b) => zipWith(a.toList, b.toList)(merge).toTraversable })
     result.map(_.iterator.asScala.toList).toList
   }
 }
-

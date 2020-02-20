@@ -19,6 +19,7 @@ package geotrellis.spark.testkit
 import org.scalatest._
 import geotrellis.raster._
 import geotrellis.raster.testkit._
+import geotrellis.layer.{SpatialKey, SpaceTimeKey}
 import geotrellis.spark._
 import org.apache.spark.rdd._
 

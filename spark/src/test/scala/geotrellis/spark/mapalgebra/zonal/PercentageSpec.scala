@@ -16,15 +16,15 @@
 
 package geotrellis.spark.mapalgebra.zonal
 
-import Implicits._
+import geotrellis.layer._
 import geotrellis.spark._
-import geotrellis.spark.io.hadoop._
+import geotrellis.spark.tiling._
+import geotrellis.spark.store.hadoop._
 import geotrellis.spark.testkit.testfiles._
 import geotrellis.spark.testkit._
 
 import geotrellis.raster._
 import geotrellis.raster.stitch._
-import geotrellis.raster.mapalgebra.zonal._
 
 import geotrellis.vector._
 
@@ -85,7 +85,5 @@ class PercentageSpec extends FunSpec with TestEnvironment with TestFiles {
         }
       }
     }
-
   }
-
 }

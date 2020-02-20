@@ -18,6 +18,7 @@ package geotrellis.vector.reproject
 
 import geotrellis.proj4._
 import geotrellis.vector._
+import org.locationtech.jts.geom._
 
 object Implicits extends Implicits
 
@@ -38,14 +39,14 @@ trait Implicits {
     def reproject(transform: Transform): PointFeature[D] = Reproject.pointFeature(pf, transform)
   }
 
-  implicit class ReprojectLine(l: Line) {
-    def reproject(src: CRS, dest: CRS): Line = Reproject(l, src, dest)
-    def reproject(transform: Transform): Line = Reproject(l, transform)
+  implicit class ReprojectLineString(l: LineString) {
+    def reproject(src: CRS, dest: CRS): LineString = Reproject(l, src, dest)
+    def reproject(transform: Transform): LineString = Reproject(l, transform)
   }
 
-  implicit class ReprojectLineFeature[D](lf: LineFeature[D]) {
-    def reproject(src: CRS, dest: CRS): LineFeature[D] = Reproject.lineFeature(lf, src, dest)
-    def reproject(transform: Transform): LineFeature[D] = Reproject.lineFeature(lf, transform)
+  implicit class ReprojectLineStringFeature[D](lf: LineStringFeature[D]) {
+    def reproject(src: CRS, dest: CRS): LineStringFeature[D] = Reproject.lineStringFeature(lf, src, dest)
+    def reproject(transform: Transform): LineStringFeature[D] = Reproject.lineStringFeature(lf, transform)
   }
 
   implicit class ReprojectPolygon(p: Polygon) {
@@ -55,7 +56,7 @@ trait Implicits {
 
   implicit class ReprojectExtent(e: Extent) {
     def reproject(src: CRS, dest: CRS): Extent = Reproject(e, src, dest)
-    def reproject(transform: Transform): Extent = Reproject(e, transform).envelope
+    def reproject(transform: Transform): Extent = Reproject(e, transform)
     def reprojectAsPolygon(src: CRS, dest: CRS, relErr: Double): Polygon = e.reprojectAsPolygon(Transform(src, dest), relErr)
     def reprojectAsPolygon(transform: Transform, relErr: Double): Polygon = Reproject.reprojectExtentAsPolygon(e, transform, relErr)
   }
@@ -75,14 +76,14 @@ trait Implicits {
     def reproject(transform: Transform): MultiPointFeature[D] = Reproject.multiPointFeature(mpf, transform)
   }
 
-  implicit class ReprojectMutliLine(ml: MultiLine) {
-    def reproject(src: CRS, dest: CRS): MultiLine = Reproject(ml, src, dest)
-    def reproject(transform: Transform): MultiLine = Reproject(ml, transform)
+  implicit class ReprojectMutliLineString(ml: MultiLineString) {
+    def reproject(src: CRS, dest: CRS): MultiLineString = Reproject(ml, src, dest)
+    def reproject(transform: Transform): MultiLineString = Reproject(ml, transform)
   }
 
-  implicit class ReprojectMutliLineFeature[D](mlf: MultiLineFeature[D]) {
-    def reproject(src: CRS, dest: CRS): MultiLineFeature[D] = Reproject.multiLineFeature(mlf, src, dest)
-    def reproject(transform: Transform): MultiLineFeature[D] = Reproject.multiLineFeature(mlf, transform)
+  implicit class ReprojectMutliLineStringFeature[D](mlf: MultiLineStringFeature[D]) {
+    def reproject(src: CRS, dest: CRS): MultiLineStringFeature[D] = Reproject.multiLineStringFeature(mlf, src, dest)
+    def reproject(transform: Transform): MultiLineStringFeature[D] = Reproject.multiLineStringFeature(mlf, transform)
   }
 
   implicit class ReprojectMutliPolygon(mp: MultiPolygon) {

@@ -19,7 +19,7 @@ package geotrellis.spark.knn
 import scala.collection.immutable.Map
 
 import geotrellis.util.MethodExtensions
-import geotrellis.vector.{Extent, Point, Geometry, Feature}
+import geotrellis.vector._
 
 import org.apache.spark.rdd.RDD
 
@@ -33,11 +33,11 @@ trait KNearestMethods[T] extends MethodExtensions[RDD[T]] {
   def kNearest(ex: Extent, k: Int)(f: T => Geometry): Seq[T] = { KNearestRDD.kNearest[T](self, ex, k)(f) }
 
   def kNearest[H <: Geometry](centers: Traversable[H], k: Int)(f: T => Geometry): Seq[Seq[T]] = {
-    KNearestRDD.kNearest[T, H](self, centers, k)(f, _.envelope)
+    KNearestRDD.kNearest[T, H](self, centers, k)(f, {g => Extent(g.getEnvelopeInternal)})
   }
 
   def kNearest[H <: Geometry, F](centers: Traversable[Feature[H, F]], k: Int)(f: T => Geometry)(implicit d: DummyImplicit): Seq[Seq[T]] = {
-    KNearestRDD.kNearest[T, Feature[H, F]](self, centers, k)(f, _.geom.envelope)
+    KNearestRDD.kNearest[T, Feature[H, F]](self, centers, k)(f, {f => Extent(f.geom.getEnvelopeInternal)})
   }
 }
 
@@ -60,16 +60,16 @@ trait KNearestGeometryMethods[G <: Geometry] extends MethodExtensions[RDD[G]] {
 }
 
 trait KNearestFeatureMethods[G <: Geometry, D] extends MethodExtensions[RDD[Feature[G, D]]] {
-  def kNearest(x: Double, y: Double, k: Int): Seq[Feature[G, D]] = 
+  def kNearest(x: Double, y: Double, k: Int): Seq[Feature[G, D]] =
     KNearestRDD.kNearest[Feature[G, D]](self, x, y, k){ g: Feature[G, D] => g.geom }
 
-  def kNearest(p: (Double, Double), k: Int): Seq[Feature[G, D]] = 
+  def kNearest(p: (Double, Double), k: Int): Seq[Feature[G, D]] =
     KNearestRDD.kNearest[Feature[G, D]](self, p, k){ g: Feature[G, D] => g.geom }
 
-  def kNearest(p: Point, k: Int): Seq[Feature[G, D]] = 
+  def kNearest(p: Point, k: Int): Seq[Feature[G, D]] =
     KNearestRDD.kNearest[Feature[G, D]](self, p, k){ g: Feature[G, D] => g.geom }
 
-  def kNearest(ex: Extent, k: Int): Seq[Feature[G, D]] = 
+  def kNearest(ex: Extent, k: Int): Seq[Feature[G, D]] =
     KNearestRDD.kNearest[Feature[G, D]](self, ex, k){ g: Feature[G, D] => g.geom }
 
   def kNearest[H <: Geometry](centers: Traversable[H], k: Int): Seq[Seq[Feature[G, D]]] = {

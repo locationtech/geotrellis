@@ -16,12 +16,10 @@
 
 package geotrellis.raster
 
-import com.typesafe.scalalogging.LazyLogging
-
 /**
   * Base trait for a Tile.
   */
-trait Tile extends CellGrid[Int] with IterableTile with MappableTile[Tile] with LazyLogging {
+abstract class Tile extends CellGrid[Int] with IterableTile with MappableTile[Tile] {
   /**
     * Execute a function at each pixel of a [[Tile]].  Two functions
     * are given: an integer version which is used if the tile is an

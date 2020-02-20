@@ -21,17 +21,9 @@ import geotrellis.raster.{CellGrid, MultibandTile, Raster, Tile}
 object Implicits extends Implicits
 
 trait Implicits {
-  implicit class withTransformTileMethods(val self: Tile) extends TransformTileMethods
+  implicit class withTileTransformMethods(val self: Tile) extends TransformTileMethods
+  implicit class withMultibandTileTransformTileMethods(val self: MultibandTile) extends MultibandTileTransformMethods
 
-  implicit class withTransformMultibandTileMethods(val self: MultibandTile) extends TransformMethods[MultibandTile] {
-    def rotate90(n: Int = 1): MultibandTile = self.mapBands { (_, tile) => tile.rotate90(n) }
-    def flipVertical: MultibandTile = self.mapBands { (_, tile) => tile.flipVertical }
-    def flipHorizontal: MultibandTile = self.mapBands { (_, tile) => tile.flipHorizontal }
-  }
-
-  implicit class withTransformRasterMethods[T <: CellGrid[Int]: ? => TransformMethods[T]](val self: Raster[T]) extends TransformMethods[Raster[T]] {
-    def rotate90(n: Int = 1): Raster[T] = Raster(self.tile.rotate90(n), self.extent)
-    def flipVertical: Raster[T] = Raster(self.tile.flipVertical, self.extent)
-    def flipHorizontal: Raster[T] = Raster(self.tile.flipHorizontal, self.extent)
-  }
+  implicit class withSinglebandRasterTransformMethods(val self: Raster[Tile]) extends SinglebandRasterTransformMethods
+  implicit class withMultibandRasterTransformMethods(val self: Raster[MultibandTile]) extends MultibandRasterTransformMethods
 }

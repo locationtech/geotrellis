@@ -16,7 +16,7 @@
 
 package geotrellis.vector.interpolation
 
-import geotrellis.vector.Point
+import geotrellis.vector._
 import spire.syntax.cfor._
 
 object InterpolationVector {

@@ -171,7 +171,10 @@ class CassandraIndexStrategySpec extends FunSpec with Matchers with CassandraTes
 
       val allTiles = tiles.parSequence
 
-      allTiles.unsafeRunSync()
+      allTiles
+        .attempt
+        .unsafeRunSync()
+        .valueOr(throw _)
 
       () //don't care about results... minimize heap churn
     }
@@ -184,7 +187,10 @@ class CassandraIndexStrategySpec extends FunSpec with Matchers with CassandraTes
 
       val allTiles = tiles.parSequence
 
-      allTiles.unsafeRunSync()
+      allTiles
+        .attempt
+        .unsafeRunSync()
+        .valueOr(throw _)
 
       () //don't care about results... minimize heap churn
     }

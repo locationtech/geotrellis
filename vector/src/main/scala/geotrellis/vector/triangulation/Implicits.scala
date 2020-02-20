@@ -16,9 +16,7 @@
 
 package geotrellis.vector.triangulation
 
-import org.locationtech.jts.geom.Coordinate
-
-import geotrellis.vector.MultiPoint
+import org.locationtech.jts.geom.{Coordinate, MultiPoint}
 
 object Implicits extends Implicits
 

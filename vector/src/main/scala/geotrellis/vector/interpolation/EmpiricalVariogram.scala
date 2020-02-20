@@ -199,9 +199,10 @@ object LinearEmpiricalVariogram {
         val lowerLimit: Double =
           (Math.floor(dmax / lag).toInt * lag) + 1
 
-        (0.0 to lowerLimit by lag).toList
-          .zip((lag to (lowerLimit + lag) by lag) toList)
-          .map{ case(start, end) => Bucket(start, end) }
+        (BigDecimal(0) to lowerLimit by lag)
+          .zip((BigDecimal(lag) to (lowerLimit + lag) by lag))
+          .map{ case(start, end) => Bucket(start.toDouble, end.toDouble) }
+          .toList
       }
 
     // populate the buckets

@@ -18,7 +18,7 @@ package geotrellis.spark.clip
 
 import geotrellis.raster.GridBounds
 import geotrellis.spark._
-import geotrellis.spark.tiling._
+import geotrellis.layer._
 import geotrellis.util._
 import geotrellis.vector._
 
@@ -78,7 +78,7 @@ object ClipToGrid {
     if(preds.covers(e)) { Some(Feature(e, feature.data)) }
     else if(preds.coveredBy(e)) { Some(feature) }
     else {
-      feature.geom.intersection(e).toGeometry.map { g =>
+      (feature.geom & e).toGeometry.map { g =>
         Feature(g, feature.data)
       }
     }
@@ -155,19 +155,19 @@ object ClipToGrid {
 
     def preparedPredicates(pg: PreparedGeometry) =
       new Predicates {
-        def covers(e: Extent) = pg.covers(e.toPolygon.jtsGeom)
+        def covers(e: Extent) = pg.covers(e.toPolygon)
         def coveredBy(e: Extent) = keys.size < 2
       }
 
     lazy val polyPredicates =
       new Predicates {
-        def covers(e: Extent) = feature.geom.jtsGeom.covers(e.toPolygon.jtsGeom)
+        def covers(e: Extent) = feature.geom.covers(e.toPolygon)
         def coveredBy(e: Extent) = keys.size < 2
       }
 
     lazy val gcPredicates =
       new Predicates {
-        def covers(e: Extent) = feature.geom.jtsGeom.covers(e.toPolygon.jtsGeom)
+        def covers(e: Extent) = feature.geom.covers(e.toPolygon)
         def coveredBy(e: Extent) = keys.size < 2
       }
 
@@ -183,18 +183,18 @@ object ClipToGrid {
     val iterator: Iterator[(SpatialKey, Feature[Geometry, D])] = {
       feature.geom match {
         /* Points will always exist inside their Extent */
-        case p:  Point      => keys.iterator.map(k => (k, feature))
-        case mp: MultiPoint => keys.iterator.flatMap(k => clipToKey(k, mpOrLinePredicates))
-        case l:  Line       => keys.iterator.flatMap(k => clipToKey(k, mpOrLinePredicates))
-        case ml: MultiLine  => keys.iterator.flatMap(k => clipToKey(k, mpOrLinePredicates))
+        case p:  Point           => keys.iterator.map(k => (k, feature))
+        case mp: MultiPoint      => keys.iterator.flatMap(k => clipToKey(k, mpOrLinePredicates))
+        case l:  LineString      => keys.iterator.flatMap(k => clipToKey(k, mpOrLinePredicates))
+        case ml: MultiLineString => keys.iterator.flatMap(k => clipToKey(k, mpOrLinePredicates))
         case p:  Polygon if keys.size > 10 =>
-          val pg = PreparedGeometryFactory.prepare(p.jtsGeom)
+          val pg = PreparedGeometryFactory.prepare(p)
           val preds = preparedPredicates(pg)
 
           keys.iterator.flatMap(k => clipToKey(k, preds))
-        case p:  Polygon => keys.iterator.flatMap(k => clipToKey(k, polyPredicates))
+        case p:  Polygon         => keys.iterator.flatMap(k => clipToKey(k, polyPredicates))
         case mp: MultiPolygon if keys.size > 10 =>
-          val pg = PreparedGeometryFactory.prepare(mp.jtsGeom)
+          val pg = PreparedGeometryFactory.prepare(mp)
           val preds = preparedPredicates(pg)
 
           keys.iterator.flatMap(k => clipToKey(k, preds))

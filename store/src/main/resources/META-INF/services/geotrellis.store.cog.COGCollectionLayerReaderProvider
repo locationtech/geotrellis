@@ -1,0 +1,2 @@
+geotrellis.store.file.cog.FileCOGCollectionLayerProvider
+geotrellis.store.hadoop.cog.HadoopCOGCollectionLayerProvider

@@ -26,7 +26,7 @@ package geotrellis.raster
  *
  * @since 8/22/18
  */
-trait DelegatingTile extends Tile {
+abstract class DelegatingTile extends Tile {
   protected def delegate: Tile
 
   def cellType: CellType =

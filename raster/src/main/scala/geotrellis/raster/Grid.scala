@@ -23,6 +23,5 @@ abstract class Grid[N: Integral] extends Serializable {
   def cols: N
   def rows: N
   def size: N = cols * rows
-  def dimensions: (N, N) = (cols, rows)
-  def gridBounds: GridBounds[N] = GridBounds(0, 0, cols - 1, rows - 1)
+  def dimensions: Dimensions[N] = Dimensions(cols, rows)
 }

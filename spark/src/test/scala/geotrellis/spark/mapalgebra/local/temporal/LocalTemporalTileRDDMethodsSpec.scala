@@ -18,6 +18,7 @@ package geotrellis.spark.mapalgebra.local.temporal
 
 import geotrellis.raster._
 import geotrellis.raster.mapalgebra.local._
+import geotrellis.layer._
 import geotrellis.spark._
 import geotrellis.util._
 import geotrellis.spark.testkit._

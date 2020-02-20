@@ -16,13 +16,15 @@
 
 package geotrellis.raster.io.geotiff
 
+import geotrellis.raster.Dimensions
+
 trait BitGeoTiffSegmentCollection extends GeoTiffSegmentCollection { self: GeoTiffSegmentLayoutTransform =>
   type T = BitGeoTiffSegment
 
   val bandType = BitBandType
 
   lazy val decompressGeoTiffSegment = { (i: Int, bytes: Array[Byte]) =>
-    val (_, segmentRows) = getSegmentDimensions(i)
+    val Dimensions(_, segmentRows) = getSegmentDimensions(i)
 
     val cols = {
       val c = segmentLayout.tileLayout.tileCols

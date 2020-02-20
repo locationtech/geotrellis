@@ -16,13 +16,13 @@
 
 package geotrellis.spark.costdistance
 
+import geotrellis.layer.TileLayerMetadata
 import geotrellis.proj4.LatLng
 import geotrellis.raster._
+import geotrellis.layer._
 import geotrellis.spark._
 import geotrellis.spark.testkit.TestEnvironment
-import geotrellis.spark.tiling.LayoutDefinition
 import geotrellis.vector._
-
 import org.scalatest._
 
 
@@ -104,7 +104,7 @@ class IterativeCostDistanceSpec extends FunSpec
       val resolution = IterativeCostDistance.computeResolution(rdd3)
       val hops = (up.getDouble(2,3) - down.getDouble(2,3)) / resolution
 
-      hops should be (5.0)
+      hops should be (5.0 +- 1e-10)
     }
 
     it("Should propogate down") {
@@ -114,7 +114,7 @@ class IterativeCostDistanceSpec extends FunSpec
       val resolution = IterativeCostDistance.computeResolution(rdd3)
       val hops = (up.getDouble(2,1) - down.getDouble(2,1)) / resolution
 
-      hops should be (5.0)
+      hops should be (5.0 +- 1e-10)
     }
 
   }

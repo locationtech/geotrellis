@@ -20,20 +20,20 @@ import org.locationtech.jts.geom.Coordinate
 import org.apache.spark.rdd.RDD
 
 import geotrellis.raster._
+import geotrellis.layer._
 import geotrellis.spark._
-import geotrellis.spark.tiling._
 import geotrellis.util.MethodExtensions
-import geotrellis.vector.{Extent, MultiPoint, Point}
+import geotrellis.vector._
 
 trait EuclideanDistanceRDDMethods extends MethodExtensions[RDD[(SpatialKey, Array[Coordinate])]] {
   def euclideanDistance(layout: LayoutDefinition): RDD[(SpatialKey, Tile)] = { EuclideanDistance(self, layout) }
 }
 
 trait EuclideanDistancePointRDDMethods extends MethodExtensions[RDD[(SpatialKey, Array[Point])]] {
-  def euclideanDistance(layout: LayoutDefinition): RDD[(SpatialKey, Tile)] = { EuclideanDistance(self.mapValues(_.map(_.jtsGeom.getCoordinate)), layout) }
+  def euclideanDistance(layout: LayoutDefinition): RDD[(SpatialKey, Tile)] = { EuclideanDistance(self.mapValues(_.map(_.getCoordinate)), layout) }
 }
 
 trait EuclideanDistanceMultiPointRDDMethods extends MethodExtensions[RDD[(SpatialKey, MultiPoint)]] {
   def euclideanDistance(layout: LayoutDefinition): RDD[(SpatialKey, Tile)] =
-    EuclideanDistance(self.mapValues(_.points.map(_.jtsGeom.getCoordinate)), layout) 
+    EuclideanDistance(self.mapValues(_.points.map(_.getCoordinate)), layout)
 }

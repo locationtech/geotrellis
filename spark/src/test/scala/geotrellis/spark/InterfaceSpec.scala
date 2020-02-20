@@ -16,10 +16,11 @@
 
 package geotrellis.spark
 
-import geotrellis.spark.io._
-import geotrellis.spark.io.avro.codecs._
-import geotrellis.spark.io.json._
+import geotrellis.layer._
 import geotrellis.raster._
+import geotrellis.store._
+import geotrellis.store.avro.codecs._
+import geotrellis.spark.store._
 
 import org.apache.spark._
 import org.apache.spark.rdd._

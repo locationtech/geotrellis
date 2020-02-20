@@ -16,14 +16,13 @@
 
 package geotrellis.vector.check.jts
 
+import geotrellis.vector.GeomFactory
 import org.locationtech.jts.geom._
 import org.scalacheck.Gen._
 import org.scalacheck._
 
 object Generators {
-  val factory = new GeometryFactory()
-
-  lazy val genCoordinate: Gen[Coordinate] = 
+  lazy val genCoordinate: Gen[Coordinate] =
     for {
       x <- choose(-99999999999999999999.0,99999999999999999999.0)
       y <- choose(-99999999999999999999.0,99999999999999999999.0)
@@ -35,40 +34,40 @@ object Generators {
       y <- choose(-1.0,1.0)
     } yield new Coordinate(x, y)
 
-  lazy val genPoint:Gen[Point] = 
-    genCoordinate.map(factory.createPoint(_))
+  lazy val genPoint:Gen[Point] =
+    genCoordinate.map(GeomFactory.factory.createPoint(_))
 
-  lazy val genMultiPoint:Gen[MultiPoint] = 
+  lazy val genMultiPoint:Gen[MultiPoint] =
     for {
       size <- Gen.choose(1,100)
       coords <- Gen.containerOfN[Set,Coordinate](size,genCoordinate)
-    } yield { factory.createMultiPointFromCoords(coords.toArray) }
+    } yield { GeomFactory.factory.createMultiPointFromCoords(coords.toArray) }
 
   lazy val genLongLineString:Gen[LineString] =
     for {
       size <-Gen.choose(2,40)
       s <- Gen.containerOfN[Set,Coordinate](size,genCoordinate)
-    } yield { factory.createLineString(s.toArray) }
+    } yield { GeomFactory.factory.createLineString(s.toArray) }
 
   lazy val genShortLineString:Gen[LineString] =
     for {
       size <-Gen.choose(2,40)
       s <- Gen.containerOfN[Set,Coordinate](size,genCoordinate)
-    } yield { factory.createLineString(s.toArray) }
+    } yield { GeomFactory.factory.createLineString(s.toArray) }
 
   lazy val genLinearRing:Gen[LinearRing] =
     genPolygon.map { p =>
-      factory.createLinearRing(p.getExteriorRing.getCoordinateSequence)//.asInstanceOf[LinearRing]
+      GeomFactory.factory.createLinearRing(p.getExteriorRing.getCoordinateSequence)//.asInstanceOf[LinearRing]
     }
 
-  lazy val genLineString:Gen[LineString] = 
+  lazy val genLineString:Gen[LineString] =
     Gen.frequency((1,genLongLineString),(1,genShortLineString),(1,genLinearRing))
 
-  lazy val genMultiLineString:Gen[MultiLineString] = 
+  lazy val genMultiLineString:Gen[MultiLineString] =
     for {
       size <- Gen.choose(1,20)
       lineStrings <- Gen.containerOfN[Set,LineString](size,genLineString)
-    } yield { factory.createMultiLineString(lineStrings.toArray) }
+    } yield { GeomFactory.factory.createMultiLineString(lineStrings.toArray) }
 
   // Doesn't yet deal with interior rings
   lazy val genPolygon:Gen[Polygon] =
@@ -83,13 +82,13 @@ object Generators {
       subSet2 <- Gen.pick(subSize2,fullSet)
     } yield {
       val polyOne =
-        factory.createMultiPointFromCoords((subSet1 ++ sharedSet).toArray).convexHull.asInstanceOf[Polygon]
+        GeomFactory.factory.createMultiPointFromCoords((subSet1 ++ sharedSet).toArray).convexHull.asInstanceOf[Polygon]
       val polyTwo =
-        factory.createMultiPointFromCoords((subSet2 ++ sharedSet).toArray).convexHull.asInstanceOf[Polygon]
+        GeomFactory.factory.createMultiPointFromCoords((subSet2 ++ sharedSet).toArray).convexHull.asInstanceOf[Polygon]
       polyOne.intersection(polyTwo).asInstanceOf[Polygon]
     }
 
-  implicit lazy val arbCoordinate: Arbitrary[Coordinate] = 
+  implicit lazy val arbCoordinate: Arbitrary[Coordinate] =
     Arbitrary(genCoordinate)
 
   implicit lazy val arbPoint: Arbitrary[Point] =
@@ -117,8 +116,8 @@ object Generators {
       coords <- Gen.containerOfN[Set,Coordinate](size,genCoordinate)
       lineCoords <- Gen.pick(lineSize,coords)
     } yield {
-      val mp = factory.createMultiPointFromCoords(coords.toArray)
-      val l = factory.createLineString(lineCoords.toArray)
+      val mp = GeomFactory.factory.createMultiPointFromCoords(coords.toArray)
+      val l = GeomFactory.factory.createLineString(lineCoords.toArray)
       LineInMultiPoint(mp,l)
     }
 
@@ -128,9 +127,9 @@ object Generators {
   case class ClosedLineString(ls:LineString)
   lazy val genClosedLineString:Gen[ClosedLineString] =
     Gen.frequency((1,genLongLineString),(1,genShortLineString))
-       .map { l => 
+       .map { l =>
          val coords = l.getCoordinates
-         ClosedLineString(factory.createLineString((coords(coords.length-1) ::coords.toList).toArray))
+         ClosedLineString(GeomFactory.factory.createLineString((coords(coords.length-1) ::coords.toList).toArray))
        }
 
   implicit lazy val arbClosedRing:Arbitrary[ClosedLineString] =

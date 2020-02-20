@@ -26,21 +26,21 @@ import spire.syntax.cfor._
 
 object ConformingDelaunay {
 
-  def apply(xs: Array[Double], ys: Array[Double], constraints: jts.GeometryCollection) = {
+  def apply(xs: Array[Double], ys: Array[Double], constraints: GeometryCollection) = {
     new ConformingDelaunay(
       xs.zip(ys).map({ case (x, y) => Point(x,y) }),
       constraints
     )
   }
 
-  def apply(coords: Array[jts.Coordinate], constraints: jts.GeometryCollection) = {
+  def apply(coords: Array[jts.Coordinate], constraints: GeometryCollection) = {
     new ConformingDelaunay(
       coords.map({ coord => Point(coord.x, coord.y) }),
       constraints
     )
   }
 
-  def apply(coords: Array[(Double, Double)], constraints: jts.GeometryCollection) = {
+  def apply(coords: Array[(Double, Double)], constraints: GeometryCollection) = {
     new ConformingDelaunay(
       coords.map({ case (x, y) => Point(x, y) }),
       constraints
@@ -57,11 +57,11 @@ object ConformingDelaunay {
   */
 case class ConformingDelaunay(
   verts: Array[Point],
-  constraints: jts.GeometryCollection
+  constraints: GeometryCollection
 ) {
 
-  private[voronoi] val gf = new jts.GeometryFactory
-  private val sites = new jts.MultiPoint(verts.map(_.jtsGeom), gf)
+  private[voronoi] val gf = GeomFactory.factory
+  private val sites = new MultiPoint(verts, gf)
   private val builder = new ConformingDelaunayTriangulationBuilder
   builder.setSites(sites) ; builder.setConstraints(constraints)
   private[voronoi] val subd = builder.getSubdivision
@@ -70,7 +70,7 @@ case class ConformingDelaunay(
     val tris = subd.getTriangles(gf)
     val len = tris.getNumGeometries
     val arr = Array.ofDim[Polygon](len)
-    cfor(0)(_ < len, _ + 1) { i => arr(i) = Polygon(tris.getGeometryN(i).asInstanceOf[jts.Polygon]) }
+    cfor(0)(_ < len, _ + 1) { i => arr(i) = tris.getGeometryN(i).asInstanceOf[Polygon] }
     arr
   }
 

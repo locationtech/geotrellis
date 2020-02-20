@@ -38,11 +38,11 @@ object RDDSigmoidalContrast {
     * @param  beta   The standard deviation in the computation, used to avoid saturating the upper and lower parts of the gamut
     * @return        An RDD of output tiles
     */
-  def singleband[K, V: (? => Tile)](
+  def singleband[K, V: (* => Tile)](
     rdd: RDD[(K, V)],
     alpha: Double, beta: Double
   ): RDD[(K, Tile)] =
-    rdd.map({ case (key, tile: Tile) => (key, SigmoidalContrast(tile, alpha, beta)) })
+    rdd.map({ case (key, tile) => (key, SigmoidalContrast(tile, alpha, beta)) })
 
   /**
     * Given an RDD of MultibandTile objects and parameters alpha and
@@ -57,10 +57,10 @@ object RDDSigmoidalContrast {
     * @param  beta   The standard deviation in the computation, used to avoid saturating the upper and lower parts of the gamut
     * @return        An RDD of output tiles
     */
-  def multiband[K, V: (? => MultibandTile)](
+  def multiband[K, V: (* => MultibandTile)](
     rdd: RDD[(K, V)],
     alpha: Double, beta: Double
   ): RDD[(K, MultibandTile)] =
-      rdd.map({ case (key, tile: MultibandTile) => (key, SigmoidalContrast(tile, alpha, beta)) })
+      rdd.map({ case (key, tile) => (key, SigmoidalContrast(tile, alpha, beta)) })
 
 }

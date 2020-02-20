@@ -21,5 +21,5 @@ import geotrellis.proj4.CRS.ObjectNameToString
 object LatLng extends CRS with ObjectNameToString {
   lazy val proj4jCrs = factory.createFromName("EPSG:4326")
 
-  override def epsgCode: Option[Int] = Some(4326)
+  override val epsgCode: Option[Int] = Some(4326)
 }

@@ -17,6 +17,9 @@
 package geotrellis.raster.io.geotiff
 
 import geotrellis.raster._
+import _root_.io.circe._
+import _root_.io.circe.syntax._
+import cats.syntax.either._
 import geotrellis.raster.io.geotiff.tags.codes.SampleFormat._
 
 sealed abstract trait BandType extends Serializable {
@@ -57,6 +60,26 @@ object BandType {
       case FloatConstantNoDataCellType | FloatCellType | FloatUserDefinedNoDataCellType(_) => Float32BandType
       case DoubleConstantNoDataCellType | DoubleCellType | DoubleUserDefinedNoDataCellType(_) => Float64BandType
     }
+
+  implicit val bandTypeDecoder: Decoder[BandType] =
+    new Decoder[BandType] {
+      final def apply(c: HCursor): Decoder.Result[BandType] = {
+        (c.downField("bitsPerSample").as[Int], c.downField("sampleFormat").as[Int])
+        for {
+          bitsPerSample <- c.downField("bitsPerSample").as[Int]
+          sampleFormat <- c.downField("sampleFormat").as[Int]
+        } yield {
+          BandType(bitsPerSample, sampleFormat)
+        }
+      }
+    }
+
+  implicit val bandTypeEncoder: Encoder[BandType] = new Encoder[BandType] {
+    final def apply(a: BandType): Json = Json.obj(
+      ("bitsPerSample", a.bitsPerSample.asJson),
+      ("sampleFormat", a.sampleFormat.asJson)
+    )
+  }
 }
 
 object BitBandType extends BandType {

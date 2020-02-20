@@ -18,8 +18,9 @@ package geotrellis.spark.pipeline.ast.singleband.spatial
 
 import io.circe.syntax._
 import geotrellis.raster._
+import geotrellis.layer.SpatialKey
 import geotrellis.spark._
-import geotrellis.spark.io._
+import geotrellis.spark.store._
 import geotrellis.spark.pipeline.ast._
 import geotrellis.spark.pipeline.json.transform
 import geotrellis.vector.ProjectedExtent

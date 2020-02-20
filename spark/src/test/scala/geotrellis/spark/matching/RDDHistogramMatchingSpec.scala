@@ -17,6 +17,7 @@
 package geotrellis.spark.matching
 
 import geotrellis.raster._
+import geotrellis.layer._
 import geotrellis.spark._
 import geotrellis.spark.testkit._
 import geotrellis.raster.histogram.StreamingHistogram

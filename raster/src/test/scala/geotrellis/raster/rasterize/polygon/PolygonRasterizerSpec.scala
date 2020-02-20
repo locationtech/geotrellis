@@ -27,7 +27,6 @@ import geotrellis.vector.io.wkt.WKT
 
 import math.{max,min,round}
 
-import org.locationtech.jts.{geom => jts}
 import org.locationtech.jts.io.WKTReader
 import org.scalatest.FunSuite
 import scala.collection.mutable
@@ -41,15 +40,15 @@ class PolygonRasterizerSpec extends FunSuite
     val e = Extent(0.0, 0.0, 10.0, 10.0)
     val re = RasterExtent(e, 1.0, 1.0, 10, 10)
 
-    val square  = Polygon( Line((1,9), (1,6), (4,6), (4,9), (1,9)) )
-    val diamond = Polygon( Line((3,7), (6,4), (3,1), (0,4), (3,7)))
-    val triangle = Polygon( Line((2,8),(5,5),(6,7), (6,7), (2,8)))
+    val square  = Polygon( LineString(Seq[(Double,Double)]((1,9), (1,6), (4,6), (4,9), (1,9)) ))
+    val diamond = Polygon( LineString(Seq[(Double,Double)]((3,7), (6,4), (3,1), (0,4), (3,7))))
+    val triangle = Polygon( LineString(Seq[(Double,Double)]((2,8),(5,5),(6,7), (6,7), (2,8))))
 
-    val outsideSquare = Polygon( Line((51,59), (51,56), (54,56), (54,59), (51,59)) )
+    val outsideSquare = Polygon( LineString(Seq[(Double,Double)]((51,59), (51,56), (54,56), (54,59), (51,59)) ))
     val envelopingSquare = Extent(0.0, 0.0, 10.0, 10.0).toPolygon
 
     // intersection on cell midpoint
-    val square2 = Polygon( Line( (1.0,9.0), (1.0,8.5), (1.0,6.0), (4.0, 6.0), (4.0, 8.5), (4.0, 9.0), (1.0, 9.0) ))
+    val square2 = Polygon( LineString(Seq[(Double,Double)]( (1.0,9.0), (1.0,8.5), (1.0,6.0), (4.0, 6.0), (4.0, 8.5), (4.0, 9.0), (1.0, 9.0) )))
 
     val r1 = Rasterizer.rasterizeWithValue(square, re, 0x11)
     // println(r1.tile.asciiDraw)
@@ -100,7 +99,7 @@ class PolygonRasterizerSpec extends FunSuite
   }
 
   test("previously-failing example should work") {
-    val p = Polygon(Line((-9510600.807354769, 4176519.1962707597), (-9511212.30358105,4172238.854275199), (-9503568.600752532,4175602.1747499597), (-9510600.807354769,4176519.1962707597)))
+    val p = Polygon(LineString(Seq[(Double,Double)]((-9510600.807354769, 4176519.1962707597), (-9511212.30358105,4172238.854275199), (-9503568.600752532,4175602.1747499597), (-9510600.807354769,4176519.1962707597))))
     val re = RasterExtent(Extent(-9509377.814902207,4174073.2405969054,-9508766.318675926,4174684.736823185),2.3886571339098737,2.3886571339044167,256,256)
     val r = Rasterizer.rasterizeWithValue(p, re, 1 )
     var sum = 0
@@ -108,8 +107,22 @@ class PolygonRasterizerSpec extends FunSuite
     assert(sum === 65536)
   }
 
+  test("Should not fail because of a Double-related issue") {
+    val poly = Polygon(LineString(Seq[(Double, Double)](
+      (-156.7523879306299, 21.545279181475966),
+      (-156.75200324049055, 21.545438525349006),
+      (-156.75110930806937, 21.5432559342482),
+      (-156.7523879306299, 21.545279181475966)
+    )))
+    val re = RasterExtent(
+      Extent(-157.026672, 21.545119837602627, -156.75185966180015, 21.559142098430257),
+      CellSize(3.3310586448311594E-4, 6.37375492151282E-4)
+    )
+    Rasterizer.rasterizeWithValue(poly, re, 1)
+  }
+
   test("polygon rasterization: more complex polygons") {
-    val p1 = Polygon (Line((-74.6229572569999, 41.5930024740001),
+    val p1 = Polygon (LineString(Seq[(Double,Double)]((-74.6229572569999, 41.5930024740001),
       (-74.6249086829999, 41.5854607480001),
       (-74.6087045219999, 41.572877582),
       (-74.6396698609999, 41.5479203780001),
@@ -126,7 +139,7 @@ class PolygonRasterizerSpec extends FunSuite
       (-74.6494842519999, 41.5467347190001),
       (-74.6459184919999, 41.565179846),
       (-74.6344289929999, 41.5694043560001),
-      (-74.6229572569999, 41.5930024740001)))
+      (-74.6229572569999, 41.5930024740001))))
 
     val tileExtent = Extent( -88.57589314970001, 35.15178531379998, -70.29017892250002, 53.43749954099997)
     // val rasterExtent = RasterExtent(tileExtent, 0.008929,0.008929, 2048, 2048 )
@@ -168,9 +181,9 @@ class PolygonRasterizerSpec extends FunSuite
       val json = scala.io.Source.fromFile(wktFile).mkString
       val filename = wktFile.getName()
       //      println("Testing rasterization: " + filename)
-      val g1 = new WKTReader().read(json).asInstanceOf[jts.Polygon]
+      val p1 = new WKTReader().read(json).asInstanceOf[Polygon]
 
-      if (g1.isValid){
+      if (p1.isValid){
         val count =
         Integer.parseInt(wktFile.getName()
           .subSequence(0, filename.length - 4)
@@ -178,7 +191,6 @@ class PolygonRasterizerSpec extends FunSuite
           .split("_")
           .last)
 
-        val p1 = Polygon(g1)
         var sum = 0
         val re = RasterExtent( Extent(0, 0, 300, 300), 1, 1, 300, 300)
         val r = PolygonRasterizer.foreachCellByPolygon(p1, re) { (x:Int, y:Int) =>
@@ -256,7 +268,7 @@ class PolygonRasterizerSpec extends FunSuite
   }
 
   test("Polygon w/ non-point pixels and w/ partial cells") {
-    val p = Polygon(Line((0.0,0.0), (0.0,1.0), (0.5,1.5), (0.0,2.0), (0.0,3.0), (3.0,3.0), (3.0,0.0), (0.0,0.0)))
+    val p = Polygon(LineString(Seq[(Double,Double)]((0.0,0.0), (0.0,1.0), (0.5,1.5), (0.0,2.0), (0.0,3.0), (3.0,3.0), (3.0,0.0), (0.0,0.0))))
     val rasterExtent = RasterExtent(Extent(0, 0, 3, 3), 3, 3)
     val options = Options(includePartial = true, sampleType = PixelIsArea)
     val s = mutable.Set.empty[(Int, Int)]
@@ -269,7 +281,7 @@ class PolygonRasterizerSpec extends FunSuite
   }
 
   test("Polygon w/ non-point pixels and w/o partial cells") {
-    val p = Polygon(Line((0.0,0.0), (0.0,1.0), (0.5,1.5), (0.0,2.0), (0.0,3.0), (3.0,3.0), (3.0,0.0), (0.0,0.0)))
+    val p = Polygon(LineString(Seq[(Double,Double)]((0.0,0.0), (0.0,1.0), (0.5,1.5), (0.0,2.0), (0.0,3.0), (3.0,3.0), (3.0,0.0), (0.0,0.0))))
     val rasterExtent = RasterExtent(Extent(0, 0, 3, 3), 3, 3)
     val options = Options(includePartial = false, sampleType = PixelIsArea)
     val s = mutable.Set[(Int, Int)]()
@@ -282,7 +294,7 @@ class PolygonRasterizerSpec extends FunSuite
   }
 
   test("Smaller polygon w/ non-point pixels and w/o partial cells") {
-    val p = Polygon(Line((0.01,0.01), (0.01,1.0), (0.5,1.5), (0.01,2.0), (0.01,2.99), (2.99,2.99), (2.99,0.01), (0.01,0.01)))
+    val p = Polygon(LineString(Seq[(Double,Double)]((0.01,0.01), (0.01,1.0), (0.5,1.5), (0.01,2.0), (0.01,2.99), (2.99,2.99), (2.99,0.01), (0.01,0.01))))
     val rasterExtent = RasterExtent(Extent(0, 0, 3, 3), 3, 3)
     val options = Options(includePartial = false, sampleType = PixelIsArea)
     val s = mutable.Set[(Int, Int)]()
@@ -296,8 +308,8 @@ class PolygonRasterizerSpec extends FunSuite
 
   test("Rasterization of a polygon with a hole in it") {
     val p = Polygon(
-      Line( (0,0), (4, 0), (4, 4), (0, 4), (0, 0) ),
-      Line( (1, 1), (3, 1), (3, 3), (1, 3), (1, 1) )
+      LineString(Seq[(Double,Double)]( (0,0), (4, 0), (4, 4), (0, 4), (0, 0) )),
+      LineString(Seq[(Double,Double)]( (1, 1), (3, 1), (3, 3), (1, 3), (1, 1) ))
     )
 
     val re = RasterExtent(Extent(-1, -1, 5, 5), 6, 6)

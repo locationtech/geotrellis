@@ -16,14 +16,20 @@
 
 package geotrellis.doc.examples.spark
 
+import geotrellis.layer._
+import geotrellis.store._
 import geotrellis.spark._
-import geotrellis.spark.io._
-import geotrellis.spark.io.index._
-import geotrellis.spark.io.index.zcurve._
-import geotrellis.spark.io.json._
+import geotrellis.spark.store._
+import geotrellis.store._
+import geotrellis.store.json._
+import geotrellis.store.index._
+import geotrellis.store.index.zcurve._
 import geotrellis.util._
 
-import spray.json._
+import _root_.io.circe._
+import _root_.io.circe.syntax._
+import _root_.io.circe.generic.semiauto._
+import cats.syntax.either._
 
 // --- //
 
@@ -47,24 +53,6 @@ object VoxelKey {
     }
   }
 
-  /** JSON Conversion */
-  implicit object VoxelKeyFormat extends RootJsonFormat[VoxelKey] {
-    def write(k: VoxelKey) = {
-      JsObject(
-        "x" -> JsNumber(k.x),
-        "y" -> JsNumber(k.y),
-        "z" -> JsNumber(k.z)
-      )
-    }
-
-    def read(value: JsValue) = {
-      value.asJsObject.getFields("x", "y", "z") match {
-        case Seq(JsNumber(x), JsNumber(y), JsNumber(z)) => VoxelKey(x.toInt, y.toInt, z.toInt)
-        case _ => throw new DeserializationException("VoxelKey expected.")
-      }
-    }
-  }
-
   /** Since [[VoxelKey]] has x and y coordinates, it can take advantage of
     * the [[SpatialComponent]] lens. Lenses are essentially "getters and setters"
     * that can be used in highly generic code.
@@ -77,6 +65,9 @@ object VoxelKey {
       (k, sk) => VoxelKey(sk.col, sk.row, k.z)
     )
   }
+
+  implicit val voxelKeyEncoder: Encoder[VoxelKey] = deriveEncoder[VoxelKey]
+  implicit val voxelKeyDecoder: Decoder[VoxelKey] = deriveDecoder[VoxelKey]
 }
 
 /** A [[KeyIndex]] based on [[VoxelKey]]. */
@@ -90,39 +81,45 @@ class ZVoxelKeyIndex(val keyBounds: KeyBounds[VoxelKey]) extends KeyIndex[VoxelK
     Z3.zranges(toZ(keyRange._1), toZ(keyRange._2))
 }
 
-/** A [[JsonFormat]] for [[ZVoxelKeyIndex]]. */
-class ZVoxelKeyIndexFormat extends RootJsonFormat[ZVoxelKeyIndex] {
-  val TYPE_NAME = "voxel"
 
-  def write(index: ZVoxelKeyIndex): JsValue = {
-    JsObject(
-      "type" -> JsString(TYPE_NAME),
-      "properties" -> JsObject("keyBounds" -> index.keyBounds.toJson)
-    )
-  }
+object ZVoxelKeyIndex {
+  val voxel = "voxel"
 
-  def read(value: JsValue): ZVoxelKeyIndex = {
-    value.asJsObject.getFields("type", "properties") match {
-      case Seq(JsString(typeName), props) if typeName == TYPE_NAME => {
-        props.asJsObject.getFields("keyBounds") match {
-          case Seq(kb) => new ZVoxelKeyIndex(kb.convertTo[KeyBounds[VoxelKey]])
-          case _ => throw new DeserializationException("Couldn't parse KeyBounds")
-        }
-      }
-      case _ => throw new DeserializationException("Wrong KeyIndex type: ZVoxelKeyIndex expected.")
+  /** An [[Encoder]] for [[ZVoxelKeyIndex]]. */
+  implicit val zVoxelKeyIndexEncoder: Encoder[ZVoxelKeyIndex] =
+    Encoder.encodeJson.contramap[ZVoxelKeyIndex] { index =>
+      Json.obj(
+        "type" -> voxel.asJson,
+        "properties" -> Json.obj("keyBounds" -> index.keyBounds.asJson)
+      )
     }
-  }
+
+  /** A [[Decoder]] for [[ZVoxelKeyIndex]]. */
+  implicit val zVoxelKeyIndexDecoder: Decoder[ZVoxelKeyIndex] =
+    Decoder.decodeHCursor.emap { c: HCursor =>
+      (c.downField("type").as[String], c.downField("properties")) match {
+        case (Right(typeName), properties) =>
+          if(typeName != voxel) Left(s"Wrong KeyIndex type: $voxel expected.")
+          else
+            properties
+              .downField("keyBounds")
+              .as[KeyBounds[VoxelKey]]
+              .map(new ZVoxelKeyIndex(_))
+              .leftMap(_ => "Couldn't deserialize voxel key index.")
+
+        case _ => Left("Wrong KeyIndex type: voxel key index expected.")
+      }
+    }
+
 }
 
-/** Register this JsonFormat with Geotrellis's central registrator.
+/** Register these Json codecs with Geotrellis's central registrator.
   * For more information on why this is necessary, see ''ShardingKeyIndex.scala''.
   */
 class ZVoxelKeyIndexRegistrator extends KeyIndexRegistrator {
-  implicit val voxelFormat = new ZVoxelKeyIndexFormat()
-
   def register(r: KeyIndexRegistry): Unit = {
     r.register(
-      KeyIndexFormatEntry[VoxelKey, ZVoxelKeyIndex](voxelFormat.TYPE_NAME)
+      KeyIndexFormatEntry[VoxelKey, ZVoxelKeyIndex](ZVoxelKeyIndex.voxel)
     )
   }
 }

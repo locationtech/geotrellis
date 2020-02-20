@@ -17,12 +17,6 @@
 package geotrellis.raster.io.geotiff
 
 import geotrellis.raster._
-import geotrellis.raster.io.geotiff.writer.GeoTiffWriter
-import geotrellis.raster.mapalgebra.local._
-
-import geotrellis.vector.Extent
-
-import geotrellis.proj4._
 
 import geotrellis.raster.testkit._
 
@@ -81,6 +75,41 @@ class BitGeoTiffTileSpec extends FunSpec
       val res = tile.mapDouble { (col, row, z) => z }
 
       assertEqual(res, tile)
+    }
+
+    it("should convert tiled tiffs") {
+      val tiff = SinglebandGeoTiff(geoTiffPath("bilevel.tif"))
+      val tile = tiff.tile.toArrayTile()
+
+      // check that it is possible to convert bit cellType to bit cellType
+      val tiffTile = tile.toGeoTiffTile.convert(BitCellType)
+      assertEqual(tiffTile.toArrayTile(), tile.toArrayTile)
+
+      // check that it is possible to convert int cellType to bit cellType
+      // and that bitCellType conversion is idempotent
+      (0 to 5).foldLeft(tile.toGeoTiffTile.convert(IntCellType)) { case (acc, _) =>
+        val tiffTileLocal = acc.convert(BitCellType)
+        assertEqual(tiffTileLocal.toArrayTile(), tile.toArrayTile)
+        tiffTileLocal
+      }
+    }
+
+    it("should convert striped tiffs (1 row per strip)") {
+      // also works with bilevel.tif but fails with 3 stripes per segment
+      val tiff = SinglebandGeoTiff(geoTiffPath("bilevel-strip-1.tif"))
+      val tile = tiff.tile.toArrayTile()
+
+      // check that it is possible to convert bit cellType to bit cellType
+      val tiffTile = tile.toGeoTiffTile.convert(BitCellType)
+      assertEqual(tiffTile.toArrayTile(), tile.toArrayTile)
+
+      // check that it is possible to convert int cellType to bit cellType
+      // and that bitCellType conversion is idempotent
+      (0 to 5).foldLeft(tile.toGeoTiffTile.convert(IntCellType)) { case (acc, _) =>
+        val tiffTileLocal = acc.convert(BitCellType)
+        assertEqual(tiffTileLocal.toArrayTile(), tile.toArrayTile)
+        tiffTileLocal
+      }
     }
   }
 }

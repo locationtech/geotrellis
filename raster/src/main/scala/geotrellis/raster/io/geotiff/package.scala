@@ -19,35 +19,9 @@ package geotrellis.raster.io
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff.compression._
 
-package object geotiff {
+package object geotiff extends Implicits {
   val DefaultCompression = DeflateCompression
   val Deflate = DeflateCompression
 
-  implicit class GeoTiffTileMethods(val tile: Tile) extends AnyRef {
-    def toGeoTiffTile(): GeoTiffTile =
-      GeoTiffTile(tile)
-
-    def toGeoTiffTile(options: GeoTiffOptions): GeoTiffTile =
-      GeoTiffTile(tile, options)
-
-    def toGeoTiffTile(compression: Compression): GeoTiffTile =
-      GeoTiffTile(tile, GeoTiffOptions(compression))
-
-    def toGeoTiffTile(layout: StorageMethod): GeoTiffTile =
-      GeoTiffTile(tile, GeoTiffOptions(layout))
-  }
-
-  implicit class GeoTiffMultibandTileMethods(val tile: MultibandTile) extends AnyRef {
-    def toGeoTiffTile(): GeoTiffMultibandTile =
-      GeoTiffMultibandTile(tile)
-
-    def toGeoTiffTile(options: GeoTiffOptions): GeoTiffMultibandTile =
-      GeoTiffMultibandTile(tile, options)
-
-    def toGeoTiffTile(compression: Compression): GeoTiffMultibandTile =
-      GeoTiffMultibandTile(tile, GeoTiffOptions(compression))
-
-    def toGeoTiffTile(layout: StorageMethod): GeoTiffMultibandTile =
-      GeoTiffMultibandTile(tile, GeoTiffOptions(layout))
-  }
+  val GeoTiffReader = reader.GeoTiffReader
 }

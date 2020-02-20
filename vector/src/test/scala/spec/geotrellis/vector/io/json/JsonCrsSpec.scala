@@ -16,16 +16,17 @@
 
 package geotrellis.vector.io.json
 
+import io.circe.syntax._
+import cats.syntax.either._
+
 import geotrellis.vector._
 import geotrellis.vector.io._
 
 import org.scalatest._
-import spray.json._
-import spray.json.DefaultJsonProtocol._
 
 class JsonCrsSpec extends FlatSpec with Matchers with GeoJsonSupport {
   val point = Point(6.0,1.2)
-  val line = Line(Point(1,2) :: Point(1,3) :: Nil)
+  val line = LineString(Point(1,2) :: Point(1,3) :: Nil)
   val crs = NamedCRS("napkin:map:sloppy")
 
   it should "should attach to a Geometry" in {
@@ -41,9 +42,9 @@ class JsonCrsSpec extends FlatSpec with Matchers with GeoJsonSupport {
           |  }
           |}""".stripMargin.parseJson
 
-    WithCrs(line, crs).toJson should be (body)
-    line.withCrs(crs).toJson should be (body)
-    body.convertTo[WithCrs[Line]] should equal (WithCrs(line, crs))
+    WithCrs(line, crs).asJson should be (body)
+    line.withCrs(crs).asJson should be (body)
+    body.as[WithCrs[LineString]].valueOr(throw _) should equal (WithCrs(line, crs))
   }
 
   it should "should attach to a GeometryCollection" in {
@@ -66,8 +67,9 @@ class JsonCrsSpec extends FlatSpec with Matchers with GeoJsonSupport {
           |}""".stripMargin.parseJson
 
     val gc = GeometryCollection(List(point, line))
-    WithCrs(gc, crs).toJson should equal (body)
-    body.convertTo[WithCrs[GeometryCollection]] should equal (WithCrs(gc, crs))
+
+    WithCrs(gc, crs).asJson should equal (body)
+    body.as[WithCrs[GeometryCollection]].valueOr(throw _) should equal (WithCrs(gc, crs))
   }
 
   it should "attach to a Feature" in {
@@ -89,8 +91,8 @@ class JsonCrsSpec extends FlatSpec with Matchers with GeoJsonSupport {
         |  }
         |}""".stripMargin.parseJson
 
-    f.withCrs(crs).toJson should equal (body)
-    body.convertTo[WithCrs[PointFeature[String]]] should equal (WithCrs(f, crs))
+    f.withCrs(crs).asJson should equal (body)
+    body.as[WithCrs[PointFeature[String]]].valueOr(throw _) should equal (WithCrs(f, crs))
   }
 
 
@@ -111,7 +113,7 @@ class JsonCrsSpec extends FlatSpec with Matchers with GeoJsonSupport {
         |  }
         |}""".stripMargin
 
-    val withCrs = body.parseJson.convertTo[WithCrs[PointFeature[String]]]
+    val withCrs = body.parseJson.as[WithCrs[PointFeature[String]]].valueOr(throw _)
     withCrs.crs.toCRS.get.epsgCode should be (Some(3857))
   }
 }

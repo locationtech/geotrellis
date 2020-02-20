@@ -16,19 +16,19 @@
 
 package geotrellis.spark.distance
 
-import org.locationtech.jts.geom.Coordinate
-import org.apache.spark.SparkContext
-import org.apache.spark.rdd.RDD
-
-import geotrellis.raster._
-import geotrellis.raster.distance._
-import geotrellis.spark._
-import geotrellis.spark.buffer.Direction
-import geotrellis.spark.buffer.Direction._
-import geotrellis.spark.tiling._
+import geotrellis.layer._
 import geotrellis.vector._
 import geotrellis.vector.triangulation._
 import geotrellis.vector.voronoi._
+import geotrellis.raster._
+import geotrellis.raster.distance._
+import geotrellis.raster.buffer.Direction
+import geotrellis.raster.buffer.Direction._
+import geotrellis.spark._
+
+import org.locationtech.jts.geom.Coordinate
+import org.apache.spark.SparkContext
+import org.apache.spark.rdd.RDD
 
 import scala.collection.mutable.{ListBuffer, Set}
 
@@ -76,7 +76,7 @@ object EuclideanDistance {
       do {
         while (getDest(e) == -1 && e < maxEdgeIndex)
           e += 1
-        val dist = re.extent.distance(Point.jtsCoord2Point(stitched.indexToCoord(getDest(e))))
+        val dist = re.extent.distance(Point(stitched.indexToCoord(getDest(e))))
         if (dist < bestdist) {
           best = e
           bestdist = dist
@@ -90,10 +90,10 @@ object EuclideanDistance {
     if (stitched.pointSet.length == 0) {
       None
     } else {
-      val baseEdge = 
+      val baseEdge =
         if (center.boundary != -1) {
           // center had edges
-          stitched.halfEdgeTable.edgeIncidentTo(center.halfEdgeTable.getDest(center.boundary)) 
+          stitched.halfEdgeTable.edgeIncidentTo(center.halfEdgeTable.getDest(center.boundary))
         } else {
           // center either has 1 or no points
           findBaseEdge()
@@ -196,9 +196,9 @@ object SparseEuclideanDistance {
    * end.  Be aware, however, that if there are many points, this operation will
    * have a lengthy runtime.
    */
-  def apply(pts: Array[Coordinate], 
-            geomExtent: Extent, 
-            ld: LayoutDefinition, 
+  def apply(pts: Array[Coordinate],
+            geomExtent: Extent,
+            ld: LayoutDefinition,
             tileCols: Int,
             tileRows: Int,
             cellType: CellType = DoubleConstantNoDataCellType)(implicit sc: SparkContext): RDD[(SpatialKey, Tile)] = {

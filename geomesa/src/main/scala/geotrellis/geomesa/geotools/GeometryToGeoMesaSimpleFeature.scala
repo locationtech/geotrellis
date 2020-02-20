@@ -16,12 +16,11 @@
 
 package geotrellis.geomesa.geotools
 
-import geotrellis.spark.io.geomesa.conf.GeoMesaConfig
+import geotrellis.spark.store.geomesa.conf.GeoMesaConfig
 import geotrellis.proj4.{CRS => GCRS}
 import geotrellis.util.annotations.experimental
-import geotrellis.vector.{Geometry, Line, MultiLine, MultiPoint, MultiPolygon, Point, Polygon}
+import geotrellis.vector._
 import com.github.blemale.scaffeine.{Cache, Scaffeine}
-import org.locationtech.jts.{geom => jts}
 import org.geotools.feature.simple.{SimpleFeatureBuilder, SimpleFeatureTypeBuilder}
 import org.locationtech.geomesa.utils.geotools.SimpleFeatureTypes
 import org.opengis.feature.simple.{SimpleFeature, SimpleFeatureType}
@@ -54,13 +53,13 @@ object GeometryToGeoMesaSimpleFeature {
         case None =>
       }
       geom match {
-        case pt: Point => sftb.add(whereField, classOf[jts.Point])
-        case ln: Line => sftb.add(whereField, classOf[jts.LineString])
-        case pg: Polygon => sftb.add(whereField, classOf[jts.Polygon])
-        case mp: MultiPoint => sftb.add(whereField, classOf[jts.MultiPoint])
-        case ml: MultiLine => sftb.add(whereField, classOf[jts.MultiLineString])
-        case mp: MultiPolygon => sftb.add(whereField, classOf[jts.MultiPolygon])
-        case g: Geometry => throw new Exception(s"Unhandled GeoTrellis Geometry $g")
+        case pt: Point => sftb.add(whereField, classOf[Point])
+        case ln: LineString => sftb.add(whereField, classOf[LineString])
+        case pg: Polygon => sftb.add(whereField, classOf[Polygon])
+        case mp: MultiPoint => sftb.add(whereField, classOf[MultiPoint])
+        case ml: MultiLineString => sftb.add(whereField, classOf[MultiLineString])
+        case mp: MultiPolygon => sftb.add(whereField, classOf[MultiPolygon])
+        case g: Geometry => throw new Exception(s"Unhandled Geometry type $g")
       }
       sftb.setDefaultGeometry(whereField)
       data.foreach({ case (key, value) => sftb
@@ -74,12 +73,12 @@ object GeometryToGeoMesaSimpleFeature {
     val sfb = new SimpleFeatureBuilder(sft)
 
     geom match {
-      case Point(pt) => sfb.add(pt)
-      case Line(ln) => sfb.add(ln)
-      case Polygon(pg) => sfb.add(pg)
-      case MultiPoint(mp) => sfb.add(mp)
-      case MultiLine(ml) => sfb.add(ml)
-      case MultiPolygon(mp) => sfb.add(mp)
+      case pt: Point => sfb.add(pt)
+      case ln: LineString => sfb.add(ln)
+      case pg: Polygon => sfb.add(pg)
+      case mp: MultiPoint => sfb.add(mp)
+      case ml: MultiLineString => sfb.add(ml)
+      case mp: MultiPolygon => sfb.add(mp)
       case g: Geometry => throw new Exception(s"Unhandled GeoTrellis Geometry $g")
     }
     data.foreach({ case (key, value) => sfb.add(value) })

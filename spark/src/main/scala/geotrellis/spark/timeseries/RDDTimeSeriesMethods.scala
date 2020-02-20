@@ -16,14 +16,15 @@
 
 package geotrellis.spark.timeseries
 
+import geotrellis.vector._
+import geotrellis.layer.mask.Mask.Options
+import geotrellis.layer.SpaceTimeKey
 import geotrellis.raster._
-import geotrellis.raster.histogram._
 import geotrellis.raster.summary.polygonal._
+import geotrellis.raster.summary.types.MeanValue
 import geotrellis.spark._
-import geotrellis.spark.mask.Mask.Options
 import geotrellis.util.annotations.experimental
 import geotrellis.util.MethodExtensions
-import geotrellis.vector._
 
 import java.time.ZonedDateTime
 
@@ -48,8 +49,19 @@ import java.time.ZonedDateTime
   /**
     * $experimental
     */
-  @experimental def meanReduction(left: MeanResult, right: MeanResult): MeanResult =
+  @experimental def meanReduction(left: MeanValue, right: MeanValue): MeanValue =
     left + right
+
+  /**
+    * $experimental
+    */
+  @experimental def maxProjection(tile: Tile): Double = {
+    var max = Double.NaN
+    tile.foreachDouble { (x: Double) =>
+      if (isData(x) && (x > max || isNoData(max))) { max = x }
+    }
+    max
+  }
 
   /**
     * $experimental
@@ -60,8 +72,28 @@ import java.time.ZonedDateTime
   /**
     * $experimental
     */
+  @experimental def minProjection(tile: Tile): Double = {
+    var min = Double.NaN
+    tile.foreachDouble { (x: Double) =>
+      if (isData(x) && (x < min || isNoData(min))) { min = x }
+    }
+    min
+  }
+
+  /**
+    * $experimental
+    */
   @experimental def minReduction(left: Double, right: Double): Double =
     scala.math.min(left, right)
+
+  /**
+    * $experimental
+    */
+  @experimental def sumProjection(tile: Tile): Double = {
+    var s = 0.0
+    tile.foreachDouble((x: Double) => if (isData(x)) s = s + x)
+    s
+  }
 
   /**
     * $experimental
@@ -110,7 +142,7 @@ import java.time.ZonedDateTime
   ): Map[ZonedDateTime, Double] = {
     TimeSeries(
       self,
-      SumDoubleSummary.handleFullTile,
+      RDDTimeSeriesFunctions.sumProjection,
       RDDTimeSeriesFunctions.sumReduction,
       polygons,
       options
@@ -153,7 +185,7 @@ import java.time.ZonedDateTime
   ): Map[ZonedDateTime, Double] = {
     TimeSeries(
       self,
-      MinDoubleSummary.handleFullTile,
+      RDDTimeSeriesFunctions.minProjection,
       RDDTimeSeriesFunctions.minReduction,
       polygons,
       options
@@ -196,7 +228,7 @@ import java.time.ZonedDateTime
   ): Map[ZonedDateTime, Double] = {
     TimeSeries(
       self,
-      MaxDoubleSummary.handleFullTile,
+      RDDTimeSeriesFunctions.maxProjection,
       RDDTimeSeriesFunctions.maxReduction,
       polygons,
       options
@@ -239,7 +271,7 @@ import java.time.ZonedDateTime
   ): Map[ZonedDateTime, Double] = {
     TimeSeries(
       self,
-      MeanResult.fromFullTileDouble,
+      MeanValue.fromFullTileDouble,
       RDDTimeSeriesFunctions.meanReduction,
       polygons,
       options

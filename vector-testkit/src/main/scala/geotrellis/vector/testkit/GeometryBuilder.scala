@@ -17,21 +17,21 @@
 package geotrellis.vector.testkit
 
 import geotrellis.vector._
-import org.locationtech.jts.{geom => jts}
+import org.locationtech.jts.geom.Coordinate
 import org.locationtech.jts.geom.util.SineStarFactory
 import org.locationtech.jts.util.GeometricShapeFactory
 
 object GeometryBuilder {
   implicit def builderToGeom[T <: Geometry](b: GeometryBuilder[T]): T = b.build
 
-  def polygon(f: GeometricShapeFactory => jts.Polygon): GeometryBuilder[Polygon] =
+  def polygon(f: GeometricShapeFactory => Polygon): GeometryBuilder[Polygon] =
     new GeometryBuilder[Polygon] {
       val factory = new GeometricShapeFactory
       def build() = f(factory)
     }
 
-  def line(f: GeometricShapeFactory => jts.LineString): GeometryBuilder[Line] =
-    new GeometryBuilder[Line] {
+  def line(f: GeometricShapeFactory => LineString): GeometryBuilder[LineString] =
+    new GeometryBuilder[LineString] {
       val factory = new GeometricShapeFactory
       def build() = f(factory)
     }
@@ -43,17 +43,17 @@ trait GeometryBuilder[T <: Geometry] {
   def build(): T
 
   def withEnvelope(extent: Extent): GeometryBuilder[T] = {
-    factory.setEnvelope(new jts.Envelope(extent.xmin, extent.xmax, extent.ymin, extent.ymax))
+    factory.setEnvelope(extent.jtsEnvelope)
     this
   }
 
   def withLowerLeftAt(p: Point): GeometryBuilder[T] = {
-    factory.setBase(new jts.Coordinate(p.x, p.y))
+    factory.setBase(new Coordinate(p.x, p.y))
     this
   }
 
   def setCenter(p: Point): GeometryBuilder[T] = {
-    factory.setCentre(new jts.Coordinate(p.x, p.y))
+    factory.setCentre(new Coordinate(p.x, p.y))
     this
   }
 
@@ -91,8 +91,8 @@ object Ellipse { def apply() = GeometryBuilder.polygon(_.createEllipse) }
 object Squircle { def apply() = GeometryBuilder.polygon(_.createSquircle) }
 object SuperCircle { def apply(power: Double) = GeometryBuilder.polygon(_.createSupercircle(power)) }
 
-object Arc { 
-  def apply(startAngle: Double, extent: Double) = 
+object Arc {
+  def apply(startAngle: Double, extent: Double) =
     GeometryBuilder.line(_.createArc(startAngle, extent))
 }
 
@@ -111,6 +111,6 @@ object SineStar {
         f
       }
 
-      def build(): Polygon = Polygon(factory.createSineStar.asInstanceOf[jts.Polygon])
+      def build(): Polygon = factory.createSineStar.asInstanceOf[Polygon]
     }
 }

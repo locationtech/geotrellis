@@ -18,12 +18,11 @@ package geotrellis.spark.render
 
 import geotrellis.raster._
 import geotrellis.raster.testkit._
-import geotrellis.raster.render._
 import geotrellis.spark._
 import geotrellis.spark.render._
 import geotrellis.spark.testkit.testfiles._
 import geotrellis.spark.testkit._
-import geotrellis.spark.io.hadoop._
+import geotrellis.spark.store.hadoop._
 import geotrellis.spark.testkit._
 
 import org.scalatest._

@@ -31,7 +31,7 @@ object Reproject {
     apply(p, Transform(src, dest))
 
   def apply(p: Point, transform: Transform): Point =
-    transform(p.x, p.y)
+    Point(transform(p.x, p.y))
 
   // For features, name explicitly, or else type erasure kicks in.
   def pointFeature[D](pf: PointFeature[D], src: CRS, dest: CRS): PointFeature[D] =
@@ -40,17 +40,17 @@ object Reproject {
   def pointFeature[D](pf: PointFeature[D], transform: Transform): PointFeature[D] =
     PointFeature[D](apply(pf.geom, transform), pf.data)
 
-  def apply(l: Line, src: CRS, dest: CRS): Line =
+  def apply(l: LineString, src: CRS, dest: CRS): LineString =
     apply(l, Transform(src, dest))
 
-  def apply(l: Line, transform: Transform): Line =
-    Line(l.points.map { p => transform(p.x, p.y) })
+  def apply(l: LineString, transform: Transform): LineString =
+    LineString(l.points.map { p => transform(p.x, p.y) })
 
-  def lineFeature[D](lf: LineFeature[D], src: CRS, dest: CRS): LineFeature[D] =
-    LineFeature(apply(lf.geom, src, dest), lf.data)
+  def lineStringFeature[D](lf: LineStringFeature[D], src: CRS, dest: CRS): LineStringFeature[D] =
+    LineStringFeature(apply(lf.geom, src, dest), lf.data)
 
-  def lineFeature[D](lf: LineFeature[D], transform: Transform): LineFeature[D] =
-    LineFeature(apply(lf.geom, transform), lf.data)
+  def lineStringFeature[D](lf: LineStringFeature[D], transform: Transform): LineStringFeature[D] =
+    LineStringFeature(apply(lf.geom, transform), lf.data)
 
   def apply(p: Polygon, src: CRS, dest: CRS): Polygon =
     apply(p, Transform(src, dest))
@@ -61,8 +61,17 @@ object Reproject {
       p.holes.map{ apply(_, transform) }
     )
 
+  /** Naively reproject an extent
+    *
+    * @note This method is unsafe when attempting to reproject a gridded space (as is the
+    * case when dealing with rasters) and should not be used. Instead, reproject a RasterExtent
+    * to ensure that underlying cells are fully and accurately captured by reprojection.
+    */
   def apply(extent: Extent, src: CRS, dest: CRS): Extent =
-    apply(extent.toPolygon, src, dest).envelope
+    apply(extent.toPolygon, src, dest).extent
+
+  def apply(extent: Extent, transform: Transform): Extent =
+    apply(extent.toPolygon, transform).extent
 
   /** Performs adaptive refinement to produce a Polygon representation of the projected region.
     *
@@ -91,7 +100,9 @@ object Reproject {
       val length = sqrt(pow(x0 - x1, 2) + pow(y0 - y1, 2))
 
       val p2 = m -> (x2, y2)
-      if (deflect / length < relError) {
+      if (java.lang.Double.isNaN(deflect)) {
+        throw new IllegalArgumentException(s"Encountered NaN during a refinement step: ($deflect / $length). Input $extent is likely not in source projection.")
+      } else if (deflect / length < relError) {
         List(p2)
       } else {
         refine(p0, p2) ++ (p2 :: refine(p2, p1))
@@ -126,17 +137,17 @@ object Reproject {
   def multiPointFeature[D](mpf: MultiPointFeature[D], transform: Transform): MultiPointFeature[D] =
     MultiPointFeature(apply(mpf.geom, transform), mpf.data)
 
-  def apply(ml: MultiLine, src: CRS, dest: CRS): MultiLine =
+  def apply(ml: MultiLineString, src: CRS, dest: CRS): MultiLineString =
     apply(ml, Transform(src, dest))
 
-  def apply(ml: MultiLine, transform: Transform): MultiLine =
-    MultiLine(ml.lines.map(apply(_, transform)))
+  def apply(ml: MultiLineString, transform: Transform): MultiLineString =
+    MultiLineString(ml.lines.map(apply(_, transform)))
 
-  def multiLineFeature[D](mlf: MultiLineFeature[D], src: CRS, dest: CRS): MultiLineFeature[D] =
-    MultiLineFeature(apply(mlf, src, dest), mlf.data)
+  def multiLineStringFeature[D](mlf: MultiLineStringFeature[D], src: CRS, dest: CRS): MultiLineStringFeature[D] =
+    MultiLineStringFeature(apply(mlf, src, dest), mlf.data)
 
-  def multiLineFeature[D](mlf: MultiLineFeature[D], transform: Transform): MultiLineFeature[D] =
-    MultiLineFeature(apply(mlf, transform), mlf.data)
+  def multiLineStringFeature[D](mlf: MultiLineStringFeature[D], transform: Transform): MultiLineStringFeature[D] =
+    MultiLineStringFeature(apply(mlf, transform), mlf.data)
 
   def apply(mp: MultiPolygon, src: CRS, dest: CRS): MultiPolygon =
     apply(mp, Transform(src, dest))
@@ -152,24 +163,24 @@ object Reproject {
 
   def apply(gc: GeometryCollection, src: CRS, dest: CRS): GeometryCollection =
     GeometryCollection(
-      gc.points.map{ apply(_, src, dest) },
-      gc.lines.map{ apply(_, src, dest) },
-      gc.polygons.map{ apply(_, src, dest) },
-      gc.multiPoints.map{ apply(_, src, dest) },
-      gc.multiLines.map{ apply(_, src, dest) },
-      gc.multiPolygons.map{ apply(_, src, dest) },
-      gc.geometryCollections.map{ apply(_, src, dest) }
+      gc.getAll[Point].map{ apply(_, src, dest) },
+      gc.getAll[LineString].map{ apply(_, src, dest) },
+      gc.getAll[Polygon].map{ apply(_, src, dest) },
+      gc.getAll[MultiPoint].map{ apply(_, src, dest) },
+      gc.getAll[MultiLineString].map{ apply(_, src, dest) },
+      gc.getAll[MultiPolygon].map{ apply(_, src, dest) },
+      gc.getAll[GeometryCollection].map{ apply(_, src, dest) }
     )
 
   def apply(gc: GeometryCollection, transform: Transform): GeometryCollection =
     GeometryCollection(
-      gc.points.map{ apply(_, transform) },
-      gc.lines.map{ apply(_, transform) },
-      gc.polygons.map{ apply(_, transform) },
-      gc.multiPoints.map{ apply(_, transform) },
-      gc.multiLines.map{ apply(_, transform) },
-      gc.multiPolygons.map{ apply(_, transform) },
-      gc.geometryCollections.map{ apply(_, transform) }
+      gc.getAll[Point].map{ apply(_, transform) },
+      gc.getAll[LineString].map{ apply(_, transform) },
+      gc.getAll[Polygon].map{ apply(_, transform) },
+      gc.getAll[MultiPoint].map{ apply(_, transform) },
+      gc.getAll[MultiLineString].map{ apply(_, transform) },
+      gc.getAll[MultiPolygon].map{ apply(_, transform) },
+      gc.getAll[GeometryCollection].map{ apply(_, transform) }
     )
 
 
@@ -185,11 +196,10 @@ object Reproject {
   def apply(g: Geometry, transform: Transform): Geometry =
     g match {
       case p: Point => apply(p, transform)
-      case l: Line => apply(l, transform)
+      case l: LineString => apply(l, transform)
       case p: Polygon => apply(p, transform)
-      case e: Extent => apply(e, transform)
       case mp: MultiPoint => apply(mp, transform)
-      case ml: MultiLine => apply(ml, transform)
+      case ml: MultiLineString => apply(ml, transform)
       case mp: MultiPolygon => apply(mp, transform)
       case gc: GeometryCollection => apply(gc, transform)
     }
@@ -200,10 +210,10 @@ object Reproject {
   def geometryFeature[D](f: Feature[Geometry, D], transform: Transform): Feature[Geometry, D] =
     f.geom match {
       case p: Point => pointFeature(Feature(p, f.data), transform)
-      case l: Line => lineFeature(Feature(l, f.data), transform)
+      case l: LineString => lineStringFeature(Feature(l, f.data), transform)
       case p: Polygon => polygonFeature(Feature(p, f.data), transform)
       case mp: MultiPoint => multiPointFeature(Feature(mp, f.data), transform)
-      case ml: MultiLine => multiLineFeature(Feature(ml, f.data), transform)
+      case ml: MultiLineString => multiLineStringFeature(Feature(ml, f.data), transform)
       case mp: MultiPolygon => multiPolygonFeature(Feature(mp, f.data), transform)
       case gc: GeometryCollection => geometryCollectionFeature(Feature(gc, f.data), transform)
     }

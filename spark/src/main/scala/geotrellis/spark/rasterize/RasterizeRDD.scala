@@ -18,16 +18,14 @@ package geotrellis.spark.rasterize
 
 import geotrellis.raster._
 import geotrellis.raster.rasterize._
+import geotrellis.layer._
 import geotrellis.spark._
-import geotrellis.spark.tiling._
 import geotrellis.vector._
-
 import org.apache.spark.rdd._
 import org.apache.spark.{HashPartitioner, Partitioner}
 import org.apache.spark.rdd._
 
 import scala.collection.immutable.VectorBuilder
-
 import spire.syntax.cfor._
 
 

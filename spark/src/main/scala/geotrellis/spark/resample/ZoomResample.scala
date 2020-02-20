@@ -18,11 +18,10 @@ package geotrellis.spark.resample
 
 import geotrellis.raster._
 import geotrellis.raster.resample._
+import geotrellis.layer._
 import geotrellis.spark._
-import geotrellis.spark.tiling._
 import geotrellis.util._
 import geotrellis.vector.Extent
-
 import org.apache.spark.rdd.RDD
 import spire.implicits._
 
@@ -64,7 +63,7 @@ object ZoomResample {
     */
   def apply[
     K: SpatialComponent,
-    V <: CellGrid[Int]: (? => TileResampleMethods[V])
+    V: (* => TileResampleMethods[V])
   ](
     rdd: RDD[(K, V)] with Metadata[TileLayerMetadata[K]],
     sourceZoom: Int,

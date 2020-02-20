@@ -44,10 +44,9 @@ class CRSTest extends FunSpec with Inspectors {
   it("should return the WKT string of the passed EPSG:4326") {
     val crs = CRS.fromName("EPSG:4326")
 
-    val wktString = crs.toWKT()
+    val wktString: Option[String] = crs.toWKT()
 
     assert(wktString == Some("GEOGCS[\"WGS 84\", DATUM[\"World Geodetic System 1984\", SPHEROID[\"WGS 84\", 6378137.0, 298.257223563, AUTHORITY[\"EPSG\",\"7030\"]], AUTHORITY[\"EPSG\",\"6326\"]], PRIMEM[\"Greenwich\", 0.0, AUTHORITY[\"EPSG\",\"8901\"]], UNIT[\"degree\", 0.017453292519943295], AXIS[\"Geodetic longitude\", EAST], AXIS[\"Geodetic latitude\", NORTH], AUTHORITY[\"EPSG\",\"4326\"]]"))
-
   }
 
   it("should return the WKT string of the passed EPSG:4010") {
@@ -69,7 +68,7 @@ class CRSTest extends FunSpec with Inspectors {
   it("should have human friendly toString") {
     val samples = Seq(
       CRS.fromEpsgCode(3857),
-      CRS.fromWKT(WebMercator.toWKT().get),
+      CRS.fromWKT(WebMercator.toWKT().get).get,
       CRS.fromName("EPSG:4326"),
       CRS.fromString(Sinusoidal.toProj4String),
       LatLng, Sinusoidal, WebMercator, ConusAlbers

@@ -27,9 +27,10 @@ import geotrellis.raster.density._
 import geotrellis.raster.mapalgebra.focal._
 import geotrellis.raster.mapalgebra.local._
 import geotrellis.raster.testkit._
+import geotrellis.layer._
+import geotrellis.layer.stitch._
 import geotrellis.spark._
 import geotrellis.spark.stitch._
-import geotrellis.spark.tiling._
 import geotrellis.vector._
 import geotrellis.spark.testkit._
 
@@ -51,7 +52,7 @@ class RDDKernelDensitySpec extends FunSpec
           low * (1-x) + high * x
         }
         new PointFeature(Point(randInRange(extent.xmin,extent.xmax),
-                               randInRange(extent.ymin,extent.ymax)), 
+                               randInRange(extent.ymin,extent.ymax)),
                          Random.nextInt % 50 + 50)
       }
 
@@ -61,7 +62,7 @@ class RDDKernelDensitySpec extends FunSpec
       assert(pts.forall (extent.contains(_)))
 
       // stamp kernels for points to local raster
-      
+
       val cellType = IntConstantNoDataCellType
       val krnwdth = 9.0
       val kern = Kernel(Circle(krnwdth))
@@ -76,7 +77,7 @@ class RDDKernelDensitySpec extends FunSpec
 
       val tileRDD = ptrdd.kernelDensity(kern, ld, LatLng, cellType)
 
-      val tileList = 
+      val tileList =
         for { r <- 0 until ld.layoutRows
             ; c <- 0 until ld.layoutCols
             } yield {
@@ -100,7 +101,7 @@ class RDDKernelDensitySpec extends FunSpec
           low * (1-x) + high * x
         }
         new PointFeature(Point(randInRange(extent.xmin,extent.xmax),
-                               randInRange(extent.ymin,extent.ymax)), 
+                               randInRange(extent.ymin,extent.ymax)),
                          Random.nextInt % 50 + 50)
       }
 
@@ -110,7 +111,7 @@ class RDDKernelDensitySpec extends FunSpec
       assert(pts.forall (extent.contains(_)))
 
       // stamp kernels for points to local raster
-      
+
       val cellType = IntConstantNoDataCellType
       val krnwdth = 9.0
       val kern = Kernel(Circle(krnwdth))
@@ -125,7 +126,7 @@ class RDDKernelDensitySpec extends FunSpec
 
       val tileRDD = ptrdd.kernelDensity(kern, ld, LatLng, cellType)
 
-      val tileList = 
+      val tileList =
         for { r <- 0 until ld.layoutRows
             ; c <- 0 until ld.layoutCols
             } yield {

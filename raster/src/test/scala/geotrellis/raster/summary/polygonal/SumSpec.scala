@@ -17,46 +17,40 @@
 package geotrellis.raster.summary.polygonal
 
 import geotrellis.raster._
-import geotrellis.vector._
+import geotrellis.raster.summary.polygonal.visitors.SumVisitor
+import geotrellis.raster.summary.types.SumValue
 import geotrellis.raster.testkit._
-
+import geotrellis.vector._
 import org.scalatest._
 
-class SumSpec extends FunSpec
-                 with Matchers
-                 with RasterMatchers
-                 with TileBuilders {
+class SumSpec
+    extends FunSpec
+    with Matchers
+    with RasterMatchers
+    with TileBuilders {
 
   describe("Sum") {
-    val rs = createRaster(Array.fill(40*40)(1),40,40)
+    val rs = createRaster(Array.fill(40 * 40)(1), 40, 40)
     val tile = rs.tile
     val extent = rs.extent
-    val zone = Extent(10,-10,50,10).toPolygon
+    val zone = Extent(10, -10, 50, 10).toPolygon
 
     val multibandTile = MultibandTile(tile, tile, tile)
+    val multibandRaster = Raster(multibandTile, extent)
 
     it("computes Sum for Singleband") {
-      val result = tile.polygonalSum(extent, zone)
-
-      result should equal (40)
+      val result = rs.polygonalSummary(zone, SumVisitor)
+      result should equal(Summary(SumValue(40.0)))
     }
 
     it("computes Sum for Multiband") {
-      val result = multibandTile.polygonalSum(extent, zone)
-
-      result should equal (Array.fill[Long](3)(40))
-    }
-
-    it("computes Double Sum for Singleband") {
-      val result = tile.polygonalSumDouble(extent, zone)
-
-      result should equal (40.0)
-    }
-
-    it("computes Double Sum for Multiband") {
-      val result = multibandTile.polygonalSumDouble(extent, zone)
-
-      result should equal (Array.fill[Double](3)(40.0))
+      multibandRaster.polygonalSummary(zone, SumVisitor) match {
+        case Summary(result) =>
+          result.foreach {
+            _ should equal(SumValue(40.0))
+          }
+        case _ => fail("polygonalSummary did not return a result")
+      }
     }
   }
 }

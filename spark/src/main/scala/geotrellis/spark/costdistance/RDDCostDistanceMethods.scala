@@ -16,16 +16,16 @@
 
 package geotrellis.spark.costdistance
 
-import geotrellis.raster.{Tile, DoubleArrayTile}
+import geotrellis.layer._
+import geotrellis.raster.{DoubleArrayTile, Tile}
 import geotrellis.spark._
 import geotrellis.util.MethodExtensions
 import geotrellis.vector.Geometry
-
 import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkContext
 
 
-abstract class RDDCostDistanceMethods[K: (? => SpatialKey), V: (? => Tile)]
+abstract class RDDCostDistanceMethods[K: (* => SpatialKey), V: (* => Tile)]
     extends MethodExtensions[RDD[(K, V)] with Metadata[TileLayerMetadata[K]]] {
 
   def costdistance(

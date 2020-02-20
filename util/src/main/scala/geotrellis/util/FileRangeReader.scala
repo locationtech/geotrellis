@@ -25,11 +25,11 @@ import java.nio.channels.FileChannel.MapMode._
  * This class extends [[RangeReader]] by reading chunks from a given local path. This
  * allows for reading in of files larger than 4gb into GeoTrellis.
  *
- * @param path: A String that is the path to the local file.
+ * @param file: A local File to read bytes from.
  * @return A new instance of FileRangeReader
  */
-class FileRangeReader(file: File) extends RangeReader {
-  def totalLength: Long = file.length
+class FileRangeReader(val file: File) extends RangeReader {
+  val totalLength: Long = file.length
 
   def readClippedRange(start: Long, length: Int): Array[Byte] = {
     val inputStream: FileInputStream = new FileInputStream(file)
@@ -60,12 +60,17 @@ object FileRangeReader {
    * Returns a new instance of FileRangeReader.
    *
    * @param path: A String that is the path to the local file.
-   * @param chunkSize: An Int that specifies how many bytes should be read in at a time.
    * @return A new instance of FileRangeReader
    */
   def apply(path: String): FileRangeReader =
     new FileRangeReader(new File(path))
 
+  /**
+    * Returns a new instance of FileRangeReader.
+    *
+    * @param file: A local File to read bytes from.
+    * @return A new instance of FileRangeReader
+    */
   def apply(file: File): FileRangeReader =
     new FileRangeReader(file)
 }

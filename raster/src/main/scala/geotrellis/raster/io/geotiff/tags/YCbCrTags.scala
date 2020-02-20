@@ -17,6 +17,8 @@
 package geotrellis.raster.io.geotiff.tags
 
 import monocle.macros.Lenses
+import io.circe._
+import io.circe.generic.semiauto._
 
 @Lenses("_")
 case class YCbCrTags(
@@ -24,3 +26,8 @@ case class YCbCrTags(
   yCbCrSubSampling: Option[Array[Int]] = None,
   yCbCrPositioning: Option[Int] = None
 )
+
+object YCbCrTags {
+   implicit val ycbcrTagsDecoder: Decoder[YCbCrTags] = deriveDecoder[YCbCrTags]
+   implicit val ycbcrTagsEncoder: Encoder[YCbCrTags] = deriveEncoder[YCbCrTags]
+}

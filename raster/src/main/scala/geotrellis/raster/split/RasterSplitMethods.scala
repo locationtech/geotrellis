@@ -22,9 +22,12 @@ import spire.syntax.cfor._
 
 import Split.Options
 
-abstract class RasterSplitMethods[T <: CellGrid[Int]: (? => SplitMethods[T])] extends SplitMethods[Raster[T]] {
+abstract class RasterSplitMethods[T <: CellGrid[Int]: (* => SplitMethods[T])] extends SplitMethods[Raster[T]] {
   def split(tileLayout: TileLayout, options: Options): Seq[Raster[T]] =
     self.rasterExtent.split(tileLayout, options)
       .zip(self.tile.split(tileLayout, options))
       .map { case (re, tile) => Raster(tile, re.extent) }
 }
+
+trait SinglebandRasterSplitMethods extends RasterSplitMethods[Tile]
+trait MultibandRasterSplitMethods extends RasterSplitMethods[MultibandTile]

@@ -13,10 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package geotrellis.raster.render
 
 import org.openjdk.jmh.annotations._
-import geotrellis.raster._
+import geotrellis.raster.{IntArrayTile, Tile}
 import geotrellis.raster.render.png._
 
 @BenchmarkMode(Array(Mode.AverageTime))

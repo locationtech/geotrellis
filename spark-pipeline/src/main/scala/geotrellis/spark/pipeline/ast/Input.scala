@@ -17,13 +17,13 @@
 package geotrellis.spark.pipeline.ast
 
 import geotrellis.raster.{MultibandTile, Tile}
-import geotrellis.spark.TemporalProjectedExtent
-import geotrellis.spark.io.hadoop.HadoopGeoTiffRDD
-import geotrellis.spark.io.s3.S3GeoTiffRDD
+import geotrellis.layer.TemporalProjectedExtent
+import geotrellis.spark.store.hadoop.HadoopGeoTiffRDD
+import geotrellis.spark.store.s3.S3GeoTiffRDD
 import geotrellis.spark.pipeline.json.read._
 import geotrellis.vector.ProjectedExtent
 
-import com.amazonaws.services.s3.AmazonS3URI
+import geotrellis.store.s3.AmazonS3URI
 import org.apache.hadoop.fs.Path
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD

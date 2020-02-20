@@ -16,8 +16,9 @@
 
 package geotrellis.spark.partition
 
+import geotrellis.layer._
+import geotrellis.store.index.zcurve._
 import geotrellis.spark._
-import geotrellis.spark.io.index.zcurve._
 import geotrellis.spark.testkit._
 
 import org.apache.spark.Partitioner

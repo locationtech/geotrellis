@@ -25,7 +25,7 @@ import geotrellis.util.MethodExtensions
 import spire.syntax.cfor._
 
 
-class ProjectedRasterReprojectMethods[T <: CellGrid[Int]](val self: ProjectedRaster[T]) extends MethodExtensions[ProjectedRaster[T]] {
+abstract class ProjectedRasterReprojectMethods[T <: CellGrid[Int]](val self: ProjectedRaster[T]) extends MethodExtensions[ProjectedRaster[T]] {
   import Reproject.Options
 
   def reproject(dest: CRS, options: Options)(implicit ev: Raster[T] => RasterReprojectMethods[Raster[T]]): ProjectedRaster[T] =

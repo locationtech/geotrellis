@@ -20,7 +20,8 @@ import geotrellis.vector.io._
 import geotrellis.vector.io.json.JsonFeatureCollection
 import org.scalatest.FunSpec
 import org.scalatest.Matchers
-import spray.json.DefaultJsonProtocol._
+
+import _root_.io.circe.generic.JsonCodec
 
 class ExtentSpec extends FunSpec with Matchers {
   describe("Extent") {
@@ -149,31 +150,31 @@ class ExtentSpec extends FunSpec with Matchers {
 
     it ("should give envelopes for geometries and features") {
 
-      val l1 = Line(Point(0,0), Point(0,5), Point(5,5), Point(5,0), Point(0,0))
-      val l2 = Line(Point(1,1), Point(1,6), Point(6,6), Point(6,1), Point(1,1))
+      val l1 = LineString(Point(0,0), Point(0,5), Point(5,5), Point(5,0), Point(0,0))
+      val l2 = LineString(Point(1,1), Point(1,6), Point(6,6), Point(6,1), Point(1,1))
 
       val p1: Polygon = Polygon(l1)
       val p2: Polygon = Polygon(l2)
 
-      val env1 = Point(18.0,23.00).envelope
+      val env1 = Point(18.0,23.00).extent
       assert(env1 === Extent(18.0,23.0,18.0,23.0))
 
-      val env2 = l1.envelope
+      val env2 = l1.extent
       assert(env2 === Extent(0.0,0.0,5.0,5.0))
 
-      val env3 = p1.envelope
+      val env3 = p1.extent
       assert(env3 === env2)
 
-      val env4 = Seq(p1, p2).envelope
+      val env4 = Seq(p1, p2).extent
       assert(env4 === Extent(0.0,0.0,6.0,6.0))
 
       val json = Seq(p1, p2).toGeoJson
-      val polygonsBack = json.parseGeoJson[GeometryCollection].polygons
-      val env5 = polygonsBack.envelope
+      val polygonsBack = json.parseGeoJson[GeometryCollection].getAll[Polygon]
+      val env5 = polygonsBack.extent
       assert(env5 === env4)
 
+      @JsonCodec
       case class SomeData(name: String, value: Double)
-      implicit val someDataFormat = jsonFormat2(SomeData)
 
       val jsonFeature =
         """{
@@ -189,13 +190,11 @@ class ExtentSpec extends FunSpec with Matchers {
           |}""".stripMargin
       val feature = PointFeature(Point(18.0,23.00), SomeData("Bob", 32.2))
 
-      val env6 = feature.envelope
-      assert(env6 === env1)
-      val env7 = feature.geom.envelope
-      assert(env7 === env6)
+      val env7 = feature.geom.extent
+      assert(env7 === env1)
 
+      @JsonCodec
       case class DataBox(data: Int)
-      implicit val boxFormat = jsonFormat1(DataBox)
       val jsonFc = """{
                      |  "type":"FeatureCollection",
                      |  "features":[
@@ -204,7 +203,7 @@ class ExtentSpec extends FunSpec with Matchers {
                      |    {"type":"Feature","geometry":{"type":"Point","coordinates":[14.13,11.21]},"properties":{"data": 142},"id":"zorp"}
                      |  ]
                      |}""".stripMargin
-      val env8 = jsonFc.parseGeoJson[JsonFeatureCollection].getAllPoints().envelope
+      val env8 = jsonFc.parseGeoJson[JsonFeatureCollection].getAllPoints().extent
       assert(env8.contains(env7))
     }
   }

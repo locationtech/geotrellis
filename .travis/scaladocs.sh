@@ -8,23 +8,27 @@ then
   exit 0
 fi
 
-rev=$(git rev-parse --short HEAD)
+DIR="$(dirname "$0")/.."
+SCALADOCS_CHECKOUT_DIR="${1:-/tmp}/scaladocs"
+SCALADOCS_REPO="https://github.com/geotrellis/scaladocs.git"
+SCALADOCS_BRANCH="gh-pages"
 
-# Build docs
-./sbt "++$TRAVIS_SCALA_VERSION" unidoc
+pushd "$DIR"
+rev=$(git rev-parse --short HEAD)
 
 # Set up git
 git config --global user.email "azaveadev@azavea.com"
 git config --global user.name "azaveaci"
 
-# Inside scaladocs from hereon
-rm -rf scaladocs
-git clone https://github.com/geotrellis/scaladocs.git
-rm -rf scaladocs/latest
-mv target/scala-2.11/unidoc scaladocs/latest
-cd scaladocs
+rm -rf "$SCALADOCS_CHECKOUT_DIR"
+git clone "$SCALADOCS_REPO" "$SCALADOCS_CHECKOUT_DIR"
+rm -rf "$SCALADOCS_CHECKOUT_DIR/latest"
+mv "target/scala-2.12/unidoc" "$SCALADOCS_CHECKOUT_DIR/latest"
+
+pushd "$SCALADOCS_CHECKOUT_DIR"
 git remote add originAuth https://$CI_GH_TOKEN@github.com/geotrellis/scaladocs.git
 
+echo "Pushing scaladoc to $SCALADOCS_REPO#$SCALADOCS_BRANCH"
 git add -A .
 git commit -m "rebuild scaladocs at ${rev}"
-git push -q originAuth gh-pages
+git push -q originAuth "$SCALADOCS_BRANCH"

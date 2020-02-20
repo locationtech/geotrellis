@@ -23,7 +23,7 @@ import geotrellis.raster._
 /**
   * A class containing extension methods for cropping [[Raster]]s.
   */
-class RasterCropMethods[T <: CellGrid[Int]: (? => CropMethods[T])](val self: Raster[T]) extends CropMethods[Raster[T]] {
+abstract class RasterCropMethods[T <: CellGrid[Int]: (* => CropMethods[T])](self: Raster[T]) extends CropMethods[Raster[T]] {
   import Crop.Options
 
   /**
@@ -39,8 +39,8 @@ class RasterCropMethods[T <: CellGrid[Int]: (? => CropMethods[T])](val self: Ras
   }
 
   /**
-    * Given an Extent, produce a cropped [[Raster]].
-    */
+   * Given an Extent, produce a cropped [[Raster]].
+   */
   def crop(extent: Extent): Raster[T] =
     crop(extent, Options.DEFAULT)
 

@@ -11,6 +11,7 @@ env:
     - RUN_SET=1
     - RUN_SET=2
     - RUN_SET=3
+    - RUN_SET=scaladoc
 
 language: scala
 
@@ -27,6 +28,7 @@ before_script:
   - sudo fallocate -l 5G /swapfile && sudo chmod 600 /swapfile && sudo mkswap /swapfile && sudo swapon /swapfile
   - .travis/before-script.sh
   - docker run -d --restart=always -p 8081:80 -v $(pwd)/spark/src/test/resources:/usr/share/nginx/html:ro nginx:stable
+  - docker run -d --restart=always -p 9091:9000 -e MINIO_ACCESS_KEY=minio -e MINIO_SECRET_KEY=password minio/minio:RELEASE.2019-05-02T19-07-09Z server /data
   - .travis/unzip-rasters.sh
 
 jdk:
@@ -34,7 +36,7 @@ jdk:
 
 scala:
   - "2.11.12"
-  - "2.12.7"
+  - "2.12.10"
 
 before_cache:
   # Cleanup the cached directories to avoid unnecessary cache updates
@@ -48,7 +50,7 @@ cache:
   - $HOME/downloads
 
 script:
-  - .travis/build-and-test.sh
+  - .travis/build-and-test-docker.sh
 
 notifications:
   email:
@@ -60,6 +62,7 @@ notifications:
 
 before_deploy:
   - export GEOTRELLIS_VERSION_SUFFIX="-${TRAVIS_COMMIT:0:7}"
+  - ./sbt unidoc
 
 deploy:
   - provider: script
@@ -68,5 +71,6 @@ deploy:
     on:
       repo: locationtech/geotrellis
       branch: master
-      jdk: oraclejdk8
+      condition: "$RUN_SET = 'scaladoc'"
+      jdk: openjdk8
       scala: "2.11.12"

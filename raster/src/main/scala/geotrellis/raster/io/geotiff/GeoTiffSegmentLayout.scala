@@ -16,7 +16,7 @@
 
 package geotrellis.raster.io.geotiff
 
-import geotrellis.raster.{GridBounds, RasterExtent, TileLayout, PixelIsArea}
+import geotrellis.raster.{GridBounds, RasterExtent, TileLayout, PixelIsArea, Dimensions}
 import geotrellis.raster.rasterize.Rasterizer
 import geotrellis.vector.{Extent, Geometry}
 
@@ -219,7 +219,7 @@ case class GeoTiffSegmentLayout(
     * @param segmentIndex: An Int that represents the given segment in the index
     * @return Tuple representing segment (cols, rows)
     */
-  def getSegmentDimensions(segmentIndex: Int): (Int, Int) = {
+  def getSegmentDimensions(segmentIndex: Int): Dimensions[Int] = {
     val normalizedSegmentIndex = segmentIndex % bandSegmentCount
     val layoutCol = normalizedSegmentIndex % tileLayout.layoutCols
     val layoutRow = normalizedSegmentIndex / tileLayout.layoutCols
@@ -238,12 +238,12 @@ case class GeoTiffSegmentLayout(
         tileLayout.tileRows
       }
 
-    (cols, rows)
+    Dimensions(cols, rows)
   }
 
   private [geotrellis] def getGridBounds(segmentIndex: Int): GridBounds[Int] = {
     val normalizedSegmentIndex = segmentIndex % bandSegmentCount
-    val (segmentCols, segmentRows) = getSegmentDimensions(segmentIndex)
+    val Dimensions(segmentCols, segmentRows) = getSegmentDimensions(segmentIndex)
 
     val (startCol, startRow) = {
       val (layoutCol, layoutRow) = getSegmentCoordinate(normalizedSegmentIndex)
@@ -276,7 +276,7 @@ trait GeoTiffSegmentLayoutTransform {
     * @param segmentIndex: An Int that represents the given segment in the index
     * @return Tuple representing segment (cols, rows)
     */
-  def getSegmentDimensions(segmentIndex: Int): (Int, Int) = {
+  def getSegmentDimensions(segmentIndex: Int): Dimensions[Int] = {
     val normalizedSegmentIndex = segmentIndex % bandSegmentCount
     val layoutCol = normalizedSegmentIndex % tileLayout.layoutCols
     val layoutRow = normalizedSegmentIndex / tileLayout.layoutCols
@@ -295,7 +295,7 @@ trait GeoTiffSegmentLayoutTransform {
         tileLayout.tileRows
       }
 
-    (cols, rows)
+    Dimensions(cols, rows)
   }
 
   /**
@@ -305,7 +305,7 @@ trait GeoTiffSegmentLayoutTransform {
     * @return Pixel size of the segment
     */
   def getSegmentSize(segmentIndex: Int): Int = {
-    val (cols, rows) = getSegmentDimensions(segmentIndex)
+    val Dimensions(cols, rows) = getSegmentDimensions(segmentIndex)
     cols * rows
   }
 
@@ -334,7 +334,7 @@ trait GeoTiffSegmentLayoutTransform {
 
   private [geotrellis] def getGridBounds(segmentIndex: Int): GridBounds[Int] = {
     val normalizedSegmentIndex = segmentIndex % bandSegmentCount
-    val (segmentCols, segmentRows) = getSegmentDimensions(segmentIndex)
+    val Dimensions(segmentCols, segmentRows) = getSegmentDimensions(segmentIndex)
 
     val (startCol, startRow) = {
       val (layoutCol, layoutRow) = getSegmentCoordinate(normalizedSegmentIndex)

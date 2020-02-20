@@ -52,17 +52,15 @@ following:
 -  `99 Problems in Scala <http://aperiodic.net/phil/scala/s-99/>`__ to
    develop basic skills in Functional Programming
 
-GeoTrellis Project Template
----------------------------
+GeoTrellis Spark Project Template
+---------------------------------
 
-The
-`geotrellis-sbt-template <https://github.com/geotrellis/geotrellis-sbt-template>`__
-repo provides a simple GeoTrellis project template. It can be used to
-experiment with GeoTrellis, or to write full applications. Get it with:
+GeoTrellis maintains a g8 template for bootstrapping a new GeoTrellis ingest
+project that depends on Spark. Get it with:
 
 .. code:: console
 
-    git clone https://github.com/geotrellis/geotrellis-sbt-template.git
+    git clone https://github.com/geotrellis/geotrellis-spark-job.g8
 
 You don't need ``sbt`` installed to write a GeoTrellis app, since this
 template includes an ``sbt`` bootstrap script. It is used like regular
@@ -71,7 +69,7 @@ SBT, and comes with a few extra commands:
 -  Enter the SBT shell: ``./sbt``
 -  Run tests: ``./sbt test``
 -  Force Scala 2.11 (default): ``./sbt -211``
--  Force Scala 2.10: ``./sbt -210``
+-  Force Scala 2.12: ``./sbt -212``
 
 À la Carte GeoTrellis Modules
 -----------------------------
@@ -84,10 +82,10 @@ the ``libraryDependencies`` list in your ``build.sbt``:
 .. code:: scala
 
     libraryDependencies ++= Seq(
-        "org.locationtech.geotrellis" %% "geotrellis-spark"  % "1.0.0",
-        "org.locationtech.geotrellis" %% "geotrellis-s3"     % "1.0.0", // now we can use Amazon S3!
-        "org.apache.spark"            %% "spark-core"        % "2.1.0" % "provided",
-        "org.scalatest"               %% "scalatest"         % "3.0.0" % "test"
+        "org.locationtech.geotrellis" %% "geotrellis-spark"    % "3.0.0",
+        "org.locationtech.geotrellis" %% "geotrellis-s3-spark" % "3.0.0", // now we can use the Amazon S3 store!
+        "org.apache.spark"            %% "spark-core"          % "2.4.3" % "provided",
+        "org.scalatest"               %% "scalatest"           % "3.0.8" % "test"
     )
 
 `Click here for a full list and explanation of each GeoTrellis

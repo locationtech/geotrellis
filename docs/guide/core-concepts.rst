@@ -229,27 +229,45 @@ Vector Data
 
 Data in GIS applications often come in a geometric form.  That is, one might
 encounter data describing, say, population by census region, or road networks.
-These are termed *vector* data sources.  Geotrellis wraps `JTS
-<http://github.com/locationtech/jts>`__ geometries in a Scala interface and
-then provides the tools to produce raster data from that vector data, or
-simply to work directly with the vector data itself.  Vector data comes either
-as raw geometry, or as *feature data*—that is, geometry with associated
-data—and can be read from a variety of sources.
+These are termed *vector* data sources.  Geotrellis uses `JTS
+<http://github.com/locationtech/jts>`__ geometries, but provides some code to
+make the use of that library's classes easier and more idiomatic in a Scala
+context.  We provide some added vector capabilities and tools to produce
+raster data from vector data.  Vector data comes either as raw geometry, or as
+*feature data*—that is, geometry with associated data—and can be read from a
+variety of sources.
 
 Geometries
 ----------
 
-Geometries in Geotrellis are exclusively point sets and piecewise linear
-representations.  A collection of points may be connected by a chain of linear
-segments into more complex shapes, and then aggregated into collections.  All
-such classes derive from the base |geotrellis.vector.Geometry|_ class.  The
-geometry subclasses are as follows:
+.. note:: As of Geotrellis version 3, we have shifted to a direct reliance on
+  JTS geometry classes.  Interested users should consult the `JTS
+  documentation <https://locationtech.github.io/jts/javadoc/>`__ for details
+  on that library's capabilities and interface.  However, we will give a rough
+  overview of the basic vector classes here for convenience.
 
-- |geotrellis.vector.Point|_
+.. note:: In nearly all circumstances, it *should not* be necessary to
+  ``import org.locationtech.jts.geom._``.  Most of the types in that module
+  are mirrored by Geotrellis and will become available via::
+
+    import geotrellis.vector._
+
+  If some of the types provided by JTS are needed and not passed through by
+  Geotrellis, it is important that the JTS imports are appropriately
+  namespaced to avoid ambiguous references.  We recommend using::
+
+    import org.locationtech.jts.{geom => jts}
+
+JTS geometries are exclusively point sets and piecewise linear
+representations.  A collection of points may be connected by a chain of linear
+segments into more complex shapes, and then aggregated into collections.  The
+following is a list of available classes:
+
+- |Point|_
 
   Representation of a 2-dimensional point in space.
 
-- |geotrellis.vector.Line|_
+- |LineString|_
 
   More appropriately termed a *polyline*.  A sequence of linear segments
   formed from a sequence of points, :math:`[p_1, p_2, ..., p_n]`, where the
@@ -257,109 +275,88 @@ geometry subclasses are as follows:
   :math:`p_{i+1}`.  May be self-intersecting.  May be open or closed (the
   latter meaning that :math:`p_1 = p_n`).
 
-- |geotrellis.vector.Polygon|_
+- |Polygon|_
 
   A polygonal shape, possibly with holes.  Formed from a single closed, simple
   (non-self-intersecting) polyline exterior, and zero or more closed, simple,
   mutually non-intersecting interior rings.  Proper construction can be
   verified through the use of the ``isValid()`` method.
 
-- |geotrellis.vector.MultiPoint|_
-- |geotrellis.vector.MultiLine|_
-- |geotrellis.vector.MultiPolygon|_
+- |MultiPoint|_, |MultiLineString|_, |MultiPolygon|_
 
-  The three preceding classes aggregate points, lines, and polygons, respectively.
+  Each of these classes represent a collection of the corresponding geometry
+  type as a single object.  This allows for multiple discrete geometries of a
+  single type to be taken semantically as a single entity.
 
-- |geotrellis.vector.GeometryCollection|_
+- |GeometryCollection|_
 
   A container class for aggregating dissimilar geometries.
 
-Geometries have a standard interface for typical operations such as
-finding the convex hull, affine transformation (rotation, scaling,
-translating, and shearing), determining if one geometry is contained within
-another, and finding intersections.
+.. |Point| replace:: ``Point``
+.. _Point: https://geotrellis.github.io/scaladocs/latest/geotrellis/vector/Point.html
+.. |LineString| replace:: ``LineString``
+.. _LineString: https://geotrellis.github.io/scaladocs/latest/geotrellis/vector/LineString.html
+.. |Polygon| replace:: ``Polygon``
+.. _Polygon: https://geotrellis.github.io/scaladocs/latest/geotrellis/vector/Polygon.html
+.. |MultiPoint| replace:: ``MultiPoint``
+.. _MultiPoint: https://geotrellis.github.io/scaladocs/latest/geotrellis/vector/MultiPoint.html
+.. |MultiLineString| replace:: ``MultiLineString``
+.. _MultiLineString: https://geotrellis.github.io/scaladocs/latest/geotrellis/vector/MultiLineString.html
+.. |MultiPolygon| replace:: ``MultiPolygon``
+.. _MultiPolygon: https://geotrellis.github.io/scaladocs/latest/geotrellis/vector/MultiPolygon.html
+.. |GeometryCollection| replace:: ``GeometryCollection``
+.. _GeometryCollection: https://geotrellis.github.io/scaladocs/latest/geotrellis/vector/GeometryCollection.html
 
-.. |geotrellis.vector.Geometry| replace:: ``geotrellis.vector.Geometry``
-.. _geotrellis.vector.Geometry: https://geotrellis.github.io/scaladocs/latest/geotrellis/vector/Geometry.html
-.. |geotrellis.vector.Point| replace:: ``geotrellis.vector.Point``
-.. _geotrellis.vector.Point: https://geotrellis.github.io/scaladocs/latest/geotrellis/vector/Point.html
-.. |geotrellis.vector.Line| replace:: ``geotrellis.vector.Line``
-.. _geotrellis.vector.Line: https://geotrellis.github.io/scaladocs/latest/geotrellis/vector/Line.html
-.. |geotrellis.vector.Polygon| replace:: ``geotrellis.vector.Polygon``
-.. _geotrellis.vector.Polygon: https://geotrellis.github.io/scaladocs/latest/geotrellis/vector/Polygon.html
-.. |geotrellis.vector.MultiPoint| replace:: ``geotrellis.vector.MultiPoint``
-.. _geotrellis.vector.MultiPoint: https://geotrellis.github.io/scaladocs/latest/geotrellis/vector/MultiPoint.html
-.. |geotrellis.vector.MultiLine| replace:: ``geotrellis.vector.MultiLine``
-.. _geotrellis.vector.MultiLine: https://geotrellis.github.io/scaladocs/latest/geotrellis/vector/MultiLine.html
-.. |geotrellis.vector.MultiPolygon| replace::
-                                    ``geotrellis.vector.MultiPolygon``
-.. _geotrellis.vector.MultiPolygon: https://geotrellis.github.io/scaladocs/latest/geotrellis/vector/MultiPolygon.html
-.. |geotrellis.vector.GeometryCollection| replace:: ``geotrellis.vector.GeometryCollection``
-.. _geotrellis.vector.GeometryCollection: https://geotrellis.github.io/scaladocs/latest/geotrellis/vector/GeometryCollection.html
+Geotrellis does add some facilities beyond those provided by JTS.  Notably,
+machinery to generate geometries is included.  A global ``GeometryFactory`` is
+available in ``geotrellis.vector.GeomFactory.factory`` that has been
+configured through an ``application.conf`` (see the |pureconfig|_
+documentation) which set some global properties for that factory object.  See
+|reference|_ for more details.  The ``apply`` methods on ``Point``,
+``LineString``, ``Polygon``, ``MultiPoint``, ``MultiLineString``,
+``MultiPolygon``, and ``GeometryCollection`` in the ``geotrellis.vector``
+package rely internally on this global factory, and make creation of new
+geometries easier.
 
-The following is a simple example of working with intersections:
+.. |pureconfig| replace:: ``pureconfig``
+.. _pureconfig: https://pureconfig.github.io
+.. |reference| replace:: ``reference.conf``
+.. _reference: https://github.com/locationtech/geotrellis/blob/master/vector/src/main/resources/reference.conf
 
-.. code-block:: scala
+.. note::
+   There is a bug in the Scala REPL which will prevent interactive use of the
+   apply methods on the basic geometry types when using ``console`` from SBT.
+   That is, when executing::
 
-    import geotrellis.vector._
+     import geotrellis.vector._
+     val p1 = Point(0,0)
+     val p2 = Point(1,1)
 
-    /** First, let's create a Point. Then, we'll use its intersection method.
-      * Note: we are also using intersection's alias '&'.
-      */
-    val myPoint = Point(1.0, 1.1) // Create a point
-    // Intersection method
-    val selfIntersection = myPoint intersection Point(1.0, 1.1)
-    // Intersection alias
-    val nonIntersection = myPoint & Point(200, 300)
+   you will encounter an error of the form ``error:
+   geotrellis.vector.Point.type does not take parameters``.
+   For this reason, we provide the ``geotrellis.vector.JTS`` object, which
+   contains duplicates of the basic geometry types (e.g.,
+   ``geotrellis.vector.JTS.Point``).  The above code block can be modified
+   to::
 
-Upon execution, the values ``selfIntersection`` and ``nonIntersection`` are
-``GeometryResult`` containers, which is a common return type for geometric
-operations.  To extract results from these wrappers, use the ``as[G <:
-Geometry]`` function which either returns ``Some(G)`` or ``None``:
+     import geotrellis.vector._
+     val p1 = JTS.Point(0,0)
+     val p2 = JTS.Point(1,1)
 
-.. code-block:: scala
+   and it will work as expected.
 
-    val pointIntersection = (Point(1.0, 2.0) & Point(1.0, 2.0)).as[Point]
-    val pointNonIntersection = (Point(1.0, 2.0) & Point(12.0, 4.0)).as[Point]
+   This is a fix for a REPL bug, and thus is not required in compiled source.
 
-    assert(pointIntersection == Some(Point(1.0, 2.0)))  // Either some point
-    assert(pointNonIntersection == None)                // Or nothing at all
+In addition to these kinds of quality-of-life improvements, there are also
+some major added features above and beyond the capabilities of JTS included in
+``geotrellis.vector``.  Specifically, we provide a fast Delaunay triangulator,
+Kriging interpolation, and the means to perform projections between various
+geodetic coordinate systems using ``proj4``.
 
-When using ``as[G <: Geometry]``, be aware that it isn't necessarily the case
-that the ``GeometryResult`` object may not be convertable to the chosen
-``G``. For example, a ``PointGeometryIntersectionResult.as[Polygon]`` will
-*always* return ``None``.
-
-Alternatively, one may use pattern matching to check intersection
-results. |geotrellis.vector.GeometryResult|_ contains a large `ADT
-<https://en.wikipedia.org/wiki/Algebraic_data_type>`__ which encodes the
-possible outcomes for different types of outcomes. The result type of a
-JTS-dependent vector operation can be found somewhere on this tree to the
-effect that an exhaustive match can be carried out to determine the
-``Geometry`` (excepting cases of ``NoResult``, for which there is no
-``Geometry``).
-
-.. |geotrellis.vector.GeometryResult| replace:: ``geotrellis.vector.GeometryResult``
-.. _geotrellis.vector.GeometryResult: https://geotrellis.github.io/scaladocs/latest/geotrellis/vector/GeometryResult.html
-
-For example, we note that a ``Point``/``Point`` intersection has the
-type ``PointOrNoResult``. From this we can deduce that it is either a
-``Point`` underneath or else nothing:
-
-.. code::
-
-    val p1: Point = Point(0, 0)
-    val p2: Point = p1
-    p1 & p2 match {
-      case PointResult(_) => println("A Point!")
-      case NoResult => println("Sorry, no result.")
-    }
-
-yields "A Point!"
-
-There are also implicits in many geotrellis modules which will extend Geometry
-capabilities. For instance, after importing ``geotrellis.vector.io._``, it
-becomes possible to call the ``toGeoJson`` method on any ``Geometry``:
+There is also the notable inclusion of GeoJSON input and output.  Implicits
+providing these capabilities in are found in ``geotrellis.vector.io._``, and
+after that import it becomes possible to call the ``toGeoJson`` method on any
+``Geometry``:
 
 .. code-block:: scala
 
@@ -368,27 +365,11 @@ becomes possible to call the ``toGeoJson`` method on any ``Geometry``:
 
 If you need to move from a geometry to a serialized representation or
 vice-versa, take a look at the ``io`` directory's contents. This naming
-convention for input and output is common throughout Geotrellis. So if
-you're trying to get spatial representations in or out of your program,
-spend some time seeing if the problem has already been solved.
-
-Methods which are specific to certain subclasses of ``Geometry`` exist
-too. For example, ``geotrellis.vector.MultiLine`` is implicitly extended
-by ``geotrellis.vector.op`` such that this becomes possible:
-
-.. code-block:: scala
-
-    import geotrellis.vector.op._
-    val myML = MultiLine.EMPTY
-    myML.unionGeometries
-
-The following packages extend ``Geometry`` capabilities:
-
-- |geotrellis.vector.io.json|_
-- |geotrellis.vector.io.WKT|_
-- |geotrellis.vector.io.WKB|_
-- |geotrellis.vector.affine|_
-- |geotrellis.vector.reproject|_
+convention for input and output is common throughout Geotrellis. So if you're
+trying to get spatial representations in or out of your program, spend some
+time seeing if the problem has already been solved.  See
+|geotrellis.vector.io.json|_, |geotrellis.vector.io.wkt|_, and
+|geotrellis.vector.io.wkb|_.
 
 .. |geotrellis.vector.io.json| replace:: ``geotrellis.vector.io.json``
 .. _geotrellis.vector.io.json: https://geotrellis.github.io/scaladocs/latest/#geotrellis.vector.io.json.package
@@ -396,10 +377,81 @@ The following packages extend ``Geometry`` capabilities:
 .. _geotrellis.vector.io.wkt: https://geotrellis.github.io/scaladocs/latest/#geotrellis.vector.io.wkt.package
 .. |geotrellis.vector.io.wkb| replace:: ``geotrellis.vector.io.wkb``
 .. _geotrellis.vector.io.wkb: https://geotrellis.github.io/scaladocs/latest/#geotrellis.vector.io.wkb.package
-.. |geotrellis.vector.affine| replace:: ``geotrellis.vector.affine``
-.. _geotrellis.vector.affine: https://geotrellis.github.io/scaladocs/latest/#geotrellis.vector.affine.package
-.. |geotrellis.vector.reproject| replace:: ``geotrellis.vector.reproject``
-.. _geotrellis.vector.reproject: https://geotrellis.github.io/scaladocs/latest/#geotrellis.vector.reproject.package
+
+Finally, Geotrellis attempts to make working with geometries a bit more
+idiomatic to Scala.  Specifically, we prefer to pattern match on the results
+of common geometric operations to catch missing logic during compile time,
+rather than at some indeterminate point in the future as a run time error.
+For instance, when working with intersections, if we use the standard JTS
+intersection function, which returns a ``Geometry``, we must then match on
+the return type, including a wildcard case to catch the impossible outcomes
+(e.g., polygons cannot result from a LineString intersection).  It
+is possible to forget some of the possible outcomes (e.g., the possibility of
+a ``GeometryCollection`` result from a LineString-LineString intersection with
+both linear and point components) and miss out on important program logic.
+
+In order to provide these facilities, Geotrellis uses the method extensions
+provided in |geotrellis.vector.methods|_ to furnish operators for difference,
+union, and intersection that return some subclass of |GeometryResult|_ that
+participate in one of several algebraic data types which completely captures
+the possible outcomes of the desired operation.  We use the symbolic operators
+``-``, ``|``, and ``&``, respectively, to denote the operations.
+
+.. |geotrellis.vector.methods| replace:: ``geotrellis.vector.methods``
+.. _geotrellis.vector.methods: https://github.com/locationtech/geotrellis/tree/master/vector/src/main/scala/geotrellis/vector/methods
+
+The results of these wrapper operators can be pattern matched completely
+without the need for a wildcard case, and will raise errors at compile time if
+a case is omitted.
+
+.. code-block:: scala
+
+    import geotrellis.vector._
+
+    val line: LineString = ...
+    val poly: Polygon = ...
+
+    // Using JTS intersection method
+    line.intersection(poly) match {
+      case l: LineString => ...
+      case _ => throw new Exception("Unhandled")
+    }
+
+    // Using Geotrellis wrapper
+    line & poly match {
+      case NoResult => ...
+      case PointResult(p) => ...
+      case LineStringResult(l) => ...
+      case GeometryCollectionResult(gc) => ...
+    }
+
+It is also possible to work with the result types directly.  To extract
+results from these result wrappers, use the ``as[G <: Geometry]`` function
+which either returns ``Some(G)`` or ``None``.  When using ``as[G <:
+Geometry]``, be aware that it isn't necessarily the case that the
+|GeometryResult|_ object may not be convertable to the chosen ``G``. For
+example, a ``PointGeometryIntersectionResult.as[Polygon]`` will *always*
+return ``None``.  For example, a ``Point``/``Point`` intersection has the type
+``PointOrNoResult``.  From this we can deduce that it is either a ``Point``
+underneath or else nothing:
+
+.. code:: scala
+
+    val p1: Point = Point(0, 0)
+    val p2: Point = p1
+    (p1 & p2).as[Point] match {
+      case Some(_) => println("A Point!")
+      case None => println("Sorry, no result.")
+    }
+
+This snippet yields "A Point!"  Please see |Results.scala|_ for complete
+details on the various result types.
+
+.. |Results.scala| replace:: ``Results.scala``
+.. _Results.scala: https://github.com/locationtech/geotrellis/blob/master/vector/src/main/scala/geotrellis/vector/Results.scala
+.. |GeometryResult| replace:: ``geotrellis.vector.GeometryResult``
+.. _GeometryResult: https://geotrellis.github.io/scaladocs/latest/geotrellis/vector/GeometryResult.html
+
 
 Extents
 ^^^^^^^
@@ -407,9 +459,9 @@ Extents
 Geotrellis makes common use of the ``Extent`` class.  This class represents an
 axis-aligned bounding box, where the extreme values are given as
 ``Extent(min_x, min_y, max_x, max_y)``.  Note that ``Extent``\ s *are not*
-``Geometry`` instances.  They can be coerced to a ``Polygon`` using the
-``toPolygon`` method, and they can often be used as arguments to geometric
-operations such as ``intersection``.
+``Geometry`` instances, nor are they JTS ``Envelope``s.  They can be coerced
+to a ``Polygon`` using the ``toPolygon`` method or to an ``Envelope`` using
+the ``jtsEnvelope`` method.
 
 Projected Geometries
 ^^^^^^^^^^^^^^^^^^^^
@@ -814,7 +866,7 @@ metadata, provide a ``LayoutDefinition`` plus a ``CRS``, ``CellType``, and
 bounds for the keys found in the ``RDD``.
 
 .. |TileLayerMetadata| replace:: ``TileLayerMetadata[K]``
-.. _TileLayerMetadata: https://geotrellis.github.io/scaladocs/latest/#geotrellis.spark.TileLayerMetadata
+.. _TileLayerMetadata: https://geotrellis.github.io/scaladocs/latest/#geotrellis.layers.TileLayerMetadata
 
     Note: The easiest means to represent a tile layer is with a
     ``ContextRDD`` object.
@@ -930,7 +982,7 @@ be used with both ``SpatialKey`` and ``SpaceTimeKey``.
     val oneD: Long = i0.toIndex(k) /* A SpatialKey's 2D coords mapped to 1D */
 
 Hilbert
-~~~~~~~
+^^^^^^^
 
 .. figure:: https://upload.wikimedia.org/wikipedia/commons/a/a5/Hilbert_curve.svg
    :alt:
@@ -1001,7 +1053,7 @@ dimensions. If those three integers sum to more than 62 bits, an error
 will be thrown at runtime.
 
 Row Major
-~~~~~~~~~
+^^^^^^^^^
 
 .. figure:: ./images/row-major.png
    :alt:
@@ -1535,21 +1587,20 @@ Implementation Assumptions
 This particular implementation of the VectorTile spec makes the
 following assumptions:
 
--  Geometries are implicitly encoded in ''some'' Coordinate Reference
-   system. That is, there is no such thing as a "projectionless"
-   VectorTile. When decoding a VectorTile, we must provide a Geotrellis
-   [[Extent]] that represents the Tile's area on a map. With this, the
-   grid coordinates stored in the VectorTile's Geometry are shifted from
-   their original [0,4096] range to actual world coordinates in the
-   Extent's CRS.
--  The ``id`` field in VectorTile Features doesn't matter.
--  ``UNKNOWN`` geometries are safe to ignore.
--  If a VectorTile ``geometry`` list marked as ``POINT`` has only one
-   pair of coordinates, it will be decoded as a Geotrellis ``Point``. If
-   it has more than one pair, it will be decoded as a ``MultiPoint``.
-   Likewise for the ``LINESTRING`` and ``POLYGON`` types. A complaint
-   has been made about the spec regarding this, and future versions may
-   include a difference between single and multi geometries.
+- Geometries are implicitly encoded in ''some'' Coordinate Reference
+  system. That is, there is no such thing as a "projectionless"
+  VectorTile. When decoding a VectorTile, we must provide a Geotrellis
+  [[Extent]] that represents the Tile's area on a map. With this, the grid
+  coordinates stored in the VectorTile's Geometry are shifted from their
+  original [0,4096] range to actual world coordinates in the Extent's CRS.
+- The ``id`` field in VectorTile Features doesn't matter.
+- ``UNKNOWN`` geometries are safe to ignore.
+- If a VectorTile ``geometry`` list marked as ``POINT`` has only one pair of
+  coordinates, it will be decoded as a ``Point``. If it has more than one
+  pair, it will be decoded as a ``MultiPoint``.  Likewise for the
+  ``LINESTRING`` and ``POLYGON`` types. A complaint has been made about the
+  spec regarding this, and future versions may include a difference between
+  single and multi geometries.
 
 .. raw:: html
 
@@ -1623,10 +1674,10 @@ within the file. The two methods are: Striped and Tiled.
 Striped
 ^^^^^^^
 
-Striped storage breaks the image into segments of long, vertical bands
+Striped storage breaks the image into segments of long, horizontal bands
 that stretch the entire width of the picture. Contained within them are
 columns of bitmapped image data. If your GeoTiff file was created before
-the realse of Tiff 6.0, then this is the data storage method in which it
+the release of Tiff 6.0, then this is the data storage method in which it
 most likely uses.
 
 If an image has strip storage, then its corresponding file directory
@@ -1640,7 +1691,7 @@ starts within the file. The last tag, ``ByteSegmentCount``, is also an
 array of values that contains the size of each strip in terms of Bytes.
 
 Tiled
-~~~~~
+^^^^^
 
 Tiff 6.0 introduced a new way to arrange and store data within a Tiff,
 tiled storage. These rectangular segments have both a height and a width
@@ -1669,8 +1720,8 @@ your Y value.
 
 The other method is to use the grid coordinate system. This technique of
 measurement uses Cols and Rows to describe the relative location of
-things. Cols run east to west whereas Rows run north to south. This then
-means that Cols increase as you go east to west, and rows increase as
+things. Cols run west to east whereas Rows run north to south. This then
+means that Cols increase as you go west to east, and rows increase as
 you go north to south.
 
 Each (X, Y) pair corresponds to some real location on the planet. Cols and
@@ -1699,7 +1750,7 @@ Cloud Optimized GeoTiffs (COGs for short) are a nascent subset of GeoTiff
 meant to increase their expressiveness, ease of use, and portability through
 further standardization. We call these GeoTiffs "cloud optimized" because
 the features they add allow for remote access to GeoTiff that, with the help
-of HTTP GET range requests, access the parts of a tiff you're interested
+of HTTP GET range requests, access the parts of a tiff you're interested in
 without consuming large portions of the image which are irrelevant to your
 computation.
 
@@ -1717,6 +1768,7 @@ required features are necessary to even support remotely reading
 subsets of the overall image data from some remote Tiff.
 
 COG requirements:
+
 - Tiled storage of image data
 - Overviews at different levels of resolution
 - Infrastructure capable of handling GET Range requests
@@ -1731,13 +1783,15 @@ COG requirements:
     val resampleMethod: ResampleMethod = ???
     val fullCog = almostCog.withOverviews(resampleMethod)
 
-> A note on sidecar files
-> The spec seems to indicate that overviews be part of the GeoTiff itself to
-> count as a COG. In practice, things are messier than that. Content providers
-> aren't always going to want to rewrite their tiffs to stuff generated
-> overviews into them. The practical upshot of this is that separate overview
-> files should be supported (GDAL will actually inspect some canonical relative
-> paths within the directory of the Tiff being read).
+A note on sidecar files
+^^^^^^^^^^^^^^^^^^^^^^^
+
+The spec seems to indicate that overviews be part of the GeoTiff itself to
+count as a COG. In practice, things are messier than that. Content providers
+aren't always going to want to rewrite their tiffs to stuff generated
+overviews into them. The practical upshot of this is that separate overview
+files should be supported (GDAL will actually inspect some canonical relative
+paths within the directory of the Tiff being read).
 
 .. code-block:: scala
 
@@ -1748,7 +1802,7 @@ COG requirements:
     val tileWithOverview = mainTile.withOverviews(List(overview1, overview2))
 
 Structured vs Unstructured COGs
--------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Historically, Geotrellis layers have been backed by specially encoded Avro
 layers which are were designed to maximize the performance of distributed
@@ -1766,6 +1820,7 @@ GeoTrellis programs to infer information about underlying, individual COG files
 without having to read multiple of them.
 
 Structured COG metadata:
+
 - cellType: Underlying Tiff celltype (width of cell representation and NoData strategy)
 - zoomRangeInfos: A map from some range of supported zoom levels to a collection of key extents
 - layoutScheme: The scheme by which individual COG tiles are cut for this layer

@@ -62,14 +62,14 @@ class ProtobufGeomSpec extends FunSpec with Matchers {
 
     it("Line") {
       val ns = Seq(9, 4, 4, 18, 6, 4, 5, 4)
-      val l = implicitly[ProtobufGeom[Line, MultiLine]].fromCommands(
+      val l = implicitly[ProtobufGeom[LineString, MultiLineString]].fromCommands(
         Command.commands(ns),
         topLeft,
         resolution
       )
 
-      l shouldBe Left(Line((2, 4094), (5, 4092), (2, 4090)))
-      Command.uncommands(implicitly[ProtobufGeom[Line, MultiLine]].toCommands(
+      l shouldBe Left(LineString(Seq[(Double,Double)]((2, 4094), (5, 4092), (2, 4090))))
+      Command.uncommands(implicitly[ProtobufGeom[LineString, MultiLineString]].toCommands(
         l,
         topLeft,
         resolution
@@ -78,17 +78,17 @@ class ProtobufGeomSpec extends FunSpec with Matchers {
 
     it("MultiLine") {
       val ns = Seq(9, 4, 4, 18, 6, 4, 5, 4, 9, 4, 4, 18, 6, 4, 5, 4)
-      val l = implicitly[ProtobufGeom[Line, MultiLine]].fromCommands(
+      val l = implicitly[ProtobufGeom[LineString, MultiLineString]].fromCommands(
         Command.commands(ns),
         topLeft,
         resolution
       )
 
-      l shouldBe Right(MultiLine(
-        Line((2, 4094), (5, 4092), (2, 4090)),
-        Line((4, 4088), (7, 4086), (4, 4084))
+      l shouldBe Right(MultiLineString(
+        LineString(Seq[(Double,Double)]((2, 4094), (5, 4092), (2, 4090))),
+        LineString(Seq[(Double,Double)]((4, 4088), (7, 4086), (4, 4084)))
       ))
-      Command.uncommands(implicitly[ProtobufGeom[Line, MultiLine]].toCommands(
+      Command.uncommands(implicitly[ProtobufGeom[LineString, MultiLineString]].toCommands(
         l,
         topLeft,
         resolution
@@ -103,7 +103,7 @@ class ProtobufGeomSpec extends FunSpec with Matchers {
         resolution
       )
 
-      p shouldBe Left(Polygon((2, 4094), (5, 4092), (2, 4090), (2, 4094)))
+      p shouldBe Left(Polygon(LineString(Seq[(Double,Double)]((2, 4094), (5, 4092), (2, 4090), (2, 4094)))))
       Command.uncommands(implicitly[ProtobufGeom[Polygon, MultiPolygon]].toCommands(
         p,
         topLeft,
@@ -120,8 +120,8 @@ class ProtobufGeomSpec extends FunSpec with Matchers {
       )
 
       p shouldBe Left(Polygon(
-        exterior = Line((2, 4094), (5, 4094), (5, 4091), (2, 4091), (2, 4094)),
-        holes = Seq(Line((3, 4093), (3, 4092), (4, 4092), (4, 4093), (3, 4093)))
+        exterior = LineString(Seq[(Double,Double)]((2, 4094), (5, 4094), (5, 4091), (2, 4091), (2, 4094))),
+        holes = Seq(LineString(Seq[(Double,Double)]((3, 4093), (3, 4092), (4, 4092), (4, 4093), (3, 4093))))
       ))
       Command.uncommands(implicitly[ProtobufGeom[Polygon, MultiPolygon]].toCommands(
         p,
@@ -139,8 +139,8 @@ class ProtobufGeomSpec extends FunSpec with Matchers {
       )
 
       p shouldBe Right(MultiPolygon(
-        Polygon((2, 4094), (5, 4092), (2, 4090), (2, 4094)),
-        Polygon((4, 4088), (7, 4086), (4, 4084), (4, 4088))
+        Polygon((2.0, 4094.0), (5.0, 4092.0), (2.0, 4090.0), (2.0, 4094.0)),
+        Polygon((4.0, 4088.0), (7.0, 4086.0), (4.0, 4084.0), (4.0, 4088.0))
       ))
       Command.uncommands(implicitly[ProtobufGeom[Polygon, MultiPolygon]].toCommands(
         p,
@@ -162,12 +162,12 @@ class ProtobufGeomSpec extends FunSpec with Matchers {
 
       p shouldBe Right(MultiPolygon(
         Polygon(
-          exterior = Line((2, 4094), (5, 4094), (5, 4091), (2, 4091), (2, 4094)),
-          holes = Seq(Line((3, 4093), (3, 4092), (4, 4092), (4, 4093), (3, 4093)))
+          exterior = LineString(Seq[(Double,Double)]((2, 4094), (5, 4094), (5, 4091), (2, 4091), (2, 4094))),
+          holes = Seq(LineString(Seq[(Double,Double)]((3, 4093), (3, 4092), (4, 4092), (4, 4093), (3, 4093))))
         ),
-        Polygon(
-          (6, 4091), (9, 4091), (9, 4088), (6, 4088), (6, 4091)
-        )
+        Polygon(LineString(
+          Seq[(Double,Double)]((6, 4091), (9, 4091), (9, 4088), (6, 4088), (6, 4091))
+        ))
       ))
       Command.uncommands(implicitly[ProtobufGeom[Polygon, MultiPolygon]].toCommands(
         p,

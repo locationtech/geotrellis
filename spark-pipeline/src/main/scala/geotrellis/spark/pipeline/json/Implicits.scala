@@ -22,13 +22,12 @@ import geotrellis.spark.pipeline.json.reindex._
 import geotrellis.spark.pipeline.json.update._
 import geotrellis.spark.pipeline.json.transform._
 import geotrellis.proj4.CRS
+import geotrellis.layer._
 import geotrellis.spark.pipeline._
 import geotrellis.raster._
 import geotrellis.raster.resample._
-import geotrellis.spark.tiling._
 import geotrellis.vector._
 
-import com.typesafe.scalalogging.LazyLogging
 import _root_.io.circe.generic.extras.Configuration
 import _root_.io.circe._
 import _root_.io.circe.syntax._
@@ -42,7 +41,7 @@ import scala.util.Try
 
 object Implicits extends Implicits
 
-trait Implicits extends LazyLogging {
+trait Implicits {
   implicit val config: Configuration = Configuration.default.withDefaults.withSnakeCaseMemberNames
   val pipelineJsonPrinter: Printer = Printer.spaces2.copy(dropNullValues = true)
 
@@ -60,21 +59,6 @@ trait Implicits extends LazyLogging {
     Decoder.decodeString.emap { str =>
       Either.catchNonFatal(Try(CRS.fromName(str)) getOrElse CRS.fromString(str)).leftMap(_ => "CRS")
     }
-
-  implicit val extentEncoder: Encoder[Extent] =
-    new Encoder[Extent] {
-      final def apply(extent: Extent): Json =
-        List(extent.xmin, extent.ymin, extent.xmax, extent.ymax).asJson
-    }
-  implicit val extentDecoder: Decoder[Extent] =
-    Decoder[Json] emap { js =>
-      (js.as[List[Double]]: Either[DecodingFailure, List[Double]]).map { case List(xmin, ymin, xmax, ymax) =>
-        Extent(xmin, ymin, xmax, ymax)
-      }.leftMap(_ => "Extent")
-    }
-
-  implicit val tileLayoutEncoder: Encoder[TileLayout] = deriveEncoder
-  implicit val tileLayoutDecoder: Decoder[TileLayout] = deriveDecoder
 
   implicit val layoutDefinitionEncoder: Encoder[LayoutDefinition] = deriveEncoder
   implicit val layoutDefinitionDecoder: Decoder[LayoutDefinition] = deriveDecoder

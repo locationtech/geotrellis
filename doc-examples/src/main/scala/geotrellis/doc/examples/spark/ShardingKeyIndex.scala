@@ -16,14 +16,20 @@
 
 package geotrellis.doc.examples.spark
 
+import geotrellis.layer._
 import geotrellis.spark._
-import geotrellis.spark.io._
-import geotrellis.spark.io.index._
-import geotrellis.spark.io.json._
+import geotrellis.spark.store._
+import geotrellis.store._
+import geotrellis.store.json._
+import geotrellis.store.index._
 import scala.reflect.ClassTag
 
-import spray.json._
-import spray.json.DefaultJsonProtocol._
+import _root_.io.circe._
+import _root_.io.circe.syntax._
+import _root_.io.circe.generic.JsonCodec
+import cats.syntax.either._
+
+import scala.reflect.ClassTag
 
 // --- //
 
@@ -80,43 +86,46 @@ class ShardingKeyIndex[K](val inner: KeyIndex[K], val shardCount: Int) extends K
   }
 }
 
-/**
- * A standard JsonFormat for [[ShardingKeyIndex]], parameterized on the key type ''K''.
- */
-class ShardingKeyIndexFormat[K: JsonFormat: ClassTag] extends RootJsonFormat[ShardingKeyIndex[K]] {
+object ShardingKeyIndex {
+  /**
+    * Standard Json codecs for [[ShardingKeyIndex]], parameterized on the key type ''K''.
+    */
+
   /* This is the foundation of the reflection-based deserialization process */
-  val TYPE_NAME = "sharding"
+  val sharding = "sharding"
 
-  /* Your `write` function must follow this format, with two fields
-   * `type` and `properties`. The `properties` JsObject can contain anything.
-   */
-  def write(index: ShardingKeyIndex[K]): JsValue = {
-    JsObject(
-      "type" -> JsString(TYPE_NAME),
-      "properties" -> JsObject(
-        "inner" -> index.inner.toJson,
-        "shardCount" -> JsNumber(index.shardCount)
+  /** An [[Encoder]] for [[ZVoxelKeyIndex]]. */
+  implicit def shardingKeyIndexEncoder[K: Encoder: ClassTag]: Encoder[ShardingKeyIndex[K]] =
+    Encoder.encodeJson.contramap[ShardingKeyIndex[K]] { index =>
+      Json.obj(
+        "type" -> sharding.asJson,
+        "properties" -> Json.obj(
+          "inner" -> index.inner.asJson,
+          "shardCount" -> index.shardCount.asJson
+        )
       )
-    )
-  }
-
-  /* You should check the deserialized `typeName` matches the original */
-  def read(value: JsValue): ShardingKeyIndex[K] = {
-    value.asJsObject.getFields("type", "properties") match {
-      case Seq(JsString(typeName), properties) if typeName == TYPE_NAME => {
-        properties.asJsObject.getFields("inner", "shardCount") match {
-          case Seq(inner, JsNumber(shardCount)) =>
-            new ShardingKeyIndex(inner.convertTo[KeyIndex[K]], shardCount.toInt)
-          case _ => throw new DeserializationException("Couldn't deserialize ShardingKeyIndex.")
-        }
-      }
-      case _ => throw new DeserializationException("Wrong KeyIndex type: ShardingKeyIndex expected.")
     }
-  }
+
+  implicit def shardingKeyIndexDecoder[K: Decoder: ClassTag]: Decoder[ShardingKeyIndex[K]] =
+    Decoder.decodeHCursor.emap { c: HCursor =>
+      (c.downField("type").as[String], c.downField("properties")) match {
+        case (Right(typeName), properties) =>
+          if(typeName != sharding) Left(s"Wrong KeyIndex type: $sharding expected.")
+          else {
+            (properties.downField("inner").as[KeyIndex[K]],
+            properties.downField("shardCount").as[Int]) match {
+              case (Right(inner), Right(shardCount)) => Right(new ShardingKeyIndex(inner, shardCount))
+              case _ => Left("Couldn't deserialize ShardingKeyIndex.")
+            }
+          }
+
+        case _ => Left("Wrong KeyIndex type: ShardingKeyIndex expected.")
+      }
+    }
 }
 
 /**
- * Register [[ShardingKeyIndex]]'s [[JsonFormat]] with the central GeoTrellis
+ * Register [[ShardingKeyIndex]]'s Codecs with the central GeoTrellis
  * [[KeyIndex]] JsonFormat registry.
  *
  * Q: Why do we need to do this?
@@ -135,15 +144,12 @@ class ShardingKeyIndexRegistrator extends KeyIndexRegistrator {
    * about each possible JsonFormat.
    */
   def register(keyIndexRegistry: KeyIndexRegistry): Unit = {
-    implicit val spaceFormat = new ShardingKeyIndexFormat[SpatialKey]()
-    implicit val timeFormat = new ShardingKeyIndexFormat[SpaceTimeKey]()
-
     /* You need to make a [[KeyIndexFormatEntry]] for each key type */
     keyIndexRegistry.register(
-      KeyIndexFormatEntry[SpatialKey, ShardingKeyIndex[SpatialKey]](spaceFormat.TYPE_NAME)
+      KeyIndexFormatEntry[SpatialKey, ShardingKeyIndex[SpatialKey]](ShardingKeyIndex.sharding)
     )
     keyIndexRegistry.register(
-      KeyIndexFormatEntry[SpaceTimeKey, ShardingKeyIndex[SpaceTimeKey]](timeFormat.TYPE_NAME)
+      KeyIndexFormatEntry[SpaceTimeKey, ShardingKeyIndex[SpaceTimeKey]](ShardingKeyIndex.sharding)
     )
   }
 }

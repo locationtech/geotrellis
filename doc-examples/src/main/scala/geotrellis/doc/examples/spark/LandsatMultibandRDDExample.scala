@@ -1,3 +1,19 @@
+/*
+ * Copyright 2019 Azavea
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package geotrellis.doc.examples
 
 object LandsatMultibandRDDExample {
@@ -7,9 +23,10 @@ object LandsatMultibandRDDExample {
   def `Generate an RDD of multiband tiles from landsat on S3`: Unit = {
     import geotrellis.raster._
     import geotrellis.spark._
-    import geotrellis.spark.io.s3._
+    import geotrellis.spark.store.s3._
     import geotrellis.vector._
 
+    import software.amazon.awssdk.services.s3.S3Client
     import org.apache.spark.SparkContext
     import org.apache.spark.rdd._
 
@@ -23,7 +40,7 @@ object LandsatMultibandRDDExample {
 
       val options =
         S3GeoTiffRDD.Options(
-          getS3Client = () => S3Client.ANONYMOUS,
+          getClient = () => S3Client.create(),
           maxTileSize = Some(512),
           numPartitions = Some(100)
         )
@@ -101,7 +118,7 @@ object LandsatMultibandRDDExample {
 
       // From here, you could ingest the multiband layer.
       // But for a simple test, we will rescale the bands and write them out to a single GeoTiff
-      import geotrellis.spark.tiling.FloatingLayoutScheme
+      import geotrellis.layer.{FloatingLayoutScheme, SpatialKey}
       import geotrellis.raster.io.geotiff.GeoTiff
 
       val (_, metadata) = sourceTiles.collectMetadata[SpatialKey](FloatingLayoutScheme(512))

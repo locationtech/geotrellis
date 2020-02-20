@@ -16,13 +16,14 @@
 
 package geotrellis.spark
 
+import geotrellis.layer.Metadata
 import geotrellis.raster._
+import org.apache.spark.SparkContext._
+import geotrellis.raster._
+
 import org.apache.spark.SparkContext._
 import org.apache.spark._
 import org.apache.spark.rdd._
-import spray.json.JsonFormat
-
-import scala.reflect.ClassTag
 
 object ContextRDD {
   def apply[K, V, M](rdd: RDD[(K, V)], metadata: M): RDD[(K, V)] with Metadata[M] =

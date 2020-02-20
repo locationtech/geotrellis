@@ -17,6 +17,7 @@
 package geotrellis.spark.pipeline.ast.untyped
 
 import geotrellis.raster._
+import geotrellis.layer.{SpatialKey, TemporalProjectedExtent, SpaceTimeKey}
 import geotrellis.spark._
 import geotrellis.spark.pipeline.ast
 import geotrellis.spark.pipeline.ast._

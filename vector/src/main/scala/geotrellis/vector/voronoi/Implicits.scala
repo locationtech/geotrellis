@@ -16,8 +16,7 @@
 
 package geotrellis.vector.voronoi
 
-import org.locationtech.jts.geom.Coordinate
-import geotrellis.vector.{MultiPoint, Point}
+import org.locationtech.jts.geom.{Coordinate, MultiPoint, Point}
 
 object Implicits extends Implicits
 

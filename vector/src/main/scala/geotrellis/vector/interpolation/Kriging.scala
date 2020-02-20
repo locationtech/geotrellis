@@ -16,8 +16,7 @@
 
 package geotrellis.vector.interpolation
 
-import geotrellis.vector.PointFeature
-import geotrellis.vector.Point
+import geotrellis.vector._
 import org.apache.commons.math3.linear._
 import spire.syntax.cfor._
 import scala.collection.mutable

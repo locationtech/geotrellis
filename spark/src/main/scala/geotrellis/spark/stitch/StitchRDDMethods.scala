@@ -20,61 +20,16 @@ import geotrellis.raster._
 import geotrellis.raster.merge._
 import geotrellis.raster.prototype._
 import geotrellis.raster.stitch.Stitcher
-import geotrellis.vector.Extent
+import geotrellis.layer._
+import geotrellis.layer.stitch._
+import geotrellis.vector._
 import geotrellis.spark._
-import geotrellis.spark.tiling._
 import geotrellis.util._
-
 import org.apache.spark.rdd.RDD
 
-import scala.collection.mutable
-
-object TileLayoutStitcher {
-  /**
-    * Stitches a collection of spatially-keyed tiles into a single tile.  Assumes that all
-    * tiles in a given column (row) have the same width (height).
-    *
-    * @param    tiles       A traversable collection of (key, tile) pairs
-    * @return               A tuple with the stitched tile, the key of the upper left tile
-    *                       of the layout, and the width and height of that spatial key
-    */
-  def stitch[
-    V <: CellGrid[Int]: Stitcher
-  ](tiles: Traversable[(Product2[Int, Int], V)]): (V, (Int, Int), (Int, Int)) = {
-    assert(tiles.size > 0, "Cannot stitch empty collection")
-
-    val colWidths = mutable.Map.empty[Int, Int]
-    val rowHeights = mutable.Map.empty[Int, Int]
-    tiles.foreach{ case (key, tile) =>
-      val curWidth = colWidths.getOrElseUpdate(key._1, tile.cols)
-      assert(curWidth == tile.cols, "Tiles in a layout column must have the same width")
-      val curHeight = rowHeights.getOrElseUpdate(key._2, tile.rows)
-      assert(curHeight == tile.rows, "Tiles in a layout row must have the same height")
-    }
-
-    val (colPos, width) = colWidths.toSeq.sorted.foldLeft( (Map.empty[Int, Int], 0) ){
-      case ((positions, acc), (col, w)) => (positions + (col -> acc), acc + w)
-    }
-    val (rowPos, height) = rowHeights.toSeq.sorted.foldLeft( (Map.empty[Int, Int], 0) ){
-      case ((positions, acc), (row, h)) => (positions + (row -> acc), acc + h)
-    }
-
-    // val result = tiles.head._2.prototype(width, height)
-    // tiles.foreach{ case (key, tile) => {
-    //   result.merge(tile, colPos(key._1), rowPos(key._2))
-    // }}
-
-    val stitcher = implicitly[Stitcher[V]]
-    val result = stitcher.stitch(tiles.map{ case (key, tile) => tile -> (colPos(key._1), rowPos(key._2)) }.toIterable, width, height)
-
-    val (minx, miny) = (colWidths.keys.min, rowHeights.keys.min)
-    (result, (minx, miny), (colWidths(minx), rowHeights(miny)))
-  }
-}
-
 abstract class SpatialTileLayoutRDDStitchMethods[
-  V <: CellGrid[Int]: Stitcher,
-  M: GetComponent[?, LayoutDefinition]
+  V <: CellGrid[Int]: Stitcher: * => TilePrototypeMethods[V],
+  M: GetComponent[*, LayoutDefinition]
 ] extends MethodExtensions[RDD[(SpatialKey, V)] with Metadata[M]] {
 
   def stitch(): Raster[V] = {
@@ -85,6 +40,58 @@ abstract class SpatialTileLayoutRDDStitchMethods[
     val base = nwTileEx.southEast
     val (ulx, uly) = (base.x - offsx.toDouble * layout.cellwidth, base.y + offsy * layout.cellheight)
     Raster(tile, Extent(ulx, uly - tile.rows * layout.cellheight, ulx + tile.cols * layout.cellwidth, uly))
+  }
+
+  /**
+    * Stitch all tiles in the RDD using a sparse stitch that handles missing keys
+    *
+    * Any missing tiles within the extent are filled with an empty prototype tile.
+    *
+    * @note This method performs an RDD.collect() so ensure your dataset fits
+    *       into driver memory.
+    *
+    * @param extent The requested [[geotrellis.vector.Extent]] of the output [[geotrellis.raster.Raster]]
+    * @return The stitched Raster, otherwise None if the collection is empty or the extent does not intersect
+    */
+  def sparseStitch(extent: Extent): Option[Raster[V]] = {
+    val tiles = self.toCollection
+    // From here down, this code duplicates SpatialTileLayoutCollectionStitchMethods.sparseStitch,
+    // replacing self with tiles
+    if (tiles.headOption.isEmpty) {
+      None
+    } else {
+      val tile = tiles.head._2
+      val layoutDefinition = self.metadata.getComponent[LayoutDefinition]
+      val mapTransform = layoutDefinition.mapTransform
+      val expectedKeys = mapTransform(extent)
+        .coordsIter
+        .map { case (x, y) => SpatialKey(x, y) }
+        .toList
+      val actualKeys = tiles.map(_._1)
+      val missingKeys = expectedKeys diff actualKeys
+
+      val missingTiles = missingKeys.map { key =>
+        (key, tile.prototype(layoutDefinition.tileLayout.tileCols, layoutDefinition.tileLayout.tileRows))
+      }
+      val allTiles = tiles.withContext { collection =>
+        collection ++ missingTiles
+      }
+      if (allTiles.isEmpty) {
+        None
+      } else {
+        Some(allTiles.stitch())
+      }
+    }
+  }
+
+  /**
+    * sparseStitch helper method that uses the extent of the collection it is called on
+    *
+    * @see sparseStitch(extent: Extent) for more details
+    */
+  def sparseStitch(): Option[Raster[V]] = {
+    val layoutDefinition = self.metadata.getComponent[LayoutDefinition]
+    sparseStitch(layoutDefinition.extent)
   }
 }
 

@@ -16,9 +16,9 @@
 
 package geotrellis.spark.viewshed
 
+import geotrellis.layer._
 import geotrellis.spark._
 import geotrellis.raster.Tile
-
 import org.apache.spark.rdd.RDD
 
 import scala.reflect.ClassTag
@@ -27,6 +27,6 @@ import scala.reflect.ClassTag
 object Implicits extends Implicits
 
 trait Implicits {
-  implicit class withRDDViewshedMethods[K: (? => SpatialKey): ClassTag, V: (? => Tile)](val self: RDD[(K, V)] with Metadata[TileLayerMetadata[K]])
+  implicit class withRDDViewshedMethods[K: (* => SpatialKey): ClassTag, V: (* => Tile)](val self: RDD[(K, V)] with Metadata[TileLayerMetadata[K]])
       extends RDDViewshedMethods[K, V]
 }

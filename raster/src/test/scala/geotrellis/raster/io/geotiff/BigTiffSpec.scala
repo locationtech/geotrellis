@@ -18,6 +18,7 @@ package geotrellis.raster.io.geotiff
 
 import geotrellis.util._
 import geotrellis.raster.io.geotiff.reader._
+import geotrellis.raster.io.geotiff.tags.TiffTags
 import geotrellis.raster._
 import geotrellis.raster.testkit._
 import geotrellis.vector.Extent
@@ -46,7 +47,7 @@ class BigTiffSpec extends FunSpec with RasterMatchers with GeoTiffTestUtils {
     it("should read in a cropped SinlebandGeoTiff from the edge") {
       val local = FileRangeReader(bigPath)
       val reader = StreamingByteReader(local, chunkSize)
-      val tiffTags = TiffTagsReader.read(smallPath)
+      val tiffTags = TiffTags.read(smallPath)
       val extent = tiffTags.extent
       val e = Extent(extent.xmin, extent.ymin, extent.xmin + 100, extent.ymin + 100)
 
@@ -59,7 +60,7 @@ class BigTiffSpec extends FunSpec with RasterMatchers with GeoTiffTestUtils {
     it("should read in a cropped SinglebandGeoTiff in the middle") {
       val local = FileRangeReader(bigPath)
       val reader = StreamingByteReader(local, chunkSize)
-      val tiffTags = TiffTagsReader.read(smallPath)
+      val tiffTags = TiffTags.read(smallPath)
       val extent = tiffTags.extent
       val e = Extent(extent.xmin + 100 , extent.ymin + 100, extent.xmax - 250, extent.ymax - 250)
 
@@ -81,7 +82,7 @@ class BigTiffSpec extends FunSpec with RasterMatchers with GeoTiffTestUtils {
     it("should read in a cropped MultibandGeoTiff from the edge") {
       val local = FileRangeReader(bigPathMulti)
       val reader = StreamingByteReader(local, chunkSize)
-      val tiffTags = TiffTagsReader.read(smallPathMulti)
+      val tiffTags = TiffTags.read(smallPathMulti)
       val extent = tiffTags.extent
       val e = Extent(extent.xmin, extent.ymin, extent.xmin + 100, extent.ymin + 100)
 
@@ -94,7 +95,7 @@ class BigTiffSpec extends FunSpec with RasterMatchers with GeoTiffTestUtils {
     it("should read in a cropped MultibandGeoTiff in the middle") {
       val local = FileRangeReader(bigPathMulti)
       val reader = StreamingByteReader(local, chunkSize)
-      val tiffTags = TiffTagsReader.read(smallPathMulti)
+      val tiffTags = TiffTags.read(smallPathMulti)
       val extent = tiffTags.extent
       val e = Extent(extent.xmin + 100 , extent.ymin + 100, extent.xmax - 250, extent.ymax - 250)
 
@@ -105,7 +106,7 @@ class BigTiffSpec extends FunSpec with RasterMatchers with GeoTiffTestUtils {
     }
 
     it("should read a previously problematic big tiff") {
-      val tags = TiffTagsReader.read(geoTiffPath("bigtiff-marcuswr.tif"))
+      val tags = TiffTags.read(geoTiffPath("bigtiff-marcuswr.tif"))
       val e = tags.extent
       e should be (Extent(-105.06398320198056, 40.743636546229, -105.05724549293515, 40.751667086819424))
     }

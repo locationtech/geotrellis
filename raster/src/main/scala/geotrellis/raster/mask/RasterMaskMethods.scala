@@ -25,7 +25,7 @@ import geotrellis.vector.{Geometry, Extent}
   * A trait containing extension methods related to masking of a
   * [[Raster]].
   */
-trait RasterMaskMethods[T <: CellGrid[Int]] extends MethodExtensions[Raster[T]] {
+abstract class RasterMaskMethods[T <: CellGrid[Int]: (* => TileMaskMethods[T])](val self: Raster[T]) extends MethodExtensions[Raster[T]] {
   /**
     * Masks this raster by the given Geometry. Do not include polygon
     * exteriors.
@@ -49,5 +49,6 @@ trait RasterMaskMethods[T <: CellGrid[Int]] extends MethodExtensions[Raster[T]] 
   /**
     * Masks this raster by the given Geometry.
     */
-  def mask(geoms: Traversable[Geometry], options: Options): Raster[T]
+  def mask(geoms: Traversable[Geometry], options: Options): Raster[T] =
+    self.mapTile(_.mask(self.extent, geoms, options))
 }

@@ -102,8 +102,10 @@ class StreamingByteReader(rangeReader: RangeReader, chunkSize: Int = 45876) exte
     }
   }
 
-  /** Ensure we can read given number of bytes from current filePosition */
-  private def ensureChunk(length: Int): Unit = {
+  /** Ensure we can read given number of bytes from current filePosition
+    * Returns the length of bytes which have been successfully ensured
+    */
+  private def ensureChunk(length: Int): Int = {
     val trimmed: Long = math.min(length.toLong, rangeReader.totalLength - filePosition)
     if (!chunkRange.contains(filePosition) || !chunkRange.contains(filePosition + trimmed - 1)) {
       val len: Long = math.min(math.max(length, chunkSize), rangeReader.totalLength - filePosition)
@@ -112,13 +114,15 @@ class StreamingByteReader(rangeReader: RangeReader, chunkSize: Int = 45876) exte
 
     if (filePosition != chunkRange.start + chunkBuffer.position)
       chunkBuffer.position((filePosition - chunkRange.start).toInt)
+
+    trimmed.toInt
   }
 
   def getBytes(length: Int): Array[Byte] = {
-    ensureChunk(length)
-    val bytes = Array.ofDim[Byte](length)
+    val actualLength = ensureChunk(length)
+    val bytes = Array.ofDim[Byte](actualLength)
     chunkBuffer.get(bytes)
-    filePosition += length
+    filePosition += actualLength
     bytes
   }
 

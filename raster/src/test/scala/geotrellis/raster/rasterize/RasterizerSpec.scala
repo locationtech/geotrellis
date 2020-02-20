@@ -64,7 +64,7 @@ class RasterizeSpec extends FunSuite with RasterMatchers
       assert( f2output === "point three: 0")
 
       var lineOutput = ""
-      val line = LineFeature(Line((0.0,0.0),(9.0,9.0)),"diagonal line")
+      val line = Feature(LineString((0.0,0.0),(9.0,9.0)),"diagonal line")
       Rasterizer.foreachCellByLineString(line.geom, re) { (col:Int, row:Int) =>
         lineOutput = lineOutput + line.data + tile.get(col,row) + "\n"
       }
@@ -78,7 +78,7 @@ class RasterizeSpec extends FunSuite with RasterMatchers
     val data = (0 until 99).toArray
     val tile = ArrayTile(data, re.cols, re.rows)
 
-    val line1 = LineFeature(Line((1.0,3.5),(1.0,8.5)), "line" )
+    val line1 = Feature(LineString((1.0,3.5),(1.0,8.5)), "line" )
     var lineOutput:String = ""
     Rasterizer.foreachCellByLineString(line1.geom, re) { (col:Int, row:Int) =>
       lineOutput = lineOutput + tile.get(col,row) + ","
@@ -94,7 +94,7 @@ class RasterizeSpec extends FunSuite with RasterMatchers
     val data = (0 until 99).toArray
     val tile = ArrayTile(data, re.cols, re.rows)
 
-    val line1 = LineFeature(Line((1.0,3.5),(1.0,8.5), (5.0, 9.0)), "line" )
+    val line1 = Feature(LineString((1.0,3.5),(1.0,8.5), (5.0, 9.0)), "line" )
     val result = mutable.ListBuffer[(Int,Int)]()
 
     Rasterizer.foreachCellByLineString(line1.geom, re) { (col:Int, row:Int) =>
@@ -117,7 +117,7 @@ class RasterizeSpec extends FunSuite with RasterMatchers
     val data = (0 until 99).toArray
     val tile = ArrayTile(data, re.cols, re.rows)
 
-    val line1 = LineFeature(Line((1.0,3.5),(1.0,8.5), (5.0, 9.0),(1.0,4.5)), "line" )
+    val line1 = Feature(LineString((1.0,3.5),(1.0,8.5), (5.0, 9.0),(1.0,4.5)), "line" )
     val result = mutable.ListBuffer[(Int,Int)]()
 
     Rasterizer.foreachCellByLineString(line1.geom, re) { (col:Int, row:Int) =>
@@ -138,7 +138,7 @@ class RasterizeSpec extends FunSuite with RasterMatchers
   test("4-connecting line drawing 1") {
     val e = Extent(0, 0, 1024, 1024)
     val re = RasterExtent(e, 1024, 1024)
-    val line = Line((0, 0), (1022, 1024))
+    val line = LineString(Seq[(Double, Double)]((0, 0), (1022, 1024)))
     val result4 = mutable.Set[(Int, Int)]()
     val result8 = mutable.Set[(Int, Int)]()
 
@@ -154,7 +154,7 @@ class RasterizeSpec extends FunSuite with RasterMatchers
   test("4-connecting line drawing 2") {
     val e = Extent(0, 0, 1024, 1024)
     val re = RasterExtent(e, 1024, 1024)
-    val line = Line((0, 0), (1024, 1022))
+    val line = LineString(Seq[(Double,Double)]((0, 0), (1024, 1022)))
     val result4 = mutable.Set[(Int, Int)]()
     val result8 = mutable.Set[(Int, Int)]()
 
@@ -175,7 +175,7 @@ class RasterizeSpec extends FunSuite with RasterMatchers
 
     val (x0, y0) = (10, 0)
     val (x1, y1) = (0, 10)
-    val line = Line((x0, y0), (x1, y1))
+    val line = LineString(Seq[(Double,Double)]((x0, y0), (x1, y1)))
 
     Rasterizer.foreachCellByLineStringDouble(line, re){ (x, y) => result += x -> y }
 
@@ -199,7 +199,7 @@ class RasterizeSpec extends FunSuite with RasterMatchers
 
     val (x0, y0) = (1, 1)
     val (x1, y1) = (5, 3)
-    val line = Line((x0, y0), (x1, y1))
+    val line = LineString(Seq[(Double,Double)]((x0, y0), (x1, y1)))
 
     Rasterizer.foreachCellByLineStringDouble(line, re){ (x, y) => result += x -> y }
 

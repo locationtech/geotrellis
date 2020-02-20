@@ -16,10 +16,11 @@
 
 package geotrellis.spark.testkit.io
 
+import geotrellis.layer.SpaceTimeKey
+import geotrellis.store.index._
+import geotrellis.spark._
 import java.time.ZonedDateTime
 
-import geotrellis.spark._
-import geotrellis.spark.io.index._
 import jp.ne.opt.chronoscala.Imports._
 
 trait SpaceTimeKeyIndexMethods {

@@ -1,8 +1,7 @@
 import os, re
 import subprocess
 
-projects = ["spark-etl",
-            "shapefile",
+projects = ["shapefile",
             "raster-testkit",
             "vector-testkit",
             "spark-testkit"]

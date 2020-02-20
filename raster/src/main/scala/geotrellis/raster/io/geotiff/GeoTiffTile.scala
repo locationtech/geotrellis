@@ -317,9 +317,6 @@ abstract class GeoTiffTile(
    * @return A new [[Tile]] that contains the new CellTypes
    */
   def convert(newCellType: CellType): GeoTiffTile = {
-    if(newCellType.isFloatingPoint != cellType.isFloatingPoint)
-      logger.warn(s"Conversion from $cellType to $newCellType may lead to data loss.")
-
     val arr = Array.ofDim[Array[Byte]](segmentCount)
     val compressor = compression.createCompressor(segmentCount)
 
@@ -731,7 +728,7 @@ abstract class GeoTiffTile(
    */
   def crop(bounds: GridBounds[Int]): MutableArrayTile = {
     val iter = crop(List(bounds))
-    if(iter.isEmpty) throw GeoAttrsError(s"No intersections of ${bounds} vs ${gridBounds}")
+    if(iter.isEmpty) throw GeoAttrsError(s"No intersections of ${bounds} vs ${dimensions}")
     else iter.next._2
   }
 

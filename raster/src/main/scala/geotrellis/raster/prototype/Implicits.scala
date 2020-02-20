@@ -22,8 +22,9 @@ import cats.Monoid
 object Implicits extends Implicits
 
 trait Implicits {
-  implicit class withTileFeaturePrototypeMethods[
-    T <: CellGrid[Int] : (? => TilePrototypeMethods[T]),
-    D: Monoid
-  ](self: TileFeature[T, D]) extends TileFeaturePrototypeMethods[T, D](self)
+  implicit class withSinglebandTilePrototypeMethods(val self: Tile) extends SinglebandTilePrototypeMethods
+  implicit class withMultibandTilePrototypeMethods(val self: MultibandTile) extends MultibandTilePrototypeMethods
+
+  implicit class withSinglebandTileFeaturePrototypeMethods[D: Monoid](val self: TileFeature[Tile, D]) extends SinglebandTileFeaturePrototypeMethods[D]
+  implicit class withMultibandTileFeaturePrototypeMethods[D: Monoid](val self: TileFeature[MultibandTile, D]) extends MultibandTileFeaturePrototypeMethods[D]
 }

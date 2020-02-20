@@ -1,3 +1,19 @@
+/*
+ * Copyright 2019 Azavea
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package geotrellis.proj4.io.wkt
 import org.scalatest.FunSpec
 
@@ -629,19 +645,17 @@ class WKTParserTest extends FunSpec {
     assert(contains(expected))
   }
 
-  it("Should parse GCS_WGS_1984") {
-    // this is a small hack to show how it is possible to handle multiline strings
+  it("Should parse GCS_WGS_1984 with and without newlines") {
     val strip = WKTParser("""|GEOGCS["GCS_WGS_1984",
                              |DATUM["D_WGS_1984", SPHEROID["WGS_1984", 6378137.0, 298.257223563]],
                              |PRIMEM["Greenwich", 0.0],
                              |UNIT["degree", 0.017453292519943295],
                              |AXIS["Longitude", "EAST"],
-                             |AXIS["Latitude", "NORTH"]]""".stripMargin.replaceAll("\n",""))
+                             |AXIS["Latitude", "NORTH"]]""".stripMargin)
 
-    // sinlge line equivalent
+    // single line equivalent
     val single = WKTParser("""GEOGCS["GCS_WGS_1984", DATUM["D_WGS_1984", SPHEROID["WGS_1984", 6378137.0, 298.257223563]],PRIMEM["Greenwich", 0.0],UNIT["degree", 0.017453292519943295],AXIS["Longitude", "EAST"],AXIS["Latitude", "NORTH"]]""")
 
     assert(strip == single)
   }
-
 }

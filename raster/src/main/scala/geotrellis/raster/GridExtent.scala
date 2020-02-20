@@ -16,10 +16,13 @@
 
 package geotrellis.raster
 
-import geotrellis.vector.{Extent, Point}
+import geotrellis.proj4.{CRS, Transform}
+import geotrellis.raster.reproject.Reproject.Options
+import geotrellis.raster.reproject.ReprojectRasterExtent
+import geotrellis.vector._
 
-import scala.math.{min, max, ceil}
-import spire.math.{Integral}
+import scala.math.{ceil, max, min}
+import spire.math.Integral
 import spire.implicits._
 
 /**
@@ -34,13 +37,16 @@ class GridExtent[@specialized(Int, Long) N: Integral](
   val cols: N,
   val rows: N
 ) extends Grid[N] with Serializable {
+  import GridExtent._
+
   if (cols <= 0) throw GeoAttrsError(s"invalid cols: $cols")
   if (rows <= 0) throw GeoAttrsError(s"invalid rows: $rows")
 
   require(
     cols == Integral[N].fromDouble(math.round(extent.width / cellwidth)) &&
     rows == Integral[N].fromDouble(math.round(extent.height / cellheight)),
-    s"$extent at $cellSize does not match $dimensions")
+    s"$extent at $cellSize does not match $dimensions"
+  )
 
   def this(extent: Extent, cols: N, rows: N) =
     this(extent, (extent.width / cols.toDouble), (extent.height / rows.toDouble), cols, rows)
@@ -79,15 +85,15 @@ class GridExtent[@specialized(Int, Long) N: Integral](
   final def mapYToGridDouble(y: Double): Double = (extent.ymax - y ) / cellheight
 
   /** Convert map coordinate x to grid coordinate column. */
-  final def mapXToGrid(x: Double): N = Integral[N].fromDouble(math.floor(mapXToGridDouble(x)))
+  final def mapXToGrid(x: Double): N = Integral[N].fromDouble(floorWithTolerance(mapXToGridDouble(x)))
 
   /** Convert map coordinate y to grid coordinate row. */
-  final def mapYToGrid(y: Double): N = Integral[N].fromDouble(math.floor(mapYToGridDouble(y)))
+  final def mapYToGrid(y: Double): N = Integral[N].fromDouble(floorWithTolerance(mapYToGridDouble(y)))
 
   /** Convert map coordinates (x, y) to grid coordinates (col, row). */
   final def mapToGrid(x: Double, y: Double): (N, N) = {
-    val col = math.floor((x - extent.xmin) / cellwidth).toInt
-    val row = math.floor((extent.ymax - y) / cellheight).toInt
+    val col = floorWithTolerance((x - extent.xmin) / cellwidth).toInt
+    val row = floorWithTolerance((extent.ymax - y) / cellheight).toInt
     (col, row)
   }
 
@@ -146,7 +152,7 @@ class GridExtent[@specialized(Int, Long) N: Integral](
 
   /**
     * Gets the GridBounds aligned with this RasterExtent that is the
-    * smallest subgrid of containing all points within the extent. The
+    * smallest subgrid containing all points within the extent. The
     * extent is considered inclusive on it's north and west borders,
     * exclusive on it's east and south borders.  See [[RasterExtent]]
     * for a discussion of grid and extent boundary concepts.
@@ -168,19 +174,19 @@ class GridExtent[@specialized(Int, Long) N: Integral](
     // what is to the West and\or North of the point. However if the border point
     // is not directly on a grid division, include the whole row and/or column that
     // contains the point.
-    val colMax: N = Integral[N].fromLong{
+    val colMax: N = Integral[N].fromLong {
       val colMaxDouble = mapXToGridDouble(subExtent.xmax)
 
-      if (math.abs(colMaxDouble - math.floor(colMaxDouble)) < GridExtent.epsilon)
+      if (math.abs(colMaxDouble - floorWithTolerance(colMaxDouble)) < GridExtent.epsilon)
         colMaxDouble.toLong - 1L
       else
         colMaxDouble.toLong
     }
 
-    val rowMax: N = Integral[N].fromLong{
+    val rowMax: N = Integral[N].fromLong {
       val rowMaxDouble = mapYToGridDouble(subExtent.ymin)
 
-      if (math.abs(rowMaxDouble - math.floor(rowMaxDouble)) < GridExtent.epsilon)
+      if (math.abs(rowMaxDouble - floorWithTolerance(rowMaxDouble)) < GridExtent.epsilon)
         rowMaxDouble.toLong - 1L
       else
         rowMaxDouble.toLong
@@ -262,7 +268,7 @@ class GridExtent[@specialized(Int, Long) N: Integral](
     * This is true when the extent is evenly divided by cellheight and cellwidth.
     */
   def isGridExtentAligned(): Boolean = {
-    def isWhole(x: Double) = math.abs(math.floor(x) - x) < geotrellis.util.Constants.DOUBLE_EPSILON
+    def isWhole(x: Double) = math.abs(math.round(x) - x) < geotrellis.util.Constants.FLOAT_EPSILON
     isWhole((extent.xmax - extent.xmin) / cellwidth) && isWhole((extent.ymax - extent.ymin) / cellheight)
   }
 
@@ -276,6 +282,28 @@ class GridExtent[@specialized(Int, Long) N: Integral](
     */
   def createAlignedRasterExtent(targetExtent: Extent): RasterExtent =
     createAlignedGridExtent(targetExtent).toRasterExtent
+
+  /**
+    * This method copies gdalwarp -tap logic:
+    *
+    * The actual code reference: https://github.com/OSGeo/gdal/blob/v2.3.2/gdal/apps/gdal_rasterize_lib.cpp#L402-L461
+    * The actual part with the -tap logic: https://github.com/OSGeo/gdal/blob/v2.3.2/gdal/apps/gdal_rasterize_lib.cpp#L455-L461
+    *
+    * The initial PR that introduced that feature in GDAL 1.8.0: https://trac.osgeo.org/gdal/attachment/ticket/3772/gdal_tap.patch
+    * A discussion thread related to it: https://lists.osgeo.org/pipermail/gdal-dev/2010-October/thread.html#26209
+    *
+    */
+  def alignTargetPixels: GridExtent[N] = {
+    val extent = this.extent
+    val cellSize @ CellSize(width, height) = this.cellSize
+
+    GridExtent[N](Extent(
+      xmin = math.floor(extent.xmin / width) * width,
+      ymin = math.floor(extent.ymin / height) * height,
+      xmax = math.ceil(extent.xmax / width) * width,
+      ymax = math.ceil(extent.ymax / height) * height
+    ), cellSize)
+  }
 
   /**
     * Gets the Extent that matches the grid bounds passed in, aligned
@@ -375,4 +403,31 @@ object GridExtent {
    * Implicit conversions are evil, but this one is always safe and saves typing.
    */
   implicit def gridBoundsIntToLong(bounds: GridBounds[Int]): GridBounds[Long] = bounds.toGridType[Long]
+
+  /**
+    * The same logic is used in QGIS: https://github.com/qgis/QGIS/blob/607664c5a6b47c559ed39892e736322b64b3faa4/src/analysis/raster/qgsalignraster.cpp#L38
+    * The search query: https://github.com/qgis/QGIS/search?p=2&q=floor&type=&utf8=%E2%9C%93
+    *
+    * GDAL uses smth like that, however it was a bit hard to track it down:
+    * https://github.com/OSGeo/gdal/blob/7601a637dfd204948d00f4691c08f02eb7584de5/gdal/frmts/vrt/vrtsources.cpp#L215
+    * */
+  def floorWithTolerance(value: Double): Double = {
+    val roundedValue = math.round(value)
+    if (math.abs(value - roundedValue) < GridExtent.epsilon) roundedValue
+    else math.floor(value)
+  }
+
+  implicit class gridExtentMethods[N: Integral](self: GridExtent[N]) {
+    def reproject(src: CRS, dest: CRS, options: Options): GridExtent[N] =
+      if(src == dest) self
+      else {
+        val transform = Transform(src, dest)
+        options
+          .targetRasterExtent
+          .map(_.toGridType[N])
+          .getOrElse(ReprojectRasterExtent(self, transform, options = options))
+      }
+
+    def reproject(src: CRS, dest: CRS): GridExtent[N] = reproject(src, dest, Options.DEFAULT)
+  }
 }

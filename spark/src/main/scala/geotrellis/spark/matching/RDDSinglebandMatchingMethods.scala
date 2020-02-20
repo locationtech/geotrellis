@@ -17,7 +17,6 @@
 package geotrellis.spark.matching
 
 import geotrellis.raster._
-import geotrellis.raster.histogram._
 import geotrellis.spark._
 import geotrellis.util.MethodExtensions
 
@@ -26,7 +25,7 @@ import org.apache.spark.rdd.RDD
 import scala.reflect.ClassTag
 
 
-abstract class RDDSinglebandMatchingMethods[K, V: (? => Tile)] extends MethodExtensions[RDD[(K, V)]] {
+abstract class RDDSinglebandMatchingMethods[K, V: (* => Tile)] extends MethodExtensions[RDD[(K, V)]] {
 
   /**
     * Given a target histogram, this function produces an RDD of

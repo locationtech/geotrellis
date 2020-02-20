@@ -18,6 +18,9 @@ fast batch processing of large raster data sets.
 Please visit the `project site <http://geotrellis.io>`__ for more
 information as well as some interactive demos.
 
+Review the `Changelog <https://github.com/locationtech/geotrellis/blob/master/CHANGELOG.md>`__
+for information on latest releases.
+
 Why GeoTrellis?
 ---------------
 
@@ -97,7 +100,6 @@ Ready? `Setup a GeoTrellis development environment. <tutorials/setup.html>`__
    :caption: Home
    :hidden:
 
-   Changelog <CHANGELOG>
    Contributing <CONTRIBUTING>
 
 .. toctree::
@@ -110,7 +112,6 @@ Ready? `Setup a GeoTrellis development environment. <tutorials/setup.html>`__
    tutorials/quickstart
    tutorials/kernel-density
    tutorials/reading-geoTiffs
-   Extract-Transform-Load (ETL) <tutorials/etl-tutorial>
 
 .. toctree::
    :maxdepth: 4
@@ -122,7 +123,8 @@ Ready? `Setup a GeoTrellis development environment. <tutorials/setup.html>`__
    Using Rasters <guide/rasters>
    Using Vectors <guide/vectors>
    Spark and GeoTrellis <guide/spark>
-   The ETL Tool <guide/etl>
+   Ingesting a Raster Layer <guide/ingests>
+   Pipelines (ETL Replacement) <guide/pipeline>
    Extending GeoTrellis Types <guide/extending-geotrellis>
    GeoTrellis Module Hierarchy <guide/module-hierarchy>
    Tile Layer Backends <guide/tile-backends>

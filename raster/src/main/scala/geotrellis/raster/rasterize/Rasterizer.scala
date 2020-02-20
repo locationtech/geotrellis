@@ -110,15 +110,34 @@ object Rasterizer {
     */
   def foreachCellByGeometry(geom: Geometry, re: RasterExtent, options : Options)(f: (Int, Int) => Unit): Unit = {
     geom match {
-      case geom: Point         => foreachCellByPoint(geom, re)(f)
-      case geom: MultiPoint    => foreachCellByMultiPoint(geom, re)(f)
-      case geom: MultiLine     => foreachCellByMultiLineString(geom, re)(f)
-      case geom: Line          => foreachCellByLineString(geom, re)(f)
-      case geom: Polygon       => PolygonRasterizer.foreachCellByPolygon(geom, re, options)(f)
-      case geom: MultiPolygon  => foreachCellByMultiPolygon(geom, re, options)(f)
+      case geom: Point              => foreachCellByPoint(geom, re)(f)
+      case geom: MultiPoint         => foreachCellByMultiPoint(geom, re)(f)
+      case geom: MultiLineString    => foreachCellByMultiLineString(geom, re)(f)
+      case geom: LineString         => foreachCellByLineString(geom, re)(f)
+      case geom: Polygon            => PolygonRasterizer.foreachCellByPolygon(geom, re, options)(f)
+      case geom: MultiPolygon       => foreachCellByMultiPolygon(geom, re, options)(f)
       case geom: GeometryCollection => geom.geometries.foreach(foreachCellByGeometry(_, re, options)(f))
-      case geom: Extent        => ExtentRasterizer.foreachCellByExtent(geom, re, options)(f)
     }
+  }
+
+  /**
+    * Perform a zonal summary by invoking a function on each cell
+    * under provided features.
+    *
+    * This function is a closure that returns Unit; all results are a
+    * side effect of this function.
+    *
+    * Note: the function f should modify a mutable variable as a side
+    * effect.  While not ideal, this avoids the unavoidable boxing
+    * that occurs when a Function3 returns a primitive value.
+    *
+    * @param extent   Feature for calculation
+    * @param re       RasterExtent to use for iterating through cells
+    * @param options  Options for the (Multi)Polygon and Extent rasterizers
+    * @param f        A function that takes (col: Int, row: Int) and produces nothing
+    */
+  def foreachCellByGeometry(extent: Extent, re: RasterExtent, options : Options)(f: (Int, Int) => Unit): Unit = {
+    ExtentRasterizer.foreachCellByExtent(extent, re, options)(f)
   }
 
   /**
@@ -156,7 +175,7 @@ object Rasterizer {
     * @param re  RasterExtent used to determine cols and rows
     * @param f   Function to apply: f(cols, row, feature)
     */
-  def foreachCellByMultiLineString(g: MultiLine, re: RasterExtent)(f: (Int, Int) => Unit) {
+  def foreachCellByMultiLineString(g: MultiLineString, re: RasterExtent)(f: (Int, Int) => Unit) {
     g.lines.foreach(foreachCellByLineString(_, re)(f))
   }
 
@@ -169,7 +188,7 @@ object Rasterizer {
     * @param f   Function to apply: f(cols, row, feature)
     */
   def foreachCellByMultiLineString(
-    g: MultiLine,
+    g: MultiLineString,
     re: RasterExtent,
     c: Connectivity
   )(f: (Int, Int) => Unit) {
@@ -223,11 +242,11 @@ object Rasterizer {
     * first point to the last point.
     */
   def foreachCellByLineString(
-    line: Line,
+    line: LineString,
     re: RasterExtent,
     c: Connectivity
   )(f: (Int, Int) => Unit) {
-    val coords = line.jtsGeom.getCoordinates()
+    val coords = line.getCoordinates()
     var i = 1; while (i < coords.size) {
       val x1 = re.mapXToGrid(coords(i-1).x)
       val y1 = re.mapYToGrid(coords(i-1).y)
@@ -243,8 +262,8 @@ object Rasterizer {
     * LineString.  The iteration happens in the direction from the
     * first point to the last point.
     */
-  def foreachCellByLineString(line: Line, re: RasterExtent)(f: (Int, Int) => Unit) {
-    val coords = line.jtsGeom.getCoordinates()
+  def foreachCellByLineString(line: LineString, re: RasterExtent)(f: (Int, Int) => Unit) {
+    val coords = line.getCoordinates()
     var i = 1; while (i < coords.size) {
       val x1 = re.mapXToGrid(coords(i-1).x)
       val y1 = re.mapYToGrid(coords(i-1).y)
@@ -272,7 +291,7 @@ object Rasterizer {
   def foreachCellInGridLine[D](
     x0: Int, y0: Int,
     x1: Int, y1: Int,
-    p: Line, re: RasterExtent,
+    p: LineString, re: RasterExtent,
     skipLast: Boolean = false
   )(f: (Int, Int) => Unit): Unit = {
     foreachCellInGridLine(x0, y0, x1, y1, re, skipLast, EightNeighbors)(f)
@@ -332,8 +351,8 @@ object Rasterizer {
     * LineString.  The iteration happens in the direction from the
     * first point to the last point.
     */
-  def foreachCellByLineStringDouble(line: Line, re: RasterExtent)(f: (Int, Int) => Unit) {
-    val coords = line.jtsGeom.getCoordinates()
+  def foreachCellByLineStringDouble(line: LineString, re: RasterExtent)(f: (Int, Int) => Unit) {
+    val coords = line.getCoordinates()
     var i = 1; while (i < coords.size) {
       foreachCellInGridLineDouble(coords(i-1).x, coords(i-1).y, coords(i+0).x, coords(i+0).y, re, line.isClosed || i != coords.size - 1)(f)
       i += 1
@@ -375,12 +394,12 @@ object Rasterizer {
     }
 
     // Find cell of first intersection with extent and ray
-    val (initialPoint, finalPoint) = re.extent.toPolygon.intersection(Line((x0, y0), (x1, y1))) match {
+    val (initialPoint, finalPoint): (Point, Option[Point]) = re.extent.toPolygon & LineString((x0, y0), (x1, y1)) match {
       case NoResult => return
       case PointResult(p) => (p, None)
-      case LineResult(l) =>
-        val p0 = l.vertices(0)
-        val p1 = l.vertices(1)
+      case LineStringResult(l) =>
+        val p0 = l.points(0)
+        val p1 = l.points(1)
         val base = Point(x0, y0)
         if (base.distance(p0) <= base.distance(p1))
           (p0, Some(p1))

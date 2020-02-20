@@ -19,7 +19,7 @@ package geotrellis.spark.pipeline.ast.singleband.temporal
 import io.circe.syntax._
 
 import geotrellis.raster._
-import geotrellis.spark.TemporalProjectedExtent
+import geotrellis.layer.TemporalProjectedExtent
 import geotrellis.spark.pipeline.ast.Input
 import geotrellis.spark.pipeline.json.read
 

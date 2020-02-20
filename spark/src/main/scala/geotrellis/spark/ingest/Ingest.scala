@@ -20,10 +20,11 @@ import geotrellis.proj4._
 import geotrellis.raster._
 import geotrellis.raster.resample.{ResampleMethod, NearestNeighbor}
 import geotrellis.raster.reproject.Reproject.{Options => RasterReprojectOptions}
+import geotrellis.layer._
 import geotrellis.spark._
 import geotrellis.spark.pyramid.Pyramid
-import geotrellis.spark.reproject._
 import geotrellis.spark.tiling._
+import geotrellis.spark.reproject._
 import geotrellis.vector._
 import geotrellis.util._
 
@@ -46,7 +47,7 @@ object Ingest {
    *  - Optionally pyramid to top zoom level, calling sink at each level
    *
    * Ingesting is abstracted over the following variants:
-   *  - The source of the input tiles, which are represented as an RDD of (T, Tile) tuples, where T: Component[?, ProjectedExtent]
+   *  - The source of the input tiles, which are represented as an RDD of (T, Tile) tuples, where T: Component[*, ProjectedExtent]
    *  - The LayoutScheme which will be used to determine how to retile the input tiles.
    *
    * @param sourceTiles   RDD of tiles that have Extent and CRS
@@ -59,7 +60,7 @@ object Ingest {
    * @tparam K            type of output tile key, must have SpatialComponent
    * @return
    */
-  def apply[T: ClassTag: ? => TilerKeyMethods[T, K]: Component[?, ProjectedExtent], K: SpatialComponent: Boundable: ClassTag](
+  def apply[T: ClassTag: * => TilerKeyMethods[T, K]: Component[*, ProjectedExtent], K: SpatialComponent: Boundable: ClassTag](
       sourceTiles: RDD[(T, Tile)],
       destCRS: CRS,
       layoutScheme: LayoutScheme,

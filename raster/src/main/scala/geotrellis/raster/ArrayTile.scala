@@ -23,7 +23,7 @@ import spire.syntax.cfor._
   * tile.  Designed to be a near drop-in replacement for Array in many
   * cases.
   */
-trait ArrayTile extends Tile with Serializable {
+abstract class ArrayTile extends Tile with Serializable {
 
   /**
     * Return the [[ArrayTile]] equivalent of this ArrayTile.
@@ -41,9 +41,6 @@ trait ArrayTile extends Tile with Serializable {
     */
   def convert(targetCellType: CellType): ArrayTile = {
     val tile = ArrayTile.alloc(targetCellType, cols, rows)
-
-    if(targetCellType.isFloatingPoint != cellType.isFloatingPoint)
-      logger.debug(s"Conversion from $cellType to $targetCellType may lead to data loss.")
 
     if(!cellType.isFloatingPoint) {
       cfor(0)(_ < rows, _ + 1) { row =>
@@ -232,14 +229,7 @@ trait ArrayTile extends Tile with Serializable {
       case ct: CroppedTile =>
         ct.combine(this)((z1, z2) => f(z2, z1))
       case t =>
-        this.map((col, row, z) => {
-          if (isNoData(z)) z
-          else {
-            val v = t.get(col, row)
-            if (isNoData(v)) v
-            else f(z, v)
-          }
-        })
+        this.map((col, row, z) => f(z, t.get(col, row)))
   }
 
   /**
@@ -296,15 +286,27 @@ trait ArrayTile extends Tile with Serializable {
     * @return         A boolean
     */
   override def equals(other: Any): Boolean = other match {
-    case r: ArrayTile => {
-      if (r == null) return false
-      val len = size
-      if (len != r.size) return false
+    case tile: ArrayTile => {
+      if (tile == null) return false
+      if (tile.cols != cols || tile.rows != rows) return false
+      if (tile.cellType != cellType) return false
+
       var i = 0
-      while (i < len) {
-        if (apply(i) != r(i)) return false
-        i += 1
-      }
+
+      if (cellType.isFloatingPoint)
+        while (i < size) {
+          val value = applyDouble(i)
+          val otherValue = tile.applyDouble(i)
+
+          if (value.isNaN && otherValue.isNaN) return true
+          if (value != otherValue) return false
+          i += 1
+        }
+      else
+        while (i < size) {
+          if (apply(i) != tile(i)) return false
+          i += 1
+        }
       true
     }
     case _ => false

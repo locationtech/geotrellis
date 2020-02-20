@@ -16,15 +16,15 @@
 
 package geotrellis.spark.summary
 
-import geotrellis.spark._
-import geotrellis.spark.io.hadoop._
-import geotrellis.spark.testkit.testfiles._
-import geotrellis.spark.testkit._
-
+import geotrellis.vector._
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff._
-
-import geotrellis.vector._
+import geotrellis.layer._
+import geotrellis.layer.TileLayerCollection
+import geotrellis.spark._
+import geotrellis.spark.store.hadoop._
+import geotrellis.spark.testkit.testfiles._
+import geotrellis.spark.testkit._
 
 import org.scalatest.FunSpec
 

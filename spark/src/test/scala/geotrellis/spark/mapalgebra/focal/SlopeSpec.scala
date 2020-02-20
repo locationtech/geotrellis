@@ -17,9 +17,11 @@
 package geotrellis.spark.mapalgebra.focal
 
 import geotrellis.raster._
+import geotrellis.raster.io.geotiff._
+import geotrellis.raster.mapalgebra.focal.ZFactor
+import geotrellis.layer._
 import geotrellis.spark._
 import geotrellis.spark.testkit._
-import geotrellis.raster.io.geotiff._
 
 import org.scalatest.FunSpec
 import java.io._
@@ -27,10 +29,11 @@ import java.io._
 class SlopeSpec extends FunSpec with TestEnvironment {
 
   describe("Slope Elevation Spec") {
+    val calculator = ZFactor({ _ => 1.0 })
 
     it("should match gdal computed slope raster") {
-      val rasterOp = (tile: Tile, re: RasterExtent) => tile.slope(re.cellSize)
-      val sparkOp = (rdd: TileLayerRDD[SpatialKey]) => rdd.slope()
+      val rasterOp = (tile: Tile, re: RasterExtent) => tile.slope(re.cellSize, calculator.fromExtent(re.extent))
+      val sparkOp = (rdd: TileLayerRDD[SpatialKey]) => rdd.slope(calculator)
 
       val path = "aspect.tif"
 
@@ -41,14 +44,14 @@ class SlopeSpec extends FunSpec with TestEnvironment {
       val tile = SinglebandGeoTiff(new File(inputHomeLocalPath, "aspect.tif").getPath).tile.toArrayTile
 
       val (_, rasterRDD) = createTileLayerRDD(tile, 4, 3)
-      val slopeRDD = rasterRDD.slope()
+      val slopeRDD = rasterRDD.slope(calculator)
       slopeRDD.metadata.cellType should be (DoubleConstantNoDataCellType)
       slopeRDD.collect.head._2.cellType should be (DoubleConstantNoDataCellType)
     }
 
     it("should match gdal computed slope raster (collections api)") {
-      val rasterOp = (tile: Tile, re: RasterExtent) => tile.slope(re.cellSize)
-      val sparkOp = (collection: TileLayerCollection[SpatialKey]) => collection.slope()
+      val rasterOp = (tile: Tile, re: RasterExtent) => tile.slope(re.cellSize, calculator.fromExtent(re.extent))
+      val sparkOp = (collection: TileLayerCollection[SpatialKey]) => collection.slope(calculator)
 
       val path = "aspect.tif"
 

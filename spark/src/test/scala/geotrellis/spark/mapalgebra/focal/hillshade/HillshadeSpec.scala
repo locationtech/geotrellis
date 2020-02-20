@@ -16,13 +16,12 @@
 
 package geotrellis.spark.mapalgebra.focal.hillshade
 
+import geotrellis.vector.Extent
+import geotrellis.layer._
 import geotrellis.raster._
 import geotrellis.raster.mapalgebra.focal.hillshade._
-
 import geotrellis.spark._
 import geotrellis.spark.testkit._
-
-import geotrellis.vector.Extent
 
 import org.scalatest._
 import spire.syntax.cfor._

@@ -16,17 +16,16 @@
 
 package geotrellis.vector.voronoi
 
-import org.locationtech.jts.geom.Coordinate
-
 import geotrellis.util.MethodExtensions
-import geotrellis.vector.{Extent, MultiPoint, Point}
+import geotrellis.vector._
+import org.locationtech.jts.geom.Coordinate
 
 trait VoronoiDiagramCoordinateMethods extends MethodExtensions[Traversable[Coordinate]] {
   def voronoiDiagram(extent: Extent): VoronoiDiagram = { VoronoiDiagram(self.toArray, extent) }
 }
 
 trait VoronoiDiagramPointMethods extends MethodExtensions[Traversable[Point]] {
-  def voronoiDiagram(extent: Extent): VoronoiDiagram = { VoronoiDiagram(self.map(_.jtsGeom.getCoordinate).toArray, extent) }
+  def voronoiDiagram(extent: Extent): VoronoiDiagram = { VoronoiDiagram(self.map(_.getCoordinate).toArray, extent) }
 }
 
 trait VoronoiDiagramCoordinateArrayMethods extends MethodExtensions[Array[Coordinate]] {
@@ -34,9 +33,9 @@ trait VoronoiDiagramCoordinateArrayMethods extends MethodExtensions[Array[Coordi
 }
 
 trait VoronoiDiagramPointArrayMethods extends MethodExtensions[Array[Point]] {
-  def voronoiDiagram(extent: Extent): VoronoiDiagram = { VoronoiDiagram(self.map(_.jtsGeom.getCoordinate), extent) }
+  def voronoiDiagram(extent: Extent): VoronoiDiagram = { VoronoiDiagram(self.map(_.getCoordinate), extent) }
 }
 
 trait VoronoiDiagramMultiPointMethods extends MethodExtensions[MultiPoint] {
-  def voronoiDiagram(extent: Extent): VoronoiDiagram = { VoronoiDiagram(self.points.map(_.jtsGeom.getCoordinate), extent) }
+  def voronoiDiagram(extent: Extent): VoronoiDiagram = { VoronoiDiagram(self.points.map(_.getCoordinate), extent) }
 }

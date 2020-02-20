@@ -29,7 +29,7 @@ trait SinglebandRasterResampleMethods extends RasterResampleMethods[SinglebandRa
     val resampler = Resample(method, self.tile, self.extent, targetCS)
 
     if(targetTile.cellType.isFloatingPoint) {
-      val interpolate = resampler.resampleDouble _
+      val interpolate: (Double, Double) => Double = resampler.resampleDouble _
       cfor(0)(_ < rows, _ + 1) { row =>
         cfor(0)(_ < cols, _ + 1) { col =>
           val x = target.gridColToMap(col)
@@ -39,7 +39,7 @@ trait SinglebandRasterResampleMethods extends RasterResampleMethods[SinglebandRa
         }
       }
     } else {
-      val interpolate = resampler.resample _
+      val interpolate: (Double, Double) => Int = resampler.resample _
       cfor(0)(_ < rows, _ + 1) { row =>
         cfor(0)(_ < cols, _ + 1) { col =>
           val x = target.gridColToMap(col)

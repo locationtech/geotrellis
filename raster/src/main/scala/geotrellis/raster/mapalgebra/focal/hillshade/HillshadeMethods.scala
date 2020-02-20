@@ -17,7 +17,7 @@
 package geotrellis.raster.mapalgebra.focal.hillshade
 
 import geotrellis.raster._
-import geotrellis.raster.mapalgebra.focal._
+import geotrellis.raster.Neighborhoods.Square
 import geotrellis.util.MethodExtensions
 
 

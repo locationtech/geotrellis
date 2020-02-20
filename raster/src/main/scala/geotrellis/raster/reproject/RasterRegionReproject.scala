@@ -20,7 +20,7 @@ import geotrellis.raster._
 import geotrellis.raster.resample._
 import geotrellis.raster.merge._
 import geotrellis.raster.rasterize._
-import geotrellis.vector.{Geometry, GeometryCollection, Line, MultiLine, MultiPoint, Point, Polygon}
+import geotrellis.vector._
 import geotrellis.proj4._
 
 import spire.syntax.cfor._
@@ -105,18 +105,18 @@ object RasterRegionReproject {
 
     { i: Int =>
       if (i >= 0 && i < destRasterExtent.rows) {
-        val scanline = Line(destRasterExtent.gridToMap(0, i), destRasterExtent.gridToMap(destRasterExtent.cols - 1, i))
-        val chunks = scanline.intersection(destRegion).toGeometry match {
+        val scanline = LineString(destRasterExtent.gridToMap(0, i), destRasterExtent.gridToMap(destRasterExtent.cols - 1, i))
+        val chunks = (scanline & destRegion).toGeometry match {
           case None => Array.empty[Geometry]
           case Some(g) =>
             if (g.isInstanceOf[GeometryCollection])
               g.asInstanceOf[GeometryCollection].geometries.toArray
-            else if (g.isInstanceOf[Line])
-              Array(g.asInstanceOf[Line])
+            else if (g.isInstanceOf[LineString])
+              Array(g.asInstanceOf[LineString])
             else if (g.isInstanceOf[Point])
               Array(g.asInstanceOf[Point])
-            else if (g.isInstanceOf[MultiLine])
-              g.asInstanceOf[MultiLine].lines
+            else if (g.isInstanceOf[MultiLineString])
+              g.asInstanceOf[MultiLineString].lines
             else if (g.isInstanceOf[MultiPoint])
               g.asInstanceOf[MultiPoint].points
             else
@@ -125,8 +125,8 @@ object RasterRegionReproject {
 
         (for (chunk <- chunks) yield {
           chunk match {
-            case l: Line =>
-              val (pxarr, xarr) = scanlineCols(l.head.x, l.last.x)
+            case l: LineString =>
+              val (pxarr, xarr) = scanlineCols(l.getStartPoint.x, l.getEndPoint.x)
               val yarr = Array.fill[Double](xarr.size)(destRasterExtent.gridRowToMap(i))
               val xres = Array.ofDim[Double](xarr.size)
               val yres = Array.ofDim[Double](xarr.size)

@@ -16,8 +16,8 @@
 
 package geotrellis.spark.pipeline.json.write
 
+import geotrellis.layer.{LayoutDefinition, LayoutScheme}
 import geotrellis.spark.pipeline.json._
-import geotrellis.spark.tiling.{LayoutDefinition, LayoutScheme}
 
 import io.circe.generic.extras.ConfiguredJsonCodec
 

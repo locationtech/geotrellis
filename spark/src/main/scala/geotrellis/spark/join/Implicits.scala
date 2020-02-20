@@ -16,6 +16,7 @@
 
 package geotrellis.spark.join
 
+import geotrellis.layer._
 import geotrellis.spark._
 import geotrellis.spark.partition._
 import geotrellis.util._
@@ -31,12 +32,12 @@ trait Implicits {
   implicit class withSpatialJoinMethods[
     K: Boundable: PartitionerIndex: ClassTag,
     V: ClassTag,
-    M: GetComponent[?, Bounds[K]]
+    M: GetComponent[*, Bounds[K]]
   ](val self: RDD[(K, V)] with Metadata[M])
     extends SpatialJoinMethods[K, V, M]
 
   implicit class withVectorJoinMethods[
-    L: ClassTag : ? => Geometry,
-    R: ClassTag : ? => Geometry
+    L: ClassTag : * => Geometry,
+    R: ClassTag : * => Geometry
   ](val self: RDD[L]) extends VectorJoinMethods[L, R]
 }

@@ -16,6 +16,12 @@
 
 package geotrellis.util
 
+import scala.collection.JavaConverters._
+import java.net.URI
+import java.util.ServiceLoader
+
+import scala.util.Try
+
 /**
  * This trait defines methods for breaking up a source of bytes into
  * Map[Long, Array[Byte]] called a, "chunk". Where the Long is where within
@@ -45,4 +51,21 @@ trait RangeReader {
 object RangeReader {
   implicit def rangeReaderToStreamingByteReader(rangeReader: RangeReader): StreamingByteReader =
     StreamingByteReader(rangeReader)
+
+  implicit def rangeReaderToStreamingByteReaderOpt(rangeReader: Option[RangeReader]): Option[StreamingByteReader] =
+    rangeReader.map(rangeReaderToStreamingByteReader)
+
+  def apply(uri: URI): RangeReader =
+    ServiceLoader.load(classOf[RangeReaderProvider])
+      .iterator().asScala
+      .find(_.canProcess(uri))
+      .getOrElse(throw new RuntimeException(s"Unable to find RangeReaderProvider for $uri"))
+      .rangeReader(uri)
+
+  def apply(uri: String): RangeReader = apply(new URI(uri))
+
+  /** This function checks if the source is valid, by trying to read the first byte of the data. */
+  def validated(uri: URI): Option[RangeReader] = Try { apply(uri).readRange(0, 1); apply(uri) }.toOption
+
+  def validated(uri: String): Option[RangeReader] = validated(new URI(uri))
 }

@@ -19,9 +19,9 @@ package geotrellis.spark.stitch
 import geotrellis.proj4.LatLng
 import geotrellis.raster._
 import geotrellis.raster.testkit._
+import geotrellis.layer._
 import geotrellis.spark._
 import geotrellis.spark.testkit._
-import geotrellis.spark.tiling.LayoutDefinition
 import geotrellis.vector.Extent
 import org.scalatest.FunSpec
 
@@ -150,6 +150,31 @@ class RDDStitchMethodsSpec extends FunSpec
       val reference = IntArrayTile.ofDim(27,27).map{ (x, y, _) => math.max(x, y) }
 
       assertEqual(tiles.stitch, reference)
+    }
+
+    it("should sparse stitch an RDD with an offset extent") {
+        val expectedTile =
+          createTile(
+            Array(
+              NaN, NaN, NaN, NaN, NaN,
+              1, 1,  1, 1, NaN,
+              1, 1,  1, 1, NaN,
+              1, 1,  1, 1, NaN,
+              1, 1,  1, 1, NaN
+            ), 5, 5)
+
+        val tile =
+          createTile(
+            Array(
+              1, 1,  1, 1,
+              1, 1,  1, 1,
+              1, 1,  1, 1,
+              1, 1,  1, 1
+            ), 4, 4)
+        val extent = Extent(0, 0, 4, 4)
+        val layer = createTileLayerRDD(Raster(tile, extent), TileLayout(4, 4, 1, 1))
+        val testExtent = Extent(0, 0, 5, 5)
+        assertEqual(layer.sparseStitch(testExtent).get.tile, expectedTile)
     }
   }
 }

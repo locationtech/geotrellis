@@ -38,14 +38,14 @@ object FlowDirection {
     val max = neighbors.values.max
     neighbors.filter { case(_, v) => v == max }.keys.sum
   }
-  
+
   /** Produces a map of available immediate neighbors and their drop in elevation from the provided cell */
   def getNeighbors(c: Int, r: Int, raster: Tile): Map[Int, Double] = {
     val center = raster.get(c, r)
     val ncols = raster.cols
     val nrows = raster.rows
     // weights to be applied to drop in elevation towards the neighbours
-    val distances = 
+    val distances =
       Map[Int, Double](
         (1,        1   ),
         (2,   sqrt(2)  ),
@@ -57,7 +57,7 @@ object FlowDirection {
         (128, sqrt(2)  )
       )
     // coordinates of the 8 neighbours
-    val map = 
+    val map =
       Map[Int, (Int, Int)](
         ( 1,   (c + 1, r)      ),
         ( 2,   (c + 1, r + 1)  ),
@@ -90,7 +90,7 @@ object FlowDirection {
 
 
   def apply(raster: Tile): Tile = {
-    val (cols, rows) = raster.dimensions
+    val Dimensions(cols, rows) = raster.dimensions
     val tile = IntArrayTile(Array.ofDim[Int](rows * cols), cols, rows)
     var r = 0
     while (r < rows) {

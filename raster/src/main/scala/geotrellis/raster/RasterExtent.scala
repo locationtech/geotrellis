@@ -16,13 +16,15 @@
 
 package geotrellis.raster
 
-import geotrellis.vector.{Extent, Point}
-import scala.math.{min, max, ceil}
+import geotrellis.vector.Extent
+import scala.math.ceil
 
+import _root_.io.circe.generic.JsonCodec
 
 /**
   * [[GeoAttrsError]] exception.
   */
+@JsonCodec
 case class GeoAttrsError(msg: String) extends Exception(msg)
 
 /**
@@ -66,6 +68,8 @@ case class GeoAttrsError(msg: String) extends Exception(msg)
   * of an Extent are not actually considered to be part of the
   * RasterExtent.
   */
+
+@JsonCodec
 case class RasterExtent(
   override val extent: Extent,
   override val cellwidth: Double,

@@ -21,10 +21,6 @@ object VectorExamples {
     import geotrellis.vector._
     import geotrellis.vector.io._
 
-    // This import is important: otherwise the JsonFormat for the
-    // feature data type is not available (the feature data type being Int)
-    import spray.json.DefaultJsonProtocol._
-
     // Starting with a list of polygon features,
     // e.g. the return type of tile.toVector
     val features: List[PolygonFeature[Int]] = ???

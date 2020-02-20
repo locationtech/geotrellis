@@ -17,6 +17,8 @@
 package geotrellis.raster.io.geotiff.tags
 
 import monocle.macros.Lenses
+import io.circe._
+import io.circe.generic.semiauto._
 
 @Lenses("_")
 case class BasicTags(
@@ -34,3 +36,8 @@ case class BasicTags(
   xResolution: Option[(Long, Long)] = None,
   yResolution: Option[(Long, Long)] = None
 )
+
+object BasicTags {
+  implicit val basicTagsDecoder: Decoder[BasicTags] = deriveDecoder[BasicTags]
+  implicit val basicTagsEncoder: Encoder[BasicTags] = deriveEncoder[BasicTags]
+}
