@@ -61,7 +61,7 @@ object GeoTrellisPath {
       uri.schemeOption.fold(uri.toStringRaw.some) { scheme =>
         val authority =
           uri match {
-            case url: UrlWithAuthority => url.authority.userInfo.user.getOrElse("")
+            case url: UrlWithAuthority => url.authority.toString
             case _ => ""
           }
 
