@@ -30,17 +30,23 @@ import java.net.MalformedURLException
  *    parameters:
  *      - '''layer''': The name of the layer.
  *      - '''zoom''': The zoom level to be read.
- *      - '''band_count''': The number of bands of each Tile in the layer.
- *    Of the above three parameters, `layer` and `zoom` are required. In addition,
- *    this path can be prefixed with, '''gt+''' to signify that the target path
- *    is to be read in only by [[GeotrellisRasterSource]].
- *  @example "s3://bucket/catalog?layer=layer_name&zoom=10"
- *  @example "hdfs://data-folder/catalog?layer=name&zoom-12&band_count=5"
+ *      - '''band_count''': The number of bands of each Tile in the layer. Optional.
+ *
+ *    If a scheme is not provided, `file` is assumed. Both relative and absolute file
+ *    paths are supported.
+ *
+ *    In addition, this path can be prefixed with, '''gt+''' to signify that the
+ *    target path is to be read in only by [[GeotrellisRasterSource]].
+ *
+ *  @example "s3://bucket/catalog?layer=name&zoom=10"
+ *  @example "hdfs://data-folder/catalog?layer=name&zoom=12&band_count=5"
  *  @example "gt+file:///tmp/catalog?layer=name&zoom=5"
+ *  @example "/tmp/catalog?layer=name&zoom=5"
+ *
  *  @note The order of the query parameters does not matter.
  */
-case class GeoTrellisPath(value: String, layerName: String, zoomLevel: Option[Int], bandCount: Option[Int]) extends SourcePath {
-  def  layerId: LayerId = LayerId(layerName, zoomLevel.get)
+case class GeoTrellisPath(value: String, layerName: String, zoomLevel: Int, bandCount: Option[Int]) extends SourcePath {
+  def  layerId: LayerId = LayerId(layerName, zoomLevel)
 }
 
 object GeoTrellisPath {
@@ -68,11 +74,15 @@ object GeoTrellisPath {
     }
 
     catalogPath.fold(Option.empty[GeoTrellisPath]) { catalogPath =>
-      val layerName: Option[String] = queryString.param(layerNameParam)
-      val zoomLevel: Option[Int] = queryString.param(zoomLevelParam).map(_.toInt)
+      val maybeLayerName: Option[String] = queryString.param(layerNameParam)
+      val maybeZoomLevel: Option[Int] = queryString.param(zoomLevelParam).map(_.toInt)
       val bandCount: Option[Int] = queryString.param(bandCountParam).map(_.toInt)
 
-      layerName.map(GeoTrellisPath(catalogPath, _, zoomLevel, bandCount))
+      (maybeLayerName, maybeZoomLevel) match {
+        case (Some(layerName), Some(zoomLevel)) =>
+          GeoTrellisPath(catalogPath, layerName, zoomLevel, bandCount).some
+        case _ => Option.empty[GeoTrellisPath]
+      }
     }
   }
 

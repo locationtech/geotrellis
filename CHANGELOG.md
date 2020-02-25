@@ -6,10 +6,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- GeoTrellisPath assumes `file` scheme when none provided [#3191](https://github.com/locationtech/geotrellis/pull/3191)
+
 ### Changed
 
 - Fix `PolygonRasterizer` failure on some inputs [#3160](https://github.com/locationtech/geotrellis/issues/3160)
 - Fix GeoTiff Byte and UByte CellType conversions [#3189](https://github.com/locationtech/geotrellis/issues/3189)
+- Fix incorrect parsing of authority in GeoTrellisPath [#3191](https://github.com/locationtech/geotrellis/pull/3191)
+- GeoTrellisPath.zoomLevel is now `Option[Int]` -> `Int` to better indicate that it is a required parameter [#3191](https://github.com/locationtech/geotrellis/pull/3191)
 
 ### Removed
 
