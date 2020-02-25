@@ -53,20 +53,18 @@ object GeoTrellisPath {
     val zoomLevelParam: String = "zoom"
     val bandCountParam: String = "band_count"
 
-    // try to parse it, otherwise it is a path
-    val uri = UrlWithAuthority.parseOption(path).fold(Url().withPath(UrlPath.fromRaw(path)): Url)(identity)
+    val uri = UrlWithAuthority.parseOption(path).fold(Url.parse(path))(identity)
     val queryString = uri.query
 
+    val scheme = uri.schemeOption.getOrElse("file")
     val catalogPath: Option[String] = {
-      uri.schemeOption.fold(uri.toStringRaw.some) { scheme =>
-        val authority =
-          uri match {
-            case url: UrlWithAuthority => url.authority.toString
-            case _ => ""
-          }
+      val authority =
+        uri match {
+          case url: UrlWithAuthority => url.authority.toString
+          case _ => ""
+        }
 
-        s"${scheme.split("\\+").last}://$authority${uri.path}".some
-      }
+      s"${scheme.split("\\+").last}://$authority${uri.path}".some
     }
 
     catalogPath.fold(Option.empty[GeoTrellisPath]) { catalogPath =>
