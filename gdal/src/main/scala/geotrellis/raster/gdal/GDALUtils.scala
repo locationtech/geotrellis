@@ -20,7 +20,12 @@ import geotrellis.raster._
 import geotrellis.raster.io.geotiff._
 import geotrellis.raster.resample._
 
+import org.log4s._
+
 object GDALUtils {
+
+  @transient private[this] lazy val logger = getLogger
+
   def deriveResampleMethodString(method: ResampleMethod): String =
     method match {
       case NearestNeighbor => "near"
@@ -100,8 +105,12 @@ object GDALUtils {
     }
 
   def deriveOverviewStrategyString(strategy: OverviewStrategy): String = strategy match {
+    case Auto(n) if (n == 0) => "AUTO"
     case Auto(n) => s"AUTO-$n"
-    case AutoHigherResolution => "AUTO"
+    case Level(level) => s"$level"
     case Base => "NONE"
+    case other =>
+      logger.warn(s"$other is not a valid GDALWarp -ovr argument; falling back to AUTO")
+      "AUTO"
   }
 }

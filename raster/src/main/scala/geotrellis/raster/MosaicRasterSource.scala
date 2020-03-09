@@ -21,7 +21,7 @@ import geotrellis.raster._
 import geotrellis.raster.resample._
 import geotrellis.raster.reproject.Reproject
 import geotrellis.proj4.{CRS, WebMercator}
-import geotrellis.raster.io.geotiff.{AutoHigherResolution, OverviewStrategy}
+import geotrellis.raster.io.geotiff.OverviewStrategy
 
 import cats.Semigroup
 import cats.implicits._
@@ -85,7 +85,7 @@ abstract class MosaicRasterSource extends RasterSource {
     targetCRS: CRS,
     resampleTarget: ResampleTarget = DefaultTarget,
     method: ResampleMethod = NearestNeighbor,
-    strategy: OverviewStrategy = AutoHigherResolution
+    strategy: OverviewStrategy = OverviewStrategy.DEFAULT
   ): RasterSource =
     MosaicRasterSource(
       sources map { _.reproject(targetCRS, resampleTarget, method, strategy) },

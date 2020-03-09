@@ -20,7 +20,7 @@ import geotrellis.vector._
 import geotrellis.raster._
 import geotrellis.raster.resample._
 import geotrellis.proj4._
-import geotrellis.raster.io.geotiff.{AutoHigherResolution, OverviewStrategy}
+import geotrellis.raster.io.geotiff.OverviewStrategy
 import geotrellis.util.GetComponent
 
 import java.util.ServiceLoader
@@ -45,13 +45,13 @@ abstract class RasterSource extends CellGrid[Long] with RasterMetadata {
   /** All available RasterSource metadata */
   def metadata: RasterMetadata
 
-  protected def reprojection(targetCRS: CRS, resampleTarget: ResampleTarget = DefaultTarget, method: ResampleMethod = NearestNeighbor, strategy: OverviewStrategy = AutoHigherResolution): RasterSource
+  protected def reprojection(targetCRS: CRS, resampleTarget: ResampleTarget = DefaultTarget, method: ResampleMethod = NearestNeighbor, strategy: OverviewStrategy = OverviewStrategy.DEFAULT): RasterSource
 
   /** Reproject to different CRS with explicit sampling reprojectOptions.
     * @see [[geotrellis.raster.reproject.Reproject]]
     * @group reproject
     */
-  def reproject(targetCRS: CRS, resampleTarget: ResampleTarget = DefaultTarget, method: ResampleMethod = NearestNeighbor, strategy: OverviewStrategy = AutoHigherResolution): RasterSource =
+  def reproject(targetCRS: CRS, resampleTarget: ResampleTarget = DefaultTarget, method: ResampleMethod = NearestNeighbor, strategy: OverviewStrategy = OverviewStrategy.DEFAULT): RasterSource =
     if (targetCRS == this.crs) this
     else reprojection(targetCRS, resampleTarget, method, strategy)
 
@@ -61,7 +61,7 @@ abstract class RasterSource extends CellGrid[Long] with RasterMetadata {
     *   of the data footprint in the target grid.
     * @group reproject a
     */
-  def reprojectToGrid(targetCRS: CRS, grid: GridExtent[Long], method: ResampleMethod = NearestNeighbor, strategy: OverviewStrategy = AutoHigherResolution): RasterSource =
+  def reprojectToGrid(targetCRS: CRS, grid: GridExtent[Long], method: ResampleMethod = NearestNeighbor, strategy: OverviewStrategy = OverviewStrategy.DEFAULT): RasterSource =
     if (targetCRS == this.crs && grid == this.gridExtent) this
     else if (targetCRS == this.crs) resampleToGrid(grid, method)
     else reprojection(targetCRS, TargetAlignment(grid), method, strategy)
@@ -71,7 +71,7 @@ abstract class RasterSource extends CellGrid[Long] with RasterMetadata {
     *   this region may be larger or smaller than the footprint of the data
     * @group reproject
     */
-  def reprojectToRegion(targetCRS: CRS, region: RasterExtent, method: ResampleMethod = NearestNeighbor, strategy: OverviewStrategy = AutoHigherResolution): RasterSource =
+  def reprojectToRegion(targetCRS: CRS, region: RasterExtent, method: ResampleMethod = NearestNeighbor, strategy: OverviewStrategy = OverviewStrategy.DEFAULT): RasterSource =
     if (targetCRS == this.crs && region == this.gridExtent) this
     else if (targetCRS == this.crs) resampleToRegion(region.asInstanceOf[GridExtent[Long]], method)
     else reprojection(targetCRS, TargetRegion(region.toGridType[Long]), method, strategy)
@@ -81,7 +81,7 @@ abstract class RasterSource extends CellGrid[Long] with RasterMetadata {
   /** Sampling grid is defined of the footprint of the data with resolution implied by column and row count.
     * @group resample
     */
-  def resample(targetCols: Long, targetRows: Long, method: ResampleMethod = NearestNeighbor, strategy: OverviewStrategy = AutoHigherResolution): RasterSource =
+  def resample(targetCols: Long, targetRows: Long, method: ResampleMethod = NearestNeighbor, strategy: OverviewStrategy = OverviewStrategy.DEFAULT): RasterSource =
     resample(TargetDimensions(targetCols, targetRows), method, strategy)
 
   /** Sampling grid and resolution is defined by given [[GridExtent]].
@@ -89,7 +89,7 @@ abstract class RasterSource extends CellGrid[Long] with RasterMetadata {
     *  of the data footprint in the target grid.
     * @group resample
     */
-  def resampleToGrid(grid: GridExtent[Long], method: ResampleMethod = NearestNeighbor, strategy: OverviewStrategy = AutoHigherResolution): RasterSource =
+  def resampleToGrid(grid: GridExtent[Long], method: ResampleMethod = NearestNeighbor, strategy: OverviewStrategy = OverviewStrategy.DEFAULT): RasterSource =
     resample(TargetAlignment(grid), method, strategy)
 
   /** Sampling grid and resolution is defined by given [[RasterExtent]] region.
@@ -97,7 +97,7 @@ abstract class RasterSource extends CellGrid[Long] with RasterMetadata {
     *   this region may be larger or smaller than the footprint of the data
     * @group resample
     */
-  def resampleToRegion(region: GridExtent[Long], method: ResampleMethod = NearestNeighbor, strategy: OverviewStrategy = AutoHigherResolution): RasterSource =
+  def resampleToRegion(region: GridExtent[Long], method: ResampleMethod = NearestNeighbor, strategy: OverviewStrategy = OverviewStrategy.DEFAULT): RasterSource =
     resample(TargetRegion(region), method, strategy)
 
   /** Reads a window for the extent.

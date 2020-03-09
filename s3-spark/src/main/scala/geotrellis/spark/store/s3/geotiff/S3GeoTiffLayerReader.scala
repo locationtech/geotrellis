@@ -18,7 +18,7 @@ package geotrellis.spark.store.s3.geotiff
 
 import geotrellis.layer.ZoomedLayoutScheme
 import geotrellis.raster.resample.{NearestNeighbor, ResampleMethod}
-import geotrellis.raster.io.geotiff.{AutoHigherResolution, OverviewStrategy}
+import geotrellis.raster.io.geotiff.OverviewStrategy
 import geotrellis.store.util._
 import geotrellis.store.s3.cog.byteReader
 import geotrellis.store.s3.S3ClientProducer
@@ -38,7 +38,7 @@ import scala.concurrent.ExecutionContext
   val attributeStore: AttributeStore[M, GeoTiffMetadata],
   val layoutScheme: ZoomedLayoutScheme,
   val resampleMethod: ResampleMethod = NearestNeighbor,
-  val strategy: OverviewStrategy = AutoHigherResolution,
+  val strategy: OverviewStrategy = OverviewStrategy.DEFAULT,
   s3Client: => S3Client = S3ClientProducer.get(),
   executionContext: ExecutionContext = BlockingThreadPool.executionContext
 ) extends GeoTiffLayerReader[M] {
@@ -50,7 +50,7 @@ import scala.concurrent.ExecutionContext
     attributeStore: AttributeStore[M, GeoTiffMetadata],
     layoutScheme: ZoomedLayoutScheme,
     resampleMethod: ResampleMethod = NearestNeighbor,
-    strategy: OverviewStrategy = AutoHigherResolution,
+    strategy: OverviewStrategy = OverviewStrategy.DEFAULT,
     s3Client: => S3Client = S3ClientProducer.get(),
     executionContext: => ExecutionContext = BlockingThreadPool.executionContext
   ): S3GeoTiffLayerReader[M] = new S3GeoTiffLayerReader[M](
