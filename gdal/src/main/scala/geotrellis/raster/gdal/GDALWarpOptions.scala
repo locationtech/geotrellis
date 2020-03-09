@@ -20,7 +20,7 @@ import geotrellis.raster.gdal.GDALDataset.DatasetType
 import geotrellis.raster.{ConvertTargetCellType, TargetCellType}
 import geotrellis.raster._
 import geotrellis.raster.resample._
-import geotrellis.raster.io.geotiff.{AutoHigherResolution, OverviewStrategy}
+import geotrellis.raster.io.geotiff.OverviewStrategy
 import geotrellis.proj4.CRS
 import geotrellis.vector.Extent
 
@@ -85,7 +85,7 @@ case class GDALWarpOptions(
     *        Specify AUTO-n where n is an integer greater or equal to 1, to select an overview level below the AUTO one.
     *        Or specify NONE to force the base resolution to be used (can be useful if overviews have been generated with a low quality resampling method, and the warping is done using a higher quality resampling method).
     */
-  ovr: Option[OverviewStrategy] = Some(AutoHigherResolution),
+  ovr: Option[OverviewStrategy] = Some(OverviewStrategy.DEFAULT),
   /** -to, set a transformer option suitable to pass to [GDALCreateGenImgProjTransformer2()](https://www.gdal.org/gdal__alg_8h.html#a94cd172f78dbc41d6f407d662914f2e3) */
   to: List[(String, String)] = Nil,
   /** -novshiftgrid, Disable the use of vertical datum shift grids when one of the source or target SRS has an explicit vertical datum, and the input dataset is a single band dataset. */

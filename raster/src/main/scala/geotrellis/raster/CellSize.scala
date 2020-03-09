@@ -20,6 +20,8 @@ import geotrellis.vector.Extent
 
 import _root_.io.circe.generic.JsonCodec
 
+import scala.math.Ordering
+
 /**
   * A case class containing the width and height of a cell.
   *
@@ -71,5 +73,10 @@ object CellSize {
   def fromString(s:String) = {
     val Array(width, height) = s.split(",").map(_.toDouble)
     CellSize(width, height)
+  }
+
+  implicit val cellsizeOrdering = new Ordering[CellSize] {
+    def compare(x: CellSize, y: CellSize): Int =
+    (x.resolution - y.resolution).toInt
   }
 }

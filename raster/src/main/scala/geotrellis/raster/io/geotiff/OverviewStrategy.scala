@@ -16,20 +16,75 @@
 
 package geotrellis.raster.io.geotiff
 
-sealed trait OverviewStrategy
+import geotrellis.raster.CellSize
+
+import scala.collection.Searching._
+
 /**
-  * Specify Auto-n where n is an integer greater or equal to 0,
-  * to select an overview level below the AUTO one (of a higher or equal resolution).
+  * Options ported from GDAL (https://gdal.org/programs/gdalwarp.html#cmdoption-gdalwarp-ovr)
+  *  for automatic selection from among available overviews
+  */
+sealed trait OverviewStrategy
+
+object OverviewStrategy {
+  def DEFAULT = Auto(0)
+
+  def selectOverview(
+    overviewCS: List[CellSize],
+    desiredCS: CellSize,
+    strategy: OverviewStrategy
+  ): Int = strategy match {
+    case Level(overviewIdx) =>
+      overviewIdx
+    case Auto(n) =>
+      selectIndexByProximity(overviewCS, desiredCS, 0.5) + n
+    case Base =>
+      overviewCS.indexOf(overviewCS.min)
+    case AutoHigherResolution =>
+      selectIndexByProximity(overviewCS, desiredCS, 1.0)
+  }
+
+  def selectIndexByProximity(overviewCS: List[CellSize], desiredCS: CellSize, proximityThreshold: Double): Int =
+    overviewCS.search(desiredCS) match {
+      case InsertionPoint(ipIdx) =>
+        if (ipIdx <= 0) 0
+        else if (ipIdx >= overviewCS.length) overviewCS.length - 1
+        else {
+          val left = overviewCS(ipIdx - 1)
+          val right = overviewCS(ipIdx)
+          val proportion =
+          1 - (right.resolution - desiredCS.resolution) / (right.resolution - left.resolution)
+          if (proportion >= proximityThreshold) ipIdx
+          else ipIdx - 1
+        }
+      case Found(csIdx) =>
+        csIdx
+  }
+}
+
+/**
+  * If the index of the overview from which data should be sampled is known, it can
+  *  be explicitly provided via this option
+  */
+case class Level(overviewLevel: Int) extends OverviewStrategy
+
+/**
+  * While n=0, the nearest zoom level should be selected. At n=1, the
+  * overview immediately after n=0 is selected, at n=2, the one after that etc.
+  * 
+  * @note n must be greater than or equal to 0
   */
 case class Auto(n: Int = 0) extends OverviewStrategy {
-  require(n >= 0, s"n should be positive as it's index in the list of overviews, given n is: $n")
+  require(n >= 0, s"n should be 0 or positive, given n is: $n")
 }
+
 /**
   * Selects the best matching overview where overview resolution would be higher or equal to desired
   * to prevent data loss, it is the Default strategy.
   * Chooses the base layer if there would be no good enough overview.
   */
 case object AutoHigherResolution extends OverviewStrategy
+
 /**
   * Force the base resolution to be used.
   */

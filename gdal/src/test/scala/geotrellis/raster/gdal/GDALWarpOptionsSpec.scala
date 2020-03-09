@@ -18,7 +18,7 @@ package geotrellis.raster.gdal
 
 import geotrellis.proj4._
 import geotrellis.raster._
-import geotrellis.raster.io.geotiff.AutoHigherResolution
+import geotrellis.raster.io.geotiff.OverviewStrategy
 import geotrellis.raster.resample._
 import geotrellis.vector.Extent
 import geotrellis.raster.testkit._
@@ -143,7 +143,7 @@ class GDALWarpOptionsSpec extends FunSpec with RasterMatchers with GivenWhenThen
           .reproject(
             targetCRS    = WebMercator,
             resampleTarget = TargetCellSize(CellSize(10, 10)),
-            strategy     = AutoHigherResolution
+            strategy     = OverviewStrategy.DEFAULT
         )
         .resampleToRegion(
           region = GridExtent(Extent(-8769160.0, 4257700.0, -8750630.0, 4274460.0), CellSize(22, 22))
@@ -183,7 +183,7 @@ object GDALWarpOptionsSpec {
       None,
       List("-9999.0"),
       Nil,
-      Some(AutoHigherResolution),
+      Some(OverviewStrategy.DEFAULT),
       Nil, false, None, false, false, false, None, Nil, None, None, false, false,
       false, None, false, false, Nil, None, None, None, None, None, false, false, false, None, false, Nil, Nil, Nil, None
     )

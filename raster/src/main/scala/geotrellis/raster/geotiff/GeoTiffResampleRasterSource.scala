@@ -22,14 +22,14 @@ import geotrellis.raster._
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.raster.reproject.{Reproject, ReprojectRasterExtent}
 import geotrellis.raster.resample.{NearestNeighbor, ResampleMethod}
-import geotrellis.raster.io.geotiff.{AutoHigherResolution, GeoTiff, GeoTiffMultibandTile, MultibandGeoTiff, OverviewStrategy, Tags}
+import geotrellis.raster.io.geotiff.{GeoTiff, GeoTiffMultibandTile, MultibandGeoTiff, OverviewStrategy, Tags}
 import geotrellis.util.RangeReader
 
 class GeoTiffResampleRasterSource(
   val dataPath: GeoTiffPath,
   val resampleTarget: ResampleTarget,
   val method: ResampleMethod = NearestNeighbor,
-  val strategy: OverviewStrategy = AutoHigherResolution,
+  val strategy: OverviewStrategy = OverviewStrategy.DEFAULT,
   private[raster] val targetCellType: Option[TargetCellType] = None,
   @transient private[raster] val baseTiff: Option[MultibandGeoTiff] = None
 ) extends RasterSource {
@@ -64,7 +64,7 @@ class GeoTiffResampleRasterSource(
   @transient private[raster] lazy val closestTiffOverview: GeoTiff[MultibandTile] =
     tiff.getClosestOverview(gridExtent.cellSize, strategy)
 
-  def reprojection(targetCRS: CRS, resampleTarget: ResampleTarget = DefaultTarget, method: ResampleMethod = NearestNeighbor, strategy: OverviewStrategy = AutoHigherResolution): GeoTiffReprojectRasterSource =
+  def reprojection(targetCRS: CRS, resampleTarget: ResampleTarget = DefaultTarget, method: ResampleMethod = NearestNeighbor, strategy: OverviewStrategy = OverviewStrategy.DEFAULT): GeoTiffReprojectRasterSource =
     new GeoTiffReprojectRasterSource(dataPath, targetCRS, resampleTarget, method, strategy, targetCellType = targetCellType) {
       override lazy val gridExtent: GridExtent[Long] = {
         val reprojectedRasterExtent =
@@ -137,7 +137,7 @@ object GeoTiffResampleRasterSource {
     dataPath: GeoTiffPath,
     resampleTarget: ResampleTarget,
     method: ResampleMethod = NearestNeighbor,
-    strategy: OverviewStrategy = AutoHigherResolution,
+    strategy: OverviewStrategy = OverviewStrategy.DEFAULT,
     targetCellType: Option[TargetCellType] = None,
     baseTiff: Option[MultibandGeoTiff] = None
   ): GeoTiffResampleRasterSource = new GeoTiffResampleRasterSource(dataPath, resampleTarget, method, strategy, targetCellType, baseTiff)
