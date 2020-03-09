@@ -18,7 +18,7 @@ package geotrellis.spark.store.hadoop.geotiff
 
 import geotrellis.layer.ZoomedLayoutScheme
 import geotrellis.raster.resample.{NearestNeighbor, ResampleMethod}
-import geotrellis.raster.io.geotiff.{AutoHigherResolution, OverviewStrategy}
+import geotrellis.raster.io.geotiff.OverviewStrategy
 import geotrellis.store.util.BlockingThreadPool
 import geotrellis.store.hadoop.cog.byteReader
 import geotrellis.util.ByteReader
@@ -36,7 +36,7 @@ import scala.concurrent.ExecutionContext
   val attributeStore: AttributeStore[M, GeoTiffMetadata],
   val layoutScheme: ZoomedLayoutScheme,
   val resampleMethod: ResampleMethod = NearestNeighbor,
-  val strategy: OverviewStrategy = AutoHigherResolution,
+  val strategy: OverviewStrategy = OverviewStrategy.DEFAULT,
   val conf: Configuration = new Configuration,
   executionContext: => ExecutionContext = BlockingThreadPool.executionContext
 ) extends GeoTiffLayerReader[M] {
@@ -48,7 +48,7 @@ import scala.concurrent.ExecutionContext
     attributeStore: AttributeStore[M, GeoTiffMetadata],
     layoutScheme: ZoomedLayoutScheme,
     resampleMethod: ResampleMethod = NearestNeighbor,
-    strategy: OverviewStrategy = AutoHigherResolution,
+    strategy: OverviewStrategy = OverviewStrategy.DEFAULT,
     conf: Configuration = new Configuration,
     executionContext: => ExecutionContext = BlockingThreadPool.executionContext
   ): HadoopGeoTiffLayerReader[M] =

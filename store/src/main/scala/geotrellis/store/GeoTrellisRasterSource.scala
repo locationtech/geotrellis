@@ -17,7 +17,7 @@
 package geotrellis.store
 
 import geotrellis.proj4._
-import geotrellis.raster.io.geotiff.{Auto, AutoHigherResolution, Base, OverviewStrategy}
+import geotrellis.raster.io.geotiff.OverviewStrategy
 import geotrellis.raster.resample.{NearestNeighbor, ResampleMethod}
 import geotrellis.raster._
 import geotrellis.layer._
@@ -97,7 +97,7 @@ class GeoTrellisRasterSource(
   override def readBounds(bounds: Traversable[GridBounds[Long]], bands: Seq[Int]): Iterator[Raster[MultibandTile]] =
     bounds.toIterator.flatMap(_.intersection(this.dimensions).flatMap(read(_, bands)))
 
-  def reprojection(targetCRS: CRS, resampleTarget: ResampleTarget = DefaultTarget, method: ResampleMethod = NearestNeighbor, strategy: OverviewStrategy = AutoHigherResolution): RasterSource = {
+  def reprojection(targetCRS: CRS, resampleTarget: ResampleTarget = DefaultTarget, method: ResampleMethod = NearestNeighbor, strategy: OverviewStrategy = OverviewStrategy.DEFAULT): RasterSource = {
     if (targetCRS != this.crs) {
       val reprojectOptions = ResampleTarget.toReprojectOptions(this.gridExtent, resampleTarget, method)
       val (closestLayerId, targetGridExtent) = GeoTrellisReprojectRasterSource.getClosestSourceLayer(targetCRS, sourceLayers, reprojectOptions, strategy)
@@ -139,25 +139,13 @@ object GeoTrellisRasterSource {
   def getClosestResolution[T](
     grids: Seq[T],
     cellSize: CellSize,
-    strategy: OverviewStrategy = AutoHigherResolution
+    strategy: OverviewStrategy = OverviewStrategy.DEFAULT
   )(implicit f: T => CellSize): Option[T] = {
     val maxResultion = Some(grids.minBy(g => f(g).resolution))
-
-    strategy match {
-      case AutoHigherResolution =>
-        grids // overviews can have erased extent information
-          .map { v => (cellSize.resolution - f(v).resolution) -> v }
-          .filter(_._1 >= 0)
-          .sortBy(_._1)
-          .map(_._2)
-          .headOption
-          .orElse(maxResultion)
-      case Auto(n) =>
-        val sorted = grids.sortBy(v => math.abs(cellSize.resolution - f(v).resolution))
-        sorted.lift(n).orElse(sorted.lastOption) // n can be out of bounds,
-      // makes only overview lookup as overview position is important
-      case Base => maxResultion
-    }
+    val resolutions = grids.map(f).toList
+    val sourceResolution =
+      OverviewStrategy.selectOverview(resolutions, cellSize, strategy)
+    grids.lift(resolutions.indexOf(sourceResolution))
   }
 
   /** Read metadata for all layers that share a name and sort them by their resolution */
