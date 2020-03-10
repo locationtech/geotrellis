@@ -54,7 +54,7 @@ class ZFactor(produceZFactor: Double => Double) extends Serializable {
  */
 object ZFactor {
   final val LAT_LNG_FEET_AT_EQUATOR = 365217.6
-  final val LAT_LNG_METERS_AT_EQUATOR = 11320
+  final val LAT_LNG_METERS_AT_EQUATOR = 111320
 
   /** Creates a [[ZFactor]] instance. specifically for Tiles
    *  that are in LatLng.
