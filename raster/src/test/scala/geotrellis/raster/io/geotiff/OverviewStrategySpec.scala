@@ -17,19 +17,19 @@ class OverviewStrategySpec extends FunSpec with Matchers {
       val strategy = Auto(0)
       val selected =
         OverviewStrategy.selectOverview(availableResolutions, CellSize(5,5), strategy)
-      selected should be (CellSize(4, 4))
+      selected should be (2)
     }
     it("auto1 should select the one after the closest") {
       val strategy = Auto(1)
       val selected =
         OverviewStrategy.selectOverview(availableResolutions, CellSize(5,5), strategy)
-      selected should be (CellSize(8, 8))
+      selected should be (3)
     }
     it("auto2 should select the one after the one after closest") {
       val strategy = Auto(2)
       val selected =
         OverviewStrategy.selectOverview(availableResolutions, CellSize(5,5), strategy)
-      selected should be (CellSize(16, 16))
+      selected should be (4)
     }
   }
   describe("Level") {
@@ -37,7 +37,7 @@ class OverviewStrategySpec extends FunSpec with Matchers {
       val strategy = Level(2)
       val selected =
         OverviewStrategy.selectOverview(availableResolutions, CellSize(5,5), strategy)
-      selected should be (CellSize(4, 4))
+      selected should be (2)
     }
   }
   describe("Base") {
@@ -45,7 +45,7 @@ class OverviewStrategySpec extends FunSpec with Matchers {
       val strategy = Base
       val selected =
         OverviewStrategy.selectOverview(availableResolutions, CellSize(5,5), strategy)
-      selected should be (CellSize(1, 1))
+      selected should be (0)
     }
   }
   describe("AutoHigherResolution") {
@@ -53,7 +53,7 @@ class OverviewStrategySpec extends FunSpec with Matchers {
       val strategy = AutoHigherResolution
       val selected =
         OverviewStrategy.selectOverview(availableResolutions, CellSize(7,7), strategy)
-      selected should be (CellSize(4, 4))
+      selected should be (2)
     }
   }
 }
