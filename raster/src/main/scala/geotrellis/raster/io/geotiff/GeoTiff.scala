@@ -106,8 +106,9 @@ trait GeoTiff[T <: CellGrid[Int]] extends GeoTiffData {
     overviews match {
       case Nil => this
       case list =>
-        val sourceCS = OverviewStrategy.selectOverview(overviews.map(_.cellSize), cellSize, strategy)
-        list(list.indexOf(sourceCS))
+        val availableViews = this :: list
+        val sourceCS = OverviewStrategy.selectOverview(availableViews.map(_.cellSize), cellSize, strategy)
+        availableViews(sourceCS)
     }
   }
 
