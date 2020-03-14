@@ -79,7 +79,7 @@ object DelaunayRasterizer {
 
       val scanrow0 = math.max(math.ceil((ymin - eymin) / h - 0.5), 0)
       var scany = eymin + scanrow0 * h + h / 2
-      while (scany < eymax && scany < ymax) {
+      while (scany <= eymax && scany <= ymax) {
         // get x at y for edge
         var xmin = Double.MinValue
         var xmax = Double.MaxValue
@@ -125,7 +125,7 @@ object DelaunayRasterizer {
 
         val scancol0 = math.max(math.ceil((xmin - exmin) / w - 0.5), 0)
         var scanx = exmin + scancol0 * w + w / 2
-        while (scanx < exmax && scanx < xmax) {
+        while (scanx <= exmax && scanx <= xmax) {
           val col = ((scanx - exmin) / w).toInt
           val row = ((eymax - scany) / h).toInt
           if(0 <= col && col < cols &&
