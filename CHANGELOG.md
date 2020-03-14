@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix incorrect parsing of authority in GeoTrellisPath [#3191](https://github.com/locationtech/geotrellis/pull/3191)
 - GeoTrellisPath.zoomLevel is now `Option[Int]` -> `Int` to better indicate that it is a required parameter [#3191](https://github.com/locationtech/geotrellis/pull/3191)
 - Fix the length of one degree at the equator in metres [#3197](https://github.com/locationtech/geotrellis/pull/3197)
+- Fix Fix DelaunayRasterizer [#3202](https://github.com/locationtech/geotrellis/pull/3202)
 
 ### Removed
 
