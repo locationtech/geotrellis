@@ -59,7 +59,7 @@ class GeoTiffReprojectRasterSourceSpec extends FunSpec with RasterMatchers with 
       }
 
       val twiceFuzzySource = rasterSource.reprojectToGrid(LatLng, twiceFuzzyLayout).asInstanceOf[GeoTiffReprojectRasterSource]
-      twiceFuzzySource.closestTiffOverview.cellSize shouldBe CellSize(20,20)
+      twiceFuzzySource.closestTiffOverview.cellSize shouldBe CellSize(20, 20)
 
       val thriceFuzzyLayout = {
         val CellSize(width, height) = baseReproject.cellSize
@@ -67,7 +67,8 @@ class GeoTiffReprojectRasterSourceSpec extends FunSpec with RasterMatchers with 
       }
 
       val thriceFuzzySource = rasterSource.reprojectToGrid(LatLng, thriceFuzzyLayout).asInstanceOf[GeoTiffReprojectRasterSource]
-      thriceFuzzySource.closestTiffOverview.cellSize shouldBe CellSize(20,20)
+      thriceFuzzySource.closestTiffOverview.cellSize.width shouldBe 40.0 +- 0.1
+      thriceFuzzySource.closestTiffOverview.cellSize.height shouldBe 40.0 +- 0.1
 
       val quatroFuzzyLayout = {
         val CellSize(width, height) = baseReproject.cellSize
@@ -75,6 +76,7 @@ class GeoTiffReprojectRasterSourceSpec extends FunSpec with RasterMatchers with 
       }
 
       val quatroTimesFuzzySource = rasterSource.reprojectToGrid(LatLng, quatroFuzzyLayout).asInstanceOf[GeoTiffReprojectRasterSource]
+      println("TARGET", quatroFuzzyLayout.cellSize)
       quatroTimesFuzzySource.closestTiffOverview.cellSize shouldBe CellSize(40.0,39.94082840236686)
 
     }
