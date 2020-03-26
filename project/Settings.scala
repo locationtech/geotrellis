@@ -387,19 +387,6 @@ object Settings {
       sparkSql % Test,
       scalatest % Test
     ),
-    /** https://github.com/lucidworks/spark-solr/issues/179 */
-    dependencyOverrides ++= {
-      val deps = Seq(
-        "com.fasterxml.jackson.core" % "jackson-core" % "2.6.7",
-        "com.fasterxml.jackson.core" % "jackson-databind" % "2.6.7",
-        "com.fasterxml.jackson.core" % "jackson-annotations" % "2.6.7"
-      )
-      CrossVersion.partialVersion(scalaVersion.value) match {
-        // if Scala 2.12+ is used
-        case Some((2, scalaMajor)) if scalaMajor >= 12 => deps
-        case _ => deps :+ "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.6.7"
-      }
-    },
     console / initialCommands :=
       """
       import geotrellis.raster._
@@ -429,19 +416,6 @@ object Settings {
       sparkSql % Test,
       scalatest % Test
     ),
-    /** https://github.com/lucidworks/spark-solr/issues/179 */
-    dependencyOverrides ++= {
-      val deps = Seq(
-        "com.fasterxml.jackson.core" % "jackson-core" % "2.6.7",
-        "com.fasterxml.jackson.core" % "jackson-databind" % "2.6.7",
-        "com.fasterxml.jackson.core" % "jackson-annotations" % "2.6.7"
-      )
-      CrossVersion.partialVersion(scalaVersion.value) match {
-        // if Scala 2.12+ is used
-        case Some((2, scalaMajor)) if scalaMajor >= 12 => deps
-        case _ => deps :+ "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.6.7"
-      }
-    },
     console / initialCommands :=
       """
       import geotrellis.raster._
@@ -522,23 +496,12 @@ object Settings {
   lazy val s3 = Seq(
     name := "geotrellis-s3",
     libraryDependencies ++= Seq(
-      awsSdkS3,
+      /** https://github.com/lucidworks/spark-solr/issues/179 */
+      awsSdkS3 excludeAll ExclusionRule("com.fasterxml.jackson.core"),
       spire,
       scaffeine,
       scalatest % Test
     ),
-    dependencyOverrides ++= {
-      val deps = Seq(
-        "com.fasterxml.jackson.core" % "jackson-core" % "2.6.7",
-        "com.fasterxml.jackson.core" % "jackson-databind" % "2.6.7",
-        "com.fasterxml.jackson.core" % "jackson-annotations" % "2.6.7"
-      )
-      CrossVersion.partialVersion(scalaVersion.value) match {
-        // if Scala 2.12+ is used
-        case Some((2, scalaMajor)) if scalaMajor >= 12 => deps
-        case _ => deps :+ "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.6.7"
-      }
-    },
     mimaPreviousArtifacts := Set(
       "org.locationtech.geotrellis" %% "geotrellis-s3" % Version.previousVersion
     ),
@@ -556,24 +519,11 @@ object Settings {
     name := "geotrellis-s3-spark",
     libraryDependencies ++= Seq(
       sparkCore % Provided,
-      awsSdkS3,
       spire,
       scaffeine,
       sparkSql % Test,
       scalatest % Test
     ),
-    dependencyOverrides ++= {
-      val deps = Seq(
-        "com.fasterxml.jackson.core" % "jackson-core" % "2.6.7",
-        "com.fasterxml.jackson.core" % "jackson-databind" % "2.6.7",
-        "com.fasterxml.jackson.core" % "jackson-annotations" % "2.6.7"
-      )
-      CrossVersion.partialVersion(scalaVersion.value) match {
-        // if Scala 2.12+ is used
-        case Some((2, scalaMajor)) if scalaMajor >= 12 => deps
-        case _ => deps :+ "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.6.7"
-      }
-    },
     mimaPreviousArtifacts := Set(
       "org.locationtech.geotrellis" %% "geotrellis-s3" % Version.previousVersion
     ),
@@ -634,8 +584,12 @@ object Settings {
   lazy val `spark-pipeline` = Seq(
     name := "geotrellis-spark-pipeline",
     libraryDependencies ++= Seq(
-      circe("core").value, circe("generic").value, circe("generic-extras").value, circe("parser").value,
-      sparkCore % Provided, sparkSql % Test,
+      circe("core").value,
+      circe("generic").value,
+      circe("generic-extras").value,
+      circe("parser").value,
+      sparkCore % Provided,
+      sparkSql % Test,
       scalatest % Test
     ),
     assembly / test := {},
@@ -663,7 +617,8 @@ object Settings {
   lazy val `spark-testkit` = Seq(
     name := "geotrellis-spark-testkit",
     libraryDependencies ++= Seq(
-      sparkCore % Provided, sparkSql % Provided,
+      sparkCore % Provided,
+      sparkSql % Provided,
       hadoopClient % Provided,
       scalatest,
       chronoscala
@@ -771,22 +726,10 @@ object Settings {
     name := "geotrellis-gdal-spark",
     libraryDependencies ++= Seq(
       gdalWarp,
-      sparkCore % Provided, sparkSql % Test,
+      sparkCore % Provided,
+      sparkSql % Test,
       scalatest % Test
     ),
-    // caused by the AWS SDK v2
-    dependencyOverrides ++= {
-      val deps = Seq(
-        jacksonCore,
-        jacksonDatabind,
-        jacksonAnnotations
-      )
-      CrossVersion.partialVersion(scalaVersion.value) match {
-        // if Scala 2.12+ is used
-        case Some((2, scalaMajor)) if scalaMajor >= 12 => deps
-        case _ => deps :+ jacksonModuleScala
-      }
-    },
     resolvers += Repositories.azaveaBintray,
     Test / fork := true,
     Test / parallelExecution := false,
