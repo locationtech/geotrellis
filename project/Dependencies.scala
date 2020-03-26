@@ -27,7 +27,7 @@ object Version {
   val hadoop      = "2.8.5"
   val spark       = "2.4.4"
   val gdal        = "2.4.0"
-  val gdalWarp    = "33.567d940"
+  val gdalWarp    = "1.0.0"
 
   val previousVersion = "3.0.0"
 }

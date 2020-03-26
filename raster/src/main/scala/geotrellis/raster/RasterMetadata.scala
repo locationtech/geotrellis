@@ -36,7 +36,7 @@ trait RasterMetadata extends Serializable {
 
   /** All available overview resolutions for this raster source
     *
-    * <li> For base [[RasterSource]] instance this will be resolutions of available overviews.
+    * <li> For base [[RasterSource]] instance this will be resolutions of available overviews including the base resolution.
     * <li> For reprojected [[RasterSource]] these resolutions represent an estimate where
     *      each cell in target CRS has ''approximately'' the same geographic coverage as a cell in the source CRS.
     *

@@ -12,6 +12,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- RasterSources resolutions should be consistent across implementations [#3210](https://github.com/locationtech/geotrellis/issues/3210)
+- Bump gdal-warp-bindings version up to 1.0.0 [#3211](https://github.com/locationtech/geotrellis/pull/3211)
+- Fixed GDALRasterSource.resample method behavior to respect the passed resampleMethod [#3211](https://github.com/locationtech/geotrellis/pull/3211)
+
+### Changed
+
 - Fix `PolygonRasterizer` failure on some inputs [#3160](https://github.com/locationtech/geotrellis/issues/3160)
 - Fix GeoTiff Byte and UByte CellType conversions [#3189](https://github.com/locationtech/geotrellis/issues/3189)
 - Fix incorrect parsing of authority in GeoTrellisPath [#3191](https://github.com/locationtech/geotrellis/pull/3191)
