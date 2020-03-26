@@ -57,9 +57,9 @@ class GeoTiffRasterSourceSpec extends FunSpec with RasterMatchers with GivenWhen
 
   it("should be able to resample") {
     // read in the whole file and resample the pixels in memory
+    val etiff = GeoTiffReader.readMultiband(url, streaming = false)
     val expected: Raster[MultibandTile] =
-      GeoTiffReader
-        .readMultiband(url, streaming = false)
+      etiff
         .raster
         .resample((source.cols * 0.95).toInt , (source.rows * 0.95).toInt, NearestNeighbor)
         // resample to 0.9 so we RasterSource picks the base layer and not an overview
@@ -71,6 +71,9 @@ class GeoTiffRasterSourceSpec extends FunSpec with RasterMatchers with GivenWhen
 
     val actual: Raster[MultibandTile] =
       resampledSource.read(GridBounds(0, 0, resampledSource.cols - 1, resampledSource.rows - 1)).get
+
+    source.resolutions.length shouldBe (etiff.overviews.length + 1)
+    source.resolutions.length shouldBe resampledSource.resolutions.length
 
     resampledSource.resolutions.zip(source.resolutions).map { case (rea, ree) =>
       rea.resolution shouldBe ree.resolution +- 1e-7
