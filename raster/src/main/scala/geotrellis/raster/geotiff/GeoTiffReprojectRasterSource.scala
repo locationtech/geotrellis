@@ -155,6 +155,8 @@ class GeoTiffReprojectRasterSource(
 
   def convert(targetCellType: TargetCellType): RasterSource =
     GeoTiffReprojectRasterSource(dataPath, crs, resampleTarget, resampleMethod, strategy, targetCellType = Some(targetCellType))
+
+  override def toString: String = s"GeoTiffReprojectRasterSource(${dataPath.value},$crs,$resampleTarget,$resampleMethod)"
 }
 
 object GeoTiffReprojectRasterSource {
