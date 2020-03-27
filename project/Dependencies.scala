@@ -27,7 +27,7 @@ object Version {
   val hadoop      = "2.8.5"
   val spark       = "2.4.4"
   val gdal        = "2.4.0"
-  val gdalWarp    = "33.567d940"
+  val gdalWarp    = "1.0.0"
 
   val previousVersion = "3.0.0"
 }
@@ -138,9 +138,4 @@ object Dependencies {
 
   val gdalBindings        = "org.gdal"                     % "gdal"                    % Version.gdal
   val gdalWarp            = "com.azavea.geotrellis"        % "gdal-warp-bindings"      % Version.gdalWarp
-
-  val jacksonCore         = "com.fasterxml.jackson.core"    % "jackson-core"             % "2.6.7"
-  val jacksonDatabind     = "com.fasterxml.jackson.core"    % "jackson-databind"         % "2.6.7"
-  val jacksonAnnotations  = "com.fasterxml.jackson.core"    % "jackson-annotations"      % "2.6.7"
-  val jacksonModuleScala  = "com.fasterxml.jackson.module" %% "jackson-module-scala"     % "2.6.7"
 }

@@ -46,9 +46,9 @@ class GDALRasterSourceSpec extends FunSpec with RasterMatchers with GivenWhenThe
     // no resampling is implemented there
     it("should be able to resample") {
       // read in the whole file and resample the pixels in memory
+      val etiff = GeoTiffReader.readMultiband(uri, streaming = false)
       val expected: Raster[MultibandTile] =
-        GeoTiffReader
-          .readMultiband(uri, streaming = false)
+        etiff
           .raster
           .resample((source.cols * 0.95).toInt , (source.rows * 0.95).toInt, NearestNeighbor)
       // resample to 0.9 so we RasterSource picks the base layer and not an overview
@@ -60,6 +60,9 @@ class GDALRasterSourceSpec extends FunSpec with RasterMatchers with GivenWhenThe
 
       info(s"Source CellSize: ${source.cellSize}")
       info(s"Target CellSize: ${resampledSource.cellSize}")
+
+      source.resolutions.length shouldBe (etiff.overviews.length + 1)
+      source.resolutions.length shouldBe resampledSource.resolutions.length
 
       // calculated expected resolutions of overviews
       // it's a rough approximation there as we're not calculating resolutions like GDAL

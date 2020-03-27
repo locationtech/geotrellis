@@ -86,7 +86,7 @@ class GeoTrellisRasterSourceSpec extends FunSpec with RasterMatchers with GivenW
 
     it("should be able to read empty layer") {
       val bounds = GridBounds(9999, 9999, 10000, 10000).toGridType[Long]
-      assert(sourceMultiband.read(bounds) == None)
+      assert(sourceMultiband.read(bounds).isEmpty)
     }
 
     it("should be able to resample") {
@@ -100,6 +100,13 @@ class GeoTrellisRasterSourceSpec extends FunSpec with RasterMatchers with GivenW
 
       val resampledSource =
         sourceMultiband.resample(expected.tile.cols, expected.tile.rows, NearestNeighbor)
+
+      sourceMultiband.resolutions.length shouldBe sourceMultiband.attributeStore.availableZoomLevels(layerId.name).length
+      sourceMultiband.resolutions.length shouldBe resampledSource.resolutions.length
+
+      resampledSource.resolutions.zip(sourceMultiband.resolutions).map { case (rea, ree) =>
+        rea.resolution shouldBe ree.resolution +- 1e-7
+      }
 
       // resampledSource should have (dimensions (expected.tile.dimensions))
 
@@ -117,7 +124,7 @@ class GeoTrellisRasterSourceSpec extends FunSpec with RasterMatchers with GivenW
     it("should have resolutions only for given layer name") {
       assert(
         sourceMultiband.resolutions.length ===
-          CollectionLayerReader(uriMultibandNoParams).attributeStore.layerIds.filter(_.name == layerId.name).length
+          CollectionLayerReader(uriMultibandNoParams).attributeStore.layerIds.count(_.name == layerId.name)
       )
       assert(
         new GeoTrellisRasterSource(s"$uriMultibandNoParams?layer=bogusLayer&zoom=0").resolutions.length === 0

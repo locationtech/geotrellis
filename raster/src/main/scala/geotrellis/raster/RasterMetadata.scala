@@ -36,13 +36,15 @@ trait RasterMetadata extends Serializable {
 
   /** All available overview resolutions for this raster source
     *
-    * <li> For base [[RasterSource]] instance this will be resolutions of available overviews.
+    * <li> For base [[RasterSource]] instance this will be resolutions of available overviews including the base resolution.
     * <li> For reprojected [[RasterSource]] these resolutions represent an estimate where
     *      each cell in target CRS has ''approximately'' the same geographic coverage as a cell in the source CRS.
     *
     * When reading raster data the underlying implementation will have to sample from one of these resolutions.
     * It is possible that a read request for a small bounding box will results in significant IO request when the target
     * cell size is much larger than closest available resolution.
+    *
+    * Warning: the behavior of this function may slightly vary, depending on the implementation.
     */
   def resolutions: List[CellSize]
 
