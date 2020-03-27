@@ -43,7 +43,6 @@ class GDALRasterSourceSpec extends FunSpec with RasterMatchers with GivenWhenThe
       )
     }
 
-    // no resampling is implemented there
     it("should be able to resample") {
       // read in the whole file and resample the pixels in memory
       val etiff = GeoTiffReader.readMultiband(uri, streaming = false)
@@ -64,12 +63,12 @@ class GDALRasterSourceSpec extends FunSpec with RasterMatchers with GivenWhenThe
       source.resolutions.length shouldBe (etiff.overviews.length + 1)
       source.resolutions.length shouldBe resampledSource.resolutions.length
 
-      // calculated expected resolutions of overviews
-      // it's a rough approximation there as we're not calculating resolutions like GDAL
-      val ratio = resampledSource.cellSize.resolution / source.cellSize.resolution
-      resampledSource.resolutions.zip (source.resolutions.map { case CellSize(cw, ch) =>
-        CellSize(cw * ratio, ch * ratio)
-      }).map { case (rea, ree) => rea.resolution shouldBe ree.resolution +- 3e-1 }
+      source.resolutions.length shouldBe (etiff.overviews.length + 1)
+      source.resolutions.length shouldBe resampledSource.resolutions.length
+
+      resampledSource.resolutions.zip(source.resolutions).map { case (rea, ree) =>
+        rea.resolution shouldBe ree.resolution +- 1e-7
+      }
 
       val actual: Raster[MultibandTile] =
         resampledSource.read(GridBounds(0, 0, resampledSource.cols - 1, resampledSource.rows - 1)).get

@@ -43,8 +43,6 @@ trait RasterMetadata extends Serializable {
     * When reading raster data the underlying implementation will have to sample from one of these resolutions.
     * It is possible that a read request for a small bounding box will results in significant IO request when the target
     * cell size is much larger than closest available resolution.
-    *
-    * Warning: the behavior of this function may slightly vary, depending on the implementation.
     */
   def resolutions: List[CellSize]
 

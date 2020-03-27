@@ -33,8 +33,8 @@ To grab the latest `SNAPSHOT`, `RC` or milestone build, add these resolvers:
 
 ```scala
 resolvers ++= Seq(
-  "locationtech-releases" at "https://repo.locationtech.org/content/groups/releases",
-  "locationtech-snapshots" at "https://repo.locationtech.org/content/groups/snapshots"
+  "eclipse-releases" at "https://repo.eclipse.org/content/groups/releases",
+  "eclipse-snapshots" at "https://repo.eclipse.org/content/groups/snapshots"
 )
 ```
 

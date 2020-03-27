@@ -19,11 +19,10 @@ package geotrellis.raster.gdal
 import geotrellis.proj4._
 import geotrellis.raster._
 import geotrellis.raster.resample._
+import geotrellis.raster.reproject.{Reproject, ReprojectRasterExtent}
 import geotrellis.raster.testkit._
 
 import org.scalatest._
-
-import java.io.File
 
 class GDALReprojectRasterSourceSpec extends FunSpec with RasterMatchers with GivenWhenThen {
 
@@ -68,8 +67,14 @@ class GDALReprojectRasterSourceSpec extends FunSpec with RasterMatchers with Giv
       val expectedRasterExtent = expectedRasterSource.gridExtent.toRasterExtent
       val warpRasterSource = rasterSource.reprojectToRegion(LatLng, expectedRasterExtent, method)
       val testBounds = GridBounds(0, 0, expectedRasterExtent.cols, expectedRasterExtent.rows).split(64,64).toSeq
+      val transform = Transform(rasterSource.crs, warpRasterSource.crs)
 
       warpRasterSource.resolutions.size shouldBe rasterSource.resolutions.size
+      rasterSource.resolutions.zip(warpRasterSource.resolutions).map { case (scz, CellSize(ew, eh)) =>
+        val CellSize(cw, ch) = ReprojectRasterExtent(GridExtent[Long](rasterSource.extent, scz), transform, Reproject.Options.DEFAULT).cellSize
+        cw shouldBe ew +- 1e-4
+        ch shouldBe eh +- 1e-4
+      }
 
       for (bound <- testBounds) yield {
         withClue(s"Read window ${bound}: ") {
