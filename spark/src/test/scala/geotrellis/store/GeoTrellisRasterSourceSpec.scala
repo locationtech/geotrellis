@@ -22,8 +22,8 @@ import geotrellis.raster.io.geotiff.{Auto, AutoHigherResolution, Base}
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.raster.testkit._
 import geotrellis.raster.MultibandTile
+import geotrellis.raster.reproject.{Reproject, ReprojectRasterExtent}
 import geotrellis.raster.resample.NearestNeighbor
-import geotrellis.store._
 import geotrellis.vector.Extent
 
 import org.scalatest._
@@ -117,6 +117,38 @@ class GeoTrellisRasterSourceSpec extends FunSpec with RasterMatchers with GivenW
           .get
 
       withGeoTiffClue(actual, expected, resampledSource.crs)  {
+        assertRastersEqual(actual, expected)
+      }
+    }
+
+    it("should be able to reproject") {
+      // read in the whole file and resample the pixels in memory
+      val etiff = GeoTiffReader.readMultiband(TestCatalog.filePath, streaming = false)
+      val expected: Raster[MultibandTile] =
+        etiff
+          .raster
+          .reproject(etiff.crs, LatLng)
+
+      val reprojectedSource = sourceMultiband.reproject(LatLng)
+
+      // checking that list of resolutions is resampled
+      val transform = Transform(sourceMultiband.crs, reprojectedSource.crs)
+
+      sourceMultiband.resolutions.length shouldBe sourceMultiband.attributeStore.availableZoomLevels(layerId.name).length
+      sourceMultiband.resolutions.length shouldBe reprojectedSource.resolutions.length
+      sourceMultiband.sourceLayers.length shouldBe reprojectedSource.resolutions.length
+
+      sourceMultiband.sourceLayers.zip(reprojectedSource.resolutions).map { case (layer, ecz) =>
+        ReprojectRasterExtent(layer.gridExtent, Transform(layer.metadata.crs, reprojectedSource.crs), Reproject.Options.DEFAULT).cellSize shouldBe ecz
+      }
+
+      val actual: Raster[MultibandTile] =
+        reprojectedSource
+          .resampleToGrid(expected.rasterExtent.toGridType[Long])
+          .read(expected.extent)
+          .get
+
+      withGeoTiffClue(actual, expected, reprojectedSource.crs)  {
         assertRastersEqual(actual, expected)
       }
     }

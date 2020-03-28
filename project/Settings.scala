@@ -28,16 +28,16 @@ import sbtprotoc.ProtocPlugin.autoImport.PB
 
 object Settings {
   object Repositories {
-    val locationtechReleases  = "locationtech-releases" at "https://repo.locationtech.org/content/repositories/releases/"
-    val locationtechSnapshots = "locationtech-snapshots" at "https://repo.locationtech.org/content/repositories/snapshots/"
-    val boundlessgeo          = "boundlessgeo" at "https://repo.boundlessgeo.com/main/"
-    val boundlessgeoRelease   = "boundless" at "https://repo.boundlessgeo.com/release"
-    val geosolutions          = "geosolutions" at "https://maven.geo-solutions.it/"
-    val osgeo                 = "osgeo" at "https://download.osgeo.org/webdav/geotools/"
-    val ivy2Local             = Resolver.file("local", file(Path.userHome.absolutePath + "/.ivy2/local"))(Resolver.ivyStylePatterns)
-    val mavenLocal            = Resolver.mavenLocal
-    val local                 = Seq(ivy2Local, mavenLocal)
-    val azaveaBintray         = Resolver.bintrayRepo("azavea", "geotrellis")
+    val eclipseReleases     = "eclipse-releases" at "https://repo.eclipse.org/content/groups/releases"
+    val eclipseSnapshots    = "eclipse-snapshots" at "https://repo.eclipse.org/content/groups/snapshots"
+    val boundlessgeo        = "boundlessgeo" at "https://repo.boundlessgeo.com/main/"
+    val boundlessgeoRelease = "boundless" at "https://repo.boundlessgeo.com/release"
+    val geosolutions        = "geosolutions" at "https://maven.geo-solutions.it/"
+    val osgeo               = "osgeo" at "https://download.osgeo.org/webdav/geotools/"
+    val ivy2Local           = Resolver.file("local", file(Path.userHome.absolutePath + "/.ivy2/local"))(Resolver.ivyStylePatterns)
+    val mavenLocal          = Resolver.mavenLocal
+    val local               = Seq(ivy2Local, mavenLocal)
+    val azaveaBintray       = Resolver.bintrayRepo("azavea", "geotrellis")
   }
 
   lazy val noForkInTests = Seq(
@@ -110,7 +110,7 @@ object Settings {
       Resolver.mavenLocal,
       Settings.Repositories.geosolutions,
       Settings.Repositories.osgeo,
-      Settings.Repositories.locationtechReleases
+      Settings.Repositories.eclipseReleases
     ),
     headerLicense := Some(HeaderLicense.ALv2(java.time.Year.now.getValue.toString, "Azavea")),
     headerMappings := Map(
@@ -251,7 +251,7 @@ object Settings {
     ),
     resolvers ++= Seq(
       Repositories.boundlessgeo,
-      Repositories.locationtechReleases
+      Repositories.eclipseReleases
     ),
     console / initialCommands :=
       """

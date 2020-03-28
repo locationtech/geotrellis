@@ -27,7 +27,7 @@ class GDALRasterSource(
   val dataPath: GDALPath,
   val options: GDALWarpOptions = GDALWarpOptions.EMPTY,
   private[raster] val targetCellType: Option[TargetCellType] = None
-) extends RasterSource {
+) extends RasterSource { self =>
 
   /**
     * All the information received from the JNI side should be cached on the JVM side,
@@ -114,7 +114,9 @@ class GDALRasterSource(
     new GDALRasterSource(dataPath, options.reproject(gridExtent, crs, targetCRS, resampleTarget, method))
 
   def resample(resampleTarget: ResampleTarget, method: ResampleMethod, strategy: OverviewStrategy): RasterSource =
-    new GDALRasterSource(dataPath, options.copy(resampleMethod = Some(method)).resample(gridExtent, resampleTarget))
+    new GDALRasterSource(dataPath, options.copy(resampleMethod = Some(method)).resample(gridExtent, resampleTarget)) {
+      override lazy val resolutions: List[CellSize] = self.resolutions
+    }
 
   /** Converts the contents of the GDALRasterSource to the [[TargetCellType]].
    *

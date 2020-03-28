@@ -49,6 +49,14 @@ class GeoTiffReprojectRasterSourceSpec extends FunSpec with RasterMatchers with 
     it("should select correct overview to sample from with a GeoTiffReprojectRasterSource") {
       // we choose LatLng to switch scales, the source projection is in meters
       val baseReproject = rasterSource.reproject(LatLng).asInstanceOf[GeoTiffReprojectRasterSource]
+
+      // checking that list of resolutions is resampled
+      val transform = Transform(rasterSource.crs, baseReproject.crs)
+      baseReproject.resolutions.size shouldBe rasterSource.resolutions.size
+      rasterSource.resolutions.zip(baseReproject.resolutions).map { case (scz, ecz) =>
+        ReprojectRasterExtent(GridExtent[Long](rasterSource.extent, scz), transform, Reproject.Options.DEFAULT).cellSize shouldBe ecz
+      }
+
       // known good start, CellSize(10, 10) is the base resolution of source
       baseReproject.closestTiffOverview.cellSize shouldBe CellSize(10, 10)
 
