@@ -1,6 +1,6 @@
 #!/bin/bash
 
-./sbt "++$TRAVIS_SCALA_VERSION" \
+./sbt -Dsbt.supershell=false "++$TRAVIS_SCALA_VERSION" \
   "project raster" test \
   "project accumulo" test \
   "project accumulo-spark" test \

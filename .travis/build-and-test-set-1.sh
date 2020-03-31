@@ -1,6 +1,6 @@
 #!/bin/bash
 
-./sbt "++$TRAVIS_SCALA_VERSION" \
+./sbt -Dsbt.supershell=false "++$TRAVIS_SCALA_VERSION" \
   "project proj4" test \
   "project geotools" test \
   "project shapefile" test \
