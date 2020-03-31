@@ -33,15 +33,20 @@ object OverviewStrategy {
     overviewCS: List[CellSize],
     desiredCS: CellSize,
     strategy: OverviewStrategy
-  ): Int = strategy match {
-    case Level(overviewIdx) =>
-      overviewIdx
-    case Auto(n) =>
-      selectIndexByProximity(overviewCS, desiredCS, 0.5) + n
-    case Base =>
-      overviewCS.indexOf(overviewCS.min)
-    case AutoHigherResolution =>
-      selectIndexByProximity(overviewCS, desiredCS, 1.0)
+  ): Int = {
+    val maybeIndex = strategy match {
+      case Level(overviewIdx) =>
+        overviewIdx
+      case Auto(n) =>
+        selectIndexByProximity(overviewCS, desiredCS, 0.5) + n
+      case Base =>
+        overviewCS.indexOf(overviewCS.min)
+      case AutoHigherResolution =>
+        selectIndexByProximity(overviewCS, desiredCS, 1.0)
+    }
+    if (maybeIndex < 0) 0
+    else if (maybeIndex >= overviewCS.size) overviewCS.size - 1
+    else maybeIndex
   }
 
   def selectIndexByProximity(overviewCS: List[CellSize], desiredCS: CellSize, proximityThreshold: Double): Int =

@@ -175,42 +175,19 @@ class GeoTrellisRasterSourceSpec extends FunSpec with RasterMatchers with GivenW
 
       implicit def getoce(ge: GridExtent[Long]): CellSize = ge.cellSize
 
-      assert(GeoTrellisRasterSource.getClosestResolution(resolutions, cellSize1, AutoHigherResolution).get == rasterExtent1)
-      assert(GeoTrellisRasterSource.getClosestResolution(resolutions, cellSize2, AutoHigherResolution).get == rasterExtent2)
+      assert(GeoTrellisRasterSource.getClosestResolution(resolutions, cellSize1, AutoHigherResolution) == rasterExtent1)
+      assert(GeoTrellisRasterSource.getClosestResolution(resolutions, cellSize2, AutoHigherResolution) == rasterExtent2)
 
-      assert(GeoTrellisRasterSource.getClosestResolution(resolutions, cellSize1, Auto(0)).get == rasterExtent1)
-      assert(GeoTrellisRasterSource.getClosestResolution(resolutions, cellSize1, Auto(1)).get == rasterExtent2)
-      assert(GeoTrellisRasterSource.getClosestResolution(resolutions, cellSize1, Auto(2)).get == rasterExtent3)
+      assert(GeoTrellisRasterSource.getClosestResolution(resolutions, cellSize1, Auto(0)) == rasterExtent1)
+      assert(GeoTrellisRasterSource.getClosestResolution(resolutions, cellSize1, Auto(1)) == rasterExtent2)
+      assert(GeoTrellisRasterSource.getClosestResolution(resolutions, cellSize1, Auto(2)) == rasterExtent3)
       // do the best we can, we can't get index 3, so we get the closest:
       val res = GeoTrellisRasterSource.getClosestResolution(resolutions, cellSize1, Auto(3))
-      info (s"Auto(3): ${res.map(_.cellSize)}")
-      assert(res == Some(rasterExtent3))
+      assert(res == rasterExtent3)
 
       val resBase = GeoTrellisRasterSource.getClosestResolution(resolutions, cellSize1, Base)
-      info(s"Base: ${resBase.map(_.cellSize)}")
-      assert(resBase == Some(rasterExtent1))
+      assert(resBase == rasterExtent1)
     }
-
-    // it("should get the closest layer") {
-    //   val extent = Extent(0.0, 0.0, 10.0, 10.0)
-    //   val rasterExtent1 = new GridExtent[Long](extent, 1.0, 1.0, 10, 10)
-    //   val rasterExtent2 = new GridExtent[Long](extent, 2.0, 2.0, 10, 10)
-    //   val rasterExtent3 = new GridExtent[Long](extent, 4.0, 4.0, 10, 10)
-
-    //   val resolutions = List(rasterExtent1, rasterExtent2, rasterExtent3)
-
-    //   val layerId1 = LayerId("foo", 0)
-    //   val layerId2 = LayerId("foo", 1)
-    //   val layerId3 = LayerId("foo", 2)
-    //   val layerIds = List(layerId1, layerId2, layerId3)
-
-    //   val cellSize = CellSize(1.0, 1.0)
-
-    //   implicit def getoce(ge: GridExtent[Long]): CellSize = ge.cellSize
-    //   assert(GeoTrellisRasterSource.getClosestLayer(resolutions, layerIds, layerId3, cellSize) == layerId1)
-    //   assert(GeoTrellisRasterSource.getClosestLayer(List(), List(), layerId3, cellSize) == layerId3)
-    //   assert(GeoTrellisRasterSource.getClosestLayer(resolutions, List(), layerId3, cellSize) == layerId3)
-    // }
 
     it("should reproject") {
       val targetCRS = WebMercator
