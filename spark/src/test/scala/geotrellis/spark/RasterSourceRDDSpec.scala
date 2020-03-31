@@ -86,14 +86,13 @@ class RasterSourceRDDSpec extends FunSpec with TestEnvironment with RasterMatche
     val geoTiffRDD = HadoopGeoTiffRDD.spatialMultiband(uri)
     val md = geoTiffRDD.collectMetadata[SpatialKey](floatingLayout)._2
 
-    val reprojectedExpectedRDD: MultibandTileLayerRDD[SpatialKey] = {
+    val reprojectedExpectedRDD: MultibandTileLayerRDD[SpatialKey] =
       geoTiffRDD
         .tileToLayout(md)
         .reproject(
           targetCRS,
           layout
         )._2.persist()
-    }
 
     def assertRDDLayersEqual(
       expected: MultibandTileLayerRDD[SpatialKey],
@@ -141,8 +140,9 @@ class RasterSourceRDDSpec extends FunSpec with TestEnvironment with RasterMatche
     }
 
     it("should reproduce tileToLayout followed by reproject") {
+      val reprojectedRasterSource = rasterSource.reprojectToGrid(targetCRS, layout, strategy = Base)
       val reprojectedSourceRDD: MultibandTileLayerRDD[SpatialKey] =
-        RasterSourceRDD.spatial(rasterSource.reprojectToGrid(targetCRS, layout), layout)
+        RasterSourceRDD.spatial(Seq(reprojectedRasterSource), layout, strategy = Base)
 
       // geotrellis.raster.io.geotiff.GeoTiff(reprojectedExpectedRDD.stitch, targetCRS).write("/tmp/expected.tif")
       // geotrellis.raster.io.geotiff.GeoTiff(reprojectedSourceRDD.stitch, targetCRS).write("/tmp/actual.tif")
