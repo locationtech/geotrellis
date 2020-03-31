@@ -74,7 +74,7 @@ object Settings {
 
     publishTo := {
       val sonatype = "https://oss.sonatype.org/"
-      val locationtech = "https://repo.locationtech.org/content/repositories"
+      val locationtech = "https://repo.eclipse.org/content/repositories"
 
       System.getProperty("release") match {
         case "locationtech" if isSnapshot.value =>
