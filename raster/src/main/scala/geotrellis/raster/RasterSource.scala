@@ -63,7 +63,7 @@ abstract class RasterSource extends CellGrid[Long] with RasterMetadata {
     */
   def reprojectToGrid(targetCRS: CRS, grid: GridExtent[Long], method: ResampleMethod = NearestNeighbor, strategy: OverviewStrategy = OverviewStrategy.DEFAULT): RasterSource =
     if (targetCRS == this.crs && grid == this.gridExtent) this
-    else if (targetCRS == this.crs) resampleToGrid(grid, method)
+    else if (targetCRS == this.crs) resampleToGrid(grid, method, strategy)
     else reprojection(targetCRS, TargetAlignment(grid), method, strategy)
 
   /** Sampling grid and resolution is defined by given [[RasterExtent]] region.

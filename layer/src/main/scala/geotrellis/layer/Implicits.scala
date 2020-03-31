@@ -20,6 +20,7 @@ import geotrellis.raster.{CellGrid, RasterSource, ResampleMethod}
 import geotrellis.util._
 import java.time.Instant
 
+import geotrellis.raster.io.geotiff.OverviewStrategy
 import geotrellis.raster.resample.NearestNeighbor
 import geotrellis.vector.io.json.CrsFormats
 
@@ -60,9 +61,10 @@ trait Implicits extends merge.Implicits
     def tileToLayout[K: SpatialComponent](
       layout: LayoutDefinition,
       tileKeyTransform: SpatialKey => K,
-      resampleMethod: ResampleMethod = NearestNeighbor
+      resampleMethod: ResampleMethod = NearestNeighbor,
+      strategy: OverviewStrategy = OverviewStrategy.DEFAULT
     ): LayoutTileSource[K] =
-      LayoutTileSource(self.resampleToGrid(layout, resampleMethod), layout, tileKeyTransform)
+      LayoutTileSource(self.resampleToGrid(layout, resampleMethod, strategy), layout, tileKeyTransform)
 
     def tileToLayout(layout: LayoutDefinition, resampleMethod: ResampleMethod): LayoutTileSource[SpatialKey] =
       tileToLayout(layout, identity, resampleMethod)
