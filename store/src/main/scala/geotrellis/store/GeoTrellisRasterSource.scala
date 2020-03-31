@@ -110,7 +110,7 @@ class GeoTrellisRasterSource(
           this
         case resampleTarget =>
           val resampledGridExtent = resampleTarget(this.gridExtent)
-          val closestLayerId = GeoTrellisRasterSource.getClosestResolution(sourceLayers.toList, resampledGridExtent.cellSize, strategy)(_.metadata.layout.cellSize).get.id
+          val closestLayerId = GeoTrellisRasterSource.getClosestResolution(sourceLayers.toList, resampledGridExtent.cellSize, strategy)(_.metadata.layout.cellSize).id
           new GeoTrellisResampleRasterSource(attributeStore, dataPath, closestLayerId, sourceLayers, resampledGridExtent, method, targetCellType)
       }
     }
@@ -118,7 +118,7 @@ class GeoTrellisRasterSource(
 
   def resample(resampleTarget: ResampleTarget, method: ResampleMethod, strategy: OverviewStrategy): RasterSource = {
     val resampledGridExtent = resampleTarget(this.gridExtent)
-    val closestLayerId = GeoTrellisRasterSource.getClosestResolution(sourceLayers.toList, resampledGridExtent.cellSize, strategy)(_.metadata.layout.cellSize).get.id
+    val closestLayerId = GeoTrellisRasterSource.getClosestResolution(sourceLayers.toList, resampledGridExtent.cellSize, strategy)(_.metadata.layout.cellSize).id
     new GeoTrellisResampleRasterSource(attributeStore, dataPath, closestLayerId, sourceLayers, resampledGridExtent, method, targetCellType)
   }
 
@@ -140,12 +140,11 @@ object GeoTrellisRasterSource {
     grids: Seq[T],
     cellSize: CellSize,
     strategy: OverviewStrategy = OverviewStrategy.DEFAULT
-  )(implicit f: T => CellSize): Option[T] = {
-    val maxResultion = Some(grids.minBy(g => f(g).resolution))
+  )(implicit f: T => CellSize): T = {
     val resolutions = grids.map(f).toList
     val sourceResolution =
       OverviewStrategy.selectOverview(resolutions, cellSize, strategy)
-    grids.lift(resolutions.indexOf(sourceResolution))
+    grids(sourceResolution)
   }
 
   /** Read metadata for all layers that share a name and sort them by their resolution */
