@@ -22,8 +22,6 @@ import geotrellis.raster._
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.raster.reproject._
 import geotrellis.raster.testkit.RasterMatchers
-import geotrellis.raster.resample.NearestNeighbor
-import geotrellis.raster.io.geotiff.AutoHigherResolution
 
 import org.scalatest._
 
@@ -76,12 +74,8 @@ class GeoTiffReprojectRasterSourceSpec extends FunSpec with RasterMatchers with 
         LayoutDefinition(RasterExtent(LatLng.worldExtent, CellSize(width*3.5, height*3.5)), tileSize = 256)
       }
 
-      val thriceFuzzySourceAutoHigher = rasterSource.reprojectToGrid(LatLng, thriceFuzzyLayout, NearestNeighbor, AutoHigherResolution).asInstanceOf[GeoTiffReprojectRasterSource]
+      val thriceFuzzySourceAutoHigher = rasterSource.reprojectToGrid(LatLng, thriceFuzzyLayout).asInstanceOf[GeoTiffReprojectRasterSource]
       thriceFuzzySourceAutoHigher.closestTiffOverview.cellSize shouldBe CellSize(20, 20)
-
-      val thriceFuzzySourceAuto = rasterSource.reprojectToGrid(LatLng, thriceFuzzyLayout).asInstanceOf[GeoTiffReprojectRasterSource]
-      thriceFuzzySourceAuto.closestTiffOverview.cellSize.width shouldBe 40.0 +- 0.1
-      thriceFuzzySourceAuto.closestTiffOverview.cellSize.height shouldBe 40.0 +- 0.1
 
       val quatroFuzzyLayout = {
         val CellSize(width, height) = baseReproject.cellSize

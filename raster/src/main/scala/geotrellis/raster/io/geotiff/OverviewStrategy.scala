@@ -53,8 +53,9 @@ object OverviewStrategy {
         overviewCS.indexOf(overviewCS.min)
       case AutoHigherResolution =>
         val idx = selectIndexByProximity(overviewCS, desiredCS, 1.0)
-        // AutoHigherResolution defaults to Base if index out of bounds
-        if (idx >= overviewCS.size) overviewCS.indexOf(overviewCS.min) else idx
+        // AutoHigherResolution defaults to the closest level
+        // idx > overviewCS.size means, that idx = overviewCS.size (last idx + 1)
+        if (idx > overviewCS.size) idx - 1 else idx
     }
     if (maybeIndex < 0) 0
     else if (maybeIndex >= overviewCS.size) overviewCS.size - 1

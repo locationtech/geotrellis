@@ -140,9 +140,8 @@ class RasterSourceRDDSpec extends FunSpec with TestEnvironment with RasterMatche
     }
 
     it("should reproduce tileToLayout followed by reproject") {
-      val reprojectedRasterSource = rasterSource.reprojectToGrid(targetCRS, layout)
       val reprojectedSourceRDD: MultibandTileLayerRDD[SpatialKey] =
-        RasterSourceRDD.spatial(Seq(reprojectedRasterSource), layout)
+        RasterSourceRDD.spatial(rasterSource.reprojectToGrid(targetCRS, layout), layout)
 
       // geotrellis.raster.io.geotiff.GeoTiff(reprojectedExpectedRDD.stitch, targetCRS).write("/tmp/expected.tif")
       // geotrellis.raster.io.geotiff.GeoTiff(reprojectedSourceRDD.stitch, targetCRS).write("/tmp/actual.tif")

@@ -63,10 +63,10 @@ class OverviewStrategySpec extends FunSpec with Matchers {
       selected should be (2)
     }
 
-    it("should select the base overview if out of bounds") {
+    it("should select the best matching overview if out of bounds") {
       val selected =
         OverviewStrategy.selectOverview(availableResolutions, CellSize(32,32), strategy)
-      selected should be (0)
+      selected should be (4)
     }
   }
 }
