@@ -31,6 +31,12 @@ class OverviewStrategySpec extends FunSpec with Matchers {
         OverviewStrategy.selectOverview(availableResolutions, CellSize(5,5), strategy)
       selected should be (4)
     }
+    it ("should select the last overview if out of bounds high") {
+      val strategy = Auto(8)
+      val selected =
+        OverviewStrategy.selectOverview(availableResolutions, CellSize(1,1), strategy)
+      selected should be (4)
+    }
   }
   describe("Level") {
     it("should select the nth overview") {
@@ -49,11 +55,18 @@ class OverviewStrategySpec extends FunSpec with Matchers {
     }
   }
   describe("AutoHigherResolution") {
+    val strategy = AutoHigherResolution
+
     it("should select the nearest overview - without rounding down") {
-      val strategy = AutoHigherResolution
       val selected =
         OverviewStrategy.selectOverview(availableResolutions, CellSize(7,7), strategy)
       selected should be (2)
+    }
+
+    it("should select the base overview if out of bounds") {
+      val selected =
+        OverviewStrategy.selectOverview(availableResolutions, CellSize(32,32), strategy)
+      selected should be (0)
     }
   }
 }
