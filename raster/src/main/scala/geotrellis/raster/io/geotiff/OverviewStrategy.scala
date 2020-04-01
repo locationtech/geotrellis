@@ -27,7 +27,7 @@ import scala.collection.Searching._
 sealed trait OverviewStrategy
 
 object OverviewStrategy {
-  def DEFAULT = Auto(0)
+  def DEFAULT = AutoHigherResolution
 
   def selectOverview(
     overviewCS: List[CellSize],
