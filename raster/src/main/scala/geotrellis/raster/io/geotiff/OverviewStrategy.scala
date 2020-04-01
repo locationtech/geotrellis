@@ -29,6 +29,16 @@ sealed trait OverviewStrategy
 object OverviewStrategy {
   def DEFAULT = AutoHigherResolution
 
+  /**
+    * Select appropriate overview given the strategy.
+    *
+    * Unless a particular strategy suggests otherwise, this method will clamp the returned
+    * index to the range of overviewCS.
+    * @param overviewCS
+    * @param desiredCS
+    * @param strategy
+    * @return
+    */
   def selectOverview(
     overviewCS: List[CellSize],
     desiredCS: CellSize,
@@ -42,19 +52,23 @@ object OverviewStrategy {
       case Base =>
         overviewCS.indexOf(overviewCS.min)
       case AutoHigherResolution =>
-        selectIndexByProximity(overviewCS, desiredCS, 1.0)
+        val idx = selectIndexByProximity(overviewCS, desiredCS, 1.0)
+        // AutoHigherResolution defaults to Base if index out of bounds
+        if (idx >= overviewCS.size) overviewCS.indexOf(overviewCS.min) else idx
     }
     if (maybeIndex < 0) 0
     else if (maybeIndex >= overviewCS.size) overviewCS.size - 1
     else maybeIndex
   }
 
-  def selectIndexByProximity(overviewCS: List[CellSize], desiredCS: CellSize, proximityThreshold: Double): Int =
+  // This method is unsafe. It's up to the selectOverview method to handle each index OOB error for
+  // each indivdual strategy
+  private def selectIndexByProximity(overviewCS: List[CellSize], desiredCS: CellSize, proximityThreshold: Double): Int =
     overviewCS.search(desiredCS) match {
       case InsertionPoint(ipIdx) =>
-        if (ipIdx <= 0) 0
-        else if (ipIdx >= overviewCS.length) overviewCS.length - 1
-        else {
+        if (ipIdx <= 0 || ipIdx >= overviewCS.length) {
+          ipIdx
+        } else {
           val left = overviewCS(ipIdx - 1)
           val right = overviewCS(ipIdx)
           val proportion =
