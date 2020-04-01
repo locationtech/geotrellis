@@ -25,7 +25,7 @@ object Version {
   val geomesa     = "2.3.1"
   val geowave     = "0.9.3"
   val hadoop      = "2.8.5"
-  val spark       = "2.4.4"
+  val spark       = "3.0.0-preview2"
   val gdal        = "2.4.0"
   val gdalWarp    = "1.0.0"
 
