@@ -141,10 +141,10 @@ object GeoTrellisRasterSource {
     cellSize: CellSize,
     strategy: OverviewStrategy = OverviewStrategy.DEFAULT
   )(implicit f: T => CellSize): T = {
-    val resolutions = grids.map(f).toList
-    val sourceResolution =
-      OverviewStrategy.selectOverview(resolutions, cellSize, strategy)
-    grids(sourceResolution)
+    val sgrids = grids.sortBy(f(_))
+    val resolutions = sgrids.map(f).toList
+    val sourceResolution = OverviewStrategy.selectOverview(resolutions, cellSize, strategy)
+    sgrids(sourceResolution)
   }
 
   /** Read metadata for all layers that share a name and sort them by their resolution */

@@ -32,6 +32,8 @@ object OverviewStrategy {
   /**
     * Select appropriate overview given the strategy.
     *
+    * WARN: this function assumes that CellSizes are sorted. It interprets idx 0 as the position with the highest CellSize.
+    *
     * Unless a particular strategy suggests otherwise, this method will clamp the returned
     * index to the range of overviewCS.
     * @param overviewCS
