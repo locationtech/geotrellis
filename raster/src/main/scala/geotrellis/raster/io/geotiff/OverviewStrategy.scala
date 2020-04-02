@@ -18,7 +18,11 @@ package geotrellis.raster.io.geotiff
 
 import geotrellis.raster.CellSize
 
-import scala.collection.Searching._
+import cats.syntax.foldable._
+import cats.syntax.option._
+import cats.instances.list._
+import cats.instances.either._
+import org.log4s.getLogger
 
 /**
   * Options ported from GDAL (https://gdal.org/programs/gdalwarp.html#cmdoption-gdalwarp-ovr)
@@ -27,19 +31,27 @@ import scala.collection.Searching._
 sealed trait OverviewStrategy
 
 object OverviewStrategy {
-  def DEFAULT = AutoHigherResolution
+  @transient private[this] lazy val logger = getLogger
+
+  def DEFAULT: OverviewStrategy = AutoHigherResolution
 
   /**
     * Select appropriate overview given the strategy.
     *
     * WARN: this function assumes that CellSizes are sorted. It interprets idx 0 as the position with the highest CellSize.
+    * If the input list is not sorted, this function returns idx 0.
     *
     * Unless a particular strategy suggests otherwise, this method will clamp the returned
     * index to the range of overviewCS.
-    * @param overviewCS
-    * @param desiredCS
-    * @param strategy
-    * @return
+    * @param overviewCS a sorted list of resolutions, otherwise it is not guaranteed that it would work with all the input strategies.
+    * @param desiredCS  cellSize that would be searched
+    * @param strategy   overview strategy that would be used to search for the best matching CellSize
+    * @return           index of the closest cellSize. Each strategy behaves a bit different:
+    *                   Level: selects the passed index and if it is OOB clamps the index.
+    *                   Auto(n): selects the best matching cellSize (approximately) and adds n, requires the input resolutions list to be sorted.
+    *                   Base: always returns the best matching cellSize from the given list of CellSizes.
+    *                   AutoHigherResolution: selects the best matching cellSize (approximately) always selects a higher resolution,
+    *                   requires the input resolutions list to be sorted.
     */
   def selectOverview(
     overviewCS: List[CellSize],
@@ -47,41 +59,54 @@ object OverviewStrategy {
     strategy: OverviewStrategy
   ): Int = {
     val maybeIndex = strategy match {
-      case Level(overviewIdx) =>
-        overviewIdx
-      case Auto(n) =>
-        selectIndexByProximity(overviewCS, desiredCS, 0.5) + n
-      case Base =>
-        overviewCS.indexOf(overviewCS.min)
+      case Level(overviewIdx) => overviewIdx
+      case Auto(n)            => selectIndexByProximity(overviewCS, desiredCS, 0.5) + n
+      // returns the best resolution always
+      case Base               => overviewCS.indexOf(overviewCS.min)
+      // Returns -1 in case nothing was found or the input list was not sorted.
       case AutoHigherResolution =>
         val idx = selectIndexByProximity(overviewCS, desiredCS, 1.0)
         // AutoHigherResolution defaults to the closest level
         // idx > overviewCS.size means, that idx = overviewCS.size (last idx + 1)
         if (idx > overviewCS.size) idx - 1 else idx
     }
+    // clamp the index to fit the input list size
     if (maybeIndex < 0) 0
     else if (maybeIndex >= overviewCS.size) overviewCS.size - 1
     else maybeIndex
   }
-
-  // This method is unsafe. It's up to the selectOverview method to handle each index OOB error for
-  // each indivdual strategy
+  
+  /**
+    * This method is unsafe. It's up to the selectOverview method to handle each index OOB error.
+    * @param overviewCS        a sorted list of resolutions, otherwise it is not guaranteed that it would work with all the input strategies.
+    * @param desiredCS          cellSize that would be searched  
+    * @param proximityThreshold threshold to defined the search proximity
+    * @return                   index of the closest cellSize. Returns -1 in case nothing was found or the input list was not sorted.  
+    */
   private def selectIndexByProximity(overviewCS: List[CellSize], desiredCS: CellSize, proximityThreshold: Double): Int =
-    overviewCS.search(desiredCS) match {
-      case InsertionPoint(ipIdx) =>
-        if (ipIdx <= 0 || ipIdx >= overviewCS.length) {
-          ipIdx
-        } else {
-          val left = overviewCS(ipIdx - 1)
-          val right = overviewCS(ipIdx)
-          val proportion =
-          1 - (right.resolution - desiredCS.resolution) / (right.resolution - left.resolution)
-          if (proportion >= proximityThreshold) ipIdx
-          else ipIdx - 1
-        }
-      case Found(csIdx) =>
-        csIdx
-  }
+    overviewCS.zipWithIndex.foldLeftM(Option.empty[(CellSize, Int)]) { case (acc, r @ (rightCZ, _)) =>
+      acc match {
+        case l @ Some((leftCZ, _)) =>
+          val proportion = 1 - (rightCZ.resolution - desiredCS.resolution) / (rightCZ.resolution - leftCZ.resolution)
+
+          // if the rightCZ > than the leftCZ it means that the list is not sorted
+          // - negative if rightCZ < leftCZ
+          // - positive if rightCZ > leftCZ
+          // - zero otherwise (if rightCZ == leftCZ)
+          if (Ordering[CellSize].compare(rightCZ, leftCZ) < 0) {
+            logger.warn(s"The input list $overviewCS is probably not sorted.")
+            Left(none)
+          }
+          // if proportion >= proximityThreshold continue the search else stop
+          else if (proportion >= proximityThreshold) Right(r.some) else Left(l)
+        case None => Right(r.some)
+      }
+    } match {
+      case Right(Some((_, idx))) => idx
+      case Left(Some((_, idx)))  => idx
+      // nothing was found
+      case _ => -1
+    }
 }
 
 /**
