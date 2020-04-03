@@ -1232,4 +1232,6 @@ abstract class GeoTiffMultibandTile(
       Some(bandType)
     )
   }
+
+  override def toString: String = s"GeoTiffMultibandTile($cols,$rows,$bandCount,$cellType)"
 }

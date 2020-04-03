@@ -402,6 +402,8 @@ abstract class ArrayTile extends Tile with Serializable {
     }
     arr
   }
+
+  override def toString: String = s"ArrayTile($cols,$rows,$cellType)"
 }
 
 /**

@@ -806,4 +806,6 @@ abstract class GeoTiffTile(
    */
   def toBytes(): Array[Byte] =
     toArrayTile.toBytes
+
+  override def toString: String = s"GeoTiffTile($cols,$rows,$cellType)"
 }

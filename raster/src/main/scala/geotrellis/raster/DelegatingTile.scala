@@ -98,4 +98,5 @@ abstract class DelegatingTile extends Tile {
   def mapDoubleMapper(mapper: DoubleTileMapper): Tile =
     delegate.mapDoubleMapper(mapper)
 
+  override def toString: String = s"DelegatingTile($cols,$rows,$cellType)"
 }

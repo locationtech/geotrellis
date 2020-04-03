@@ -512,4 +512,6 @@ class ArrayMultibandTile(_bands: Array[Tile]) extends MultibandTile with MacroMu
     case _ =>
       false
   }
+
+  override def toString: String = s"ArrayMultibandTile($cols,$rows,$bandCount,$cellType)"
 }
