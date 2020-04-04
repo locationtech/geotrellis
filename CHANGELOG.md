@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - GeoTrellisPath assumes `file` scheme when none provided [#3191](https://github.com/locationtech/geotrellis/pull/3191)
+- toStrings overrides to common classes [#3217](https://github.com/locationtech/geotrellis/pull/3217)
 
 ### Changed
 
