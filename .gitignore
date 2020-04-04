@@ -10,8 +10,10 @@ project/plugins/project
 project/plugins/target
 project/target
 target
-.ensime
+.ensime*
 .metals/
+.idea
+project/metals.sbt
 \#*#
 *~
 .#*
@@ -27,7 +29,6 @@ _SUCCESS
 .cache
 .settings
 .history
-.idea
 *.bloop
 .DS_Store
 *.iml
@@ -40,15 +41,7 @@ _SUCCESS
 scripts/emr/terraform/variables.tf*
 scripts/emr/terraform/terraform.tfstate*
 
-lib
-index.html
-index.js
-.ensime*
-
 nohup.out
-
-site/
-
 derby.log
 metastore_db/
 *.log

@@ -187,4 +187,6 @@ class DelayedConversionTile(inner: Tile, targetCellType: CellType)
 
     tile
   }
+
+  override def toString: String = s"DelayedConversionTile($cols,$rows,$cellType)"
 }

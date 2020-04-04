@@ -130,6 +130,8 @@ class GeoTiffResampleRasterSource(
       ).resample(targetRasterExtent.cols, targetRasterExtent.rows, method)
     }
   }
+
+  override def toString: String = s"GeoTiffResampleRasterSource(${dataPath.value},$resampleTarget,$method)"
 }
 
 object GeoTiffResampleRasterSource {

@@ -99,6 +99,8 @@ class GeoTiffRasterSource(
       convertRaster(Raster(tile, gridExtent.extentFor(gb.toGridType[Long], clamp = true)))
     }
   }
+
+  override def toString: String = s"GeoTiffRasterSource(${dataPath.value})"
 }
 
 object GeoTiffRasterSource {

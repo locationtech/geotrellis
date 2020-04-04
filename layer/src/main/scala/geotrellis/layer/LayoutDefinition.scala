@@ -17,10 +17,8 @@
 package geotrellis.layer
 
 import geotrellis.raster._
-import geotrellis.raster.rasterize._
 import geotrellis.vector._
 import spire.math.Integral
-import spire.implicits._
 import _root_.io.circe.generic.JsonCodec
 
 /**
@@ -30,12 +28,14 @@ import _root_.io.circe.generic.JsonCodec
  */
 @JsonCodec
 case class LayoutDefinition(override val extent: Extent, tileLayout: TileLayout) extends GridExtent[Long](extent, tileLayout.cellSize(extent)) {
+
+  /** Transformation between tile addressing and map coordinate addressing for for this layout */
   lazy val mapTransform = MapKeyTransform(extent, tileLayout.layoutDimensions)
 
-  def tileCols = tileLayout.tileCols
-  def tileRows = tileLayout.tileRows
-  def layoutCols = tileLayout.layoutCols
-  def layoutRows = tileLayout.layoutRows
+  def tileCols: Int = tileLayout.tileCols
+  def tileRows: Int = tileLayout.tileRows
+  def layoutCols: Int = tileLayout.layoutCols
+  def layoutRows: Int = tileLayout.layoutRows
 
   /** LayoutDefinition for tile bounds within this layout.
     * Resulting layout will line up with parent layout, but the (0,0) tile will be offset to region covered by bounds.
@@ -52,7 +52,7 @@ case class LayoutDefinition(override val extent: Extent, tileLayout: TileLayout)
   override def toString: String =
     s"""LayoutDefinition($extent,$cellSize,${layoutCols}x${layoutRows} tiles,${cols}x${rows} pixels)"""
 
-  override def canEqual(a: Any) = a.isInstanceOf[LayoutDefinition]
+  override def canEqual(a: Any): Boolean = a.isInstanceOf[LayoutDefinition]
 
   override def equals(that: Any): Boolean =
     that match {
@@ -63,7 +63,7 @@ case class LayoutDefinition(override val extent: Extent, tileLayout: TileLayout)
       case _ => false
   }
 
-  override def hashCode: Int =
+  override def hashCode(): Int =
     ((31 +
     (if (extent == null) 0 else extent.hashCode)) * 31 +
     (if (tileLayout == null) 0 else tileLayout.hashCode) * 31)

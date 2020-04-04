@@ -144,4 +144,7 @@ class ZoomedLayoutScheme(val crs: CRS, val tileSize: Int, val resolutionThreshol
       )
     )
   }
+
+  override def toString: String = s"" +
+    s"ZoomedLayoutScheme($crs,$tileSize,$resolutionThreshold)"
 }
