@@ -23,7 +23,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - RasterSources resolutions should be consistent across implementations [#3210](https://github.com/locationtech/geotrellis/issues/3210)
 - Bump gdal-warp-bindings version up to 1.0.0 [#3211](https://github.com/locationtech/geotrellis/pull/3211)
 - Fixed GDALRasterSource.resample method behavior to respect the passed resampleMethod [#3211](https://github.com/locationtech/geotrellis/pull/3211)
-- Fix Jackson dependencies [#3212](https://github.com/locationtech/geotrellis/issues/3212) 
+- Fix Jackson dependencies [#3212](https://github.com/locationtech/geotrellis/issues/3212)
+- Fix Rasterizer for polygons containing concavities whith `PixelIsArea` option [#3192](https://github.com/locationtech/geotrellis/pull/3192)
 
 ### Removed
 
