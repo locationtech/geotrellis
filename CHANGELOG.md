@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed GDALRasterSource.resample method behavior to respect the passed resampleMethod [#3211](https://github.com/locationtech/geotrellis/pull/3211)
 - Fix Jackson dependencies [#3212](https://github.com/locationtech/geotrellis/issues/3212)
 - Fix Rasterizer for polygons containing concavities whith `PixelIsArea` option [#3192](https://github.com/locationtech/geotrellis/pull/3192)
+- Fix spatial join (Spark) when using different partitioning in left and right RDDs [#3175](https://github.com/locationtech/geotrellis/pull/3175)
 
 ### Removed
 
@@ -38,7 +39,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Preserve NODATA values for double cell types when resampling with Max or Min resampler [#3144](https://github.com/locationtech/geotrellis/pull/3144)
 - Update dependency versions for Scala 2.12 cross build [#3132](https://github.com/locationtech/geotrellis/pull/3132)
 - Fix eager evaluation of band min-max in `GDALDataset` [#](https://github.com/locationtech/geotrellis/pull/3162)
-- Fix spatial join (Spark) when using different partitioning in left and right RDDs [#3175](https://github.com/locationtech/geotrellis/pull/3175)
 
 ## [3.1.0] - 2019-10-25
 
