@@ -40,6 +40,8 @@ trait RasterMetadata extends Serializable {
     * <li> For reprojected [[RasterSource]] these resolutions represent an estimate where
     *      each cell in target CRS has ''approximately'' the same geographic coverage as a cell in the source CRS.
     *
+    * For compatibility with [[OverviewStrategy]], this list should be sorted from smallest cell sizes to largest, as determined by `_.resolution`.
+    *
     * When reading raster data the underlying implementation will have to sample from one of these resolutions.
     * It is possible that a read request for a small bounding box will results in significant IO request when the target
     * cell size is much larger than closest available resolution.

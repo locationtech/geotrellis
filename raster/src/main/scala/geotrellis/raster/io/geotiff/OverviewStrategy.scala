@@ -38,15 +38,16 @@ object OverviewStrategy {
   /**
     * Select appropriate overview given the strategy.
     *
-    * WARN: this function assumes that CellSizes are sorted. It interprets idx 0 as the position with the highest CellSize.
-    * If the input list is not sorted, this function returns idx 0.
+    * WARN: this function assumes that CellSizes are sorted by their resolution, with "smaller" cell sizes appearing first.
+    * It interprets idx 0 as the position with the highest CellSize.  If the input list is not sorted, this function returns
+    * idx 0.
     *
     * Unless a particular strategy suggests otherwise, this method will clamp the returned
     * index to the range of overviewCS.
-    * @param overviewCS a sorted list of resolutions, otherwise it is not guaranteed that it would work with all the input strategies.
+    * @param overviewCS a list of CellSizes sorted by `resolution`, result is undefined for unsorted lists.
     * @param desiredCS  cellSize that would be searched
-    * @param strategy   overview strategy that would be used to search for the best matching CellSize
-    * @return           index of the closest cellSize. Each strategy behaves a bit different:
+    * @param strategy   overview strategy used to search for the best matching CellSize
+    * @return           index of the closest cellSize. Each strategy defines a different behavior:
     *                   Level: selects the passed index and if it is OOB clamps the index.
     *                   Auto(n): selects the best matching cellSize (approximately) and adds n, requires the input resolutions list to be sorted.
     *                   Base: always returns the best matching cellSize from the given list of CellSizes.
@@ -75,13 +76,13 @@ object OverviewStrategy {
     else if (maybeIndex >= overviewCS.size) overviewCS.size - 1
     else maybeIndex
   }
-  
+
   /**
     * This method is unsafe. It's up to the selectOverview method to handle each index OOB error.
     * @param overviewCS        a sorted list of resolutions, otherwise it is not guaranteed that it would work with all the input strategies.
-    * @param desiredCS          cellSize that would be searched  
+    * @param desiredCS          cellSize that would be searched
     * @param proximityThreshold threshold to defined the search proximity
-    * @return                   index of the closest cellSize. Returns -1 in case nothing was found or the input list was not sorted.  
+    * @return                   index of the closest cellSize. Returns -1 in case nothing was found or the input list was not sorted.
     */
   private def selectIndexByProximity(overviewCS: List[CellSize], desiredCS: CellSize, proximityThreshold: Double): Int =
     overviewCS.zipWithIndex.foldLeftM(Option.empty[(CellSize, Int)]) { case (acc, r @ (rightCZ, _)) =>
@@ -118,7 +119,7 @@ case class Level(overviewLevel: Int) extends OverviewStrategy
 /**
   * While n=0, the nearest zoom level should be selected. At n=1, the
   * overview immediately after n=0 is selected, at n=2, the one after that etc.
-  * 
+  *
   * @note n must be greater than or equal to 0
   */
 case class Auto(n: Int = 0) extends OverviewStrategy {
