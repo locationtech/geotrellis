@@ -113,7 +113,7 @@ class GeoTrellisResampleRasterSource(
   /** Resample underlying RasterSource to new grid extent
     * Note: ResampleTarget will be applied to GridExtent of the source layer, not the GridExtent of this RasterSource
     */
-  override def resample(resampleTarget: ResampleTarget, method: ResampleMethod, strategy: OverviewStrategy): GeoTrellisResampleRasterSource = {
+  def resample(resampleTarget: ResampleTarget, method: ResampleMethod, strategy: OverviewStrategy): GeoTrellisResampleRasterSource = {
     val resampledGridExtent = resampleTarget(this.gridExtent)
     val closestLayer = GeoTrellisRasterSource.getClosestResolution(sourceLayers, resampledGridExtent.cellSize, strategy)(_.metadata.layout.cellSize)
     // TODO: if closestLayer is w/in some marging of desired CellSize, return GeoTrellisRasterSource instead

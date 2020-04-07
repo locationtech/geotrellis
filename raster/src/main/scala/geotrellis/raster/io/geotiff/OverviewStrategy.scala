@@ -79,7 +79,7 @@ object OverviewStrategy {
 
   /**
     * This method is unsafe. It's up to the selectOverview method to handle each index OOB error.
-    * @param overviewCS        a sorted list of resolutions, otherwise it is not guaranteed that it would work with all the input strategies.
+    * @param overviewCS         a sorted list of resolutions, otherwise it is not guaranteed that it would work with all the input strategies.
     * @param desiredCS          cellSize that would be searched
     * @param proximityThreshold threshold to defined the search proximity
     * @return                   index of the closest cellSize. Returns -1 in case nothing was found or the input list was not sorted.
