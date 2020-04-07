@@ -40,9 +40,11 @@ sealed trait PolygonalSummaryResult[+A] {
 
 object PolygonalSummaryResult {
   implicit val monad: Monad[PolygonalSummaryResult] = new Monad[PolygonalSummaryResult] {
-    def flatMap[A, B](fa: PolygonalSummaryResult[A])
-                     (f: A => PolygonalSummaryResult[B]): PolygonalSummaryResult[B] = {
-      flatten(map(fa)(f))
+    def flatMap[A, B](fa: PolygonalSummaryResult[A])(f: A => PolygonalSummaryResult[B]): PolygonalSummaryResult[B] = {
+      fa match {
+        case NoIntersection => NoIntersection
+        case Summary(value) => f(value)
+      }
     }
 
     def pure[A](x: A): PolygonalSummaryResult[A] = Summary(x)
