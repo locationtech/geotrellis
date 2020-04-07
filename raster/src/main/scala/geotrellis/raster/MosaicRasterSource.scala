@@ -72,14 +72,14 @@ abstract class MosaicRasterSource extends RasterSource {
   /**
     * All available resolutions for all RasterSources in this MosaicRasterSource
     *
-    * @see [[geotrellis.contrib.vlm.RasterSource.resolutions]]
+    * @see [[geotrellis.raster.RasterSource.resolutions]]
     */
   def resolutions: List[CellSize] = sources.map { _.resolutions }.reduce
 
   /** Create a new MosaicRasterSource with sources transformed according to the provided
     * crs, options, and strategy, and a new crs
     *
-    * @see [[geotrellis.contrib.vlm.RasterSource.reproject]]
+    * @see [[geotrellis.raster.RasterSource.reproject]]
     */
   def reprojection(
     targetCRS: CRS,

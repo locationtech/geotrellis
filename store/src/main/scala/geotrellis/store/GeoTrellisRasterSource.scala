@@ -72,10 +72,7 @@ class GeoTrellisRasterSource(
   lazy val reader = CollectionLayerReader(attributeStore, dataPath.value)
 
   // read metadata directly instead of searching sourceLayers to avoid unneeded reads
-  lazy val layerMetadata: TileLayerMetadata[_] = {
-    logger.debug(s"RasterSource(${dataPath.value}): Reading layerMetadata")
-    reader.attributeStore.readTileLayerMetadataErased(layerId)
-  }
+  lazy val layerMetadata: TileLayerMetadata[_] = reader.attributeStore.readTileLayerMetadataErased(layerId)
 
   lazy val gridExtent: GridExtent[Long] = layerMetadata.layout.createAlignedGridExtent(layerMetadata.extent)
 
