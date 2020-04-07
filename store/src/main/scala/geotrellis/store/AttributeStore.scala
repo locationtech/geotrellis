@@ -18,7 +18,6 @@ package geotrellis.store
 
 import geotrellis.store.cog.ZoomRange
 import geotrellis.store.index._
-import geotrellis.store.json.Implicits._
 
 import org.apache.avro.Schema
 import io.circe._
@@ -28,7 +27,6 @@ import cats.syntax.either._
 import scala.reflect._
 import java.net.URI
 import java.util.ServiceLoader
-
 
 trait AttributeStore extends AttributeCaching with LayerAttributeStore {
   def read[T: Decoder](layerId: LayerId, attributeName: String): T

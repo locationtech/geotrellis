@@ -84,7 +84,7 @@ abstract class MosaicRasterSource extends RasterSource {
   def reprojection(
     targetCRS: CRS,
     resampleTarget: ResampleTarget = DefaultTarget,
-    method: ResampleMethod = NearestNeighbor,
+    method: ResampleMethod = ResampleMethod.DEFAULT,
     strategy: OverviewStrategy = OverviewStrategy.DEFAULT
   ): RasterSource =
     MosaicRasterSource(
