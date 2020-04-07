@@ -16,12 +16,16 @@
 
 package geotrellis.store
 
-import geotrellis.raster.CellGrid
-import geotrellis.layer._
-import geotrellis.util._
-import java.time.Instant
-
+import geotrellis.layer.{SpaceTimeKey, SpatialKey, TileLayerMetadata}
 
 object Implicits extends Implicits
 
-trait Implicits extends avro.codecs.Implicits with json.Implicits
+trait Implicits extends avro.codecs.Implicits with json.Implicits {
+  implicit class AttributeStoreOps(attributeStore: AttributeStore) {
+    private [store] def readTileLayerMetadataErased(layerId: LayerId): TileLayerMetadata[_] = {
+      val header = attributeStore.readHeader[LayerHeader](layerId)
+      if(header.keyClass.contains("SpatialKey")) attributeStore.readMetadata[TileLayerMetadata[SpatialKey]](layerId)
+      else attributeStore.readMetadata[TileLayerMetadata[SpaceTimeKey]](layerId)
+    }
+  }
+}
