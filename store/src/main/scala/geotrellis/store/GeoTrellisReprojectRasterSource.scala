@@ -95,7 +95,7 @@ class GeoTrellisReprojectRasterSource(
         else
           logger.warn(msg + " (large read)")
       }
-      raster <- GeoTrellisRasterSource.readIntersecting(reader, layerId, sourceLayer.metadata, sourceExtent, bands)
+      raster <- GeoTrellisRasterSource.readIntersecting(reader, layerId, sourceLayer.metadata, sourceExtent, bands, time)
     } yield {
       val reprojected = raster.reproject(
         targetRasterExtent,

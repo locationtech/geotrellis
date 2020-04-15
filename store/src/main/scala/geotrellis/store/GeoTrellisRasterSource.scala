@@ -110,7 +110,7 @@ class GeoTrellisRasterSource(
   lazy val isTemporal: Boolean = times.nonEmpty
 
   def read(extent: Extent, bands: Seq[Int]): Option[Raster[MultibandTile]] =
-    GeoTrellisRasterSource.read(reader, layerId, layerMetadata, extent, bands).map(convertRaster)
+    GeoTrellisRasterSource.read(reader, layerId, layerMetadata, extent, bands, time).map(convertRaster)
 
   def read(bounds: GridBounds[Long], bands: Seq[Int]): Option[Raster[MultibandTile]] =
     bounds
@@ -192,7 +192,7 @@ object GeoTrellisRasterSource {
     layerId: LayerId,
     extent: Extent,
     bands: Seq[Int],
-    time: Option[ZonedDateTime] = None
+    time: Option[ZonedDateTime]
   ): Seq[(SpatialKey, MultibandTile)] with Metadata[TileLayerMetadata[SpatialKey]] = {
     def spatialTileRead =
       reader.query[SpatialKey, Tile, TileLayerMetadata[SpatialKey]](layerId)
@@ -256,13 +256,13 @@ object GeoTrellisRasterSource {
     }
   }
 
-  def readIntersecting(reader: CollectionLayerReader[LayerId], layerId: LayerId, metadata: TileLayerMetadata[_], extent: Extent, bands: Seq[Int]): Option[Raster[MultibandTile]] = {
-    val tiles = readTiles(reader, layerId, extent, bands)
+  def readIntersecting(reader: CollectionLayerReader[LayerId], layerId: LayerId, metadata: TileLayerMetadata[_], extent: Extent, bands: Seq[Int], time: Option[ZonedDateTime]): Option[Raster[MultibandTile]] = {
+    val tiles = readTiles(reader, layerId, extent, bands, time)
     sparseStitch(tiles, extent)
   }
 
-  def read(reader: CollectionLayerReader[LayerId], layerId: LayerId, metadata: TileLayerMetadata[_], extent: Extent, bands: Seq[Int]): Option[Raster[MultibandTile]] = {
-    val tiles = readTiles(reader, layerId, extent, bands)
+  def read(reader: CollectionLayerReader[LayerId], layerId: LayerId, metadata: TileLayerMetadata[_], extent: Extent, bands: Seq[Int], time: Option[ZonedDateTime]): Option[Raster[MultibandTile]] = {
+    val tiles = readTiles(reader, layerId, extent, bands, time)
     metadata.extent.intersection(extent) flatMap { intersectionExtent =>
       sparseStitch(tiles, intersectionExtent).map(_.crop(intersectionExtent))
     }
