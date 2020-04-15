@@ -16,8 +16,8 @@
 
 package geotrellis.store.json
 
+import geotrellis.store.index.zcurve.ZSpaceTimeLargeKeyIndex
 import geotrellis.layer._
-import geotrellis.store._
 import geotrellis.store.index._
 
 import io.circe._
@@ -60,5 +60,6 @@ class TestKeyIndexRegistrator extends KeyIndexRegistrator {
 
   def register(keyIndexRegistry: KeyIndexRegistry): Unit = {
     keyIndexRegistry register KeyIndexFormatEntry[SpatialKey, TestKeyIndex](test)
+    keyIndexRegistry register KeyIndexFormatEntry[SpaceTimeKey, ZSpaceTimeLargeKeyIndex](ZSpaceTimeLargeKeyIndex.NAME)
   }
 }

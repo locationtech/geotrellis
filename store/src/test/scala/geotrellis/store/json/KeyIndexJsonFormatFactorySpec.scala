@@ -16,14 +16,14 @@
 
 package geotrellis.store.json
 
+import java.time.ZonedDateTime
+
 import geotrellis.layer._
 import geotrellis.store._
 import geotrellis.store.index._
-
 import io.circe.syntax._
 import cats.syntax.either._
-
-
+import geotrellis.store.index.zcurve.ZSpaceTimeLargeKeyIndex
 import org.scalatest._
 
 class KeyIndexJsonFormatFactorySpec extends FunSpec with Matchers {
@@ -35,6 +35,40 @@ class KeyIndexJsonFormatFactorySpec extends FunSpec with Matchers {
       val actual = json.as[KeyIndex[SpatialKey]].valueOr(throw _)
       actual.keyBounds should be (expectedKeyBounds)
       actual should be (a[TestKeyIndex])
+    }
+
+    // https://github.com/geotrellis/geotrellis-server/issues/248
+    it("should be able to serialize and deserialize a ZSpaceTimeLargeKeyIndex key index set through application.conf") {
+      // layer dates range
+      // ["1960-01-01T12:00Z","1974-01-01T12:00Z"]
+
+      // unix time is in [1 January 1970; 1 January 2038) bounds
+      val minDate = ZonedDateTime.parse("1960-01-01T12:00Z")
+      val maxDate = ZonedDateTime.parse("1974-01-01T12:00Z")
+
+      minDate.toInstant.toEpochMilli shouldBe -315576000000L
+      maxDate.toInstant.toEpochMilli shouldBe 126273600000L
+
+      // -315576000000L
+      val minKey = SpaceTimeKey(4577, 5960, instant = minDate.toInstant.toEpochMilli)
+      // 126273600000L
+      val maxKey = SpaceTimeKey(4590, 5971, instant = maxDate.toInstant.toEpochMilli)
+      val kb = KeyBounds(minKey, maxKey)
+
+      // val temporalResolution: Long = 31536000000L
+      val index = ZSpaceTimeLargeKeyIndex.byYear(kb)
+      index.temporalResolution shouldBe 31536000000L
+
+      index.indexRanges(minKey -> maxKey).length shouldBe 401
+
+      val json = index.asJson
+      val actual = json.as[KeyIndex[SpaceTimeKey]].valueOr(throw _)
+      actual.keyBounds should be (kb)
+      actual should be (a[ZSpaceTimeLargeKeyIndex])
+
+      val actualt = actual.asInstanceOf[ZSpaceTimeLargeKeyIndex]
+      actualt.temporalResolution shouldBe index.temporalResolution
+      actualt.shift shouldBe index.shift
     }
   }
 }
