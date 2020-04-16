@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Fix GeoTrellisRasterSources to properly pass time though all the internal functions [#3226](https://github.com/locationtech/geotrellis/pull/3226) 
+
 ## [3.3.0] - 2020-04-07
 
 ### Added

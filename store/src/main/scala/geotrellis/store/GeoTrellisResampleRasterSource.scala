@@ -91,7 +91,7 @@ class GeoTrellisResampleRasterSource(
     else
     logger.warn(msg + " (large read)")
 
-    GeoTrellisRasterSource.readIntersecting(reader, layerId, sourceLayer.metadata, extent, bands)
+    GeoTrellisRasterSource.readIntersecting(reader, layerId, sourceLayer.metadata, extent, bands, time)
       .map { raster =>
         val targetRasterExtent = gridExtent.createAlignedRasterExtent(extent)
         logger.trace(s"\u001b[31mTargetRasterExtent\u001b[0m: ${targetRasterExtent} ${targetRasterExtent.dimensions}")
