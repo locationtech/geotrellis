@@ -101,7 +101,8 @@ object Dependencies {
   val geotoolsGeoTiff     = "org.geotools"                 % "gt-geotiff"              % Version.geotools
   val geotoolsShapefile   = "org.geotools"                 % "gt-shapefile"            % Version.geotools
 
-  val jaiCore             = "javax.media"                  % "jai_core"                % "1.1.3"
+  // This is one finicky dependency. Being explicit in hopes it will stop hurting Travis.
+  val jaiCore             = "javax.media" % "jai_core"     % "1.1.3" from "https://repo.osgeo.org/repository/release/javax/media/jai_core/1.1.3/jai_core-1.1.3.jar"
 
   val geowaveRaster       = "mil.nga.giat"                 % "geowave-adapter-raster"     % Version.geowave
   val geowaveVector       = "mil.nga.giat"                 % "geowave-adapter-vector"     % Version.geowave

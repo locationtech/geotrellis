@@ -273,8 +273,7 @@ object Settings {
       geotoolsGeoTiff % Test,
       geotoolsShapefile % Test,
       scalatest % Test,
-      // This is one finicky dependency. Being explicit in hopes it will stop hurting Travis.
-      jaiCore % Test from "https://download.osgeo.org/webdav/geotools/javax/media/jai_core/1.1.3/jai_core-1.1.3.jar"
+      jaiCore % Test
     ),
     externalResolvers += Settings.Repositories.osgeoReleases,
     console / initialCommands :=
@@ -548,8 +547,7 @@ object Settings {
     name := "geotrellis-shapefile",
     libraryDependencies ++= Seq(
       geotoolsShapefile,
-      // This is one finicky dependency. Being explicit in hopes it will stop hurting Travis.
-      jaiCore from "https://download.osgeo.org/webdav/geotools/javax/media/jai_core/1.1.3/jai_core-1.1.3.jar"
+      jaiCore
     ),
     resolvers += Repositories.osgeoReleases,
     Test / fork := false
