@@ -28,16 +28,12 @@ import sbtprotoc.ProtocPlugin.autoImport.PB
 
 object Settings {
   object Repositories {
-    val eclipseReleases     = "eclipse-releases" at "https://repo.eclipse.org/content/groups/releases"
-    val eclipseSnapshots    = "eclipse-snapshots" at "https://repo.eclipse.org/content/groups/snapshots"
-    val boundlessgeo        = "boundlessgeo" at "https://repo.boundlessgeo.com/main/"
-    val boundlessgeoRelease = "boundless" at "https://repo.boundlessgeo.com/release"
-    val geosolutions        = "geosolutions" at "https://maven.geo-solutions.it/"
-    val osgeo               = "osgeo" at "https://download.osgeo.org/webdav/geotools/"
-    val ivy2Local           = Resolver.file("local", file(Path.userHome.absolutePath + "/.ivy2/local"))(Resolver.ivyStylePatterns)
-    val mavenLocal          = Resolver.mavenLocal
-    val local               = Seq(ivy2Local, mavenLocal)
-    val azaveaBintray       = Resolver.bintrayRepo("azavea", "geotrellis")
+    val eclipseReleases = "eclipse-releases" at "https://repo.eclipse.org/content/groups/releases"
+    val osgeoReleases   = "osgeo-releases" at "https://repo.osgeo.org/repository/release/"
+    val geosolutions    = "geosolutions" at "https://maven.geo-solutions.it/"
+    val ivy2Local       = Resolver.file("local", file(Path.userHome.absolutePath + "/.ivy2/local"))(Resolver.ivyStylePatterns)
+    val mavenLocal      = Resolver.mavenLocal
+    val local           = Seq(ivy2Local, mavenLocal)
   }
 
   lazy val noForkInTests = Seq(
@@ -109,7 +105,7 @@ object Settings {
     resolvers ++= Seq(
       Resolver.mavenLocal,
       Settings.Repositories.geosolutions,
-      Settings.Repositories.osgeo,
+      Settings.Repositories.osgeoReleases,
       Settings.Repositories.eclipseReleases
     ),
     headerLicense := Some(HeaderLicense.ALv2(java.time.Year.now.getValue.toString, "Azavea")),
@@ -250,7 +246,7 @@ object Settings {
       scalatest % Test
     ),
     resolvers ++= Seq(
-      Repositories.boundlessgeo,
+      Repositories.osgeoReleases,
       Repositories.eclipseReleases
     ),
     console / initialCommands :=
@@ -280,9 +276,7 @@ object Settings {
       // This is one finicky dependency. Being explicit in hopes it will stop hurting Travis.
       jaiCore % Test from "https://download.osgeo.org/webdav/geotools/javax/media/jai_core/1.1.3/jai_core-1.1.3.jar"
     ),
-    externalResolvers ++= Seq(
-      Repositories.boundlessgeo
-    ),
+    externalResolvers += Settings.Repositories.osgeoReleases,
     console / initialCommands :=
       """
       import geotrellis.geotools._
@@ -341,9 +335,8 @@ object Settings {
       scalatest % Test
     ),
     resolvers ++= Seq(
-      Repositories.boundlessgeoRelease,
-      Repositories.geosolutions,
-      Repositories.osgeo
+      Repositories.osgeoReleases,
+      Repositories.geosolutions
     ),
     assembly / assemblyMergeStrategy := {
       case "reference.conf" => MergeStrategy.concat
@@ -435,8 +428,7 @@ object Settings {
     libraryDependencies ++= Seq(
       spireMacro,
       "org.scala-lang" % "scala-reflect" % scalaVersion.value
-    ),
-    resolvers += Resolver.sonatypeRepo("snapshots")
+    )
   ) ++ commonSettings
 
   lazy val proj4 = Seq(
@@ -559,7 +551,7 @@ object Settings {
       // This is one finicky dependency. Being explicit in hopes it will stop hurting Travis.
       jaiCore from "https://download.osgeo.org/webdav/geotools/javax/media/jai_core/1.1.3/jai_core-1.1.3.jar"
     ),
-    resolvers += Repositories.osgeo,
+    resolvers += Repositories.osgeoReleases,
     Test / fork := false
   ) ++ commonSettings
 
@@ -727,7 +719,6 @@ object Settings {
       scalatest % Test,
       gdalBindings % Test
     ),
-    resolvers += Repositories.azaveaBintray,
     Test / fork := true,
     Test / parallelExecution := false,
     Test / testOptions += Tests.Argument("-oDF"),
@@ -742,7 +733,6 @@ object Settings {
       sparkSql % Test,
       scalatest % Test
     ),
-    resolvers += Repositories.azaveaBintray,
     Test / fork := true,
     Test / parallelExecution := false,
     Test / testOptions += Tests.Argument("-oDF"),
