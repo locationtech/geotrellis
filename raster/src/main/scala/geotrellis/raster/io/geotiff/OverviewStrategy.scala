@@ -95,7 +95,7 @@ object OverviewStrategy {
           // - positive if rightCZ > leftCZ
           // - zero otherwise (if rightCZ == leftCZ)
           if (Ordering[CellSize].compare(rightCZ, leftCZ) < 0) {
-            logger.warn(s"The input list $overviewCS is probably not sorted.")
+            logger.debug(s"The input list $overviewCS is probably not sorted.")
             Left(none)
           }
           // if proportion >= proximityThreshold continue the search else stop
