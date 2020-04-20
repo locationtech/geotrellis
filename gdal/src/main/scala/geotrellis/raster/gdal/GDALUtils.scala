@@ -110,7 +110,7 @@ object GDALUtils {
     case Level(level) => s"$level"
     case Base => "NONE"
     case other =>
-      logger.warn(s"$other is not a valid GDALWarp -ovr argument; falling back to AUTO")
+      logger.debug(s"$other is not a valid GDALWarp -ovr argument; falling back to AUTO")
       "AUTO"
   }
 }
