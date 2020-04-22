@@ -41,25 +41,18 @@ object GDALUtils {
       case _ => throw new Exception(s"Could not find equivalent GDALResampleMethod for: $method")
     }
 
-  def dataTypeToCellType(datatype: GDALDataType, noDataValue: Option[Double] = None, typeSizeInBits: => Option[Int] = None, minMaxValues: => Option[(Double, Double)] = None): CellType =
+  def dataTypeToCellType(datatype: GDALDataType, noDataValue: Option[Double] = None, typeSizeInBits: => Option[Int] = None): CellType =
     datatype match {
       case TypeByte =>
         typeSizeInBits match {
           case Some(bits) if bits == 1 => BitCellType
           case _ =>
-            minMaxValues match {
-              case Some((mi, ma)) if (mi.toInt >= 0 && mi <= 255) && (ma.toInt >= 0 && ma <= 255) =>
-                noDataValue match {
-                  case Some(nd) if nd.toInt > 0 && nd <= 255 => UByteUserDefinedNoDataCellType(nd.toByte)
-                  case Some(nd) if nd.toInt == 0 => UByteConstantNoDataCellType
-                  case _ => UByteCellType
-                }
-              case _ =>
-                noDataValue match {
-                  case Some(nd) if nd.toInt > Byte.MinValue.toInt && nd <= Byte.MaxValue.toInt => ByteUserDefinedNoDataCellType(nd.toByte)
-                  case Some(nd) if nd.toInt == Byte.MinValue.toInt => ByteConstantNoDataCellType
-                  case _ => ByteCellType
-                }
+            noDataValue match {
+              case Some(nd) if nd.toInt > 0 && nd <= 255 => UByteUserDefinedNoDataCellType(nd.toByte)
+              case Some(nd) if nd.toInt == 0 => UByteConstantNoDataCellType
+              case Some(nd) if nd.toInt > Byte.MinValue.toInt && nd <= Byte.MaxValue.toInt => ByteUserDefinedNoDataCellType(nd.toByte)
+              case Some(nd) if nd.toInt == Byte.MinValue.toInt => ByteConstantNoDataCellType
+              case _ => UByteCellType
             }
         }
       case TypeUInt16 =>

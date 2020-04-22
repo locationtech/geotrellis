@@ -288,24 +288,7 @@ case class GDALDataset(token: Long) extends AnyVal {
     require(acceptableDatasets contains datasetType)
     val nd = noDataValue(datasetType)
     val dt = GDALDataType.intToGDALDataType(this.dataType(datasetType))
-    // This is declared lazy to avoid eval if the by-name param in GDALUtils.dataTypeToCellType is not needed
-    lazy val mm = {
-      val minmax = Array.ofDim[Double](2)
-      val success = Array.ofDim[Int](1)
-
-      val returnValue = GDALWarp.get_band_min_max(token, datasetType.value, numberOfAttempts, 1, true, minmax, success)
-
-      if (returnValue <= 0) {
-        val positiveValue = math.abs(returnValue)
-        throw new MalformedDataTypeException(
-          s"Unable to deterime the min/max values in order to calculate CellType. GDAL Error Code: $positiveValue",
-          positiveValue
-        )
-      }
-      if (success(0) != 0) Some(minmax(0), minmax(1))
-      else None
-    }
-    GDALUtils.dataTypeToCellType(datatype = dt, noDataValue = nd, minMaxValues = mm)
+    GDALUtils.dataTypeToCellType(datatype = dt, noDataValue = nd)
   }
 
   def readTile(gb: GridBounds[Int] = GridBounds(dimensions), band: Int, datasetType: DatasetType = GDALDataset.WARPED): Tile = {
