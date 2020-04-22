@@ -288,7 +288,13 @@ case class GDALDataset(token: Long) extends AnyVal {
     require(acceptableDatasets contains datasetType)
     val nd = noDataValue(datasetType)
     val dt = GDALDataType.intToGDALDataType(this.dataType(datasetType))
-    GDALUtils.dataTypeToCellType(datatype = dt, noDataValue = nd)
+    /** The neccesary metadata about the [[CellType]] is available only on the RasterBand metadata level, that is why band = 1 here. */
+    lazy val md = this.getMetadata(ImageStructureDomain, 1)
+    /** To handle the [[BitCellType]] it is possible to fetch NBITS information from the RasterBand metadata, **/
+    lazy val bitsPerSample = md.get("NBITS").map(_.toInt)
+    /** To handle the [[ByteCellType]] it is possible to fetch information about the sampleFormat from the RasdterBand metadata. **/
+    lazy val signedByte = md.get("PIXELTYPE").contains("SIGNEDBYTE")
+    GDALUtils.dataTypeToCellType(datatype = dt, noDataValue = nd, typeSizeInBits = bitsPerSample, signedByte = signedByte)
   }
 
   def readTile(gb: GridBounds[Int] = GridBounds(dimensions), band: Int, datasetType: DatasetType = GDALDataset.WARPED): Tile = {

@@ -9,7 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Fix GeoTrellisRasterSources to properly pass time though all the internal functions [#3226](https://github.com/locationtech/geotrellis/pull/3226)
 - Move GDAL overview strategy logger to debug level [#3230](https://github.com/locationtech/geotrellis/pull/3230)
-- Fix S3RDDLayerReader partitioning [#3231](https://github.com/locationtech/geotrellis/pull/3231) 
+- Fix S3RDDLayerReader partitioning [#3231](https://github.com/locationtech/geotrellis/pull/3231)
+- GDALRasterSource works inconsistenly with BitCellType and ByteCellType [#3232](https://github.com/locationtech/geotrellis/issues/3232) 
 
 ## [3.3.0] - 2020-04-07
 

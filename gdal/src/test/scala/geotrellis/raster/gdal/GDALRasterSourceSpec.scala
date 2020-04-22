@@ -24,6 +24,7 @@ import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.raster.resample._
 import geotrellis.raster.testkit._
 import geotrellis.vector.Extent
+
 import org.scalatest._
 
 class GDALRasterSourceSpec extends FunSpec with RasterMatchers with GivenWhenThen {
@@ -114,11 +115,13 @@ class GDALRasterSourceSpec extends FunSpec with RasterMatchers with GivenWhenThe
     }
 
     describe("should derive the cellType consistently with GeoTiffRasterSource") {
-      val ext = Extent(0.0, 0.0, 3.0, 3.0)
-      val data = Array(
-        Byte.MinValue, 2, 3,
-        4, 5, 6,
-        7, 8, Byte.MaxValue * 2
+      val raster = Raster(
+        ArrayTile(Array(
+          1, 2, 3,
+          4, 5, 6,
+          7, 8, 9
+        ), 3, 3),
+        Extent(0.0, 0.0, 3.0, 3.0)
       )
 
       List(
@@ -147,21 +150,11 @@ class GDALRasterSourceSpec extends FunSpec with RasterMatchers with GivenWhenThe
       ) map { ct =>
         it(ct.getClass.getName.split("\\$").last.split("\\.").last) {
           val path = s"/tmp/gdal-$ct-test.tiff"
-          val raster = Raster(ArrayTile(data, 3, 3).convert(ct), ext)
-          GeoTiff(raster, LatLng).write(path)
+          val craster = raster.mapTile(_.convert(ct))
+          GeoTiff(craster, LatLng).write(path)
 
-          ct match {
-            case BitCellType =>
-              println("BitCellType requires a new GDALWarpBindings release")
-              // GDALRasterSource(path).cellType shouldBe UByteCellType
-              GeoTiffRasterSource(path).cellType shouldBe ct
-            case ByteCellType =>
-              GDALRasterSource(path).cellType shouldBe UByteCellType
-              GeoTiffRasterSource(path).cellType shouldBe ct
-            case _ =>
-              GDALRasterSource(path).cellType shouldBe ct
-              GeoTiffRasterSource(path).cellType shouldBe ct
-          }
+          GDALRasterSource(path).cellType shouldBe ct
+          GeoTiffRasterSource(path).cellType shouldBe ct
         }
       }
     }
