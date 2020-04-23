@@ -23,12 +23,10 @@ import org.apache.hadoop.fs.Path
 
 
 /**
- * This class extends [[RangeReader]] by reading chunks out of a GeoTiff on HDFS.
- *
- * @param request: A [[GetObjectRequest]] of the desired GeoTiff.
- * @param client: The [[S3Client]] that retrieves the data.
- * @return A new instance of S3RangeReader.
- */
+  * This class extends [[RangeReader]] by reading chunks out of a GeoTiff on HDFS.
+  * @param path [[Path]] to a file
+  * @param conf [[Configuration]]
+  */
 class HdfsRangeReader(
   path: Path,
   conf: Configuration

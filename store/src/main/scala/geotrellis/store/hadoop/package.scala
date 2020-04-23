@@ -19,7 +19,7 @@ package geotrellis.store
 import org.apache.hadoop.fs.Path
 
 package object hadoop extends Implicits {
-  final val SCHEMES: Array[String] = Array("hdfs", "hdfs+file", "s3n", "s3a", "wasb", "wasbs")
+  final val SCHEMES: Array[String] = Array("hdfs", "hdfs+file", "s3n", "s3a", "wasb", "wasbs", "gs")
 
   implicit def stringToPath(path: String): Path = new Path(path)
 }

@@ -62,7 +62,7 @@ case class GDALDataset(token: Long) extends AnyVal {
 
   def getMetadata(domain: GDALMetadataDomain, band: Int): Map[String, String] = getMetadata(GDALDataset.SOURCE, domain, band)
 
-  def  getMetadata(datasetType: DatasetType, domain: GDALMetadataDomain, band: Int): Map[String, String] = {
+  def getMetadata(datasetType: DatasetType, domain: GDALMetadataDomain, band: Int): Map[String, String] = {
     val arr = Array.ofDim[Byte](100, 1 << 10)
     val returnValue = GDALWarp.get_metadata(token, datasetType.value, numberOfAttempts, band, domain.name, arr)
 
