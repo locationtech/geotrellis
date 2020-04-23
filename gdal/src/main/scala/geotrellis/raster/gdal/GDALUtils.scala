@@ -28,38 +28,34 @@ object GDALUtils {
 
   def deriveResampleMethodString(method: ResampleMethod): String =
     method match {
-      case NearestNeighbor => "near"
-      case Bilinear => "bilinear"
+      case NearestNeighbor  => "near"
+      case Bilinear         => "bilinear"
       case CubicConvolution => "cubic"
-      case CubicSpline => "cubicspline"
-      case Lanczos => "lanczos"
-      case Average => "average"
-      case Mode => "mode"
-      case Max => "max"
-      case Min => "min"
-      case Median => "med"
-      case _ => throw new Exception(s"Could not find equivalent GDALResampleMethod for: $method")
+      case CubicSpline      => "cubicspline"
+      case Lanczos          => "lanczos"
+      case Average          => "average"
+      case Mode             => "mode"
+      case Max              => "max"
+      case Min              => "min"
+      case Median           => "med"
+      case _                => throw new Exception(s"Could not find equivalent GDALResampleMethod for: $method")
     }
 
-  def dataTypeToCellType(datatype: GDALDataType, noDataValue: Option[Double] = None, typeSizeInBits: => Option[Int] = None, minMaxValues: => Option[(Double, Double)] = None): CellType =
+  def dataTypeToCellType(datatype: GDALDataType, noDataValue: Option[Double] = None, typeSizeInBits: => Option[Int] = None, signedByte: => Boolean = false): CellType =
     datatype match {
       case TypeByte =>
         typeSizeInBits match {
           case Some(bits) if bits == 1 => BitCellType
           case _ =>
-            minMaxValues match {
-              case Some((mi, ma)) if (mi.toInt >= 0 && mi <= 255) && (ma.toInt >= 0 && ma <= 255) =>
-                noDataValue match {
-                  case Some(nd) if nd.toInt > 0 && nd <= 255 => UByteUserDefinedNoDataCellType(nd.toByte)
-                  case Some(nd) if nd.toInt == 0 => UByteConstantNoDataCellType
-                  case _ => UByteCellType
-                }
-              case _ =>
-                noDataValue match {
-                  case Some(nd) if nd.toInt > Byte.MinValue.toInt && nd <= Byte.MaxValue.toInt => ByteUserDefinedNoDataCellType(nd.toByte)
-                  case Some(nd) if nd.toInt == Byte.MinValue.toInt => ByteConstantNoDataCellType
-                  case _ => ByteCellType
-                }
+            if(!signedByte) noDataValue match {
+              case Some(nd) if nd.toInt > 0 && nd <= 255 => UByteUserDefinedNoDataCellType(nd.toByte)
+              case Some(nd) if nd.toInt == 0 => UByteConstantNoDataCellType
+              case _ => UByteCellType
+            }
+            else noDataValue match {
+              case Some(nd) if nd.toInt > Byte.MinValue.toInt && nd <= Byte.MaxValue.toInt => ByteUserDefinedNoDataCellType(nd.toByte)
+              case Some(nd) if nd.toInt == Byte.MinValue.toInt => ByteConstantNoDataCellType
+              case _ => ByteCellType
             }
         }
       case TypeUInt16 =>
@@ -76,8 +72,8 @@ object GDALUtils {
         }
       case TypeUInt32 =>
         noDataValue match {
-          case Some(nd) if nd.toLong > 0l && nd.toLong <= 4294967295l => FloatUserDefinedNoDataCellType(nd.toFloat)
-          case Some(nd) if nd.toLong == 0l => FloatConstantNoDataCellType
+          case Some(nd) if nd.toLong > 0L && nd.toLong <= 4294967295L => FloatUserDefinedNoDataCellType(nd.toFloat)
+          case Some(nd) if nd.toLong == 0L => FloatConstantNoDataCellType
           case _ => FloatCellType
         }
       case TypeInt32 =>
@@ -89,13 +85,13 @@ object GDALUtils {
       case TypeFloat32 =>
         noDataValue match {
           case Some(nd) if isData(nd) && Float.MinValue.toDouble <= nd && Float.MaxValue.toDouble >= nd => FloatUserDefinedNoDataCellType(nd.toFloat)
-          case Some(nd) => FloatConstantNoDataCellType
+          case Some(_) => FloatConstantNoDataCellType
           case _ => FloatCellType
         }
       case TypeFloat64 =>
         noDataValue match {
           case Some(nd) if isData(nd) => DoubleUserDefinedNoDataCellType(nd)
-          case Some(nd) => DoubleConstantNoDataCellType
+          case Some(_) => DoubleConstantNoDataCellType
           case _ => DoubleCellType
         }
       case UnknownType =>
@@ -105,7 +101,7 @@ object GDALUtils {
     }
 
   def deriveOverviewStrategyString(strategy: OverviewStrategy): String = strategy match {
-    case Auto(n) if (n == 0) => "AUTO"
+    case Auto(n) if n == 0 => "AUTO"
     case Auto(n) => s"AUTO-$n"
     case Level(level) => s"$level"
     case Base => "NONE"

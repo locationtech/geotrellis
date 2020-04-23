@@ -16,11 +16,14 @@
 
 package geotrellis.raster.gdal
 
+import geotrellis.proj4.LatLng
 import geotrellis.raster.geotiff.GeoTiffRasterSource
 import geotrellis.raster._
+import geotrellis.raster.io.geotiff.GeoTiff
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.raster.resample._
 import geotrellis.raster.testkit._
+import geotrellis.vector.Extent
 
 import org.scalatest._
 
@@ -109,6 +112,51 @@ class GDALRasterSourceSpec extends FunSpec with RasterMatchers with GivenWhenThe
     it("should read the same metadata as GeoTiffRasterSource") {
       lazy val tsource = GeoTiffRasterSource(uri)
       source.metadata.attributes.mapValues(_.toUpperCase) shouldBe tsource.metadata.attributes.mapValues(_.toUpperCase)
+    }
+
+    describe("should derive the cellType consistently with GeoTiffRasterSource") {
+      val raster = Raster(
+        ArrayTile(Array(
+          1, 2, 3,
+          4, 5, 6,
+          7, 8, 9
+        ), 3, 3),
+        Extent(0.0, 0.0, 3.0, 3.0)
+      )
+
+      List(
+        BitCellType,
+        ByteCellType,
+        ByteConstantNoDataCellType,
+        ByteUserDefinedNoDataCellType((Byte.MinValue + 1).toByte),
+        UByteCellType,
+        UByteConstantNoDataCellType,
+        UByteUserDefinedNoDataCellType(1),
+        ShortCellType,
+        ShortConstantNoDataCellType,
+        ShortUserDefinedNoDataCellType((Short.MinValue + 1).toShort),
+        UShortCellType,
+        UShortConstantNoDataCellType,
+        UShortUserDefinedNoDataCellType(1),
+        IntCellType,
+        IntConstantNoDataCellType,
+        IntUserDefinedNoDataCellType(Int.MinValue + 1),
+        FloatCellType,
+        FloatConstantNoDataCellType,
+        FloatUserDefinedNoDataCellType(Float.MinValue + 1),
+        DoubleCellType,
+        DoubleConstantNoDataCellType,
+        DoubleUserDefinedNoDataCellType(Double.MinValue + 1)
+      ) map { ct =>
+        it(ct.getClass.getName.split("\\$").last.split("\\.").last) {
+          val path = s"/tmp/gdal-$ct-test.tiff"
+          val craster = raster.mapTile(_.convert(ct))
+          GeoTiff(craster, LatLng).write(path)
+
+          GDALRasterSource(path).cellType shouldBe ct
+          GeoTiffRasterSource(path).cellType shouldBe ct
+        }
+      }
     }
   }
 }

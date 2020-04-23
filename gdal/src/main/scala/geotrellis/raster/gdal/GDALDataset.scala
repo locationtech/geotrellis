@@ -62,7 +62,7 @@ case class GDALDataset(token: Long) extends AnyVal {
 
   def getMetadata(domain: GDALMetadataDomain, band: Int): Map[String, String] = getMetadata(GDALDataset.SOURCE, domain, band)
 
-  def getMetadata(datasetType: DatasetType, domain: GDALMetadataDomain, band: Int): Map[String, String] = {
+  def  getMetadata(datasetType: DatasetType, domain: GDALMetadataDomain, band: Int): Map[String, String] = {
     val arr = Array.ofDim[Byte](100, 1 << 10)
     val returnValue = GDALWarp.get_metadata(token, datasetType.value, numberOfAttempts, band, domain.name, arr)
 
@@ -288,24 +288,13 @@ case class GDALDataset(token: Long) extends AnyVal {
     require(acceptableDatasets contains datasetType)
     val nd = noDataValue(datasetType)
     val dt = GDALDataType.intToGDALDataType(this.dataType(datasetType))
-    // This is declared lazy to avoid eval if the by-name param in GDALUtils.dataTypeToCellType is not needed
-    lazy val mm = {
-      val minmax = Array.ofDim[Double](2)
-      val success = Array.ofDim[Int](1)
-
-      val returnValue = GDALWarp.get_band_min_max(token, datasetType.value, numberOfAttempts, 1, true, minmax, success)
-
-      if (returnValue <= 0) {
-        val positiveValue = math.abs(returnValue)
-        throw new MalformedDataTypeException(
-          s"Unable to deterime the min/max values in order to calculate CellType. GDAL Error Code: $positiveValue",
-          positiveValue
-        )
-      }
-      if (success(0) != 0) Some(minmax(0), minmax(1))
-      else None
-    }
-    GDALUtils.dataTypeToCellType(datatype = dt, noDataValue = nd, minMaxValues = mm)
+    /** The necessary metadata about the [[CellType]] is available only on the RasterBand metadata level, that is why band = 1 here. */
+    lazy val md = this.getMetadata(ImageStructureDomain, 1)
+    /** To handle the [[BitCellType]] it is possible to fetch NBITS information from the RasterBand metadata, **/
+    lazy val bitsPerSample = md.get("NBITS").map(_.toInt)
+    /** To handle the [[ByteCellType]] it is possible to fetch information about the sampleFormat from the RasterBand metadata. **/
+    lazy val signedByte = md.get("PIXELTYPE").contains("SIGNEDBYTE")
+    GDALUtils.dataTypeToCellType(datatype = dt, noDataValue = nd, typeSizeInBits = bitsPerSample, signedByte = signedByte)
   }
 
   def readTile(gb: GridBounds[Int] = GridBounds(dimensions), band: Int, datasetType: DatasetType = GDALDataset.WARPED): Tile = {
