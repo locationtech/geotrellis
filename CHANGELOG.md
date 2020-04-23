@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Add GS in the list of supported URI schemes [#3235](https://github.com/locationtech/geotrellis/pull/3235)
+
 ### Changed
 - Fix GeoTrellisRasterSources to properly pass time though all the internal functions [#3226](https://github.com/locationtech/geotrellis/pull/3226)
 - Move GDAL overview strategy logger to debug level [#3230](https://github.com/locationtech/geotrellis/pull/3230)
