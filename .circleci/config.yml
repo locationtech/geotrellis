@@ -35,7 +35,7 @@ jobs:
             export SCALA_VERSION=<< parameters.scala-version >>
             export RUN_SET=<< parameters.test-set >>
             cd raster/data; unzip geotiff-test-files.zip; cd ~-
-            .travis/build-and-test.sh
+            .circleci/build-and-test.sh
       - save_cache:
           key: sbt-cache
           paths:
