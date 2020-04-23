@@ -1,0 +1,61 @@
+version: 2.1
+executors:
+  gdal-build-executor:
+    docker:
+      - image: jamesmcclain/gdal-build-environment:4
+    working_directory: /workdir
+
+  java-executor:
+    docker:
+      - image: circleci/openjdk:8u232-jdk
+      - image: cassandra:latest
+        environment:
+          MAX_HEAP_SIZE: 500m
+          HEAP_NEWSIZE: 100m
+
+jobs:
+  test-java:
+    parameters:
+      scala-version:
+        type: string
+      test-set:
+        type: string
+    executor: java-executor
+    steps:
+      - setup_remote_docker
+      - checkout
+      - restore_cache:
+          key: sbt-cache
+      - run:
+          name: NGINX
+          command: docker run -d --restart=always -p 8081:80 -v $(pwd)/spark/src/test/resources:/usr/share/nginx/html:ro nginx:stable
+      - run:
+          name: MINIO
+          command: docker run -d --restart=always -p 9091:9000 -e MINIO_ACCESS_KEY=minio -e MINIO_SECRET_KEY=password minio/minio:RELEASE.2019-05-02T19-07-09Z server /data
+      - run:
+          name: Test
+          command: |
+            export SCALA_VERSION=<< parameters.scala-version >>
+            export RUN_SET=<< parameters.test-set >>
+            .travis/build-and-test.sh
+      - save_cache:
+          key: sbt-cache
+          paths:
+            - "~/.ivy2/cache"
+            - "~/.couriser/cache"
+            - "~/.sbt"
+            - "~/.m2"
+
+workflows:
+  test-publish:
+    jobs:
+      - test-java:
+          matrix:
+            parameters:
+              scala-version: ["2.11.12", "2.12.10"]
+              test-set: ["1", "2", "3", "scaladoc"]
+          filters:
+            branches:
+              only: /.*/
+            tags:
+              only: /^v.*/
