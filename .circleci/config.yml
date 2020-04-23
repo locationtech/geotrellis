@@ -8,10 +8,13 @@ executors:
   java-executor:
     docker:
       - image: circleci/openjdk:8u232-jdk
-      - image: cassandra:latest
-        environment:
-          MAX_HEAP_SIZE: 500m
-          HEAP_NEWSIZE: 100m
+      # - image: cassandra:latest
+      #   environment:
+      #     MAX_HEAP_SIZE: 500m
+      #     HEAP_NEWSIZE: 100m
+
+        # // docker run -d --restart=always -p 8081:80 -v $(pwd)/spark/src/test/resources:/usr/share/nginx/html:ro nginx:stable
+        # // docker run -d --restart=always -p 9091:9000 -e MINIO_ACCESS_KEY=minio -e MINIO_SECRET_KEY=password minio/minio:RELEASE.2019-05-02T19-07-09Z server /data
 
 jobs:
   test-java:
@@ -29,10 +32,9 @@ jobs:
       - run:
           name: Test
           command: |
-            docker run -d --restart=always -p 8081:80 -v $(pwd)/spark/src/test/resources:/usr/share/nginx/html:ro nginx:stable
-            docker run -d --restart=always -p 9091:9000 -e MINIO_ACCESS_KEY=minio -e MINIO_SECRET_KEY=password minio/minio:RELEASE.2019-05-02T19-07-09Z server /data
             export SCALA_VERSION=<< parameters.scala-version >>
             export RUN_SET=<< parameters.test-set >>
+            cd raster/data; unzip geotiff-test-files.zip; cd ~-
             .travis/build-and-test.sh
       - save_cache:
           key: sbt-cache
