@@ -683,7 +683,7 @@ class PolygonRasterizerSpec extends FunSuite
     Rasterizer.rasterizeWithValue(polygon, rasterExtent, 1)
   }
 
-  test("Should throw clear exception for invalid UTM 29N polygon") {
+  ignore("Should throw clear exception for invalid UTM 29N polygon") {
     // This test constructs an invalid polygon. This comes from a user polygon that was not
     // known to be invalid, but threw a cryptic error message.
 
