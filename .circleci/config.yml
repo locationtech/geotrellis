@@ -18,11 +18,13 @@ executors:
 jobs:
   java:
     parameters:
+      executor-type:
+        type: executor
       scala-version:
         type: string
       test-set:
         type: string
-    executor: java-executor-gdal
+    executor: << parameters.executor-type >>
     steps:
       - checkout
       - restore_cache:
@@ -48,6 +50,7 @@ workflows:
       - java:
           matrix:
             parameters:
+              executor-type: [java-executor-gdal]
               scala-version: ["2.11.12", "2.12.10"]
               test-set: ["1", "2", "3"]
           filters:
