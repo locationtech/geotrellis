@@ -49,6 +49,7 @@ jobs:
           key: sbt-cache
       - run:
           name: Test
+          no-output-timeout: 30m
           command: |
             # docker run -d --restart=always -p 8081:80 -v $(pwd)/spark/src/test/resources:/usr/share/nginx/html:ro nginx:stable
             export SCALA_VERSION=<< parameters.scala-version >>
@@ -73,7 +74,7 @@ jobs:
       - restore_cache:
           key: sbt-cache
       - run:
-          name: Test Cassnadra
+          name: Test Cassandra
           command: |
             export SCALA_VERSION=<< parameters.scala-version >>
             cd raster/data; unzip geotiff-test-files.zip; cd ~-
