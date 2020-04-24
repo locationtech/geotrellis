@@ -8,4 +8,9 @@
   "project doc-examples" compile \
   "project vector" test \
   "project vectortile" test \
-  "project util" test  || { exit 1; }
+  "project util" test \
+  "project gdal" test:compile \
+  "project hbase" test:compile \
+  "project hbase-spark" test:compile \
+  "project cassandra" test:compile \
+  "project cassandra-spark" test:compile || { exit 1; }
