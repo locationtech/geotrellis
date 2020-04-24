@@ -8,8 +8,8 @@
   "project store" test \
   "project vector" test \
   "project vectortile" test \
-  "project gdal" test:compile \
+  "project gdal" test \
   "project hbase" test:compile \
   "project hbase-spark" test:compile \
-  "project cassandra" test:compile \
-  "project cassandra-spark" test:compile || { exit 1; }
+  "project cassandra" test \
+  "project cassandra-spark" test || { exit 1; }
