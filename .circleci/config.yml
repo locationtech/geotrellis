@@ -1,12 +1,30 @@
 version: 2.1
 executors:
-  gdal-executor:
+  java-executor-gdal:
     docker:
       - image: quay.io/azavea/openjdk-gdal:2.4-jdk8-slim
 
   java-executor:
     docker:
       - image: circleci/openjdk:8u232-jdk
+
+  java-executor-s3:
+    docker:
+      - image: circleci/openjdk:8u232-jdk
+      - image: minio/minio:RELEASE.2019-05-02T19-07-09Z
+        environment:
+          MINIO_ACCESS_KEY: minio
+          MINIO_SECRET_KEY: password
+        command: server --address :9091 /data
+
+  java-executor-cassandra:
+    docker:
+      - image: circleci/openjdk:8u232-jdk
+      - image: cassandra:latest
+        environment:
+          MAX_HEAP_SIZE: 500M
+          HEAP_NEWSIZE: 100M
+          CASSANDRA_LISTEN_ADDRESS: 127.0.0.1
 
 jobs:
   java:
@@ -41,7 +59,7 @@ jobs:
     parameters:
       scala-version:
         type: string
-    executor: java-executor
+    executor: java-executor-cassandra
     steps:
       - setup_remote_docker
       - checkout
@@ -50,7 +68,6 @@ jobs:
       - run:
           name: Test Cassnadra
           command: |
-            docker run -d --restart=always --net=host -m 1G --memory-swap -1 --env="MAX_HEAP_SIZE=500M" --env="HEAP_NEWSIZE=100M" --env="CASSANDRA_LISTEN_ADDRESS=127.0.0.1" cassandra:latest
             export SCALA_VERSION=<< parameters.scala-version >>
             cd raster/data; unzip geotiff-test-files.zip; cd ~-
             ./sbt -Dsbt.supershell=false "++$SCALA_VERSION" \
@@ -68,7 +85,7 @@ jobs:
     parameters:
       scala-version:
         type: string
-    executor: java-executor
+    executor: java-executor-s3
     steps:
       - setup_remote_docker
       - checkout
@@ -121,7 +138,7 @@ jobs:
     parameters:
       scala-version:
         type: string
-    executor: gdal-executor
+    executor: java-executor-gdal
     steps:
       - setup_remote_docker
       - checkout
