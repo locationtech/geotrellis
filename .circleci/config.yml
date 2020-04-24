@@ -84,14 +84,12 @@ jobs:
         type: string
     executor: java-executor-s3
     steps:
-      - setup_remote_docker
       - checkout
       - restore_cache:
           key: sbt-cache
       - run:
           name: Test S3
           command: |
-            docker run -d --restart=always -p 9091:9000 -e MINIO_ACCESS_KEY=minio -e MINIO_SECRET_KEY=password minio/minio:RELEASE.2019-05-02T19-07-09Z server /data
             export SCALA_VERSION=<< parameters.scala-version >>
             cd raster/data; unzip geotiff-test-files.zip; cd ~-
             ./sbt -Dsbt.supershell=false "++$SCALA_VERSION" \
