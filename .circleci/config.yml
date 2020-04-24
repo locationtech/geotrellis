@@ -24,7 +24,7 @@ executors:
       - image: cassandra:latest
         environment:
           _JAVA_OPTIONS: "-Xms1m -Xmx512m"
-          MAX_HEAP_SIZE: 500m
+          MAX_HEAP_SIZE: 512m
           HEAP_NEWSIZE: 100m
           CASSANDRA_LISTEN_ADDRESS: 127.0.0.1
 
