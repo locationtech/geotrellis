@@ -3,44 +3,125 @@ executors:
   java-executor-gdal:
     docker:
       - image: quay.io/azavea/openjdk-gdal:2.4-jdk8-slim
+
+  java-executor-s3:
+    docker:
+      - image: quay.io/azavea/openjdk-gdal:2.4-jdk8-slim
       - image: minio/minio:RELEASE.2019-05-02T19-07-09Z
         environment:
           _JAVA_OPTIONS: "-Xms1m -Xmx512m"
           MINIO_ACCESS_KEY: minio
           MINIO_SECRET_KEY: password
         command: server --address :9091 /data
+
+  java-executor-cassandra:
+    docker:
+      - image: quay.io/azavea/openjdk-gdal:2.4-jdk8-slim
+        environment:
       - image: cassandra:latest
         environment:
           _JAVA_OPTIONS: "-Xms1m -Xmx512m"
           MAX_HEAP_SIZE: 512m
-          HEAP_NEWSIZE: 100m
+          HEAP_NEWSIZE: 1m
           CASSANDRA_LISTEN_ADDRESS: 127.0.0.1
-
-  java-executor-gdal-empty:
-    docker:
-      - image: quay.io/azavea/openjdk-gdal:2.4-jdk8-slim
-
 jobs:
   java:
     parameters:
-      executor-type:
-        type: executor
       scala-version:
         type: string
       test-set:
         type: string
-    executor: << parameters.executor-type >>
+    executor: java-executor-gdal
     steps:
+      - setup_remote_docker
       - checkout
       - restore_cache:
           key: sbt-cache
       - run:
           name: Test
           command: |
+            # docker run -d --restart=always -p 8081:80 -v $(pwd)/spark/src/test/resources:/usr/share/nginx/html:ro nginx:stable
             export SCALA_VERSION=<< parameters.scala-version >>
             export RUN_SET=<< parameters.test-set >>
             cd raster/data; unzip geotiff-test-files.zip; cd ~-
             .circleci/build-and-test.sh
+      - save_cache:
+          key: sbt-cache
+          paths:
+            - "~/.ivy2/cache"
+            - "~/.couriser/cache"
+            - "~/.sbt"
+            - "~/.m2"
+
+  cassandra:
+    parameters:
+      scala-version:
+        type: string
+    executor: java-executor-cassandra
+    steps:
+      - checkout
+      - restore_cache:
+          key: sbt-cache
+      - run:
+          name: Test Cassnadra
+          command: |
+            export SCALA_VERSION=<< parameters.scala-version >>
+            cd raster/data; unzip geotiff-test-files.zip; cd ~-
+            ./sbt -Dsbt.supershell=false "++$SCALA_VERSION" \
+            "project cassandra" test \
+            "project cassandra-spark" test
+      - save_cache:
+          key: sbt-cache
+          paths:
+            - "~/.ivy2/cache"
+            - "~/.couriser/cache"
+            - "~/.sbt"
+            - "~/.m2"
+
+  s3:
+    parameters:
+      scala-version:
+        type: string
+    executor: java-executor-s3
+    steps:
+      - setup_remote_docker
+      - checkout
+      - restore_cache:
+          key: sbt-cache
+      - run:
+          name: Test S3
+          command: |
+            docker run -d --restart=always -p 9091:9000 -e MINIO_ACCESS_KEY=minio -e MINIO_SECRET_KEY=password minio/minio:RELEASE.2019-05-02T19-07-09Z server /data
+            export SCALA_VERSION=<< parameters.scala-version >>
+            cd raster/data; unzip geotiff-test-files.zip; cd ~-
+            ./sbt -Dsbt.supershell=false "++$SCALA_VERSION" \
+            "project s3" test \
+            "project s3-spark" test
+      - save_cache:
+          key: sbt-cache
+          paths:
+            - "~/.ivy2/cache"
+            - "~/.couriser/cache"
+            - "~/.sbt"
+            - "~/.m2"
+
+  hbase:
+    parameters:
+      scala-version:
+        type: string
+    executor: java-executor-gdal
+    steps:
+      - checkout
+      - restore_cache:
+          key: sbt-cache
+      - run:
+          name: Test HBase
+          command: |
+            export SCALA_VERSION=<< parameters.scala-version >>
+            cd raster/data; unzip geotiff-test-files.zip; cd ~-
+            ./sbt -Dsbt.supershell=false "++$SCALA_VERSION" \
+            "project hbase" test:compile \
+            "project hbase-spark" test:compile
       - save_cache:
           key: sbt-cache
           paths:
@@ -55,20 +136,35 @@ workflows:
       - java:
           matrix:
             parameters:
-              executor-type: [java-executor-gdal]
               scala-version: ["2.11.12", "2.12.10"]
-              test-set: ["1", "2"]
+              test-set: ["1", "2", "3"]
           filters:
             branches:
               only: /.*/
             tags:
               only: /^v.*/
-      - java:
+      - cassandra:
           matrix:
             parameters:
-              executor-type: [java-executor-gdal-empty]
               scala-version: ["2.11.12", "2.12.10"]
-              test-set: ["3"]
+          filters:
+            branches:
+              only: /.*/
+            tags:
+              only: /^v.*/
+      - s3:
+          matrix:
+            parameters:
+              scala-version: ["2.11.12", "2.12.10"]
+          filters:
+            branches:
+              only: /.*/
+            tags:
+              only: /^v.*/
+      - hbase:
+          matrix:
+            parameters:
+              scala-version: ["2.11.12", "2.12.10"]
           filters:
             branches:
               only: /.*/
