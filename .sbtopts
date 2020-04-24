@@ -1,7 +1,6 @@
--J-Xmx1536m
--J-Xms256m
+-J-Xmx1g
+-J-Xms128m
 -J-Xss2M
--J-XX:MaxMetaspaceSize=1536m
 -J-XX:+CMSClassUnloadingEnabled
 -Dfile.encoding=UTF8
 -Djava.awt.headless=true
