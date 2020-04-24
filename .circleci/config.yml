@@ -15,6 +15,11 @@ executors:
           MAX_HEAP_SIZE: 512m
           HEAP_NEWSIZE: 100m
           CASSANDRA_LISTEN_ADDRESS: 127.0.0.1
+
+  java-executor-gdal-empty:
+    docker:
+      - image: quay.io/azavea/openjdk-gdal:2.4-jdk8-slim
+
 jobs:
   java:
     parameters:
@@ -52,7 +57,18 @@ workflows:
             parameters:
               executor-type: [java-executor-gdal]
               scala-version: ["2.11.12", "2.12.10"]
-              test-set: ["1", "2", "3"]
+              test-set: ["1", "2"]
+          filters:
+            branches:
+              only: /.*/
+            tags:
+              only: /^v.*/
+      - java:
+          matrix:
+            parameters:
+              executor-type: [java-executor-gdal-empty]
+              scala-version: ["2.11.12", "2.12.10"]
+              test-set: ["3"]
           filters:
             branches:
               only: /.*/
