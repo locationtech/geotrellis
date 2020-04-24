@@ -20,10 +20,12 @@ executors:
   java-executor-cassandra:
     docker:
       - image: circleci/openjdk:8u232-jdk
+        environment:
       - image: cassandra:latest
         environment:
-          MAX_HEAP_SIZE: 500M
-          HEAP_NEWSIZE: 100M
+          _JAVA_OPTIONS: "-Xms1m -Xmx512m"
+          MAX_HEAP_SIZE: 500m
+          HEAP_NEWSIZE: 100m
           CASSANDRA_LISTEN_ADDRESS: 127.0.0.1
 
 jobs:
