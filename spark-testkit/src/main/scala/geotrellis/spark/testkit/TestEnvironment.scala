@@ -75,6 +75,7 @@ trait TestEnvironment extends BeforeAndAfterAll
       .setMaster(sparkMaster)
       .setAppName("Test Context")
       .set("spark.default.parallelism", "4")
+      .set("spark.driver.memory", "1536m")
 
     // Shortcut out of using Kryo serialization if we want to test against
     // java serialization.
