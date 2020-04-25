@@ -4,7 +4,7 @@ executors:
     docker:
       - image: quay.io/azavea/openjdk-gdal:2.4-jdk8-slim
         environment:
-          _JAVA_OPTIONS: "-Xms1m -Xmx1536m"
+          _JAVA_OPTIONS: "-Xms128m -Xmx2g"
 
   executor-s3:
     docker:
