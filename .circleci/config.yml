@@ -141,6 +141,30 @@ jobs:
             - "~/.sbt"
             - "~/.m2"
 
+  gdal-spark:
+    parameters:
+      scala-version:
+        type: string
+    executor: executor-gdal
+    steps:
+      - checkout
+      - restore_cache:
+          key: sbt-cache
+      - run:
+          name: Test GDAL Spark
+          command: |
+            export SCALA_VERSION=<< parameters.scala-version >>
+            cd raster/data; unzip geotiff-test-files.zip; cd ~-
+            ./sbt -Dsbt.supershell=false "++$SCALA_VERSION" \
+            "project gdal-spark" test
+      - save_cache:
+          key: sbt-cache
+          paths:
+            - "~/.ivy2/cache"
+            - "~/.couriser/cache"
+            - "~/.sbt"
+            - "~/.m2"
+
 workflows:
   test-publish:
     jobs:
@@ -173,6 +197,15 @@ workflows:
             tags:
               only: /^v.*/
       - hbase:
+          matrix:
+            parameters:
+              scala-version: ["2.11.12", "2.12.10"]
+          filters:
+            branches:
+              only: /.*/
+            tags:
+              only: /^v.*/
+      - gdal-spark:
           matrix:
             parameters:
               scala-version: ["2.11.12", "2.12.10"]

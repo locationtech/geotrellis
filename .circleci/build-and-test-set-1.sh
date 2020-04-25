@@ -9,5 +9,4 @@
   "project vector" test \
   "project vectortile" test \
   "project util" test \
-  "project gdal" test \
-  "project gdal-spark" test || { exit 1; }
+  "project gdal" test || { exit 1; }
