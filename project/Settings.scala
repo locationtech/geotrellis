@@ -264,7 +264,7 @@ object Settings {
   lazy val geotools = Seq(
     name := "geotrellis-geotools",
     libraryDependencies ++= Seq(
-      jaiCore,
+      jaiCore % Compile,
       jts,
       spire,
       geotoolsCoverage exclude("javax.media", "jai_core"),
