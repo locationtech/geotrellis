@@ -2,5 +2,6 @@
 
 ./sbt -Dsbt.supershell=false "++$SCALA_VERSION" \
   "project spark" test \
-  "project gdal-spark" test \
-  "project spark-pipeline" test || { exit 1; }
+  "project spark-pipeline" test && \
+./sbt -Dsbt.supershell=false "++$SCALA_VERSION" \
+  "project gdal-spark" test || { exit 1; }
