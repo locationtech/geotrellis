@@ -35,7 +35,7 @@ executors:
       - image: quay.io/azavea/openjdk-gdal:2.4-jdk8-slim
         environment:
           _JAVA_OPTIONS: "-Xms128m -Xmx1792m"
-      - image: dajobe/hbase:latest
+      - image: daunnc/hbase:latest
         environment:
           _JAVA_OPTIONS: "-Xms1m -Xmx512m"
           HBASE_DOCKER_HOSTNAME: localhost
@@ -209,12 +209,12 @@ workflows:
               only: /.*/
             tags:
               only: /^v.*/
-      - gdal-spark:
-          matrix:
-            parameters:
-              scala-version: ["2.11.12", "2.12.10"]
-          filters:
-            branches:
-              only: /.*/
-            tags:
-              only: /^v.*/
+      #- gdal-spark:
+      #    matrix:
+      #      parameters:
+      #        scala-version: ["2.11.12", "2.12.10"]
+      #    filters:
+      #      branches:
+      #        only: /.*/
+      #      tags:
+      #        only: /^v.*/
