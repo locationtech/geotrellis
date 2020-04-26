@@ -264,16 +264,16 @@ object Settings {
   lazy val geotools = Seq(
     name := "geotrellis-geotools",
     libraryDependencies ++= Seq(
-      geotoolsCoverage,
-      geotoolsHsql,
-      geotoolsMain,
-      geotoolsReferencing,
+      jaiCore,
       jts,
       spire,
-      geotoolsGeoTiff % Test,
-      geotoolsShapefile % Test,
-      scalatest % Test,
-      jaiCore % Test
+      geotoolsCoverage exclude("javax.media", "jai_core"),
+      geotoolsHsql exclude("javax.media", "jai_core"),
+      geotoolsMain exclude("javax.media", "jai_core"),
+      geotoolsReferencing exclude("javax.media", "jai_core"),
+      geotoolsGeoTiff % Test exclude("javax.media", "jai_core"),
+      geotoolsShapefile % Test exclude("javax.media", "jai_core"),
+      scalatest % Test
     ),
     externalResolvers += Settings.Repositories.osgeoReleases,
     console / initialCommands :=
