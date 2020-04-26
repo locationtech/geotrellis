@@ -264,7 +264,7 @@ object Settings {
   lazy val geotools = Seq(
     name := "geotrellis-geotools",
     libraryDependencies ++= Seq(
-      jaiCore % Compile,
+      jaiCore,
       jts,
       spire,
       geotoolsCoverage exclude("javax.media", "jai_core"),
@@ -546,8 +546,8 @@ object Settings {
   lazy val shapefile = Seq(
     name := "geotrellis-shapefile",
     libraryDependencies ++= Seq(
-      geotoolsShapefile,
-      jaiCore
+      jaiCore,
+      geotoolsShapefile exclude("javax.media", "jai_core")
     ),
     resolvers += Repositories.osgeoReleases,
     Test / fork := false
