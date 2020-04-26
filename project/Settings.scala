@@ -267,14 +267,15 @@ object Settings {
       jaiCore,
       jts,
       spire,
-      geotoolsCoverage exclude("javax.media", "jai_core"),
-      geotoolsHsql exclude("javax.media", "jai_core"),
-      geotoolsMain exclude("javax.media", "jai_core"),
-      geotoolsReferencing exclude("javax.media", "jai_core"),
-      geotoolsGeoTiff % Test exclude("javax.media", "jai_core"),
-      geotoolsShapefile % Test exclude("javax.media", "jai_core"),
       scalatest % Test
-    ),
+    ) ++ Seq(
+      geotoolsCoverage,
+      geotoolsHsql,
+      geotoolsMain,
+      geotoolsReferencing,
+      geotoolsGeoTiff % Test,
+      geotoolsShapefile % Test
+    ).map(_ exclude("javax.media", "jai_core")),
     externalResolvers += Settings.Repositories.osgeoReleases,
     console / initialCommands :=
       """
