@@ -8,4 +8,7 @@
   "project store" test \
   "project vector" test \
   "project vectortile" test \
-  "project gdal" test || { exit 1; }
+  "project gdal" test \
+  "project raster" test \
+  "project accumulo" test \
+  "project accumulo-spark" test || { exit 1; }
