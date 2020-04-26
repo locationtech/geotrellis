@@ -9,6 +9,8 @@ executors:
   executor-s3:
     docker:
       - image: quay.io/azavea/openjdk-gdal:2.4-jdk8-slim
+        environment:
+          _JAVA_OPTIONS: "-Xms128m -Xmx1792m"
       - image: minio/minio:RELEASE.2019-05-02T19-07-09Z
         environment:
           _JAVA_OPTIONS: "-Xms1m -Xmx512m"
@@ -20,6 +22,7 @@ executors:
     docker:
       - image: quay.io/azavea/openjdk-gdal:2.4-jdk8-slim
         environment:
+          _JAVA_OPTIONS: "-Xms128m -Xmx1792m"
       - image: cassandra:latest
         environment:
           _JAVA_OPTIONS: "-Xms1m -Xmx512m"
@@ -31,6 +34,7 @@ executors:
     docker:
       - image: quay.io/azavea/openjdk-gdal:2.4-jdk8-slim
         environment:
+          _JAVA_OPTIONS: "-Xms128m -Xmx1792m"
       - image: dajobe/hbase:latest
         environment:
           _JAVA_OPTIONS: "-Xms1m -Xmx512m"
