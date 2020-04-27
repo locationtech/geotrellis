@@ -5,6 +5,7 @@
   "project geotools" test \
   "project shapefile" test \
   "project layer" test \
+  "project store" test \
   "project doc-examples" compile \
   "project vector" test \
   "project vectortile" test \
