@@ -59,14 +59,15 @@ object Rasterizer {
     * @param rasterExtent  Definition of raster to create
     * @param value         Single value to burn
     */
-  def rasterizeWithValue(geom: Geometry, rasterExtent: RasterExtent, value: Int): Tile = {
-    val cols = rasterExtent.cols
-    val array = Array.ofDim[Int](rasterExtent.cols * rasterExtent.rows).fill(NODATA)
-    val f2 = (col: Int, row: Int) =>
-          array(row * cols + col) = value
-    foreachCellByGeometry(geom, rasterExtent)(f2)
-    ArrayTile(array, rasterExtent.cols, rasterExtent.rows)
-  }
+  def rasterizeWithValue(geom: Geometry, rasterExtent: RasterExtent, value: Int): Tile =
+    if(!geom.isValid) throw new IllegalArgumentException("Cannot rasterize an invalid polygon")
+    else {
+      val cols = rasterExtent.cols
+      val array = Array.ofDim[Int](rasterExtent.cols * rasterExtent.rows).fill(NODATA)
+      val f2 = (col: Int, row: Int) => array(row * cols + col) = value
+      foreachCellByGeometry(geom, rasterExtent)(f2)
+      ArrayTile(array, rasterExtent.cols, rasterExtent.rows)
+    }
 
   /**
     * Create a raster from a geometry feature.

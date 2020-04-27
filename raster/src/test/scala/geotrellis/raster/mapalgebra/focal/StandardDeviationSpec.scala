@@ -19,9 +19,7 @@ package geotrellis.raster.mapalgebra.focal
 import geotrellis.raster._
 import org.scalatest._
 
-class StandardDeviationSpec extends FunSpec with FocalOpSpec
-                                            with Matchers {
-
+class StandardDeviationSpec extends FunSpec with FocalOpSpec with Matchers {
   val getCircleStdResult = (getDoubleCursorResult _).curried(
     (r,n) => StandardDeviation.calculation(r,n)
   )(Circle(1))
@@ -32,12 +30,12 @@ class StandardDeviationSpec extends FunSpec with FocalOpSpec
 
   def mean(xs: List[Int]): Double = xs match {
     case Nil => Double.NaN
-    case ys => ys.reduceLeft(_ + _) / ys.size.toDouble
+    case ys => ys.sum / ys.size.toDouble
   }
                                               
   def stddev(xs: List[Int], avg: Double): Double = xs match {
     case Nil => Double.NaN
-    case ys => math.sqrt((0.0 /: ys) {
+    case ys => math.sqrt(ys.foldLeft(0.0) {
       (a,e) => a + math.pow(e - avg, 2.0)
     } / xs.size.toDouble)
   }
