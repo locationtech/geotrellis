@@ -6,9 +6,7 @@ executors:
         environment:
           _JAVA_OPTIONS: "-Xms128m -Xmx1536m"
       - image: nginx:stable
-        environment:
-          NGINX_PORT=8081
-        command: /bin/bash -c "cd /usr/share/nginx/html && curl -o all-ones.tif https://github.com/locationtech/geotrellis/raw/v3.3.0/spark/src/test/resources/all-ones.tif && cd ~- && envsubst < listen ${NGINX_PORT}; > /etc/nginx/conf.d/default.conf && exec nginx -g 'daemon off;'"
+        command: /bin/bash -c "cd /usr/share/nginx/html && curl -o all-ones.tif https://github.com/locationtech/geotrellis/raw/v3.3.0/spark/src/test/resources/all-ones.tif && cd ~- && sed -i 's/listen       80;/listen       8081;/g' /etc/nginx/conf.d/default.conf && exec nginx -g 'daemon off;'"
 
   executor-s3:
     docker:
