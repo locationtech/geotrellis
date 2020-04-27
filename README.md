@@ -1,6 +1,6 @@
 # GeoTrellis
 
-[![Build Status](https://api.travis-ci.org/locationtech/geotrellis.svg?branch=master)](http://travis-ci.org/locationtech/geotrellis) [![Join the chat at https://gitter.im/geotrellis/geotrellis](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/geotrellis/geotrellis?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![CircleCI](https://circleci.com/gh/locationtech/geotrellis.svg?style=svg)](https://app.circleci.com/pipelines/github/locationtech/geotrellis) [![Join the chat at https://gitter.im/geotrellis/geotrellis](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/geotrellis/geotrellis?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Maven Central](https://img.shields.io/maven-central/v/org.locationtech.geotrellis/geotrellis-spark_2.12)](http://search.maven.org/#search%7Cga%7C1%7Corg.locationtech.geotrellis)
 [![ReadTheDocs](https://readthedocs.org/projects/geotrellis/badge/?version=latest)](http://geotrellis.readthedocs.io/en/latest/)
 [![Changelog](https://img.shields.io/badge/changelog-v1.2.0-brightgreen.svg)](https://github.com/locationtech/geotrellis/blob/master/CHANGELOG.md)

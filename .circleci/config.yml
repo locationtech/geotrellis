@@ -43,7 +43,7 @@ executors:
           HBASE_DOCKER_HOSTNAME: localhost
 
 jobs:
-  java:
+  common:
     parameters:
       scala-version:
         type: string
@@ -151,13 +151,25 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Artifacts publish
+          name: Scaladocs publish
           command: .circleci/scaladocs.sh
+  publish:
+    parameters:
+      scala-version:
+        type: string
+    executor: executor-gdal
+    steps:
+      - checkout
+      - run:
+          name: Artifacts publish
+          command: |
+            export SCALA_VERSION=<< parameters.scala-version >>
+            ./sbt -Dsbt.supershell=false "++$SCALA_VERSION" publishLocal
 
 workflows:
   test-publish:
     jobs:
-      - java:
+      - common:
           matrix:
             parameters:
               scala-version: ["2.12.11", "2.11.12"]
@@ -201,3 +213,17 @@ workflows:
           filters:
             branches:
               only: master
+      - publish:
+          requires:
+            - common
+            - cassandra
+            - s3
+            - hbase
+          matrix:
+            parameters:
+              scala-version: ["2.11.12", "2.12.11"]
+          filters:
+            branches:
+              only: master
+            tags:
+              only: /^v.*/
