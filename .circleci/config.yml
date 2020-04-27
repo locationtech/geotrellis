@@ -157,7 +157,9 @@ jobs:
           key: v1-dependencies-{{ checksum "build.sbt" }}-{{ checksum "project/Settings.scala" }}-{{ checksum "project/Dependencies.scala" }}
       - run:
           name: Scaladocs publish
-          command: .circleci/scaladocs.sh
+          command: |
+            ./sbt unidoc
+            .circleci/scaladocs.sh
       - save_cache:
           key: v1-dependencies-{{ checksum "build.sbt" }}-{{ checksum "project/Settings.scala" }}-{{ checksum "project/Dependencies.scala" }}
           paths:
