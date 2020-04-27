@@ -54,7 +54,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: sbt-cache
+          key: v1-dependencies--{{ checksum "build.sbt" }}
       - run:
           name: Test
           command: |
@@ -63,7 +63,7 @@ jobs:
             .circleci/unzip-rasters.sh
             .circleci/build-and-test.sh
       - save_cache:
-          key: sbt-cache
+          key: v1-dependencies--{{ checksum "build.sbt" }}
           paths:
             - "~/.ivy2/cache"
             - "~/.couriser/cache"
@@ -78,7 +78,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: sbt-cache
+          key: v1-dependencies--{{ checksum "build.sbt" }}
       - run:
           name: Test Cassandra
           command: |
@@ -88,7 +88,7 @@ jobs:
             "project cassandra" test \
             "project cassandra-spark" test
       - save_cache:
-          key: sbt-cache
+          key: v1-dependencies--{{ checksum "build.sbt" }}
           paths:
             - "~/.ivy2/cache"
             - "~/.couriser/cache"
@@ -103,7 +103,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: sbt-cache
+          key: v1-dependencies--{{ checksum "build.sbt" }}
       - run:
           name: Test S3
           command: |
@@ -113,7 +113,7 @@ jobs:
             "project s3" test \
             "project s3-spark" test
       - save_cache:
-          key: sbt-cache
+          key: v1-dependencies--{{ checksum "build.sbt" }}
           paths:
             - "~/.ivy2/cache"
             - "~/.couriser/cache"
@@ -128,7 +128,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: sbt-cache
+          key: v1-dependencies--{{ checksum "build.sbt" }}
       - run:
           name: Test HBase
           command: |
@@ -138,7 +138,7 @@ jobs:
             "project hbase" test \
             "project hbase-spark" test
       - save_cache:
-          key: sbt-cache
+          key: v1-dependencies--{{ checksum "build.sbt" }}
           paths:
             - "~/.ivy2/cache"
             - "~/.couriser/cache"
@@ -151,9 +151,18 @@ jobs:
     executor: executor-gdal
     steps:
       - checkout
+      - restore_cache:
+          key: v1-dependencies--{{ checksum "build.sbt" }}
       - run:
           name: Scaladocs publish
           command: .circleci/scaladocs.sh
+      - save_cache:
+          key: v1-dependencies--{{ checksum "build.sbt" }}
+          paths:
+            - "~/.ivy2/cache"
+            - "~/.couriser/cache"
+            - "~/.sbt"
+            - "~/.m2"
   publish:
     parameters:
       scala-version:
@@ -161,14 +170,23 @@ jobs:
     executor: executor-gdal
     steps:
       - checkout
+      - restore_cache:
+          key: v1-dependencies--{{ checksum "build.sbt" }}
       - run:
           name: Artifacts publish
           command: |
             export SCALA_VERSION=<< parameters.scala-version >>
             ./sbt -Dsbt.supershell=false "++$SCALA_VERSION" publishLocal
+      - save_cache:
+          key: v1-dependencies--{{ checksum "build.sbt" }}
+          paths:
+            - "~/.ivy2/cache"
+            - "~/.couriser/cache"
+            - "~/.sbt"
+            - "~/.m2"
 
 workflows:
-  test-publish:
+  geotrellis-test-and-publish:
     jobs:
       - common:
           matrix:
