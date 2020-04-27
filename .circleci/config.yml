@@ -51,7 +51,6 @@ jobs:
         type: string
     executor: executor-gdal
     steps:
-      - setup_remote_docker
       - checkout
       - restore_cache:
           key: sbt-cache
@@ -60,7 +59,7 @@ jobs:
           command: |
             export SCALA_VERSION=<< parameters.scala-version >>
             export RUN_SET=<< parameters.test-set >>
-            cd raster/data; unzip geotiff-test-files.zip; cd ~-
+            .circleci/unpack-test-rasters.sh
             .circleci/build-and-test.sh
       - save_cache:
           key: sbt-cache
@@ -83,7 +82,7 @@ jobs:
           name: Test Cassandra
           command: |
             export SCALA_VERSION=<< parameters.scala-version >>
-            cd raster/data; unzip geotiff-test-files.zip; cd ~-
+            .circleci/unpack-test-rasters.sh
             ./sbt -Dsbt.supershell=false "++$SCALA_VERSION" \
             "project cassandra" test \
             "project cassandra-spark" test
@@ -108,7 +107,7 @@ jobs:
           name: Test S3
           command: |
             export SCALA_VERSION=<< parameters.scala-version >>
-            cd raster/data; unzip geotiff-test-files.zip; cd ~-
+            .circleci/unpack-test-rasters.sh
             ./sbt -Dsbt.supershell=false "++$SCALA_VERSION" \
             "project s3" test \
             "project s3-spark" test
@@ -133,34 +132,10 @@ jobs:
           name: Test HBase
           command: |
             export SCALA_VERSION=<< parameters.scala-version >>
-            cd raster/data; unzip geotiff-test-files.zip; cd ~-
+            .circleci/unpack-test-rasters.sh
             ./sbt -Dsbt.supershell=false "++$SCALA_VERSION" \
             "project hbase" test \
             "project hbase-spark" test
-      - save_cache:
-          key: sbt-cache
-          paths:
-            - "~/.ivy2/cache"
-            - "~/.couriser/cache"
-            - "~/.sbt"
-            - "~/.m2"
-
-  gdal-spark:
-    parameters:
-      scala-version:
-        type: string
-    executor: executor-gdal
-    steps:
-      - checkout
-      - restore_cache:
-          key: sbt-cache
-      - run:
-          name: Test GDAL Spark
-          command: |
-            export SCALA_VERSION=<< parameters.scala-version >>
-            cd raster/data; unzip geotiff-test-files.zip; cd ~-
-            ./sbt -Dsbt.supershell=false "++$SCALA_VERSION" \
-            "project gdal-spark" test
       - save_cache:
           key: sbt-cache
           paths:
