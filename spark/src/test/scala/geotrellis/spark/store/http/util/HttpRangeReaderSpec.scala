@@ -26,7 +26,7 @@ import spire.syntax.cfor._
 /** These tests require running the container defined in scripts/nginxTestHttp.sh */
 class HttpRangeReaderSpec extends FunSpec with Matchers {
 
-  ignore("HttpRangeReader") {
+  describe("HttpRangeReader") {
     val testGeoTiffPath = "spark/src/test/resources/all-ones.tif"
     val testGeoTiffHttpPath = "http://localhost:8081/all-ones.tif"
     val geoTiffBytes = Files.readAllBytes(Paths.get(testGeoTiffPath))

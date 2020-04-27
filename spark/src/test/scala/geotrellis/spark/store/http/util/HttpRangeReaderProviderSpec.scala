@@ -23,7 +23,7 @@ import org.scalatest._
 import java.net.URI
 
 class HttpRangeReaderProviderSpec extends FunSpec with Matchers {
-  ignore("HttpRangeReaderProviderSpec") {
+  describe("HttpRangeReaderProviderSpec") {
     it("should create a HttpRangeReader from a URI") {
       val path = "http://localhost:8081/all-ones.tif"
       val reader = RangeReader(new URI(path))

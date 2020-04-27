@@ -5,6 +5,10 @@ executors:
       - image: quay.io/azavea/openjdk-gdal:2.4-jdk8-slim
         environment:
           _JAVA_OPTIONS: "-Xms128m -Xmx1536m"
+      - image: nginx:stable
+        environment:
+          NGINX_PORT=8081
+        command: /bin/bash -c "cd /usr/share/nginx/html && curl -o all-ones.tif https://github.com/locationtech/geotrellis/raw/v3.3.0/spark/src/test/resources/all-ones.tif && cd ~- && exec nginx -g 'daemon off;'"
 
   executor-s3:
     docker:
@@ -57,7 +61,6 @@ jobs:
           name: Test
           no-output-timeout: 30m
           command: |
-            # docker run -d --restart=always -p 8081:80 -v $(pwd)/spark/src/test/resources:/usr/share/nginx/html:ro nginx:stable
             export SCALA_VERSION=<< parameters.scala-version >>
             export RUN_SET=<< parameters.test-set >>
             cd raster/data; unzip geotiff-test-files.zip; cd ~-
