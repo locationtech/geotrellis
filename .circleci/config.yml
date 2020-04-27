@@ -6,7 +6,7 @@ executors:
         environment:
           _JAVA_OPTIONS: "-Xms128m -Xmx1536m"
       - image: nginx:stable
-        command: /bin/bash -c "cd /usr/share/nginx/html && curl -o all-ones.tif https://github.com/locationtech/geotrellis/raw/v3.3.0/spark/src/test/resources/all-ones.tif && cd ~- && sed -i 's/listen       80;/listen       8081;/g' /etc/nginx/conf.d/default.conf && exec nginx -g 'daemon off;'"
+        command: /bin/bash -c "cd /usr/share/nginx/html && curl -o all-ones.tif https://raw.githubusercontent.com/locationtech/geotrellis/v3.3.0/spark/src/test/resources/all-ones.tif && cd ~- && sed -i 's/listen       80;/listen       8081;/g' /etc/nginx/conf.d/default.conf && exec nginx -g 'daemon off;'"
 
   executor-s3:
     docker:
@@ -59,7 +59,7 @@ jobs:
           command: |
             export SCALA_VERSION=<< parameters.scala-version >>
             export RUN_SET=<< parameters.test-set >>
-            .circleci/unpack-test-rasters.sh
+            .circleci/unzip-rasters.sh
             .circleci/build-and-test.sh
       - save_cache:
           key: sbt-cache
@@ -82,7 +82,7 @@ jobs:
           name: Test Cassandra
           command: |
             export SCALA_VERSION=<< parameters.scala-version >>
-            .circleci/unpack-test-rasters.sh
+            .circleci/unzip-rasters.sh
             ./sbt -Dsbt.supershell=false "++$SCALA_VERSION" \
             "project cassandra" test \
             "project cassandra-spark" test
@@ -107,7 +107,7 @@ jobs:
           name: Test S3
           command: |
             export SCALA_VERSION=<< parameters.scala-version >>
-            .circleci/unpack-test-rasters.sh
+            .circleci/unzip-rasters.sh
             ./sbt -Dsbt.supershell=false "++$SCALA_VERSION" \
             "project s3" test \
             "project s3-spark" test
@@ -132,7 +132,7 @@ jobs:
           name: Test HBase
           command: |
             export SCALA_VERSION=<< parameters.scala-version >>
-            .circleci/unpack-test-rasters.sh
+            .circleci/unzip-rasters.sh
             ./sbt -Dsbt.supershell=false "++$SCALA_VERSION" \
             "project hbase" test \
             "project hbase-spark" test
@@ -143,6 +143,16 @@ jobs:
             - "~/.couriser/cache"
             - "~/.sbt"
             - "~/.m2"
+  scaladocs:
+    parameters:
+      scala-version:
+        type: string
+    executor: executor-gdal
+    steps:
+      - checkout
+      - run:
+          name: Artifacts publish
+          command: .circleci/scaladocs.sh
 
 workflows:
   test-publish:
@@ -150,7 +160,7 @@ workflows:
       - java:
           matrix:
             parameters:
-              scala-version: ["2.11.12", "2.12.10"]
+              scala-version: ["2.12.11", "2.11.12"]
               test-set: ["1", "2"]
           filters:
             branches:
@@ -160,7 +170,7 @@ workflows:
       - cassandra:
           matrix:
             parameters:
-              scala-version: ["2.11.12", "2.12.10"]
+              scala-version: ["2.11.12", "2.12.11"]
           filters:
             branches:
               only: /.*/
@@ -169,7 +179,7 @@ workflows:
       - s3:
           matrix:
             parameters:
-              scala-version: ["2.11.12", "2.12.10"]
+              scala-version: ["2.11.12", "2.12.11"]
           filters:
             branches:
               only: /.*/
@@ -178,9 +188,16 @@ workflows:
       - hbase:
           matrix:
             parameters:
-              scala-version: ["2.11.12", "2.12.10"]
+              scala-version: ["2.11.12", "2.12.11"]
           filters:
             branches:
               only: /.*/
             tags:
               only: /^v.*/
+      - scaladocs:
+          matrix:
+            parameters:
+              scala-version: ["2.12.11"]
+          filters:
+            branches:
+              only: master
