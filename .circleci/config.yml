@@ -163,6 +163,8 @@ jobs:
       scala-version:
         type: string
     executor: executor-gdal
+    environment:
+      _JAVA_OPTIONS: "-Xms128m -Xmx2g"
     steps:
       - checkout
       - restore_cache:
