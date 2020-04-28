@@ -10,7 +10,8 @@
   "project vector" test \
   "project vectortile" test \
   "project util" test \
-  "project gdal" test \
   "project raster" test \
   "project accumulo" test \
-  "project accumulo-spark" test || { exit 1; }
+  "project accumulo-spark" test && \
+./sbt -Dsbt.supershell=false "++$SCALA_VERSION" \
+  "project gdal" test || { exit 1; }
