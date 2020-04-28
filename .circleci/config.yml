@@ -1,4 +1,17 @@
 version: 2.1
+
+aliases:
+  - &restore_build_cache
+    key: v1-dependencies-{{ checksum "build.sbt" }}-{{ checksum "project/Settings.scala" }}-{{ checksum "project/Dependencies.scala" }}
+
+  - &save_build_cache
+    key: v1-dependencies-{{ checksum "build.sbt" }}-{{ checksum "project/Settings.scala" }}-{{ checksum "project/Dependencies.scala" }}
+    paths:
+      - "~/.ivy2/cache"
+      - "~/.cache/coursier"
+      - "~/.sbt"
+      - "~/.m2"
+
 executors:
   executor-gdal:
     docker:
@@ -54,21 +67,14 @@ jobs:
     executor: executor-gdal
     steps:
       - checkout
-      - restore_cache:
-          key: v1-dependencies-{{ checksum "build.sbt" }}-{{ checksum "project/Settings.scala" }}-{{ checksum "project/Dependencies.scala" }}
+      - restore_cache: *restore_build_cache
       - run:
           name: Test
           command: |
             export SCALA_VERSION=<< parameters.scala-version >>
             export RUN_SET=<< parameters.test-set >>
             .circleci/build-and-test.sh
-      - save_cache:
-          key: v1-dependencies-{{ checksum "build.sbt" }}-{{ checksum "project/Settings.scala" }}-{{ checksum "project/Dependencies.scala" }}
-          paths:
-            - "~/.ivy2/cache"
-            - "~/.cache/coursier"
-            - "~/.sbt"
-            - "~/.m2"
+      - save_cache: *save_build_cache
 
   cassandra:
     parameters:
@@ -77,20 +83,13 @@ jobs:
     executor: executor-cassandra
     steps:
       - checkout
-      - restore_cache:
-          key: v1-dependencies-{{ checksum "build.sbt" }}-{{ checksum "project/Settings.scala" }}-{{ checksum "project/Dependencies.scala" }}
+      - restore_cache: *restore_build_cache
       - run:
           name: Test Cassandra
           command: |
             export SCALA_VERSION=<< parameters.scala-version >>
             .circleci/build-and-test-cassandra.sh
-      - save_cache:
-          key: v1-dependencies-{{ checksum "build.sbt" }}-{{ checksum "project/Settings.scala" }}-{{ checksum "project/Dependencies.scala" }}
-          paths:
-            - "~/.ivy2/cache"
-            - "~/.cache/coursier"
-            - "~/.sbt"
-            - "~/.m2"
+      - save_cache: *save_build_cache
 
   s3:
     parameters:
@@ -99,20 +98,13 @@ jobs:
     executor: executor-s3
     steps:
       - checkout
-      - restore_cache:
-          key: v1-dependencies-{{ checksum "build.sbt" }}-{{ checksum "project/Settings.scala" }}-{{ checksum "project/Dependencies.scala" }}
+      - restore_cache: *restore_build_cache
       - run:
           name: Test S3
           command: |
             export SCALA_VERSION=<< parameters.scala-version >>
             .circleci/build-and-test-s3.sh
-      - save_cache:
-          key: v1-dependencies-{{ checksum "build.sbt" }}-{{ checksum "project/Settings.scala" }}-{{ checksum "project/Dependencies.scala" }}
-          paths:
-            - "~/.ivy2/cache"
-            - "~/.cache/coursier"
-            - "~/.sbt"
-            - "~/.m2"
+      - save_cache: *save_build_cache
 
   hbase:
     parameters:
@@ -121,20 +113,13 @@ jobs:
     executor: executor-hbase
     steps:
       - checkout
-      - restore_cache:
-          key: v1-dependencies-{{ checksum "build.sbt" }}-{{ checksum "project/Settings.scala" }}-{{ checksum "project/Dependencies.scala" }}
+      - restore_cache: *restore_build_cache
       - run:
           name: Test HBase
           command: |
             export SCALA_VERSION=<< parameters.scala-version >>
             .circleci/build-and-test-hbase.sh
-      - save_cache:
-          key: v1-dependencies-{{ checksum "build.sbt" }}-{{ checksum "project/Settings.scala" }}-{{ checksum "project/Dependencies.scala" }}
-          paths:
-            - "~/.ivy2/cache"
-            - "~/.cache/coursier"
-            - "~/.sbt"
-            - "~/.m2"
+      - save_cache: *save_build_cache
 
   scaladocs:
     parameters:
@@ -143,20 +128,13 @@ jobs:
     executor: executor-gdal
     steps:
       - checkout
-      - restore_cache:
-          key: v1-dependencies-{{ checksum "build.sbt" }}-{{ checksum "project/Settings.scala" }}-{{ checksum "project/Dependencies.scala" }}
+      - restore_cache: *restore_build_cache
       - run:
           name: Scaladocs publish
           command: |
             ./sbt unidoc
             .circleci/scaladocs.sh
-      - save_cache:
-          key: v1-dependencies-{{ checksum "build.sbt" }}-{{ checksum "project/Settings.scala" }}-{{ checksum "project/Dependencies.scala" }}
-          paths:
-            - "~/.ivy2/cache"
-            - "~/.cache/coursier"
-            - "~/.sbt"
-            - "~/.m2"
+      - save_cache: *save_build_cache
 
   publish:
     parameters:
@@ -167,20 +145,13 @@ jobs:
       _JAVA_OPTIONS: "-Xms128m -Xmx2g"
     steps:
       - checkout
-      - restore_cache:
-          key: v1-dependencies-{{ checksum "build.sbt" }}-{{ checksum "project/Settings.scala" }}-{{ checksum "project/Dependencies.scala" }}
+      - restore_cache: *restore_build_cache
       - run:
           name: Artifacts publish
           command: |
             export SCALA_VERSION=<< parameters.scala-version >>
             ./sbt -Dsbt.supershell=false "++$SCALA_VERSION" publishLocal
-      - save_cache:
-          key: v1-dependencies-{{ checksum "build.sbt" }}-{{ checksum "project/Settings.scala" }}-{{ checksum "project/Dependencies.scala" }}
-          paths:
-            - "~/.ivy2/cache"
-            - "~/.cache/coursier"
-            - "~/.sbt"
-            - "~/.m2"
+      - save_cache: *save_build_cache
 
 workflows:
   test-and-publish:
