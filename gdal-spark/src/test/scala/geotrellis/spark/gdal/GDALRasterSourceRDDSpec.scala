@@ -208,7 +208,7 @@ class GDALRasterSourceRDDSpec extends FunSpec with TestEnvironment with BeforeAn
         assertRDDLayersEqual(reprojectedExpectedRDDGDAL, reprojectedSourceRDD, true)
       }
 
-      def parellSpec(n: Int = 1000)(implicit cs: ContextShift[IO]): List[RasterSource] = {
+      def parallelSpec(n: Int = 1000)(implicit cs: ContextShift[IO]): List[RasterSource] = {
         println(java.lang.Thread.activeCount())
 
         /** Functions to trigger Datasets computation */
@@ -278,7 +278,7 @@ class GDALRasterSourceRDDSpec extends FunSpec with TestEnvironment with BeforeAn
         val i = 1000
         implicit val cs = IO.contextShift(ExecutionContext.global)
 
-        val res = parellSpec(i)
+        val res = parallelSpec(i)
       }
 
       it(s"should not fail on parallelization with a fixed thread pool") {
@@ -288,7 +288,7 @@ class GDALRasterSourceRDDSpec extends FunSpec with TestEnvironment with BeforeAn
         val ec = ExecutionContext.fromExecutor(pool)
         implicit val cs = IO.contextShift(ec)
 
-        val res = parellSpec(i)
+        val res = parallelSpec(i)
       }
     }
   }

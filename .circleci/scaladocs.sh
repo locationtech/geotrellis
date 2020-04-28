@@ -2,9 +2,9 @@
 
 set -o errexit -o nounset
 
-if [ "$TRAVIS_BRANCH" != "master" ]
+if [ "$CIRCLE_BRANCH" != "master" ]
 then
-  echo "This commit was made against the $TRAVIS_BRANCH and not the master! No deploy!"
+  echo "This commit was made against the $CIRCLE_BRANCH and not the master! No deploy!"
   exit 0
 fi
 
