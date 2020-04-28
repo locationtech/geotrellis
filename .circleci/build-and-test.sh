@@ -1,5 +1,7 @@
 #!/bin/bash
 
+.circleci/unzip-rasters.sh
+
 if [ $RUN_SET = "1" ]; then
     echo "RUNNING SET 1";
     .circleci/build-and-test-set-1.sh;

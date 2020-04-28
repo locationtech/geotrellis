@@ -61,7 +61,6 @@ jobs:
           command: |
             export SCALA_VERSION=<< parameters.scala-version >>
             export RUN_SET=<< parameters.test-set >>
-            .circleci/unzip-rasters.sh
             .circleci/build-and-test.sh
       - save_cache:
           key: v1-dependencies-{{ checksum "build.sbt" }}-{{ checksum "project/Settings.scala" }}-{{ checksum "project/Dependencies.scala" }}
@@ -84,10 +83,7 @@ jobs:
           name: Test Cassandra
           command: |
             export SCALA_VERSION=<< parameters.scala-version >>
-            .circleci/unzip-rasters.sh
-            ./sbt -Dsbt.supershell=false "++$SCALA_VERSION" \
-            "project cassandra" test \
-            "project cassandra-spark" test
+            .circleci/build-and-test-cassandra.sh
       - save_cache:
           key: v1-dependencies-{{ checksum "build.sbt" }}-{{ checksum "project/Settings.scala" }}-{{ checksum "project/Dependencies.scala" }}
           paths:
@@ -109,10 +105,7 @@ jobs:
           name: Test S3
           command: |
             export SCALA_VERSION=<< parameters.scala-version >>
-            .circleci/unzip-rasters.sh
-            ./sbt -Dsbt.supershell=false "++$SCALA_VERSION" \
-            "project s3" test \
-            "project s3-spark" test
+            .circleci/build-and-test-s3.sh
       - save_cache:
           key: v1-dependencies-{{ checksum "build.sbt" }}-{{ checksum "project/Settings.scala" }}-{{ checksum "project/Dependencies.scala" }}
           paths:
@@ -134,10 +127,7 @@ jobs:
           name: Test HBase
           command: |
             export SCALA_VERSION=<< parameters.scala-version >>
-            .circleci/unzip-rasters.sh
-            ./sbt -Dsbt.supershell=false "++$SCALA_VERSION" \
-            "project hbase" test \
-            "project hbase-spark" test
+            .circleci/build-and-test-hbase.sh
       - save_cache:
           key: v1-dependencies-{{ checksum "build.sbt" }}-{{ checksum "project/Settings.scala" }}-{{ checksum "project/Dependencies.scala" }}
           paths:
