@@ -57,7 +57,7 @@ abstract class SpatialTileLayoutRDDStitchMethods[
     val tiles = self.toCollection
     // From here down, this code duplicates SpatialTileLayoutCollectionStitchMethods.sparseStitch,
     // replacing self with tiles
-    if (tiles.headOption.isEmpty) {
+    if (tiles.isEmpty) {
       None
     } else {
       val tile = tiles.head._2

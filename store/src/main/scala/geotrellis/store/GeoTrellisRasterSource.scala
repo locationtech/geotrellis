@@ -258,41 +258,14 @@ object GeoTrellisRasterSource {
 
   def readIntersecting(reader: CollectionLayerReader[LayerId], layerId: LayerId, metadata: TileLayerMetadata[_], extent: Extent, bands: Seq[Int], time: Option[ZonedDateTime]): Option[Raster[MultibandTile]] = {
     val tiles = readTiles(reader, layerId, extent, bands, time)
-    sparseStitch(tiles, extent)
+    tiles.sparseStitch(extent)
   }
 
   def read(reader: CollectionLayerReader[LayerId], layerId: LayerId, metadata: TileLayerMetadata[_], extent: Extent, bands: Seq[Int], time: Option[ZonedDateTime]): Option[Raster[MultibandTile]] = {
     val tiles = readTiles(reader, layerId, extent, bands, time)
     metadata.extent.intersection(extent) flatMap { intersectionExtent =>
-      sparseStitch(tiles, intersectionExtent).map(_.crop(intersectionExtent))
+      tiles.sparseStitch(intersectionExtent).map(_.crop(intersectionExtent))
     }
-  }
-
-  /**
-    *  The stitch method in gtcore is unable to handle missing spatialkeys correctly.
-    *  This method works around that problem by attempting to infer any missing tiles
-    **/
-  def sparseStitch(
-    tiles: Seq[(SpatialKey, MultibandTile)] with Metadata[TileLayerMetadata[SpatialKey]],
-    extent: Extent
-  ): Option[Raster[MultibandTile]] = {
-    val md = tiles.metadata
-    val expectedKeys = md
-      .mapTransform(extent)
-      .coordsIter
-      .map { case (x, y) => SpatialKey(x, y) }
-      .toList
-    val actualKeys = tiles.map(_._1)
-    val missingKeys = expectedKeys diff actualKeys
-
-    val missingTiles = missingKeys.map { key =>
-      (key, MultibandTile(ArrayTile.empty(md.cellType, md.tileLayout.tileCols, md.tileLayout.tileRows)))
-    }
-    val allTiles = tiles.withContext { collection =>
-      collection.toList ::: missingTiles
-    }
-    if (allTiles.isEmpty) None
-    else Some(allTiles.stitch())
   }
 
   def apply(dataPath: GeoTrellisPath): GeoTrellisRasterSource = GeoTrellisRasterSource(dataPath, None, None)
