@@ -66,9 +66,8 @@ object CRS {
     * Creates a CoordinateReferenceSystem (CRS) from a
     * well-known-text String.
     */
-  def fromWKT(wktString: String): Option[CRS] = {
-    WKT.getEpsgStringCode(wktString).map(fromName(_))
-  }
+  def fromWKT(wktString: String): Option[CRS] =
+    WKT.getEpsgStringCode(wktString).map(fromName)
 
   /**
     * Creates a CoordinateReferenceSystem (CRS) from a well-known name.
@@ -117,13 +116,11 @@ trait CRS extends Serializable {
 
   val Epsilon = 1e-8
 
-  def epsgCode: Option[Int] = {
+  def epsgCode: Option[Int] =
     proj4jCrs.getName.split(":") match {
       case Array(name, code) if name.toUpperCase == "EPSG" => Try(code.toInt).toOption
       case _ => CRS.getEpsgCode(toProj4String)
     }
-  }
-
 
   def proj4jCrs: CoordinateReferenceSystem
 
