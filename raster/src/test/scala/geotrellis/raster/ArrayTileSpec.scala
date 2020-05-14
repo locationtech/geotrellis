@@ -258,6 +258,17 @@ class ArrayTileSpec extends FunSpec
 
       assert(at == other)
     }
+
+    // https://github.com/locationtech/geotrellis/issues/3242
+    it("ArrayTile equals method should compare arrays with the First NaN correct") {
+      val arr1 = Array(NaN, 0.5, 0.9, 0.4)
+      val tile1 = ArrayTile.apply(arr1, 2, 2)
+
+      val arr2 = Array(NaN, NaN, NaN, NaN)
+      val tile2 = ArrayTile.apply(arr2, 2, 2)
+
+      assert(tile1 != tile2)
+    }
   }
 }
 

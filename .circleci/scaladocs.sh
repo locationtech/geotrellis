@@ -2,7 +2,7 @@
 
 set -o errexit -o nounset
 
-if [ "$CIRCLE_BRANCH" != "master" ] || [ -z "$CI_GH_TOKEN" ]
+if [ "$CIRCLE_BRANCH" != "master" ] || [ -z ${CI_GH_TOKEN:-} ]
 then
   echo "This commit was made against the $CIRCLE_BRANCH, not the master or the CI_GH_TOKEN is not set! No deploy!"
   exit 0
