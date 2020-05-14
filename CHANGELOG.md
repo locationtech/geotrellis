@@ -15,7 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix S3RDDLayerReader partitioning [#3231](https://github.com/locationtech/geotrellis/pull/3231)
 - GDALRasterSource works inconsistenly with BitCellType and ByteCellType [#3232](https://github.com/locationtech/geotrellis/issues/3232)
 - rasterizeWithValue accepts only topologically valid polygons [#3236](https://github.com/locationtech/geotrellis/pull/3236)
-- Rasterizer.rasterize should be consistent with rasterizeWithValue [#3238](https://github.com/locationtech/geotrellis/pull/3238) 
+- Rasterizer.rasterize should be consistent with rasterizeWithValue [#3238](https://github.com/locationtech/geotrellis/pull/3238)
+- GeoTrellisRasterSource should return None on empty reads [#3240](https://github.com/locationtech/geotrellis/pull/3240) 
 
 ## [3.3.0] - 2020-04-07
 

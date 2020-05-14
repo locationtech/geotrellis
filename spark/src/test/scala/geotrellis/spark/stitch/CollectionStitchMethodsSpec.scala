@@ -16,9 +16,10 @@
 
 package geotrellis.spark.stitch
 
+import geotrellis.layer._
+import geotrellis.proj4.LatLng
 import geotrellis.raster._
 import geotrellis.raster.testkit._
-import geotrellis.raster.io.geotiff.SinglebandGeoTiff
 import geotrellis.spark._
 import geotrellis.spark.testkit._
 import geotrellis.vector.Extent
@@ -174,5 +175,19 @@ class CollectionStitchMethodsSpec extends FunSpec
         TileLayout(4, 4, 1, 1)
       ).toCollection
     assertEqual(layer.sparseStitch.get.tile, tile)
+  }
+
+  it("should correctly sparse stitch an empty collection") {
+    val extent = Extent(0, 0, 4, 4)
+    val md = TileLayerMetadata(
+      IntConstantNoDataCellType,
+      LayoutDefinition(extent,TileLayout(4, 4, 1, 1)),
+      extent,
+      LatLng,
+      KeyBounds(SpatialKey(0,0), SpatialKey(3,3))
+    )
+    val layer = ContextCollection(Seq.empty[(SpatialKey, Tile)], md)
+
+    layer.sparseStitch shouldBe None
   }
 }

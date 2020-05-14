@@ -47,7 +47,7 @@ abstract class SpatialTileLayoutCollectionStitchMethods[
     * @return The stitched Raster, otherwise None if the collection is empty or the extent does not intersect
     */
   def sparseStitch(extent: Extent): Option[Raster[V]] = {
-    if (self.headOption.isEmpty) {
+    if (self.isEmpty) {
       None
     } else {
       val tile = self.head._2
