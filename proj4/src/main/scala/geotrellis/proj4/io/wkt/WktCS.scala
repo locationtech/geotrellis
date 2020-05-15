@@ -63,4 +63,4 @@ case class ExtensionProj4(value: String) extends Extension {
   val name: String = "PROJ4"
 }
 
-case class ExtensionUnsupported(name: String, value: String) extends Extension
+case class ExtensionAny(name: String, value: String) extends Extension

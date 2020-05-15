@@ -16,8 +16,7 @@
 
 package geotrellis.proj4
 
-import geotrellis.proj4.io.wkt.WKT
-
+import geotrellis.proj4.io.wkt.{ExtensionProj4, ProjCS, WKT, WKTParser}
 import org.locationtech.proj4j._
 import org.locationtech.proj4j.util.CRSCache
 
@@ -66,8 +65,20 @@ object CRS {
     * Creates a CoordinateReferenceSystem (CRS) from a
     * well-known-text String.
     */
-  def fromWKT(wktString: String): Option[CRS] =
-    WKT.getEpsgStringCode(wktString).map(fromName)
+  def fromWKT(wktString: String): Option[CRS] = {
+    val fromEpsgCode = WKT.getEpsgStringCode(wktString).map(fromName)
+    if(fromEpsgCode.isEmpty) {
+      WKTParser(wktString) match {
+        case wkt: ProjCS =>
+          wkt.extension.flatMap {
+            case ExtensionProj4(proj4String) =>
+              Some(CRS.fromString(proj4String))
+            case _ => None
+          }
+        case _ => fromEpsgCode
+      }
+    } else fromEpsgCode
+  }
 
   /**
     * Creates a CoordinateReferenceSystem (CRS) from a well-known name.

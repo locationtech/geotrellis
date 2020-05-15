@@ -116,7 +116,7 @@ object WKTParser extends RegexParsers {
 
 def extension: Parser[Extension] = """EXTENSION[""" ~ string ~ comma ~ string ~ """]""" map {
   case _ ~ "PROJ4" ~ _ ~ value ~ _ => ExtensionProj4(value)
-  case _ ~ name ~ _ ~ value ~ _ => ExtensionUnsupported(name, value)
+  case _ ~ name ~ _ ~ value ~ _ => ExtensionAny(name, value)
 }
 
   def wktCS: Parser[WktCS] = localcs | projcs | geogcs | geoccs | compdcs | vertcs
