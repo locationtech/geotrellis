@@ -54,7 +54,7 @@ case class GeocCS(name: String, datum: Datum, primeM: PrimeM, unit: UnitField, a
 
 case class CompDCS(name: String, head: Any, tail: Any, authority: Option[Authority]) extends WktCS
 
-sealed trait Extension extends WktCS {
+sealed trait Extension {
   def name: String
   def value: String
 }
