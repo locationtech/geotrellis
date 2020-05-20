@@ -379,14 +379,14 @@ class WKTParserTest extends FunSpec {
   it("Should return a Projcs objects") {
     import WKTParser._
     val toWgs84 = ToWgs84(List(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0))
-    val spherAuth = Authority("EPSG","7019")
-    val datumAuth = Authority("EPSG","6171")
-    val geogcsAuth = Authority("EPSG","4171")
-    val projectionAuth = Authority("EPSG","9802")
-    val projAuth = Authority("EPSG","3942")
+    val spherAuth = Authority("EPSG", "7019")
+    val datumAuth = Authority("EPSG", "6171")
+    val geogcsAuth = Authority("EPSG", "4171")
+    val projectionAuth = Authority("EPSG", "9802")
+    val projAuth = Authority("EPSG", "3942")
     val spheroid = Spheroid("GRS 1980", 6378137.0, 298.257222101, Some(spherAuth))
     val datum = Datum("Reseau Geodesique Francais 1993", spheroid, Some(toWgs84), Some(datumAuth))
-    val primeMAuth = Authority("EPSG","8901")
+    val primeMAuth = Authority("EPSG", "8901")
     val primeM = PrimeM("Greenwich", 0.0, Some(primeMAuth))
     val geogcsUnit = UnitField("degree", 0.017453292519943295, None)
     val axisFirst = Axis("Geodetic longitude", "EAST")
@@ -418,8 +418,8 @@ class WKTParserTest extends FunSpec {
 
   it("Should return VertCS object") {
     import WKTParser._
-    val vertAuth = Authority("EPSG","5621")
-    val datumAuth = Authority("EPSG","5215")
+    val vertAuth = Authority("EPSG", "5621")
+    val datumAuth = Authority("EPSG", "5215")
     val vertDatum = VertDatum("European Vertical Reference Frame 2007", 2005, Some(datumAuth))
     val axis = Axis("Gravity-related height", "UP")
     val unitField = UnitField("m", 1.0, None)
@@ -461,12 +461,12 @@ class WKTParserTest extends FunSpec {
 
   it("Should return a LocalCS object") {
     import WKTParser._
-    val datumAuth = Authority("EPSG","9314")
+    val datumAuth = Authority("EPSG", "9314")
     val localDatum = LocalDatum("Tombak LNG plant", 0, Some(datumAuth))
     val axis1 = Axis("Plant East", "EAST")
     val axis2 = Axis("Plant North", "WEST")
     val axisList = List(axis1, axis2)
-    val localAuth = Authority("EPSG","5817")
+    val localAuth = Authority("EPSG", "5817")
     val unitField = UnitField("m", 1.0, None)
     val expected = LocalCS("Tombak LNG plant", localDatum, unitField, axisList, Some(localAuth))
     val localCSString = """LOCAL_CS["Tombak LNG plant", LOCAL_DATUM["Tombak LNG plant", 0, AUTHORITY["EPSG","9314"]], UNIT["m", 1.0], AXIS["Plant East", EAST], AXIS["Plant North", WEST], AUTHORITY["EPSG","5817"]]"""
@@ -481,17 +481,17 @@ class WKTParserTest extends FunSpec {
 
   it("Should return a Geoccs object") {
     import WKTParser._
-    val spherAuth = Authority("EPSG","7019")
+    val spherAuth = Authority("EPSG", "7019")
     val spheroid = Spheroid("GRS 1980", 6378137.0, 298.257222101, Some(spherAuth))
     val toWgs84 = ToWgs84(List(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0))
-    val datumAuth = Authority("EPSG","1035")
+    val datumAuth = Authority("EPSG", "1035")
     val datum = Datum("Red Geodesica de Canarias 1995", spheroid, Some(toWgs84), Some(datumAuth))
-    var primeM = PrimeM("Greenwich", 0.0, Some(Authority("EPSG","8901")))
+    val primeM = PrimeM("Greenwich", 0.0, Some(Authority("EPSG", "8901")))
     val unitField = UnitField("m", 1.0, None)
     val axis1 = Axis("Geocentric X", "GEOCENTRIC_X")
     val axis2 = Axis("Geocentric Y", "GEOCENTRIC_Y")
     val axis3 = Axis("Geocentric Z", "GEOCENTRIC_Z")
-    val auth = Authority("EPSG","4079")
+    val auth = Authority("EPSG", "4079")
     val expected = GeocCS("REGCAN95", datum, primeM, unitField, Some(List(axis1, axis2, axis3)), Some(auth))
     val geoCCSString = """GEOCCS["REGCAN95", DATUM["Red Geodesica de Canarias 1995", SPHEROID["GRS 1980", 6378137.0, 298.257222101, AUTHORITY["EPSG","7019"]], TOWGS84[0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], AUTHORITY["EPSG","1035"]], PRIMEM["Greenwich", 0.0, AUTHORITY["EPSG","8901"]], UNIT["m", 1.0], AXIS["Geocentric X", GEOCENTRIC_X], AXIS["Geocentric Y", GEOCENTRIC_Y], AXIS["Geocentric Z", GEOCENTRIC_Z], AUTHORITY["EPSG","4079"]]"""
     parseAll(geoccs, geoCCSString) match {
@@ -503,12 +503,11 @@ class WKTParserTest extends FunSpec {
     }
   }
 
-
   it("Should return a Compdcs object") {
     import WKTParser._
-    val authGeogcs = Authority("EPSG","6258")
-    val authSpher = Authority("EPSG","7019")
-    val authPrimeM = Authority("EPSG","8901")
+    val authGeogcs = Authority("EPSG", "6258")
+    val authSpher = Authority("EPSG", "7019")
+    val authPrimeM = Authority("EPSG", "8901")
     val toWgs84 = ToWgs84(List(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0))
     val spher = Spheroid("GRS 1980", 6378137.0, 298.257222101, Some(authSpher))
     val datum = Datum("European Terrestrial Reference System 1989", spher, Some(toWgs84), Some(authGeogcs))
@@ -516,8 +515,8 @@ class WKTParserTest extends FunSpec {
     val unitField = UnitField("degree", 0.017453292519943295, None)
     val axis1 = Axis("Geodetic latitude", "NORTH")
     val axis2 = Axis("Geodetic longitude", "EAST")
-    val geogcs = GeogCS("ETRS89", datum, primeM, unitField, Some(List(axis1, axis2)), Some(Authority("EPSG","4258")))
-    val projection = Projection("Transverse_Mercator", Some(Authority("EPSG","9807")))
+    val geogcs = GeogCS("ETRS89", datum, primeM, unitField, Some(List(axis1, axis2)), Some(Authority("EPSG", "4258")))
+    val projection = Projection("Transverse_Mercator", Some(Authority("EPSG", "9807")))
     val param1 = Parameter("central_meridian", 33.0)
     val param2 = Parameter("latitude_of_origin", 0.0)
     val param3 = Parameter("scale_factor", 0.9996)
@@ -527,11 +526,11 @@ class WKTParserTest extends FunSpec {
     val axisProj1 = Axis("Easting", "EAST")
     val axisProj2 = Axis("Northing", "NORTH")
     val twinsProj = TwinAxis(axisProj1, axisProj2)
-    val authProj = Authority("EPSG","25836")
+    val authProj = Authority("EPSG", "25836")
     val projcs = ProjCS("ETRS89 / UTM zone 36N", geogcs, projection, Some(paramsList), UnitField("m", 1.0, None), Some(twinsProj), None, Some(authProj))
-    val authGeoCCS = Authority("EPSG","6176")
-    val vertCSAuth = Authority("EPSG","5776")
-    val vertDatumAuth = Authority("EPSG","5174")
+    val authGeoCCS = Authority("EPSG", "6176")
+    val vertCSAuth = Authority("EPSG", "5776")
+    val vertDatumAuth = Authority("EPSG", "5174")
     val vertDatum = VertDatum("Norway Normal Null 1954", 2005, Some(vertDatumAuth))
     val vertAxis = Axis("Gravity-related height", "UP")
     val vertUnit = UnitField("m", 1.0, None)
@@ -549,20 +548,20 @@ class WKTParserTest extends FunSpec {
 
   it("Should return a Projcs object special one") {
     import WKTParser._
-    val authProjcs = Authority("EPSG","22033")
-    val authSpher = Authority("EPSG","7012")
+    val authProjcs = Authority("EPSG", "22033")
+    val authSpher = Authority("EPSG", "7012")
     val spher = Spheroid("Clarke 1880 (RGS)", 6378249.145, 293.465, Some(authSpher))
     val toWgs84 = ToWgs84(List(-50.9, -347.6, -231.0, 0.0, 0.0, 0.0, 0.0))
-    val authDatum = Authority("EPSG","6220")
+    val authDatum = Authority("EPSG", "6220")
     val datum = Datum("Camacupa", spher, Some(toWgs84), Some(authDatum))
-    val authPrimeM = Authority("EPSG","8901")
+    val authPrimeM = Authority("EPSG", "8901")
     val primeM = PrimeM("Greenwich", 0.0, Some(authPrimeM))
     val unitField = UnitField("degree", 0.017453292519943295, None)
     val axis1 = Axis("Geodetic longitude", "EAST")
     val axis2 = Axis("Geodetic latitude", "NORTH")
-    val authGeogcs = Authority("EPSG","4220")
+    val authGeogcs = Authority("EPSG", "4220")
     val geogcs = GeogCS("Camacupa", datum, primeM, unitField, Some(List(axis1, axis2)), Some(authGeogcs))
-    val projection = Projection("Transverse_Mercator", Some(Authority("EPSG","9807")))
+    val projection = Projection("Transverse_Mercator", Some(Authority("EPSG", "9807")))
     val param1 = Parameter("central_meridian", 15.0)
     val param2 = Parameter("latitude_of_origin", 0.0)
     val param3 = Parameter("scale_factor", 0.9996)
@@ -596,7 +595,7 @@ class WKTParserTest extends FunSpec {
     val param2 = Parameter("central_meridian", -98.0)
     val param3 = Parameter("scale_factor", 0.9996)
     val param4 = Parameter("false_easting", 0)
-    val param5 = Parameter("false_northing",0)
+    val param5 = Parameter("false_northing", 0)
     val unitField = UnitField("Meter", 1, None)
     val auth = Authority("EPSG", "42301")
     val expected = ProjCS("NAD27 / Polar Stereographic / CM\\=-98", geogcs, projection, Some(List(param1, param2, param3, param4, param5)), unitField, None, None, Some(auth))
@@ -605,33 +604,33 @@ class WKTParserTest extends FunSpec {
 
   it("Should return a contain the Geoccs object") {
     import WKT._
-    val spherAuth = Authority("EPSG","7019")
+    val spherAuth = Authority("EPSG", "7019")
     val spheroid = Spheroid("GRS 1980", 6378137.0, 298.257222101, Some(spherAuth))
     val toWgs84 = ToWgs84(List(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0))
-    val datumAuth = Authority("EPSG","1035")
+    val datumAuth = Authority("EPSG", "1035")
     val datum = Datum("Red Geodesica de Canarias 1995", spheroid, Some(toWgs84), Some(datumAuth))
-    var primeM = PrimeM("Greenwich", 0.0, Some(Authority("EPSG","8901")))
+    val primeM = PrimeM("Greenwich", 0.0, Some(Authority("EPSG", "8901")))
     val unitField = UnitField("m", 1.0, None)
     val axis1 = Axis("Geocentric X", "GEOCENTRIC_X")
     val axis2 = Axis("Geocentric Y", "GEOCENTRIC_Y")
     val axis3 = Axis("Geocentric Z", "GEOCENTRIC_Z")
-    val auth = Authority("EPSG","4079")
+    val auth = Authority("EPSG", "4079")
     val expected = GeocCS("REGCAN95", datum, primeM, unitField, Some(List(axis1, axis2, axis3)), Some(auth))
     assert(contains(expected))
   }
 
   it("Should parse NAD83(CSRS98) / New Brunswick Stereo") {
     import WKT._
-    val spherAuth = Authority("EPSG","7019")
+    val spherAuth = Authority("EPSG", "7019")
     val datumSpher = Spheroid("GRS 1980", 6378137.0, 298.257222101, Some(spherAuth))
     val toWgs84 = ToWgs84(List(0, 0, 0))
-    val datumAuth = Authority("EPSG","6140")
+    val datumAuth = Authority("EPSG", "6140")
     val geoDatum = Datum("NAD83_Canadian_Spatial_Reference_System", datumSpher, Some(toWgs84), Some(datumAuth))
-    val primeMAuth = Authority("EPSG","8901")
+    val primeMAuth = Authority("EPSG", "8901")
     val primeM = PrimeM("Greenwich", 0, Some(primeMAuth))
-    val unitAuth = Authority("EPSG","9108")
+    val unitAuth = Authority("EPSG", "9108")
     val unitField = UnitField("degree", 0.0174532925199433, Some(unitAuth))
-    val geoAuth = Authority("EPSG","4140")
+    val geoAuth = Authority("EPSG", "4140")
     val geogcs = GeogCS("NAD83(CSRS98)", geoDatum, primeM, unitField, None, Some(geoAuth))
     val projection = Projection("Oblique_Stereographic", None)
     val param1 = Parameter("latitude_of_origin", 46.5)
@@ -646,13 +645,90 @@ class WKTParserTest extends FunSpec {
     assert(contains(expected))
   }
 
+  it("Should parse WGS 84 / Pseudo-Mercator with PROJ4 Extension (ProjCS object)") {
+    import WKTParser._
+
+    val expected = ProjCS(
+      "WGS 84 / Pseudo-Mercator",
+      GeogCS("WGS 84",
+        Datum("WGS_1984",
+          Spheroid("WGS 84", 6378137.0, 298.257223563, Some(Authority("EPSG", "7030"))),
+          None, Some(Authority("EPSG", "6326"))
+        ),
+        PrimeM("Greenwich", 0.0, Some(Authority("EPSG", "8901"))),
+        UnitField("degree", 0.0174532925199433, Some(Authority("EPSG", "9122"))),
+        None, Some(Authority("EPSG", "4326"))
+      ),
+      Projection("Mercator_1SP", None),
+      Some(List(
+        Parameter("central_meridian", 0.0),
+        Parameter("scale_factor", 1.0),
+        Parameter("false_easting", 0.0),
+        Parameter("false_northing", 0.0)
+      )),
+      UnitField("metre", 1.0, Some(Authority("EPSG", "9001"))),
+      Some(TwinAxis(Axis("Easting", "EAST"), Axis("Northing", "NORTH"))),
+      Some(ExtensionProj4("+proj=merc +a=6378137 +b=6378137 +lat_ts=0 +lon_0=0 +x_0=0 +y_0=0 +k=1 +units=m +nadgrids=@null +wktext +no_defs")),
+      Some(Authority("EPSG", "3857"))
+    )
+
+    val projcsString = """PROJCS["WGS 84 / Pseudo-Mercator",GEOGCS["WGS 84",DATUM["WGS_1984",SPHEROID["WGS 84",6378137,298.257223563,AUTHORITY["EPSG","7030"]],AUTHORITY["EPSG","6326"]],PRIMEM["Greenwich",0,AUTHORITY["EPSG","8901"]],UNIT["degree",0.0174532925199433,AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","4326"]],PROJECTION["Mercator_1SP"],PARAMETER["central_meridian",0],PARAMETER["scale_factor",1],PARAMETER["false_easting",0],PARAMETER["false_northing",0],UNIT["metre",1,AUTHORITY["EPSG","9001"]],AXIS["Easting",EAST],AXIS["Northing",NORTH],EXTENSION["PROJ4","+proj=merc +a=6378137 +b=6378137 +lat_ts=0 +lon_0=0 +x_0=0 +y_0=0 +k=1 +units=m +nadgrids=@null +wktext +no_defs"],AUTHORITY["EPSG","3857"]]"""
+
+    parseAll(projcs, projcsString) match {
+      case Success(n, _) =>
+        assert(n == expected)
+      case NoSuccess(msg, _) =>
+        info(msg)
+        fail()
+    }
+  }
+
+  it("Should parse WGS 84 / Pseudo-Mercator with an unknown Extension (ProjCS object)") {
+    import WKTParser._
+
+    val expected = ProjCS(
+      "WGS 84 / Pseudo-Mercator",
+      GeogCS("WGS 84",
+        Datum("WGS_1984",
+          Spheroid("WGS 84", 6378137.0, 298.257223563, Some(Authority("EPSG", "7030"))),
+          None, Some(Authority("EPSG", "6326"))
+        ),
+        PrimeM("Greenwich", 0.0, Some(Authority("EPSG", "8901"))),
+        UnitField("degree", 0.0174532925199433, Some(Authority("EPSG", "9122"))),
+        None, Some(Authority("EPSG", "4326"))
+      ),
+      Projection("Mercator_1SP", None),
+      Some(List(
+        Parameter("central_meridian", 0.0),
+        Parameter("scale_factor", 1.0),
+        Parameter("false_easting", 0.0),
+        Parameter("false_northing", 0.0)
+      )),
+      UnitField("metre", 1.0, Some(Authority("EPSG", "9001"))),
+      Some(TwinAxis(Axis("Easting", "EAST"), Axis("Northing", "NORTH"))),
+      Some(ExtensionAny("UNKNOWN", "str1,str2,str3")),
+      Some(Authority("EPSG", "3857"))
+    )
+
+    val projcsString = """PROJCS["WGS 84 / Pseudo-Mercator",GEOGCS["WGS 84",DATUM["WGS_1984",SPHEROID["WGS 84",6378137,298.257223563,AUTHORITY["EPSG","7030"]],AUTHORITY["EPSG","6326"]],PRIMEM["Greenwich",0,AUTHORITY["EPSG","8901"]],UNIT["degree",0.0174532925199433,AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","4326"]],PROJECTION["Mercator_1SP"],PARAMETER["central_meridian",0],PARAMETER["scale_factor",1],PARAMETER["false_easting",0],PARAMETER["false_northing",0],UNIT["metre",1,AUTHORITY["EPSG","9001"]],AXIS["Easting",EAST],AXIS["Northing",NORTH],EXTENSION["UNKNOWN", "str1,str2,str3"],AUTHORITY["EPSG","3857"]]"""
+
+    parseAll(projcs, projcsString) match {
+      case Success(n, _) =>
+        assert(n == expected)
+      case NoSuccess(msg, _) =>
+        info(msg)
+        fail()
+    }
+  }
+
   it("Should parse GCS_WGS_1984 with and without newlines") {
-    val strip = WKTParser("""|GEOGCS["GCS_WGS_1984",
-                             |DATUM["D_WGS_1984", SPHEROID["WGS_1984", 6378137.0, 298.257223563]],
-                             |PRIMEM["Greenwich", 0.0],
-                             |UNIT["degree", 0.017453292519943295],
-                             |AXIS["Longitude", "EAST"],
-                             |AXIS["Latitude", "NORTH"]]""".stripMargin)
+    val strip = WKTParser(
+      """|GEOGCS["GCS_WGS_1984",
+         |DATUM["D_WGS_1984", SPHEROID["WGS_1984", 6378137.0, 298.257223563]],
+         |PRIMEM["Greenwich", 0.0],
+         |UNIT["degree", 0.017453292519943295],
+         |AXIS["Longitude", "EAST"],
+         |AXIS["Latitude", "NORTH"]]""".stripMargin)
 
     // single line equivalent
     val single = WKTParser("""GEOGCS["GCS_WGS_1984", DATUM["D_WGS_1984", SPHEROID["WGS_1984", 6378137.0, 298.257223563]],PRIMEM["Greenwich", 0.0],UNIT["degree", 0.017453292519943295],AXIS["Longitude", "EAST"],AXIS["Latitude", "NORTH"]]""")
@@ -661,22 +737,23 @@ class WKTParserTest extends FunSpec {
   }
 
   it("Should parse WKT string with proj4 extension") {
-    val strip = WKTParser("""|PROJCS["WGS 84 / Pseudo-Mercator",
-                             |GEOGCS["WGS 84",
-                             |DATUM["WGS_1984",SPHEROID["WGS 84",6378137,298.257223563,AUTHORITY["EPSG","7030"]],AUTHORITY["EPSG","6326"]],
-                             |PRIMEM["Greenwich",0,AUTHORITY["EPSG","8901"]],
-                             |UNIT["degree",0.0174532925199433,AUTHORITY["EPSG","9122"]],
-                             |AUTHORITY["EPSG","4326"]],
-                             |PROJECTION["Mercator_1SP"],
-                             |PARAMETER["central_meridian",0],
-                             |PARAMETER["scale_factor",1],
-                             |PARAMETER["false_easting",0],
-                             |PARAMETER["false_northing",0],
-                             |UNIT["metre",1,AUTHORITY["EPSG","9001"]],
-                             |AXIS["Easting",EAST],
-                             |AXIS["Northing",NORTH],
-                             |EXTENSION["PROJ4","+proj=merc +a=6378137 +b=6378137 +lat_ts=0 +lon_0=0 +x_0=0 +y_0=0 +k=1 +units=m +nadgrids=@null +wktext +no_defs"],
-                             |AUTHORITY["EPSG","3857"]]""".stripMargin)
+    val strip = WKTParser(
+      """|PROJCS["WGS 84 / Pseudo-Mercator",
+         |GEOGCS["WGS 84",
+         |DATUM["WGS_1984",SPHEROID["WGS 84",6378137,298.257223563,AUTHORITY["EPSG","7030"]],AUTHORITY["EPSG","6326"]],
+         |PRIMEM["Greenwich",0,AUTHORITY["EPSG","8901"]],
+         |UNIT["degree",0.0174532925199433,AUTHORITY["EPSG","9122"]],
+         |AUTHORITY["EPSG","4326"]],
+         |PROJECTION["Mercator_1SP"],
+         |PARAMETER["central_meridian",0],
+         |PARAMETER["scale_factor",1],
+         |PARAMETER["false_easting",0],
+         |PARAMETER["false_northing",0],
+         |UNIT["metre",1,AUTHORITY["EPSG","9001"]],
+         |AXIS["Easting",EAST],
+         |AXIS["Northing",NORTH],
+         |EXTENSION["PROJ4","+proj=merc +a=6378137 +b=6378137 +lat_ts=0 +lon_0=0 +x_0=0 +y_0=0 +k=1 +units=m +nadgrids=@null +wktext +no_defs"],
+         |AUTHORITY["EPSG","3857"]]""".stripMargin)
 
     // single line equivalent
     val single = WKTParser("""PROJCS["WGS 84 / Pseudo-Mercator",GEOGCS["WGS 84",DATUM["WGS_1984",SPHEROID["WGS 84",6378137,298.257223563,AUTHORITY["EPSG","7030"]],AUTHORITY["EPSG","6326"]],PRIMEM["Greenwich",0,AUTHORITY["EPSG","8901"]],UNIT["degree",0.0174532925199433,AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","4326"]],PROJECTION["Mercator_1SP"],PARAMETER["central_meridian",0],PARAMETER["scale_factor",1],PARAMETER["false_easting",0],PARAMETER["false_northing",0],UNIT["metre",1,AUTHORITY["EPSG","9001"]],AXIS["Easting",EAST],AXIS["Northing",NORTH],EXTENSION["PROJ4","+proj=merc +a=6378137 +b=6378137 +lat_ts=0 +lon_0=0 +x_0=0 +y_0=0 +k=1 +units=m +nadgrids=@null +wktext +no_defs"],AUTHORITY["EPSG","3857"]]""")
@@ -684,26 +761,27 @@ class WKTParserTest extends FunSpec {
     assert(strip == single)
   }
 
-  it("Should parse WKT string with an unsupported extension") {
-    val strip = WKTParser("""|PROJCS["WGS 84 / Pseudo-Mercator",
-                             |GEOGCS["WGS 84",
-                             |DATUM["WGS_1984",SPHEROID["WGS 84",6378137,298.257223563,AUTHORITY["EPSG","7030"]],AUTHORITY["EPSG","6326"]],
-                             |PRIMEM["Greenwich",0,AUTHORITY["EPSG","8901"]],
-                             |UNIT["degree",0.0174532925199433,AUTHORITY["EPSG","9122"]],
-                             |AUTHORITY["EPSG","4326"]],
-                             |PROJECTION["Mercator_1SP"],
-                             |PARAMETER["central_meridian",0],
-                             |PARAMETER["scale_factor",1],
-                             |PARAMETER["false_easting",0],
-                             |PARAMETER["false_northing",0],
-                             |UNIT["metre",1,AUTHORITY["EPSG","9001"]],
-                             |AXIS["Easting",EAST],
-                             |AXIS["Northing",NORTH],
-                             |EXTENSION["UNSUPPORTED","randomstring"],
-                             |AUTHORITY["EPSG","3857"]]""".stripMargin)
+  it("Should parse WKT string with an unknown extension") {
+    val strip = WKTParser(
+      """|PROJCS["WGS 84 / Pseudo-Mercator",
+         |GEOGCS["WGS 84",
+         |DATUM["WGS_1984",SPHEROID["WGS 84",6378137,298.257223563,AUTHORITY["EPSG","7030"]],AUTHORITY["EPSG","6326"]],
+         |PRIMEM["Greenwich",0,AUTHORITY["EPSG","8901"]],
+         |UNIT["degree",0.0174532925199433,AUTHORITY["EPSG","9122"]],
+         |AUTHORITY["EPSG","4326"]],
+         |PROJECTION["Mercator_1SP"],
+         |PARAMETER["central_meridian",0],
+         |PARAMETER["scale_factor",1],
+         |PARAMETER["false_easting",0],
+         |PARAMETER["false_northing",0],
+         |UNIT["metre",1,AUTHORITY["EPSG","9001"]],
+         |AXIS["Easting",EAST],
+         |AXIS["Northing",NORTH],
+         |EXTENSION["UNKNOWN", "str1,str2,str3"],
+         |AUTHORITY["EPSG","3857"]]""".stripMargin)
 
     // single line equivalent
-    val single = WKTParser("""PROJCS["WGS 84 / Pseudo-Mercator",GEOGCS["WGS 84",DATUM["WGS_1984",SPHEROID["WGS 84",6378137,298.257223563,AUTHORITY["EPSG","7030"]],AUTHORITY["EPSG","6326"]],PRIMEM["Greenwich",0,AUTHORITY["EPSG","8901"]],UNIT["degree",0.0174532925199433,AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","4326"]],PROJECTION["Mercator_1SP"],PARAMETER["central_meridian",0],PARAMETER["scale_factor",1],PARAMETER["false_easting",0],PARAMETER["false_northing",0],UNIT["metre",1,AUTHORITY["EPSG","9001"]],AXIS["Easting",EAST],AXIS["Northing",NORTH],EXTENSION["UNSUPPORTED","randomstring"],AUTHORITY["EPSG","3857"]]""")
+    val single = WKTParser("""PROJCS["WGS 84 / Pseudo-Mercator",GEOGCS["WGS 84",DATUM["WGS_1984",SPHEROID["WGS 84",6378137,298.257223563,AUTHORITY["EPSG","7030"]],AUTHORITY["EPSG","6326"]],PRIMEM["Greenwich",0,AUTHORITY["EPSG","8901"]],UNIT["degree",0.0174532925199433,AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","4326"]],PROJECTION["Mercator_1SP"],PARAMETER["central_meridian",0],PARAMETER["scale_factor",1],PARAMETER["false_easting",0],PARAMETER["false_northing",0],UNIT["metre",1,AUTHORITY["EPSG","9001"]],AXIS["Easting",EAST],AXIS["Northing",NORTH],EXTENSION["UNKNOWN", "str1,str2,str3"],AUTHORITY["EPSG","3857"]]""")
 
     assert(strip == single)
   }

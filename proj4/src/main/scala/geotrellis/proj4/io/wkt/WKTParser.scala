@@ -114,10 +114,10 @@ object WKTParser extends RegexParsers {
     case _ ~ name ~ _ ~ head ~ _ ~ tail ~ _ ~ auth ~ _ => CompDCS(name, head, tail, auth)
   }
 
-def extension: Parser[Extension] = """EXTENSION[""" ~ string ~ comma ~ string ~ """]""" map {
-  case _ ~ "PROJ4" ~ _ ~ value ~ _ => ExtensionProj4(value)
-  case _ ~ name ~ _ ~ value ~ _ => ExtensionAny(name, value)
-}
+  def extension: Parser[Extension] = """EXTENSION[""" ~ string ~ comma ~ string ~ """]""" map {
+    case _ ~ "PROJ4" ~ _ ~ value ~ _ => ExtensionProj4(value)
+    case _ ~ name ~ _ ~ value ~ _ => ExtensionAny(name, value)
+  }
 
   def wktCS: Parser[WktCS] = localcs | projcs | geogcs | geoccs | compdcs | vertcs
 
@@ -126,7 +126,7 @@ def extension: Parser[Extension] = """EXTENSION[""" ~ string ~ comma ~ string ~ 
     parseAll(wktCS, cleanWkt) match {
       case Success(wktObject, _) =>
         wktObject
-      case Failure(msg, tail) =>
+      case Failure(msg, _) =>
         throw new IllegalArgumentException(msg)
       case Error(msg, _) => {
         throw new IllegalArgumentException(msg)
