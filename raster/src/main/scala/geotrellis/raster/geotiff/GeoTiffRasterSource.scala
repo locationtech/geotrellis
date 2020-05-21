@@ -53,7 +53,7 @@ class GeoTiffRasterSource(
   def crs: CRS = tiff.crs
 
   lazy val gridExtent: GridExtent[Long] = tiff.rasterExtent.toGridType[Long]
-  lazy val resolutions: List[CellSize] = cellSize :: tiff.overviews.map(_.cellSize)
+  lazy val resolutions: List[CellSize] = cellSize :: tiff.overviews.map(_.cellSize).sorted
 
   def reprojection(targetCRS: CRS, resampleTarget: ResampleTarget = DefaultTarget, method: ResampleMethod = ResampleMethod.DEFAULT, strategy: OverviewStrategy = OverviewStrategy.DEFAULT): GeoTiffReprojectRasterSource =
     GeoTiffReprojectRasterSource(dataPath, targetCRS, resampleTarget, method, strategy, targetCellType = targetCellType, baseTiff = Some(tiff))

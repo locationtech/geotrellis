@@ -52,8 +52,6 @@ class GeoTrellisRasterSource(
   val time: Option[ZonedDateTime],
   val timeMetadataKey: String = "times"
 ) extends RasterSource {
-  @transient private[this] lazy val logger = getLogger
-
   def name: GeoTrellisPath = dataPath
 
   def this(attributeStore: AttributeStore, dataPath: GeoTrellisPath) =
@@ -95,7 +93,7 @@ class GeoTrellisRasterSource(
   def metadata: GeoTrellisMetadata = GeoTrellisMetadata(name, crs, bandCount, cellType, gridExtent, resolutions, attributes)
 
   // reference to this will fully initilze the sourceLayers stream
-  lazy val resolutions: List[CellSize] = sourceLayers.map(_.gridExtent.cellSize).toList
+  lazy val resolutions: List[CellSize] = sourceLayers.map(_.gridExtent.cellSize).toList.sorted
 
   lazy val times: List[ZonedDateTime] = {
     val layerId = dataPath.layerId

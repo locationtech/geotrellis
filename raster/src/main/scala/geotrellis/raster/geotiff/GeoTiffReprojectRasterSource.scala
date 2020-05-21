@@ -82,7 +82,7 @@ class GeoTiffReprojectRasterSource(
 
   lazy val resolutions: List[CellSize] =
     ReprojectRasterExtent(tiff.rasterExtent, transform, Reproject.Options.DEFAULT).cellSize ::
-      tiff.overviews.map(ovr => ReprojectRasterExtent(ovr.rasterExtent, transform, Reproject.Options.DEFAULT).cellSize)
+      tiff.overviews.map(ovr => ReprojectRasterExtent(ovr.rasterExtent, transform, Reproject.Options.DEFAULT).cellSize).sorted
 
   @transient private[raster] lazy val closestTiffOverview: GeoTiff[MultibandTile] = {
     resampleTarget match {

@@ -50,7 +50,7 @@ class GeoTrellisReprojectRasterSource(
 
   lazy val resolutions: List[CellSize] = sourceLayers.map { layer =>
     ReprojectRasterExtent(layer.gridExtent, Transform(layer.metadata.crs, crs), Reproject.Options.DEFAULT).cellSize
-  }.toList
+  }.toList.sorted
 
   lazy val sourceLayer: Layer = sourceLayers.find(_.id == layerId).get
 
