@@ -16,8 +16,7 @@
 
 package geotrellis.proj4
 
-import geotrellis.proj4.io.wkt.WKT
-
+import geotrellis.proj4.io.wkt.{ExtensionProj4, ProjCS, WKT, WKTParser}
 import org.locationtech.proj4j._
 import org.locationtech.proj4j.util.CRSCache
 
@@ -67,7 +66,18 @@ object CRS {
     * well-known-text String.
     */
   def fromWKT(wktString: String): Option[CRS] = {
-    WKT.getEpsgStringCode(wktString).map(fromName(_))
+    val fromEpsgCode = WKT.getEpsgStringCode(wktString).map(fromName)
+    if(fromEpsgCode.isEmpty) {
+      WKTParser(wktString) match {
+        case wkt: ProjCS =>
+          wkt.extension.flatMap {
+            case ExtensionProj4(proj4String) =>
+              Some(CRS.fromString(proj4String))
+            case _ => None
+          }
+        case _ => fromEpsgCode
+      }
+    } else fromEpsgCode
   }
 
   /**
@@ -117,13 +127,11 @@ trait CRS extends Serializable {
 
   val Epsilon = 1e-8
 
-  def epsgCode: Option[Int] = {
+  def epsgCode: Option[Int] =
     proj4jCrs.getName.split(":") match {
       case Array(name, code) if name.toUpperCase == "EPSG" => Try(code.toInt).toOption
       case _ => CRS.getEpsgCode(toProj4String)
     }
-  }
-
 
   def proj4jCrs: CoordinateReferenceSystem
 

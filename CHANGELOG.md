@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Add GS in the list of supported URI schemes [#3235](https://github.com/locationtech/geotrellis/pull/3235)
+- WKT Proj4 Extension support [#3241](https://github.com/locationtech/geotrellis/issues/3241)
 
 ### Changed
 - Fix GeoTrellisRasterSources to properly pass time though all the internal functions [#3226](https://github.com/locationtech/geotrellis/pull/3226)

@@ -44,7 +44,7 @@ case class Projection(name: String, authority: Option[Authority])
 
 case class GeogCS(name: String, datum: Datum, primeM: PrimeM, angularUnit: UnitField, axes: Option[List[Axis]], authority: Option[Authority]) extends WktCS
 
-case class ProjCS(name: String, geogcs: GeogCS, projection: Projection, params: Option[List[Parameter]], linearUnit: UnitField, twinAxis: Option[TwinAxis], authority: Option[Authority]) extends WktCS
+case class ProjCS(name: String, geogcs: GeogCS, projection: Projection, params: Option[List[Parameter]], linearUnit: UnitField, twinAxis: Option[TwinAxis], extension: Option[Extension], authority: Option[Authority]) extends WktCS
 
 case class VertCS(name: String, vertDatum: VertDatum, unit: UnitField, axis: Option[Axis], authority: Option[Authority]) extends WktCS
 
@@ -53,3 +53,14 @@ case class LocalCS(name: String, localDatum: LocalDatum, unit: UnitField, axisLi
 case class GeocCS(name: String, datum: Datum, primeM: PrimeM, unit: UnitField, axis: Option[List[Axis]], authority: Option[Authority]) extends WktCS
 
 case class CompDCS(name: String, head: Any, tail: Any, authority: Option[Authority]) extends WktCS
+
+sealed trait Extension {
+  def name: String
+  def value: String
+}
+
+case class ExtensionProj4(value: String) extends Extension {
+  val name: String = "PROJ4"
+}
+
+case class ExtensionAny(name: String, value: String) extends Extension
