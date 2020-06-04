@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Rasterizer.rasterize should be consistent with rasterizeWithValue [#3238](https://github.com/locationtech/geotrellis/pull/3238)
 - GeoTrellisRasterSource should return None on empty reads [#3240](https://github.com/locationtech/geotrellis/pull/3240) 
 - ArrayTile equals method always returns true if first elements are NaN [#3242](https://github.com/locationtech/geotrellis/issues/3242)
+- Fixed resource issue with JpegDecompressor that was causing a "too many open files in the system" exception on many parallel reads of JPEG compressed GeoTiffs. [#3249](https://github.com/locationtech/geotrellis/pull/3249)
 
 ## [3.3.0] - 2020-04-07
 
