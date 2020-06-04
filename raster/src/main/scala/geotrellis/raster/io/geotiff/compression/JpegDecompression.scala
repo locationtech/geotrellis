@@ -26,8 +26,7 @@ import spire.syntax.cfor._
 
 import java.awt.image.DataBufferByte
 import java.io.ByteArrayInputStream
-import javax.imageio.ImageIO
-import javax.imageio.IIOException
+import javax.imageio.{ImageIO, IIOException, ImageReader}
 import javax.imageio.metadata.IIOMetadata
 import javax.imageio.metadata.IIOMetadataFormatImpl
 import javax.imageio.metadata.IIOMetadataNode
@@ -55,22 +54,39 @@ class JpegDecompressor(tiffTags: TiffTags) extends Decompressor {
       throw new GeoTiffReaderLimitationException(msg)
     }
 
-  // Create the delegate JPEG reader
-  val jpegReader = {
+  private def withJpegReader[T](inputBytes: Option[Array[Byte]])(fn: ImageReader => T): T = {
     val readers = ImageIO.getImageReadersByFormatName("JPEG")
     if(!readers.hasNext) {
       throw new IIOException("Could not instantiate JPEGImageReader")
     }
-    readers.next
+    val reader = readers.next
+    val tablesSource = ImageIO.createImageInputStream(new ByteArrayInputStream(jpegTables))
+    val imageSource = inputBytes.map { ib =>
+      ImageIO.createImageInputStream(new ByteArrayInputStream(ib))
+    }
+
+    try {
+      // This initializes the tables and other internal settings for the reader,
+      // and is actually a feature of JPEG, see abbreviated streams:
+      // http://docs.oracle.com/javase/6/docs/api/javax/imageio/metadata/doc-files/jpeg_metadata.html#abbrev
+      reader.setInput(tablesSource)
+      reader.getStreamMetadata()
+
+      imageSource.foreach(reader.setInput(_))
+      fn(reader)
+
+    } finally {
+      tablesSource.close()
+      imageSource.foreach(_.close())
+      reader.dispose()
+    }
   }
-  jpegReader.setInput(imageSourceFromBytes(jpegTables))
-  jpegReader.getStreamMetadata()
 
-  val jpegParam = jpegReader.getDefaultReadParam.asInstanceOf[JPEGImageReadParam]
-  jpegParam.setSourceSubsampling(1, 1, 0, 0)
-
-  def imageSourceFromBytes(bytes: Array[Byte]): ImageInputStream =
-    ImageIO.createImageInputStream(new ByteArrayInputStream(bytes))
+  val jpegParam = withJpegReader(None) { jpegReader =>
+    val params = jpegReader.getDefaultReadParam.asInstanceOf[JPEGImageReadParam]
+    params.setSourceSubsampling(1, 1, 0, 0)
+    params
+  }
 
   def  normalizeYCbCr(array: Array[Byte]): Array[Byte] = {
     // Default:  CCIR Recommendation 601-1: 299/1000, 587/1000 and 114/1000
@@ -94,8 +110,10 @@ class JpegDecompressor(tiffTags: TiffTags) extends Decompressor {
   def code = JpegCoded
 
   def decompress(segment: Array[Byte], segmentIndex: Int): Array[Byte] = {
-    jpegReader.setInput(imageSourceFromBytes(segment))
-    val result = jpegReader.readRaster(0, jpegParam).getDataBuffer.asInstanceOf[DataBufferByte].getData
+    val result = withJpegReader(Some(segment)) { jpegReader =>
+      jpegReader.readRaster(0, jpegParam).getDataBuffer.asInstanceOf[DataBufferByte].getData
+    }
+
     if(photometricInterp == ColorSpace.YCbCr)
       normalizeYCbCr(result)
     else
