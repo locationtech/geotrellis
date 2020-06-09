@@ -19,7 +19,6 @@ package geotrellis.raster
 import geotrellis.vector._
 import geotrellis.raster._
 import geotrellis.raster.resample._
-import geotrellis.raster.reproject.Reproject
 import geotrellis.proj4.{CRS, WebMercator}
 import geotrellis.raster.io.geotiff.OverviewStrategy
 
@@ -38,7 +37,7 @@ import spire.math.Integral
   * whether they'll have the same CRS. crs allows specifying the CRS on read instead of
   * having to make sure at compile time that you're threading CRSes through everywhere correctly.
   */
-abstract class MosaicRasterSource extends RasterSource { self =>
+abstract class MosaicRasterSource extends RasterSource {
 
   val sources: NonEmptyList[RasterSource]
   val crs: CRS
@@ -86,20 +85,8 @@ abstract class MosaicRasterSource extends RasterSource { self =>
     resampleTarget: ResampleTarget = DefaultTarget,
     method: ResampleMethod = ResampleMethod.DEFAULT,
     strategy: OverviewStrategy = OverviewStrategy.DEFAULT
-  ): RasterSource = {
-    val reprojectedSources = sources.map(_.reproject(targetCRS, resampleTarget, method, strategy))
-    val combinedExtent = reprojectedSources.map(_.extent).toList.reduce(_ combine _)
-    val minCellSize = reprojectedSources.map(_.cellSize).toList.maxBy(_.resolution)
-    val combinedGridExtent = GridExtent[Long](combinedExtent, minCellSize)
-
-    new MosaicRasterSource {
-      val name = self.name
-      val sources = reprojectedSources
-      val crs = targetCRS
-
-      def gridExtent: GridExtent[Long] = combinedGridExtent
-    }
-  }
+   ): RasterSource =
+    MosaicRasterSource.instance(sources.map(_.reproject(targetCRS, resampleTarget, method, strategy)), targetCRS, name)
 
   def read(extent: Extent, bands: Seq[Int]): Option[Raster[MultibandTile]] = {
     val rasters = sources map { _.read(extent, bands) }
@@ -115,11 +102,11 @@ abstract class MosaicRasterSource extends RasterSource { self =>
     resampleTarget: ResampleTarget,
     method: ResampleMethod,
     strategy: OverviewStrategy
-  ): RasterSource = MosaicRasterSource(
-    sources map { _.resample(resampleTarget, method, strategy) }, crs, name)
+  ): RasterSource =
+    MosaicRasterSource.instance(sources.map(_.resample(resampleTarget, method, strategy)), crs, name)
 
   def convert(targetCellType: TargetCellType): RasterSource =
-    MosaicRasterSource(sources map { _.convert(targetCellType) }, crs, name)
+    MosaicRasterSource.instance(sources.map(_.convert(targetCellType)), crs, name)
 
   override def toString: String = s"MosaicRasterSource(${sources.toList}, $crs, $gridExtent, $name)"
 }
@@ -132,7 +119,7 @@ object MosaicRasterSource {
       def combine(l: Raster[MultibandTile], r: Raster[MultibandTile]) = {
         val targetRE = RasterExtent(
           l.rasterExtent.extent combine r.rasterExtent.extent,
-          List(l.rasterExtent.cellSize, r.rasterExtent.cellSize).minBy(_.resolution))
+          List(l.rasterExtent.cellSize, r.rasterExtent.cellSize).maxBy(_.resolution))
         val result = l.resample(targetRE) merge r.resample(targetRE)
         result
       }
@@ -153,13 +140,34 @@ object MosaicRasterSource {
       }
     }
 
+  def instance(sourcesList: NonEmptyList[RasterSource], targetCRS: CRS, targetGridExtent: GridExtent[Long], sourceName: SourceName): MosaicRasterSource =
+    new MosaicRasterSource {
+      val sources: NonEmptyList[RasterSource] = sourcesList
+      val crs: CRS = targetCRS
+      def gridExtent: GridExtent[Long] = targetGridExtent
+      val name: SourceName = sourceName
+    }
+
+  def instance(sourcesList: NonEmptyList[RasterSource], targetCRS: CRS, sourceName: SourceName): MosaicRasterSource = {
+    val combinedExtent = sourcesList.map(_.extent).toList.reduce(_ combine _)
+    val minCellSize = sourcesList.map(_.cellSize).toList.maxBy(_.resolution)
+    val combinedGridExtent = GridExtent[Long](combinedExtent, minCellSize)
+    instance(sourcesList, targetCRS, combinedGridExtent, sourceName)
+  }
+
+  def instance(sourcesList: NonEmptyList[RasterSource], targetCRS: CRS): MosaicRasterSource =
+    instance(sourcesList, targetCRS, EmptyName)
+
+  def instance(sourcesList: NonEmptyList[RasterSource], targetCRS: CRS, targetGridExtent: GridExtent[Long]): MosaicRasterSource =
+    instance(sourcesList, targetCRS, targetGridExtent, EmptyName)
+
   def apply(sourcesList: NonEmptyList[RasterSource], targetCRS: CRS, targetGridExtent: GridExtent[Long]): MosaicRasterSource =
     apply(sourcesList, targetCRS, targetGridExtent, EmptyName)
 
   def apply(sourcesList: NonEmptyList[RasterSource], targetCRS: CRS, targetGridExtent: GridExtent[Long], rasterSourceName: SourceName): MosaicRasterSource = {
     new MosaicRasterSource {
       val name = rasterSourceName
-      val sources = sourcesList map { _.reprojectToGrid(targetCRS, gridExtent) }
+      val sources = sourcesList.map(_.reprojectToGrid(targetCRS, gridExtent))
       val crs = targetCRS
 
       def gridExtent: GridExtent[Long] = targetGridExtent
@@ -175,16 +183,10 @@ object MosaicRasterSource {
       val sources = sourcesList map { _.reprojectToGrid(targetCRS, sourcesList.head.gridExtent) }
       val crs = targetCRS
       def gridExtent: GridExtent[Long] = {
-        val reprojectedExtents =
-          sourcesList map { source => source.gridExtent.reproject(source.crs, targetCRS) }
-        val minCellSize: CellSize = reprojectedExtents.toList map { rasterExtent =>
-          CellSize(rasterExtent.cellwidth, rasterExtent.cellheight)
-        } minBy { _.resolution }
-        reprojectedExtents.toList.reduce(
-          (re1: GridExtent[Long], re2: GridExtent[Long]) => {
-            re1.withResolution(minCellSize) combine re2.withResolution(minCellSize)
-          }
-        )
+        val reprojectedSources = sources.toList
+        val combinedExtent = reprojectedSources.map(_.extent).reduce(_ combine _)
+        val minCellSize = reprojectedSources.map(_.cellSize).maxBy(_.resolution)
+        GridExtent[Long](combinedExtent, minCellSize)
       }
     }
   }

@@ -45,6 +45,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix Rasterizer for polygons containing concavities whith `PixelIsArea` option [#3192](https://github.com/locationtech/geotrellis/pull/3192)
 - Fix spatial join (Spark) when using different partitioning in left and right RDDs [#3175](https://github.com/locationtech/geotrellis/pull/3175)
 - Fix Monad instance for `PolygonalSummaryResult` [#3221](https://github.com/locationtech/geotrellis/pull/3221)
+- Fix MosaicRasterSource and GDALRasterSource reprojection behavior [#3252](https://github.com/locationtech/geotrellis/pull/3252)
 
 ### Removed
 
