@@ -17,12 +17,14 @@
 package geotrellis.raster
 
 import geotrellis.raster.geotiff._
-import geotrellis.raster.io.geotiff.GeoTiffTestUtils
-import geotrellis.proj4.{LatLng, WebMercator}
+import geotrellis.raster.io.geotiff.{AutoHigherResolution, GeoTiffTestUtils}
+import geotrellis.proj4.{CRS, LatLng, WebMercator}
 import geotrellis.vector.Extent
-
 import geotrellis.raster.testkit.RasterMatchers
 import cats.data.NonEmptyList
+import cats.syntax.apply._
+import cats.instances.option._
+import geotrellis.raster.resample.NearestNeighbor
 
 import org.scalatest._
 
@@ -49,11 +51,11 @@ class MosaicRasterSourceSpec extends FunSpec with RasterMatchers with GeoTiffTes
     it("should union extents of its sources") {
       mosaicRasterSource.gridExtent shouldBe (
         gtRasterSource1.gridExtent combine gtRasterSource2.gridExtent
-      )
+        )
     }
 
     it("should union extents with reprojection") {
-      mosaicRasterSource.reproject(WebMercator).gridExtent shouldBe mosaicRasterSource.gridExtent.reproject(LatLng, WebMercator)
+      mosaicRasterSource.reproject(WebMercator).gridExtent shouldBe mosaicRasterSource.sources.map(_.gridExtent.reproject(LatLng, WebMercator)).toList.reduce(_ combine _)
     }
 
     it("the extent read should match the extent requested") {
@@ -88,10 +90,10 @@ class MosaicRasterSourceSpec extends FunSpec with RasterMatchers with GeoTiffTes
       val expectation = Raster(
         MultibandTile(
           IntConstantNoDataArrayTile(Array(1, 2, 3, 4, 1, 2,
-                                           5, 6, 7, 8, 5, 6,
-                                           9, 10, 11, 12, 9, 10,
-                                           13, 14, 15, 16, 13, 14),
-                                     6, 4)),
+            5, 6, 7, 8, 5, 6,
+            9, 10, 11, 12, 9, 10,
+            13, 14, 15, 16, 13, 14),
+            6, 4)),
         extentRead
       )
       val result = mosaicRasterSource.read(extentRead, Seq(0)).get
@@ -102,16 +104,59 @@ class MosaicRasterSourceSpec extends FunSpec with RasterMatchers with GeoTiffTes
       val expectation = Raster(
         MultibandTile(
           IntConstantNoDataArrayTile(Array(1, 2, 3, 4, 1, 2, 3, 4,
-                                           5, 6, 7, 8, 5, 6, 7, 8,
-                                           9, 10, 11, 12, 9, 10, 11, 12,
-                                           13, 14, 15, 16, 13, 14, 15, 16),
-                                     8, 4)),
-          mosaicRasterSource.gridExtent.extent
+            5, 6, 7, 8, 5, 6, 7, 8,
+            9, 10, 11, 12, 9, 10, 11, 12,
+            13, 14, 15, 16, 13, 14, 15, 16),
+            8, 4)),
+        mosaicRasterSource.gridExtent.extent
       )
       val bounds = GridBounds(mosaicRasterSource.dimensions)
       val result = mosaicRasterSource.read(bounds, Seq(0)).get
       result shouldEqual expectation
       result.extent shouldEqual expectation.extent
+    }
+  }
+
+  describe("reprojection operations") {
+    it("reprojectToRegion should behave consistent with simple raster sources") {
+      val rs = GeoTiffRasterSource(baseGeoTiffPath("vlm/lc8-utm-1.tif"))
+      val mrs = MosaicRasterSource(NonEmptyList(rs, Nil), rs.crs)
+
+      rs.crs shouldBe mrs.crs
+      rs.gridExtent shouldBe mrs.gridExtent
+
+      val targetCRS = CRS.fromEpsgCode(4326)
+      val targetGridExtent = GridExtent[Long](
+        Extent(-76.66721364182322, 37.825520359396386, -73.9485516555973, 39.96447687368617),
+        CellSize(0.00355308391078038,0.00354453974736105)
+      ).toRasterExtent()
+
+      val extent = Extent(-76.66721364182322, 37.825520359396386, -73.9485516555973, 39.96447687368617)
+
+      val reprojectedrs = rs.reprojectToRegion(
+        targetCRS,
+        targetGridExtent,
+        NearestNeighbor,
+        AutoHigherResolution
+      )
+
+      val reprojectedmrs = mrs.reprojectToRegion(
+        targetCRS,
+        targetGridExtent,
+        NearestNeighbor,
+        AutoHigherResolution
+      )
+
+      reprojectedrs.crs shouldBe reprojectedmrs.crs
+      reprojectedrs.gridExtent shouldBe reprojectedmrs.gridExtent
+
+      val result = reprojectedrs.read(extent)
+      val resultm = reprojectedmrs.read(extent)
+
+      result shouldNot be (None)
+      resultm shouldNot be (None)
+
+      (result, resultm).mapN(assertEqual)
     }
   }
 }

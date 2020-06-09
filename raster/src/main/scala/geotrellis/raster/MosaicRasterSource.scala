@@ -38,7 +38,7 @@ import spire.math.Integral
   * whether they'll have the same CRS. crs allows specifying the CRS on read instead of
   * having to make sure at compile time that you're threading CRSes through everywhere correctly.
   */
-abstract class MosaicRasterSource extends RasterSource {
+abstract class MosaicRasterSource extends RasterSource { self =>
 
   val sources: NonEmptyList[RasterSource]
   val crs: CRS
@@ -86,13 +86,20 @@ abstract class MosaicRasterSource extends RasterSource {
     resampleTarget: ResampleTarget = DefaultTarget,
     method: ResampleMethod = ResampleMethod.DEFAULT,
     strategy: OverviewStrategy = OverviewStrategy.DEFAULT
-  ): RasterSource =
-    MosaicRasterSource(
-      sources map { _.reproject(targetCRS, resampleTarget, method, strategy) },
-      crs,
-      gridExtent.reproject(this.crs, targetCRS, Reproject.Options.DEFAULT.copy(method = method)),
-      name
-    )
+  ): RasterSource = {
+    val reprojectedSources = sources.map(_.reproject(targetCRS, resampleTarget, method, strategy))
+    val combinedExtent = reprojectedSources.map(_.extent).toList.reduce(_ combine _)
+    val minCellSize = reprojectedSources.map(_.cellSize).toList.maxBy(_.resolution)
+    val combinedGridExtent = GridExtent[Long](combinedExtent, minCellSize)
+
+    new MosaicRasterSource {
+      val name = self.name
+      val sources = reprojectedSources
+      val crs = targetCRS
+
+      def gridExtent: GridExtent[Long] = combinedGridExtent
+    }
+  }
 
   def read(extent: Extent, bands: Seq[Int]): Option[Raster[MultibandTile]] = {
     val rasters = sources map { _.read(extent, bands) }
