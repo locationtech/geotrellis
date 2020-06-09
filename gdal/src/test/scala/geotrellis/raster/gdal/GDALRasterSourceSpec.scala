@@ -16,7 +16,7 @@
 
 package geotrellis.raster.gdal
 
-import geotrellis.proj4.LatLng
+import geotrellis.proj4.{LatLng, WebMercator}
 import geotrellis.raster.geotiff.GeoTiffRasterSource
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff.GeoTiff
@@ -24,7 +24,6 @@ import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.raster.resample._
 import geotrellis.raster.testkit._
 import geotrellis.vector.Extent
-
 import org.scalatest._
 
 class GDALRasterSourceSpec extends FunSpec with RasterMatchers with GivenWhenThen {
@@ -112,6 +111,38 @@ class GDALRasterSourceSpec extends FunSpec with RasterMatchers with GivenWhenThe
     it("should read the same metadata as GeoTiffRasterSource") {
       lazy val tsource = GeoTiffRasterSource(uri)
       source.metadata.attributes.mapValues(_.toUpperCase) shouldBe tsource.metadata.attributes.mapValues(_.toUpperCase)
+    }
+
+    it("should perform a chained reprojection") {
+      val rs = GDALRasterSource(Resource.path("vlm/lc8-utm-1.tif"))
+      val drs = rs.reproject(WebMercator).reproject(LatLng).asInstanceOf[GDALRasterSource]
+      val rrs = rs.reproject(LatLng).asInstanceOf[GDALRasterSource]
+
+      drs.crs shouldBe rrs.crs
+
+      val RasterExtent(Extent(dxmin, dymin, dxmax, dymax), dcw, dch, dc, dr) = drs.gridExtent.toRasterExtent()
+      val RasterExtent(Extent(rxmin, rymin, rxmax, rymax), rcw, rch, rc, rr) = rrs.gridExtent.toRasterExtent()
+
+      // our reprojection rounding error
+      // to fix it we can round cellSize in the options reprojection by 6 numbers after the decimal point
+      dxmin shouldBe rxmin +- 1e-2
+      dymin shouldBe rymin +- 1e-2
+      dxmax shouldBe rxmax +- 1e-2
+      dymax shouldBe rymax +- 1e-2
+
+      dcw shouldBe rcw +- 1e-6
+      dch shouldBe rch +- 1e-6
+
+      dc shouldBe rc +- 1
+      dr shouldBe rr +- 1
+
+      // manually ensure that the difference in two raster sources
+      // is only in a different cellSize
+      drs.options.copy(cellSize = None) shouldBe rrs.options.copy(cellSize = None)
+      val CellSize(docw, doch) = drs.options.cellSize.get
+      val CellSize(rocw, roch) = rrs.options.cellSize.get
+      docw shouldBe rocw +- 1e-6
+      doch shouldBe roch +- 1e-6
     }
 
     describe("should derive the cellType consistently with GeoTiffRasterSource") {

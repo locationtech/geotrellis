@@ -261,7 +261,7 @@ case class GDALWarpOptions(
     this.copy(
       cellSize       = re.cellSize.some,
       targetCRS      = targetCRS.some,
-      sourceCRS      = sourceCRS.some,
+      sourceCRS      = this.sourceCRS orElse sourceCRS.some,
       resampleMethod = reprojectOptions.method.some
     )
   }

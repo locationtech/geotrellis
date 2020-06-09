@@ -120,6 +120,8 @@ abstract class MosaicRasterSource extends RasterSource { self =>
 
   def convert(targetCellType: TargetCellType): RasterSource =
     MosaicRasterSource(sources map { _.convert(targetCellType) }, crs, name)
+
+  override def toString: String = s"MosaicRasterSource(${sources.toList}, $crs, $gridExtent, $name)"
 }
 
 object MosaicRasterSource {
