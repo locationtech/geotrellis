@@ -190,38 +190,5 @@ class GDALRasterSourceSpec extends FunSpec with RasterMatchers with GivenWhenThe
         }
       }
     }
-
-
-    ignore("resampleToRegion should behave like GeoTiffRasterSource.resampleToRegion") {
-      val crs = CRS.fromEpsgCode(32618)
-
-      val uri = Resource.path("vlm/lc8-utm-1.tif")
-
-      val gt = GeoTiffRasterSource(uri)
-      val gd = GDALRasterSource(uri)
-
-      val re = GridExtent[Long](Extent(222285.0, 4187685.0, 589815.0, 4584315.0),CellSize(657.4776386404293,658.8538205980067)).toRasterExtent()
-      val e = Extent(222285.0, 4187685.0, 589815.0, 4584315.0)
-
-      val resgt =
-        gt
-        .reprojectToRegion(crs, re, NearestNeighbor, AutoHigherResolution)
-        .read(e).get
-
-      resgt.tile.band(0) // .renderPng().write("/Users/daunnc/Downloads/test-gt1.png")
-
-      val resgd =
-        gd
-          .reprojectToRegion(crs, re, NearestNeighbor, AutoHigherResolution)
-          .read(e).get
-
-      println(resgt.rasterExtent)
-      println(resgd.rasterExtent)
-
-      resgd.tile.band(0) // .renderPng().write("/Users/daunnc/Downloads/test-gd1.png")
-
-      // there is a little mismatch since GDAL aligns pixels
-      assertEqual(resgt.tile, resgd.tile)
-    }
   }
 }

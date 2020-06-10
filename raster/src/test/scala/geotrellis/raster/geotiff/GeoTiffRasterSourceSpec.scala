@@ -17,12 +17,11 @@
 package geotrellis.raster.geotiff
 
 import geotrellis.raster._
-import geotrellis.raster.io.geotiff.GeoTiffTestUtils
+import geotrellis.raster.io.geotiff.{AutoHigherResolution, GeoTiffTestUtils}
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.raster.resample._
 import geotrellis.raster.testkit._
 import geotrellis.vector._
-
 import org.scalatest._
 
 class GeoTiffRasterSourceSpec extends FunSpec with RasterMatchers with GivenWhenThen with GeoTiffTestUtils {
@@ -82,5 +81,22 @@ class GeoTiffRasterSourceSpec extends FunSpec with RasterMatchers with GivenWhen
     withGeoTiffClue(actual, expected, resampledSource.crs)  {
       assertRastersEqual(actual, expected)
     }
+  }
+
+  it("resampleToRegion should produce an expected raster") {
+    val uri = baseGeoTiffPath("vlm/lc8-utm-1.tif")
+    val urie = baseGeoTiffPath("vlm/lc8-utm-1-re.tif")
+
+    val expected = GeoTiffRasterSource(urie).read().get
+
+    val re = GridExtent[Long](Extent(222285.0, 4187685.0, 589815.0, 4584315.0), CellSize(657.4776386404293,658.8538205980067))
+    val e = Extent(222285.0, 4187685.0, 589815.0, 4584315.0)
+
+    val actual =
+      GeoTiffRasterSource(uri)
+        .resampleToRegion(re, NearestNeighbor, AutoHigherResolution)
+        .read(e).get
+
+    assertEqual(actual, expected)
   }
 }
