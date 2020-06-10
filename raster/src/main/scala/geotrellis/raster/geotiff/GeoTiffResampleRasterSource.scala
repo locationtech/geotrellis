@@ -57,6 +57,7 @@ class GeoTiffResampleRasterSource(
 
   def crs: CRS = tiff.crs
 
+  // GDAL aligns target pixels, do we need to do it as well?
   override lazy val gridExtent: GridExtent[Long] = resampleTarget(tiff.rasterExtent.toGridType[Long])
 
   lazy val resolutions: List[CellSize] = tiff.cellSize :: tiff.overviews.map(_.cellSize)
@@ -74,13 +75,7 @@ class GeoTiffResampleRasterSource(
             Reproject.Options.DEFAULT.copy(method = resampleMethod, errorThreshold = errorThreshold)
           )
 
-        resampleTarget match {
-          case targetRegion: TargetRegion => targetRegion.region.toGridType[Long]
-          case targetAlignment: TargetAlignment => targetAlignment(reprojectedRasterExtent)
-          case targetDimensions: TargetDimensions => targetDimensions(reprojectedRasterExtent)
-          case targetCellSize: TargetCellSize => targetCellSize(reprojectedRasterExtent)
-          case _ => reprojectedRasterExtent
-        }
+        resampleTarget(reprojectedRasterExtent)
       }
     }
 
@@ -124,10 +119,7 @@ class GeoTiffResampleRasterSource(
 
     geoTiffTile.crop(windows.keys.toSeq, bands.toArray).map { case (gb, tile) =>
       val targetRasterExtent = windows(gb)
-      Raster(
-        tile = tile,
-        extent = targetRasterExtent.extent
-      ).resample(targetRasterExtent.cols, targetRasterExtent.rows, method)
+      Raster(tile, closestTiffOverview.rasterExtent.extentFor(gb, clamp = true)).resample(targetRasterExtent, method)
     }
   }
 

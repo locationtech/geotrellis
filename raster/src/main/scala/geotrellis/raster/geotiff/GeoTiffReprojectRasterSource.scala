@@ -71,13 +71,7 @@ class GeoTiffReprojectRasterSource(
         Reproject.Options.DEFAULT.copy(method = resampleMethod, errorThreshold = errorThreshold)
       )
 
-    resampleTarget match {
-      case targetRegion: TargetRegion => targetRegion.region.toGridType[Long]
-      case targetAlignment: TargetAlignment => targetAlignment(reprojectedRasterExtent)
-      case targetDimensions: TargetDimensions => targetDimensions(reprojectedRasterExtent)
-      case targetCellSize: TargetCellSize => targetCellSize(reprojectedRasterExtent)
-      case _ => reprojectedRasterExtent
-    }
+    resampleTarget(reprojectedRasterExtent)
   }
 
   lazy val resolutions: List[CellSize] =

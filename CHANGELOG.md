@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - GeoTrellisRasterSource should return None on empty reads [#3240](https://github.com/locationtech/geotrellis/pull/3240) 
 - ArrayTile equals method always returns true if first elements are NaN [#3242](https://github.com/locationtech/geotrellis/issues/3242)
 - Fixed resource issue with JpegDecompressor that was causing a "too many open files in the system" exception on many parallel reads of JPEG compressed GeoTiffs. [#3249](https://github.com/locationtech/geotrellis/pull/3249)
+- Fix MosaicRasterSource, GDALRasterSource, GeoTiffResample raster sources behavior  [#3252](https://github.com/locationtech/geotrellis/pull/3252)
 
 ## [3.3.0] - 2020-04-07
 
@@ -45,7 +46,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix Rasterizer for polygons containing concavities whith `PixelIsArea` option [#3192](https://github.com/locationtech/geotrellis/pull/3192)
 - Fix spatial join (Spark) when using different partitioning in left and right RDDs [#3175](https://github.com/locationtech/geotrellis/pull/3175)
 - Fix Monad instance for `PolygonalSummaryResult` [#3221](https://github.com/locationtech/geotrellis/pull/3221)
-- Fix MosaicRasterSource and GDALRasterSource reprojection behavior [#3252](https://github.com/locationtech/geotrellis/pull/3252)
 
 ### Removed
 
