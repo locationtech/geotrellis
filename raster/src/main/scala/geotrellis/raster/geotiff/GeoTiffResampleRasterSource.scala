@@ -57,7 +57,6 @@ class GeoTiffResampleRasterSource(
 
   def crs: CRS = tiff.crs
 
-  // GDAL aligns target pixels, do we need to do it as well?
   override lazy val gridExtent: GridExtent[Long] = resampleTarget(tiff.rasterExtent.toGridType[Long])
 
   lazy val resolutions: List[CellSize] = tiff.cellSize :: tiff.overviews.map(_.cellSize)

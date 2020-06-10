@@ -19,7 +19,7 @@ package geotrellis.raster
 import geotrellis.vector._
 import geotrellis.raster._
 import geotrellis.raster.resample._
-import geotrellis.proj4.{CRS, WebMercator}
+import geotrellis.proj4.CRS
 import geotrellis.raster.io.geotiff.OverviewStrategy
 
 import cats.Semigroup
@@ -140,6 +140,10 @@ object MosaicRasterSource {
       }
     }
 
+  /**
+    * This instance method allows to create an instance of the MosaicRasterSource.
+    * It assumes that all raster sources are known, and the GridExtent is also known.
+    */
   def instance(sourcesList: NonEmptyList[RasterSource], targetCRS: CRS, targetGridExtent: GridExtent[Long], sourceName: SourceName): MosaicRasterSource =
     new MosaicRasterSource {
       val sources: NonEmptyList[RasterSource] = sourcesList
@@ -148,6 +152,10 @@ object MosaicRasterSource {
       val name: SourceName = sourceName
     }
 
+  /**
+    * This instance method allows to create an instance of the MosaicRasterSource.
+    * It computes the MosaicRasterSource basing on the input sourcesList.
+    */
   def instance(sourcesList: NonEmptyList[RasterSource], targetCRS: CRS, sourceName: SourceName): MosaicRasterSource = {
     val combinedExtent = sourcesList.map(_.extent).toList.reduce(_ combine _)
     val minCellSize = sourcesList.map(_.cellSize).toList.maxBy(_.resolution)
@@ -161,6 +169,7 @@ object MosaicRasterSource {
   def instance(sourcesList: NonEmptyList[RasterSource], targetCRS: CRS, targetGridExtent: GridExtent[Long]): MosaicRasterSource =
     instance(sourcesList, targetCRS, targetGridExtent, EmptyName)
 
+  /** All apply methods reproject the input sourcesList to the targetGridExtent */
   def apply(sourcesList: NonEmptyList[RasterSource], targetCRS: CRS, targetGridExtent: GridExtent[Long]): MosaicRasterSource =
     apply(sourcesList, targetCRS, targetGridExtent, EmptyName)
 
@@ -190,13 +199,4 @@ object MosaicRasterSource {
       }
     }
   }
-
-  @SuppressWarnings(Array("TraversableHead", "TraversableTail"))
-  def unsafeFromList(sourcesList: List[RasterSource], targetCRS: CRS = WebMercator, targetGridExtent: Option[GridExtent[Long]], rasterSourceName: SourceName = EmptyName): MosaicRasterSource =
-    new MosaicRasterSource {
-      val name = rasterSourceName
-      val sources = NonEmptyList(sourcesList.head, sourcesList.tail)
-      val crs = targetCRS
-      def gridExtent: GridExtent[Long] = targetGridExtent getOrElse { sourcesList.head.gridExtent}
-    }
 }

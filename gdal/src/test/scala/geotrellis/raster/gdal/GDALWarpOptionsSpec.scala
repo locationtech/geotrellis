@@ -23,6 +23,7 @@ import geotrellis.raster.resample._
 import geotrellis.vector.Extent
 import geotrellis.raster.testkit._
 
+import cats.syntax.option._
 import org.gdal.gdal._
 
 import scala.collection.JavaConverters._
@@ -39,17 +40,19 @@ class GDALWarpOptionsSpec extends FunSpec with RasterMatchers with GivenWhenThen
 
   val reprojectOptions: GDALWarpOptions =
     generateWarpOptions(
-      sourceCRS = Some(CRS.fromString("+proj=lcc +lat_1=36.16666666666666 +lat_2=34.33333333333334 +lat_0=33.75 +lon_0=-79 +x_0=609601.22 +y_0=0 +datum=NAD83 +units=m +no_defs ")),
-      targetCRS = Some(WebMercator),
-      cellSize = Some(CellSize(10, 10))
+      sourceCRS = lccProjection.some,
+      targetCRS = WebMercator.some,
+      cellSize  = CellSize(10, 10).some,
+      te        = Extent(-8769160.0, 4257700.0, -8750640.0, 4274460.0).some
     )
 
   val resampleOptions: GDALWarpOptions =
     generateWarpOptions(
       et        = None,
-      cellSize  = Some(CellSize(22, 22)),
-      sourceCRS = None,
-      targetCRS = None
+      cellSize  = CellSize(22, 22).some,
+      sourceCRS = lccProjection.some,
+      targetCRS = WebMercator.some,
+      te        = Extent(-8769178.0, 4257682.0, -8750640.0, 4274468.0).some
     )
 
   def rasterSourceFromUriOptions(uri: String, options: GDALWarpOptions): GDALRasterSource = GDALRasterSource(uri, options)
@@ -60,7 +63,7 @@ class GDALWarpOptionsSpec extends FunSpec with RasterMatchers with GivenWhenThen
         .EMPTY
         .reproject(
           rasterExtent = GridExtent(Extent(630000.0, 215000.0, 645000.0, 228500.0), 10, 10),
-          CRS.fromString("+proj=lcc +lat_1=36.16666666666666 +lat_2=34.33333333333334 +lat_0=33.75 +lon_0=-79 +x_0=609601.22 +y_0=0 +datum=NAD83 +units=m +no_defs "),
+          lccProjection,
           WebMercator,
           TargetCellSize(CellSize(10, 10))
         )
@@ -73,13 +76,13 @@ class GDALWarpOptionsSpec extends FunSpec with RasterMatchers with GivenWhenThen
         .EMPTY
         .reproject(
           rasterExtent = GridExtent(Extent(630000.0, 215000.0, 645000.0, 228500.0), 10, 10),
-          CRS.fromString("+proj=lcc +lat_1=36.16666666666666 +lat_2=34.33333333333334 +lat_0=33.75 +lon_0=-79 +x_0=609601.22 +y_0=0 +datum=NAD83 +units=m +no_defs "),
+          lccProjection,
           WebMercator,
           TargetCellSize(CellSize(10, 10))
         )
         .resample(
-          GridExtent(Extent(-8769160.0, 4257700.0, -8750630.0, 4274460.0), CellSize(10, 10)),
-          TargetRegion(GridExtent[Long](Extent(-8769160.0, 4257700.0, -8750630.0, 4274460.0), CellSize(22, 22)))
+          GridExtent(Extent(-8769160.0, 4257700.0, -8750640.0, 4274460.0), CellSize(10, 10)),
+          TargetRegion(GridExtent[Long](Extent(-8769160.0, 4257700.0, -8750640.0, 4274460.0), CellSize(22, 22)))
         )
     rasterSourceFromUriOptions(uri, opts)
   }
@@ -141,12 +144,12 @@ class GDALWarpOptionsSpec extends FunSpec with RasterMatchers with GivenWhenThen
       val rs =
         GDALRasterSource(filePath)
           .reproject(
-            targetCRS    = WebMercator,
+            targetCRS      = WebMercator,
             resampleTarget = TargetCellSize(CellSize(10, 10)),
-            strategy     = OverviewStrategy.DEFAULT
+            strategy       = OverviewStrategy.DEFAULT
         )
         .resampleToRegion(
-          region = GridExtent(Extent(-8769160.0, 4257700.0, -8750630.0, 4274460.0), CellSize(22, 22))
+          region = GridExtent(Extent(-8769160.0, 4257700.0, -8750640.0, 4274460.0), CellSize(22, 22))
         )
 
       optimizedRawResample.gridExtent shouldBe rs.gridExtent
@@ -164,11 +167,14 @@ class GDALWarpOptionsSpec extends FunSpec with RasterMatchers with GivenWhenThen
 }
 
 object GDALWarpOptionsSpec {
+  val lccProjection = CRS.fromString("+proj=lcc +lat_1=36.16666666666666 +lat_2=34.33333333333334 +lat_0=33.75 +lon_0=-79 +x_0=609601.22 +y_0=0 +datum=NAD83 +units=m +no_defs ")
+
   def generateWarpOptions(
-    et: Option[Double] = Some(0.125),
-    cellSize: Option[CellSize] = Some(CellSize(19.1, 19.1)),
-    sourceCRS: Option[CRS] = Some(CRS.fromString("+proj=lcc +lat_1=36.16666666666666 +lat_2=34.33333333333334 +lat_0=33.75 +lon_0=-79 +x_0=609601.22 +y_0=0 +datum=NAD83 +units=m +no_defs ")),
-    targetCRS: Option[CRS] = Some(WebMercator)
+    et: Option[Double] = 0.125.some,
+    cellSize: Option[CellSize] = CellSize(19.1, 19.1).some,
+    sourceCRS: Option[CRS] = lccProjection.some,
+    targetCRS: Option[CRS] = WebMercator.some,
+    te: Option[Extent] = None
   ): GDALWarpOptions = {
     GDALWarpOptions(
       Some("VRT"),
@@ -179,9 +185,9 @@ object GDALWarpOptionsSpec {
       None,
       sourceCRS,
       targetCRS,
+      te,
       None,
-      None,
-      List("-9999.0"),
+      Nil,
       Nil,
       Some(OverviewStrategy.DEFAULT),
       Nil, false, None, false, false, false, None, Nil, None, None, false, false,
