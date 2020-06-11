@@ -16,15 +16,15 @@
 
 package geotrellis.raster.gdal
 
-import geotrellis.proj4.LatLng
+import cats.data.NonEmptyList
+import geotrellis.proj4.{CRS, LatLng, WebMercator}
 import geotrellis.raster.geotiff.GeoTiffRasterSource
 import geotrellis.raster._
-import geotrellis.raster.io.geotiff.GeoTiff
+import geotrellis.raster.io.geotiff.{AutoHigherResolution, GeoTiff}
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.raster.resample._
 import geotrellis.raster.testkit._
 import geotrellis.vector.Extent
-
 import org.scalatest._
 
 class GDALRasterSourceSpec extends FunSpec with RasterMatchers with GivenWhenThen {
@@ -114,6 +114,45 @@ class GDALRasterSourceSpec extends FunSpec with RasterMatchers with GivenWhenThe
       source.metadata.attributes.mapValues(_.toUpperCase) shouldBe tsource.metadata.attributes.mapValues(_.toUpperCase)
     }
 
+    it("should perform a chained reprojection") {
+      val rs = GDALRasterSource(Resource.path("vlm/lc8-utm-1.tif"))
+      val drs = rs.reproject(WebMercator).reproject(LatLng).asInstanceOf[GDALRasterSource]
+      val rrs = rs.reproject(LatLng).asInstanceOf[GDALRasterSource]
+
+      drs.crs shouldBe rrs.crs
+
+      val RasterExtent(Extent(dxmin, dymin, dxmax, dymax), dcw, dch, dc, dr) = drs.gridExtent.toRasterExtent()
+      val RasterExtent(Extent(rxmin, rymin, rxmax, rymax), rcw, rch, rc, rr) = rrs.gridExtent.toRasterExtent()
+
+      // our reprojection rounding error
+      // to fix it we can round cellSize in the options reprojection by 6 numbers after the decimal point
+      dxmin shouldBe rxmin +- 1e-1
+      dymin shouldBe rymin +- 1e-1
+      dxmax shouldBe rxmax +- 1e-1
+      dymax shouldBe rymax +- 1e-1
+
+      dcw shouldBe rcw +- 1e-6
+      dch shouldBe rch +- 1e-6
+
+      dc shouldBe rc +- 1
+      dr shouldBe rr +- 1
+
+      // manually ensure that the difference in two GDALWarpOptions
+      drs.options.copy(cellSize = None, te = None) shouldBe rrs.options.copy(cellSize = None, te = None)
+      val CellSize(docw, doch) = drs.options.cellSize.get
+      val CellSize(rocw, roch) = rrs.options.cellSize.get
+      docw shouldBe rocw +- 1e-6
+      doch shouldBe roch +- 1e-6
+
+      val Extent(dtexmin, dteymin, dtexmax, dteymax) = drs.options.te.get
+      val Extent(rtexmin, rteymin, rtexmax, rteymax) = rrs.options.te.get
+
+      dtexmin shouldBe rtexmin +- 1e-1
+      dteymin shouldBe rteymin +- 1e-1
+      dtexmax shouldBe rtexmax +- 1e-1
+      dteymax shouldBe rteymax +- 1e-1
+    }
+
     describe("should derive the cellType consistently with GeoTiffRasterSource") {
       val raster = Raster(
         ArrayTile(Array(
@@ -157,6 +196,40 @@ class GDALRasterSourceSpec extends FunSpec with RasterMatchers with GivenWhenThe
           GeoTiffRasterSource(path).cellType shouldBe ct
         }
       }
+    }
+
+
+    it("reprojectToRegion should produce an expected raster") {
+      val expected = GeoTiffRasterSource(Resource.path("vlm/lc8-utm-re-mosaic-expected.tif")).read().get
+
+      val uris = List(
+        Resource.path("vlm/lc8-utm-1.tif"),
+        Resource.path("vlm/lc8-utm-2.tif"),
+        Resource.path("vlm/lc8-utm-3.tif")
+      )
+
+      val targetGridExtent = GridExtent[Long](
+        Extent(-89.18876450968908, 37.796833507913995, -73.9486554460876, 41.41061537114088),
+        CellSize(0.01272458402544677,0.01272129304140357)
+      )
+      val e = Extent(-89.18876450968908, 37.796833507913995, -73.9486554460876, 41.41061537114088)
+      val targetCRS = CRS.fromEpsgCode(4326)
+
+      val rasterSources = NonEmptyList.fromListUnsafe(uris.map(GDALRasterSource(_)))
+      val moisac = MosaicRasterSource.instance(rasterSources, rasterSources.head.crs)
+
+      val actual =
+        moisac
+          .reprojectToRegion(
+            targetCRS,
+            targetGridExtent.toRasterExtent,
+            NearestNeighbor,
+            AutoHigherResolution
+          )
+          .read(e)
+          .get
+
+      assertEqual(actual, expected)
     }
   }
 }

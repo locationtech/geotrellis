@@ -256,20 +256,38 @@ case class GDALWarpOptions(
    */
   def reproject(rasterExtent: GridExtent[Long], sourceCRS: CRS, targetCRS: CRS, resampleTarget: ResampleTarget = DefaultTarget, resampleMethod: ResampleMethod = NearestNeighbor): GDALWarpOptions = {
     val reprojectOptions = ResampleTarget.toReprojectOptions(rasterExtent, resampleTarget, resampleMethod)
-    val re = rasterExtent.reproject(sourceCRS, targetCRS, reprojectOptions)
+    val reprojectedRasterExtent = rasterExtent.reproject(sourceCRS, targetCRS, reprojectOptions)
 
-    this.copy(
-      cellSize       = re.cellSize.some,
-      targetCRS      = targetCRS.some,
-      sourceCRS      = sourceCRS.some,
-      resampleMethod = reprojectOptions.method.some
-    )
+    resampleTarget match {
+      case TargetDimensions(cols, rows) =>
+        this.copy(
+          te             = reprojectedRasterExtent.extent.some,
+          cellSize       = None,
+          targetCRS      = targetCRS.some,
+          sourceCRS      = this.sourceCRS orElse sourceCRS.some,
+          resampleMethod = reprojectOptions.method.some,
+          dimensions     = (cols.toInt, rows.toInt).some
+        )
+      case _ =>
+        val re = {
+          val targetRasterExtent = resampleTarget(reprojectedRasterExtent).toRasterExtent
+          if(this.alignTargetPixels) targetRasterExtent.alignTargetPixels else targetRasterExtent
+        }
+
+        this.copy(
+          cellSize       = re.cellSize.some,
+          te             = re.extent.some,
+          targetCRS      = targetCRS.some,
+          sourceCRS      = this.sourceCRS orElse sourceCRS.some,
+          resampleMethod = reprojectOptions.method.some
+        )
+    }
   }
 
   /** Adjust GDAL options to represents resampling with following parameters .
    * This call matches semantics and arguments of {@see RasterSource#resample}
    */
-  def resample(gridExtent: => GridExtent[Long], resampleTarget: ResampleTarget): GDALWarpOptions = {
+  def resample(gridExtent: => GridExtent[Long], resampleTarget: ResampleTarget): GDALWarpOptions =
     resampleTarget match {
       case TargetDimensions(cols, rows) =>
         this.copy(te = gridExtent.extent.some, cellSize = None, dimensions = (cols.toInt, rows.toInt).some)
@@ -282,7 +300,7 @@ case class GDALWarpOptions(
 
         this.copy(te = re.extent.some, cellSize = re.cellSize.some)
     }
-  }
+
   /** Adjust GDAL options to represents conversion to desired cell type.
    * This call matches semantics and arguments of {@see RasterSource#convert}
    */
