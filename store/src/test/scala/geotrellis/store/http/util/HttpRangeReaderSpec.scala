@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.store.http.util
+package geotrellis.store.http.util
 
 import java.nio.file.{Files, Paths}
 import java.nio.ByteBuffer
@@ -97,7 +97,7 @@ class HttpRangeReaderSpec extends FunSpec with Matchers {
       }
 
       assertThrows[HttpStatusException] {
-       HttpRangeReader.withoutHeadRequest(uri)
+        HttpRangeReader.withoutHeadRequest(uri)
       }
     }
   }

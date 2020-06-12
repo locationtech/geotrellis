@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.store.http.util
+package geotrellis.store.http.util
 
 import geotrellis.util.RangeReader
 
@@ -26,13 +26,13 @@ import scala.util.Try
 
 
 /**
- * This class extends [[RangeReader]] by reading chunks out of a GeoTiff at the
- * specified HTTP location.
- *
- * @throws [[HttpStatusException]] if the HTTP response code is 4xx or 5xx
- *
- * @param url: A [[URL]] pointing to the desired GeoTiff.
- */
+  * This class extends [[RangeReader]] by reading chunks out of a GeoTiff at the
+  * specified HTTP location.
+  *
+  * @throws [[HttpStatusException]] if the HTTP response code is 4xx or 5xx
+  *
+  * @param url: A [[URL]] pointing to the desired GeoTiff.
+  */
 class HttpRangeReader(url: URL, useHeadRequest: Boolean) extends RangeReader {
   @transient private[this] lazy val logger = getLogger
 
@@ -45,20 +45,20 @@ class HttpRangeReader(url: URL, useHeadRequest: Boolean) extends RangeReader {
       request.method("GET").execute { is => "" }
     }
     val contentLength = headers
-        .header("Content-Length")
-        .flatMap({ cl => Try(cl.toLong).toOption }) match {
-          case Some(num) => num
-          case None => -1L
-        }
+      .header("Content-Length")
+      .flatMap(cl => Try(cl.toLong).toOption) match {
+        case Some(num) => num
+        case None => -1L
+    }
     headers.throwError
 
     /**
-     * "The Accept-Ranges response HTTP header is a marker used by the server
-     *  to advertise its support of partial requests. The value of this field
-     *  indicates the unit that can be used to define a range."
-     * https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Accept-Ranges
-     */
-    require(headers.header("Accept-Ranges") == Some("bytes"),
+      * "The Accept-Ranges response HTTP header is a marker used by the server
+      *  to advertise its support of partial requests. The value of this field
+      *  indicates the unit that can be used to define a range."
+      * https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Accept-Ranges
+      */
+    require(headers.header("Accept-Ranges").contains("bytes"),
       "Server doesn't support ranged byte reads")
 
     require(contentLength > 0,
@@ -74,12 +74,12 @@ class HttpRangeReader(url: URL, useHeadRequest: Boolean) extends RangeReader {
       .asBytes
 
     /**
-     * "If the byte-range-set is unsatisfiable, the server SHOULD return
-     *  a response with a status of 416 (Requested range not satisfiable).
-     *  Otherwise, the server SHOULD return a response with a status of 206
-     *  (Partial Content) containing the satisfiable ranges of the entity-body."
-     * https://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html
-     */
+      * "If the byte-range-set is unsatisfiable, the server SHOULD return
+      *  a response with a status of 416 (Requested range not satisfiable).
+      *  Otherwise, the server SHOULD return a response with a status of 206
+      *  (Partial Content) containing the satisfiable ranges of the entity-body."
+      * https://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html
+      */
     require(res.code != 416,
       "Server unable to generate the byte range between ${start} and ${start + length}")
 
@@ -98,20 +98,20 @@ object HttpRangeReader {
   def apply(uri: URI): HttpRangeReader = apply(uri.toURL)
 
   /**
-   * Returns a new instance of HttpRangeReader.
-   *
-   * @param url: A [[URL]] pointing to the desired GeoTiff.
-   * @return A new instance of HttpRangeReader.
-   */
+    * Returns a new instance of HttpRangeReader.
+    *
+    * @param url: A [[URL]] pointing to the desired GeoTiff.
+    * @return A new instance of HttpRangeReader.
+    */
   def apply(url: URL): HttpRangeReader = new HttpRangeReader(url, true)
 
   /**
-   * Returns a new instance of HttpRangeReader which does not use HEAD
-   * to determine the totalLength.
-   *
-   * @param url: A [[URL]] pointing to the desired GeoTiff.
-   * @return A new instance of HttpRangeReader.
-   */
+    * Returns a new instance of HttpRangeReader which does not use HEAD
+    * to determine the totalLength.
+    *
+    * @param url: A [[URL]] pointing to the desired GeoTiff.
+    * @return A new instance of HttpRangeReader.
+    */
   def withoutHeadRequest(url: URL): HttpRangeReader = new HttpRangeReader(url, false)
 
   def withoutHeadRequest(address: String): HttpRangeReader = withoutHeadRequest(new URL(address))

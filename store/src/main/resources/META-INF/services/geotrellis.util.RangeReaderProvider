@@ -1,1 +1,2 @@
 geotrellis.store.hadoop.util.HdfsRangeReaderProvider
+geotrellis.store.http.util.HttpRangeReaderProvider
