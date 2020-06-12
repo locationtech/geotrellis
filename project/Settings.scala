@@ -560,7 +560,6 @@ object Settings {
       sparkCore % Provided,
       hadoopClient % Provided,
       uzaygezenCore,
-      scalaj,
       avro,
       spire,
       chronoscala,
@@ -707,6 +706,7 @@ object Settings {
       uzaygezenCore,
       pureconfig,
       scalaXml,
+      scalaj,
       scalatest % Test
     )
   ) ++ commonSettings

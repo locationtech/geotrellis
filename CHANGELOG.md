@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ArrayTile equals method always returns true if first elements are NaN [#3242](https://github.com/locationtech/geotrellis/issues/3242)
 - Fixed resource issue with JpegDecompressor that was causing a "too many open files in the system" exception on many parallel reads of JPEG compressed GeoTiffs. [#3249](https://github.com/locationtech/geotrellis/pull/3249)
 - Fix MosaicRasterSource, GDALRasterSource and GeoTiffResampleRasterSource behavior [#3252](https://github.com/locationtech/geotrellis/pull/3252)
+- HttpRangeReader should live outside of the Spark package [#3254](https://github.com/locationtech/geotrellis/issues/3254)
 
 ## [3.3.0] - 2020-04-07
 
