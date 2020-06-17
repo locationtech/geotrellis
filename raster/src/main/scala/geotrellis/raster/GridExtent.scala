@@ -70,8 +70,8 @@ class GridExtent[@specialized(Int, Long) N: Integral](
       throw GeoAttrsError(s"illegal cellheights: $cellheight and ${that.cellheight}")
 
     val newExtent = extent.combine(that.extent)
-    val newRows = ceil(newExtent.height / cellheight)
-    val newCols = ceil(newExtent.width / cellwidth)
+    val newRows = ceilWithTolerance(newExtent.height / cellheight)
+    val newCols = ceilWithTolerance(newExtent.width / cellwidth)
 
     new GridExtent[N](newExtent, cellwidth, cellheight,
       cols = Integral[N].fromDouble(newCols),
@@ -128,8 +128,8 @@ class GridExtent[@specialized(Int, Long) N: Integral](
   * width.
   */
   def withResolution(targetCellWidth: Double, targetCellHeight: Double): GridExtent[N] = {
-    val newCols = math.ceil((extent.xmax - extent.xmin) / targetCellWidth)
-    val newRows = math.ceil((extent.ymax - extent.ymin) / targetCellHeight)
+    val newCols = ceilWithTolerance((extent.xmax - extent.xmin) / targetCellWidth)
+    val newRows = ceilWithTolerance((extent.ymax - extent.ymin) / targetCellHeight)
     new GridExtent(extent, targetCellWidth, targetCellHeight,
       cols = Integral[N].fromDouble(newCols),
       rows = Integral[N].fromDouble(newRows))
@@ -247,8 +247,8 @@ class GridExtent[@specialized(Int, Long) N: Integral](
     * that lines up with the grid and also covers ``targetExtent``.
     */
   def createAlignedGridExtent(targetExtent: Extent, alignmentPoint: Point): GridExtent[N] = {
-    def left(reference: Double, actual: Double, unit: Double): Double = reference + math.floor((actual - reference) / unit) * unit
-    def right(reference: Double, actual: Double, unit: Double): Double = reference + math.ceil((actual - reference) / unit) * unit
+    def left(reference: Double, actual: Double, unit: Double): Double = reference + floorWithTolerance((actual - reference) / unit) * unit
+    def right(reference: Double, actual: Double, unit: Double): Double = reference + ceilWithTolerance((actual - reference) / unit) * unit
 
     val xmin = left(alignmentPoint.x, targetExtent.xmin, cellwidth)
     val xmax = right(alignmentPoint.x, targetExtent.xmax, cellwidth)
@@ -415,6 +415,12 @@ object GridExtent {
     val roundedValue = math.round(value)
     if (math.abs(value - roundedValue) < GridExtent.epsilon) roundedValue
     else math.floor(value)
+  }
+
+  def ceilWithTolerance(value: Double): Double = {
+    val roundedValue = math.round(value)
+    if(math.abs(value - roundedValue) < GridExtent.epsilon) roundedValue
+    else math.ceil(value)
   }
 
   implicit class gridExtentMethods[N: Integral](self: GridExtent[N]) {
