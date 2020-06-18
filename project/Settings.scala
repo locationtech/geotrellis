@@ -632,6 +632,7 @@ object Settings {
     libraryDependencies ++= Seq(
       logging,
       pureconfig,
+      scalaj,
       spire,
       scalatest % Test
     )
@@ -706,7 +707,6 @@ object Settings {
       uzaygezenCore,
       pureconfig,
       scalaXml,
-      scalaj,
       scalatest % Test
     )
   ) ++ commonSettings

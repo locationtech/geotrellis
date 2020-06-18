@@ -14,16 +14,14 @@
  * limitations under the License.
  */
 
-package geotrellis.store.http.util
+package geotrellis.util
 
-import geotrellis.util.RangeReader
+import java.net.{URI, URL}
 
 import scalaj.http.Http
 import org.log4s._
 
-import java.net.{URL, URI}
 import scala.util.Try
-
 
 /**
   * This class extends [[RangeReader]] by reading chunks out of a GeoTiff at the
