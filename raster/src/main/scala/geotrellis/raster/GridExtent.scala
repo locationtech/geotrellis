@@ -21,7 +21,7 @@ import geotrellis.raster.reproject.Reproject.Options
 import geotrellis.raster.reproject.ReprojectRasterExtent
 import geotrellis.vector._
 
-import scala.math.{ceil, max, min}
+import scala.math.{max, min}
 import spire.math.Integral
 import spire.implicits._
 
@@ -59,7 +59,7 @@ class GridExtent[@specialized(Int, Long) N: Integral](
   def cellSize = CellSize(cellwidth, cellheight)
 
   /**
-  * Combine two different [[RasterExtent]]s (which must have the
+  * Combine two different [[GridExtent]]s (which must have the
   * same cellsizes).  The result is a new extent at the same
   * resolution.
   */
@@ -70,12 +70,7 @@ class GridExtent[@specialized(Int, Long) N: Integral](
       throw GeoAttrsError(s"illegal cellheights: $cellheight and ${that.cellheight}")
 
     val newExtent = extent.combine(that.extent)
-    val newRows = ceilWithTolerance(newExtent.height / cellheight)
-    val newCols = ceilWithTolerance(newExtent.width / cellwidth)
-
-    new GridExtent[N](newExtent, cellwidth, cellheight,
-      cols = Integral[N].fromDouble(newCols),
-      rows = Integral[N].fromDouble(newRows))
+    GridExtent(newExtent, CellSize(cellwidth, cellheight))
   }
 
   /** Convert map coordinate x to grid coordinate column. */
@@ -123,7 +118,7 @@ class GridExtent[@specialized(Int, Long) N: Integral](
   }
 
   /**
-  * Returns a [[RasterExtent]] with the same extent, but a modified
+  * Returns a [[GridExtent]] with the same extent, but a modified
   * number of columns and rows based on the given cell height and
   * width.
   */
@@ -151,7 +146,7 @@ class GridExtent[@specialized(Int, Long) N: Integral](
     new GridExtent(extent, targetCols, targetRows)
 
   /**
-    * Gets the GridBounds aligned with this RasterExtent that is the
+    * Gets the GridBounds aligned with this GridExtent that is the
     * smallest subgrid containing all points within the extent. The
     * extent is considered inclusive on it's north and west borders,
     * exclusive on it's east and south borders.  See [[RasterExtent]]
@@ -160,7 +155,7 @@ class GridExtent[@specialized(Int, Long) N: Integral](
     * The 'clamp' flag determines whether or not to clamp the
     * GridBounds to the RasterExtent; defaults to true. If false,
     * GridBounds can contain negative values, or values outside of
-    * this RasterExtent's boundaries.
+    * this GridExtent's boundaries.
     *
     * @param     subExtent      The extent to get the grid bounds for
     * @param     clamp          A boolean
@@ -247,8 +242,8 @@ class GridExtent[@specialized(Int, Long) N: Integral](
     * that lines up with the grid and also covers ``targetExtent``.
     */
   def createAlignedGridExtent(targetExtent: Extent, alignmentPoint: Point): GridExtent[N] = {
-    def left(reference: Double, actual: Double, unit: Double): Double = reference + floorWithTolerance((actual - reference) / unit) * unit
-    def right(reference: Double, actual: Double, unit: Double): Double = reference + ceilWithTolerance((actual - reference) / unit) * unit
+    def left(reference: Double, actual: Double, unit: Double): Double = reference + math.floor((actual - reference) / unit) * unit
+    def right(reference: Double, actual: Double, unit: Double): Double = reference + math.ceil((actual - reference) / unit) * unit
 
     val xmin = left(alignmentPoint.x, targetExtent.xmin, cellwidth)
     val xmax = right(alignmentPoint.x, targetExtent.xmax, cellwidth)
@@ -307,13 +302,13 @@ class GridExtent[@specialized(Int, Long) N: Integral](
 
   /**
     * Gets the Extent that matches the grid bounds passed in, aligned
-    * with this RasterExtent.
+    * with this GridExtent.
     *
     * The 'clamp' parameter determines whether or not to clamp the
-    * Extent to the extent of this RasterExtent; defaults to true. If
+    * Extent to the extent of this GridExtent; defaults to true. If
     * true, the returned extent will be contained by this
-    * RasterExtent's extent, if false, the Extent returned can be
-    * outside of this RasterExtent's extent.
+    * GridExtent's extent, if false, the Extent returned can be
+    * outside of this GridExtent's extent.
     *
     * @param  cellBounds  The extent to get the grid bounds for
     * @param  clamp       A boolean which controlls the clamping behvior
@@ -415,12 +410,6 @@ object GridExtent {
     val roundedValue = math.round(value)
     if (math.abs(value - roundedValue) < GridExtent.epsilon) roundedValue
     else math.floor(value)
-  }
-
-  def ceilWithTolerance(value: Double): Double = {
-    val roundedValue = math.round(value)
-    if(math.abs(value - roundedValue) < GridExtent.epsilon) roundedValue
-    else math.ceil(value)
   }
 
   implicit class gridExtentMethods[N: Integral](self: GridExtent[N]) {
