@@ -169,5 +169,13 @@ class GridExtentSpec extends FunSpec with Matchers {
         baseGridExtent.withResolution(r) should be(expectedGridExtents(i))
       }
     }
+
+    it("should compute withResolution even for CellSizes that don't cleanly divide the Extent") {
+      val extent = Extent(0, 0, 10, 10)
+      val gridExtent = GridExtent[Long](extent, CellSize(2, 2))
+      val expectedGridExtent = new GridExtent[Long](extent, 1.4, 1.4, 7, 7)
+      val actualGridExtent = gridExtent.withResolution(CellSize(1.4, 1.4))
+      expectedGridExtent should be (actualGridExtent)
+    }
   }
 }

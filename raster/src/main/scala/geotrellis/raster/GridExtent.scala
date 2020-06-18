@@ -128,11 +128,11 @@ class GridExtent[@specialized(Int, Long) N: Integral](
   * width.
   */
   def withResolution(targetCellWidth: Double, targetCellHeight: Double): GridExtent[N] = {
-    val newCols = ceilWithTolerance((extent.xmax - extent.xmin) / targetCellWidth)
-    val newRows = ceilWithTolerance((extent.ymax - extent.ymin) / targetCellHeight)
+    val newCols = math.round((extent.xmax - extent.xmin) / targetCellWidth)
+    val newRows = math.round((extent.ymax - extent.ymin) / targetCellHeight)
     new GridExtent(extent, targetCellWidth, targetCellHeight,
-      cols = Integral[N].fromDouble(newCols),
-      rows = Integral[N].fromDouble(newRows))
+      cols = Integral[N].fromLong(newCols),
+      rows = Integral[N].fromLong(newRows))
   }
 
   /**
