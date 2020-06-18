@@ -14,12 +14,9 @@
  * limitations under the License.
  */
 
-package geotrellis.store.http.util
-
-import geotrellis.util.RangeReaderProvider
+package geotrellis.util
 
 import java.net.{URI, URL}
-
 
 class HttpRangeReaderProvider extends RangeReaderProvider {
   def canProcess(uri: URI): Boolean =

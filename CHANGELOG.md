@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed resource issue with JpegDecompressor that was causing a "too many open files in the system" exception on many parallel reads of JPEG compressed GeoTiffs. [#3249](https://github.com/locationtech/geotrellis/pull/3249)
 - Fix MosaicRasterSource, GDALRasterSource and GeoTiffResampleRasterSource behavior [#3252](https://github.com/locationtech/geotrellis/pull/3252)
 - HttpRangeReader should live outside of the Spark package [#3254](https://github.com/locationtech/geotrellis/issues/3254)
+- HttpRangeReader moved to `geotrellis.util [#3256](https://github.com/locationtech/geotrellis/issues/3256)
 
 ## [3.3.0] - 2020-04-07
 

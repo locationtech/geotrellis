@@ -345,7 +345,8 @@ Plumbing for other GeoTrellis modules.
 -  Data structures missing from Scala, such as BTree
 -  Haversine implementation
 -  Lenses
--  RangeReader for reading contiguous subsets of data from a source
+-  RangeReaderProvider for reading contiguous subsets of data from a source
+  - Implementations for FileRangeReader and HttpRangeReader
 
 geotrellis-vector
 -----------------
