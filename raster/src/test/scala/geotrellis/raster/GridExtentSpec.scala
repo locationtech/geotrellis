@@ -17,11 +17,9 @@
 package geotrellis.raster
 
 import geotrellis.vector.{Extent, Point}
-import geotrellis.raster.testkit._
-
-import scala.math.{min, max}
-
 import org.scalatest._
+
+import scala.math.{max, min}
 
 class GridExtentSpec extends FunSpec with Matchers {
   def isWhole(x: Double): Boolean = (x.round - x).abs < geotrellis.util.Constants.FLOAT_EPSILON
@@ -135,6 +133,49 @@ class GridExtentSpec extends FunSpec with Matchers {
 
         result
       }).reduce(_ && _) should be (true)
+    }
+
+    it("should compute cols and rows in GridExtents with non integer cell sizes via withResolution") {
+      val cols: Long = 28017
+      val rows: Long = 22204
+      val resolutions = List(
+        CellSize(0.5047699668978283,0.5047699668978283),
+        CellSize(1.0095039019613432,1.0095399337956565),
+        CellSize(2.0188636920166245,2.019079867591313),
+        CellSize(4.037151059827706,4.037432400936376),
+        CellSize(8.071997809689758,8.074864801872751),
+        CellSize(16.143995619379517,16.149729603745502),
+        CellSize(32.287991238759034,32.299459207491005),
+        CellSize(64.57598247751807,64.41328933907688)
+      )
+      val extent = Extent(4114885.5876404666, -770072.0469938816, 4129027.727803043, -758864.1346488822)
+      val baseCellSize = resolutions.head
+      val baseGridExtent = GridExtent[Long](extent, baseCellSize)
+
+      val expectedGridExtents = List(
+        GridExtent(extent, cols, rows),
+        GridExtent(extent, 14009, 11102),
+        GridExtent(extent, 7005, 5551),
+        GridExtent(extent, 3503, 2776),
+        GridExtent(extent, 1752, 1388),
+        GridExtent(extent, 876, 694),
+        GridExtent(extent, 438, 347),
+        GridExtent(extent, 219, 174)
+      )
+
+      baseGridExtent.cols should be (cols)
+      baseGridExtent.rows should be (rows)
+      resolutions.zipWithIndex.foreach { case (r: CellSize, i: Int) =>
+        baseGridExtent.withResolution(r) should be(expectedGridExtents(i))
+      }
+    }
+
+    it("should compute withResolution even for CellSizes that don't cleanly divide the Extent") {
+      val extent = Extent(0, 0, 10, 10)
+      val gridExtent = GridExtent[Long](extent, CellSize(2, 2))
+      val expectedGridExtent = new GridExtent[Long](extent, 1.4, 1.4, 7, 7)
+      val actualGridExtent = gridExtent.withResolution(CellSize(1.4, 1.4))
+      expectedGridExtent should be (actualGridExtent)
     }
   }
 }
