@@ -1,1 +1,2 @@
 geotrellis.util.FileRangeReaderProvider
+geotrellis.util.HttpRangeReaderProvider

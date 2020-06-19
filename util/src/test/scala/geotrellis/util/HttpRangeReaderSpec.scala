@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package geotrellis.store.http.util
+package geotrellis.util
 
-import java.nio.file.{Files, Paths}
 import java.nio.ByteBuffer
+import java.nio.file.{Files, Paths}
 
 import org.scalatest._
 import scalaj.http.HttpStatusException

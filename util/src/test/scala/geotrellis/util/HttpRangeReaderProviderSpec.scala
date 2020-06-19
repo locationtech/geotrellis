@@ -14,13 +14,11 @@
  * limitations under the License.
  */
 
-package geotrellis.store.http.util
-
-import geotrellis.util.RangeReader
-
-import org.scalatest._
+package geotrellis.util
 
 import java.net.URI
+
+import org.scalatest._
 
 class HttpRangeReaderProviderSpec extends FunSpec with Matchers {
   describe("HttpRangeReaderProviderSpec") {
