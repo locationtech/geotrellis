@@ -4,8 +4,8 @@ Brief description of what this PR does, and why it is needed.
 
 ## Checklist
 
-- [ ] [docs/CHANGELOG.rst](https://github.com/locationtech/geotrellis/blob/master/CHANGELOG.md) updated, if necessary
-- [ ] [Module Hierarcy](https://github.com/locationtech/geotrellis/blob/master/docs/guide/module-hierarchy.rst) updated, if necessary
+- [ ] [./CHANGELOG.md](https://github.com/locationtech/geotrellis/blob/master/CHANGELOG.md) updated, if necessary. Link to the issue if closed, otherwise the PR.
+- [ ] [Module Hierarchy](https://github.com/locationtech/geotrellis/blob/master/docs/guide/module-hierarchy.rst) updated, if necessary
 - [ ] `docs` guides update, if necessary
 - [ ] New user API has useful Scaladoc strings
 - [ ] Unit tests added for bug-fix or new feature
