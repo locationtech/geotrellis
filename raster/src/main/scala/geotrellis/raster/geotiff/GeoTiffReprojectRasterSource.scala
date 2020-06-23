@@ -97,7 +97,7 @@ class GeoTiffReprojectRasterSource(
   def read(bounds: GridBounds[Long], bands: Seq[Int]): Option[Raster[MultibandTile]] = {
     val it = readBounds(List(bounds), bands)
 
-    closestTiffOverview.synchronized { if (it.hasNext) Some(it.next) else None }
+    tiff.synchronized { if (it.hasNext) Some(it.next) else None }
   }
 
   override def readExtents(extents: Traversable[Extent], bands: Seq[Int]): Iterator[Raster[MultibandTile]] = {
