@@ -31,4 +31,4 @@ git remote add originAuth https://$CI_GH_TOKEN@github.com/geotrellis/scaladocs.g
 echo "Pushing scaladoc to $SCALADOCS_REPO#$SCALADOCS_BRANCH"
 git add -A .
 git commit -m "rebuild scaladocs at ${rev}"
-git push -q originAuth "$SCALADOCS_BRANCH" || true
+git push -q originAuth "$SCALADOCS_BRANCH"

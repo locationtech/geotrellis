@@ -133,7 +133,7 @@ jobs:
           name: Scaladocs publish
           command: |
             ./sbt unidoc
-            .circleci/scaladocs.sh
+            .circleci/scaladocs.sh || true
       - save_cache: *save_build_cache
 
   publish:
