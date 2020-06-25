@@ -6,7 +6,14 @@ since we had lot's of issues with conflicting sbt versions / gpg version / etc.
 
 ## Setup
 
+First, copy the example `Makefile` and `global.sbt` templates:
+```
+cp Makefile.template Makefile
+cp global.sbt.template global.sbt
+```
+
 You'll need to have the proper Sonatype credentials in `./sonatype.sbt`:
+
 ```scala
 realm=Sonatype Nexus Repository Manager
 host=oss.sonatype.org
@@ -14,14 +21,17 @@ user=username
 password=password
 ```
 
-The proper PGP public and private key in `~/.gnupg` (or in any other directory, see `Makefile`).
-The passphrase for the private key (for jar signing) in `./global.sbt`:
+Then, make sure you update `CREDENTIALS_PATH` in the Makefile to point to this directory.
+
+Add the proper PGP public and private key to `~/.gnupg` (or to any other directory, see `Makefile`). If you need these keys, contact a GeoTrellis maintainer.
+
+Edit the passphrase for the private key (for jar signing) in `./global.sbt`. If you need the passphrase, contact a GeoTrellis maintainer:
 
 ```scala
 pgpPassphrase := Some(Array('p', 'a', 's', 's', 'w', 'o', 'r', 'd'))
 ```
 
-And a `./gpg.sbt` that looks like:
+Ensure that `./gpg.sbt` that looks like:
 
 ```scala
 addSbtPlugin("com.jsuereth" % "sbt-pgp" % "1.1.1")
@@ -48,7 +58,7 @@ IMG                       := geotrellis/publish-geotrellis-container
 # docker image default tag
 TAG                       := latest
 # GeoTrellis release tag
-RELEASE_TAG               := v3.0.0
+RELEASE_TAG               := vX.Y.Z
 # GeoTrellis version suffix that determines the release type
 GEOTRELLIS_VERSION_SUFFIX := ""
 # path to PGP keys
@@ -59,7 +69,9 @@ CREDENTIALS_PATH          := ~/.ivy2
 
 ## Building the container
 
-First build the container using `make build`. The image will always be rebuilt from
+First ensure that `RELEASE_TAG` in `Makefile` is set to the tag you wish to publish.
+
+Then build the container using `make build`. The image will always be rebuilt from
 scratch, cloning geotrellis and checking out the version branch.
 
 
