@@ -1,6 +1,6 @@
 IMG                       := geotrellis/publish-geotrellis-container
 TAG                       := latest
-RELEASE_TAG               := v3.0.0
+RELEASE_TAG               := vX.Y.Z
 GEOTRELLIS_VERSION_SUFFIX := ""
 PGPKEYS_PATH              := ~/.gnupg
 CREDENTIALS_PATH          := ~/.ivy2
