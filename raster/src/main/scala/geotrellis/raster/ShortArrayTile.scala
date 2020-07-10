@@ -266,11 +266,11 @@ object ShortArrayTile {
   def ofDim(cols: Int, rows: Int, cellType: ShortCells with NoDataHandling): ShortArrayTile =
     cellType match {
       case ShortCellType =>
-        new ShortRawArrayTile(Array.ofDim[Short](cols * rows), cols, rows)
+        ShortRawArrayTile(Array.ofDim[Short](cols * rows), cols, rows)
       case ShortConstantNoDataCellType =>
-        new ShortConstantNoDataArrayTile(Array.ofDim[Short](cols * rows), cols, rows)
+        ShortConstantNoDataArrayTile(Array.ofDim[Short](cols * rows), cols, rows)
       case udct: ShortUserDefinedNoDataCellType =>
-        new ShortUserDefinedNoDataArrayTile(Array.ofDim[Short](cols * rows), cols, rows, udct)
+        ShortUserDefinedNoDataArrayTile(Array.ofDim[Short](cols * rows), cols, rows, udct)
     }
 
   /**
@@ -327,11 +327,11 @@ object ShortArrayTile {
   def fill(v: Short, cols: Int, rows: Int, cellType: ShortCells with NoDataHandling): ShortArrayTile =
     cellType match {
       case ShortCellType =>
-        new ShortRawArrayTile(Array.ofDim[Short](cols * rows).fill(v), cols, rows)
+        ShortRawArrayTile(Array.ofDim[Short](cols * rows).fill(v), cols, rows)
       case ShortConstantNoDataCellType =>
-        new ShortConstantNoDataArrayTile(Array.ofDim[Short](cols * rows).fill(v), cols, rows)
+        ShortConstantNoDataArrayTile(Array.ofDim[Short](cols * rows).fill(v), cols, rows)
       case udct: ShortUserDefinedNoDataCellType =>
-        new ShortUserDefinedNoDataArrayTile(Array.ofDim[Short](cols * rows).fill(v), cols, rows, udct)
+        ShortUserDefinedNoDataArrayTile(Array.ofDim[Short](cols * rows).fill(v), cols, rows, udct)
     }
 
   private def constructShortArray(bytes: Array[Byte]): Array[Short] = {
@@ -366,10 +366,10 @@ object ShortArrayTile {
   def fromBytes(bytes: Array[Byte], cols: Int, rows: Int, cellType: ShortCells with NoDataHandling): ShortArrayTile =
     cellType match {
       case ShortCellType =>
-        new ShortRawArrayTile(constructShortArray(bytes), cols, rows)
+        ShortRawArrayTile(constructShortArray(bytes), cols, rows)
       case ShortConstantNoDataCellType =>
-        new ShortConstantNoDataArrayTile(constructShortArray(bytes), cols, rows)
+        ShortConstantNoDataArrayTile(constructShortArray(bytes), cols, rows)
       case udct: ShortUserDefinedNoDataCellType =>
-        new ShortUserDefinedNoDataArrayTile(constructShortArray(bytes), cols, rows, udct)
+        ShortUserDefinedNoDataArrayTile(constructShortArray(bytes), cols, rows, udct)
     }
 }

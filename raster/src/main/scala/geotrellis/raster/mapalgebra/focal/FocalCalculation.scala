@@ -226,7 +226,7 @@ trait ShortArrayTileResult extends Resulting[Tile] { self: FocalCalculation[Tile
   /** [[ShortArrayTile]] that will be returned by the focal calculation */
   val cols: Int = bounds.width
   val rows: Int = bounds.height
-  val resultTile = ShortArrayTile(Array.ofDim[Short](cols * rows), cols, rows)
+  val resultTile = ShortArrayTile.empty(cols, rows)
 
   val copyOriginalValue: (Int, Int, Int, Int) => Unit = { (focusCol: Int, focusRow: Int, col: Int, row: Int) =>
     resultTile.set(col, row, r.get(focusCol, focusRow))
