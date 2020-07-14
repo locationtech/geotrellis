@@ -104,21 +104,16 @@ class GridExtent[@specialized(Int, Long) N: Integral](
     mapToGrid(p.x, p.y)
 
   /** The map coordinate of a grid cell is the center point. */
-  final def gridToMap(col: N, row: N): (Double, Double) = {
-    val x = col.toDouble * cellwidth + extent.xmin + (cellwidth / 2)
-    val y = extent.ymax - (row.toDouble * cellheight) - (cellheight / 2)
-    (x, y)
-  }
+  final def gridToMap(col: N, row: N): (Double, Double) =
+    (gridColToMap(col), gridRowToMap(row))
 
   /** For a given column, find the corresponding x-coordinate in the grid of the present GridExtent. */
-  final def gridColToMap(col: N): Double = {
+  final def gridColToMap(col: N): Double =
     col.toDouble * cellwidth + extent.xmin + (cellwidth / 2)
-  }
 
   /** For a given row, find the corresponding y-coordinate in the grid of the present GridExtent. */
-  final def gridRowToMap(row: N): Double = {
+  final def gridRowToMap(row: N): Double =
     extent.ymax - (row.toDouble * cellheight) - (cellheight / 2)
-  }
 
   /**
     * Returns a GridExtent with the same extent, but a modified
@@ -327,10 +322,17 @@ class GridExtent[@specialized(Int, Long) N: Integral](
     *
     * @param  cellBounds  The extent to get the grid bounds for
     * @param  clamp       A boolean which controls the clamping behavior
+    * @param  center      A boolean which can center the extent
     */
-  def extentFor(cellBounds: GridBounds[N], clamp: Boolean = true): Extent = {
-    val xmin: Double = cellBounds.colMin.toLong * cellwidth + extent.xmin
-    val ymax: Double = extent.ymax - (cellBounds.rowMin.toLong * cellheight)
+  def extentFor(cellBounds: GridBounds[N], clamp: Boolean = true, center: Boolean = false): Extent = {
+    val (xmin: Double, ymax: Double) =
+      if(!center)
+        (cellBounds.colMin.toLong * cellwidth + extent.xmin,
+          extent.ymax - (cellBounds.rowMin.toLong * cellheight))
+      else
+        (cellBounds.colMin.toLong * cellwidth + extent.xmin + (cellwidth / 2),
+          extent.ymax - (cellBounds.rowMin.toLong * cellheight) - (cellheight / 2))
+
     val xmax: Double = xmin + (cellBounds.width.toLong * cellwidth)
     val ymin: Double = ymax - (cellBounds.height.toLong * cellheight)
 

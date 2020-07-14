@@ -112,9 +112,8 @@ class GeoTiffReprojectRasterSource(
       queryPixelBounds <- bounds
       targetPixelBounds <- queryPixelBounds.intersection(this.dimensions)
     } yield {
-      // move extent to the grid center points
       val targetRasterExtent = RasterExtent(
-        extent = gridExtent.extentFor(targetPixelBounds, clamp = true).buffer(- cellSize.width / 2, cellSize.height / 2),
+        extent = gridExtent.extentFor(targetPixelBounds, clamp = true),
         cols = targetPixelBounds.width.toInt,
         rows = targetPixelBounds.height.toInt
       )

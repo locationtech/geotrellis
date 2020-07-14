@@ -110,8 +110,13 @@ class GeoTiffResampleRasterSource(
       queryPixelBounds <- bounds
       targetPixelBounds <- queryPixelBounds.intersection(this.dimensions)
     } yield {
-      // move extent to the grid center points
-      val targetExtent = gridExtent.extentFor(targetPixelBounds).buffer(- cellSize.width / 2, cellSize.height / 2)
+      // in case gridExtent is aligned, the result extent would be the extent of pixel borders
+      // we need the extent of pixel centers
+      val targetExtent = resampleTarget match {
+        case TargetAlignment(_) => gridExtent.extentFor(targetPixelBounds).buffer(- cellSize.width / 2, cellSize.height / 2)
+        case _ => gridExtent.extentFor(targetPixelBounds)
+      }
+
       val sourcePixelBounds = closestTiffOverview.rasterExtent.gridBoundsFor(targetExtent, clamp = true)
       val targetRasterExtent = RasterExtent(targetExtent, targetPixelBounds.width.toInt, targetPixelBounds.height.toInt)
       (sourcePixelBounds, targetRasterExtent)

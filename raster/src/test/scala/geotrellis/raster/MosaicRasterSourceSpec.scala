@@ -39,7 +39,7 @@ class MosaicRasterSourceSpec extends FunSpec with RasterMatchers with GeoTiffTes
     val gtRasterSource1 = GeoTiffRasterSource(inputPath1)
     val gtRasterSource2 = GeoTiffRasterSource(inputPath2)
 
-    val mosaicRasterSource = MosaicRasterSource(
+    val mosaicRasterSource = MosaicRasterSource.instance(
       NonEmptyList(gtRasterSource1, List(gtRasterSource2)), LatLng,
       gtRasterSource1.gridExtent combine gtRasterSource2.gridExtent)
 

@@ -97,6 +97,8 @@ class GeoTiffRasterSourceSpec extends FunSpec with RasterMatchers with GivenWhen
         .resampleToRegion(re, NearestNeighbor, AutoHigherResolution)
         .read(e).get
 
+
+
     assertEqual(actual, expected)
   }
 }

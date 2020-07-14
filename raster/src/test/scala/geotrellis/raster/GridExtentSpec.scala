@@ -82,6 +82,12 @@ class GridExtentSpec extends FunSpec with Matchers {
       ge.gridBoundsFor(Extent(2.25,-1,5,1.75)) should be (GridBounds(4,3,7,8))
     }
 
+    it("should produce correct centered grid bounds") {
+      val ge = GridExtent[Int](Extent(0,0,4,3), CellSize(1.0/2.0, 1.0/3.0))
+
+      ge.gridBoundsFor(Extent(2.25,-1,5,1.75)) should be (GridBounds(4,3,7,8))
+    }
+
     it("should allow aligned grid creation") {
 
       (for (i <- (0 to 10000).toSeq) yield {
