@@ -30,7 +30,8 @@ import scala.math.Ordering
   */
 @JsonCodec
 case class CellSize(width: Double, height: Double) {
-  def resolution: Double = math.sqrt(width*height)
+  def resolution: Double = math.sqrt(width * height)
+  def invert: CellSize = CellSize(- width, - height)
 }
 
 /**
@@ -70,7 +71,7 @@ object CellSize {
     * @param   s  The string
     * @return     The CellSize
     */
-  def fromString(s:String) = {
+  def fromString(s:String): CellSize = {
     val Array(width, height) = s.split(",").map(_.toDouble)
     CellSize(width, height)
   }

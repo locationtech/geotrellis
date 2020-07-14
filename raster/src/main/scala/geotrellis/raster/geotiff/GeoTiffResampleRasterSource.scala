@@ -110,25 +110,24 @@ class GeoTiffResampleRasterSource(
       queryPixelBounds <- bounds
       targetPixelBounds <- queryPixelBounds.intersection(this.dimensions)
     } yield {
-      // in case gridExtent is aligned, the result extent would be the extent of pixel borders
-      // we need the extent of pixel centers
       val targetExtent = resampleTarget match {
-        case TargetAlignment(_) => gridExtent.extentFor(targetPixelBounds).buffer(- cellSize.width / 2, cellSize.height / 2)
+        // center pixels, if the gridExtent is expected to be aligned
+        case TargetAlignment(_) => gridExtent.extentFor(targetPixelBounds).buffer(- cellSize.width / 2, - cellSize.height / 2)
         case _ => gridExtent.extentFor(targetPixelBounds)
       }
 
-      val sourcePixelBounds = closestTiffOverview.rasterExtent.gridBoundsFor(targetExtent, clamp = true)
+      val sourcePixelBounds = closestTiffOverview.rasterExtent.gridBoundsFor(targetExtent)
       val targetRasterExtent = RasterExtent(targetExtent, targetPixelBounds.width.toInt, targetPixelBounds.height.toInt)
       (sourcePixelBounds, targetRasterExtent)
     }}.toMap
 
     geoTiffTile.crop(windows.keys.toSeq, bands.toArray).map { case (gb, tile) =>
       val targetRasterExtent = windows(gb)
-      Raster(tile, closestTiffOverview.rasterExtent.extentFor(gb, clamp = true)).resample(targetRasterExtent, method)
+      Raster(tile, closestTiffOverview.rasterExtent.extentFor(gb)).resample(targetRasterExtent, method)
     }
   }
 
-  override def toString: String = s"GeoTiffResampleRasterSource(${dataPath.value},$resampleTarget,$method)"
+  override def toString: String = s"GeoTiffResampleRasterSource(${dataPath.value}, $resampleTarget, $method)"
 }
 
 object GeoTiffResampleRasterSource {

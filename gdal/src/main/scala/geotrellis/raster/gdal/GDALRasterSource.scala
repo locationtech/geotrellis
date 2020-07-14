@@ -149,7 +149,8 @@ class GDALRasterSource(
   }
 
   def read(extent: Extent, bands: Seq[Int]): Option[Raster[MultibandTile]] = {
-    val bounds = gridExtent.gridBoundsFor(extent.buffer(- cellSize.width / 2, cellSize.height / 2), clamp = false)
+    // center pixels, since the gridExtent is expected to be aligned (see the GDALWarp -tap parameter)
+    val bounds = gridExtent.gridBoundsFor(extent.buffer(- cellSize.width / 2, - cellSize.height / 2), clamp = false)
     read(bounds, bands)
   }
 
@@ -159,13 +160,12 @@ class GDALRasterSource(
   }
 
   override def readExtents(extents: Traversable[Extent]): Iterator[Raster[MultibandTile]] = {
-    val bounds = extents.map(gridExtent.gridBoundsFor(_, clamp = false))
+    // center pixels since the gridExtent is expected to be aligned (see the GDALWarp -tap parameter)
+    val bounds = extents.map(_.buffer(- cellSize.width / 2, - cellSize.height / 2)).map(gridExtent.gridBoundsFor(_, clamp = false))
     readBounds(bounds, 0 until bandCount)
   }
 
-  override def toString: String = {
-    s"GDALRasterSource(${dataPath.value},$options)"
-  }
+  override def toString: String = s"GDALRasterSource(${dataPath.value},$options)"
 
   override def equals(other: Any): Boolean = {
     other match {

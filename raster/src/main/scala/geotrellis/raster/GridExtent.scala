@@ -272,7 +272,7 @@ class GridExtent[@specialized(Int, Long) N: Integral](
     * Tests if the grid is aligned to the extent.
     * This is true when the extent is evenly divided by cellheight and cellwidth.
     */
-  def isGridExtentAligned(): Boolean = {
+  def isGridExtentAligned: Boolean = {
     def isWhole(x: Double) = math.abs(math.round(x) - x) < geotrellis.util.Constants.FLOAT_EPSILON
     isWhole((extent.xmax - extent.xmin) / cellwidth) && isWhole((extent.ymax - extent.ymin) / cellheight)
   }
@@ -322,30 +322,22 @@ class GridExtent[@specialized(Int, Long) N: Integral](
     *
     * @param  cellBounds  The extent to get the grid bounds for
     * @param  clamp       A boolean which controls the clamping behavior
-    * @param  center      A boolean which can center the extent
     */
-  def extentFor(cellBounds: GridBounds[N], clamp: Boolean = true, center: Boolean = false): Extent = {
-    val (xmin: Double, ymax: Double) =
-      if(!center)
-        (cellBounds.colMin.toLong * cellwidth + extent.xmin,
-          extent.ymax - (cellBounds.rowMin.toLong * cellheight))
-      else
-        (cellBounds.colMin.toLong * cellwidth + extent.xmin + (cellwidth / 2),
-          extent.ymax - (cellBounds.rowMin.toLong * cellheight) - (cellheight / 2))
-
+  def extentFor(cellBounds: GridBounds[N], clamp: Boolean = true): Extent = {
+    val xmin: Double = cellBounds.colMin.toLong * cellwidth + extent.xmin
+    val ymax: Double = extent.ymax - (cellBounds.rowMin.toLong * cellheight)
     val xmax: Double = xmin + (cellBounds.width.toLong * cellwidth)
     val ymin: Double = ymax - (cellBounds.height.toLong * cellheight)
 
-    if(clamp) {
+    if(clamp)
       Extent(
         max(min(xmin, extent.xmax), extent.xmin),
         max(min(ymin, extent.ymax), extent.ymin),
         max(min(xmax, extent.xmax), extent.xmin),
         max(min(ymax, extent.ymax), extent.ymin)
       )
-    } else {
+    else
       Extent(xmin, ymin, xmax, ymax)
-    }
   }
 
   /**
@@ -360,7 +352,8 @@ class GridExtent[@specialized(Int, Long) N: Integral](
       xmin = extent.xmin,
       ymin = extent.ymax - (cellheight*totalRows),
       xmax = extent.xmin + (cellwidth*totalCols),
-      ymax = extent.ymax)
+      ymax = extent.ymax
+    )
 
     new GridExtent[N](resampledExtent, cellwidth, cellheight,
       cols = Integral[N].fromLong(totalCols),
@@ -387,8 +380,7 @@ class GridExtent[@specialized(Int, Long) N: Integral](
     new GridExtent[M](extent, cellwidth, cellheight, Integral[N].toType[M](cols), Integral[N].toType[M](rows))
   }
 
-  override def toString: String =
-    s"""GridExtent($extent,$cellSize,${cols}x${rows})"""
+  override def toString: String = s"GridExtent($extent, $cellSize, ${cols}x${rows})"
 }
 
 

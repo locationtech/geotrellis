@@ -32,13 +32,8 @@ package object cog extends Implicits {
     }
   }
 
-  implicit class withExtentMethods(extent: Extent) {
+  implicit class ExtentOps(extent: Extent) {
     def bufferByLayout(layout: LayoutDefinition): Extent =
-      Extent(
-        extent.xmin + layout.cellwidth / 2,
-        extent.ymin + layout.cellheight / 2,
-        extent.xmax - layout.cellwidth / 2,
-        extent.ymax - layout.cellheight / 2
-      )
+      extent.buffer(- layout.cellwidth / 2, -layout.cellheight / 2)
   }
 }

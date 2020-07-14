@@ -85,8 +85,7 @@ class GeoTiffRasterSource(
   }
 
   override def readExtents(extents: Traversable[Extent], bands: Seq[Int]): Iterator[Raster[MultibandTile]] = {
-    val bounds = extents.map(gridExtent.gridBoundsFor(_, clamp = true))
-
+    val bounds = extents.map(gridExtent.gridBoundsFor(_))
     readBounds(bounds, bands)
   }
 
@@ -96,7 +95,7 @@ class GeoTiffRasterSource(
       bounds.flatMap(_.intersection(this.dimensions)).toSeq.map(_.toGridType[Int])
 
     geoTiffTile.crop(intersectingBounds, bands.toArray).map { case (gb, tile) =>
-      convertRaster(Raster(tile, gridExtent.extentFor(gb.toGridType[Long], clamp = true)))
+      convertRaster(Raster(tile, gridExtent.extentFor(gb.toGridType[Long])))
     }
   }
 

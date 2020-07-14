@@ -236,15 +236,7 @@ object COGLayer {
         val keyEncoder = kwEncoder.value
         partition.map { case (key, tiles) =>
           val cogExtent = key.getComponent[SpatialKey].extent(minZoomLayout)
-          val centerToCenter: Extent = {
-            val h = maxZoomLayout.cellheight / 2
-            val w = maxZoomLayout.cellwidth / 2
-            Extent(
-              xmin = cogExtent.xmin + w,
-              ymin = cogExtent.ymin + h,
-              xmax = cogExtent.xmax - w,
-              ymax = cogExtent.ymax - h)
-          }
+          val centerToCenter: Extent = cogExtent.buffer(- maxZoomLayout.cellwidth / 2, - maxZoomLayout.cellheight / 2)
           val cogTileBounds: TileBounds = maxZoomLayout.mapTransform.extentToBounds(centerToCenter)
           val cogLayout: TileLayout = maxZoomLayout.layoutForBounds(cogTileBounds).tileLayout
 
