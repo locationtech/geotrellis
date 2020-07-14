@@ -102,7 +102,7 @@ case class COGLayerMetadata[K: SpatialComponent](
             baseLayout
               .mapTransform
               .boundsToExtent(baseKeyBounds.toGridBounds())
-              .bufferByLayout(layout)
+              .centeredByLayout(layout)
         )
 
       val GridBounds(colMin, rowMin, colMax, rowMax) =
@@ -161,7 +161,7 @@ case class COGLayerMetadata[K: SpatialComponent](
             layout
               .mapTransform
               .boundsToExtent(queryTileBounds)
-              .bufferByLayout(layout)
+              .centeredByLayout(layout)
           )
 
       extentGridBounds
@@ -184,7 +184,7 @@ case class COGLayerMetadata[K: SpatialComponent](
         val layoutGridBounds =
           layout
             .mapTransform
-            .extentToBounds(queryKey.extent(baseLayout).bufferByLayout(layout))
+            .extentToBounds(queryKey.extent(baseLayout).centeredByLayout(layout))
 
         val seq = queryTileBounds.intersection(layoutGridBounds) match {
           case Some(GridBounds(queryMinKeyCol, queryMinKeyRow, queryMaxKeyCol, queryMaxKeyRow)) =>
@@ -229,7 +229,7 @@ case class COGLayerMetadata[K: SpatialComponent](
             .center
         )
 
-    val layoutGridBounds = layout.mapTransform(baseKey.extent(baseLayout).bufferByLayout(layout))
+    val layoutGridBounds = layout.mapTransform(baseKey.extent(baseLayout).centeredByLayout(layout))
 
     val gridBounds = {
       val (minCol, minRow) = ((key.col - layoutGridBounds.colMin) * layout.tileCols, (key.row - layoutGridBounds.rowMin) * layout.tileRows)

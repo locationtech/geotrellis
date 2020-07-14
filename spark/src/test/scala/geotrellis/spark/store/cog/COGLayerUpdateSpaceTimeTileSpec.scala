@@ -134,7 +134,7 @@ trait COGLayerUpdateSpaceTimeTileSpec
           sample
             .metadata
             .copy(bounds = ukb)
-            .copy(extent = sample.metadata.mapTransform(ukb.toGridBounds).bufferByLayout(sample.metadata.layout))
+            .copy(extent = sample.metadata.mapTransform(ukb.toGridBounds).centeredByLayout(sample.metadata.layout))
         )
 
         writer.write[SpaceTimeKey, Tile](updatedLayerId.name, sample, updatedLayerId.zoom, updatedKeyIndex)

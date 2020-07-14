@@ -31,7 +31,6 @@ import scala.math.Ordering
 @JsonCodec
 case class CellSize(width: Double, height: Double) {
   def resolution: Double = math.sqrt(width * height)
-  def invert: CellSize = CellSize(- width, - height)
 }
 
 /**

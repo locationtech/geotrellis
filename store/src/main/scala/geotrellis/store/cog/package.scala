@@ -16,9 +16,9 @@
 
 package geotrellis.store
 
+import geotrellis.raster._
 import geotrellis.vector.Extent
 import geotrellis.layer.LayoutDefinition
-import geotrellis.store.index.KeyIndex
 
 package object cog extends Implicits {
   val GTKey     = "GT_KEY"
@@ -32,8 +32,8 @@ package object cog extends Implicits {
     }
   }
 
-  implicit class ExtentOps(extent: Extent) {
-    def bufferByLayout(layout: LayoutDefinition): Extent =
-      extent.buffer(- layout.cellwidth / 2, -layout.cellheight / 2)
+  implicit class ExtentLayoutOps(extent: Extent) {
+    def centeredByLayout(layout: LayoutDefinition): Extent =
+      extent.centered(layout.cellSize)
   }
 }

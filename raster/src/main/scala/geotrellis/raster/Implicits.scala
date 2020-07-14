@@ -128,4 +128,11 @@ trait Implicits
 
   implicit class withCellFeaturesMethods[R](val self: R) extends CellFeatures.Methods[R]
 
+  implicit class ExtentOps(extent: Extent) {
+    def centered(cellSize: CellSize): Extent = {
+      val CellSize(w, h) = cellSize
+      extent.buffer(- w / 2, - h / 2)
+    }
+  }
+
 }

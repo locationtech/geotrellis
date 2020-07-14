@@ -116,6 +116,8 @@ class GeoTiffResampleRasterSource(
         case _ => gridExtent.extentFor(targetPixelBounds)
       }
 
+      println(s"targetExtent: ${targetExtent}")
+
       val sourcePixelBounds = closestTiffOverview.rasterExtent.gridBoundsFor(targetExtent)
       val targetRasterExtent = RasterExtent(targetExtent, targetPixelBounds.width.toInt, targetPixelBounds.height.toInt)
       (sourcePixelBounds, targetRasterExtent)
