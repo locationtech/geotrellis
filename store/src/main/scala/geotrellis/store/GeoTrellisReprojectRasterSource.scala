@@ -110,7 +110,7 @@ class GeoTrellisReprojectRasterSource(
   def read(bounds: GridBounds[Long], bands: Seq[Int]): Option[Raster[MultibandTile]] =
     bounds
       .intersection(this.dimensions)
-      .map(gridExtent.extentFor(_).buffer(- cellSize.width / 2, - cellSize.height / 2))
+      .map(gridExtent.extentFor(_).buffer(- cellSize.width / 2, cellSize.height / 2))
       .flatMap(read(_, bands))
 
   override def readExtents(extents: Traversable[Extent], bands: Seq[Int]): Iterator[Raster[MultibandTile]] =

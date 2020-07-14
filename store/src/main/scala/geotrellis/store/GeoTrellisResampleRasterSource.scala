@@ -102,7 +102,7 @@ class GeoTrellisResampleRasterSource(
   def read(bounds: GridBounds[Long], bands: Seq[Int]): Option[Raster[MultibandTile]] =
     bounds
       .intersection(this.dimensions)
-      .map(gridExtent.extentFor(_).buffer(- cellSize.width / 2, - cellSize.height / 2))
+      .map(gridExtent.extentFor(_).buffer(- cellSize.width / 2, cellSize.height / 2))
       .flatMap(read(_, bands))
 
   def reprojection(targetCRS: CRS, resampleTarget: ResampleTarget = DefaultTarget, method: ResampleMethod = ResampleMethod.DEFAULT, strategy: OverviewStrategy = OverviewStrategy.DEFAULT): GeoTrellisReprojectRasterSource = {

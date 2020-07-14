@@ -149,7 +149,7 @@ class GDALRasterSource(
   }
 
   def read(extent: Extent, bands: Seq[Int]): Option[Raster[MultibandTile]] = {
-    val bounds = gridExtent.gridBoundsFor(extent.buffer(- cellSize.width / 2, - cellSize.height / 2), clamp = false)
+    val bounds = gridExtent.gridBoundsFor(extent.buffer(- cellSize.width / 2, cellSize.height / 2), clamp = false)
     read(bounds, bands)
   }
 
