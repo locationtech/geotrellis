@@ -223,10 +223,10 @@ class GridExtent[@specialized(Int, Long) N: Integral](
     */
   def toRasterExtent(): RasterExtent = {
     if(cols > Int.MaxValue) {
-      throw new GeoAttrsError(s"Cannot convert GridExtent into a RasterExtent: number of columns exceeds maximum integer value ($cols > ${Int.MaxValue})")
+      throw GeoAttrsError(s"Cannot convert GridExtent into a RasterExtent: number of columns exceeds maximum integer value ($cols > ${Int.MaxValue})")
     }
     if(rows > Int.MaxValue) {
-      throw new GeoAttrsError(s"Cannot convert GridExtent into a RasterExtent: number of rows exceeds maximum integer value ($rows > ${Int.MaxValue})")
+      throw GeoAttrsError(s"Cannot convert GridExtent into a RasterExtent: number of rows exceeds maximum integer value ($rows > ${Int.MaxValue})")
     }
 
     RasterExtent(extent, cellwidth, cellheight, cols.toInt, rows.toInt)
@@ -326,7 +326,7 @@ class GridExtent[@specialized(Int, Long) N: Integral](
     * outside of this GridExtent's extent.
     *
     * @param  cellBounds  The extent to get the grid bounds for
-    * @param  clamp       A boolean which controlls the clamping behvior
+    * @param  clamp       A boolean which controls the clamping behavior
     */
   def extentFor(cellBounds: GridBounds[N], clamp: Boolean = true): Extent = {
     val xmin: Double = cellBounds.colMin.toLong * cellwidth + extent.xmin

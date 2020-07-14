@@ -21,8 +21,8 @@ import geotrellis.raster._
 import geotrellis.raster.testkit.{RasterMatchers, Resource}
 import geotrellis.raster.geotiff._
 import geotrellis.raster.io.geotiff.reader._
-import geotrellis.raster.resample.NearestNeighbor
-import geotrellis.vector.ProjectedExtent
+import geotrellis.raster.resample._
+import geotrellis.vector._
 
 import org.scalatest._
 
@@ -156,7 +156,7 @@ class LayoutTileSourceSpec extends FunSpec with RasterMatchers {
     }
 
     cellSizes.foreach { targetCellSize =>
-      it(s"for cellSize: ${targetCellSize}") {
+      it(s"for cellSize: $targetCellSize") {
         val pe = ProjectedExtent(source.extent, source.crs)
         val scheme = FloatingLayoutScheme(256)
         val layout = scheme.levelFor(pe.extent, targetCellSize).layout
@@ -204,6 +204,44 @@ class LayoutTileSourceSpec extends FunSpec with RasterMatchers {
         }
 
         layoutSource.source
+      }
+    }
+  }
+
+  describe("should perform reproject and tileToLayout of a GeoTiffRasterSource") {
+    // https://github.com/locationtech/geotrellis/issues/3267
+    it("should read reprojected and tiled to layout source // see issue-3267") {
+      val path = Resource.path("vlm/seams-16.tif")
+      val testZoomLevel = 16
+      val rs = GeoTiffRasterSource(path)
+
+      val scheme = ZoomedLayoutScheme(WebMercator)
+      val pyramid = (1 to 30).map { z => (z, scheme.levelForZoom(z)) }.toMap
+
+      val extent = rs.extent.reproject(rs.crs, WebMercator)
+
+      def getTileZXY(point: Point, zoom: Int) = {
+        val SpatialKey(x, y) = pyramid(zoom).layout.mapTransform(point)
+        (zoom, x, y)
+      }
+
+      val (_, x, y) = getTileZXY(extent.center, testZoomLevel)
+
+      val neighborhood = for {
+        col <- ((x - 2) until (x + 2)).toList
+        row <- ((y - 2) until (y + 2)).toList
+      } yield (col, row)
+
+      val trs = rs
+        .reproject(WebMercator, method = NearestNeighbor)
+        .tileToLayout(scheme.levelForZoom(testZoomLevel).layout)
+
+      neighborhood.map { key =>
+        val t = trs.read(key).get.band(0)
+        val arr = trs.read(key).get.band(0).toArray
+        // info(s"Debug info for: ($key)")
+        arr.sum shouldBe arr.size
+        t.dimensions shouldBe Dimensions(256, 256)
       }
     }
   }
