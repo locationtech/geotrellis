@@ -33,7 +33,7 @@ package object cog extends Implicits {
   }
 
   implicit class ExtentLayoutOps(extent: Extent) {
-    def centeredByLayout(layout: LayoutDefinition): Extent =
-      extent.centered(layout.cellSize)
+    def bufferByLayout(layout: LayoutDefinition): Extent =
+      extent.buffer(-layout.cellwidth / 2, -layout.cellheight / 2)
   }
 }

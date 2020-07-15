@@ -112,21 +112,24 @@ class GeoTiffReprojectRasterSource(
       queryPixelBounds <- bounds
       targetPixelBounds <- queryPixelBounds.intersection(this.dimensions)
     } yield {
-      val targetExtent = resampleTarget match {
-        // center pixels, if the gridExtent is expected to be aligned
-        case TargetAlignment(_) => gridExtent.extentFor(targetPixelBounds).buffer(- cellSize.width / 2, cellSize.height / 2)
-        case _ => gridExtent.extentFor(targetPixelBounds)
-      }
-
+      val targetExtent = gridExtent.extentFor(targetPixelBounds)
       val targetRasterExtent = RasterExtent(
         extent = targetExtent,
         cols = targetPixelBounds.width.toInt,
         rows = targetPixelBounds.height.toInt
       )
 
+      // buffer the targetExtent to read a buffered area from the source tiff
+      // so the resample would behave properly on borders
+      val bufferedTargetRasterExtent = RasterExtent(
+        extent = targetExtent.buffer(cellSize.width, cellSize.height),
+        cols = targetPixelBounds.width.toInt,
+        rows = targetPixelBounds.height.toInt
+      )
+
       // A tmp workaround for https://github.com/locationtech/proj4j/pull/29
       // Stacktrace details: https://github.com/geotrellis/geotrellis-contrib/pull/206#pullrequestreview-260115791
-      val sourceExtent = Proj4Transform.synchronized(targetRasterExtent.extent.reprojectAsPolygon(backTransform, 0.001).getEnvelopeInternal)
+      val sourceExtent = Proj4Transform.synchronized(bufferedTargetRasterExtent.extent.reprojectAsPolygon(backTransform, 0.001).getEnvelopeInternal)
       val sourcePixelBounds = closestTiffOverview.rasterExtent.gridBoundsFor(sourceExtent)
       (sourcePixelBounds, targetRasterExtent)
     }}.toMap

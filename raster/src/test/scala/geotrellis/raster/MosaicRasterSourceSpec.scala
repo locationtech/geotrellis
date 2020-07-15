@@ -39,7 +39,7 @@ class MosaicRasterSourceSpec extends FunSpec with RasterMatchers with GeoTiffTes
     val gtRasterSource1 = GeoTiffRasterSource(inputPath1)
     val gtRasterSource2 = GeoTiffRasterSource(inputPath2)
 
-    val mosaicRasterSource = MosaicRasterSource.instance(
+    val mosaicRasterSource = MosaicRasterSource(
       NonEmptyList(gtRasterSource1, List(gtRasterSource2)), LatLng,
       gtRasterSource1.gridExtent combine gtRasterSource2.gridExtent)
 
@@ -120,7 +120,7 @@ class MosaicRasterSourceSpec extends FunSpec with RasterMatchers with GeoTiffTes
   describe("reprojection operations") {
     it("reprojectToRegion should behave consistent with simple raster sources") {
       val rs = GeoTiffRasterSource(baseGeoTiffPath("vlm/lc8-utm-1.tif"))
-      val mrs = MosaicRasterSource.instance(NonEmptyList(rs, Nil), rs.crs)
+      val mrs = MosaicRasterSource(NonEmptyList(rs, Nil), rs.crs)
 
       rs.crs shouldBe mrs.crs
       rs.gridExtent shouldBe mrs.gridExtent

@@ -110,20 +110,19 @@ class GeoTiffResampleRasterSource(
       queryPixelBounds <- bounds
       targetPixelBounds <- queryPixelBounds.intersection(this.dimensions)
     } yield {
-      val targetExtent = resampleTarget match {
-        // center pixels, if the gridExtent is expected to be aligned
-        case TargetAlignment(_) => gridExtent.extentFor(targetPixelBounds).buffer(- cellSize.width / 2, cellSize.height / 2)
-        case _ => gridExtent.extentFor(targetPixelBounds)
-      }
-
-      val sourcePixelBounds = closestTiffOverview.rasterExtent.gridBoundsFor(targetExtent)
+      val targetExtent = gridExtent.extentFor(targetPixelBounds)
+      // buffer the targetExtent to read a buffered area from the source tiff
+      // so the resample would behave properly on borders
+      val bufferedTargetExtent = targetExtent.buffer(cellSize.width, cellSize.height)
+      val sourcePixelBounds = closestTiffOverview.rasterExtent.gridBoundsFor(bufferedTargetExtent)
       val targetRasterExtent = RasterExtent(targetExtent, targetPixelBounds.width.toInt, targetPixelBounds.height.toInt)
       (sourcePixelBounds, targetRasterExtent)
     }}.toMap
 
     geoTiffTile.crop(windows.keys.toSeq, bands.toArray).map { case (gb, tile) =>
       val targetRasterExtent = windows(gb)
-      Raster(tile, closestTiffOverview.rasterExtent.extentFor(gb)).resample(targetRasterExtent, method)
+      val sourceExtent = closestTiffOverview.rasterExtent.extentFor(gb, clamp = false)
+      Raster(tile, sourceExtent).resample(targetRasterExtent, method)
     }
   }
 

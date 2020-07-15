@@ -102,7 +102,6 @@ class GeoTrellisResampleRasterSource(
   def read(bounds: GridBounds[Long], bands: Seq[Int]): Option[Raster[MultibandTile]] =
     bounds
       .intersection(this.dimensions)
-      // center pixels, since the gridExtent is expected to be aligned
       .map(gridExtent.extentFor(_).buffer(- cellSize.width / 2, - cellSize.height / 2))
       .flatMap(read(_, bands))
 
