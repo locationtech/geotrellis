@@ -18,9 +18,7 @@ package geotrellis.raster.io.geotiff.tags
 
 import ProjectionTypesMap._
 import geotrellis.raster.io.geotiff.reader.MalformedGeoTiffException
-import geotrellis.raster.io.geotiff.util._
 
-import monocle.syntax._
 import monocle.macros.Lenses
 import io.circe._
 import io.circe.generic.semiauto._

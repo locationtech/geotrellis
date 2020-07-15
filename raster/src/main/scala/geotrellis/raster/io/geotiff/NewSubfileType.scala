@@ -19,22 +19,44 @@ package geotrellis.raster.io.geotiff
 /**
   * A general indication of the kind of data contained in this subfile.
   * URL: https://www.awaresystems.be/imaging/tiff/tifftags/newsubfiletype.html
+  * URL #2: https://exiftool.org/TagNames/EXIF.html
   */
 abstract sealed class NewSubfileType extends Serializable { val code: Int }
 
+/** Full resolution image */
+case object FullResolutionImage extends NewSubfileType { val code = 0 }
 /** Reduced-resolution version of another image in this TIFF file */
 case object ReducedImage extends NewSubfileType { val code = 1 }
 /** Single page of a multi-page image (see the PageNumber field description) */
 case object Page extends NewSubfileType { val code = 2 }
 /** Transparency mask for another image in this TIFF file */
 case object Mask extends NewSubfileType { val code = 4 }
+/** Reduced-resolution version of a transparency mask */
+case object MaskReducedImage extends NewSubfileType { val code = 5 }
+/** Transparency mask of multi-page image */
+case object MaskMultiPage extends NewSubfileType { val code = 6 }
+/** Transparency mask of reduced-resolution multi-page image */
+case object MaskMultiPageReducedImage extends NewSubfileType { val code = 7 }
+/** Depth map */
+case object Depth extends NewSubfileType { val code = 8 }
+/** Depth map of reduced-resolution image */
+case object DepthReducedImage extends NewSubfileType { val code = 9 }
+/** Enhanced image data */
+case object Enhanced extends NewSubfileType { val code = 10 }
 
 object NewSubfileType {
   def fromCode(code: Long): Option[NewSubfileType] = fromCode(code.toInt)
   def fromCode(code: Int): Option[NewSubfileType] = code match {
+    case FullResolutionImage.code => Some(FullResolutionImage)
     case ReducedImage.code => Some(ReducedImage)
     case Page.code => Some(Page)
     case Mask.code => Some(Mask)
+    case MaskReducedImage.code => Some(MaskReducedImage)
+    case MaskMultiPage.code => Some(MaskMultiPage)
+    case MaskMultiPageReducedImage.code => Some(MaskMultiPageReducedImage)
+    case Depth.code => Some(Depth)
+    case DepthReducedImage.code => Some(DepthReducedImage)
+    case Enhanced.code => Some(Enhanced)
     case _ => None
   }
 }
