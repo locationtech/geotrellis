@@ -121,15 +121,11 @@ class GeoTiffReprojectRasterSource(
 
       // buffer the targetExtent to read a buffered area from the source tiff
       // so the resample would behave properly on borders
-      val bufferedTargetRasterExtent = RasterExtent(
-        extent = targetExtent.buffer(cellSize.width, cellSize.height),
-        cols = targetPixelBounds.width.toInt,
-        rows = targetPixelBounds.height.toInt
-      )
+      val bufferedTargetExtent = targetExtent.buffer(cellSize.width, cellSize.height)
 
       // A tmp workaround for https://github.com/locationtech/proj4j/pull/29
       // Stacktrace details: https://github.com/geotrellis/geotrellis-contrib/pull/206#pullrequestreview-260115791
-      val sourceExtent = Proj4Transform.synchronized(bufferedTargetRasterExtent.extent.reprojectAsPolygon(backTransform, 0.001).getEnvelopeInternal)
+      val sourceExtent = Proj4Transform.synchronized(bufferedTargetExtent.reprojectAsPolygon(backTransform, 0.001).getEnvelopeInternal)
       val sourcePixelBounds = closestTiffOverview.rasterExtent.gridBoundsFor(sourceExtent)
       (sourcePixelBounds, targetRasterExtent)
     }}.toMap
