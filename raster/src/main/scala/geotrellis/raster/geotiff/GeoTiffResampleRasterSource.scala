@@ -111,18 +111,22 @@ class GeoTiffResampleRasterSource(
       targetPixelBounds <- queryPixelBounds.intersection(this.dimensions)
     } yield {
       val targetExtent = gridExtent.extentFor(targetPixelBounds)
-      val sourcePixelBounds = closestTiffOverview.rasterExtent.gridBoundsFor(targetExtent, clamp = true)
+      // buffer the targetExtent to read a buffered area from the source tiff
+      // so the resample would behave properly on borders
+      val bufferedTargetExtent = targetExtent.buffer(cellSize.width, cellSize.height)
+      val sourcePixelBounds = closestTiffOverview.rasterExtent.gridBoundsFor(bufferedTargetExtent)
       val targetRasterExtent = RasterExtent(targetExtent, targetPixelBounds.width.toInt, targetPixelBounds.height.toInt)
       (sourcePixelBounds, targetRasterExtent)
     }}.toMap
 
     geoTiffTile.crop(windows.keys.toSeq, bands.toArray).map { case (gb, tile) =>
       val targetRasterExtent = windows(gb)
-      Raster(tile, closestTiffOverview.rasterExtent.extentFor(gb, clamp = true)).resample(targetRasterExtent, method)
+      val sourceExtent = closestTiffOverview.rasterExtent.extentFor(gb, clamp = false)
+      Raster(tile, sourceExtent).resample(targetRasterExtent, method)
     }
   }
 
-  override def toString: String = s"GeoTiffResampleRasterSource(${dataPath.value},$resampleTarget,$method)"
+  override def toString: String = s"GeoTiffResampleRasterSource(${dataPath.value}, $resampleTarget, $method)"
 }
 
 object GeoTiffResampleRasterSource {

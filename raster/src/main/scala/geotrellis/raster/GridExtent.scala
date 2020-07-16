@@ -104,21 +104,16 @@ class GridExtent[@specialized(Int, Long) N: Integral](
     mapToGrid(p.x, p.y)
 
   /** The map coordinate of a grid cell is the center point. */
-  final def gridToMap(col: N, row: N): (Double, Double) = {
-    val x = col.toDouble * cellwidth + extent.xmin + (cellwidth / 2)
-    val y = extent.ymax - (row.toDouble * cellheight) - (cellheight / 2)
-    (x, y)
-  }
+  final def gridToMap(col: N, row: N): (Double, Double) =
+    (gridColToMap(col), gridRowToMap(row))
 
   /** For a given column, find the corresponding x-coordinate in the grid of the present GridExtent. */
-  final def gridColToMap(col: N): Double = {
+  final def gridColToMap(col: N): Double =
     col.toDouble * cellwidth + extent.xmin + (cellwidth / 2)
-  }
 
   /** For a given row, find the corresponding y-coordinate in the grid of the present GridExtent. */
-  final def gridRowToMap(row: N): Double = {
+  final def gridRowToMap(row: N): Double =
     extent.ymax - (row.toDouble * cellheight) - (cellheight / 2)
-  }
 
   /**
     * Returns a GridExtent with the same extent, but a modified
@@ -223,10 +218,10 @@ class GridExtent[@specialized(Int, Long) N: Integral](
     */
   def toRasterExtent(): RasterExtent = {
     if(cols > Int.MaxValue) {
-      throw new GeoAttrsError(s"Cannot convert GridExtent into a RasterExtent: number of columns exceeds maximum integer value ($cols > ${Int.MaxValue})")
+      throw GeoAttrsError(s"Cannot convert GridExtent into a RasterExtent: number of columns exceeds maximum integer value ($cols > ${Int.MaxValue})")
     }
     if(rows > Int.MaxValue) {
-      throw new GeoAttrsError(s"Cannot convert GridExtent into a RasterExtent: number of rows exceeds maximum integer value ($rows > ${Int.MaxValue})")
+      throw GeoAttrsError(s"Cannot convert GridExtent into a RasterExtent: number of rows exceeds maximum integer value ($rows > ${Int.MaxValue})")
     }
 
     RasterExtent(extent, cellwidth, cellheight, cols.toInt, rows.toInt)
@@ -277,7 +272,7 @@ class GridExtent[@specialized(Int, Long) N: Integral](
     * Tests if the grid is aligned to the extent.
     * This is true when the extent is evenly divided by cellheight and cellwidth.
     */
-  def isGridExtentAligned(): Boolean = {
+  def isGridExtentAligned: Boolean = {
     def isWhole(x: Double) = math.abs(math.round(x) - x) < geotrellis.util.Constants.FLOAT_EPSILON
     isWhole((extent.xmax - extent.xmin) / cellwidth) && isWhole((extent.ymax - extent.ymin) / cellheight)
   }
@@ -326,7 +321,7 @@ class GridExtent[@specialized(Int, Long) N: Integral](
     * outside of this GridExtent's extent.
     *
     * @param  cellBounds  The extent to get the grid bounds for
-    * @param  clamp       A boolean which controlls the clamping behvior
+    * @param  clamp       A boolean which controls the clamping behavior
     */
   def extentFor(cellBounds: GridBounds[N], clamp: Boolean = true): Extent = {
     val xmin: Double = cellBounds.colMin.toLong * cellwidth + extent.xmin
@@ -334,16 +329,15 @@ class GridExtent[@specialized(Int, Long) N: Integral](
     val xmax: Double = xmin + (cellBounds.width.toLong * cellwidth)
     val ymin: Double = ymax - (cellBounds.height.toLong * cellheight)
 
-    if(clamp) {
+    if(clamp)
       Extent(
         max(min(xmin, extent.xmax), extent.xmin),
         max(min(ymin, extent.ymax), extent.ymin),
         max(min(xmax, extent.xmax), extent.xmin),
         max(min(ymax, extent.ymax), extent.ymin)
       )
-    } else {
+    else
       Extent(xmin, ymin, xmax, ymax)
-    }
   }
 
   /**
@@ -358,7 +352,8 @@ class GridExtent[@specialized(Int, Long) N: Integral](
       xmin = extent.xmin,
       ymin = extent.ymax - (cellheight*totalRows),
       xmax = extent.xmin + (cellwidth*totalCols),
-      ymax = extent.ymax)
+      ymax = extent.ymax
+    )
 
     new GridExtent[N](resampledExtent, cellwidth, cellheight,
       cols = Integral[N].fromLong(totalCols),
@@ -385,8 +380,7 @@ class GridExtent[@specialized(Int, Long) N: Integral](
     new GridExtent[M](extent, cellwidth, cellheight, Integral[N].toType[M](cols), Integral[N].toType[M](rows))
   }
 
-  override def toString: String =
-    s"""GridExtent($extent,$cellSize,${cols}x${rows})"""
+  override def toString: String = s"GridExtent($extent, $cellSize, ${cols}x${rows})"
 }
 
 

@@ -127,5 +127,4 @@ trait Implicits
   }
 
   implicit class withCellFeaturesMethods[R](val self: R) extends CellFeatures.Methods[R]
-
 }

@@ -16,9 +16,9 @@
 
 package geotrellis.store
 
+import geotrellis.raster._
 import geotrellis.vector.Extent
 import geotrellis.layer.LayoutDefinition
-import geotrellis.store.index.KeyIndex
 
 package object cog extends Implicits {
   val GTKey     = "GT_KEY"
@@ -34,11 +34,6 @@ package object cog extends Implicits {
 
   implicit class withExtentMethods(extent: Extent) {
     def bufferByLayout(layout: LayoutDefinition): Extent =
-      Extent(
-        extent.xmin + layout.cellwidth / 2,
-        extent.ymin + layout.cellheight / 2,
-        extent.xmax - layout.cellwidth / 2,
-        extent.ymax - layout.cellheight / 2
-      )
+      extent.buffer(-layout.cellwidth / 2, -layout.cellheight / 2)
   }
 }
