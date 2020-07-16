@@ -160,13 +160,21 @@ object GeoTiffInfo {
             case Tiff =>
               var ifdOffset = byteReader.getInt
               while (ifdOffset > 0) {
-                tiffTagsBuffer += TiffTags.read(byteReader, ifdOffset)(IntTiffTagOffsetSize)
+                val ifdTiffTags = TiffTags.read(byteReader, ifdOffset)(IntTiffTagOffsetSize)
+                // TIFF Reader supports only overviews at this point
+                // Overview is a reduced-resolution IFD
+                val subfileType = ifdTiffTags.nonBasicTags.newSubfileType.flatMap(NewSubfileType.fromCode)
+                if(subfileType.contains(ReducedImage)) tiffTagsBuffer += ifdTiffTags
                 ifdOffset = byteReader.getInt
               }
             case _ =>
               var ifdOffset = byteReader.getLong
               while (ifdOffset > 0) {
-                tiffTagsBuffer += TiffTags.read(byteReader, ifdOffset)(LongTiffTagOffsetSize)
+                val ifdTiffTags = TiffTags.read(byteReader, ifdOffset)(LongTiffTagOffsetSize)
+                // TIFF Reader supports only overviews at this point
+                // Overview is a reduced-resolution IFD
+                val subfileType = ifdTiffTags.nonBasicTags.newSubfileType.flatMap(NewSubfileType.fromCode)
+                if(subfileType.contains(ReducedImage)) tiffTagsBuffer += ifdTiffTags
                 ifdOffset = byteReader.getLong
               }
           }

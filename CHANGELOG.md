@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - GeoTiffRasterSource is not threadsafe enough [#3265](https://github.com/locationtech/geotrellis/pull/3265)
 - Fix ShortArrayTileResult result ArrayTile fulfillment [#3268](https://github.com/locationtech/geotrellis/pull/3268)
 - GeoTiffRasterSource TiledToLayout reads by SpatialKey can produce non-256x256 tiles [3267](https://github.com/locationtech/geotrellis/issues/3267)
+- Fix Overviews Read Incorrectly when Per Dataset Masks Present [#3269](https://github.com/locationtech/geotrellis/issues/3269)
 
 ## [3.4.0] - 2020-06-19
 
