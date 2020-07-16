@@ -51,7 +51,7 @@ object NewSubfileType {
     case ReducedImage.code => Some(ReducedImage)
     case Page.code => Some(Page)
     case Mask.code => Some(Mask)
-    case ReducedImage.code => Some(ReducedImage)
+    case ReducedImageMask.code => Some(ReducedImageMask)
     case MultiPageMask.code => Some(MultiPageMask)
     case MultiPageReducedImageMask.code => Some(MultiPageReducedImageMask)
     case Depth.code => Some(Depth)
