@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - GeoTiffRasterSource is not threadsafe enough [#3265](https://github.com/locationtech/geotrellis/pull/3265)
 - Fix ShortArrayTileResult result ArrayTile fulfillment [#3268](https://github.com/locationtech/geotrellis/pull/3268)
+- Add alternative RasterizeRDD methods for keyed geometries or features [#3271](https://github.com/locationtech/geotrellis/pull/3271)
 
 ## [3.4.0] - 2020-06-19
 
