@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Fix combineDouble of ArrayTile and ConstantTile with non-commutative operator [#3257](https://github.com/locationtech/geotrellis/issues/3257)
+
 ## [3.4.1] - 2020-07-16
 
 ### Changed

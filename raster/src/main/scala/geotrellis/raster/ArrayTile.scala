@@ -270,7 +270,7 @@ abstract class ArrayTile extends Tile with Serializable {
       case ar: ArrayTile =>
         combineDouble(ar)(f)
       case ct: ConstantTile =>
-        ct.combineDouble(this)(f)
+        ct.combineDouble(this)((z1, z2) => f(z2, z1))
       case ct: CompositeTile =>
         ct.combineDouble(this)((z1, z2) => f(z2, z1))
       case t =>
