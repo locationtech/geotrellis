@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Add alternative RasterizeRDD methods for keyed geometries or features [#3271](https://github.com/locationtech/geotrellis/pull/3271)
+
 ## [3.4.1] - 2020-07-16
 
 ### Changed

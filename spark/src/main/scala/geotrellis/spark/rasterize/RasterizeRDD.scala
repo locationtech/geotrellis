@@ -21,26 +21,24 @@ import geotrellis.raster.rasterize._
 import geotrellis.layer._
 import geotrellis.spark._
 import geotrellis.vector._
-import org.apache.spark.rdd._
 import org.apache.spark.{HashPartitioner, Partitioner}
 import org.apache.spark.rdd._
 
-import scala.collection.immutable.VectorBuilder
 import spire.syntax.cfor._
 
 
 object RasterizeRDD {
   /**
-   * Rasterize an RDD of Feature objects into a tiled raster RDD.
-   * Cells not intersecting any geometry will left as NODATA.
-   * Feature data will be converted to type matching specified [[CellType]].
-   * Feature rasterization order is undefined in this operation.
-   *
-   * @param cellType [[CellType]] for creating raster tiles
-   * @param layout Raster layer layout for the result of rasterization
-   * @param options Rasterizer options for cell intersection rules
-   * @param partitioner Partitioner for result RDD
-   */
+    * Rasterize an RDD of Geometry objects into a tiled raster RDD.
+    * Cells not intersecting any geometry will left as NODATA.
+    * Value will be converted to type matching specified [[CellType]].
+    *
+    * @param value Cell value for cells intersecting a geometry
+    * @param cellType [[CellType]] for creating raster tiles
+    * @param layout Raster layer layout for the result of rasterization
+    * @param options Rasterizer options for cell intersection rules
+    * @param partitioner Partitioner for result RDD
+    */
   def fromGeometry[G <: Geometry](
     geoms: RDD[G],
     value: Double,
@@ -54,16 +52,39 @@ object RasterizeRDD {
   }
 
   /**
-   * Rasterize an RDD of Geometry objects into a tiled raster RDD.
-   * Cells not intersecting any geometry will left as NODATA.
-   * Value will be converted to type matching specified [[CellType]].
-   *
-   * @param value Cell value for cells intersecting a geometry
-   * @param layout Raster layer layout for the result of rasterization
-   * @param cellType [[CellType]] for creating raster tiles
-   * @param options Rasterizer options for cell intersection rules
-   * @param partitioner Partitioner for result RDD
-   */
+    * Rasterize an RDD of Geometry objects keyed by the associated spatial key(s) into a tiled raster RDD.
+    * Cells not intersecting any geometry will left as NODATA.
+    * Value will be converted to type matching specified [[CellType]].
+    *
+    * @param value Cell value for cells intersecting a geometry
+    * @param cellType [[CellType]] for creating raster tiles
+    * @param layout Raster layer layout for the result of rasterization
+    * @param options Rasterizer options for cell intersection rules
+    * @param partitioner Partitioner for result RDD
+    */
+  def fromKeyedGeometry[G <: Geometry](
+    geoms: RDD[(SpatialKey, G)],
+    value: Double,
+    cellType: CellType,
+    layout: LayoutDefinition,
+    options: Rasterizer.Options = Rasterizer.Options.DEFAULT,
+    partitioner: Option[Partitioner] = None
+  ): RDD[(SpatialKey, Tile)] with Metadata[LayoutDefinition] = {
+    val features = geoms.map { case (key, g) => (key, (Feature(g, value), key)) }
+    _fromKeyedFeature(features, cellType, layout, options, partitioner)
+  }
+
+  /**
+    * Rasterize an RDD of Feature objects into a tiled raster RDD.
+    * Cells not intersecting any geometry will left as NODATA.
+    * Feature data will be converted to type matching specified [[CellType]].
+    * Feature rasterization order is undefined in this operation.
+    *
+    * @param cellType [[CellType]] for creating raster tiles
+    * @param layout Raster layer layout for the result of rasterization
+    * @param options Rasterizer options for cell intersection rules
+    * @param partitioner Partitioner for result RDD
+    */
   def fromFeature[G <: Geometry](
     features: RDD[Feature[G, Double]],
     cellType: CellType,
@@ -78,6 +99,38 @@ object RasterizeRDD {
           .map(key => (key, (feature, key)) )
       }
 
+    _fromKeyedFeature(keyed, cellType, layout, options, partitioner)
+  }
+
+  /**
+    * Rasterize an RDD of Feature objects keyed by the associated spatial key(s) into a tiled raster RDD.
+    * Cells not intersecting any geometry will left as NODATA.
+    * Feature data will be converted to type matching specified [[CellType]].
+    * Feature rasterization order is undefined in this operation.
+    *
+    * @param cellType [[CellType]] for creating raster tiles
+    * @param layout Raster layer layout for the result of rasterization
+    * @param options Rasterizer options for cell intersection rules
+    * @param partitioner Partitioner for result RDD
+    */
+  def fromKeyedFeature[G <: Geometry](
+    features: RDD[(SpatialKey, Feature[G, Double])],
+    cellType: CellType,
+    layout: LayoutDefinition,
+    options: Rasterizer.Options = Rasterizer.Options.DEFAULT,
+    partitioner: Option[Partitioner] = None
+  ): RDD[(SpatialKey, Tile)] with Metadata[LayoutDefinition] = {
+    val keyed = features.map { case (key, feature) => (key, (feature, key)) }
+    _fromKeyedFeature(keyed, cellType, layout, options, partitioner)
+  }
+
+  private def _fromKeyedFeature[G <: Geometry](
+    keyedFeatures: RDD[(SpatialKey, (Feature[G, Double], SpatialKey))],
+    cellType: CellType,
+    layout: LayoutDefinition,
+    options: Rasterizer.Options = Rasterizer.Options.DEFAULT,
+    partitioner: Option[Partitioner] = None
+  ): RDD[(SpatialKey, Tile)] with Metadata[LayoutDefinition] = {
     val createTile = (tup: (Feature[Geometry, Double], SpatialKey)) => {
       val (feature, key) = tup
       val tile = ArrayTile.empty(cellType, layout.tileCols, layout.tileRows)
@@ -106,28 +159,28 @@ object RasterizeRDD {
     }
 
     val tiles: RDD[(SpatialKey, MutableArrayTile)] =
-      keyed.combineByKeyWithClassTag[MutableArrayTile](
+      keyedFeatures.combineByKeyWithClassTag[MutableArrayTile](
         createCombiner = createTile,
         mergeValue = updateTile,
         mergeCombiners = mergeTiles,
-        partitioner.getOrElse(new HashPartitioner(features.getNumPartitions))
+        partitioner.getOrElse(new HashPartitioner(keyedFeatures.getNumPartitions))
       )
 
     ContextRDD(tiles.asInstanceOf[RDD[(SpatialKey, Tile)]], layout)
   }
 
   /**
-   * Rasterize an RDD of Feature objects into a tiled raster RDD.
-   * Cells not intersecting any geometry will left as NODATA.
-   * Feature value will be converted to type matching specified [[CellType]].
-   * Z-Index from [[CellValue]] will be maintained per-cell during rasterization.
-   * A cell with greater zindex is always in front of a cell with a lower zinde.
-   *
-   * @param cellType [[CellType]] for creating raster tiles
-   * @param layout Raster layer layout for the result of rasterization
-   * @param options Rasterizer options for cell intersection rules
-   * @param partitioner Partitioner for result RDD
-   */
+    * Rasterize an RDD of Feature objects into a tiled raster RDD.
+    * Cells not intersecting any geometry will left as NODATA.
+    * Feature value will be converted to type matching specified [[CellType]].
+    * Z-Index from [[CellValue]] will be maintained per-cell during rasterization.
+    * A cell with greater zindex is always in front of a cell with a lower zinde.
+    *
+    * @param cellType [[CellType]] for creating raster tiles
+    * @param layout Raster layer layout for the result of rasterization
+    * @param options Rasterizer options for cell intersection rules
+    * @param partitioner Partitioner for result RDD
+    */
   def fromFeatureWithZIndex[G <: Geometry](
     features: RDD[Feature[G, CellValue]],
     cellType: CellType,
@@ -136,7 +189,6 @@ object RasterizeRDD {
     partitioner: Option[Partitioner] = None,
     zIndexCellType: CellType = ByteConstantNoDataCellType
   ): RDD[(SpatialKey, Tile)] with Metadata[LayoutDefinition] = {
-
     // key the geometry to intersecting tiles so it can be rasterized in the map-side combine
     val keyed: RDD[(SpatialKey, (Feature[Geometry, CellValue], SpatialKey))] =
       features.flatMap { feature =>
@@ -144,6 +196,41 @@ object RasterizeRDD {
           .map(key => (key, (feature, key)) )
       }
 
+    _fromKeyedFeatureWithZIndex(keyed, cellType, layout, options, partitioner, zIndexCellType)
+  }
+
+  /**
+    * Rasterize an RDD of Feature objects keyed by the associated spatial key(s) into a tiled raster RDD.
+    * Cells not intersecting any geometry will left as NODATA.
+    * Feature value will be converted to type matching specified [[CellType]].
+    * Z-Index from [[CellValue]] will be maintained per-cell during rasterization.
+    * A cell with greater zindex is always in front of a cell with a lower zinde.
+    *
+    * @param cellType [[CellType]] for creating raster tiles
+    * @param layout Raster layer layout for the result of rasterization
+    * @param options Rasterizer options for cell intersection rules
+    * @param partitioner Partitioner for result RDD
+    */
+  def fromKeyedFeatureWithZIndex[G <: Geometry](
+    features: RDD[(SpatialKey, Feature[G, CellValue])],
+    cellType: CellType,
+    layout: LayoutDefinition,
+    options: Rasterizer.Options = Rasterizer.Options.DEFAULT,
+    partitioner: Option[Partitioner] = None,
+    zIndexCellType: CellType = ByteConstantNoDataCellType
+  ): RDD[(SpatialKey, Tile)] with Metadata[LayoutDefinition] = {
+    val keyed = features.map { case (key, feature) => (key, (feature, key)) }
+    _fromKeyedFeatureWithZIndex(keyed, cellType, layout, options, partitioner)
+  }
+
+  private def _fromKeyedFeatureWithZIndex[G <: Geometry](
+    keyedFeatures: RDD[(SpatialKey, (Feature[G, CellValue], SpatialKey))],
+    cellType: CellType,
+    layout: LayoutDefinition,
+    options: Rasterizer.Options = Rasterizer.Options.DEFAULT,
+    partitioner: Option[Partitioner] = None,
+    zIndexCellType: CellType = ByteConstantNoDataCellType
+  ): RDD[(SpatialKey, Tile)] with Metadata[LayoutDefinition] = {
     val createTile = (tup: (Feature[Geometry, CellValue], SpatialKey)) => {
       val (feature, key) = tup
       val tile = ArrayTile.empty(cellType, layout.tileCols, layout.tileRows)
@@ -185,11 +272,11 @@ object RasterizeRDD {
     }
 
     val tiles: RDD[(SpatialKey, MutableArrayTile)] =
-      keyed.combineByKeyWithClassTag[(MutableArrayTile, MutableArrayTile)](
+      keyedFeatures.combineByKeyWithClassTag[(MutableArrayTile, MutableArrayTile)](
         createCombiner = createTile,
         mergeValue = updateTile,
         mergeCombiners = mergeTiles,
-        partitioner.getOrElse(new HashPartitioner(features.getNumPartitions))
+        partitioner.getOrElse(new HashPartitioner(keyedFeatures.getNumPartitions))
       )
         .mapValues { tup  => tup._1 }
 
