@@ -64,7 +64,7 @@ trait MultibandColorMethods extends MethodExtensions[MultibandTile] {
         val b = if (isData(bBand)) { bBand } else 0
         val a = if (isData(aBand)) { aBand } else 0
 
-        if(r + g + b == 0) 0
+        if(r + g + b + a == 0) 0
         else {
           ((r & 0xFF) << 24) | ((g & 0xFF) << 16) | ((b & 0xFF) << 8) | (a & 0xFF)
         }
