@@ -17,6 +17,7 @@
 package geotrellis.raster.render.jpg
 
 import geotrellis.raster._
+import geotrellis.raster.geotiff.GeoTiffRasterSource
 import geotrellis.raster.render.Jpg
 import geotrellis.raster.testkit._
 
@@ -24,6 +25,7 @@ import spire.syntax.cfor._
 import org.scalatest._
 
 import java.io._
+import java.nio.file.{Files, Paths}
 import javax.imageio._
 
 class RenderJpgTests extends FunSuite with Matchers with TileBuilders with RasterMatchers {
@@ -90,9 +92,9 @@ class RenderJpgTests extends FunSuite with Matchers with TileBuilders with Raste
         )
       )
 
-    val jpg = tile.renderJpg(colorMap)
+    val jpg = tile.renderJpg(colorMap, Settings.HIGHEST_QUALITY)
 
-    testJpg(jpg, tile, colorMap, threshold=250.0)
+    testJpg(jpg, tile, colorMap, threshold = 250.0)
   }
 
   test("render a JPG from an Int tile and ensure it (roughly) matches what is read in by ImageIO when written") {
@@ -118,9 +120,9 @@ class RenderJpgTests extends FunSuite with Matchers with TileBuilders with Raste
         )
       )
 
-    val jpg = tile.renderJpg(colorMap)
+    val jpg = tile.renderJpg(colorMap, Settings.HIGHEST_QUALITY)
 
-    testJpg(jpg, tile, colorMap, threshold=250.0)
+    testJpg(jpg, tile, colorMap, threshold = 250.0)
   }
 
   test("render int and double tiles similarly") {
@@ -188,17 +190,27 @@ class RenderJpgTests extends FunSuite with Matchers with TileBuilders with Raste
         )
       )
 
-    val jpg = tile.renderJpg(colorMap)
+    val jpg = tile.renderJpg(colorMap, Settings.HIGHEST_QUALITY)
     val img = ImageIO.read(new ByteArrayInputStream(jpg.bytes))
 
     img.getWidth should be (tile.cols)
     img.getHeight should be (tile.rows)
 
-    var distances = 0.0
     cfor(0)(_ < img.getWidth, _ + 1) { col =>
       cfor(0)(_ < img.getHeight, _ + 1) { row =>
         img.getRGB(col, row).isTransparent should be (true)
       }
     }
+  }
+
+  test("should render rgb raster") {
+    val baseDataPath = "raster/data/jpg"
+    val path = s"$baseDataPath/tiled_compressed.tif"
+    val pathExpected = s"$baseDataPath/tiled_compressed_expected.jpg"
+
+    val expected = Files.readAllBytes(Paths.get(pathExpected))
+    val actual = GeoTiffRasterSource(path).tiff.tile.renderJpg().bytes
+
+    actual should contain theSameElementsAs expected
   }
 }
