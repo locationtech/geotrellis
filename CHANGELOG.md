@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Fix NoData handling in the ColorMethods.color function for the RGB and RGBA Multiband Rasters [#3278](https://github.com/locationtech/geotrellis/pull/3278)
 - Fix renderJpg() color is bluer than expected [#3203](https://github.com/locationtech/geotrellis/issues/3203)
+- Fix combineDouble of ArrayTile and ConstantTile with non-commutative operator [#3257](https://github.com/locationtech/geotrellis/issues/3257)
 
 ## [3.4.1] - 2020-07-16
 
