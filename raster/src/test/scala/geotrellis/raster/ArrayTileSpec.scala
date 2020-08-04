@@ -236,6 +236,61 @@ class ArrayTileSpec extends FunSpec
         CountData(BiasedAdd(d2, d1)) should be (4L)
       }
     }
+
+    it("should combine with non-commutative functions (minus)") {
+
+      withClue("IntArrayTile") {
+        val at = IntArrayTile(Array.ofDim[Int](100 * 100).fill(50), 100, 100)
+        val other = IntArrayTile(Array.ofDim[Int](100 * 100).fill(11), 100, 100)
+        val expected = IntConstantTile(39, 100, 100)
+
+        assertEqual(at.combine(other)((z1, z2) => z1 - z2), expected)
+      }
+
+      withClue("constant IntArrayTile") {
+        val at = IntArrayTile(Array.ofDim[Int](100 * 100).fill(50), 100, 100)
+        val other = IntConstantTile(11, 100, 100)
+        val expected = IntConstantTile(39, 100, 100)
+
+        assertEqual(at.combine(other)((z1, z2) => z1 - z2), expected)
+      }
+
+      withClue("composite Int Tile") {
+        val at = IntArrayTile(Array.ofDim[Int](100 * 100).fill(50), 100, 100)
+        val tl = TileLayout(2, 2, 50, 50)
+        val other = CompositeTile(Seq(11, 22, 33, 44).map { v => IntConstantTile(v, 50, 50) }, tl)
+        val expected = CompositeTile(Seq(39, 28, 17, 6).map { v => IntConstantTile(v, 50, 50) }, tl)
+
+        assertEqual(at.combine(other)((z1, z2) => z1 - z2), expected)
+      }
+
+      withClue("DoubleArrayTile") {
+        val at = DoubleArrayTile(Array.ofDim[Double](100 * 100).fill(50), 100, 100)
+        val other = DoubleArrayTile(Array.ofDim[Double](100 * 100).fill(11.1), 100, 100)
+        val expected = DoubleConstantTile(38.9, 100, 100)
+
+        assertEqual(at.combineDouble(other)((z1, z2) => z1 - z2), expected)
+      }
+
+      withClue("constant DoubleArrayTile") {
+        val at = DoubleArrayTile(Array.ofDim[Double](100 * 100).fill(50), 100, 100)
+        val other = DoubleConstantTile(11.1, 100, 100)
+        val expected = DoubleConstantTile(38.9, 100, 100)
+
+        assertEqual(at.combineDouble(other)((z1, z2) => z1 - z2), expected)
+      }
+
+      withClue("composite Double Tile") {
+        val at = DoubleArrayTile(Array.ofDim[Double](100 * 100).fill(50), 100, 100)
+        val tl = TileLayout(2, 2, 50, 50)
+        val other = CompositeTile(Seq(11.1, 22.2, 33.3, 44.4).map { v => DoubleConstantTile(v, 50, 50) }, tl)
+        val expected = CompositeTile(Seq(38.9, 27.8, 16.7, 5.6).map { v => DoubleConstantTile(v, 50, 50) }, tl)
+
+        assertEqual(at.combineDouble(other)((z1, z2) => z1 - z2), expected)
+      }
+
+    }
+
   }
 
   describe("ArrayTile equality") {
