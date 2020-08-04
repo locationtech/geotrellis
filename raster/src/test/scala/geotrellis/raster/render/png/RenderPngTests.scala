@@ -17,14 +17,15 @@
 package geotrellis.raster.render.png
 
 import geotrellis.raster._
-import geotrellis.raster.render.{RGB, RGBA, Png}
+import geotrellis.raster.geotiff.GeoTiffRasterSource
+import geotrellis.raster.render.{ColorMap, ColorRamp, Png, RGB, RGBA}
 import geotrellis.raster.testkit._
-
 import spire.syntax.cfor._
-import org.scalatest._
 
 import java.io._
 import javax.imageio._
+
+import org.scalatest._
 
 class RenderPngTests extends FunSuite with Matchers with TileBuilders with RasterMatchers {
   def testPng(png: Png, tile: Tile, colorMap: ColorMap): Unit = {
@@ -375,5 +376,149 @@ class RenderPngTests extends FunSuite with Matchers with TileBuilders with Raste
         }
       }
     }
+  }
+
+  test("RGBA raster should respect NoData colors set") {
+    val baseDataPath = "raster/data"
+    val path = s"$baseDataPath/rgba-test.tif"
+
+    val tiff = GeoTiffRasterSource(path).tiff
+    val colors = Vector(0x000000FF, 0xFFFFFFFF)
+    val colorRamp = ColorRamp(colors)
+    val (min, max) = 54D -> 255D
+    val steps = 255
+
+    val step = (max - min) / steps
+    val breaks = for (j <- 0 until steps) yield min + j * step
+
+    val singleBandTile = tiff.raster.tile.band(0)
+
+    val cmap =
+      ColorMap(breaks.toArray, ColorRamp(colorRamp.stops(steps)), ColorMapOptions.DEFAULT)
+        .withFallbackColor(colors.last)
+
+    val renderedTile = cmap.render(singleBandTile)
+
+    val r = renderedTile.map(_.red).interpretAs(UByteCellType)
+    val g = renderedTile.map(_.green).interpretAs(UByteCellType)
+    val b = renderedTile.map(_.blue).interpretAs(UByteCellType)
+    val a = renderedTile.map(_.alpha).interpretAs(UByteCellType)
+
+    val rmm = r.findMinMax
+    val gmm = g.findMinMax
+    val bmm = b.findMinMax
+    val amm = a.findMinMax
+
+    rmm shouldBe (0, 36)
+    gmm shouldBe (0, 36)
+    bmm shouldBe (0, 36)
+    amm shouldBe (0, 255)
+
+    val color = MultibandTile(r, g, b, a).color
+
+    color.findMinMax shouldBe (0, rmm._2 << 24 | gmm._2 << 16 | bmm._2 << 8 | amm._2)
+
+    cfor(0)(_ < color.cols, _ + 1) { col =>
+      cfor(0)(_ < color.rows, _ + 1) { row =>
+        val az = a.get(col, row)
+        val rz = r.get(col, row)
+        val gz = g.get(col, row)
+        val bz = b.get(col, row)
+        val z = color.get(col, row)
+
+        if(az == 0) z shouldBe 0
+        else z shouldBe rz << 24 | gz << 16 | bz << 8 | az
+      }
+    }
+  }
+
+  test("RGB raster should respect NoData colors set") {
+    val baseDataPath = "raster/data"
+    val path = s"$baseDataPath/rgba-test.tif"
+
+    val tiff = GeoTiffRasterSource(path).tiff
+    val colors = Vector(0x000000FF, 0xFFFFFFFF)
+    val colorRamp = ColorRamp(colors)
+    val (min, max) = 54D -> 255D
+    val steps = 255
+
+    val step = (max - min) / steps
+    val breaks = for (j <- 0 until steps) yield min + j * step
+
+    val singleBandTile = tiff.raster.tile.band(0)
+
+    val cmap =
+      ColorMap(breaks.toArray, ColorRamp(colorRamp.stops(steps)), ColorMapOptions.DEFAULT)
+        .withFallbackColor(colors.last)
+
+    val renderedTile = cmap.render(singleBandTile)
+
+    val r = renderedTile.map(_.red).interpretAs(IntUserDefinedNoDataCellType(36))
+    val g = renderedTile.map(_.green).interpretAs(IntUserDefinedNoDataCellType(36))
+    val b = renderedTile.map(_.blue).interpretAs(IntUserDefinedNoDataCellType(36))
+
+    val rmm = r.findMinMax
+    val gmm = g.findMinMax
+    val bmm = b.findMinMax
+
+    rmm shouldBe (0, 35)
+    gmm shouldBe (0, 35)
+    bmm shouldBe (0, 35)
+
+    val color = MultibandTile(r, g, b).color
+
+    color.findMinMax shouldBe (0, rmm._2 << 24 | gmm._2 << 16 | bmm._2 << 8 | 0xFF)
+
+    // original tiles not with the reinterpreted cellType
+    val rr = renderedTile.map(_.red)
+    val gg = renderedTile.map(_.green)
+    val bb = renderedTile.map(_.blue)
+
+    var expectedTransparentCounter = 0
+    var expectedNonTransparentZerosCounter = 0
+
+    var transparentCounter = 0
+    var nonTransparentZerosCounter = 0
+
+    cfor(0)(_ < color.cols, _ + 1) { col =>
+      cfor(0)(_ < color.rows, _ + 1) { row =>
+        val rz = r.get(col, row)
+        val gz = g.get(col, row)
+        val bz = b.get(col, row)
+
+        // count the amount of NoDatas and Zeros
+        // to prepare "Expected" accumulators
+        val rzz = rr.get(col, row)
+        val gzz = gg.get(col, row)
+        val bzz = bb.get(col, row)
+
+        if(rzz == 36 && gzz == 36 && bzz == 36)
+          expectedTransparentCounter += 1
+
+        if(rzz + gzz + bzz == 0)
+          expectedNonTransparentZerosCounter += 1
+
+        val transparent = isNoData(rz) && isNoData(gz) && isNoData(bz)
+
+        val z = color.get(col, row)
+
+        if(transparent) {
+          transparentCounter += 1
+          z shouldBe 0
+          rz shouldBe NODATA
+          gz shouldBe NODATA
+          bz shouldBe NODATA
+        }
+        else if(z == 0xFF) {
+          nonTransparentZerosCounter += 1
+          rz shouldNot be(NODATA)
+          gz shouldNot be(NODATA)
+          bz shouldNot be(NODATA)
+        } else z shouldBe rz << 24 | gz << 16 | bz << 8 | 0xFF
+      }
+    }
+
+    transparentCounter shouldBe expectedTransparentCounter
+    nonTransparentZerosCounter shouldBe expectedNonTransparentZerosCounter
   }
 }

@@ -40,7 +40,7 @@ trait JpgRenderMethods extends MethodExtensions[Tile] {
     *
     */
   def renderJpg(settings: Settings): Jpg =
-    new JpgEncoder(settings).writeByteArray(self)
+    JpgEncoder(settings).writeByteArray(self.map(_.toARGB))
 
   def renderJpg(colorRamp: ColorRamp): Jpg =
     renderJpg(colorRamp, Settings.DEFAULT)
@@ -73,8 +73,6 @@ trait JpgRenderMethods extends MethodExtensions[Tile] {
     * geotrellis.raster.stats.op.stat.GetClassBreaks operation to
     * generate quantile class breaks.
     */
-  def renderJpg(colorMap: ColorMap, settings: Settings): Jpg = {
-    val encoder = new JpgEncoder(new Settings(1.0, false))
-    encoder.writeByteArray(colorMap.render(self).map(_.toARGB))
-  }
+  def renderJpg(colorMap: ColorMap, settings: Settings): Jpg =
+    JpgEncoder(settings).writeByteArray(colorMap.render(self).map(_.toARGB))
 }
