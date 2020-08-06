@@ -73,10 +73,10 @@ object Dependencies {
   val scalacheck          = "org.scalacheck"             %% "scalacheck"               % "1.14.0"
   val scalaXml            = "org.scala-lang.modules"     %% "scala-xml"                % "1.2.0"
   val jts                 = "org.locationtech.jts"        % "jts-core"                 % "1.16.1"
-  val proj4j              = "org.locationtech.proj4j"     % "proj4j"                   % "1.1.0"
+  val proj4j              = "org.locationtech.proj4j"     % "proj4j"                   % "1.1.1"
   val openCSV             = "com.opencsv"                 % "opencsv"                  % "4.6"
-  val spire               = "org.spire-math"            %% "spire"                    % Version.spire
-  val spireMacro          = "org.spire-math"            %% "spire-macros"             % Version.spire
+  val spire               = "org.spire-math"             %% "spire"                    % Version.spire
+  val spireMacro          = "org.spire-math"             %% "spire-macros"             % Version.spire
   val apacheIO            = "commons-io"                  % "commons-io"               % "2.6"
   val apacheMath          = "org.apache.commons"          % "commons-math3"            % "3.6.1"
   val chronoscala         = "jp.ne.opt"                  %% "chronoscala"              % "0.3.2"
