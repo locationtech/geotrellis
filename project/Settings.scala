@@ -65,7 +65,7 @@ object Settings {
     Test / publishArtifact := false,
     pomIncludeRepository := { _ => false },
     autoAPIMappings := true,
-    useCoursier := false,
+    // useCoursier := false,
     Global / cancelable := true,
 
     publishTo := {

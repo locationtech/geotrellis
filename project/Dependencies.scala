@@ -26,10 +26,10 @@ object Version {
   val geowave     = "0.9.3"
   val hadoop      = "2.8.5"
   val spark       = "2.4.4"
-  val gdal        = "2.4.0"
-  val gdalWarp    = "1.0.1"
+  val gdal        = "3.1.0"
+  val gdalWarp    = "1.0.2-feature_gdal_3.0-SNAPSHOT"
 
-  val previousVersion = "3.0.0"
+  val previousVersion = "3.4.0"
 }
 import sbt.Keys._
 
