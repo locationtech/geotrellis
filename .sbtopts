@@ -1,5 +1,5 @@
--J-Xmx1536m
--J-Xms128m
+-J-Xmx1280m
+-J-Xms64m
 -J-Xss2M
 -J-XX:+CMSClassUnloadingEnabled
 -Dfile.encoding=UTF8
