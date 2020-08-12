@@ -18,9 +18,7 @@ import Dependencies._
 import GTBenchmarkPlugin.Keys._
 import sbt._
 import sbt.Keys._
-import sbtassembly.AssemblyPlugin.autoImport.{MergeStrategy, assemblyMergeStrategy}
-import sbtassembly.AssemblyKeys._
-import sbtassembly.{PathList, ShadeRule}
+import sbtassembly.AssemblyPlugin.autoImport._
 import com.typesafe.tools.mima.plugin.MimaKeys._
 import de.heikoseeberger.sbtheader.{CommentCreator, CommentStyle, FileType}
 import de.heikoseeberger.sbtheader.HeaderPlugin.autoImport.{HeaderLicense, headerLicense, headerMappings}
