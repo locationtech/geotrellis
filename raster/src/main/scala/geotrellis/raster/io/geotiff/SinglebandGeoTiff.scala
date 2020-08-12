@@ -22,9 +22,7 @@ import geotrellis.vector.Extent
 import geotrellis.proj4.CRS
 import geotrellis.raster.crop.Crop
 import geotrellis.raster.resample.ResampleMethod
-import spire.syntax.cfor._
 
-import java.nio.ByteBuffer
 
 case class SinglebandGeoTiff(
   tile: Tile,

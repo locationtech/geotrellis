@@ -20,7 +20,6 @@ import geotrellis.store._
 import geotrellis.store.s3._
 import geotrellis.store.s3.cog._
 import geotrellis.spark.store.cog._
-import geotrellis.spark.store.s3._
 
 import org.apache.spark._
 

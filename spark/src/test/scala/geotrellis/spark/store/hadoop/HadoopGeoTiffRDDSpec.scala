@@ -23,13 +23,10 @@ import geotrellis.raster._
 import geotrellis.raster.testkit.RasterMatchers
 import geotrellis.store.hadoop.util.HdfsUtils
 import geotrellis.spark._
-import geotrellis.spark.store.hadoop.formats._
 import geotrellis.spark.testkit._
 import geotrellis.spark.testkit.testfiles._
-import geotrellis.spark.tiling._
 
 import org.apache.hadoop.fs.Path
-import spire.syntax.cfor._
 
 import java.net.URI
 import java.time.{LocalDateTime, ZoneId}

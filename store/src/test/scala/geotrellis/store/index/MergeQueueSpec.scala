@@ -18,11 +18,10 @@ package geotrellis.store.index
 
 import java.time.{ZoneId, ZonedDateTime}
 
-import geotrellis.proj4.{LatLng, Sinusoidal}
+import geotrellis.proj4.LatLng
 import geotrellis.raster._
 import geotrellis.layer._
 import geotrellis.store._
-import geotrellis.store.index.hilbert.HilbertSpaceTimeKeyIndex
 import geotrellis.store.index.zcurve.ZSpaceTimeKeyIndex
 import geotrellis.vector._
 

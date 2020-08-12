@@ -19,15 +19,11 @@ package geotrellis.spark.mapalgebra.local.temporal
 import geotrellis.raster._
 import geotrellis.layer._
 import geotrellis.layer.mapalgebra.local.temporal._
-import geotrellis.spark._
 import geotrellis.util._
 
-import org.apache.spark.Partitioner
 import org.apache.spark.rdd.RDD
 
-import jp.ne.opt.chronoscala.Imports._
 
-import java.time._
 
 import scala.reflect.ClassTag
 

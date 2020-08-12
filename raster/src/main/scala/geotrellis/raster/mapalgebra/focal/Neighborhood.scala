@@ -16,11 +16,8 @@
 
 package geotrellis.raster.mapalgebra.focal
 
-import geotrellis._
-import geotrellis.raster._
 
 import scala.math._
-import scala.language.implicitConversions
 
 object Angles {
   @inline final def radians(d:Double) = d * Pi / 180.0

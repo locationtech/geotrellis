@@ -17,11 +17,9 @@
 package geotrellis.spark.store.slippy
 
 import geotrellis.layer._
-import geotrellis.spark._
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff._
 import geotrellis.proj4._
-import geotrellis.vector._
 import geotrellis.spark.testkit._
 
 import geotrellis.spark.testkit.testfiles._

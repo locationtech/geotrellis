@@ -19,7 +19,6 @@ package geotrellis.spark.mapalgebra.local.temporal
 import geotrellis.layer._
 import geotrellis.raster._
 import geotrellis.layer.mapalgebra.local.temporal.LocalTemporalStatistics
-import geotrellis.spark._
 import geotrellis.util.MethodExtensions
 
 import org.apache.spark.Partitioner

@@ -26,10 +26,8 @@ import geotrellis.vector.Extent
 
 import cats.Monad
 import cats.instances.option._
-import cats.syntax.apply._
 import cats.syntax.option._
 
-import scala.collection.JavaConverters._
 
 /**
   * GDALWarpOptions basically should cover https://www.gdal.org/gdalwarp.html

@@ -17,11 +17,7 @@
 package geotrellis.store
 
 import geotrellis.proj4._
-import geotrellis.raster._
-import geotrellis.raster.{GridBounds, RasterExtent, PixelIsArea}
-import geotrellis.raster.rasterize.Rasterizer.Options
 import geotrellis.layer._
-import geotrellis.store._
 import geotrellis.vector._
 import geotrellis.util._
 
@@ -72,9 +68,6 @@ object LayerFilter {
 
 
 object Intersects {
-  import geotrellis.raster.rasterize.{Rasterizer, Callback}
-  import collection.JavaConverters._
-  import java.util.concurrent.ConcurrentHashMap
 
   def apply[T](value: T) = LayerFilter.Value[Intersects.type, T](value)
 
@@ -214,7 +207,7 @@ object Intersects {
     }
 
   /** Define Contains filter for Point */
-  implicit def forPoint[K: SpatialComponent: Boundable, M: (* => MapKeyTransform)] =
+  implicit def forPoint[K: SpatialComponent: Boundable, M: * => MapKeyTransform] =
     new LayerFilter[K, Intersects.type, Point, M] {
       def apply(metadata: M, kb: KeyBounds[K], point: Point) = Contains.pointContainment(metadata, kb, point)
     }
@@ -259,7 +252,7 @@ object Between {
 object Contains {
   def apply[T](value: T) = LayerFilter.Value[Contains.type, T](value)
 
-  private [store] def pointContainment[K: SpatialComponent: Boundable, M: (* => MapKeyTransform)](metadata: M, kb: KeyBounds[K], point: Point) = {
+  private [store] def pointContainment[K: SpatialComponent: Boundable, M: * => MapKeyTransform](metadata: M, kb: KeyBounds[K], point: Point) = {
     val spatialKey = (metadata: MapKeyTransform)(point)
     val queryBounds =
       KeyBounds(
@@ -273,7 +266,7 @@ object Contains {
   }
 
   /** Define Intersects filter for Extent */
-  implicit def forPoint[K: SpatialComponent: Boundable, M: (* => MapKeyTransform)] =
+  implicit def forPoint[K: SpatialComponent: Boundable, M: * => MapKeyTransform] =
     new LayerFilter[K, Contains.type, Point, M] {
       def apply(metadata: M, kb: KeyBounds[K], point: Point) = pointContainment(metadata, kb, point)
     }

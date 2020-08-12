@@ -22,9 +22,7 @@ import geotrellis.raster.rasterize.polygon.PolygonRasterizer
 import geotrellis.util.Constants.{DOUBLE_EPSILON => EPSILON}
 import geotrellis.vector._
 
-import spire.syntax.cfor._
 
-import scala.language.higherKinds
 
 
 trait Transformer[+B] {

@@ -19,7 +19,6 @@ package geotrellis.raster.io.geotiff.reader
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff._
 import geotrellis.raster.testkit._
-import geotrellis.util.Filesystem
 
 import spire.syntax.cfor._
 

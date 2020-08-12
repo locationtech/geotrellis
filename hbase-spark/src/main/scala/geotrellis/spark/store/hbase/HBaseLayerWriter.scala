@@ -17,9 +17,7 @@
 package geotrellis.spark.store.hbase
 
 import geotrellis.store.hbase._
-import geotrellis.spark._
 import geotrellis.spark.store.LayerWriter
-import geotrellis.spark.merge._
 import geotrellis.layer._
 import geotrellis.store._
 import geotrellis.store.avro._

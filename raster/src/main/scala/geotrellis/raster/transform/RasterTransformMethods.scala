@@ -19,7 +19,7 @@ package geotrellis.raster.transform
 import geotrellis.raster.{CellGrid, MultibandTile, Raster, Tile}
 
 
-abstract class RasterTransformMethods[T <: CellGrid[Int]: (* => TransformMethods[T])] extends TransformMethods[Raster[T]] {
+abstract class RasterTransformMethods[T <: CellGrid[Int]: * => TransformMethods[T]] extends TransformMethods[Raster[T]] {
   def rotate90(n: Int = 1): Raster[T] = Raster(self.tile.rotate90(n), self.extent)
   def flipVertical: Raster[T] = Raster(self.tile.flipVertical, self.extent)
   def flipHorizontal: Raster[T] = Raster(self.tile.flipHorizontal, self.extent)

@@ -17,9 +17,7 @@
 package geotrellis.raster.io.geotiff
 
 import geotrellis.util._
-import geotrellis.raster.io.geotiff.reader._
 import geotrellis.raster.io.geotiff.tags.TiffTags
-import geotrellis.raster._
 import geotrellis.raster.testkit._
 import geotrellis.vector.Extent
 

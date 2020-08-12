@@ -20,7 +20,7 @@ import sbt._
 import sbt.Keys._
 import sbtassembly.AssemblyPlugin.autoImport._
 import com.typesafe.tools.mima.plugin.MimaKeys._
-import de.heikoseeberger.sbtheader.{CommentCreator, CommentStyle, FileType}
+import de.heikoseeberger.sbtheader.{CommentStyle, FileType}
 import de.heikoseeberger.sbtheader.HeaderPlugin.autoImport.{HeaderLicense, headerLicense, headerMappings}
 import sbtprotoc.ProtocPlugin.autoImport.PB
 
@@ -50,7 +50,9 @@ object Settings {
     "-language:existentials",
     "-language:experimental.macros",
     "-feature",
-    "-Ypartial-unification", // Required by Cats
+    "-Ypartial-unification", // required by Cats
+    // "-Yrangepos",            // required by SemanticDB compiler plugin
+    // "-Ywarn-unused-import",  // required by `RemoveUnused` rule
     "-target:jvm-1.8")
 
   lazy val commonSettings = Seq(
@@ -83,6 +85,7 @@ object Settings {
 
     addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.11.0" cross CrossVersion.full),
     addCompilerPlugin("org.scalamacros" %% "paradise" % "2.1.1" cross CrossVersion.full),
+    addCompilerPlugin("org.scalameta" % "semanticdb-scalac" % "4.3.20" cross CrossVersion.full),
 
     pomExtra := (
       <developers>

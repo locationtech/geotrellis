@@ -17,17 +17,11 @@
 package geotrellis.spark.partition
 
 import geotrellis.layer.Bounds
-import geotrellis.spark._
 import geotrellis.store.index._
-import geotrellis.store.index.zcurve.{Z3, Z2, ZSpatialKeyIndex}
-import geotrellis.util._
 
 import org.apache.spark._
-import org.apache.spark.rdd.{ShuffledRDD, RDD}
 
-import scala.collection.mutable.ArrayBuffer
 import scala.collection.Searching._
-import scala.reflect._
 
 /**
   * Uses KeyIndex to partition an RDD in memory, giving its records

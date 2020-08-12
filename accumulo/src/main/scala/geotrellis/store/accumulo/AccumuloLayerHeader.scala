@@ -16,7 +16,6 @@
 
 package geotrellis.store.accumulo
 
-import geotrellis.layer._
 import geotrellis.store._
 
 import io.circe._

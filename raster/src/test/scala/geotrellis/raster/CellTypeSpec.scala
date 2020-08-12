@@ -17,7 +17,6 @@
 package geotrellis.raster
 
 import java.nio.file.Files
-import java.nio.file.attribute.FileAttribute
 
 import geotrellis.proj4.LatLng
 import geotrellis.raster.io.geotiff.GeoTiff

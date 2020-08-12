@@ -17,17 +17,12 @@
 package geotrellis.vector.voronoi
 
 import org.locationtech.jts.geom.Coordinate
-import org.apache.commons.math3.linear._
 
 // import geotrellis.raster._
 // import geotrellis.raster.rasterize._
 import geotrellis.vector._
-import geotrellis.vector.io._
-import geotrellis.vector.io.json._
 import geotrellis.vector.triangulation._
 
-import scala.util.Random
-import scala.math.pow
 
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.funspec.AnyFunSpec

@@ -20,8 +20,6 @@ import geotrellis.spark._
 import geotrellis.vector._
 import geotrellis.spark.testkit._
 
-import org.apache.spark.rdd.RDD._
-import org.apache.spark._
 
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.funspec.AnyFunSpec

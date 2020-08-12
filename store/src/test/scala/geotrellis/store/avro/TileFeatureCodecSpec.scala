@@ -17,7 +17,6 @@
 package geotrellis.store.avro
 
 import geotrellis.raster._
-import geotrellis.layer._
 import geotrellis.store.avro.codecs.Implicits._
 
 import org.scalatest.matchers.should.Matchers

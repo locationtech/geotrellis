@@ -20,7 +20,6 @@ import geotrellis.proj4._
 import geotrellis.raster.{FloatConstantNoDataCellType, GridBounds, TileLayout}
 import geotrellis.layer._
 import geotrellis.spark._
-import geotrellis.spark.tiling._
 import geotrellis.spark.testkit._
 import org.apache.spark._
 import jp.ne.opt.chronoscala.Imports._

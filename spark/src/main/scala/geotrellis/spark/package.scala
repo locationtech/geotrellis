@@ -19,7 +19,6 @@ package geotrellis
 import geotrellis.layer.{Metadata, TileLayerMetadata}
 import geotrellis.raster._
 import geotrellis.layer._
-import geotrellis.util._
 import org.apache.spark.rdd._
 
 package object spark extends Implicits {

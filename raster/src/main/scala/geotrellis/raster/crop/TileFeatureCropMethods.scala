@@ -18,11 +18,10 @@ package geotrellis.raster.crop
 
 import geotrellis.raster._
 import geotrellis.vector._
-import geotrellis.util.MethodExtensions
 
 
 abstract class TileFeatureCropMethods[
-  T <: CellGrid[Int]: (* => TileCropMethods[T]),
+  T <: CellGrid[Int]: * => TileCropMethods[T],
   D
 ](val self: TileFeature[T, D]) extends TileCropMethods[TileFeature[T, D]] {
   import Crop.Options

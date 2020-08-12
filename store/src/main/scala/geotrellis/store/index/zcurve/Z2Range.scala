@@ -16,7 +16,6 @@
 
 package geotrellis.store.index.zcurve
 
-import scala.annotation._
 
 /**
  * Represents a rectangle in defined by min and max as two opposing

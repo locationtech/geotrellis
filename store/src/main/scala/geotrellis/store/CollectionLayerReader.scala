@@ -21,9 +21,6 @@ import geotrellis.store.avro._
 import geotrellis.util._
 
 import io.circe._
-import io.circe.generic.semiauto._
-import io.circe.syntax._
-import cats.syntax.either._
 
 import scala.reflect._
 import java.net.URI

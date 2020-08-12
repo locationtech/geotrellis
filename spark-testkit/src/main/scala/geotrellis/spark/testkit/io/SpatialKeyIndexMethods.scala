@@ -17,7 +17,6 @@
 package geotrellis.spark.testkit.io
 
 import geotrellis.layer.SpatialKey
-import geotrellis.spark._
 import geotrellis.store.index._
 
 trait SpatialKeyIndexMethods {

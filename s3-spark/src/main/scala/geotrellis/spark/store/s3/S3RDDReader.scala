@@ -17,7 +17,6 @@
 package geotrellis.spark.store.s3
 
 import geotrellis.layer._
-import geotrellis.store._
 import geotrellis.store.avro.{AvroEncoder, AvroRecordCodec}
 import geotrellis.store.avro.codecs.KeyValueRecordCodec
 import geotrellis.store.index.{IndexRanges, MergeQueue}

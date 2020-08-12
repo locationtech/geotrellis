@@ -20,7 +20,6 @@ import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.model._
 
 import scala.collection.JavaConverters._
-import scala.collection.mutable
 
 object S3TestUtils {
   def cleanBucket(client: S3Client, bucket: String) = {

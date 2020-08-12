@@ -18,8 +18,7 @@ package geotrellis.spark.store.cog
 
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff._
-import geotrellis.layer.{SpatialKey, SpatialComponent}
-import geotrellis.spark._
+import geotrellis.layer.SpatialComponent
 import geotrellis.store.index.KeyIndex
 import geotrellis.util._
 

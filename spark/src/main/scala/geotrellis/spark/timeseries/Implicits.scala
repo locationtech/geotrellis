@@ -19,7 +19,6 @@ package geotrellis.spark.timeseries
 import geotrellis.layer.SpaceTimeKey
 import geotrellis.spark._
 
-import org.apache.spark.rdd.RDD
 
 
 object Implicits extends Implicits

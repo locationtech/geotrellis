@@ -17,10 +17,8 @@
 package geotrellis.raster.io.geotiff
 
 import geotrellis.raster._
-import geotrellis.raster.io.geotiff.writer.GeoTiffWriter
 import geotrellis.raster.io.geotiff.reader._
-import geotrellis.raster.mapalgebra.local._
-import geotrellis.util.{ByteReader, Filesystem}
+import geotrellis.util.Filesystem
 import geotrellis.vector.Extent
 import geotrellis.proj4._
 

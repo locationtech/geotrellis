@@ -17,7 +17,6 @@
 package geotrellis.store.json
 
 import geotrellis.layer._
-import geotrellis.store._
 import geotrellis.store.index._
 
 import io.circe._

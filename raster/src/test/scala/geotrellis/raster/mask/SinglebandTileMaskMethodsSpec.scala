@@ -20,7 +20,6 @@ import geotrellis.raster.testkit._
 import geotrellis.raster._
 import geotrellis.raster.rasterize.Rasterizer.Options
 import geotrellis.vector._
-import geotrellis.vector.io._
 
 import scala.util.Random
 

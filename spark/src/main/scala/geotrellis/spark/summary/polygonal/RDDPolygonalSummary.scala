@@ -27,7 +27,6 @@ import geotrellis.raster.summary.GridVisitor
 import geotrellis.raster.summary.polygonal._
 import geotrellis.util.MethodExtensions
 import geotrellis.vector._
-import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
 import scala.reflect.ClassTag

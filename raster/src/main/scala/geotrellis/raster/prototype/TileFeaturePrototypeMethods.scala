@@ -20,7 +20,7 @@ import geotrellis.raster._
 import cats.Monoid
 
 abstract class TileFeaturePrototypeMethods[
-  T <: CellGrid[Int]: (* => TilePrototypeMethods[T]),
+  T <: CellGrid[Int]: * => TilePrototypeMethods[T],
   D: Monoid
 ] extends TilePrototypeMethods[TileFeature[T, D]] {
   def prototype(cols: Int, rows: Int): TileFeature[T, D] =

@@ -23,7 +23,6 @@ import geotrellis.store.avro.AvroRecordCodec
 import geotrellis.store.index.Index
 import geotrellis.util._
 
-import org.log4s._
 import io.circe.Decoder
 
 import scala.concurrent.ExecutionContext

@@ -16,11 +16,7 @@
 
 package geotrellis.spark.mapalgebra.local
 
-import geotrellis.spark._
 import geotrellis.raster._
-import geotrellis.spark.mapalgebra._
-import geotrellis.raster.mapalgebra.local._
-import org.apache.spark.rdd.RDD
 
 trait LocalMapTileRDDMethods[K] extends TileRDDMethods[K] {
     /** Map the integer values of a each cell to a new integer value. */

@@ -17,8 +17,6 @@
 package geotrellis.raster.distance
 
 import geotrellis.raster._
-import geotrellis.raster.rasterize._
-import geotrellis.raster.render._
 import geotrellis.raster.testkit._
 import geotrellis.vector._
 import scala.math.{sqrt, pow}

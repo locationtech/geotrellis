@@ -20,10 +20,8 @@ import geotrellis.layer._
 import geotrellis.store._
 import geotrellis.store.avro._
 import geotrellis.store.index._
-import geotrellis.spark._
 import geotrellis.util._
 
-import org.apache.avro._
 import _root_.io.circe._
 
 import java.time.ZonedDateTime

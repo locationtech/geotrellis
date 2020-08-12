@@ -17,13 +17,11 @@
 package geotrellis.spark.mapalgebra.zonal
 
 import geotrellis.spark._
-import geotrellis.spark.store.hadoop._
 import geotrellis.spark.testkit.testfiles._
 import geotrellis.raster._
 import geotrellis.raster.histogram.Histogram
 import geotrellis.spark.testkit._
 
-import geotrellis.vector._
 
 import org.scalatest.funspec.AnyFunSpec
 

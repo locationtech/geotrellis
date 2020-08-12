@@ -17,7 +17,6 @@
 package geotrellis.raster.io.json
 
 import io.circe._
-import io.circe.generic.semiauto._
 import cats.syntax.either._
 
 import geotrellis.raster._

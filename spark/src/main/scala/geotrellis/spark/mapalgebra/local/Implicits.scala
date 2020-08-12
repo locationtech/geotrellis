@@ -18,7 +18,6 @@ package geotrellis.spark.mapalgebra.local
 
 import geotrellis.layer.mapalgebra.local.{LocalTileCollectionMethods, LocalTileCollectionSeqMethods}
 import geotrellis.raster._
-import geotrellis.spark._
 import org.apache.spark.rdd.RDD
 
 import scala.reflect.ClassTag

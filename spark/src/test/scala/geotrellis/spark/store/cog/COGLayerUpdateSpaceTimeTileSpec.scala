@@ -25,7 +25,6 @@ import geotrellis.raster._
 import geotrellis.raster.testkit._
 import geotrellis.raster.io.geotiff.GeoTiff
 import geotrellis.spark._
-import geotrellis.spark.store._
 import geotrellis.spark.testkit._
 import geotrellis.spark.testkit.io._
 import geotrellis.spark.testkit.io.cog._

@@ -17,7 +17,6 @@
 package geotrellis.raster.vectorize
 
 import geotrellis.raster._
-import geotrellis.vector._
 
 import org.locationtech.jts.geom
 import scala.collection.mutable

@@ -18,8 +18,6 @@ package geotrellis.spark.pyramid
 
 import geotrellis.layer._
 import geotrellis.spark._
-import geotrellis.spark.stitch._
-import geotrellis.spark.tiling._
 import geotrellis.proj4._
 import geotrellis.raster._
 import geotrellis.vector._

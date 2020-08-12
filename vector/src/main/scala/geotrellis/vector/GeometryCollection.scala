@@ -19,9 +19,7 @@ package geotrellis.vector
 import geotrellis.vector.GeomFactory._
 
 import org.locationtech.jts.{geom => jts}
-import spire.syntax.cfor._
 
-import scala.reflect._
 
 trait GeometryCollectionConstructors {
   def apply(points: Seq[jts.Point] = Seq(), lines: Seq[jts.LineString] = Seq(), polygons: Seq[jts.Polygon] = Seq(),

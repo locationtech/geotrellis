@@ -18,7 +18,6 @@ package geotrellis.raster.histogram
 
 import geotrellis.raster._
 import geotrellis.raster.summary.Statistics
-import geotrellis.raster.doubleNODATA
 import StreamingHistogram.{Bucket, Delta, DeltaCompare}
 
 import math.{abs, exp, max, min, sqrt}

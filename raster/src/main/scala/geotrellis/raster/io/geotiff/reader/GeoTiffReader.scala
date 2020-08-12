@@ -21,11 +21,9 @@ import java.io.File
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff._
 import geotrellis.vector.Extent
-import geotrellis.proj4.CRS
 import geotrellis.util.{ByteReader, Filesystem, FileRangeReader, StreamingByteReader}
-import java.nio.{ByteBuffer, ByteOrder}
+import java.nio.ByteBuffer
 
-import scala.collection.mutable.ListBuffer
 
 class MalformedGeoTiffException(msg: String) extends RuntimeException(msg)
 

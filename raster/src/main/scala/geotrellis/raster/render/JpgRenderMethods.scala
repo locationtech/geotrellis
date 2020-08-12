@@ -18,8 +18,6 @@ package geotrellis.raster.render
 
 import geotrellis.raster._
 import geotrellis.raster.render.jpg._
-import geotrellis.raster.histogram.Histogram
-import geotrellis.raster.summary._
 import geotrellis.util.MethodExtensions
 
 

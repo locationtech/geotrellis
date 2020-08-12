@@ -22,8 +22,6 @@ import geotrellis.vector._
 import geotrellis.proj4._
 import geotrellis.util._
 
-import java.util.concurrent.ConcurrentHashMap
-import scala.collection.JavaConverters._
 import scala.collection.mutable
 
 object MapKeyTransform {

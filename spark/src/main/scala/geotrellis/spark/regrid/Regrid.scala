@@ -19,7 +19,6 @@ package geotrellis.spark.regrid
 import org.apache.spark.rdd.RDD
 import geotrellis.raster._
 import geotrellis.raster.crop._
-import geotrellis.raster.prototype._
 import geotrellis.raster.stitch._
 import geotrellis.layer._
 import geotrellis.spark._
@@ -43,7 +42,7 @@ object Regrid {
 
   def apply[
     K: SpatialComponent: ClassTag,
-    V: ClassTag: Stitcher: (* => CropMethods[V]),
+    V: ClassTag: Stitcher: * => CropMethods[V],
     M: Component[*, LayoutDefinition]: Component[*, Bounds[K]]
   ](layer: RDD[(K, V)] with Metadata[M], tileCols: Int, tileRows: Int): RDD[(K, V)] with Metadata[M] = {
     val md = layer.metadata
@@ -137,7 +136,7 @@ object Regrid {
 
   def apply[
     K: SpatialComponent: ClassTag,
-    V: ClassTag: Stitcher: (* => CropMethods[V]),
+    V: ClassTag: Stitcher: * => CropMethods[V],
     M: Component[*, LayoutDefinition]: Component[*, Bounds[K]]
   ](layer: RDD[(K, V)] with Metadata[M], tileSize: Int): RDD[(K, V)] with Metadata[M] = apply(layer, tileSize, tileSize)
 

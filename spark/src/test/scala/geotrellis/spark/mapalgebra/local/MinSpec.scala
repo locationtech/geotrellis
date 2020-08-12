@@ -17,8 +17,6 @@
 package geotrellis.spark.mapalgebra.local
 
 import geotrellis.spark._
-import geotrellis.spark.store.hadoop._
-import geotrellis.spark.TileLayerRDD
 import geotrellis.spark.testkit.testfiles._
 import geotrellis.raster.Tile
 import geotrellis.spark.testkit._

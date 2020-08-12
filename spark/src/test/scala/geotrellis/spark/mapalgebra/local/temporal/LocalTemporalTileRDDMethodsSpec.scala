@@ -23,7 +23,6 @@ import geotrellis.spark._
 import geotrellis.util._
 import geotrellis.spark.testkit._
 
-import spire.syntax.cfor._
 import jp.ne.opt.chronoscala.Imports._
 import java.time.{ZoneOffset, ZonedDateTime}
 

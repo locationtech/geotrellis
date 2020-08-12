@@ -17,8 +17,6 @@
 package geotrellis.raster.mask
 
 import geotrellis.raster._
-import geotrellis.raster.rasterize.Rasterizer.Options
-import geotrellis.vector.Geometry
 
 object Implicits extends Implicits
 

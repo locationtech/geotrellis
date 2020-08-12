@@ -17,7 +17,6 @@
 package geotrellis.raster.vectorize
 
 import geotrellis.raster._
-import geotrellis.raster.rasterize.polygon.PolygonRasterizer
 import geotrellis.raster.regiongroup.{RegionGroup, RegionGroupOptions}
 import geotrellis.vector._
 

@@ -17,7 +17,6 @@
 package geotrellis
 
 import geotrellis.macros.{NoDataMacros, TypeConversionMacros}
-import geotrellis.vector.{Geometry, Point}
 import spire.math.Integral
 
 

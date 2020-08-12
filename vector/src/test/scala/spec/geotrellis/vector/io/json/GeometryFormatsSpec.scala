@@ -20,7 +20,6 @@ import io.circe.syntax._
 import cats.syntax.either._
 
 import geotrellis.vector._
-import geotrellis.vector.io._
 
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.flatspec.AnyFlatSpec

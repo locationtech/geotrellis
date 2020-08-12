@@ -20,14 +20,11 @@ import geotrellis.layer.ZoomedLayoutScheme
 import geotrellis.raster.resample.{NearestNeighbor, ResampleMethod}
 import geotrellis.raster.io.geotiff.OverviewStrategy
 import geotrellis.store.util._
-import geotrellis.store.s3.cog.byteReader
 import geotrellis.store.s3.S3ClientProducer
 import geotrellis.spark.store.hadoop.geotiff.{AttributeStore, GeoTiffLayerReader, GeoTiffMetadata}
-import geotrellis.util.ByteReader
 import geotrellis.util.annotations.experimental
 
 import software.amazon.awssdk.services.s3.S3Client
-import java.net.URI
 
 import scala.concurrent.ExecutionContext
 

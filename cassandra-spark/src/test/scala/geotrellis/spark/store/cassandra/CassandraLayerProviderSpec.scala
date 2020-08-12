@@ -16,12 +16,10 @@
 
 package geotrellis.spark.store.cassandra
 
-import geotrellis.layer._
 import geotrellis.store._
 import geotrellis.store.cassandra._
 import geotrellis.spark.store._
 import geotrellis.spark.CassandraTestEnvironment
-import geotrellis.spark.testkit.TestEnvironment
 
 import org.scalatest.funspec.AnyFunSpec
 

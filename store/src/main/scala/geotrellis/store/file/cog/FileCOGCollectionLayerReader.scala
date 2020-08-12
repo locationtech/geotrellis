@@ -23,7 +23,6 @@ import geotrellis.store._
 import geotrellis.store.util._
 import geotrellis.store.cog.{COGCollectionLayerReader, Extension, ZoomRange}
 import geotrellis.store.file.{FileAttributeStore, KeyPathGenerator}
-import geotrellis.util._
 
 import _root_.io.circe._
 

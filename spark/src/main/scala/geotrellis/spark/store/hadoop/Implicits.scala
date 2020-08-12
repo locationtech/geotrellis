@@ -24,8 +24,6 @@ import geotrellis.raster.resample._
 import geotrellis.store._
 import geotrellis.store.avro._
 import geotrellis.store.hadoop._
-import geotrellis.spark.store._
-import geotrellis.spark.util.KryoSerializer
 import geotrellis.util.MethodExtensions
 
 import org.apache.hadoop.conf.Configuration

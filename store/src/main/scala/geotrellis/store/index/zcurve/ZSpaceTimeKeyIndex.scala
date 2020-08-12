@@ -18,7 +18,6 @@ package geotrellis.store.index.zcurve
 
 import geotrellis.layer._
 import geotrellis.store.index.KeyIndex
-import geotrellis.store.index.zcurve._
 
 object ZSpaceTimeKeyIndex {
   def byMilliseconds(keyBounds: KeyBounds[SpaceTimeKey], millis: Long): ZSpaceTimeKeyIndex =

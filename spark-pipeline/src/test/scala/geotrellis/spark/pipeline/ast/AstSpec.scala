@@ -193,7 +193,6 @@ class AstSpec extends AnyFunSpec
     }
 
     it("Untyped AST") {
-      import singleband.spatial._
       val scheme = Left[LayoutScheme, LayoutDefinition](FloatingLayoutScheme(512))
       val jsonRead = json.read.JsonRead("/", `type` = ReadTypes.SpatialHadoopType)
       val jsonTileToLayout = json.transform.TileToLayout(`type` = TransformTypes.SpatialTileToLayoutType)

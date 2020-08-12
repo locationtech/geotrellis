@@ -17,9 +17,7 @@
 package geotrellis.store.index.zcurve
 
 import geotrellis.layer._
-import geotrellis.store._
 
-import scala.collection.immutable.TreeSet
 
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.funspec.AnyFunSpec

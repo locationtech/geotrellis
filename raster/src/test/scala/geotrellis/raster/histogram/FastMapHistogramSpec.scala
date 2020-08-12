@@ -16,7 +16,6 @@
 
 package geotrellis.raster.histogram
 
-import geotrellis.raster._
 
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.funspec.AnyFunSpec

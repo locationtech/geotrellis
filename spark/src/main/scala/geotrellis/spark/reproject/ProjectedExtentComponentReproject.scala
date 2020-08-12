@@ -19,15 +19,11 @@ package geotrellis.spark.reproject
 import geotrellis.proj4._
 import geotrellis.raster._
 import geotrellis.raster.reproject._
-import geotrellis.raster.resample._
-import geotrellis.spark._
-import geotrellis.spark.ingest._
 import geotrellis.vector._
 import geotrellis.util._
 
 import org.apache.spark.rdd._
 
-import scala.reflect.ClassTag
 
 object ProjectedExtentComponentReproject {
   import geotrellis.raster.reproject.Reproject.Options
@@ -35,7 +31,7 @@ object ProjectedExtentComponentReproject {
 
   /** Reproject the given RDD and modify the key with the new CRS and extent
     */
-  def apply[K: Component[*, ProjectedExtent], V <: CellGrid[Int]: (* => TileReprojectMethods[V])](
+  def apply[K: Component[*, ProjectedExtent], V <: CellGrid[Int]: * => TileReprojectMethods[V]](
     rdd: RDD[(K, V)],
     destCrs: CRS,
     options: Options

@@ -17,12 +17,8 @@
 package geotrellis.raster.reproject
 
 import geotrellis.raster._
-import geotrellis.raster.resample._
-import geotrellis.raster.rasterize._
-import geotrellis.vector.Polygon
 import geotrellis.proj4._
 
-import spire.syntax.cfor._
 
 trait MultibandRasterReprojectMethods extends RasterReprojectMethods[MultibandRaster] {
   import Reproject.Options

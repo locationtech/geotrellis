@@ -17,9 +17,7 @@
 package geotrellis.store.index.zcurve
 
 import geotrellis.layer._
-import geotrellis.store._
 
-import scala.collection.immutable.TreeSet
 
 import jp.ne.opt.chronoscala.Imports._
 

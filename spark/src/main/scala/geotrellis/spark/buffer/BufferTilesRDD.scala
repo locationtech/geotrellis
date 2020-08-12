@@ -24,7 +24,6 @@ import geotrellis.raster.buffer.Direction._
 import geotrellis.raster.crop._
 import geotrellis.raster.stitch._
 import geotrellis.layer.buffer.BufferTiles
-import geotrellis.spark._
 import geotrellis.util._
 
 import org.apache.log4j.Logger
@@ -102,7 +101,7 @@ object BufferTilesRDD extends BufferTiles {
     */
   def apply[
     K: SpatialComponent: ClassTag,
-    V <: CellGrid[Int]: Stitcher: ClassTag: (* => CropMethods[V])
+    V <: CellGrid[Int]: Stitcher: ClassTag: * => CropMethods[V]
   ](
     rdd: RDD[(K, V)],
     bufferSize: Int
@@ -124,7 +123,7 @@ object BufferTilesRDD extends BufferTiles {
     */
   def apply[
     K: SpatialComponent: ClassTag,
-    V <: CellGrid[Int]: Stitcher: ClassTag: (* => CropMethods[V])
+    V <: CellGrid[Int]: Stitcher: ClassTag: * => CropMethods[V]
   ](
     rdd: RDD[(K, V)],
     bufferSize: Int,
@@ -148,7 +147,7 @@ object BufferTilesRDD extends BufferTiles {
     */
   def apply[
     K: SpatialComponent: ClassTag,
-    V <: CellGrid[Int]: Stitcher: ClassTag: (* => CropMethods[V])
+    V <: CellGrid[Int]: Stitcher: ClassTag: * => CropMethods[V]
   ](
     rdd: RDD[(K, V)],
     bufferSize: Int,
@@ -176,7 +175,7 @@ object BufferTilesRDD extends BufferTiles {
     */
   def apply[
     K: SpatialComponent: ClassTag,
-    V <: CellGrid[Int]: Stitcher: ClassTag: (* => CropMethods[V])
+    V <: CellGrid[Int]: Stitcher: ClassTag: * => CropMethods[V]
   ](
     rdd: RDD[(K, V)],
     bufferSize: Int,
@@ -207,7 +206,7 @@ object BufferTilesRDD extends BufferTiles {
     */
   def apply[
     K: SpatialComponent: ClassTag,
-    V <: CellGrid[Int]: Stitcher: (* => CropMethods[V])
+    V <: CellGrid[Int]: Stitcher: * => CropMethods[V]
   ](
     layer: RDD[(K, V)],
     getBufferSizes: K => BufferSizes
@@ -231,7 +230,7 @@ object BufferTilesRDD extends BufferTiles {
     */
   def apply[
     K: SpatialComponent: ClassTag,
-    V <: CellGrid[Int]: Stitcher: (* => CropMethods[V])
+    V <: CellGrid[Int]: Stitcher: * => CropMethods[V]
   ](
     layer: RDD[(K, V)],
     getBufferSizes: K => BufferSizes,
@@ -255,7 +254,7 @@ object BufferTilesRDD extends BufferTiles {
     */
   def apply[
     K: SpatialComponent: ClassTag,
-    V <: CellGrid[Int]: Stitcher: (* => CropMethods[V])
+    V <: CellGrid[Int]: Stitcher: * => CropMethods[V]
   ](layer: RDD[(K, V)],
     includeKey: K => Boolean,
     getBufferSizes: K => BufferSizes
@@ -281,7 +280,7 @@ object BufferTilesRDD extends BufferTiles {
     */
   def apply[
     K: SpatialComponent: ClassTag,
-    V <: CellGrid[Int]: Stitcher: (* => CropMethods[V])
+    V <: CellGrid[Int]: Stitcher: * => CropMethods[V]
   ](layer: RDD[(K, V)],
     includeKey: K => Boolean,
     getBufferSizes: K => BufferSizes,

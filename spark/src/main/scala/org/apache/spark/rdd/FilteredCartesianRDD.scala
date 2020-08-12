@@ -21,12 +21,10 @@
   */
 package org.apache.spark.rdd
 
-import java.io.{IOException, ObjectOutputStream}
 
 import scala.reflect.ClassTag
 
 import org.apache.spark._
-import org.apache.spark.util.Utils
 
 /** Performs a cartesian join of two RDDs using filter and refine pattern.
   *

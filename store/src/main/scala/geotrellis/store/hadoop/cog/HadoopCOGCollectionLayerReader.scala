@@ -25,7 +25,6 @@ import geotrellis.store.cog.{COGCollectionLayerReader, Extension, ZoomRange}
 import geotrellis.store.hadoop.{HadoopAttributeStore, SerializableConfiguration}
 import geotrellis.store.hadoop.util._
 import geotrellis.store.index.Index
-import geotrellis.util._
 
 import _root_.io.circe._
 import org.apache.hadoop.conf.Configuration

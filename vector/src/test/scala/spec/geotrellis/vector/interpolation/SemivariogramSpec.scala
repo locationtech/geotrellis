@@ -16,7 +16,6 @@
 
 package geotrellis.vector.interpolation
 
-import geotrellis.vector.testkit._
 import geotrellis.vector.{Point, PointFeature}
 
 import org.scalatest.matchers.should.Matchers

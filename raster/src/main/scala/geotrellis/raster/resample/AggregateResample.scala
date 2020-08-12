@@ -19,7 +19,6 @@ package geotrellis.raster.resample
 import geotrellis.raster._
 import geotrellis.vector.Extent
 
-import scala.math.{min, max}
 
 abstract class AggregateResample(tile: Tile, extent: Extent, targetCS: CellSize) extends Resample(tile, extent) {
 

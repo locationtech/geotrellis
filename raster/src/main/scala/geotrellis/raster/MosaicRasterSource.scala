@@ -17,7 +17,6 @@
 package geotrellis.raster
 
 import geotrellis.vector._
-import geotrellis.raster._
 import geotrellis.raster.resample._
 import geotrellis.proj4.CRS
 import geotrellis.raster.io.geotiff.OverviewStrategy

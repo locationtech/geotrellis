@@ -17,7 +17,6 @@
 package geotrellis.vector
 
 import geotrellis.vector.GeomFactory._
-import geotrellis.util.MethodExtensions
 import org.locationtech.jts.{geom => jts}
 
 trait PointConstructors {

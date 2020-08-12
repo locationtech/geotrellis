@@ -17,7 +17,6 @@
 package geotrellis.layer
 
 import geotrellis.raster._
-import geotrellis.layer._
 import geotrellis.util._
 
 /** Reads tiles by key from a [[RasterSource]] as keyed by a [[LayoutDefinition]]

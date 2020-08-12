@@ -20,12 +20,9 @@ import geotrellis.proj4._
 import geotrellis.vector._
 import geotrellis.layer._
 import geotrellis.raster._
-import geotrellis.raster.io.geotiff._
 import geotrellis.store.hadoop._
-import geotrellis.store.hadoop.formats.{BinaryFileInputFormat, BytesFileInputFormat}
-import geotrellis.spark._
+import geotrellis.store.hadoop.formats.BytesFileInputFormat
 import geotrellis.spark.store.RasterReader
-import geotrellis.spark.store.hadoop.formats._
 
 import org.log4s._
 

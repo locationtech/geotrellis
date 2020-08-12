@@ -18,7 +18,6 @@ package geotrellis.store.hbase
 
 import geotrellis.store._
 import geotrellis.store.hbase.conf.HBaseConfig
-import geotrellis.layer._
 
 import org.apache.hadoop.hbase._
 import org.apache.hadoop.hbase.client._

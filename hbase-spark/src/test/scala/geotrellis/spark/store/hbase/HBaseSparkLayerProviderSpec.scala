@@ -21,7 +21,6 @@ import geotrellis.store.hbase._
 import geotrellis.spark.store._
 import geotrellis.spark.store._
 import geotrellis.spark.HBaseTestEnvironment
-import geotrellis.spark.testkit.TestEnvironment
 
 import org.scalatest.funspec.AnyFunSpec
 

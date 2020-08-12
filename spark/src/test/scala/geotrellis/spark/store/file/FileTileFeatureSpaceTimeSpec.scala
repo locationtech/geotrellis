@@ -19,8 +19,6 @@ package geotrellis.spark.store.file
 import geotrellis.layer._
 import geotrellis.raster.{Tile, TileFeature}
 import geotrellis.store.file._
-import geotrellis.store.index._
-import geotrellis.spark._
 import geotrellis.spark.store._
 import geotrellis.spark.testkit._
 import geotrellis.spark.testkit.io._

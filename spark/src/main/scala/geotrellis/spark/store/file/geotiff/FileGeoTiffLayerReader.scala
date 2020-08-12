@@ -19,13 +19,10 @@ package geotrellis.spark.store.file.geotiff
 import geotrellis.layer.ZoomedLayoutScheme
 import geotrellis.raster.resample.{NearestNeighbor, ResampleMethod}
 import geotrellis.raster.io.geotiff.OverviewStrategy
-import geotrellis.store.file.cog.byteReader
 import geotrellis.spark.store.hadoop.geotiff._
 import geotrellis.store.util.BlockingThreadPool
-import geotrellis.util.ByteReader
 import geotrellis.util.annotations.experimental
 
-import java.net.URI
 
 import scala.concurrent.ExecutionContext
 

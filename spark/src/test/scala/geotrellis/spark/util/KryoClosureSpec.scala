@@ -16,12 +16,6 @@
 
 package geotrellis.spark.util
 
-import geotrellis.spark._
-import geotrellis.proj4._
-import geotrellis.spark.tiling._
-import geotrellis.spark.store.hadoop._
-import geotrellis.spark.TileLayerRDD
-import geotrellis.spark.testkit.testfiles._
 import geotrellis.spark.testkit._
 
 import org.scalatest.funspec.AnyFunSpec

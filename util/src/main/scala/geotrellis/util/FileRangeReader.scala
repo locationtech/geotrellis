@@ -17,7 +17,6 @@
 package geotrellis.util
 
 import java.io._
-import java.nio.ByteBuffer
 import java.nio.channels.FileChannel
 import java.nio.channels.FileChannel.MapMode._
 

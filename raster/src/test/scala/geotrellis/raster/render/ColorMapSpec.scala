@@ -17,7 +17,6 @@
 package geotrellis.raster.render
 
 import geotrellis.raster._
-import geotrellis.raster.render._
 import geotrellis.raster.render.png.IndexedPngEncoding
 import geotrellis.raster.testkit._
 

@@ -20,7 +20,6 @@ import geotrellis.raster._
 import geotrellis.layer.SpatialComponent
 import geotrellis.util.MethodExtensions
 
-import org.apache.spark.rdd._
 
 import scala.reflect.ClassTag
 

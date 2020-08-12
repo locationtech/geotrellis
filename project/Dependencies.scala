@@ -20,8 +20,8 @@ object Version {
   val geotools    = "23.2"
   val spire       = "0.13.0"
   val accumulo    = "1.9.3"
-  val cassandra   = "3.10.1"
-  val hbase       = "2.3.0"
+  val cassandra   = "3.7.2"
+  val hbase       = "2.2.5"
   val geomesa     = "2.3.1"
   val geowave     = "0.9.3"
   val hadoop      = "2.8.5"
@@ -80,7 +80,7 @@ object Dependencies {
   val apacheIO            = "commons-io"                  % "commons-io"               % "2.7"
   val apacheMath          = "org.apache.commons"          % "commons-math3"            % "3.6.1"
   val chronoscala         = "jp.ne.opt"                  %% "chronoscala"              % "0.3.2"
-  val awsSdkS3            = "software.amazon.awssdk"      % "s3"                       % "2.13.73"
+  val awsSdkS3            = "software.amazon.awssdk"      % "s3"                       % "2.13.74"
   val hadoopClient        = "org.apache.hadoop"           % "hadoop-client"            % Version.hadoop
   val avro                = "org.apache.avro"             % "avro"                     % "1.7.7"
   val parserCombinators   = "org.scala-lang.modules"     %% "scala-parser-combinators" % "1.1.2"
@@ -133,9 +133,8 @@ object Dependencies {
 
   val scalapbRuntime      = "com.thesamet.scalapb"        %% "scalapb-runtime"         % scalapb.compiler.Version.scalapbVersion
 
-  val squants             = "org.typelevel"               %% "squants"                 % "1.6.0"
+  val squants             = "org.typelevel"               %% "squants"                 % "1.7.0"
   val scalactic           = "org.scalactic"               %% "scalactic"               % "3.2.1"
-
 
   val gdalBindings        = "org.gdal"                     % "gdal"                    % Version.gdal
   val gdalWarp            = "com.azavea.geotrellis"        % "gdal-warp-bindings"      % Version.gdalWarp

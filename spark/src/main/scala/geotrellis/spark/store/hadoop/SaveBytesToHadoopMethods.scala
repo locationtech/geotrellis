@@ -16,13 +16,7 @@
 
 package geotrellis.spark.store.hadoop
 
-import geotrellis.layer.SpatialKey
-import geotrellis.spark.render._
-import java.net.URI
 
-import geotrellis.store.LayerId
-import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.spark.rdd.RDD
 
 

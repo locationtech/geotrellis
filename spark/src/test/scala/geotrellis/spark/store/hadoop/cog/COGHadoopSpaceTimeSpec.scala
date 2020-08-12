@@ -19,12 +19,8 @@ package geotrellis.spark.store.hadoop.cog
 import geotrellis.layer._
 import geotrellis.raster.Tile
 import geotrellis.store.hadoop.cog._
-import geotrellis.spark._
-import geotrellis.spark.store._
-import geotrellis.spark.store.hadoop._
 import geotrellis.spark.store.cog._
 import geotrellis.spark.testkit._
-import geotrellis.spark.testkit.io._
 import geotrellis.spark.testkit.io.cog._
 import geotrellis.spark.testkit.testfiles.cog.COGTestFiles
 

@@ -16,10 +16,9 @@
 
 package geotrellis.raster.histogram
 
-import geotrellis.raster.NODATA
 import geotrellis.raster.summary.Statistics
 
-import math.{abs, round, sqrt}
+import math.sqrt
 import spire.syntax.cfor._
 
 

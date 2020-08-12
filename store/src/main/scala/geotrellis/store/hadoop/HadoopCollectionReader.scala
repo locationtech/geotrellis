@@ -17,7 +17,6 @@
 package geotrellis.store.hadoop
 
 import geotrellis.layer._
-import geotrellis.store._
 import geotrellis.store.avro._
 import geotrellis.store.avro.codecs._
 import geotrellis.store.hadoop.formats.FilterMapFileInputFormat

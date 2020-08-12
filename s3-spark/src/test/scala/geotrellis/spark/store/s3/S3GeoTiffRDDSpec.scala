@@ -27,7 +27,6 @@ import geotrellis.vector._
 import spire.syntax.cfor._
 import software.amazon.awssdk.core.sync.RequestBody
 import software.amazon.awssdk.services.s3.model._
-import org.apache.spark.rdd.RDD
 
 import java.nio.file.{Files, Paths}
 

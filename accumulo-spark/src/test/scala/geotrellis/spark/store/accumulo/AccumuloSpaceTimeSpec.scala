@@ -21,7 +21,6 @@ import geotrellis.raster.Tile
 import geotrellis.store.accumulo._
 import geotrellis.spark._
 import geotrellis.spark.store._
-import geotrellis.store.index._
 import geotrellis.spark.testkit.io._
 import geotrellis.spark.testkit.testfiles.TestFiles
 import geotrellis.spark.testkit.TestEnvironment

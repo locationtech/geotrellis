@@ -16,7 +16,6 @@
 
 package geotrellis.store.s3.cog
 
-import geotrellis.layer._
 import geotrellis.store._
 import geotrellis.store.cog._
 import geotrellis.store.s3._

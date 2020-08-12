@@ -23,7 +23,6 @@ import geotrellis.store.avro.codecs.KeyValueRecordCodec
 import geotrellis.store.avro.{AvroEncoder, AvroRecordCodec}
 import geotrellis.store.index.{IndexRanges, MergeQueue}
 import geotrellis.store.util.{BlockingThreadPool, IOUtils}
-import geotrellis.spark.store._
 import geotrellis.spark.util.KryoWrapper
 
 import com.datastax.driver.core.querybuilder.QueryBuilder

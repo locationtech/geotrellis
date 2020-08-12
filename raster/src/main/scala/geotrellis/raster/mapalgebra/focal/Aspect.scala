@@ -18,7 +18,6 @@ package geotrellis.raster.mapalgebra.focal
 
 import geotrellis.raster._
 import geotrellis.raster.mapalgebra.focal.hillshade.{SurfacePoint, SurfacePointCalculation}
-import geotrellis.raster.mapalgebra.focal.Angles._
 
 /** Calculates the aspect of each cell in a raster.
   *

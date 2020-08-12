@@ -20,10 +20,8 @@ import geotrellis.raster._
 import geotrellis.raster.rasterize.Rasterizer
 import geotrellis.layer._
 import geotrellis.spark._
-import geotrellis.spark.tiling._
 import geotrellis.spark.testkit._
 import geotrellis.spark.testkit.TestEnvironment
-import geotrellis.raster.rasterize.Rasterizer.Options
 import geotrellis.vector._
 import geotrellis.vector.io.wkt.WKT
 import geotrellis.vector.io.json._

@@ -19,7 +19,6 @@ package geotrellis.spark.store.hadoop
 import geotrellis.proj4.CRS
 import geotrellis.raster._
 import geotrellis.layer.TemporalProjectedExtent
-import geotrellis.spark.store.hadoop.formats._
 import geotrellis.vector._
 
 import org.apache.spark._

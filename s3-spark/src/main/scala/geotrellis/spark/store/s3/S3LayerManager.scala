@@ -18,13 +18,10 @@ package geotrellis.spark.store.s3
 
 import geotrellis.layer._
 import geotrellis.store._
-import geotrellis.store.AttributeStore.Fields
 import geotrellis.store.avro._
 import geotrellis.store.index._
 import geotrellis.store.s3._
 import geotrellis.util._
-import geotrellis.spark._
-import geotrellis.spark.store._
 
 import software.amazon.awssdk.services.s3.S3Client
 import org.apache.spark.SparkContext

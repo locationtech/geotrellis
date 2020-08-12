@@ -23,8 +23,6 @@ import geotrellis.raster._
 import geotrellis.store
 import geotrellis.store.cog._
 import geotrellis.spark._
-import geotrellis.spark.store._
-import geotrellis.spark.tiling._
 
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.funspec.AnyFunSpec

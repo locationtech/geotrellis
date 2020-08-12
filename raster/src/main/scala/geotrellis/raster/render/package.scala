@@ -16,7 +16,6 @@
 
 package geotrellis.raster
 
-import geotrellis.raster.histogram._
 
 package object render {
   // RGB and RGBA

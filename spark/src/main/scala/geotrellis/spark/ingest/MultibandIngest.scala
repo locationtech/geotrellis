@@ -24,7 +24,6 @@ import geotrellis.layer._
 import geotrellis.spark._
 import geotrellis.spark.pyramid._
 import geotrellis.spark.tiling._
-import geotrellis.spark.reproject._
 import geotrellis.vector._
 import geotrellis.util._
 

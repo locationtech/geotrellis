@@ -19,7 +19,6 @@ package geotrellis.spark.store.s3
 import geotrellis.proj4._
 import geotrellis.raster._
 import geotrellis.vector._
-import geotrellis.spark._
 import geotrellis.spark.store.hadoop._
 import geotrellis.spark.testkit.TestEnvironment
 

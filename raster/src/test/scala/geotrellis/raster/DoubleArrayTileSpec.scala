@@ -16,7 +16,6 @@
 
 package geotrellis.raster
 
-import geotrellis._
 import geotrellis.raster.testkit._
 
 import spire.syntax.cfor._

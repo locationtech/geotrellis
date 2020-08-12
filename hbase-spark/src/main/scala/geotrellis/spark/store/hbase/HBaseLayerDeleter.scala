@@ -16,10 +16,8 @@
 
 package geotrellis.spark.store.hbase
 
-import geotrellis.layer._
 import geotrellis.store._
 import geotrellis.store.hbase._
-import geotrellis.spark.store._
 import org.log4s._
 import org.apache.hadoop.hbase.client._
 import org.apache.hadoop.hbase.filter.PrefixFilter

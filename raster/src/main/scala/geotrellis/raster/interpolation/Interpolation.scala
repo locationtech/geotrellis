@@ -17,7 +17,6 @@
 package geotrellis.raster.interpolation
 
 import geotrellis.raster._
-import geotrellis.vector.Extent
 import geotrellis.vector.interpolation.Kriging
 import spire.syntax.cfor._
 

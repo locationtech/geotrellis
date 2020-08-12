@@ -22,7 +22,6 @@ import geotrellis.raster._
 import geotrellis.raster.buffer.Direction
 import geotrellis.raster.buffer.Direction._
 import geotrellis.raster.distance.{EuclideanDistanceTile => RasterEuclideanDistance}
-import geotrellis.raster.render._
 import geotrellis.raster.testkit._
 import geotrellis.spark._
 import geotrellis.spark.testkit._

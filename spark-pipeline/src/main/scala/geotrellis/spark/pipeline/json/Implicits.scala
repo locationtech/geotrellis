@@ -26,7 +26,6 @@ import geotrellis.layer._
 import geotrellis.spark.pipeline._
 import geotrellis.raster._
 import geotrellis.raster.resample._
-import geotrellis.vector._
 
 import _root_.io.circe.generic.extras.Configuration
 import _root_.io.circe._

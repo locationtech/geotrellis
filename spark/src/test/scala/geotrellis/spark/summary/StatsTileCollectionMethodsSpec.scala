@@ -16,19 +16,16 @@
 
 package geotrellis.spark.summary
 
-import geotrellis.vector._
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff._
 import geotrellis.layer._
 import geotrellis.layer.TileLayerCollection
 import geotrellis.spark._
-import geotrellis.spark.store.hadoop._
 import geotrellis.spark.testkit.testfiles._
 import geotrellis.spark.testkit._
 
 import org.scalatest.funspec.AnyFunSpec
 
-import collection._
 
 class StatsTileCollectionMethodsSpec extends AnyFunSpec with TestEnvironment with TestFiles {
 

@@ -24,7 +24,6 @@ import java.time._
 import java.time.temporal.ChronoUnit._
 import jp.ne.opt.chronoscala.Imports._
 
-import scala.reflect.ClassTag
 
 
 object LocalTemporalStatistics {

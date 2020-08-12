@@ -18,7 +18,6 @@ package geotrellis.raster.mapalgebra.focal
 
 import scala.math._
 
-import geotrellis._
 import geotrellis.raster._
 
 sealed trait TraversalStrategy

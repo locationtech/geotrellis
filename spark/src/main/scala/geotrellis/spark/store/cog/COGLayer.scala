@@ -32,7 +32,6 @@ import geotrellis.store.hadoop.SerializableConfiguration
 import geotrellis.store.hadoop.util.HdfsUtils
 import geotrellis.spark._
 import geotrellis.spark.pyramid.Pyramid
-import geotrellis.spark.tiling._
 import geotrellis.spark.util._
 import geotrellis.util._
 

@@ -19,7 +19,6 @@ package geotrellis.spark.reproject
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff._
 import geotrellis.raster.resample._
-import geotrellis.raster.reproject._
 import geotrellis.raster.reproject.Reproject.{Options => RasterReprojectOptions}
 import geotrellis.layer._
 import geotrellis.spark._

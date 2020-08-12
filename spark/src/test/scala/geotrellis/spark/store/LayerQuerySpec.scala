@@ -18,12 +18,10 @@ package geotrellis.spark.store
 
 import geotrellis.proj4._
 import geotrellis.vector._
-import geotrellis.vector.io._
 import geotrellis.vector.io.wkt.WKT
 import geotrellis.layer._
 import geotrellis.raster._
 import geotrellis.store._
-import geotrellis.spark._
 import geotrellis.spark.testkit.testfiles._
 import geotrellis.spark.testkit._
 

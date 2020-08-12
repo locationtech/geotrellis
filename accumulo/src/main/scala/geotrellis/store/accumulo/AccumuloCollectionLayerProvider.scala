@@ -16,7 +16,6 @@
 
 package geotrellis.store.accumulo
 
-import geotrellis.layer._
 import geotrellis.store._
 import geotrellis.store.accumulo.conf.AccumuloConfig
 import geotrellis.util.UriUtils

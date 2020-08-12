@@ -20,7 +20,6 @@ import geotrellis.layer._
 import geotrellis.store._
 import geotrellis.store.cassandra._
 import geotrellis.store.avro._
-import geotrellis.spark.store._
 import geotrellis.util._
 
 import org.apache.spark.SparkContext

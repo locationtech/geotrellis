@@ -20,7 +20,6 @@ import geotrellis.vector._
 import geotrellis.layer.mask.Mask.Options
 import geotrellis.layer.SpaceTimeKey
 import geotrellis.raster._
-import geotrellis.raster.summary.polygonal._
 import geotrellis.raster.summary.types.MeanValue
 import geotrellis.spark._
 import geotrellis.util.annotations.experimental

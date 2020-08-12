@@ -16,7 +16,6 @@
 
 package geotrellis.raster.mapalgebra.focal
 
-import geotrellis._
 
 import scala.collection.mutable.Set
 

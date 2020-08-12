@@ -17,7 +17,6 @@
 package geotrellis.spark.store.hadoop
 
 import geotrellis.store.hadoop.HadoopAttributeStore
-import geotrellis.spark._
 import geotrellis.spark.store._
 
 class HadoopAttributeStoreSpec extends AttributeStoreSpec {

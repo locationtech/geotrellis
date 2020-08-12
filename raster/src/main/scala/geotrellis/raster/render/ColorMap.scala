@@ -18,7 +18,6 @@ package geotrellis.raster.render
 
 import geotrellis.raster._
 import geotrellis.raster.histogram.Histogram
-import geotrellis.util._
 import spire.syntax.cfor._
 import spire.std.any._
 import _root_.io.circe._

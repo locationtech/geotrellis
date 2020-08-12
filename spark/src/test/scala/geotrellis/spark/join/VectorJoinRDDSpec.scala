@@ -16,15 +16,10 @@
 
 package geotrellis.spark.join
 
-import geotrellis.proj4._
-import geotrellis.raster._
 import geotrellis.spark._
-import geotrellis.spark.partition._
-import geotrellis.spark.tiling._
 import geotrellis.vector._
 import geotrellis.spark.testkit._
 
-import org.apache.spark._
 import org.apache.spark.rdd._
 
 import org.scalatest.matchers.should.Matchers

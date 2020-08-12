@@ -17,7 +17,6 @@
 package geotrellis.store
 
 import geotrellis.layer.{Bounds, Boundable}
-import geotrellis.store._
 import geotrellis.store.avro.AvroRecordCodec
 import geotrellis.store.index.{KeyIndex, KeyIndexMethod}
 import geotrellis.util._

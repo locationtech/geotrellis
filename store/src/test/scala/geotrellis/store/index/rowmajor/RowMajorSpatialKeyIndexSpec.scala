@@ -16,8 +16,6 @@
 
 package geotrellis.store.index.rowmajor
 
-import scala.collection.immutable.TreeSet
-import geotrellis.store.index.KeyIndex
 import geotrellis.layer.{SpatialKey, KeyBounds}
 
 import org.scalatest.matchers.should.Matchers

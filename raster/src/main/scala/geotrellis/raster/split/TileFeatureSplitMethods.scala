@@ -19,7 +19,7 @@ package geotrellis.raster.split
 import geotrellis.raster._
 
 abstract class TileFeatureSplitMethods[
-  T <: CellGrid[Int]: (* => SplitMethods[T]),
+  T <: CellGrid[Int]: * => SplitMethods[T],
   D
 ] extends SplitMethods[TileFeature[T, D]] {
   import Split.Options

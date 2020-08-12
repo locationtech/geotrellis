@@ -17,11 +17,9 @@
 package geotrellis.raster
 
 import geotrellis.raster.split.Split
-import geotrellis.vector.Extent
 
 import spire.syntax.cfor._
 
-import scala.collection.mutable
 
 /**
   * The companion object for the [[CompositeTile]] type.

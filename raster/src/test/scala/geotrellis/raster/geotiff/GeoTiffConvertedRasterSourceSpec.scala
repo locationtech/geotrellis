@@ -24,7 +24,6 @@ import geotrellis.raster.testkit._
 import geotrellis.vector._
 
 import org.scalatest.GivenWhenThen
-import org.scalatest.matchers.should.Matchers
 import org.scalatest.funspec.AnyFunSpec
 
 class GeoTiffConvertedRasterSourceSpec extends AnyFunSpec with RasterMatchers with GeoTiffTestUtils with GivenWhenThen {

@@ -16,8 +16,7 @@
 
 package geotrellis.vector.triangulation
 
-import org.locationtech.jts.geom.Coordinate
-import geotrellis.vector.{LineString, Point}
+import geotrellis.vector.LineString
 import geotrellis.vector.RobustPredicates.{LEFTOF, ON, RIGHTOF}
 import geotrellis.vector.mesh.{HalfEdgeTable, IndexedPointSet}
 

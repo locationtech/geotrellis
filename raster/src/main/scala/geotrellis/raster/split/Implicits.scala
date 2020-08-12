@@ -16,7 +16,7 @@
 
 package geotrellis.raster.split
 
-import geotrellis.raster.{Tile, MultibandTile, RasterExtent, CellGrid, Raster, TileFeature}
+import geotrellis.raster.{Tile, MultibandTile, RasterExtent, Raster, TileFeature}
 
 object Implicits extends Implicits
 

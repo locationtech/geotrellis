@@ -18,7 +18,6 @@ package geotrellis.spark.split
 
 import geotrellis.raster._
 import geotrellis.raster.split.SplitMethods
-import geotrellis.spark._
 import geotrellis.vector.ProjectedExtent
 import geotrellis.util._
 
@@ -29,6 +28,6 @@ object Implicits extends Implicits
 trait Implicits {
   implicit class withProjectedExtentRDDSplitMethods[
     K: Component[*, ProjectedExtent],
-    V <: CellGrid[Int]: (* => SplitMethods[V])
+    V <: CellGrid[Int]: * => SplitMethods[V]
   ](val self: RDD[(K, V)]) extends ProjectedExtentRDDSplitMethods[K, V]
 }

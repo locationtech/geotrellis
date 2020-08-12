@@ -18,18 +18,12 @@ package geotrellis.spark.buffer
 
 import geotrellis.layer.{SpatialComponent, SpatialKey}
 import geotrellis.raster
-import geotrellis.raster._
 import geotrellis.raster.buffer.Direction._
-import geotrellis.raster.crop._
-import geotrellis.raster.stitch._
-import geotrellis.spark._
 import geotrellis.util._
 
 import org.apache.spark.rdd._
-import org.apache.spark.storage.StorageLevel
 
 import scala.reflect.ClassTag
-import scala.collection.mutable.ArrayBuffer
 
 
 object CollectNeighbors {

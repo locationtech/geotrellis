@@ -16,7 +16,6 @@
 
 package geotrellis.raster
 
-import spire.syntax.cfor._
 import spire.implicits._
 
 import org.scalatest.matchers.should.Matchers

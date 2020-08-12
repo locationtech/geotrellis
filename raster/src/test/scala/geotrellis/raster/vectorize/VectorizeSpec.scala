@@ -16,7 +16,6 @@
 
 package geotrellis.raster.vectorize
 
-import org.locationtech.jts.{geom => jts}
 import geotrellis.raster._
 import geotrellis.raster.testkit._
 import geotrellis.vector._

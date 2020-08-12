@@ -20,7 +20,6 @@ import geotrellis.raster._
 import geotrellis.raster.io.geotiff._
 import geotrellis.raster.testkit._
 
-import org.scalatest.matchers.should.Matchers
 import org.scalatest.funspec.AnyFunSpec
 
 class PredictorGeoTiffReaderSpec extends AnyFunSpec with RasterMatchers with GeoTiffTestUtils {

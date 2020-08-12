@@ -21,7 +21,6 @@ import geotrellis.raster.mask.TileMaskMethods
 import geotrellis.layer.Metadata
 import geotrellis.util._
 
-import scala.reflect.ClassTag
 
 
 object Implicits extends Implicits
@@ -29,7 +28,7 @@ object Implicits extends Implicits
 trait Implicits {
   implicit class withTileCollectionMaskMethods[
     K: SpatialComponent,
-    V: (* => TileMaskMethods[V]),
+    V: * => TileMaskMethods[V],
     M: GetComponent[*, LayoutDefinition]
   ](val self: Seq[(K, V)] with Metadata[M]) extends TileCollectionMaskMethods[K, V, M]
 }

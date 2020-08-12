@@ -16,11 +16,7 @@
 
 package geotrellis.layer.mapalgebra.local.temporal
 
-import geotrellis.raster._
-import geotrellis.layer._
 
-import java.time.ZonedDateTime
-import reflect.ClassTag
 
 
 object TemporalWindowHelper {

@@ -24,12 +24,9 @@ import geotrellis.raster.crop._
 import geotrellis.raster.merge._
 import geotrellis.raster.prototype._
 import geotrellis.raster.reproject._
-import geotrellis.raster.resample._
 import geotrellis.raster.stitch._
 import geotrellis.spark._
 import geotrellis.spark.buffer.BufferTilesRDD
-import geotrellis.spark.merge._
-import geotrellis.spark.tiling._
 import geotrellis.vector._
 import geotrellis.util._
 
@@ -58,7 +55,7 @@ object TileRDDReproject {
     */
   def apply[
     K: SpatialComponent: Boundable: ClassTag,
-    V <: CellGrid[Int]: ClassTag: RasterRegionReproject: (* => TileMergeMethods[V]): (* => TilePrototypeMethods[V])
+    V <: CellGrid[Int]: ClassTag: RasterRegionReproject: * => TileMergeMethods[V]: * => TilePrototypeMethods[V]
   ](
     bufferedTiles: RDD[(K, BufferedTile[V])],
     metadata: TileLayerMetadata[K],
@@ -227,7 +224,7 @@ object TileRDDReproject {
     */
   def apply[
     K: SpatialComponent: Boundable: ClassTag,
-    V <: CellGrid[Int]: ClassTag: RasterRegionReproject: Stitcher: (* => CropMethods[V]): (* => TileMergeMethods[V]): (* => TilePrototypeMethods[V])
+    V <: CellGrid[Int]: ClassTag: RasterRegionReproject: Stitcher: * => CropMethods[V]: * => TileMergeMethods[V]: * => TilePrototypeMethods[V]
   ](
     rdd: RDD[(K, V)] with Metadata[TileLayerMetadata[K]],
     destCrs: CRS,
@@ -308,7 +305,7 @@ object TileRDDReproject {
     */
   def apply[
     K: SpatialComponent: Boundable: ClassTag,
-    V <: CellGrid[Int]: ClassTag: RasterRegionReproject: Stitcher: (* => CropMethods[V]): (* => TileMergeMethods[V]): (* => TilePrototypeMethods[V])
+    V <: CellGrid[Int]: ClassTag: RasterRegionReproject: Stitcher: * => CropMethods[V]: * => TileMergeMethods[V]: * => TilePrototypeMethods[V]
   ](
     rdd: RDD[(K, V)] with Metadata[TileLayerMetadata[K]],
     destCrs: CRS,

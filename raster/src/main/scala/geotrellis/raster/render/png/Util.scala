@@ -18,7 +18,6 @@ package geotrellis.raster.render.png
 
 import java.nio.ByteBuffer
 
-import geotrellis._
 
 object Util {
   @inline final def byte(i:Int):Byte = i.toByte

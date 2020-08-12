@@ -17,8 +17,6 @@
 package geotrellis.spark.render
 
 import geotrellis.layer._
-import geotrellis.spark._
-import geotrellis.spark.render._
 import geotrellis.spark.testkit.testfiles.TestFiles
 import geotrellis.spark.store.hadoop._
 import geotrellis.spark.testkit._

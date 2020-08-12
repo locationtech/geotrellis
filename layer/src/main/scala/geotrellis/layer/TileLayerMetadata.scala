@@ -20,12 +20,10 @@ import geotrellis.proj4.CRS
 import geotrellis.raster._
 import geotrellis.util._
 import geotrellis.vector.Extent
-import geotrellis.vector.io.json.CrsFormats._
 
 import cats.{Functor, Semigroup}
 import cats.syntax.functor._
 import _root_.io.circe._
-import _root_.io.circe.generic.semiauto._
 
 /**
  * @param cellType    value type of each cell

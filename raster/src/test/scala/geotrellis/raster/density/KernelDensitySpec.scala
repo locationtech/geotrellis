@@ -17,7 +17,6 @@
 package geotrellis.raster.density
 
 import geotrellis.raster._
-import geotrellis.raster.density._
 import geotrellis.raster.testkit._
 import geotrellis.vector._
 

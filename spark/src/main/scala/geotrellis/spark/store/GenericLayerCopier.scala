@@ -19,7 +19,6 @@ package geotrellis.spark.store
 import geotrellis.layer.{Boundable, Bounds}
 import geotrellis.store._
 import geotrellis.store.avro._
-import geotrellis.store.index.KeyIndex
 import geotrellis.util._
 
 import io.circe._

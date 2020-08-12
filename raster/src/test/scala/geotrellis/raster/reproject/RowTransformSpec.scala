@@ -24,7 +24,6 @@ import geotrellis.proj4._
 import geotrellis.vector.testkit._
 import geotrellis.raster.io.geotiff._
 
-import spire.syntax.cfor._
 
 import org.scalatest.funspec.AnyFunSpec
 

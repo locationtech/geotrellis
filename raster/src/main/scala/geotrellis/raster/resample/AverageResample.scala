@@ -19,7 +19,6 @@ package geotrellis.raster.resample
 import geotrellis.raster._
 import geotrellis.vector.Extent
 
-import spire.syntax.cfor._
 
 /**
   * Takes the average value for all cells within the index boundaries provided by

@@ -16,9 +16,7 @@
 
 package geotrellis.spark.store.s3
 
-import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.raster.io.geotiff.reader.GeoTiffInfo
-import geotrellis.raster.io.geotiff.tags.TiffTags
 import geotrellis.store.s3._
 import geotrellis.store.s3.util.S3RangeReader
 import geotrellis.spark.store._

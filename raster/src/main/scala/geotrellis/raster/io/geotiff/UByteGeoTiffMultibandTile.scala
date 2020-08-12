@@ -19,7 +19,6 @@ package geotrellis.raster.io.geotiff
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff.compression._
 
-import java.nio.ByteBuffer
 
 class UByteGeoTiffMultibandTile(
   compressedBytes: SegmentBytes,

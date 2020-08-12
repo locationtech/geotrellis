@@ -17,12 +17,8 @@
 package geotrellis.raster.io.geotiff
 
 import geotrellis.raster._
-import geotrellis.raster.io.geotiff.util._
-import geotrellis.raster.io.geotiff.compression._
 
-import java.util.BitSet
 
-import spire.syntax.cfor._
 
 class UByteUserDefinedNoDataGeoTiffSegment(bytes: Array[Byte], val userDefinedIntNoDataValue: Byte)
     extends UByteGeoTiffSegment(bytes)

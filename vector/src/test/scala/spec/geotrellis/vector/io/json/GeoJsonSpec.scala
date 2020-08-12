@@ -19,7 +19,6 @@ package geotrellis.vector.io.json
 import io.circe._
 import io.circe.generic._
 import io.circe.syntax._
-import cats.syntax.either._
 
 import geotrellis.vector._
 import geotrellis.vector.testkit._

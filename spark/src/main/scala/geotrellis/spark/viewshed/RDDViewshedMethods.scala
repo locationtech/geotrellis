@@ -17,19 +17,17 @@
 package geotrellis.spark.viewshed
 
 import geotrellis.layer.{Metadata, TileLayerMetadata}
-import geotrellis.raster.{DoubleArrayTile, Tile}
+import geotrellis.raster.Tile
 import geotrellis.raster.viewshed.R2Viewshed._
 import geotrellis.layer._
-import geotrellis.spark._
 import geotrellis.util.MethodExtensions
 import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkContext
 
-import scala.collection.mutable
 import scala.reflect.ClassTag
 
 
-abstract class RDDViewshedMethods[K: (* => SpatialKey): ClassTag, V: (* => Tile)]
+abstract class RDDViewshedMethods[K: * => SpatialKey: ClassTag, V: * => Tile]
     extends MethodExtensions[RDD[(K, V)] with Metadata[TileLayerMetadata[K]]] {
 
   def viewshed(

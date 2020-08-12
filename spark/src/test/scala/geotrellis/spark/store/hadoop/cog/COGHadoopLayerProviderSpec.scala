@@ -18,7 +18,6 @@ package geotrellis.spark.store.hadoop.cog
 
 import geotrellis.store.cog.COGValueReader
 import geotrellis.store.hadoop.cog.HadoopCOGValueReader
-import geotrellis.spark.store._
 import geotrellis.spark.store.cog._
 import geotrellis.spark.testkit.TestEnvironment
 

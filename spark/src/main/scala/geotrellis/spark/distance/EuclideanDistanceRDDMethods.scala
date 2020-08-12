@@ -21,7 +21,6 @@ import org.apache.spark.rdd.RDD
 
 import geotrellis.raster._
 import geotrellis.layer._
-import geotrellis.spark._
 import geotrellis.util.MethodExtensions
 import geotrellis.vector._
 

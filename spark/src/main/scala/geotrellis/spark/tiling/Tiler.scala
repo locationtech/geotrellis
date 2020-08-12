@@ -19,7 +19,6 @@ package geotrellis.spark.tiling
 import geotrellis.raster.resample._
 
 import org.apache.spark._
-import org.apache.spark.rdd.RDD
 
 object Tiler {
   case class Options(

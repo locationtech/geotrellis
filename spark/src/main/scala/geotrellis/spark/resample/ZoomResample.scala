@@ -23,7 +23,6 @@ import geotrellis.spark._
 import geotrellis.util._
 import geotrellis.vector.Extent
 import org.apache.spark.rdd.RDD
-import spire.implicits._
 
 object ZoomResample {
   private def gridBoundsAtZoom(sourceZoom: Int, spatialKey: SpatialKey, targetZoom: Int): TileBounds = {
@@ -63,7 +62,7 @@ object ZoomResample {
     */
   def apply[
     K: SpatialComponent,
-    V: (* => TileResampleMethods[V])
+    V: * => TileResampleMethods[V]
   ](
     rdd: RDD[(K, V)] with Metadata[TileLayerMetadata[K]],
     sourceZoom: Int,

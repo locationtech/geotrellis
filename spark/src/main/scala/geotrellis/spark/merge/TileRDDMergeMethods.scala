@@ -16,7 +16,6 @@
 
 package geotrellis.spark.merge
 
-import geotrellis.raster._
 import geotrellis.raster.merge._
 import geotrellis.util.MethodExtensions
 

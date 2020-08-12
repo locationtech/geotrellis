@@ -17,7 +17,6 @@
 package geotrellis.raster
 
 import geotrellis.raster.io.arg.ArgReader
-import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 
 trait TestFiles {
 

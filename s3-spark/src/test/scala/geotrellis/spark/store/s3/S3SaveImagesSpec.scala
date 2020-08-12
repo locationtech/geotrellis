@@ -20,7 +20,6 @@ import geotrellis.layer._
 import geotrellis.store._
 import geotrellis.store.s3._
 import geotrellis.spark.testkit.TestEnvironment
-import geotrellis.spark.render._
 import geotrellis.spark.testkit.testfiles.TestFiles
 import geotrellis.spark.store.s3._
 import geotrellis.spark.store.s3.SaveToS3

@@ -25,7 +25,6 @@ import software.amazon.awssdk.core.sync.RequestBody
 import software.amazon.awssdk.services.s3.model.PutObjectRequest
 import _root_.io.circe.syntax._
 
-import java.io.ByteArrayInputStream
 import java.net.URI
 
 /**

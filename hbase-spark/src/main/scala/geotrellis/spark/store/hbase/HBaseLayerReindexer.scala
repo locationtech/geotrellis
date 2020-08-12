@@ -18,7 +18,6 @@ package geotrellis.spark.store.hbase
 
 import geotrellis.store._
 import geotrellis.store.hbase._
-import geotrellis.spark._
 import geotrellis.spark.store._
 import geotrellis.layer._
 import geotrellis.store.avro._

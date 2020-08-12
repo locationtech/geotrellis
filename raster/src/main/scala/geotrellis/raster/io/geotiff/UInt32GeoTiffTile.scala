@@ -18,7 +18,6 @@ package geotrellis.raster.io.geotiff
 
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff.compression._
-import spire.syntax.cfor._
 
 class UInt32GeoTiffTile(
   val segmentBytes: SegmentBytes,

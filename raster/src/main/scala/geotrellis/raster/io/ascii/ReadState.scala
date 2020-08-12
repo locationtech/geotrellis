@@ -16,10 +16,7 @@
 
 package geotrellis.raster.io.ascii
 
-import scala.math.{Numeric, min, max, abs, round, floor, ceil}
-import java.io.{File, FileInputStream, FileOutputStream}
 
-import geotrellis._
 import geotrellis.raster._
 
 import spire.syntax.cfor._

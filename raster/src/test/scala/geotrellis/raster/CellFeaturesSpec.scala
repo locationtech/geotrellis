@@ -17,7 +17,6 @@
 package geotrellis.raster
 
 import geotrellis.vector._
-import geotrellis.raster.testkit._
 
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.funspec.AnyFunSpec

@@ -16,7 +16,7 @@
 
 package geotrellis.spark.knn
 
-import geotrellis.vector.{Point, Geometry, Feature}
+import geotrellis.vector.{Geometry, Feature}
 import org.apache.spark.rdd.RDD
 
 object Implicits extends Implicits

@@ -19,7 +19,6 @@ package geotrellis.store.cog
 import geotrellis.proj4.CRS
 import geotrellis.vector.Extent
 import geotrellis.raster._
-import geotrellis.raster.io._
 import geotrellis.layer._
 import geotrellis.util._
 

@@ -17,7 +17,6 @@
 package geotrellis.raster.mosaic
 
 import geotrellis.raster._
-import geotrellis.raster.resample._
 import geotrellis.vector.Extent
 import geotrellis.raster.testkit._
 

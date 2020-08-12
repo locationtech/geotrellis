@@ -17,7 +17,6 @@
 package geotrellis.spark.store.file
 
 import geotrellis.layer.{Boundable, KeyBounds}
-import geotrellis.spark._
 import geotrellis.store.avro.codecs.KeyValueRecordCodec
 import geotrellis.store.index.{IndexRanges, MergeQueue}
 import geotrellis.store.avro.{AvroEncoder, AvroRecordCodec}

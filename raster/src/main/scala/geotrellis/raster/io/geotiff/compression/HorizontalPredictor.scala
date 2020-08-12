@@ -19,7 +19,6 @@ package geotrellis.raster.io.geotiff.compression
 import geotrellis.raster.io.geotiff._
 import geotrellis.raster.io.geotiff.tags._
 import geotrellis.raster.io.geotiff.reader.MalformedGeoTiffException
-import monocle.syntax._
 
 import java.nio.ByteBuffer
 import spire.syntax.cfor._

@@ -22,10 +22,8 @@ import codes.TagCodes._
 import GeoKeys._
 
 import geotrellis.util.ByteReader
-import java.nio.ByteBuffer
 
 import monocle.syntax.apply._
-import monocle.macros.Lenses
 
 object GeoKeyReader {
 

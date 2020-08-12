@@ -18,7 +18,6 @@ package geotrellis.raster.io.geotiff.compression
 
 import geotrellis.raster.io.geotiff._
 import geotrellis.raster.io.geotiff.tags._
-import monocle.syntax._
 import spire.syntax.cfor._
 
 /** See TIFF Technical Note 3 */

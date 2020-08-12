@@ -35,7 +35,6 @@ import CoordinateTransformTypes._
 import geotrellis.proj4.EPSGCSVReader
 import geotrellis.proj4.CSVFileConstants._
 
-import scala.collection.immutable.HashMap
 
 import monocle.syntax.apply._
 

@@ -16,7 +16,6 @@
 
 package geotrellis.spark.store.accumulo
 
-import geotrellis.layer._
 import geotrellis.store._
 import geotrellis.store.accumulo._
 

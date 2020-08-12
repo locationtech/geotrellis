@@ -20,7 +20,6 @@ import io.circe.syntax._
 
 import geotrellis.spark._
 import geotrellis.layer.SpatialKey
-import geotrellis.spark.store._
 import geotrellis.spark.pipeline.ast._
 import geotrellis.spark.pipeline.json.write
 

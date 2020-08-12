@@ -16,12 +16,7 @@
 
 package geotrellis.spark.store.slippy
 
-import geotrellis.raster._
-import geotrellis.raster.io.geotiff._
 import geotrellis.layer.SpatialKey
-import geotrellis.spark._
-import geotrellis.spark.store.slippy._
-import geotrellis.vector._
 
 import org.apache.commons.io.IOUtils._
 import org.apache.spark._

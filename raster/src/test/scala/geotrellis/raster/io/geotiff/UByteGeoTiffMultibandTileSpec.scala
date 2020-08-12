@@ -17,13 +17,8 @@
 package geotrellis.raster.io.geotiff
 
 import geotrellis.raster._
-import geotrellis.raster.io.geotiff.writer.GeoTiffWriter
-import geotrellis.raster.mapalgebra.local._
-import geotrellis.vector.Extent
-import geotrellis.proj4._
 import geotrellis.raster.testkit._
 
-import java.util.Arrays
 
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.matchers.should.Matchers

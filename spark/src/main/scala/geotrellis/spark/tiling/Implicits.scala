@@ -16,7 +16,6 @@
 
 package geotrellis.spark.tiling
 
-import geotrellis.spark._
 import geotrellis.vector._
 import geotrellis.raster._
 import geotrellis.raster.merge._

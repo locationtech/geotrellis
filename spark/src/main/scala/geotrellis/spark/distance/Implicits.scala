@@ -20,7 +20,6 @@ import org.locationtech.jts.geom.Coordinate
 import org.apache.spark.rdd.RDD
 
 import geotrellis.layer.SpatialKey
-import geotrellis.spark._
 import geotrellis.vector.{MultiPoint, Point}
 
 object Implicits extends Implicits

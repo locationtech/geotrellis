@@ -16,7 +16,6 @@
 
 package geotrellis.spark.store.file
 
-import geotrellis.layer._
 import geotrellis.store._
 import geotrellis.store.file.{FileAttributeStore, FileValueReader}
 import geotrellis.spark.store._

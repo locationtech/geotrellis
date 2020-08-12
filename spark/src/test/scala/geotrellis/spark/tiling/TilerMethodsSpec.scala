@@ -18,7 +18,6 @@ package geotrellis.spark.tiling
 
 import geotrellis.raster._
 import geotrellis.vector._
-import geotrellis.proj4._
 import geotrellis.layer._
 
 import geotrellis.spark._
@@ -27,7 +26,6 @@ import geotrellis.spark.testkit._
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.funspec.AnyFunSpec
 
-import org.apache.spark._
 import org.apache.spark.rdd._
 
 // Defined here because of serialization

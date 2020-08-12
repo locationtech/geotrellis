@@ -18,7 +18,6 @@ package geotrellis.vectortile
 
 import geotrellis.proj4._
 import geotrellis.vector._
-import geotrellis.vectortile.internal._
 
 import org.scalatest.funspec.AnyFunSpec
 

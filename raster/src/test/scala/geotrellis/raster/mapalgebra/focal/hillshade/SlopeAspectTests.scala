@@ -17,7 +17,6 @@
 package geotrellis.raster.mapalgebra.focal.hillshade
 
 import geotrellis.raster._
-import geotrellis.raster.mapalgebra.focal._
 import geotrellis.raster.testkit._
 
 import scala.math._

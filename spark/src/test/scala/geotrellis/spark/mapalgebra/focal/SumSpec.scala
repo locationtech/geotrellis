@@ -20,7 +20,6 @@ import geotrellis.raster._
 import geotrellis.raster.Neighborhoods.{Square, Circle}
 
 import geotrellis.spark._
-import geotrellis.spark.mapalgebra.focal._
 import geotrellis.spark.testkit._
 
 import org.scalatest.funspec.AnyFunSpec

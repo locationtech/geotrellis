@@ -20,7 +20,6 @@ import geotrellis.raster._
 import geotrellis.vector.interpolation._
 import geotrellis.vector._
 import geotrellis.vector.io.json.JsonFeatureCollection
-import geotrellis.raster.testkit._
 
 import spire.syntax.cfor._
 

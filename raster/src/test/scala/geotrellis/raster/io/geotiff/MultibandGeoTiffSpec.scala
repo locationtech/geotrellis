@@ -18,7 +18,6 @@ package geotrellis.raster.io.geotiff
 
 import geotrellis.raster._
 import geotrellis.raster.resample.NearestNeighbor
-import geotrellis.raster.io.geotiff.reader._
 import geotrellis.raster.testkit.RasterMatchers
 
 import org.scalatest.matchers.should.Matchers

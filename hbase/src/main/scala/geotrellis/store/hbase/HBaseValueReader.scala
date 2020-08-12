@@ -18,7 +18,6 @@ package geotrellis.store.hbase
 
 import geotrellis.layer._
 import geotrellis.store._
-import geotrellis.store.hbase._
 import geotrellis.raster._
 import geotrellis.raster.resample._
 import geotrellis.store.avro.codecs.KeyValueRecordCodec

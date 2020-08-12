@@ -16,12 +16,10 @@
 
 package geotrellis.spark.store
 
-import geotrellis.raster.io._
 import geotrellis.raster.histogram._
 import geotrellis.store.{LayerId, AttributeStore}
 import geotrellis.spark._
 import geotrellis.spark.testkit.testfiles._
-import geotrellis.spark.summary._
 import geotrellis.spark.testkit._
 
 import _root_.io.circe.generic.JsonCodec

@@ -16,7 +16,6 @@
 
 package geotrellis.vector
 
-import geotrellis.vector.io._
 import geotrellis.vector.io.json.JsonFeatureCollection
 
 import _root_.io.circe.generic.JsonCodec

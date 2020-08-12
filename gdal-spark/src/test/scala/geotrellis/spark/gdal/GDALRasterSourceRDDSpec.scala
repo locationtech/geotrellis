@@ -24,7 +24,6 @@ import geotrellis.proj4._
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff._
 import geotrellis.spark._
-import geotrellis.spark.partition._
 import geotrellis.spark.store.hadoop._
 import geotrellis.spark.testkit._
 import geotrellis.store.hadoop._

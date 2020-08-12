@@ -28,7 +28,7 @@ import org.apache.spark.rdd._
 object Crop {
   def apply[
     K: SpatialComponent,
-    V <: CellGrid[Int]: (* => TileCropMethods[V]),
+    V <: CellGrid[Int]: * => TileCropMethods[V],
     M: Component[*, Bounds[K]]: GetComponent[*, Extent]: GetComponent[*, LayoutDefinition]
   ](rdd: RDD[(K, V)] with Metadata[M], extent: Extent, options: Options): RDD[(K, V)] with Metadata[M] =
     rdd.metadata.getComponent[Extent].intersection(extent) match {

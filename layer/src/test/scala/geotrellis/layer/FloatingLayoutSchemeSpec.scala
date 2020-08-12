@@ -16,7 +16,6 @@
 
 package geotrellis.layer
 
-import geotrellis.proj4.LatLng
 import geotrellis.raster.CellSize
 import geotrellis.vector.Extent
 

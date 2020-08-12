@@ -22,7 +22,6 @@ import geotrellis.spark.pipeline.json.write.{Write => JsonWrite}
 import geotrellis.raster.CellGrid
 import geotrellis.raster.merge.TileMergeMethods
 import geotrellis.raster.prototype.TilePrototypeMethods
-import geotrellis.spark._
 import geotrellis.spark.store.LayerWriter
 import geotrellis.store.avro.AvroRecordCodec
 import geotrellis.layer.{Bounds, LayoutDefinition, SpatialComponent, Metadata}

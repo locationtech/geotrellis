@@ -16,10 +16,8 @@
 
 package geotrellis.layer.mapalgebra
 
-import geotrellis.raster._
 import geotrellis.util.MethodExtensions
 
-import scala.reflect.ClassTag
 
 
 object Implicits extends Implicits

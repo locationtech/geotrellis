@@ -17,7 +17,6 @@
 package geotrellis.spark.stitch
 
 import geotrellis.raster._
-import geotrellis.raster.merge._
 import geotrellis.raster.prototype._
 import geotrellis.raster.stitch.Stitcher
 import geotrellis.layer._

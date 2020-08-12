@@ -109,7 +109,6 @@ class DelaunayTriangulationSpec extends AnyFunSpec with Matchers {
       val pts = randomizedGrid(13, Extent(0,0,1,1)).toArray
       val dt = DelaunayTriangulation(pts, debug=false) // to kick travis
       implicit val trans = { i: Int => pts(i) }
-      import dt.halfEdgeTable._
       val tris = dt.triangleMap.getTriangles.keys.toArray
       val ntris = tris.size
 

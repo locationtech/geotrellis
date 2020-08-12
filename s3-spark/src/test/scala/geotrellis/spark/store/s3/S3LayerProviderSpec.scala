@@ -16,7 +16,6 @@
 
 package geotrellis.spark.store.s3
 
-import geotrellis.layer._
 import geotrellis.store._
 import geotrellis.store.s3._
 import geotrellis.spark.store._

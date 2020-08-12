@@ -19,10 +19,9 @@ package geotrellis.raster.reproject
 import geotrellis.proj4._
 import geotrellis.raster._
 import geotrellis.vector._
-import geotrellis.util.MethodExtensions
 
 abstract class TileFeatureReprojectMethods[
-  T <: CellGrid[Int]: (* => TileReprojectMethods[T]),
+  T <: CellGrid[Int]: * => TileReprojectMethods[T],
   D
 ](val self: TileFeature[T, D]) extends TileReprojectMethods[TileFeature[T, D]] {
   import Reproject.Options

@@ -17,9 +17,7 @@
 package geotrellis.raster.histogram
 
 import geotrellis.raster._
-import geotrellis.raster.io._
 
-import _root_.io.circe._
 import _root_.io.circe.syntax._
 import _root_.io.circe.parser._
 import cats.syntax.either._

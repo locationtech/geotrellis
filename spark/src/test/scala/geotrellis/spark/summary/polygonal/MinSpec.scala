@@ -17,7 +17,6 @@
 package geotrellis.spark.summary.polygonal
 
 import geotrellis.spark._
-import geotrellis.spark.store.hadoop._
 import geotrellis.spark.testkit._
 import geotrellis.spark.testkit.testfiles.TestFiles
 import geotrellis.raster.summary.polygonal._

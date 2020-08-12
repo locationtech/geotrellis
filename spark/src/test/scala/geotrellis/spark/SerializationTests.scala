@@ -18,11 +18,9 @@ package geotrellis.spark
 
 import geotrellis.proj4._
 import geotrellis.raster.{DoubleCellType, IntCellType, Tile}
-import geotrellis.raster.io.geotiff._
 import geotrellis.raster.testkit.{RasterMatchers, TileBuilders}
 import geotrellis.spark.util.KryoSerializer
 import geotrellis.spark.testkit._
-import geotrellis.vector._
 
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.funsuite.AnyFunSuite

@@ -19,7 +19,6 @@ package geotrellis.raster.reproject
 import geotrellis.raster._
 import geotrellis.raster.resample._
 import geotrellis.raster.merge._
-import geotrellis.raster.rasterize._
 import geotrellis.vector._
 import geotrellis.proj4._
 

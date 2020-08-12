@@ -17,9 +17,7 @@
 package geotrellis.raster.io.json
 
 import geotrellis.raster.CellSize
-import geotrellis.raster.io._
 
-import io.circe._
 import io.circe.parser._
 import cats.syntax.either._
 

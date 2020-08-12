@@ -19,7 +19,6 @@ package geotrellis.raster.resample
 import geotrellis.raster._
 import geotrellis.vector.Extent
 
-import org.apache.commons.math3.analysis.interpolation._
 
 /**
   * Uses the following implementation:

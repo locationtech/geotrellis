@@ -17,7 +17,6 @@
 package geotrellis.spark.filter
 
 import geotrellis.layer._
-import geotrellis.spark._
 import geotrellis.util._
 import cats.Functor
 import org.apache.spark.rdd._

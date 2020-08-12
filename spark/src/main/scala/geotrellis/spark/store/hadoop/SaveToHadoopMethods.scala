@@ -16,15 +16,9 @@
 
 package geotrellis.spark.store.hadoop
 
-import geotrellis.spark.render._
-import geotrellis.layer.SpatialKey
-import geotrellis.store.LayerId
 
-import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.spark.rdd.RDD
 
-import java.net.URI
 
 class SaveToHadoopMethods[K, V](rdd: RDD[(K, V)]) {
   /** Sets up saving to Hadoop, but returns an RDD so that writes can be chained.

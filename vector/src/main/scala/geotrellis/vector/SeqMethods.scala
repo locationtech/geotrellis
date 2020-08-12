@@ -18,7 +18,6 @@ package geotrellis.vector
 
 import scala.collection.JavaConverters._
 
-import org.locationtech.jts.geom._
 import org.locationtech.jts.operation.union.CascadedPolygonUnion
 
 trait SeqMethods {

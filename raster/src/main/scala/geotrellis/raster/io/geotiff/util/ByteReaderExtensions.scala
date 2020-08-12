@@ -17,7 +17,6 @@
 package geotrellis.raster.io.geotiff.util
 
 import geotrellis.util.ByteReader
-import java.nio.{ByteBuffer, ByteOrder}
 
 import spire.syntax.cfor._
 

@@ -18,7 +18,6 @@ package geotrellis.raster.io.geotiff
 
 import geotrellis.raster._
 import geotrellis.raster.testkit._
-import geotrellis.raster.io.geotiff.reader._
 
 import spire.syntax.cfor._
 import org.scalatest.matchers.should.Matchers

@@ -16,11 +16,9 @@
 
 package geotrellis.raster
 
-import geotrellis.raster.resample._
 import geotrellis.vector.Extent
 
 import spire.syntax.cfor._
-import scala.collection.mutable
 
 
 /**

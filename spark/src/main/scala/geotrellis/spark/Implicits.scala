@@ -23,18 +23,13 @@ import geotrellis.vector._
 import geotrellis.proj4._
 import geotrellis.util._
 import geotrellis.layer._
-import geotrellis.spark.ingest._
-import geotrellis.spark.crop._
-import geotrellis.spark.filter._
 import geotrellis.spark.tiling._
 import geotrellis.store.json.{Implicits => StoreCodecs}
 
 import org.apache.spark.{Partitioner, SparkContext}
 import org.apache.spark.rdd._
-import cats.Functor
 
 import scala.reflect.ClassTag
-import java.time.Instant
 
 
 object Implicits extends Implicits

@@ -17,7 +17,6 @@
 package geotrellis.spark.mapalgebra.zonal
 
 import geotrellis.raster.mapalgebra.zonal._
-import geotrellis.raster.summary._
 import geotrellis.raster._
 import geotrellis.spark._
 

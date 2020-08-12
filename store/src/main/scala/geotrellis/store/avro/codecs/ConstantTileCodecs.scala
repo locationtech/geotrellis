@@ -18,12 +18,10 @@ package geotrellis.store.avro.codecs
 
 import geotrellis.raster._
 import geotrellis.store.avro._
-import geotrellis.store.avro.codecs.Implicits._
 
 import org.apache.avro.SchemaBuilder
 import org.apache.avro.generic._
 
-import scala.collection.JavaConverters._
 import scala.util.Try
 
 trait ConstantTileCodecs {

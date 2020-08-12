@@ -16,7 +16,7 @@
 
 package geotrellis.raster.histogram
 
-import math.{abs, round, sqrt}
+import math.abs
 
 
 /**

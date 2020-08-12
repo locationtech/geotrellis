@@ -25,7 +25,6 @@ import geotrellis.spark.store._
 import geotrellis.spark.store._
 import geotrellis.spark.testkit.io._
 import geotrellis.spark.testkit.testfiles.TestTileFeatureFiles
-import geotrellis.spark.testkit.TestEnvironment
 
 class HBaseTileFeatureSpaceTimeSpec
   extends PersistenceSpec[SpaceTimeKey, TileFeature[Tile, Tile], TileLayerMetadata[SpaceTimeKey]]

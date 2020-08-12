@@ -16,7 +16,6 @@
 
 package geotrellis.spark.pipeline.json
 
-import geotrellis.spark.pipeline._
 import geotrellis.store.index.{HilbertKeyIndexMethod, KeyIndexMethod, RowMajorKeyIndexMethod, ZCurveKeyIndexMethod}
 import io.circe.generic.extras.ConfiguredJsonCodec
 
