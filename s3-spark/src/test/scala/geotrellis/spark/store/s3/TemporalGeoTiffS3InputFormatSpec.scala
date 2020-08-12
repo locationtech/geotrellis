@@ -30,13 +30,15 @@ import software.amazon.awssdk.core.sync.RequestBody
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.mapreduce._
 import org.apache.hadoop.mapreduce.task._
-import org.scalatest._
 
 import java.time.ZoneOffset
 import java.nio.file.{Files,Paths}
 import java.time.format.DateTimeFormatter
 
-class TemporalGeoTiffS3InputFormatSpec extends FunSpec with Matchers with TestEnvironment {
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
+
+class TemporalGeoTiffS3InputFormatSpec extends AnyFunSpec with Matchers with TestEnvironment {
   val layoutScheme = ZoomedLayoutScheme(LatLng)
   val client = MockS3Client()
   val bucket = this.getClass.getSimpleName.toLowerCase

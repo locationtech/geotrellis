@@ -26,15 +26,13 @@ import geotrellis.spark.testkit._
 
 import geotrellis.spark.testkit.testfiles._
 
-import org.scalatest._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
+
 import java.io.File
 
-class HadoopSlippyTileWriterSpec
-    extends FunSpec
-    with Matchers
-    with TestEnvironment
-    with TestFiles
-{
+class HadoopSlippyTileWriterSpec extends AnyFunSpec with Matchers with TestEnvironment with TestFiles {
+
   describe("HadoopSlippyTileWriter") {
     val testPath = new File(outputLocalPath, "slippy-write-test").getPath
 

@@ -24,9 +24,10 @@ import cats.syntax.either._
 import geotrellis.vector._
 import geotrellis.vector.testkit._
 
-import org.scalatest._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.flatspec.AnyFlatSpec
 
-class GeoJsonSpec extends FlatSpec with Matchers {
+class GeoJsonSpec extends AnyFlatSpec with Matchers {
   "GeoJson package" should "go from Geometry to String" in {
     val g = Point(1,1)
 

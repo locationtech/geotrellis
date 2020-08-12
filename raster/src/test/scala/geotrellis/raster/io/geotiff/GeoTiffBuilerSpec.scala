@@ -23,9 +23,9 @@ import geotrellis.raster._
 import geotrellis.raster.testkit._
 import geotrellis.vector.Extent
 
-import org.scalatest._
+import org.scalatest.funspec.AnyFunSpec
 
-class GeoTiffBuilderSpec extends FunSpec with RasterMatchers with GeoTiffTestUtils {
+class GeoTiffBuilderSpec extends AnyFunSpec with RasterMatchers with GeoTiffTestUtils {
   describe("GeoTiffBuilder") {
     val tileSize = 5
     val ct = IntCellType

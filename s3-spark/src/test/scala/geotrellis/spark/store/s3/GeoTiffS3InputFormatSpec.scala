@@ -23,15 +23,15 @@ import geotrellis.spark._
 import geotrellis.spark.store.hadoop._
 import geotrellis.spark.testkit.TestEnvironment
 
-import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.mapreduce.{TaskAttemptContext, InputSplit}
 import software.amazon.awssdk.services.s3.model._
 import software.amazon.awssdk.core.sync.RequestBody
-import org.scalatest._
 
 import java.nio.file.{Paths, Files}
 
-class GeoTiffS3InputFormatSpec extends FunSpec with TestEnvironment with Matchers {
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
+
+class GeoTiffS3InputFormatSpec extends AnyFunSpec with TestEnvironment with Matchers {
 
   val mockClient = MockS3Client()
   val bucket = this.getClass.getSimpleName.toLowerCase

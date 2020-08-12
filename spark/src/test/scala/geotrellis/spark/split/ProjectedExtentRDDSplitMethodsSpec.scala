@@ -24,12 +24,11 @@ import geotrellis.vector._
 import geotrellis.spark.testkit._
 
 import org.apache.spark.rdd.RDD
-import org.scalatest._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
-class ProjectedExtentRDDSplitMethodsSpec extends FunSpec
-    with Matchers
-    with TestEnvironment
-    with TileBuilders {
+class ProjectedExtentRDDSplitMethodsSpec extends AnyFunSpec with Matchers with TestEnvironment with TileBuilders {
+
   describe("Splitting an RDD[(ProjectedExtent, Tile)]") {
     it("should split an example correctly") {
       val tile1 =

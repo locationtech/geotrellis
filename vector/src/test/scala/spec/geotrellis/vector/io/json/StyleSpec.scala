@@ -18,9 +18,10 @@ package geotrellis.vector.io.json
 
 import geotrellis.vector._
 
-import org.scalatest._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
-class StyleSpec extends FunSpec with Matchers {
+class StyleSpec extends AnyFunSpec with Matchers {
   describe("Styling geometries") {
     it("should style the geometry from a user defines style and read it back in") {
       val p = """{ "type": "Polygon", "coordinates": [ [ [-76.97021484375, 40.17887331434696], [-74.02587890625, 39.842286020743394],

@@ -20,11 +20,11 @@ import geotrellis.layer._
 import geotrellis.raster.geotiff._
 import geotrellis.raster.{MultibandTile, Tile}
 
-import org.scalatest.FunSpec
+import org.scalatest.funspec.AnyFunSpec
 
 import java.io.File
 
-class TestCatalogSpec extends FunSpec with CatalogTestEnvironment {
+class TestCatalogSpec extends AnyFunSpec with CatalogTestEnvironment {
   val absMultibandOutputPath = s"file://${TestCatalog.multibandOutputPath}"
   val absSinglebandOutputPath = s"file://${TestCatalog.singlebandOutputPath}"
 

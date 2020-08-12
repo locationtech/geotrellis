@@ -25,9 +25,10 @@ import geotrellis.raster._
 import geotrellis.raster.summary.polygonal.visitors.MaxVisitor
 import geotrellis.raster.summary.types.MaxValue
 import geotrellis.vector._
-import org.scalatest.FunSpec
 
-class MaxSpec extends FunSpec with TestEnvironment with TestFiles {
+import org.scalatest.funspec.AnyFunSpec
+
+class MaxSpec extends AnyFunSpec with TestEnvironment with TestFiles {
 
   describe("Max Double Zonal Summary Operation") {
     val inc = IncreasingTestFile

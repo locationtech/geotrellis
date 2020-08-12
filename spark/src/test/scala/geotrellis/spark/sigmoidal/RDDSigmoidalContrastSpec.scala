@@ -20,11 +20,10 @@ import geotrellis.raster._
 import geotrellis.spark._
 import geotrellis.spark.testkit._
 
-import org.scalatest._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
-class RDDSigmoidalContrastSpec extends FunSpec
-    with Matchers
-    with TestEnvironment {
+class RDDSigmoidalContrastSpec extends AnyFunSpec with Matchers with TestEnvironment {
 
   describe("RDD Sigmoidal Contrast") {
 

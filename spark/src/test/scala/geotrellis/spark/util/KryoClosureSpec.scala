@@ -24,12 +24,12 @@ import geotrellis.spark.TileLayerRDD
 import geotrellis.spark.testkit.testfiles._
 import geotrellis.spark.testkit._
 
-import org.scalatest.FunSpec
+import org.scalatest.funspec.AnyFunSpec
 
 class OptimusPrime(val prime: Int) extends Function1[Int, Int] {
   def apply(x: Int): Int = prime + x
 }
-class KryoClosureSpec extends FunSpec with TestEnvironment {
+class KryoClosureSpec extends AnyFunSpec with TestEnvironment {
   val transformer = new OptimusPrime(7)
   val numbers = Array.fill(10)(10)
 

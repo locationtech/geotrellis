@@ -22,9 +22,10 @@ import geotrellis.raster.testkit._
 import geotrellis.util.Filesystem
 
 import spire.syntax.cfor._
-import org.scalatest._
 
-class SinglebandGeoTiffReaderSpec extends FunSpec with RasterMatchers with GeoTiffTestUtils {
+import org.scalatest.funspec.AnyFunSpec
+
+class SinglebandGeoTiffReaderSpec extends AnyFunSpec with RasterMatchers with GeoTiffTestUtils {
   def geoTiff(storage: String, cellType: String): SinglebandGeoTiff =
     SinglebandGeoTiff(geoTiffPath(s"uncompressed/$storage/${cellType}.tif"))
 

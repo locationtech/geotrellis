@@ -16,9 +16,7 @@
 
 package geotrellis.proj4
 
-import org.locationtech.proj4j._
-
-import org.scalatest._
+import org.scalatest.funsuite.AnyFunSuite
 
 /**
  * Tests from Proj4JS
@@ -26,7 +24,7 @@ import org.scalatest._
  * @author Martin Davis (port by Rob Emanuele)
  *
  */
-class Proj4JSTest extends FunSuite with BaseCoordinateTransformTest
+class Proj4JSTest extends AnyFunSuite with BaseCoordinateTransformTest
 {
   test("Good") {
     checkTransformFromGeo("EPSG:23030", -6.77432123185356, 37.88456231505968, 168035.13, 4199884.83, 100)

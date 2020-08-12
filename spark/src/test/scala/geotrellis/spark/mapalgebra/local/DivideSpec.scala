@@ -21,9 +21,9 @@ import geotrellis.spark.store.hadoop._
 import geotrellis.spark.testkit.testfiles._
 import geotrellis.spark.testkit._
 
-import org.scalatest.FunSpec
+import org.scalatest.funspec.AnyFunSpec
 
-class DivideSpec extends FunSpec with TestEnvironment with TestFiles {
+class DivideSpec extends AnyFunSpec with TestEnvironment with TestFiles {
 
   describe("Divide Operation") {
     val twos = AllTwosTestFile

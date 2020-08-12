@@ -22,9 +22,9 @@ import geotrellis.spark.TileLayerRDD
 import geotrellis.spark.testkit.testfiles._
 import geotrellis.spark.testkit._
 
-import org.scalatest.FunSpec
+import org.scalatest.funspec.AnyFunSpec
 
-class GreaterSpec extends FunSpec with TestEnvironment with TestFiles {
+class GreaterSpec extends AnyFunSpec with TestEnvironment with TestFiles {
   describe("Greater Operation") {
     val inc = IncreasingTestFile
     val ones = AllOnesTestFile

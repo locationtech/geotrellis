@@ -28,11 +28,13 @@ import _root_.io.circe.syntax._
 import _root_.io.circe.parser._
 import cats.implicits._
 
-import org.scalatest._
-
 import scala.util.{Failure, Try}
 
-class AstSpec extends FunSpec
+import org.scalatest.BeforeAndAfterAll
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
+
+class AstSpec extends AnyFunSpec
   with Matchers
   with BeforeAndAfterAll
   with TestEnvironment {

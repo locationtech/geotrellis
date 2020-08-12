@@ -16,11 +16,13 @@
 
 package geotrellis.raster.mapalgebra.focal
 
-import org.scalatest._
-import geotrellis.raster.testkit._
 import geotrellis.raster._
 
-class MaxSpec extends FunSpec with Matchers with TileBuilders with RasterMatchers with FocalOpSpec {
+import geotrellis.raster.testkit._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
+
+class MaxSpec extends AnyFunSpec with Matchers with TileBuilders with RasterMatchers with FocalOpSpec {
 
   val getMaxResult = Function.uncurried((getCursorResult _).curried(
     (r,n) => Max.calculation(r,n)

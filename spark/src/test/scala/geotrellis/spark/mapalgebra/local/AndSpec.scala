@@ -22,9 +22,9 @@ import geotrellis.spark.TileLayerRDD
 import geotrellis.spark.testkit.testfiles._
 import geotrellis.spark.testkit._
 
-import org.scalatest.FunSpec
+import org.scalatest.funspec.AnyFunSpec
 
-class AndSpec extends FunSpec with TestEnvironment with TestFiles {
+class AndSpec extends AnyFunSpec with TestEnvironment with TestFiles {
   
   describe("And Operation") {
     val ones = AllOnesTestFile

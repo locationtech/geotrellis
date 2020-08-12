@@ -23,11 +23,12 @@ import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.raster.reproject._
 import geotrellis.raster.testkit.RasterMatchers
 
-import org.scalatest._
-
 import java.io.File
 
-class GeoTiffReprojectRasterSourceSpec extends FunSpec with RasterMatchers with GivenWhenThen {
+import org.scalatest.GivenWhenThen
+import org.scalatest.funspec.AnyFunSpec
+
+class GeoTiffReprojectRasterSourceSpec extends AnyFunSpec with RasterMatchers with GivenWhenThen {
   def rasterGeoTiffPath(name: String): String = {
     def baseDataPath = "raster/data"
     val path = s"$baseDataPath/$name"

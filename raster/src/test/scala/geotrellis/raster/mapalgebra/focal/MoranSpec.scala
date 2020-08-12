@@ -20,9 +20,9 @@ import geotrellis.vector.Extent
 import geotrellis.raster._
 import geotrellis.raster.testkit._
 
-import org.scalatest._
+import org.scalatest.funspec.AnyFunSpec
 
-class MoranSpec extends FunSpec with RasterMatchers {
+class MoranSpec extends AnyFunSpec with RasterMatchers {
   val x = Array(0, 1, 0, 1, 0, 1, 0, 1)
   val y = Array(1, 0, 1, 0, 1, 0, 1, 0)
 

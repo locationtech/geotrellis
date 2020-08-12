@@ -19,9 +19,10 @@ package geotrellis.raster.split
 import geotrellis.raster._
 import geotrellis.raster.testkit._
 
-import org.scalatest._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
-class MultibandTileSplitMethodsSpec extends FunSpec with Matchers with TileBuilders {
+class MultibandTileSplitMethodsSpec extends AnyFunSpec with Matchers with TileBuilders {
   describe("MultibandTile split") {
     it("should split a raster") {
       val b1 =

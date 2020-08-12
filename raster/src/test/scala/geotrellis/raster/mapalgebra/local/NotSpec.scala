@@ -18,11 +18,12 @@ package geotrellis.raster.mapalgebra.local
 
 import geotrellis.raster._
 
-import org.scalatest._
-
 import geotrellis.raster.testkit._
 
-class NotSpec extends FunSpec 
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
+
+class NotSpec extends AnyFunSpec
                  with Matchers 
                  with RasterMatchers 
                  with TileBuilders {

@@ -28,9 +28,11 @@ import geotrellis.spark.testkit._
 import jp.ne.opt.chronoscala.Imports._
 
 import java.time.{ZoneOffset, ZonedDateTime}
-import org.scalatest._
 
-class PyramidSpec extends FunSpec with Matchers with TestEnvironment {
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
+
+class PyramidSpec extends AnyFunSpec with Matchers with TestEnvironment {
 
   describe("Pyramid") {
     it("should work with SpaceTimeKey rasters") {

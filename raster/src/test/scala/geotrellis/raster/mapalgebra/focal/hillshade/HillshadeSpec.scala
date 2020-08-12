@@ -18,16 +18,11 @@ package geotrellis.raster.mapalgebra.focal.hillshade
 
 import geotrellis.raster._
 import geotrellis.vector.Extent
-import geotrellis.raster.mapalgebra._
-import geotrellis.raster.mapalgebra.focal._
-import geotrellis.raster.render._
 import geotrellis.raster.testkit._
 
-import org.scalatest._
+import org.scalatest.funsuite.AnyFunSuite
 
-import spire.syntax.cfor._
-
-class HillshadeSpec extends FunSuite with RasterMatchers with TileBuilders {
+class HillshadeSpec extends AnyFunSuite with RasterMatchers with TileBuilders {
 
   def time() = System.currentTimeMillis()
 

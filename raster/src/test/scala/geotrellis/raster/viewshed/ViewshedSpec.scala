@@ -18,15 +18,14 @@ package geotrellis.raster.viewshed
 
 import geotrellis.raster._
 import geotrellis.raster.testkit._
-import org.scalatest._
+
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
 /**
  * Created by jchien on 4/24/14.
  */
-class ViewshedSpec extends FunSpec
-                      with Matchers
-                      with RasterMatchers with TestFiles
-                      with TileBuilders {
+class ViewshedSpec extends AnyFunSpec with Matchers with RasterMatchers with TestFiles with TileBuilders {
   describe("Viewshed") {
     it("computes the viewshed of a flat int plane") {
       val r = createTile(Array.fill(7 * 8)(1), 7, 8)

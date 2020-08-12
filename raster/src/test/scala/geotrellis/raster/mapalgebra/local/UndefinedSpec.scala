@@ -18,14 +18,12 @@ package geotrellis.raster.mapalgebra.local
 
 import geotrellis.raster._
 
-import org.scalatest._
-
 import geotrellis.raster.testkit._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
-class UndefinedSpec extends FunSpec 
-                       with Matchers 
-                       with RasterMatchers 
-                       with TileBuilders {
+class UndefinedSpec extends AnyFunSpec with Matchers with RasterMatchers with TileBuilders {
+
   describe("Undefined") {
     it("returns correct result for an integer raster") {
       val r = positiveIntegerNoDataRaster

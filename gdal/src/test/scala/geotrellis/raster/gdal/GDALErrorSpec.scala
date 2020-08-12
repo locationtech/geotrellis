@@ -19,9 +19,9 @@ package geotrellis.raster.gdal
 import com.azavea.gdal.GDALWarp
 import geotrellis.raster.testkit.Resource
 
-import org.scalatest._
+import org.scalatest.funspec.AnyFunSpec
 
-class GDALErrorSpec extends FunSpec {
+class GDALErrorSpec extends AnyFunSpec {
   val uri = Resource.path("vlm/c41078a1.tif")
   val token = GDALWarp.get_token(uri, Array())
   val dataset: GDALDataset.DatasetType = GDALWarpOptions.EMPTY.datasetType

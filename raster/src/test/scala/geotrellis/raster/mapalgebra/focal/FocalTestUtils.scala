@@ -17,14 +17,12 @@
 package geotrellis.raster.mapalgebra.focal
 
 import geotrellis.raster._
-import geotrellis.vector.Extent
-import geotrellis.raster.mapalgebra.local._
 
 import geotrellis.raster.testkit._
 
-import org.scalatest._
-
 import scala.math._
+
+import org.scalatest.matchers.should.Matchers
 
 case class SeqTestSetup[@specialized(Int, Double)D](adds: Seq[Int], removes: Seq[Int], result: D)
 

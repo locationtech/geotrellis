@@ -19,12 +19,14 @@ package geotrellis.util
 import java.nio.ByteBuffer
 import java.nio.file.{Files, Paths}
 
-import org.scalatest._
 import scalaj.http.HttpStatusException
 import spire.syntax.cfor._
 
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
+
 /** These tests require running the container defined in scripts/nginxTestHttp.sh */
-class HttpRangeReaderSpec extends FunSpec with Matchers {
+class HttpRangeReaderSpec extends AnyFunSpec with Matchers {
 
   describe("HttpRangeReader") {
     val testGeoTiffPath = "spark/src/test/resources/all-ones.tif"

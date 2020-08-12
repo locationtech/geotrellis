@@ -16,12 +16,11 @@
 
 package geotrellis.raster.io
 
-import geotrellis.vector.Extent
 import geotrellis.raster._
 
-import org.scalatest._
+import org.scalatest.funsuite.AnyFunSuite
 
-class ArgTest extends FunSuite {
+class ArgTest extends AnyFunSuite {
   var tile: MutableArrayTile = null
 
   test("create a float32 raster of zeros") {

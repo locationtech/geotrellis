@@ -17,11 +17,11 @@
 import sbt._
 
 object Version {
-  val geotools    = "21.2"
+  val geotools    = "23.2"
   val spire       = "0.13.0"
   val accumulo    = "1.9.3"
-  val cassandra   = "3.7.2"
-  val hbase       = "2.2.0"
+  val cassandra   = "3.10.1"
+  val hbase       = "2.3.0"
   val geomesa     = "2.3.1"
   val geowave     = "0.9.3"
   val hadoop      = "2.8.5"
@@ -43,13 +43,13 @@ object Dependencies {
   }
 
   def monocle(module: String) = Def.setting {
-    "com.github.julien-truffaut" %% s"monocle-$module" % ver("1.5.1-cats", "2.0.0").value
+    "com.github.julien-truffaut" %% s"monocle-$module" % ver("1.5.1-cats", "2.0.5").value
   }
 
   def cats(module: String) = Def.setting {
     module match {
-      case "core"   => "org.typelevel" %% s"cats-$module" % ver("1.6.1", "2.0.0").value
-      case "effect" => "org.typelevel" %% s"cats-$module" % ver("1.3.1", "2.0.0").value
+      case "core"   => "org.typelevel" %% s"cats-$module" % ver("1.6.1", "2.1.1").value
+      case "effect" => "org.typelevel" %% s"cats-$module" % ver("1.3.1", "2.1.3").value
     }
   }
 
@@ -58,7 +58,7 @@ object Dependencies {
   }
 
   def fs2(module: String) = Def.setting {
-    "co.fs2" %% s"fs2-$module" % ver("1.0.5", "2.0.1").value
+    "co.fs2" %% s"fs2-$module" % ver("1.0.5", "2.4.2").value
   }
 
   val scalaURI = Def.setting {
@@ -69,23 +69,23 @@ object Dependencies {
   val sparkSql            = "org.apache.spark"           %% "spark-sql"                % Version.spark
   val pureconfig          = "com.github.pureconfig"      %% "pureconfig"               % "0.11.1"
   val logging             = "org.log4s"                  %% "log4s"                    % "1.8.2"
-  val scalatest           = "org.scalatest"              %% "scalatest"                % "3.0.8"
-  val scalacheck          = "org.scalacheck"             %% "scalacheck"               % "1.14.0"
-  val scalaXml            = "org.scala-lang.modules"     %% "scala-xml"                % "1.2.0"
+  val scalatest           = "org.scalatest"              %% "scalatest"                % "3.2.1"
+  val scalacheck          = "org.scalacheck"             %% "scalacheck"               % "1.14.3"
+  val scalaXml            = "org.scala-lang.modules"     %% "scala-xml"                % "1.3.0"
   val jts                 = "org.locationtech.jts"        % "jts-core"                 % "1.16.1"
   val proj4j              = "org.locationtech.proj4j"     % "proj4j"                   % "1.1.1"
-  val openCSV             = "com.opencsv"                 % "opencsv"                  % "4.6"
+  val openCSV             = "com.opencsv"                 % "opencsv"                  % "5.2"
   val spire               = "org.spire-math"             %% "spire"                    % Version.spire
   val spireMacro          = "org.spire-math"             %% "spire-macros"             % Version.spire
-  val apacheIO            = "commons-io"                  % "commons-io"               % "2.6"
+  val apacheIO            = "commons-io"                  % "commons-io"               % "2.7"
   val apacheMath          = "org.apache.commons"          % "commons-math3"            % "3.6.1"
   val chronoscala         = "jp.ne.opt"                  %% "chronoscala"              % "0.3.2"
-  val awsSdkS3            = "software.amazon.awssdk"      % "s3"                       % "2.7.32"
+  val awsSdkS3            = "software.amazon.awssdk"      % "s3"                       % "2.13.73"
   val hadoopClient        = "org.apache.hadoop"           % "hadoop-client"            % Version.hadoop
   val avro                = "org.apache.avro"             % "avro"                     % "1.7.7"
   val parserCombinators   = "org.scala-lang.modules"     %% "scala-parser-combinators" % "1.1.2"
   val jsonSchemaValidator = "com.networknt"               % "json-schema-validator"    % "0.1.23"
-  val scaffeine           = "com.github.blemale"         %% "scaffeine"                % "3.1.0"
+  val scaffeine           = "com.github.blemale"         %% "scaffeine"                % "4.0.1"
   val accumuloCore        = "org.apache.accumulo"          % "accumulo-core"           % Version.accumulo
   val sl4jnop             = "org.slf4j"                    % "slf4j-nop"               % "1.7.25"
   val cassandraDriverCore = "com.datastax.cassandra"       % "cassandra-driver-core"   % Version.cassandra
@@ -133,8 +133,8 @@ object Dependencies {
 
   val scalapbRuntime      = "com.thesamet.scalapb"        %% "scalapb-runtime"         % scalapb.compiler.Version.scalapbVersion
 
-  val squants             = "org.typelevel"               %% "squants"                 % "1.4.0"
-  val scalactic           = "org.scalactic"               %% "scalactic"               % "3.0.8"
+  val squants             = "org.typelevel"               %% "squants"                 % "1.6.0"
+  val scalactic           = "org.scalactic"               %% "scalactic"               % "3.2.1"
 
 
   val gdalBindings        = "org.gdal"                     % "gdal"                    % Version.gdal

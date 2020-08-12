@@ -25,13 +25,12 @@ import geotrellis.spark.summary._
 import geotrellis.spark.testkit._
 
 import _root_.io.circe.generic.JsonCodec
-import org.scalatest._
 
-abstract class AttributeStoreSpec
-    extends FunSpec
-    with Matchers
-    with TestEnvironment
-    with TestFiles {
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
+
+abstract class AttributeStoreSpec extends AnyFunSpec with Matchers with TestEnvironment with TestFiles {
+
   def attributeStore: AttributeStore
 
   it("should write to an attribute store") {

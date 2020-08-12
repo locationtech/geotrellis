@@ -19,11 +19,12 @@ package geotrellis.raster.mapalgebra.local
 import geotrellis.raster._
 import geotrellis.raster.testkit._
 
-import org.scalatest._
-
 import spire.syntax.cfor._
 
-class VarianceSpec extends FunSpec
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
+
+class VarianceSpec extends AnyFunSpec
     with Matchers
     with RasterMatchers
     with TileBuilders {

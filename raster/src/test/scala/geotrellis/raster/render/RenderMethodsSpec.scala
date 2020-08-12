@@ -19,10 +19,10 @@ package geotrellis.raster.render
 import geotrellis.raster._
 import geotrellis.raster.testkit._
 
-import org.scalatest._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
-class RenderMethodsSpec extends FunSpec with Matchers
-                                        with TileBuilders {
+class RenderMethodsSpec extends AnyFunSpec with Matchers with TileBuilders {
   describe("color") {
     it("should color an int tile") {
       val arr = (0 to 120).map { z => ((z.toDouble / 120) * 100).toInt }.toArray

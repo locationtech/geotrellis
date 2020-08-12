@@ -22,11 +22,13 @@ import geotrellis.spark.store.hadoop._
 
 import software.amazon.awssdk.services.s3.model._
 import software.amazon.awssdk.core.sync.RequestBody
-import org.scalatest._
 
 import java.nio.file.{Paths, Files}
 
-class TiffTagsS3InputFormatSpec extends FunSpec with Matchers with TestEnvironment {
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
+
+class TiffTagsS3InputFormatSpec extends AnyFunSpec with Matchers with TestEnvironment {
   val mockClient = MockS3Client()
   val bucket = this.getClass.getSimpleName.toLowerCase
   S3TestUtils.cleanBucket(mockClient, bucket)

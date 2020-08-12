@@ -25,7 +25,7 @@ import cats.instances.future._
 import cats.instances.list._
 import cats.syntax.traverse._
 
-import org.scalatest._
+import org.scalatest.funspec.AsyncFunSpec
 
 import scala.concurrent.{ExecutionContext, Future}
 

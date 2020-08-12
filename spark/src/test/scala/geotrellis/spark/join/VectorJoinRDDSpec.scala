@@ -26,9 +26,11 @@ import geotrellis.spark.testkit._
 
 import org.apache.spark._
 import org.apache.spark.rdd._
-import org.scalatest._
 
-class VectorJoinRDDSpec extends FunSpec with Matchers with TestEnvironment {
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
+
+class VectorJoinRDDSpec extends AnyFunSpec with Matchers with TestEnvironment {
 
   val polyA = Polygon(
     LineString(Point(0,0), Point(1,0), Point(1,1), Point(0,1), Point(0,0)))

@@ -25,7 +25,7 @@ import geotrellis.layer.buffer.BufferTiles
 import geotrellis.spark._
 import geotrellis.spark.testkit._
 
-import org.scalatest.FunSpec
+import org.scalatest.funspec.AnyFunSpec
 
 object BufferTilesSpec {
   def generateBufferSizes(bounds: Bounds[SpatialKey])(key: SpatialKey) = {
@@ -44,7 +44,7 @@ object BufferTilesSpec {
 }
 
 
-class BufferTilesSpec extends FunSpec with TestEnvironment with RasterMatchers {
+class BufferTilesSpec extends AnyFunSpec with TestEnvironment with RasterMatchers {
   describe("The BufferTiles functionality") {
     val path = "raster/data/aspect.tif"
     val gt = SinglebandGeoTiff(path)

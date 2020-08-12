@@ -20,16 +20,16 @@ import geotrellis.raster._
 import geotrellis.raster.io.geotiff._
 import geotrellis.raster.testkit._
 import geotrellis.vector.Extent
-import java.nio.file.Files
 import java.net.URL
 import java.io.File
-import org.scalatest._
 import scala.collection.parallel._
 import scala.util.Random
 import sys.process._
 
+import org.scalatest.BeforeAndAfterAll
+import org.scalatest.funspec.AnyFunSpec
 
-class JpegCompressionSpec extends FunSpec
+class JpegCompressionSpec extends AnyFunSpec
     with RasterMatchers
     with BeforeAndAfterAll
     with GeoTiffTestUtils {

@@ -23,12 +23,11 @@ import geotrellis.spark._
 import geotrellis.spark.testkit.TestEnvironment
 import geotrellis.vector._
 import org.apache.spark.rdd.RDD
-import org.scalatest._
 
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
-class RDDCostDistanceMethodsSpec extends FunSpec
-    with Matchers
-    with TestEnvironment {
+class RDDCostDistanceMethodsSpec extends AnyFunSpec with Matchers with TestEnvironment {
 
   val rdd: RDD[(SpatialKey, Tile)] with Metadata[TileLayerMetadata[SpatialKey]] = {
     val tile = IntArrayTile(Array.fill[Int](25)(1), 5, 5)

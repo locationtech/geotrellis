@@ -28,15 +28,16 @@ import geotrellis.raster.summary.polygonal.visitors._
 import geotrellis.raster.summary.types.{MaxValue, MinValue}
 import geotrellis.raster.testkit._
 import geotrellis.vector.{Extent, Point}
+
 import monocle.syntax.apply._
-import org.scalatest._
 import spire.syntax.cfor._
 
-class GeoTiffReaderSpec extends FunSpec
-    with Matchers
-    with BeforeAndAfterAll
-    with RasterMatchers
-    with GeoTiffTestUtils {
+import org.scalatest.{BeforeAndAfterAll, Inspectors}
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
+
+class GeoTiffReaderSpec extends AnyFunSpec with Matchers with BeforeAndAfterAll with RasterMatchers with GeoTiffTestUtils {
 
   override def afterAll = purge
 
@@ -571,9 +572,7 @@ class GeoTiffReaderSpec extends FunSpec
   }
 }
 
-class PackBitsGeoTiffReaderSpec extends FunSpec
-    with RasterMatchers
-    with GeoTiffTestUtils {
+class PackBitsGeoTiffReaderSpec extends AnyFunSpec with RasterMatchers with GeoTiffTestUtils {
 
   describe("Reading geotiffs with PACKBITS compression") {
     it("must read a single band bit raster as a multiband") {
@@ -598,9 +597,7 @@ class PackBitsGeoTiffReaderSpec extends FunSpec
   }
 }
 
-class TiePointsTests extends FunSuite
-    with RasterMatchers
-    with GeoTiffTestUtils {
+class TiePointsTests extends AnyFunSuite with RasterMatchers with GeoTiffTestUtils {
 
   test("Reads correct extent for tie points and PixelIsPoint") {
     val actual = SinglebandGeoTiff(geoTiffPath("tie-points.tif")).extent

@@ -16,10 +16,10 @@
 
 package geotrellis.vector
 
-import org.scalatest.FunSpec
-import org.scalatest.Matchers
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
-class SpatialIndexSpec extends FunSpec with Matchers {
+class SpatialIndexSpec extends AnyFunSpec with Matchers {
   describe("SpatialIndex") {
     it("should find correct points in extents") {
       val vs =

@@ -16,11 +16,11 @@
 
 package geotrellis.store.avro
 
-import org.scalatest._
-import Matchers._
-
 import geotrellis.raster._
 import geotrellis.util.MethodExtensions
+
+import org.scalatest.matchers.should.Matchers
+import Matchers._
 
 trait AvroTools { self: Matchers =>
   import AvroTools._

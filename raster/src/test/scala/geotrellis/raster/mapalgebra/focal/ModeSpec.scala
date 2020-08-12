@@ -16,10 +16,11 @@
 
 package geotrellis.raster.mapalgebra.focal
 
-import org.scalatest._
 import geotrellis.raster.testkit._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
-class ModeSpec extends FunSpec with Matchers with FocalOpSpec with RasterMatchers {
+class ModeSpec extends AnyFunSpec with Matchers with FocalOpSpec with RasterMatchers {
 
   val getModeResult = Function.uncurried((getCursorResult _).curried(
     (r,n) => Mode.calculation(r,n)))

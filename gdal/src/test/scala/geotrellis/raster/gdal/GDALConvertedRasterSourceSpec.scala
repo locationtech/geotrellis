@@ -20,9 +20,10 @@ import geotrellis.raster._
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.raster.testkit._
 
-import org.scalatest._
+import org.scalatest.GivenWhenThen
+import org.scalatest.funspec.AnyFunSpec
 
-class GDALConvertedRasterSourceSpec extends FunSpec with RasterMatchers with GivenWhenThen {
+class GDALConvertedRasterSourceSpec extends AnyFunSpec with RasterMatchers with GivenWhenThen {
 
   val url = Resource.path("vlm/aspect-tiled.tif")
   val uri = s"file://$url"

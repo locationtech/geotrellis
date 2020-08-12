@@ -17,10 +17,11 @@
 package geotrellis.raster.mapalgebra.focal
 
 import geotrellis.raster._
-import org.scalatest._
 
-class ConwaySpec extends FunSpec with FocalOpSpec
-                                 with Matchers {
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
+
+class ConwaySpec extends AnyFunSpec with FocalOpSpec with Matchers {
 
   val getConwayResult =
     Function.uncurried(

@@ -19,11 +19,10 @@ package geotrellis.raster.mapalgebra.focal
 import geotrellis.raster._
 import geotrellis.vector.Extent
 
-import org.scalatest._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
-import scala.collection.mutable.Set
-
-class FocalStrategySpec extends FunSpec with Matchers {
+class FocalStrategySpec extends AnyFunSpec with Matchers {
   describe("CursorStrategy") {
     it("should execute the ZigZag traversal strategy correctly") {
       val rex = RasterExtent(Extent(0, 0, 5, 5), 1, 1, 5, 5)

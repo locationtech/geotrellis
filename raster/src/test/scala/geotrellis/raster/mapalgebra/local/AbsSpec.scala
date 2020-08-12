@@ -18,14 +18,12 @@ package geotrellis.raster.mapalgebra.local
 
 import geotrellis.raster._
 
-import org.scalatest._
-
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 import geotrellis.raster.testkit._
 
-class AbsSpec extends FunSpec
-                 with Matchers
-                 with RasterMatchers
-                 with TileBuilders {
+class AbsSpec extends AnyFunSpec with Matchers with RasterMatchers with TileBuilders {
+
   describe("Abs") {
     it("takes the absolute value of each cell of an int raster") {
       val rasterData = Array(

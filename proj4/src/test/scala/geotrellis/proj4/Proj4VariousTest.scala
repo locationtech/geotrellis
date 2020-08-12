@@ -16,9 +16,7 @@
 
 package geotrellis.proj4
 
-import org.locationtech.proj4j._
-
-import org.scalatest._
+import org.scalatest.funsuite.AnyFunSuite
 
 /**
  * Tests from the PROJ4 testvarious file.
@@ -26,8 +24,7 @@ import org.scalatest._
  * @author Martin Davis (port by Rob emanuele)
  *
  */
-class Proj4VariousTest extends FunSuite with BaseCoordinateTransformTest
-{
+class Proj4VariousTest extends AnyFunSuite with BaseCoordinateTransformTest {
   test("RawEllipse") {
     checkTransform(
         "+proj=latlong +ellps=clrk66", p("79d58'00.000W 37d02'00.000N"),

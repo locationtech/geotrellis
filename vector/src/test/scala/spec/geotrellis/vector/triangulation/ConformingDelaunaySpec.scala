@@ -20,13 +20,14 @@ import geotrellis.vector._
 import geotrellis.vector.triangulation._
 
 import org.locationtech.jts.{ geom => jts }
-import org.locationtech.jts.geom.{Coordinate, MultiPoint, Polygon => JTSPolygon}
-import org.locationtech.jts.triangulate.{ConformingDelaunayTriangulationBuilder, DelaunayTriangulationBuilder}
-import org.scalatest.{FunSpec, Matchers}
+import org.locationtech.jts.geom.{MultiPoint, Polygon => JTSPolygon}
+import org.locationtech.jts.triangulate.DelaunayTriangulationBuilder
 import spire.syntax.cfor._
 
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
-class ConformingDelaunaySpec extends FunSpec with Matchers {
+class ConformingDelaunaySpec extends AnyFunSpec with Matchers {
 
   val factory = GeomFactory.factory
   val points = Array(Point(-0.001,-0.001), Point(1,0), Point(2,0), Point(2.001,1), Point(2.001,2.001), Point(1,2), Point(1,1), Point(0,1))

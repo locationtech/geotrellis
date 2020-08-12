@@ -26,13 +26,11 @@ import geotrellis.vector._
 import geotrellis.spark.testkit._
 
 import org.apache.hadoop.fs.Path
-import org.scalatest._
 
-class HadoopIngestSpec
-  extends FunSpec
-    with Matchers
-    with TestEnvironment with TestFiles {
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
+class HadoopIngestSpec extends AnyFunSpec with Matchers with TestEnvironment with TestFiles {
   val layoutScheme = ZoomedLayoutScheme(LatLng, 512)
 
   it("should allow filtering files in hadoopGeoTiffRDD") {

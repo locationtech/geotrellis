@@ -22,9 +22,9 @@ import geotrellis.spark.testkit._
 import geotrellis.raster._
 import geotrellis.raster.Neighborhoods.{Square, Circle}
 
-import org.scalatest.FunSpec
+import org.scalatest.funspec.AnyFunSpec
 
-class MeanSpec extends FunSpec with TestEnvironment {
+class MeanSpec extends AnyFunSpec with TestEnvironment {
 
   describe("Mean Focal Spec") {
     val nd = NODATA

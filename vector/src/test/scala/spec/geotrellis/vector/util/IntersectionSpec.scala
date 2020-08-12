@@ -18,9 +18,10 @@ package geotrellis.vector.util
 
 import geotrellis.vector._
 
-import org.scalatest._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
-class IntersectionSpec extends FunSpec with Matchers {
+class IntersectionSpec extends AnyFunSpec with Matchers {
   describe("Intersection utils") {
     it("should return only the polygonal portion of an intersection with a tangency") {
       val lowertri = Polygon((0.0,0.0), (1.0,0.0), (0.0,1.0), (0.0,0.0))

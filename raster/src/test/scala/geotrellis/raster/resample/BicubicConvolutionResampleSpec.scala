@@ -16,10 +16,8 @@
 
 package geotrellis.raster.resample
 
-import geotrellis.raster._
-import geotrellis.vector.Extent
-
-import org.scalatest._
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.matchers.should.Matchers
 
 /**
   * Since cubic convolution resample inherits from cubic resample it
@@ -35,8 +33,7 @@ import org.scalatest._
   * The bicubic convolution resample class uses a helper class,
   * which is the only class tested here.
   */
-class BicubicConvolutionResampleSpec
-    extends FunSuite with Matchers {
+class BicubicConvolutionResampleSpec extends AnyFunSuite with Matchers {
 
   val E = 1e-4
 

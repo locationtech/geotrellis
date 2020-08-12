@@ -24,10 +24,9 @@ import geotrellis.vector._
 import geotrellis.vector.io._
 import geotrellis.vector.testkit._
 
-import org.scalatest._
-import spire.syntax.cfor._
+import org.scalatest.funspec.AnyFunSpec
 
-class ReprojectRasterExtentSpec extends FunSpec
+class ReprojectRasterExtentSpec extends AnyFunSpec
     with TileBuilders
     with GeoTiffTestUtils
     with RasterMatchers {

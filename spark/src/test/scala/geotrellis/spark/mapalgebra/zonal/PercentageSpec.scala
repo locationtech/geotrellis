@@ -28,11 +28,11 @@ import geotrellis.raster.stitch._
 
 import geotrellis.vector._
 
-import org.scalatest.FunSpec
+import org.scalatest.funspec.AnyFunSpec
 import org.apache.spark.rdd.RDD
 import spire.syntax.cfor._
 
-class PercentageSpec extends FunSpec with TestEnvironment with TestFiles {
+class PercentageSpec extends AnyFunSpec with TestEnvironment with TestFiles {
 
   describe("Percentage Zonal Operation") {
     it("gives correct percentage for example raster rdds") {

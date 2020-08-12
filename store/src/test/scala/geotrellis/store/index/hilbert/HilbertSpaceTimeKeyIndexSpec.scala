@@ -16,7 +16,6 @@
 
 package geotrellis.store.index.hilbert
 
-import org.scalatest._
 import geotrellis.layer.SpaceTimeKey
 
 import jp.ne.opt.chronoscala.Imports._
@@ -24,7 +23,10 @@ import jp.ne.opt.chronoscala.Imports._
 import java.time.temporal.ChronoUnit.MILLIS
 import java.time.{ZoneOffset, ZonedDateTime}
 
-class HilbertSpaceTimeKeyIndexSpec extends FunSpec with Matchers {
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
+
+class HilbertSpaceTimeKeyIndexSpec extends AnyFunSpec with Matchers {
 
   val upperBound: Int = 16 // corresponds to width of 4 2^4
   val y2k = ZonedDateTime.of(2000, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC)

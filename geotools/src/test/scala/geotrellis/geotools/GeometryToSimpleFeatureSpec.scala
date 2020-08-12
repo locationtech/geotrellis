@@ -19,11 +19,10 @@ package geotrellis.geotools
 import geotrellis.proj4.{LatLng, WebMercator}
 import geotrellis.vector._
 
-import org.scalatest._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
-class GeometryToSimpleFeatureSpec
-    extends FunSpec
-    with Matchers {
+class GeometryToSimpleFeatureSpec extends AnyFunSpec with Matchers {
 
   describe("The Geometry to SimpleFeature Conversion") {
 

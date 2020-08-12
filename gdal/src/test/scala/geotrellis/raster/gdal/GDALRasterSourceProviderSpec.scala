@@ -18,9 +18,9 @@ package geotrellis.raster.gdal
 
 import geotrellis.raster.RasterSource
 
-import org.scalatest._
+import org.scalatest.funspec.AnyFunSpec
 
-class GDALRasterSourceProviderSpec extends FunSpec {
+class GDALRasterSourceProviderSpec extends AnyFunSpec {
   describe("GDALRasterSourceProvider") {
     val provider = new GDALRasterSourceProvider()
 

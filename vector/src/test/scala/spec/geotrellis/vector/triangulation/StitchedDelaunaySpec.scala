@@ -22,12 +22,14 @@ import geotrellis.util.Direction._
 import geotrellis.vector._
 import geotrellis.vector.io.wkt.WKT
 
-import org.scalatest.{FunSpec, Matchers}
 import spire.syntax.cfor._
 
 import scala.util.Random
 
-class StitchedDelaunaySpec extends FunSpec with Matchers {
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
+
+class StitchedDelaunaySpec extends AnyFunSpec with Matchers {
 
   def time[R](msg: String)(block: => R): R = {
     val t0 = System.nanoTime()

@@ -20,12 +20,12 @@ import geotrellis.raster._
 import geotrellis.raster.rasterize._
 import geotrellis.vector._
 
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
 import scala.math.round
 
-
-class FractionalRasterizerSpec extends FunSpec with Matchers {
+class FractionalRasterizerSpec extends AnyFunSpec with Matchers {
 
   describe("Fractional-Pixel Polygon Rasterizer") {
     val e = Extent(0, 0, 3, 3)

@@ -17,9 +17,11 @@
 package geotrellis.util.np
 
 import spire.syntax.cfor._
-import org.scalatest._
 
-class LinspaceSpec extends FunSpec with Matchers {
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
+
+class LinspaceSpec extends AnyFunSpec with Matchers {
 
   val pyArr =
     Array(0d, 0.390625, 0.78125, 1.171875, 1.5625, 1.953125,

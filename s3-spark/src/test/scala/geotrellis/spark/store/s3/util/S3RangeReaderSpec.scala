@@ -25,9 +25,10 @@ import spire.syntax.cfor._
 import software.amazon.awssdk.core.sync.RequestBody
 import software.amazon.awssdk.services.s3.model._
 
-import org.scalatest._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
-class S3RangeReaderSpec extends FunSpec with Matchers {
+class S3RangeReaderSpec extends AnyFunSpec with Matchers {
   val bucket = this.getClass.getSimpleName.toLowerCase
   val mockClient = MockS3Client()
   S3TestUtils.cleanBucket(mockClient, bucket)

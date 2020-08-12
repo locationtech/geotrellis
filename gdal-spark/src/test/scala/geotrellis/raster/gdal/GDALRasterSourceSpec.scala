@@ -23,9 +23,10 @@ import geotrellis.raster.resample._
 import geotrellis.vector.ProjectedExtent
 import geotrellis.raster.testkit._
 
-import org.scalatest._
+import org.scalatest.GivenWhenThen
+import org.scalatest.funspec.AnyFunSpec
 
-class GDALRasterSourceSpec extends FunSpec with RasterMatchers with GivenWhenThen {
+class GDALRasterSourceSpec extends AnyFunSpec with RasterMatchers with GivenWhenThen {
   import geotrellis.GDALTestUtils._
   val uri = gdalGeoTiffPath("vlm/aspect-tiled.tif")
 

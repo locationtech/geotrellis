@@ -23,12 +23,11 @@ import geotrellis.spark.testkit._
 import org.apache.spark.rdd.RDD._
 import org.apache.spark._
 
-import org.scalatest._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
-class KNearestRDDSpec extends FunSpec
-    with TestEnvironment
-    with Matchers
-{
+class KNearestRDDSpec extends AnyFunSpec with TestEnvironment with Matchers {
+
   describe("K-nearest neighbors") {
     val pts = for (i <- -10 to 10;
                    j <- -10 to 10;

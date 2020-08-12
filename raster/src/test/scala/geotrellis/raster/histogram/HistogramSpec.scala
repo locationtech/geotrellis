@@ -16,12 +16,13 @@
 
 package geotrellis.raster.histogram
 
-import org.scalatest._
+import org.scalatest.Inspectors
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
 import java.util.Locale
 
-
-class HistogramSpec extends FunSpec with Matchers with Inspectors {
+class HistogramSpec extends AnyFunSpec with Matchers with Inspectors {
   private def charToInt(c: Char) = c.toByte - 32
   private def stringToInts(s:String) = {
     s.toCharArray.map(charToInt)

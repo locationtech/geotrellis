@@ -29,9 +29,10 @@ import geotrellis.vector.triangulation._
 import scala.util.Random
 import scala.math.pow
 
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
-class VoronoiDiagramSpec extends FunSpec with Matchers {
+class VoronoiDiagramSpec extends AnyFunSpec with Matchers {
 
   // def rasterizePoly(poly: Polygon, tile: MutableArrayTile, re: RasterExtent, erring: Boolean)(implicit trans: Int => Point) = {
   //   if (erring) {

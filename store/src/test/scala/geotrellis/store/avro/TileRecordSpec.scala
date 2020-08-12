@@ -19,11 +19,13 @@ package geotrellis.store.avro
 import geotrellis.store.avro.codecs.{KeyValueRecordCodec, TileCodecs, KeyCodecs}
 import TileCodecs._
 import KeyCodecs._
-import org.scalatest._
 import geotrellis.raster._
 import geotrellis.layer._
 
-class TileRecordSpec extends FunSpec with AvroTools with Matchers {
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
+
+class TileRecordSpec extends AnyFunSpec with AvroTools with Matchers {
   describe("TileRecordCodecs") {
     it("encodes (key,tile) pairs"){
       val pairs = Vector(

@@ -21,9 +21,9 @@ import geotrellis.spark.testkit._
 import geotrellis.raster.Neighborhoods.{Square, Circle}
 import geotrellis.raster._
 
-import org.scalatest.FunSpec
+import org.scalatest.funspec.AnyFunSpec
 
-class MinSpec extends FunSpec with TestEnvironment {
+class MinSpec extends AnyFunSpec with TestEnvironment {
 
   describe("Min Focal Spec") {
 

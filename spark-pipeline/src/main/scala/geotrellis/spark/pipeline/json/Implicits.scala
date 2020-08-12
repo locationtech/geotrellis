@@ -32,8 +32,11 @@ import _root_.io.circe.generic.extras.Configuration
 import _root_.io.circe._
 import _root_.io.circe.syntax._
 import _root_.io.circe.generic.extras.semiauto._
-import cats.syntax._
-import cats.implicits._
+import cats.syntax.either._
+import cats.syntax.apply._
+import cats.syntax.bifoldable._
+import cats.instances.option._
+import cats.instances.either._
 
 import java.net.URI
 
@@ -139,7 +142,7 @@ trait Implicits {
     Decoder.decodeJsonObject.emap { jso: JsonObject =>
       val map = jso.toMap
       val cellSize = ((map.get("width"), map.get("height")) mapN {
-        (w, h) => (new EitherOps(w.as[Double]).toOption, new EitherOps(h.as[Double]).toOption) mapN {
+        (w, h) => (w.as[Double].toOption, h.as[Double].toOption) mapN {
           (width, height) => CellSize(width, height)
         }
       }).flatten

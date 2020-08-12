@@ -26,9 +26,9 @@ import geotrellis.vector.testkit._
 
 import org.apache.spark.rdd.RDD
 
-import org.scalatest.FunSpec
+import org.scalatest.funspec.AnyFunSpec
 
-class ClipToGridSpec extends FunSpec with TestEnvironment {
+class ClipToGridSpec extends AnyFunSpec with TestEnvironment {
   describe("ClipToGrid") {
     val layoutDefinition =
       LayoutDefinition(

@@ -9,4 +9,5 @@ addSbtPlugin("pl.project13.scala" % "sbt-jmh" % "0.3.7")
 addSbtPlugin("org.scalastyle" %% "scalastyle-sbt-plugin" % "1.0.0")
 addSbtPlugin("com.typesafe" % "sbt-mima-plugin" % "0.7.0")
 addSbtPlugin("com.thesamet" % "sbt-protoc" % "0.99.34")
+addSbtPlugin("ch.epfl.scala" % "sbt-scalafix" % "0.9.19")
 libraryDependencies += "com.thesamet.scalapb" %% "compilerplugin" % "0.9.8"

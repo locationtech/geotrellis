@@ -25,6 +25,7 @@ import spire.implicits.cfor
 import spire.math.Integral
 import org.scalatest._
 import org.scalatest.matchers.{HavePropertyMatchResult, HavePropertyMatcher}
+import org.scalatest.matchers.should.Matchers
 import org.scalatest.tools.BetterPrinters
 
 import scala.reflect.ClassTag

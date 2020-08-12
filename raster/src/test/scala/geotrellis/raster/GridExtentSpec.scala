@@ -17,11 +17,13 @@
 package geotrellis.raster
 
 import geotrellis.vector.{Extent, Point}
-import org.scalatest._
 
 import scala.math.{max, min}
 
-class GridExtentSpec extends FunSpec with Matchers {
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
+
+class GridExtentSpec extends AnyFunSpec with Matchers {
   def isWhole(x: Double): Boolean = (x.round - x).abs < geotrellis.util.Constants.FLOAT_EPSILON
 
   def generateExtent(cw: Double, ch: Double, minCols: Int = 1, minRows: Int = 1): Extent = {

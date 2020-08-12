@@ -16,10 +16,11 @@
 
 package geotrellis.raster.mapalgebra.focal
 
-import org.scalatest._
 import geotrellis.raster.testkit._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
-class MedianSpec extends FunSpec with Matchers with TileBuilders with RasterMatchers {
+class MedianSpec extends AnyFunSpec with Matchers with TileBuilders with RasterMatchers {
   describe("Tile focalMedian") {
     it("should match worked out results") {
       val r = createTile(Array(

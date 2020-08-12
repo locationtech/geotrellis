@@ -25,9 +25,10 @@ import geotrellis.store._
 import geotrellis.store.index.hilbert.HilbertSpaceTimeKeyIndex
 import geotrellis.store.index.zcurve.ZSpaceTimeKeyIndex
 import geotrellis.vector._
-import org.scalatest._
 
-class MergeQueueSpec extends FunSpec {
+import org.scalatest.funspec.AnyFunSpec
+
+class MergeQueueSpec extends AnyFunSpec {
 
   //val mPoly = MultiPolygon(mPolys.flatMap(p => p.reproject(LatLng, Sinusoidal).polygons))
 

@@ -22,9 +22,9 @@ import geotrellis.spark.TileLayerRDD
 import geotrellis.spark.testkit.testfiles._
 import geotrellis.spark.testkit._
 
-import org.scalatest.FunSpec
+import org.scalatest.funspec.AnyFunSpec
 
-class IfCellSpec extends FunSpec with TestEnvironment with TestFiles {
+class IfCellSpec extends AnyFunSpec with TestEnvironment with TestFiles {
 
   describe("IfCell Operation") {
     val inc = IncreasingTestFile

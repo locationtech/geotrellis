@@ -18,14 +18,14 @@ package geotrellis.raster.mapalgebra.local
 
 import geotrellis.raster._
 
-import org.scalatest._
-
 import geotrellis.raster.testkit._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
 /**
  * Created by jchien on 2/22/14.
  */
-class MinNSpec extends FunSpec
+class MinNSpec extends AnyFunSpec
                   with Matchers
                   with RasterMatchers
                   with TileBuilders {

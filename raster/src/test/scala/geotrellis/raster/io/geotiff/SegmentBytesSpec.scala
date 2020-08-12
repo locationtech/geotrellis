@@ -17,12 +17,12 @@
 package geotrellis.raster.io.geotiff
 
 import geotrellis.util._
-import geotrellis.raster._
-import geotrellis.raster.io.geotiff.reader._
 import geotrellis.raster.io.geotiff.tags.TiffTags
 import geotrellis.raster.testkit._
 
-import org.scalatest._
+import org.scalatest.BeforeAndAfterAll
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
 trait Tester {
   def paths: List[String]
@@ -49,7 +49,7 @@ trait Tester {
   }
 }
 
-class SegmentBytesSpec extends FunSpec
+class SegmentBytesSpec extends AnyFunSpec
   with GeoTiffTestUtils
   with Matchers
   with BeforeAndAfterAll

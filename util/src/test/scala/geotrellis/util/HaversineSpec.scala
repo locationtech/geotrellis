@@ -16,9 +16,10 @@
 
 package geotrellis.util
 
-import org.scalatest._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
-class HaversineSpec extends FunSpec with Matchers {
+class HaversineSpec extends AnyFunSpec with Matchers {
   describe("HaversineSpec") {
     // Rio de Janeiro
     val rio = -22.906847 -> -43.172896

@@ -20,12 +20,10 @@ import geotrellis.raster._
 import geotrellis.raster.testkit._
 import geotrellis.vector._
 
-import org.scalatest._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
-
-class RasterizeMethodsSpec extends FunSpec
-    with Matchers
-    with TileBuilders {
+class RasterizeMethodsSpec extends AnyFunSpec with Matchers with TileBuilders {
 
   val magicNumber = 42
   val e = Extent(0.0, 0.0, 10.0, 10.0)

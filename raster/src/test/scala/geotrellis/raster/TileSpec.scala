@@ -21,12 +21,13 @@ import geotrellis.raster.testkit._
 import geotrellis.raster.mapalgebra.local._
 import geotrellis.raster.resample._
 
-import org.scalatest._
 import scala.collection.mutable
-
 import spire.syntax.cfor._
 
-class TileSpec extends FunSpec
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
+
+class TileSpec extends AnyFunSpec
                   with Matchers
                   with RasterMatchers
                   with TileBuilders {

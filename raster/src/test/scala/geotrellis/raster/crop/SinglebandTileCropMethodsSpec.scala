@@ -20,14 +20,10 @@ import geotrellis.raster._
 import geotrellis.vector.Extent
 import geotrellis.raster.testkit._
 
-import org.scalatest._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
-class SinglebandTileCropMethodsSpec
-    extends FunSpec
-    with Matchers
-    with TileBuilders
-    with RasterMatchers
-    with TestFiles {
+class SinglebandTileCropMethodsSpec extends AnyFunSpec with Matchers with TileBuilders with RasterMatchers with TestFiles {
 
   describe("cropping by extent") {
     val (cols, rows) = (5, 5)

@@ -16,10 +16,8 @@
 
 package geotrellis.raster.resample
 
-import geotrellis.raster._
-import geotrellis.vector.Extent
-
-import org.scalatest._
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.matchers.should.Matchers
 
 /**
   * Since cubic spline resample inherits from cubic resample it
@@ -35,8 +33,7 @@ import org.scalatest._
   * The bicubic spline resample class uses a helper class,
   * which is the only class tested here.
   */
-class BicubicSplineResampleSpec
-    extends FunSuite with Matchers {
+class BicubicSplineResampleSpec extends AnyFunSuite with Matchers {
 
   val E = 1e-2
 

@@ -16,7 +16,6 @@
 
 package geotrellis.spark.rasterize
 
-import org.scalatest._
 import geotrellis.raster._
 import geotrellis.raster.rasterize.Rasterizer
 import geotrellis.layer._
@@ -34,9 +33,10 @@ import java.nio.file.Paths;
 
 import org.apache.spark._
 
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
-class RasterizeRDDSpec extends FunSpec with Matchers
-    with TestEnvironment {
+class RasterizeRDDSpec extends AnyFunSpec with Matchers with TestEnvironment {
 
   def readFile(path: String): String =
     new String(Files.readAllBytes(Paths.get(path)));

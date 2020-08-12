@@ -21,13 +21,11 @@ import geotrellis.raster.summary.polygonal.visitors.MaxVisitor
 import geotrellis.raster.summary.types.MaxValue
 import geotrellis.raster.testkit._
 import geotrellis.vector._
-import org.scalatest._
 
-class MaxSpec
-    extends FunSpec
-    with Matchers
-    with RasterMatchers
-    with TileBuilders {
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
+
+class MaxSpec extends AnyFunSpec with Matchers with RasterMatchers with TileBuilders {
 
   describe("Max") {
     val rs = createRaster(Array.fill(40 * 40)(1.0), 40, 40)

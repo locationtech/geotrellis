@@ -18,17 +18,15 @@ package geotrellis.raster.rasterize
 
 import geotrellis.raster._
 import geotrellis.vector._
-import geotrellis.raster.testkit._
 import geotrellis.util.Constants.{FLOAT_EPSILON => EPSILON}
-import math.{max,min,round}
-
-import org.scalatest._
 
 import geotrellis.raster.testkit._
 import scala.collection.mutable
 
-class RasterizeSpec extends FunSuite with RasterMatchers
-                                     with Matchers {
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.matchers.should.Matchers
+
+class RasterizerSpec extends AnyFunSuite with RasterMatchers with Matchers {
    test("Point Rasterization") {
       val e = Extent(0.0, 0.0, 10.0, 10.0)
       val re = RasterExtent(e, 1.0, 1.0, 10, 10)

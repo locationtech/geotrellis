@@ -19,9 +19,11 @@ package geotrellis.raster.mapalgebra.focal
 import geotrellis.raster._
 import geotrellis.raster.testkit._
 import scala.collection.mutable.Set
-import org.scalatest._
 
-class CursorSpec extends FunSpec with Matchers with TileBuilders {
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
+
+class CursorSpec extends AnyFunSpec with Matchers with TileBuilders {
 
   def checkSet(r: Tile, set: CellSet, cursor: Cursor, m: Movement, center: (Int, Int), expected: Seq[Int]) = {
     center match { 

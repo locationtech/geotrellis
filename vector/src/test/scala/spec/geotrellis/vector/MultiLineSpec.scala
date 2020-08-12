@@ -16,11 +16,10 @@
 
 package geotrellis.vector
 
-import org.locationtech.jts.{geom=>jts}
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
-import org.scalatest._
-
-class MultiLineStringSpec extends FunSpec with Matchers {
+class MultiLineStringSpec extends AnyFunSpec with Matchers {
   describe("MultiLineString") {
     it ("should maintain immutability over normalization") {
       val ml =

@@ -19,16 +19,15 @@ package geotrellis.geotools
 import geotrellis.proj4.WebMercator
 import geotrellis.vector._
 
-import org.scalatest._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
 object FeatureToSimpleFeatureMethodsSpec {
   case class Foo(x: Int, y: String)
   implicit def fooToSeq(foo: Foo): Seq[(String, Any)] = List((foo.y, foo.x))
 }
 
-class FeatureToSimpleFeatureMethodsSpec
-    extends FunSpec
-    with Matchers {
+class FeatureToSimpleFeatureMethodsSpec extends AnyFunSpec with Matchers {
 
   import FeatureToSimpleFeatureMethodsSpec._
 

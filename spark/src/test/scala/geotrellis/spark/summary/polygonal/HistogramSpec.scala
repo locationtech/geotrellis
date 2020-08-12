@@ -24,11 +24,12 @@ import geotrellis.raster.summary.polygonal._
 import geotrellis.raster.summary.polygonal.visitors._
 import geotrellis.vector._
 import geotrellis.spark.testkit._
-import org.scalatest.FunSpec
+
+import org.scalatest.funspec.AnyFunSpec
 
 import collection.immutable.HashMap
 
-class HistogramSpec extends FunSpec with TestEnvironment with TestFiles {
+class HistogramSpec extends AnyFunSpec with TestEnvironment with TestFiles {
   describe("Histogram Zonal Summary Operation") {
 
     val modHundred = Mod10000TestFile

@@ -18,9 +18,10 @@ package geotrellis.proj4
 
 import org.locationtech.proj4j._
 
-import org.scalatest._
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.matchers.should.Matchers
 
-class RepeatedTransformTest extends FunSuite with Matchers {
+class RepeatedTransformTest extends AnyFunSuite with Matchers {
   test("RepeatedTransform") {
     val crsFactory = new CRSFactory()
 

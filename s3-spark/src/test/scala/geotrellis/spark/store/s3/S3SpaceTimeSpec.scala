@@ -25,7 +25,7 @@ import geotrellis.spark.testkit.io._
 import geotrellis.spark.testkit.testfiles.TestFiles
 import geotrellis.spark.testkit.TestEnvironment
 
-import org.scalatest._
+import org.scalatest.BeforeAndAfterAll
 
 class S3SpaceTimeSpec
   extends PersistenceSpec[SpaceTimeKey, Tile, TileLayerMetadata[SpaceTimeKey]]

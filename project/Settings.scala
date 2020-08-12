@@ -107,18 +107,13 @@ object Settings {
     ),
     headerLicense := Some(HeaderLicense.ALv2(java.time.Year.now.getValue.toString, "Azavea")),
     headerMappings := Map(
-      FileType.scala -> CommentStyle.cStyleBlockComment.copy(commentCreator = new CommentCreator() {
-        val Pattern = "(?s).*?(\\d{4}(-\\d{4})?).*".r
-        def findYear(header: String): Option[String] = header match {
-          case Pattern(years, _) => Some(years)
-          case _                 => None
-        }
-        def apply(text: String, existingText: Option[String]): String = {
+      FileType.scala -> CommentStyle.cStyleBlockComment.copy(
+        commentCreator = { (text, existingText) => {
           // preserve year of old headers
           val newText = CommentStyle.cStyleBlockComment.commentCreator.apply(text, existingText)
           existingText.flatMap(_ => existingText.map(_.trim)).getOrElse(newText)
-        }
-      })
+        } }
+      )
     )
   )
 

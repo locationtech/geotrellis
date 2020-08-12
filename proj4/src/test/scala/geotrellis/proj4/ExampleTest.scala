@@ -18,7 +18,8 @@ package geotrellis.proj4
 
 import org.locationtech.proj4j._
 
-import org.scalatest._
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.matchers.should.Matchers
 
 /**
  * Test which serves as an example of using Proj4J.
@@ -26,7 +27,7 @@ import org.scalatest._
  * @author mbdavis
  *
  */
-class ExampleTest extends FunSuite with Matchers{
+class ExampleTest extends AnyFunSuite with Matchers {
   def isInTolerance(p: ProjCoordinate, x: Double, y: Double, tolerance: Double) = {
     /*
      * Compare result to expected, for test purposes

@@ -22,11 +22,13 @@ import geotrellis.store.index._
 
 import _root_.io.circe._
 import _root_.io.circe.syntax._
-import org.scalatest._
+
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
 // --- //
 
-class ShardingKeyIndexSpec extends FunSpec with Matchers {
+class ShardingKeyIndexSpec extends AnyFunSpec with Matchers {
   /* Z-Curve Indices */
   val zspace: KeyIndex[SpatialKey] =
     ZCurveKeyIndexMethod.createIndex(KeyBounds(

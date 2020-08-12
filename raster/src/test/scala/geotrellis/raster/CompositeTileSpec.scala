@@ -20,14 +20,11 @@ import geotrellis.raster.resample._
 import geotrellis.vector.Extent
 import geotrellis.raster.testkit._
 
-import org.scalatest._
+import org.scalatest.funspec.AnyFunSpec
 
 import spire.syntax.cfor._
 
-class CompositeTileSpec extends FunSpec
-                                with TileBuilders
-                                with RasterMatchers
-                                with TestFiles {
+class CompositeTileSpec extends AnyFunSpec with TileBuilders with RasterMatchers with TestFiles {
   describe("wrap") {
     it("wraps a literal raster") {
       val r =

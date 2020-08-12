@@ -16,9 +16,10 @@
 
 package geotrellis.store.index.zcurve
 
-import org.scalatest._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
-class Z2IteratorSpec extends FunSpec with Matchers {
+class Z2IteratorSpec extends AnyFunSpec with Matchers {
   describe("Z2IteratorRange") {
 
     it("iterates"){

@@ -24,7 +24,9 @@ import geotrellis.layer._
 import geotrellis.spark._
 import geotrellis.spark.testkit._
 
-import org.scalatest._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
+
 import org.apache.spark._
 import org.apache.spark.rdd._
 
@@ -34,10 +36,7 @@ class IntTilerKeyMethods(val self: Int, extents: List[Extent]) extends TilerKeyM
   def translate(k: SpatialKey): SpatialKey = k
 }
 
-class TilerMethodsSpec extends FunSpec
-  with Matchers
-  with TestEnvironment
-{
+class TilerMethodsSpec extends AnyFunSpec with Matchers with TestEnvironment {
 
   describe("Tiler") {
     it("should tile overlapping rasters"){

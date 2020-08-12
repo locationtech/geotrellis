@@ -20,9 +20,10 @@ import geotrellis.raster._
 import geotrellis.raster.resample._
 import geotrellis.vector.Extent
 
-import org.scalatest._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
-class BilinearResampleSpec extends FunSpec with Matchers {
+class BilinearResampleSpec extends AnyFunSpec with Matchers {
 
   val Epsilon = 1e-9
 

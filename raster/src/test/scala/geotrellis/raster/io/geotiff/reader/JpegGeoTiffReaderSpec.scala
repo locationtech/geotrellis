@@ -16,16 +16,12 @@
 
 package geotrellis.raster.io.geotiff.reader
 
-import geotrellis.raster._
-import geotrellis.raster.io.geotiff.GeoTiffTestUtils.testDirPath
 import geotrellis.raster.io.geotiff._
 import geotrellis.raster.testkit._
 
-import org.scalatest._
+import org.scalatest.funspec.AnyFunSpec
 
-class JpegGeoTiffReaderSpec extends FunSpec
-    with RasterMatchers
-    with GeoTiffTestUtils {
+class JpegGeoTiffReaderSpec extends AnyFunSpec with RasterMatchers with GeoTiffTestUtils {
 
   describe("Reading a geotiff with JPEG compression") {
     it("should read and write jpeg compressed GeoTiff") {

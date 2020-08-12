@@ -21,9 +21,11 @@ import geotrellis.raster.testkit._
 import geotrellis.raster.io.geotiff.reader._
 
 import spire.syntax.cfor._
-import org.scalatest._
 
-class SinglebandCropIteratorSpec extends FunSpec
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
+
+class SinglebandCropIteratorSpec extends AnyFunSpec
   with Matchers
   with RasterMatchers
   with GeoTiffTestUtils {

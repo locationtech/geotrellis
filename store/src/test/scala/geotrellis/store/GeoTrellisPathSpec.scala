@@ -16,9 +16,9 @@
 
 package geotrellis.store
 
-import org.scalatest._
+import org.scalatest.funspec.AnyFunSpec
 
-class GeoTrellisPathSpec extends FunSpec {
+class GeoTrellisPathSpec extends AnyFunSpec {
   describe("GeoTrellisPathSpec") {
 
     it("should fail to parse without a layer") {

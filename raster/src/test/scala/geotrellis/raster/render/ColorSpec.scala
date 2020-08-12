@@ -16,17 +16,17 @@
 
 package geotrellis.raster.render
 
-import org.scalatest._
-
-
 import java.util.Locale
+
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
 object ColorSpec {
   def hexstringify(colors: Seq[Int]) = colors.map{ "%08x".formatLocal(Locale.ENGLISH, _) }.toList
   def getColorString(colors: Seq[Int]) = colors.map("%06X".formatLocal(Locale.ENGLISH, _)).mkString(",")
 }
 
-class ColorSpec extends FunSpec with Matchers {
+class ColorSpec extends AnyFunSpec with Matchers {
   describe("chooseColors") {
     val (color1, color2) = (0xFF0000, 0x0000FF)
     val colorArray = Vector(0xFF0000, 0x0000FF)

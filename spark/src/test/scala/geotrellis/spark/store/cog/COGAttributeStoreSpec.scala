@@ -28,13 +28,10 @@ import geotrellis.spark.testkit.testfiles.cog._
 import geotrellis.spark.summary._
 import geotrellis.spark.testkit._
 
-import org.scalatest._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
-abstract class COGAttributeStoreSpec
-    extends FunSpec
-    with Matchers
-    with TestEnvironment
-    with COGTestFiles {
+abstract class COGAttributeStoreSpec extends AnyFunSpec with Matchers with TestEnvironment with COGTestFiles {
   def attributeStore: AttributeStore
   def header: LayerHeader
 

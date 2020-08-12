@@ -21,10 +21,11 @@ import org.locationtech.jts.geom.Coordinate
 import geotrellis.vector.Extent
 
 import scala.util.Random
-import org.scalatest._
 
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
-class BoundaryDelaunaySpec extends FunSpec with Matchers {
+class BoundaryDelaunaySpec extends AnyFunSpec with Matchers {
 
   def randInRange(low: Double, high: Double): Double = {
     val x = Random.nextDouble

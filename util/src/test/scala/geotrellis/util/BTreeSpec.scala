@@ -16,11 +16,12 @@
 
 package geotrellis.util
 
-import org.scalatest._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
 // --- //
 
-class BTreeSpec extends FunSpec with Matchers {
+class BTreeSpec extends AnyFunSpec with Matchers {
   private val v: Vector[Int] = (1 to 15).toVector
 
   describe("Instantiation") {

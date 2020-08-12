@@ -22,9 +22,9 @@ import geotrellis.spark.testkit._
 import geotrellis.raster._
 import geotrellis.raster.Neighborhoods.Square
 
-import org.scalatest.FunSpec
+import org.scalatest.funspec.AnyFunSpec
 
-class MedianSpec extends FunSpec with TestEnvironment {
+class MedianSpec extends AnyFunSpec with TestEnvironment {
 
   describe("Median Focal Spec") {
 

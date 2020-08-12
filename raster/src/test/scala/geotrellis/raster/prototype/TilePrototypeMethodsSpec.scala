@@ -19,9 +19,10 @@ package geotrellis.raster.prototype
 import geotrellis.raster._
 import geotrellis.raster.testkit._
 
-import org.scalatest._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
-class TilePrototypeMethodsSpec extends FunSpec
+class TilePrototypeMethodsSpec extends AnyFunSpec
     with Matchers
     with TileBuilders
     with RasterMatchers {

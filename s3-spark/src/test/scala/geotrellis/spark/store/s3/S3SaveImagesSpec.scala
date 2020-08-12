@@ -16,7 +16,6 @@
 
 package geotrellis.spark.render
 
-import geotrellis.raster.{Tile, TileLayout}
 import geotrellis.layer._
 import geotrellis.store._
 import geotrellis.store.s3._
@@ -28,9 +27,10 @@ import geotrellis.spark.store.s3.SaveToS3
 
 import software.amazon.awssdk.services.s3.model._
 
-import org.scalatest._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
-class S3SaveImagesSpec extends FunSpec with TestEnvironment with Matchers {
+class S3SaveImagesSpec extends AnyFunSpec with TestEnvironment with Matchers {
   lazy val sample = TestFiles.generateSpatial("all-ones")
   val  mockClient = MockS3Client()
   S3TestUtils.cleanBucket(mockClient, "mock-bucket")

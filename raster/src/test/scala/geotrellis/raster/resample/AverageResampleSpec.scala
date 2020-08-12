@@ -19,9 +19,10 @@ package geotrellis.raster.resample
 import geotrellis.raster._
 import geotrellis.vector.Extent
 
-import org.scalatest._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
-class AverageResampleSpec extends FunSpec with Matchers {
+class AverageResampleSpec extends AnyFunSpec with Matchers {
 
   describe("it should correctly resample to the average of a region") {
 

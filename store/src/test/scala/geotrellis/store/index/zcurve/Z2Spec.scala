@@ -16,9 +16,10 @@
 
 package geotrellis.store.index.zcurve
 
-import org.scalatest._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
-class Z2Spec extends FunSpec with Matchers {
+class Z2Spec extends AnyFunSpec with Matchers {
   describe("Z2 encoding") {
     it("interlaces bits"){
       Z2(1,0).z should equal(1)

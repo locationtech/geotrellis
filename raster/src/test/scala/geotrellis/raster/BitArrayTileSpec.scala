@@ -16,9 +16,11 @@
 
 package geotrellis.raster
 
-import org.scalatest._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
-class BitArrayTileSpec extends FunSpec with Matchers {
+class BitArrayTileSpec extends AnyFunSpec with Matchers {
+
   describe("BitArrayTile.map") {
     it("should map an inverse function correctly.") {
       val arr = Array[Byte](0,1,2,3,4,5,6,7,8)

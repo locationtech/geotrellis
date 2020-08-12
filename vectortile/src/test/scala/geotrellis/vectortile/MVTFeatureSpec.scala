@@ -18,9 +18,10 @@ package geotrellis.vectortile
 
 import geotrellis.vector._
 
-import org.scalatest._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
-class MVTFeatureSpec extends FunSpec with Matchers {
+class MVTFeatureSpec extends AnyFunSpec with Matchers {
   val geom = Point(0, 0)
   describe("MVTFeature.fromFeature") {
     it("should construct MVTFeature with None id") {

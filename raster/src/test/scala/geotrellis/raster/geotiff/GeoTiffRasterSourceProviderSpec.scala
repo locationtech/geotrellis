@@ -18,9 +18,9 @@ package geotrellis.raster.geotiff
 
 import geotrellis.raster.RasterSource
 
-import org.scalatest._
+import org.scalatest.funspec.AnyFunSpec
 
-class GeoTiffRasterSourceProviderSpec extends FunSpec {
+class GeoTiffRasterSourceProviderSpec extends AnyFunSpec {
   describe("GeoTiffRasterSourceProvider") {
     val provider = new GeoTiffRasterSourceProvider()
 

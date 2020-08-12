@@ -19,10 +19,12 @@ package geotrellis.raster.resample
 import geotrellis.raster._
 import geotrellis.vector.Extent
 
-import org.scalatest._
 import spire.syntax.cfor._
 
-class AggregateResampleSpec extends FunSpec with Matchers {
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
+
+class AggregateResampleSpec extends AnyFunSpec with Matchers {
 
   class MockAggregateResample(tile: Tile, extent: Extent, targetCS: CellSize) extends AggregateResample(tile, extent, targetCS) {
     def resampleValid(x: Double, y: Double): Int = contributions(x, y).size

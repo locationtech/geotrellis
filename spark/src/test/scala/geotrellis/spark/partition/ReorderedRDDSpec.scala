@@ -20,12 +20,12 @@ import geotrellis.layer._
 import geotrellis.store.index.zcurve._
 import geotrellis.spark._
 import geotrellis.spark.testkit._
+import org.apache.spark.rdd.RDD
 
-import org.apache.spark.Partitioner
-import org.apache.spark.rdd.{PairRDDFunctions, RDD}
-import org.scalatest._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
-class ReorderedRDDSpec extends FunSpec with Matchers with TestEnvironment {
+class ReorderedRDDSpec extends AnyFunSpec with Matchers with TestEnvironment {
   import TestImplicits._
 
   val bounds1 = KeyBounds(SpatialKey(0,0), SpatialKey(10,10))

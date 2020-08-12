@@ -19,10 +19,11 @@ package geotrellis.raster.io.geotiff
 import geotrellis.raster._
 
 import geotrellis.raster.testkit._
+import org.scalatest.BeforeAndAfterAll
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
-import org.scalatest._
-
-class BitGeoTiffTileSpec extends FunSpec
+class BitGeoTiffTileSpec extends AnyFunSpec
     with Matchers
     with RasterMatchers
     with BeforeAndAfterAll

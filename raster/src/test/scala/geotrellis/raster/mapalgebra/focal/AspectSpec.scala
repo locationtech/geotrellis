@@ -19,11 +19,13 @@ package geotrellis.raster.mapalgebra.focal
 import geotrellis.raster._
 import geotrellis.raster.testkit._
 import geotrellis.vector.Extent
-import org.scalatest._
 
 import scala.math._
 
-class AspectSpec extends FunSpec with Matchers with RasterMatchers with TileBuilders with TestFiles {
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
+
+class AspectSpec extends AnyFunSpec with Matchers with RasterMatchers with TileBuilders with TestFiles {
   describe("Aspect") {
     it("should match gdal computed aspect raster") {
       val elevation = loadTestArg("data/elevation")

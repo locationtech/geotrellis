@@ -17,23 +17,13 @@
 package geotrellis.raster.io.geotiff
 
 import geotrellis.raster._
-import geotrellis.raster.io.geotiff.writer.GeoTiffWriter
-import geotrellis.raster.mapalgebra.local._
-
-import geotrellis.vector.Extent
-
-import geotrellis.proj4._
-
 import geotrellis.raster.testkit._
 
-import org.scalatest._
+import org.scalatest.BeforeAndAfterAll
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
-class BitGeoTiffMultibandTileSpec extends FunSpec
-    with Matchers
-    with BeforeAndAfterAll
-    with RasterMatchers
-    with GeoTiffTestUtils 
-    with TileBuilders {
+class BitGeoTiffMultibandTileSpec extends AnyFunSpec with Matchers with BeforeAndAfterAll with RasterMatchers with GeoTiffTestUtils with TileBuilders {
   def p(s: String, i: String): String = 
     geoTiffPath(s"3bands/bit/3bands-${s}-${i}.tif")
 

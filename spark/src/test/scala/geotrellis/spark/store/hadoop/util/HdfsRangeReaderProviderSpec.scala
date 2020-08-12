@@ -19,12 +19,10 @@ package geotrellis.spark.store.hadoop.util
 import geotrellis.store.hadoop.util.HdfsRangeReader
 import geotrellis.util.RangeReader
 
-import org.scalatest._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
-import java.net.URI
-
-
-class HdfsRangeReaderProviderSpec extends FunSpec with Matchers {
+class HdfsRangeReaderProviderSpec extends AnyFunSpec with Matchers {
   describe("HdfsRangeReaderProviderSpec") {
     val uri = new java.net.URI("hdfs+file:/tmp/catalog")
 

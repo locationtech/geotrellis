@@ -25,9 +25,10 @@ import geotrellis.raster._
 import geotrellis.raster.summary.polygonal.visitors.SumVisitor
 import geotrellis.raster.summary.types.SumValue
 import geotrellis.vector._
-import org.scalatest.FunSpec
 
-class SumSpec extends FunSpec with TestEnvironment with TestFiles {
+import org.scalatest.funspec.AnyFunSpec
+
+class SumSpec extends AnyFunSpec with TestEnvironment with TestFiles {
 
   describe("Sum Double Zonal Summary Operation") {
     val ones = AllOnesTestFile

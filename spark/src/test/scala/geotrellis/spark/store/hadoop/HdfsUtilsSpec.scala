@@ -19,14 +19,14 @@ package geotrellis.spark.store.hadoop
 import geotrellis.store.hadoop.util.HdfsUtils
 import geotrellis.spark.testkit._
 import geotrellis.util.Filesystem
+import org.apache.hadoop.fs.Path
 
 import java.io.IOException
 
-import org.scalatest._
-import org.apache.hadoop.fs.Path
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
-
-class HdfsUtilsSpec extends FunSpec with Matchers with TestEnvironment {
+class HdfsUtilsSpec extends AnyFunSpec with Matchers with TestEnvironment {
   describe("HdfsUtils") {
 
     def testArrays[T](arr1: Array[T], arr2: Array[T]): Array[(T, T)] = {

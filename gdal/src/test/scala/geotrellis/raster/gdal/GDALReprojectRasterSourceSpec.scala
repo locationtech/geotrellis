@@ -22,9 +22,10 @@ import geotrellis.raster.resample._
 import geotrellis.raster.reproject.{Reproject, ReprojectRasterExtent}
 import geotrellis.raster.testkit._
 
-import org.scalatest._
+import org.scalatest.GivenWhenThen
+import org.scalatest.funspec.AnyFunSpec
 
-class GDALReprojectRasterSourceSpec extends FunSpec with RasterMatchers with GivenWhenThen {
+class GDALReprojectRasterSourceSpec extends AnyFunSpec with RasterMatchers with GivenWhenThen {
 
   /**
     * Pipeline to generate test dataset from the aspect-tiled.tif.

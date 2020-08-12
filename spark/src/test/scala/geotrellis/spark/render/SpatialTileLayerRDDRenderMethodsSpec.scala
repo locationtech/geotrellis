@@ -25,13 +25,10 @@ import geotrellis.spark.testkit._
 import geotrellis.spark.store.hadoop._
 import geotrellis.spark.testkit._
 
-import org.scalatest._
+import org.scalatest.funspec.AnyFunSpec
 
-class SpatialTileRDDRenderMethodsSpec extends FunSpec
-    with TestEnvironment
-    with TileBuilders
-    with RasterMatchers
-    with TileLayerRDDBuilders {
+class SpatialTileLayerRDDRenderMethodsSpec extends AnyFunSpec with TestEnvironment with TileBuilders with RasterMatchers with TileLayerRDDBuilders {
+
   lazy val sample = TestFiles.generateSpatial("all-ones")
   val tmpdir = System.getProperty("java.io.tmpdir")
 

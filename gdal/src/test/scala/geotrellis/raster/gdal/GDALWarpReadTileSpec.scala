@@ -23,10 +23,9 @@ import geotrellis.raster.io.geotiff._
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.vector.Extent
 
-import org.scalatest._
-import java.io.File
+import org.scalatest.funspec.AnyFunSpec
 
-class GDALWarpReadTileSpec extends FunSpec with RasterMatchers {
+class GDALWarpReadTileSpec extends AnyFunSpec with RasterMatchers {
   val path = Resource.path("vlm/slope.tif")
 
   describe("reading a GeoTiff") {

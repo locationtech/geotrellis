@@ -16,12 +16,13 @@
 
 package geotrellis.proj4
 
-import org.scalatest._
+import org.scalatest.Inspectors
+import org.scalatest.funspec.AnyFunSpec
 
 /**
  * @author Manuri Perera
  */
-class CRSTest extends FunSpec with Inspectors {
+class CRSTest extends AnyFunSpec with Inspectors {
 
   it("should return the proj4string corresponding to EPSG:4326") {
     val crs = CRS.fromName("EPSG:4326")

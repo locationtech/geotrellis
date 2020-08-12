@@ -17,9 +17,11 @@
 package geotrellis.raster.mapalgebra.focal
 
 import geotrellis.raster._
-import org.scalatest._
 
-class StandardDeviationSpec extends FunSpec with FocalOpSpec with Matchers {
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
+
+class StandardDeviationSpec extends AnyFunSpec with FocalOpSpec with Matchers {
   val getCircleStdResult = (getDoubleCursorResult _).curried(
     (r,n) => StandardDeviation.calculation(r,n)
   )(Circle(1))

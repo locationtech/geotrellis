@@ -20,10 +20,9 @@ import geotrellis.proj4._
 import geotrellis.vector._
 import geotrellis.vectortile.internal._
 
-import org.scalatest._
+import org.scalatest.funspec.AnyFunSpec
 
-
-class ProjectionSpec extends FunSpec {
+class ProjectionSpec extends AnyFunSpec {
   describe("VectorTile Projection Conversions") {
     it("should read a point from a VectorTile and write it back") {
       val p1 = Point(-61.347656249999986, 10.412183158667512)

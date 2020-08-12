@@ -18,14 +18,13 @@ package geotrellis.raster.mapalgebra.local
 
 import geotrellis.raster._
 
-import org.scalatest._
-
 import geotrellis.raster.testkit._
 
-class MajoritySpec extends FunSpec 
-                      with Matchers 
-                      with RasterMatchers 
-                      with TileBuilders {
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
+
+class MajoritySpec extends AnyFunSpec with Matchers with RasterMatchers with TileBuilders {
+
   describe("Majority") {
     it("takes majority on rasters of all one value") {
       val r1 = createTile(Array.fill(7*8)(1), 7, 8)

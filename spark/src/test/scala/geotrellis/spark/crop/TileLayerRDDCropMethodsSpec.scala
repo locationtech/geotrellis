@@ -23,9 +23,9 @@ import geotrellis.spark._
 import geotrellis.vector.Extent
 import geotrellis.spark.testkit._
 
-import org.scalatest.FunSpec
+import org.scalatest.funspec.AnyFunSpec
 
-class TileLayerRDDCropMethodsSpec extends FunSpec with TestEnvironment {
+class TileLayerRDDCropMethodsSpec extends AnyFunSpec with TestEnvironment {
 
   describe("TileLayerRDD Crop Methods") {
     val path = "raster/data/aspect.tif"

@@ -18,14 +18,12 @@ package geotrellis.raster.mapalgebra.local
 
 import geotrellis.raster._
 
-import org.scalatest._
-
 import geotrellis.raster.testkit._
 
-class GreaterSpec extends FunSpec
-  with Matchers
-  with RasterMatchers
-  with TileBuilders {
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
+
+class GreaterSpec extends AnyFunSpec with Matchers with RasterMatchers with TileBuilders {
   describe("Greater") {
     it("checks int valued raster against int constant") {
       val r = positiveIntegerRaster

@@ -19,14 +19,17 @@ package geotrellis.raster.render.ascii
 import geotrellis.raster.io.geotiff.{GeoTiffTestUtils, SinglebandGeoTiff}
 import geotrellis.raster.render.ascii.AsciiArtEncoder.Palette
 import geotrellis.raster.testkit.TileBuilders
-import org.scalatest.{FunSuite, Inspectors, Matchers}
+
+import org.scalatest.Inspectors
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.matchers.should.Matchers
 
 /**
  * Simple tests to check basic ASCII art rendering.
  *
  * @since 9/6/17
  */
-class RenderAsciiTests extends FunSuite with Matchers with TileBuilders with Inspectors {
+class RenderAsciiTests extends AnyFunSuite with Matchers with TileBuilders with Inspectors {
 
   test("generate ASCII art from graident tile") {
     val palettes = Seq(

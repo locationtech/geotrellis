@@ -18,15 +18,13 @@ package geotrellis.raster.mapalgebra.zonal
 
 import geotrellis.raster._
 
-import org.scalatest._
-
 import geotrellis.raster.testkit._
-
-import scala.collection.mutable
-
 import spire.syntax.cfor._
 
-class ZonalPercentageSpec extends FunSpec
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
+
+class ZonalPercentageSpec extends AnyFunSpec
                              with Matchers
                              with RasterMatchers
                              with TileBuilders {

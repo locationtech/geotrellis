@@ -31,10 +31,12 @@ import org.apache.spark.rdd.RDD
 
 import java.nio.file.{Files, Paths}
 
-import org.scalatest._
+import org.scalatest.BeforeAndAfterEach
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
 class S3GeoTiffRDDSpec
-  extends FunSpec
+  extends AnyFunSpec
     with Matchers
     with RasterMatchers
     with TestEnvironment

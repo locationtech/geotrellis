@@ -18,23 +18,18 @@ package geotrellis.raster.rasterize.polygon
 
 import geotrellis.proj4._
 import geotrellis.raster._
-import geotrellis.raster.io.geotiff.GeoTiff
 import geotrellis.raster.rasterize._
 import geotrellis.raster.rasterize.Rasterizer.Options
 import geotrellis.raster.testkit._
 import geotrellis.vector._
 import geotrellis.vector.io.wkt.WKT
 
-import math.{max,min,round}
-
 import org.locationtech.jts.io.WKTReader
-import org.scalatest.FunSuite
 import scala.collection.mutable
 
+import org.scalatest.funsuite.AnyFunSuite
 
-class PolygonRasterizerSpec extends FunSuite
-    with RasterMatchers
-    with TileBuilders {
+class PolygonRasterizerSpec extends AnyFunSuite with RasterMatchers with TileBuilders {
 
   test("Polygon Rasterization") {
     val e = Extent(0.0, 0.0, 10.0, 10.0)

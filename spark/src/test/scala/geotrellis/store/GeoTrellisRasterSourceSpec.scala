@@ -26,9 +26,10 @@ import geotrellis.raster.reproject.{Reproject, ReprojectRasterExtent}
 import geotrellis.raster.resample.NearestNeighbor
 import geotrellis.vector.Extent
 
-import org.scalatest._
+import org.scalatest.GivenWhenThen
+import org.scalatest.funspec.AnyFunSpec
 
-class GeoTrellisRasterSourceSpec extends FunSpec with RasterMatchers with GivenWhenThen with CatalogTestEnvironment {
+class GeoTrellisRasterSourceSpec extends AnyFunSpec with RasterMatchers with GivenWhenThen with CatalogTestEnvironment {
   val layerId = LayerId("landsat", 0)
   val uriMultibandNoParams = s"file://${TestCatalog.multibandOutputPath}"
   val uriMultiband = s"file://${TestCatalog.multibandOutputPath}?layer=${layerId.name}&zoom=${layerId.zoom}"

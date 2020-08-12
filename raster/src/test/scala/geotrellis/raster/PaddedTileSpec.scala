@@ -17,11 +17,13 @@
 package geotrellis.raster
 
 import geotrellis.raster.testkit.RasterMatchers
-import org.scalatest._
 
 import spire.syntax.cfor._
 
-class PaddedTileSpec extends FunSpec with Matchers with RasterMatchers {
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
+
+class PaddedTileSpec extends AnyFunSpec with Matchers with RasterMatchers {
   val padded = PaddedTile(chunk = IntArrayTile.fill(1, cols = 8, rows = 8), colOffset = 8, rowOffset = 8, cols = 16, rows = 16)
 
   val expected = {

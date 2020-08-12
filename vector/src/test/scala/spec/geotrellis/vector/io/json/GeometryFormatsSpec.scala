@@ -22,9 +22,10 @@ import cats.syntax.either._
 import geotrellis.vector._
 import geotrellis.vector.io._
 
-import org.scalatest._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.flatspec.AnyFlatSpec
 
-class GeometryFormatsSpec extends FlatSpec with Matchers with GeoJsonSupport {
+class GeometryFormatsSpec extends AnyFlatSpec with Matchers with GeoJsonSupport {
 
   val point = Point(6.0,1.2)
   val line = LineString(Point(1,2) :: Point(1,3) :: Nil)

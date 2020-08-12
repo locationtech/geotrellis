@@ -24,9 +24,10 @@ import geotrellis.spark._
 import geotrellis.spark.testkit._
 import geotrellis.spark.tiling._
 import geotrellis.vector._
-import org.scalatest._
 
-class RegridSpec extends FunSpec with TestEnvironment with RasterMatchers {
+import org.scalatest.funspec.AnyFunSpec
+
+class RegridSpec extends AnyFunSpec with TestEnvironment with RasterMatchers {
 
   val simpleLayer = {
     val tiles =

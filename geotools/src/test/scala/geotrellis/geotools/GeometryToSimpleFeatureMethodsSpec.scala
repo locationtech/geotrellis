@@ -19,11 +19,10 @@ package geotrellis.geotools
 import geotrellis.proj4.LatLng
 import geotrellis.vector._
 
-import org.scalatest._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
-class GeometryToSimpleFeatureMethodsSpec
-    extends FunSpec
-    with Matchers {
+class GeometryToSimpleFeatureMethodsSpec extends AnyFunSpec with Matchers {
 
   describe("The .toSimpleFeature Extension Methods") {
 

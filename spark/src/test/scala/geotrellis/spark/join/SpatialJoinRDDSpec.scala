@@ -23,10 +23,11 @@ import geotrellis.spark.testkit._
 
 import org.apache.spark.Partitioner
 import org.apache.spark.rdd.{PairRDDFunctions, RDD}
-import org.scalatest._
-import spire.math.interval.EmptyBound
 
-class SpatialJoinRDDSpec extends FunSpec with Matchers with TestEnvironment {
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
+
+class SpatialJoinRDDSpec extends AnyFunSpec with Matchers with TestEnvironment {
   // Import the PartitionerIndex that we will be using for the tests.
   import geotrellis.spark.partition.TestImplicits._
 

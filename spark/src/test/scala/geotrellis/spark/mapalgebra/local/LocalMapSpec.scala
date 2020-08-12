@@ -25,9 +25,9 @@ import geotrellis.spark.testkit._
 
 import java.time.ZonedDateTime
 
-import org.scalatest._
+import org.scalatest.funspec.AnyFunSpec
 
-class LocalMapSpec extends FunSpec with TestEnvironment with TestFiles {
+class LocalMapSpec extends AnyFunSpec with TestEnvironment with TestFiles {
 
   describe("Local Map Operations") {
     it("should map an integer function over an integer raster rdd") {

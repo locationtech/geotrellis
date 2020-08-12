@@ -20,9 +20,9 @@ import geotrellis.vector.Extent
 import geotrellis.raster._
 import geotrellis.raster.testkit._
 
-import org.scalatest._
+import org.scalatest.funspec.AnyFunSpec
 
-class SumSpec extends FunSpec with RasterMatchers with TileBuilders with FocalOpSpec {
+class SumSpec extends AnyFunSpec with RasterMatchers with TileBuilders with FocalOpSpec {
   val sq1 = Square(1)
   val sq2 = Square(2)
   val sq3 = Square(3)

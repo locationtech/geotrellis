@@ -27,9 +27,9 @@ import geotrellis.spark.store._
 import geotrellis.spark.tiling._
 import geotrellis.spark.testkit._
 
-import org.scalatest.FunSpec
+import org.scalatest.funspec.AnyFunSpec
 
-class TileLayerRDDFilterMethodsSpec extends FunSpec with TestEnvironment {
+class TileLayerRDDFilterMethodsSpec extends AnyFunSpec with TestEnvironment {
 
   describe("SpaceTime TileLayerRDD Filter Methods") {
     val rdd = sc.parallelize(List(

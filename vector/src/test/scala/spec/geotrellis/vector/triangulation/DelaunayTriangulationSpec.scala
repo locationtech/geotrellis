@@ -23,9 +23,10 @@ import geotrellis.vector._
 
 import scala.util.Random
 
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
-class DelaunayTriangulationSpec extends FunSpec with Matchers {
+class DelaunayTriangulationSpec extends AnyFunSpec with Matchers {
 
   println("Starting tests for DelaunayTriangulationSpec")
 

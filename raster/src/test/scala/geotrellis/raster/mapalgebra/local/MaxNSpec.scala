@@ -18,17 +18,15 @@ package geotrellis.raster.mapalgebra.local
 
 import geotrellis.raster._
 
-import org.scalatest._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
 import geotrellis.raster.testkit._
 
 /**
  * Created by jchien on 2/22/14.
  */
-class MaxNSpec extends FunSpec
-                  with Matchers
-                  with RasterMatchers
-                  with TileBuilders {
+class MaxNSpec extends AnyFunSpec with Matchers with RasterMatchers with TileBuilders {
 
   describe("MaxN") {
     it("takes nth max of each cell of int valued rasters") {

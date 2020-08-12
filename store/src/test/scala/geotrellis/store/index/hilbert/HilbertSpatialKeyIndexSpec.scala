@@ -17,11 +17,12 @@
 package geotrellis.store.index.hilbert
 
 import geotrellis.store.index.HilbertKeyIndexMethod
-import org.scalatest._
-
 import geotrellis.layer.{KeyBounds, SpatialKey}
 
-class HilbertSpatialKeyIndexSpec extends FunSpec with Matchers{
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
+
+class HilbertSpatialKeyIndexSpec extends AnyFunSpec with Matchers {
 
   val upperBound: Int = 64
 

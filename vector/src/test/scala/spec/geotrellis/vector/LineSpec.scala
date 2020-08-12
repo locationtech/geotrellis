@@ -16,11 +16,10 @@
 
 package geotrellis.vector
 
-import org.locationtech.jts.{geom=>jts}
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
-import org.scalatest._
-
-class LineSpec extends FunSpec with Matchers {
+class LineSpec extends AnyFunSpec with Matchers {
   describe("Line") {
 
     it ("should be a closed Line if constructed with l(0) == l(-1)") {

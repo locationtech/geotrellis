@@ -19,13 +19,12 @@ package geotrellis.raster.costdistance
 import geotrellis.raster._
 import geotrellis.raster.testkit._
 
-import org.scalatest._
-
 import java.util.Locale
 import scala.language.implicitConversions
 
+import org.scalatest.funsuite.AnyFunSuite
 
-class SimpleCostDistanceSpec extends FunSuite with RasterMatchers {
+class SimpleCostDistanceSpec extends AnyFunSuite with RasterMatchers {
   implicit def array2Tile(a: Array[Int]): Tile = {
     val size = math.sqrt(a.length).toInt
 

@@ -16,9 +16,10 @@
 
 package geotrellis.util
 
-import org.scalatest._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
-class ComponentSpec extends FunSpec with Matchers {
+class ComponentSpec extends AnyFunSpec with Matchers {
   class Upper
   class Middle extends Upper
   class Lower extends Middle
