@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Add alternative RasterizeRDD methods for keyed geometries or features [#3271](https://github.com/locationtech/geotrellis/pull/3271)
+
 ### Changed
 - Fix NoData handling in the ColorMethods.color function for the RGB and RGBA Multiband Rasters [#3278](https://github.com/locationtech/geotrellis/pull/3278)
 - Fix renderJpg() color is bluer than expected [#3203](https://github.com/locationtech/geotrellis/issues/3203)
