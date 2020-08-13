@@ -1,6 +1,7 @@
--J-Xmx1408m
+-J-Xmx1536m
 -J-Xms64m
 -J-Xss2M
+-J-XX:+UseConcMarkSweepGC
 -J-XX:+CMSClassUnloadingEnabled
 -Dfile.encoding=UTF8
 -Djava.awt.headless=true
