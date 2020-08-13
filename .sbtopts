@@ -1,4 +1,4 @@
--J-Xmx1280m
+-J-Xmx1408m
 -J-Xms64m
 -J-Xss2M
 -J-XX:+CMSClassUnloadingEnabled
