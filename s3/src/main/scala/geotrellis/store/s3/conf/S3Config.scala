@@ -16,11 +16,12 @@
 
 package geotrellis.store.s3.conf
 
+import pureconfig.ConfigSource
 import pureconfig.generic.auto._
 
 case class S3Config(windowsSize: Int = 1024)
 
 object S3Config {
-  lazy val conf: S3Config = pureconfig.loadConfigOrThrow[S3Config]("geotrellis.s3.rdd.read")
+  lazy val conf: S3Config = ConfigSource.default.at("geotrellis.s3.rdd.read").loadOrThrow[S3Config]
   implicit def s3ConfigToClass(obj: S3Config.type): S3Config = conf
 }

@@ -18,6 +18,8 @@ package geotrellis.vector.conf
 
 import org.locationtech.jts.geom.PrecisionModel
 import org.locationtech.jts.precision.GeometryPrecisionReducer
+
+import pureconfig.ConfigSource
 import pureconfig.generic.auto._
 
 case class Simplification(scale: Double = 1e12) {
@@ -37,6 +39,6 @@ case class JtsConfig(precision: Precision = Precision(), simplification: Simplif
 }
 
 object JtsConfig {
-  lazy val conf: JtsConfig = pureconfig.loadConfigOrThrow[JtsConfig]("geotrellis.jts")
+  lazy val conf: JtsConfig = ConfigSource.default.at("geotrellis.jts").loadOrThrow[JtsConfig]
   implicit def jtsConfigToClass(obj: JtsConfig.type): JtsConfig = conf
 }

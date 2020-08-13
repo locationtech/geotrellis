@@ -43,7 +43,7 @@ object Dependencies {
   }
 
   def monocle(module: String) = Def.setting {
-    "com.github.julien-truffaut" %% s"monocle-$module" % ver("1.5.1-cats", "2.0.5").value
+    "com.github.julien-truffaut" %% s"monocle-$module" % ver("1.5.1-cats", "2.1.0").value
   }
 
   def cats(module: String) = Def.setting {
@@ -54,7 +54,7 @@ object Dependencies {
   }
 
   def circe(module: String) = Def.setting {
-    "io.circe" %% s"circe-$module" % ver("0.11.1", "0.12.2").value
+    "io.circe" %% s"circe-$module" % ver("0.11.1", "0.13.0").value
   }
 
   def fs2(module: String) = Def.setting {
@@ -67,7 +67,7 @@ object Dependencies {
 
   val sparkCore           = "org.apache.spark"           %% "spark-core"               % Version.spark
   val sparkSql            = "org.apache.spark"           %% "spark-sql"                % Version.spark
-  val pureconfig          = "com.github.pureconfig"      %% "pureconfig"               % "0.11.1"
+  val pureconfig          = "com.github.pureconfig"      %% "pureconfig"               % "0.13.0"
   val logging             = "org.log4s"                  %% "log4s"                    % "1.8.2"
   val scalatest           = "org.scalatest"              %% "scalatest"                % "3.2.1"
   val scalacheck          = "org.scalacheck"             %% "scalacheck"               % "1.14.3"
@@ -86,9 +86,9 @@ object Dependencies {
   val parserCombinators   = "org.scala-lang.modules"     %% "scala-parser-combinators" % "1.1.2"
   val jsonSchemaValidator = "com.networknt"               % "json-schema-validator"    % "0.1.23"
   val scaffeine           = "com.github.blemale"         %% "scaffeine"                % "4.0.1"
-  val accumuloCore        = "org.apache.accumulo"          % "accumulo-core"           % Version.accumulo
-  val sl4jnop             = "org.slf4j"                    % "slf4j-nop"               % "1.7.25"
-  val cassandraDriverCore = "com.datastax.cassandra"       % "cassandra-driver-core"   % Version.cassandra
+  val accumuloCore        = "org.apache.accumulo"         % "accumulo-core"            % Version.accumulo
+  val sl4jnop             = "org.slf4j"                   % "slf4j-nop"                % "1.7.25"
+  val cassandraDriverCore = "com.datastax.cassandra"      % "cassandra-driver-core"    % Version.cassandra
   val geomesaJobs              = "org.locationtech.geomesa" %% "geomesa-jobs"               % Version.geomesa
   val geomesaAccumuloJobs      = "org.locationtech.geomesa" %% "geomesa-accumulo-jobs"      % Version.geomesa
   val geomesaAccumuloDatastore = "org.locationtech.geomesa" %% "geomesa-accumulo-datastore" % Version.geomesa

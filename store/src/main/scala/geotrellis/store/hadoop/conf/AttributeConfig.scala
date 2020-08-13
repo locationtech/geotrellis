@@ -16,6 +16,7 @@
 
 package geotrellis.store.hadoop.conf
 
+import pureconfig.ConfigSource
 import pureconfig.generic.auto._
 
 case class AttributeCachingConfig(
@@ -27,6 +28,6 @@ case class AttributeCachingConfig(
 case class AttributeConfig(caching: AttributeCachingConfig = AttributeCachingConfig())
 
 object AttributeConfig {
-  lazy val conf: AttributeConfig = pureconfig.loadConfigOrThrow[AttributeConfig]("geotrellis.attribute")
+  lazy val conf: AttributeConfig = ConfigSource.default.at("geotrellis.attribute").loadOrThrow[AttributeConfig]
   implicit def attributeConfigToClass(obj: AttributeConfig.type): AttributeConfig = conf
 }
