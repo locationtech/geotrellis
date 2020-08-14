@@ -147,6 +147,16 @@ class GeoTiffWriterSpec extends AnyFunSpec with Matchers with BeforeAndAfterAll 
       actualCRS.toProj4String should be (geoTiff.crs.toProj4String)
     }
 
+    it ("should write web mercator with no epsg code correctly") {
+      val geoTiff = MultibandGeoTiff(geoTiffPath("ndvi-web-mercator.tif"))
+
+      addToPurge(path)
+      GeoTiff(geoTiff.raster, CRS.fromString(geoTiff.crs.toProj4String)).write(path)
+      val actualCRS = SinglebandGeoTiff(path).crs
+
+      actualCRS.toProj4String should be (geoTiff.crs.toProj4String)
+    }
+
     it("should write floating point rasters correctly") {
       val t = DoubleArrayTile(Array(11.0, 22.0, 33.0, 44.0), 2, 2)
 
