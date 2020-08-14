@@ -341,7 +341,7 @@ case class CroppedTile(
   def combine(other: Tile)(f: (Int, Int) => Int): Tile = {
     (this, other).assertEqualDimensions
 
-    val tile = ArrayTile.alloc(cellType, cols, rows)
+    val tile = ArrayTile.alloc(cellType.union(other.cellType), cols, rows)
     cfor(0)(_ < rows, _ + 1) { row =>
       cfor(0)(_ < cols, _ + 1) { col =>
         tile.set(col, row, f(get(col, row), other.get(col, row)))
