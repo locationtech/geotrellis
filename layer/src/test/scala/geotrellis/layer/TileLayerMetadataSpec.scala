@@ -21,10 +21,11 @@ import geotrellis.proj4._
 import geotrellis.vector._
 import _root_.io.circe.syntax._
 import _root_.io.circe.parser.decode
-import geotrellis.raster
-import org.scalatest._
 
-class TileLayerMetadataSpec extends FunSpec with Matchers {
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
+
+class TileLayerMetadataSpec extends AnyFunSpec with Matchers {
   describe("TileLayerMetadata JSON codecs") {
 
     val cellType = DoubleCellType

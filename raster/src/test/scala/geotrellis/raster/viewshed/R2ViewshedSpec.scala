@@ -20,13 +20,10 @@ import geotrellis.raster._
 import geotrellis.raster.testkit._
 import geotrellis.raster.viewshed.R2Viewshed._
 
-import org.scalatest._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
-
-class R2ViewshedSpec extends FunSpec
-    with Matchers
-    with RasterMatchers with TestFiles
-    with TileBuilders {
+class R2ViewshedSpec extends AnyFunSpec with Matchers with RasterMatchers with TestFiles with TileBuilders {
 
   describe("Viewshed") {
 

@@ -17,11 +17,11 @@
 package geotrellis.geotools
 
 import org.geotools.data.shapefile._
-import org.scalatest._
 
-class SimpleFeatureToFeatureSpec
-    extends FunSpec
-    with Matchers {
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
+
+class SimpleFeatureToFeatureSpec extends AnyFunSpec with Matchers {
 
   val shapefiles : List[String] = List(
     "geotools/src/test/resources/timepyramid/timepyramid/2/2.shp",

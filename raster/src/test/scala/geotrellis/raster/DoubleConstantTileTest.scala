@@ -18,9 +18,10 @@ package geotrellis.raster
 
 import geotrellis.raster.testkit._
 
-import org.scalatest._
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.matchers.should.Matchers
 
-class DoubleConstantTileTest extends FunSuite with RasterMatchers with Matchers {
+class DoubleConstantTileTest extends AnyFunSuite with RasterMatchers with Matchers {
   test("building") {
     val d1 = DoubleConstantTile(99.0, 2, 2)
     val d2 = DoubleArrayTile(Array.fill(4)(99.0), 2, 2)

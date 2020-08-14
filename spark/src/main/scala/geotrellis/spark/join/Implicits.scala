@@ -17,7 +17,6 @@
 package geotrellis.spark.join
 
 import geotrellis.layer._
-import geotrellis.spark._
 import geotrellis.spark.partition._
 import geotrellis.util._
 import geotrellis.vector._

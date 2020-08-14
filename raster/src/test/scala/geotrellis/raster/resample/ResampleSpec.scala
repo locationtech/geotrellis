@@ -19,9 +19,10 @@ package geotrellis.raster.resample
 import geotrellis.raster._
 import geotrellis.vector.Extent
 
-import org.scalatest._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
-class ResampleSpec extends FunSpec with Matchers {
+class ResampleSpec extends AnyFunSpec with Matchers {
 
   val B = 5 // value returned when resampling
 

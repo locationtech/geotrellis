@@ -16,11 +16,11 @@
 
 package geotrellis.vector
 
-import org.locationtech.jts.{geom=>jts}
 
-import org.scalatest._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
-class MultiPointSpec extends FunSpec with Matchers {
+class MultiPointSpec extends AnyFunSpec with Matchers {
   describe("MultiPoint") {
 
     // -- Intersection

@@ -17,16 +17,16 @@
 package geotrellis.spark.summary.polygonal
 
 import geotrellis.spark._
-import geotrellis.spark.store.hadoop._
 import geotrellis.spark.testkit._
 import geotrellis.spark.testkit.testfiles.TestFiles
 import geotrellis.raster.summary.polygonal._
 import geotrellis.raster._
 import geotrellis.raster.summary.polygonal.visitors.MeanVisitor
 import geotrellis.vector._
-import org.scalatest.FunSpec
 
-class MeanSpec extends FunSpec with TestEnvironment with TestFiles {
+import org.scalatest.funspec.AnyFunSpec
+
+class MeanSpec extends AnyFunSpec with TestEnvironment with TestFiles {
   describe("Mean Zonal Summary Operation") {
     val inc = IncreasingTestFile
     val multi = inc.withContext { _.mapValues { tile => MultibandTile(tile, tile) } }

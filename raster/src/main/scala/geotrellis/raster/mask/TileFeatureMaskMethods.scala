@@ -18,12 +18,11 @@ package geotrellis.raster.mask
 
 import geotrellis.raster._
 import geotrellis.raster.rasterize._
-import geotrellis.util.MethodExtensions
 import geotrellis.vector._
 
 
 abstract class TileFeatureMaskMethods[
-  T <: CellGrid[Int] : (* => TileMaskMethods[T]),
+  T <: CellGrid[Int] : * => TileMaskMethods[T],
   D
 ](val self: TileFeature[T, D]) extends TileMaskMethods[TileFeature[T, D]] {
   def localMask(mask: TileFeature[T, D], readMask: Int, writeMask: Int): TileFeature[T, D] =

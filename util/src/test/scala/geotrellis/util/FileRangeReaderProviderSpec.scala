@@ -16,12 +16,12 @@
 
 package geotrellis.util
 
-import org.scalatest._
-
 import java.net.URI
 
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
-class FileRangeReaderProviderSpec extends FunSpec with Matchers {
+class FileRangeReaderProviderSpec extends AnyFunSpec with Matchers {
   describe("FileRangeReaderProviderSpec") {
     val path = "raster/data/aspect.tif"
 

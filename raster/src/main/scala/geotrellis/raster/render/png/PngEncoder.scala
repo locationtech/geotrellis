@@ -24,12 +24,9 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.OutputStream
 import java.nio.ByteBuffer
-import java.util.zip.CRC32
-import java.util.zip.CheckedOutputStream
 import java.util.zip.Deflater
 import java.util.zip.DeflaterOutputStream
 
-import scala.math.abs
 
 import Util._
 

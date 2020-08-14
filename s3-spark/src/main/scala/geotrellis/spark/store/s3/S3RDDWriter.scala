@@ -17,7 +17,6 @@
 package geotrellis.spark.store.s3
 
 import geotrellis.spark.store._
-import geotrellis.store._
 import geotrellis.store.avro._
 import geotrellis.store.avro.codecs.KeyValueRecordCodec
 import geotrellis.store.s3._

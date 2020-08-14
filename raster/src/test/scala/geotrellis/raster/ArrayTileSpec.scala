@@ -19,12 +19,12 @@ package geotrellis.raster
 import geotrellis.raster.ArrayTileSpec.{BiasedAdd, CountData}
 import geotrellis.raster.mapalgebra.local.{Add, LocalTileBinaryOp}
 import geotrellis.raster.testkit._
-import org.scalatest._
 
-class ArrayTileSpec extends FunSpec
-                  with Matchers
-                  with RasterMatchers
-                  with TileBuilders {
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
+
+class ArrayTileSpec extends AnyFunSpec with Matchers with RasterMatchers with TileBuilders {
+
   describe("ArrayTile.convert from a DoubleCellType source tile") {
     val arr = Array(0.0, 1.0, -1.0, Double.NaN)
     val sourceTile = DoubleArrayTile(arr, 2, 2, DoubleCellType)

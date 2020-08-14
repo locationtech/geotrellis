@@ -24,7 +24,6 @@ import geotrellis.proj4._
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff._
 import geotrellis.spark._
-import geotrellis.spark.partition._
 import geotrellis.spark.store.hadoop._
 import geotrellis.spark.testkit._
 import geotrellis.store.hadoop._
@@ -33,13 +32,15 @@ import cats.effect.{ContextShift, IO}
 import cats.implicits._
 import spire.syntax.cfor._
 import org.apache.spark.rdd.RDD
+
 import org.scalatest.Inspectors._
-import org.scalatest._
+import org.scalatest.BeforeAndAfterAll
+import org.scalatest.funspec.AnyFunSpec
 
 import java.util.concurrent.Executors
 import scala.concurrent.ExecutionContext
 
-class GDALRasterSourceRDDSpec extends FunSpec with TestEnvironment with BeforeAndAfterAll {
+class GDALRasterSourceRDDSpec extends AnyFunSpec with TestEnvironment with BeforeAndAfterAll {
   import geotrellis.GDALTestUtils._
 
   val uri = gdalGeoTiffPath("vlm/aspect-tiled.tif")

@@ -22,13 +22,11 @@ import geotrellis.layer._
 import geotrellis.spark._
 import geotrellis.spark.testkit.TestEnvironment
 import geotrellis.vector._
-import org.apache.spark.rdd.RDD
-import org.scalatest._
 
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
-class RDDTimeSeriesMethodsSpec extends FunSpec
-    with Matchers
-    with TestEnvironment {
+class RDDTimeSeriesMethodsSpec extends AnyFunSpec with Matchers with TestEnvironment {
 
   val rdd = {
     val tile1 = IntConstantNoDataArrayTile(Array.fill[Int](25)(1), 5, 5)

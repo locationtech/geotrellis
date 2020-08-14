@@ -19,12 +19,11 @@ package geotrellis.spark.store.hadoop
 import geotrellis.store.{AttributeStore, ValueReader}
 import geotrellis.store.hadoop._
 import geotrellis.spark.store._
-import geotrellis.spark.store.hadoop._
 import geotrellis.spark.testkit.TestEnvironment
 
-import org.scalatest._
+import org.scalatest.funspec.AnyFunSpec
 
-class HadoopLayerProviderSpec extends FunSpec with TestEnvironment {
+class HadoopLayerProviderSpec extends AnyFunSpec with TestEnvironment {
   val uri = new java.net.URI("hdfs+file:/tmp/catalog")
   it("construct HadoopAttributeStore from URI"){
     val store = AttributeStore(uri)

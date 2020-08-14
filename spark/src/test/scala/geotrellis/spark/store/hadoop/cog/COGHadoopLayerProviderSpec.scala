@@ -18,13 +18,12 @@ package geotrellis.spark.store.hadoop.cog
 
 import geotrellis.store.cog.COGValueReader
 import geotrellis.store.hadoop.cog.HadoopCOGValueReader
-import geotrellis.spark.store._
 import geotrellis.spark.store.cog._
 import geotrellis.spark.testkit.TestEnvironment
 
-import org.scalatest._
+import org.scalatest.funspec.AnyFunSpec
 
-class COGHadoopLayerProviderSpec extends FunSpec with TestEnvironment {
+class COGHadoopLayerProviderSpec extends AnyFunSpec with TestEnvironment {
   val uri = new java.net.URI("hdfs+file:/tmp/catalog")
 
   it("construct HadoopCOGLayerReader from URI") {

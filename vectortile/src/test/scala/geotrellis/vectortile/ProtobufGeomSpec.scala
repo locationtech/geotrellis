@@ -18,11 +18,13 @@ package geotrellis.vectortile
 
 import geotrellis.vector._
 import geotrellis.vectortile.internal.{Command, ProtobufGeom}
-import org.scalatest._
+
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
 // --- //
 
-class ProtobufGeomSpec extends FunSpec with Matchers {
+class ProtobufGeomSpec extends AnyFunSpec with Matchers {
   /* Naive `LayoutDefinition` values */
   val topLeft = Point(0, 4096)
   val resolution: Double = 1

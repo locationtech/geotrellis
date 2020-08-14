@@ -16,13 +16,12 @@
 
 package geotrellis.spark.store.hadoop.cog
 
-import geotrellis.store.{COGLayerType, LayerHeader}
+import geotrellis.store.COGLayerType
 import geotrellis.store.hadoop.{HadoopAttributeStore, HadoopLayerHeader}
 import geotrellis.store.hadoop._
 import geotrellis.spark.store.cog._
 import geotrellis.spark.store.hadoop._
 
-import org.apache.spark.SparkContext
 
 import java.net.URI
 

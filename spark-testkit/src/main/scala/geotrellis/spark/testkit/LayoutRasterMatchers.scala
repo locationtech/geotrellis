@@ -21,11 +21,12 @@ import geotrellis.raster._
 import geotrellis.proj4._
 import geotrellis.layer.{SpatialKey, Bounds, LayoutDefinition}
 import geotrellis.raster.testkit.RasterMatchers
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
 import matchers._
 
-trait LayoutRasterMatchers {
-  self: Matchers with FunSpec with RasterMatchers =>
+trait LayoutRasterMatchers { self: Matchers with AnyFunSpec with RasterMatchers =>
   def containKey(key: SpatialKey) = Matcher[Bounds[SpatialKey]] { bounds =>
     MatchResult(bounds.includes(key),
       s"""$bounds does not contain $key""",

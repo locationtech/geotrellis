@@ -22,7 +22,6 @@ import geotrellis.raster._
 import geotrellis.raster.buffer.Direction
 import geotrellis.raster.buffer.Direction._
 import geotrellis.raster.distance.{EuclideanDistanceTile => RasterEuclideanDistance}
-import geotrellis.raster.render._
 import geotrellis.raster.testkit._
 import geotrellis.spark._
 import geotrellis.spark.testkit._
@@ -31,22 +30,17 @@ import geotrellis.vector.triangulation._
 import geotrellis.vector.io.wkt.WKT
 
 import org.locationtech.jts.geom.Coordinate
-
 import org.apache.spark.rdd.RDD
+import spire.syntax.cfor._
 
 import scala.util.Random
 import scala.math.{Pi, atan, cos, max, pow, sin}
 
-import org.scalatest._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
-import spire.syntax.cfor._
 
-
-class EuclideanDistanceSpec extends FunSpec
-                            with TestEnvironment
-                            with Matchers
-                            with RasterMatchers {
-
+class EuclideanDistanceSpec extends AnyFunSpec with TestEnvironment with Matchers with RasterMatchers {
   //def heightField(x: Double, y: Double): Double = math.pow(x*x + y*y - 1, 3) - x*x * y*y*y + 0.5
 
   //def heightField(x: Double, y: Double): Double = math.pow(math.sin(math.Pi * x) * math.cos(math.Pi * y), 2) - 0.1

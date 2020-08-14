@@ -19,9 +19,10 @@ package geotrellis.raster.transform
 import geotrellis.raster._
 import geotrellis.raster.testkit.TileBuilders
 
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
-class TransformMethodsSpec extends FunSpec with Matchers with TileBuilders {
+class TransformMethodsSpec extends AnyFunSpec with Matchers with TileBuilders {
   val tile = IntArrayTile(Array(
     2, 2, 1, 1, 5, 5, 5,
     2, 2, 8, 8, 5, 2, 1,

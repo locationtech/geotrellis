@@ -17,9 +17,9 @@
 package geotrellis.raster.resample
 
 import geotrellis.raster._
-import geotrellis.vector.Extent
 
-import org.scalatest._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
 /**
   * Since lanczos resample inherits from cubic resample it
@@ -43,7 +43,7 @@ import org.scalatest._
   * These values are calculated by hand by Johan Stenberg, and should match the
   * GeoTrellis lanczos lnterpolation implementation.
   */
-class LanczosResampleSpec extends FunSpec with Matchers {
+class LanczosResampleSpec extends AnyFunSpec with Matchers {
 
   val Eps = 1e-6
 

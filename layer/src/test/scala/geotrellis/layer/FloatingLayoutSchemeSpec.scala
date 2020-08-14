@@ -16,12 +16,13 @@
 
 package geotrellis.layer
 
-import geotrellis.proj4.LatLng
 import geotrellis.raster.CellSize
 import geotrellis.vector.Extent
-import org.scalatest._
 
-class FloatingLayoutSchemeSpec extends FunSpec with Matchers {
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
+
+class FloatingLayoutSchemeSpec extends AnyFunSpec with Matchers {
   describe("FloatingLayoutScheme"){
     val scheme: LayoutScheme = FloatingLayoutScheme(10)
     val level = scheme.levelFor(Extent(0,0,37,27), CellSize(1,1))

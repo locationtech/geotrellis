@@ -16,8 +16,6 @@
 
 package geotrellis.raster
 
-import geotrellis.vector.Extent
-import geotrellis.proj4._
 
 package object reproject {
   // Function that takes in coordinates in the first to arrays and fills out

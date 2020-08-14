@@ -28,7 +28,6 @@ import geotrellis.layer._
 import geotrellis.store.avro.AvroRecordCodec
 import geotrellis.spark.tiling.TilerKeyMethods
 import geotrellis.spark._
-import geotrellis.spark.store._
 import geotrellis.spark.pipeline.json.transform.{Pyramid => JsonPyramid}
 import geotrellis.spark.pipeline.json.transform._
 import geotrellis.spark.pyramid.Pyramid
@@ -44,7 +43,7 @@ trait Transform[F, T] extends Node[T]
 object Transform {
   def perTileReproject[
     I: Component[*, ProjectedExtent],
-    V <: CellGrid[Int]: (* => TileReprojectMethods[V])
+    V <: CellGrid[Int]: * => TileReprojectMethods[V]
   ](arg: Reproject)(rdd: RDD[(I, V)]): RDD[(I, V)] = {
     (arg.scheme, arg.maxZoom) match {
       case (Left(layoutScheme: ZoomedLayoutScheme), Some(mz)) =>
@@ -57,7 +56,7 @@ object Transform {
 
   def bufferedReproject[
     K: SpatialComponent: Boundable: ClassTag,
-    V <: CellGrid[Int]: ClassTag: RasterRegionReproject: Stitcher: (* => TileReprojectMethods[V]): (* => CropMethods[V]): (* => TileMergeMethods[V]): (* => TilePrototypeMethods[V])
+    V <: CellGrid[Int]: ClassTag: RasterRegionReproject: Stitcher: * => TileReprojectMethods[V]: * => CropMethods[V]: * => TileMergeMethods[V]: * => TilePrototypeMethods[V]
   ](arg: Reproject)(rdd: RDD[(K, V)] with Metadata[TileLayerMetadata[K]]): RDD[(K, V)] with Metadata[TileLayerMetadata[K]] = {
     (arg.scheme, arg.maxZoom) match {
       case (Left(layoutScheme: ZoomedLayoutScheme), Some(mz)) =>
@@ -75,7 +74,7 @@ object Transform {
   def tileToLayout[
     K: Boundable: SpatialComponent: ClassTag,
     I: Component[*, ProjectedExtent]: * => TilerKeyMethods[I, K],
-    V <: CellGrid[Int]: (* => TileReprojectMethods[V]): (* => TileMergeMethods[V]): (* => TilePrototypeMethods[V]): ClassTag
+    V <: CellGrid[Int]: * => TileReprojectMethods[V]: * => TileMergeMethods[V]: * => TilePrototypeMethods[V]: ClassTag
   ](arg: TileToLayout)(rdd: RDD[(I, V)]): RDD[(K, V)] with Metadata[TileLayerMetadata[K]] = {
     val md = { // collecting floating metadata allows detecting upsampling
       val (_, md) = rdd.collectMetadata(FloatingLayoutScheme(arg.tileSize.getOrElse(256)))
@@ -85,7 +84,7 @@ object Transform {
   }
 
   def retileToLayoutSpatial[
-    V <: CellGrid[Int]: (* => TileReprojectMethods[V]): (* => TileMergeMethods[V]): (* => TilePrototypeMethods[V]): ClassTag
+    V <: CellGrid[Int]: * => TileReprojectMethods[V]: * => TileMergeMethods[V]: * => TilePrototypeMethods[V]: ClassTag
   ](arg: RetileToLayout)(rdd: RDD[(SpatialKey, V)] with Metadata[TileLayerMetadata[SpatialKey]]): RDD[(SpatialKey, V)] with Metadata[TileLayerMetadata[SpatialKey]] = {
     val md = rdd.metadata
     val mapKeyTransform = md.mapTransform
@@ -104,7 +103,7 @@ object Transform {
   }
 
   def retileToLayoutTemporal[
-    V <: CellGrid[Int]: (* => TileReprojectMethods[V]): (* => TileMergeMethods[V]): (* => TilePrototypeMethods[V]): ClassTag
+    V <: CellGrid[Int]: * => TileReprojectMethods[V]: * => TileMergeMethods[V]: * => TilePrototypeMethods[V]: ClassTag
   ](arg: RetileToLayout)(rdd: RDD[(SpaceTimeKey, V)] with Metadata[TileLayerMetadata[SpaceTimeKey]]): RDD[(SpaceTimeKey, V)] with Metadata[TileLayerMetadata[SpaceTimeKey]] = {
     val md = rdd.metadata
     val mapKeyTransform = md.mapTransform

@@ -18,11 +18,9 @@ package geotrellis.raster.reproject
 
 import geotrellis.raster._
 import geotrellis.raster.resample._
-import geotrellis.vector.Extent
 import geotrellis.proj4._
 import geotrellis.util.MethodExtensions
 
-import spire.syntax.cfor._
 
 
 abstract class ProjectedRasterReprojectMethods[T <: CellGrid[Int]](val self: ProjectedRaster[T]) extends MethodExtensions[ProjectedRaster[T]] {

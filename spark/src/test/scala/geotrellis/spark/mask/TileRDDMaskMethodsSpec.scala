@@ -24,16 +24,13 @@ import geotrellis.spark._
 import geotrellis.spark.testkit.testfiles._
 import geotrellis.spark.testkit._
 
-import org.scalatest._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
 import scala.util.Random
 
-class TileRDDMaskMethodsSpec extends FunSpec
-    with Matchers
-    with TestEnvironment
-    with TestFiles
-    with TileLayerRDDBuilders
-    with RasterMatchers {
+class TileRDDMaskMethodsSpec extends AnyFunSpec with Matchers with TestEnvironment with TestFiles with TileLayerRDDBuilders with RasterMatchers {
+
   describe("TileLayerRDDMask") {
     it("should properly mask a float32 user defined nodata layer") {
       val arr = (1 to (6*4)).map(_.toFloat).toArray

@@ -19,9 +19,10 @@ package geotrellis.raster.resample
 import geotrellis.raster._
 import geotrellis.vector.Extent
 
-import org.scalatest._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
-class NearestNeighborResampleSpec extends FunSpec with Matchers with TestFiles {
+class NearestNeighborResampleSpec extends AnyFunSpec with Matchers with TestFiles {
 
   describe("it should correctly resample using NearestNeighbor") {
     val (cols, rows) = (5, 5)

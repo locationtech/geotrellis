@@ -23,9 +23,11 @@ import software.amazon.awssdk.services.s3.model._
 import software.amazon.awssdk.core.sync.RequestBody
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.mapreduce.{Job, TaskAttemptContext, InputSplit}
-import org.scalatest._
 
 import scala.collection.JavaConverters._
+
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
 class MockS3InputFormat extends S3InputFormat[ProjectedExtent, Array[Byte]] {
   override def createRecordReader(split: InputSplit, context: TaskAttemptContext) =
@@ -35,7 +37,7 @@ class MockS3InputFormat extends S3InputFormat[ProjectedExtent, Array[Byte]] {
     }
 }
 
-class S3InputFormatSpec extends FunSpec with Matchers {
+class S3InputFormatSpec extends AnyFunSpec with Matchers {
   describe("S3 InputFormat") {
 
     it("should parse the s3 url containing bucket name with dash") {

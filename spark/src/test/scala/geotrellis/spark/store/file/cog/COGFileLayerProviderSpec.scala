@@ -18,13 +18,12 @@ package geotrellis.spark.store.file.cog
 
 import geotrellis.store.cog.COGValueReader
 import geotrellis.store.file.cog.FileCOGValueReader
-import geotrellis.spark.store._
 import geotrellis.spark.store.cog._
-import geotrellis.spark.store.file._
 import geotrellis.spark.testkit.TestEnvironment
-import org.scalatest._
 
-class FileCOGLayerProviderSpec extends FunSpec with TestEnvironment {
+import org.scalatest.funspec.AnyFunSpec
+
+class FileCOGLayerProviderSpec extends AnyFunSpec with TestEnvironment {
   val uri = new java.net.URI("file:/tmp/catalog")
 
   it("construct FileCOGLayerReader from URI") {

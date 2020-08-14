@@ -18,9 +18,7 @@ package geotrellis.layer.mapalgebra.local.temporal
 
 import geotrellis.layer.{SpatialComponent, TemporalComponent}
 import geotrellis.raster.Tile
-import geotrellis.util.MethodExtensions
 
-import scala.reflect.ClassTag
 
 
 object Implicits extends Implicits

@@ -19,9 +19,10 @@ package geotrellis.raster.resample
 import geotrellis.raster._
 import geotrellis.vector.Extent
 
-import org.scalatest._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
-class SumResampleSpec extends FunSpec with Matchers {
+class SumResampleSpec extends AnyFunSpec with Matchers {
 
   describe("it should resample to nodata when only nodata in tile") {
 

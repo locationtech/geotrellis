@@ -16,11 +16,13 @@
 
 package geotrellis.raster.mapalgebra.focal
 
-import org.scalatest._
-import geotrellis.raster.testkit._
 import geotrellis.raster._
 
-class MinSpec extends FunSpec with Matchers with FocalOpSpec with RasterMatchers {
+import geotrellis.raster.testkit._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
+
+class MinSpec extends AnyFunSpec with Matchers with FocalOpSpec with RasterMatchers {
 
   val getMinResult = Function.uncurried((getCursorResult _).curried((r,n) => Min.calculation(r,n)))
 

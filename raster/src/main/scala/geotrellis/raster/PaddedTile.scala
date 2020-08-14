@@ -16,7 +16,6 @@
 
 package geotrellis.raster
 
-import geotrellis.raster._
 import spire.syntax.cfor._
 
 case class PaddedTile(chunk: Tile, colOffset: Int, rowOffset: Int, cols: Int, rows: Int) extends Tile {

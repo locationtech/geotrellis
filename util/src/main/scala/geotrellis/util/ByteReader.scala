@@ -16,7 +16,7 @@
 
 package geotrellis.util
 
-import java.nio.{Buffer, ByteBuffer, ByteOrder}
+import java.nio.{ByteBuffer, ByteOrder}
 import scala.language.implicitConversions
 
 /**

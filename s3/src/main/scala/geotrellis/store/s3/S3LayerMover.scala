@@ -16,13 +16,10 @@
 
 package geotrellis.store.s3
 
-import geotrellis.layer._
 import geotrellis.store._
-import geotrellis.util._
 
 import software.amazon.awssdk.services.s3.S3Client
 
-import scala.reflect.ClassTag
 
 object S3LayerMover {
   def apply(

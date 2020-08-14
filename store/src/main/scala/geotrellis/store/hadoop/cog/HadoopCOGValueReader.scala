@@ -23,7 +23,6 @@ import geotrellis.store._
 import geotrellis.store.cog.{COGReader, OverzoomingCOGValueReader, ZoomRange, Extension}
 import geotrellis.store.hadoop.{HadoopAttributeStore, HadoopLayerHeader}
 import geotrellis.store.index.{Index, KeyIndex}
-import geotrellis.util._
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path

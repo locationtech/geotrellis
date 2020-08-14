@@ -19,9 +19,8 @@ package geotrellis.raster.resample
 import geotrellis.raster._
 import geotrellis.vector.Extent
 
-import collection._
-
-import org.scalatest._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
 /**
   * Since the abstract cubic resample inherits from bilinear
@@ -36,7 +35,7 @@ import org.scalatest._
   * It also tests that it uses the cubic resample when it should, and that
   * the cubic resample resolves the correct D * D points.
   */
-class CubicResampleSpec extends FunSpec with Matchers {
+class CubicResampleSpec extends AnyFunSpec with Matchers {
 
   // Returned if cubic resample is used.
   // Bilinear resample should never be able to return this

@@ -17,12 +17,14 @@
 package geotrellis.store.avro
 
 import geotrellis.store.avro.codecs.TileCodecs
-import org.scalatest._
 import TileCodecs._
 import geotrellis.raster._
 import geotrellis.store.avro.AvroTools._
 
-class TileCodecsSpec extends FunSpec with Matchers with AvroTools  {
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
+
+class TileCodecsSpec extends AnyFunSpec with Matchers with AvroTools  {
   describe("TileCodecs") {
     it("encodes ByteArrayTile"){
       roundTripWithNoDataCheck(ByteArrayTile.fill(127,10,15))

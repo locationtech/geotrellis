@@ -22,8 +22,6 @@ import org.scalacheck._
 import Prop._
 import Arbitrary._
 
-import java.lang.System.currentTimeMillis
-import scala.collection.mutable
  
 object MultiLineStringCheck extends Properties("MultiLineString") {
   import Generators._

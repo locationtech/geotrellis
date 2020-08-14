@@ -22,9 +22,9 @@ import geotrellis.spark.testkit._
 import geotrellis.raster._
 import geotrellis.raster.Neighborhoods.Square
 
-import org.scalatest.FunSpec
+import org.scalatest.funspec.AnyFunSpec
 
-class ModeSpec extends FunSpec with TestEnvironment {
+class ModeSpec extends AnyFunSpec with TestEnvironment {
 
   describe("Mode Focal Spec") {
 

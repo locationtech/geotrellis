@@ -17,24 +17,16 @@
 package geotrellis.spark.store.cog
 
 import geotrellis.layer._
-import geotrellis.raster.io._
-import geotrellis.raster.histogram._
 import geotrellis.store._
 import geotrellis.store.cog.COGLayerStorageMetadata
 import geotrellis.store.index._
-import geotrellis.spark._
-import geotrellis.spark.store._
 import geotrellis.spark.testkit.testfiles.cog._
-import geotrellis.spark.summary._
 import geotrellis.spark.testkit._
 
-import org.scalatest._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
-abstract class COGAttributeStoreSpec
-    extends FunSpec
-    with Matchers
-    with TestEnvironment
-    with COGTestFiles {
+abstract class COGAttributeStoreSpec extends AnyFunSpec with Matchers with TestEnvironment with COGTestFiles {
   def attributeStore: AttributeStore
   def header: LayerHeader
 

@@ -24,13 +24,9 @@ import geotrellis.spark.testkit._
 import geotrellis.vector.Extent
 import geotrellis.spark.testkit._
 
-import org.scalatest.FunSpec
+import org.scalatest.funspec.AnyFunSpec
 
-class ZoomResampleMethodsSpec extends FunSpec
-    with TileBuilders
-    with TileLayerRDDBuilders
-    with TestEnvironment {
-
+class ZoomResampleMethodsSpec extends AnyFunSpec with TileBuilders with TileLayerRDDBuilders with TestEnvironment {
 
   describe("Zoom Resample on TileLayerRDD - aspect.tif") {
     val path = "raster/data/aspect.tif"

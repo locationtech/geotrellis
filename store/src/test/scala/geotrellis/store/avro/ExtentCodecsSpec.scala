@@ -17,12 +17,14 @@
 package geotrellis.store.avro
 
 import geotrellis.store.avro.codecs.Implicits._
-import org.scalatest._
 import geotrellis.proj4._
 import geotrellis.vector._
 import geotrellis.layer._
 
-class ExtentCodecsSpec extends FunSpec with Matchers with AvroTools  {
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
+
+class ExtentCodecsSpec extends AnyFunSpec with Matchers with AvroTools  {
   val fortyThreeTwentyFour = CRS.fromEpsgCode(4324)
   // A proj4 CRS known to not have a CRS code.
   val nonEpsgCrs = CRS.fromString("+proj=sinu +lon_0=0.0 +x_0=0.0 +y_0=0.0 +a=6371007.181 +b=6371007.181 +units=m")

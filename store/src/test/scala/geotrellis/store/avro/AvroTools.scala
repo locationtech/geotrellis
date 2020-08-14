@@ -16,11 +16,11 @@
 
 package geotrellis.store.avro
 
-import org.scalatest._
-import Matchers._
-
 import geotrellis.raster._
 import geotrellis.util.MethodExtensions
+
+import org.scalatest.matchers.should.Matchers
+import Matchers._
 
 trait AvroTools { self: Matchers =>
   import AvroTools._
@@ -34,7 +34,7 @@ trait AvroTools { self: Matchers =>
     fromJson shouldBe thing
   }
 
-  def roundTripWithNoDataCheck[T : AvroRecordCodec : (* => AvroNoDataCheckMethods[T])](thing: T): Unit = {
+  def roundTripWithNoDataCheck[T : AvroRecordCodec : * => AvroNoDataCheckMethods[T]](thing: T): Unit = {
     val bytes = AvroEncoder.toBinary(thing)
     val fromBytes = AvroEncoder.fromBinary[T](bytes)
     fromBytes shouldBe thing

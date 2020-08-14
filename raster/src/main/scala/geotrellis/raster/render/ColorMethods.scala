@@ -17,9 +17,6 @@
 package geotrellis.raster.render
 
 import geotrellis.raster._
-import geotrellis.raster.render.png._
-import geotrellis.raster.histogram.Histogram
-import geotrellis.raster.summary._
 import geotrellis.util.MethodExtensions
 
 import java.awt.image.BufferedImage

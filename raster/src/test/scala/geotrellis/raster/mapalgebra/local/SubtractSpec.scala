@@ -19,10 +19,11 @@ package geotrellis.raster.mapalgebra.local
 import geotrellis.raster._
 import geotrellis.vector.Extent
 
-import org.scalatest._
 import geotrellis.raster.testkit._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
-class SubtractSpec extends FunSpec 
+class SubtractSpec extends AnyFunSpec
                  with Matchers 
                  with RasterMatchers 
                  with TileBuilders {

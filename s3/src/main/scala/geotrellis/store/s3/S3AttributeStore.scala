@@ -16,7 +16,6 @@
 
 package geotrellis.store.s3
 
-import geotrellis.layer._
 import geotrellis.store._
 
 import software.amazon.awssdk.core.sync.RequestBody

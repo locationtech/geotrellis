@@ -21,10 +21,10 @@ import geotrellis.store.hbase._
 import geotrellis.spark.store._
 import geotrellis.spark.store._
 import geotrellis.spark.HBaseTestEnvironment
-import geotrellis.spark.testkit.TestEnvironment
-import org.scalatest._
 
-class HBaseSparkLayerProviderSpec extends FunSpec with HBaseTestEnvironment {
+import org.scalatest.funspec.AnyFunSpec
+
+class HBaseSparkLayerProviderSpec extends AnyFunSpec with HBaseTestEnvironment {
   val uri = new java.net.URI("hbase://localhost?master=localhost&attributes=attributes&layers=tiles")
   it("construct HBaseAttributeStore from URI"){
     val store = AttributeStore(uri)

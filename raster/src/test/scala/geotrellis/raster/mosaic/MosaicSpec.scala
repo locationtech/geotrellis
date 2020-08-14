@@ -17,15 +17,12 @@
 package geotrellis.raster.mosaic
 
 import geotrellis.raster._
-import geotrellis.raster.resample._
 import geotrellis.vector.Extent
 import geotrellis.raster.testkit._
 
-import org.scalatest._
+import org.scalatest.funspec.AnyFunSpec
 
-import spire.syntax.cfor._
-
-class MosaicSpec extends FunSpec
+class MosaicSpec extends AnyFunSpec
                          with TileBuilders
                          with RasterMatchers
                          with TestFiles {

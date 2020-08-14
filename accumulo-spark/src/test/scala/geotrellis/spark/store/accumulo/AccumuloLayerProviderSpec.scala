@@ -16,14 +16,14 @@
 
 package geotrellis.spark.store.accumulo
 
-import geotrellis.layer._
 import geotrellis.store._
 import geotrellis.store.accumulo._
 import geotrellis.spark.store._
 import geotrellis.spark.testkit.TestEnvironment
-import org.scalatest._
 
-class AccumuloLayerProviderSpec extends FunSpec with TestEnvironment {
+import org.scalatest.funspec.AnyFunSpec
+
+class AccumuloLayerProviderSpec extends AnyFunSpec with TestEnvironment {
   val uri = new java.net.URI("accumulo://root:@localhost/fake?attributes=attributes&layers=tiles")
   it("construct AccumuloAttributeStore from URI"){
     val store = AttributeStore(uri)

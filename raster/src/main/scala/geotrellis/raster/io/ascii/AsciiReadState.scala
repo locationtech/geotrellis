@@ -17,7 +17,6 @@
 package geotrellis.raster.io.ascii
 
 import geotrellis.raster._
-import geotrellis.raster.io._
 
 import java.io._
 

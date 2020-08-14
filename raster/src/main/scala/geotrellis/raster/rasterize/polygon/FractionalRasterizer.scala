@@ -20,7 +20,6 @@ import geotrellis.raster._
 import geotrellis.raster.rasterize._
 import geotrellis.vector._
 
-import org.locationtech.jts.geom.Envelope
 import spire.syntax.cfor._
 
 import scala.collection.mutable

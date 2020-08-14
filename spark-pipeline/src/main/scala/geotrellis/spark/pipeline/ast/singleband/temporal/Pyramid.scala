@@ -20,12 +20,10 @@ import io.circe.syntax._
 import geotrellis.raster._
 import geotrellis.layer.SpaceTimeKey
 import geotrellis.spark._
-import geotrellis.spark.store._
 import geotrellis.spark.pipeline.ast._
 import geotrellis.spark.pipeline.json.transform
 
 import org.apache.spark.SparkContext
-import org.apache.spark.rdd.RDD
 
 case class Pyramid(
   node: Node[TileLayerRDD[SpaceTimeKey]],

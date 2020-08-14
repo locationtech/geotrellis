@@ -23,10 +23,10 @@ import geotrellis.raster.io.geotiff._
 
 import org.apache.spark._
 
-import org.scalatest.FunSpec
+import org.scalatest.funspec.AnyFunSpec
 import java.io._
 
-class PartitionerSpec extends FunSpec with TestEnvironment {
+class PartitionerSpec extends AnyFunSpec with TestEnvironment {
 
   val tile = SinglebandGeoTiff(new File(inputHomeLocalPath, "aspect.tif").getPath).tile.toArrayTile
   val (_, rasterRDD) = createTileLayerRDD(tile, 4, 3)

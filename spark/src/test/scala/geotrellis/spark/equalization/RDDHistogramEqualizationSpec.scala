@@ -20,11 +20,10 @@ import geotrellis.raster._
 import geotrellis.spark._
 import geotrellis.spark.testkit._
 
-import org.scalatest._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
-class RDDHistogramEqualizationSpec extends FunSpec
-    with Matchers
-    with TestEnvironment {
+class RDDHistogramEqualizationSpec extends AnyFunSpec with Matchers with TestEnvironment {
 
   val _a = List(0)
   val b  = List(1)

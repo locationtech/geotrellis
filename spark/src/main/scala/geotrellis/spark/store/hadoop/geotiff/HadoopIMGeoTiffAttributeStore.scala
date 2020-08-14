@@ -17,7 +17,6 @@
 package geotrellis.spark.store.hadoop.geotiff
 
 import geotrellis.store.hadoop.util.HdfsUtils
-import geotrellis.spark.store.hadoop._
 import geotrellis.util.annotations.experimental
 
 import org.apache.hadoop.conf.Configuration

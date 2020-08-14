@@ -16,9 +16,10 @@
 
 package geotrellis.util.np
 
-import org.scalatest._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
-class PercentileSpec extends FunSpec with Matchers {
+class PercentileSpec extends AnyFunSpec with Matchers {
   // https://github.com/numpy/numpy/blob/b57957c639ca7c96c328003cc2436a06f8ecf9db/numpy/lib/tests/test_function_base.py#L2508
   describe("percentile should behave like numpy.percentile") {
     it("test basic") {

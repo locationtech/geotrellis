@@ -20,10 +20,8 @@ import io.circe.syntax._
 import geotrellis.layer.SpaceTimeKey
 import geotrellis.raster._
 import geotrellis.spark._
-import geotrellis.spark.store._
 import geotrellis.spark.pipeline.ast._
 import geotrellis.spark.pipeline.json.transform
-import geotrellis.vector._
 
 import org.apache.spark.SparkContext
 

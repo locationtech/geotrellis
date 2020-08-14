@@ -17,11 +17,8 @@
 package geotrellis.store.accumulo
 
 import geotrellis.layer._
-import geotrellis.store.accumulo._
-import geotrellis.store.index.{KeyIndexMethod, KeyIndex}
+import geotrellis.store.index.KeyIndex
 
-import org.apache.accumulo.core.data.Key
-import org.apache.hadoop.io.Text
 
 import scala.collection.JavaConverters._
 

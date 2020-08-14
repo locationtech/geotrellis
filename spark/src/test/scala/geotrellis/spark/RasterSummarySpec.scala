@@ -27,10 +27,11 @@ import org.apache.spark.rdd._
 import geotrellis.spark.testkit._
 import geotrellis.raster.testkit._
 
-import org.scalatest._
+import org.scalatest.GivenWhenThen
+import org.scalatest.funspec.AnyFunSpec
 import java.time.{ZoneOffset, ZonedDateTime}
 
-class RasterSummarySpec extends FunSpec with TestEnvironment with RasterMatchers with GivenWhenThen {
+class RasterSummarySpec extends AnyFunSpec with TestEnvironment with RasterMatchers with GivenWhenThen {
 
   describe("Should collect GeoTiffRasterSource RasterSummary correct") {
     it("should collect summary for a raw source") {

@@ -17,15 +17,13 @@
 package geotrellis.raster.io.geotiff
 
 import geotrellis.util._
-import geotrellis.raster.io.geotiff.reader._
 import geotrellis.raster.io.geotiff.tags.TiffTags
-import geotrellis.raster._
 import geotrellis.raster.testkit._
 import geotrellis.vector.Extent
 
-import org.scalatest._
+import org.scalatest.funspec.AnyFunSpec
 
-class BigTiffSpec extends FunSpec with RasterMatchers with GeoTiffTestUtils {
+class BigTiffSpec extends AnyFunSpec with RasterMatchers with GeoTiffTestUtils {
   describe("Reading BigTiffs") {
     val smallPath = geoTiffPath("ls8_int32.tif")
     val bigPath = geoTiffPath("bigtiffs/ls8_int32-big.tif")

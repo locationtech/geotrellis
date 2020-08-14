@@ -16,9 +16,10 @@
 
 package geotrellis.vector
 
-import org.scalatest._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
-class SeqMethodsSpec extends FunSpec with Matchers {
+class SeqMethodsSpec extends AnyFunSpec with Matchers {
   describe("SeqMethods") {
 
     // it("should implicitly cast Seq[LineString] to MultiLineString for union") {

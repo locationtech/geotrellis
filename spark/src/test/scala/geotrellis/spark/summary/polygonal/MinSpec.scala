@@ -17,7 +17,6 @@
 package geotrellis.spark.summary.polygonal
 
 import geotrellis.spark._
-import geotrellis.spark.store.hadoop._
 import geotrellis.spark.testkit._
 import geotrellis.spark.testkit.testfiles.TestFiles
 import geotrellis.raster.summary.polygonal._
@@ -25,9 +24,10 @@ import geotrellis.raster._
 import geotrellis.raster.summary.polygonal.visitors.MinVisitor
 import geotrellis.raster.summary.types.MinValue
 import geotrellis.vector._
-import org.scalatest.FunSpec
 
-class MinSpec extends FunSpec with TestEnvironment with TestFiles {
+import org.scalatest.funspec.AnyFunSpec
+
+class MinSpec extends AnyFunSpec with TestEnvironment with TestFiles {
 
   describe("Min Double Zonal Summary Operation") {
     val inc = IncreasingTestFile

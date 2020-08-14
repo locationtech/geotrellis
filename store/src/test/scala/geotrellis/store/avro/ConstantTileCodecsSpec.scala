@@ -17,11 +17,13 @@
 package geotrellis.store.avro
 
 import geotrellis.store.avro.codecs.Implicits._
-import org.scalatest._
 import geotrellis.raster._
 import geotrellis.store.avro.AvroTools._
 
-class ConstantTileCodecsSpec extends FunSpec with Matchers with AvroTools  {
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
+
+class ConstantTileCodecsSpec extends AnyFunSpec with Matchers with AvroTools  {
   describe("ConstantTileCodecs") {
     it("encodes BitConstantTile"){
       roundTripWithNoDataCheck(BitConstantTile(1,10,15))

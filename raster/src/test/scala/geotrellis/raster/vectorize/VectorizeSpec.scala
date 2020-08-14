@@ -16,15 +16,13 @@
 
 package geotrellis.raster.vectorize
 
-import org.locationtech.jts.{geom => jts}
 import geotrellis.raster._
 import geotrellis.raster.testkit._
 import geotrellis.vector._
-import org.scalatest._
 
-class VectorizeSpec extends FunSpec
-                      with RasterMatchers with TestFiles
-                      with TileBuilders {
+import org.scalatest.funspec.AnyFunSpec
+
+class VectorizeSpec extends AnyFunSpec with RasterMatchers with TestFiles with TileBuilders {
   val cw = 1
   val ch = 10
   val xmin = 0

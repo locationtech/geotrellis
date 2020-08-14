@@ -17,17 +17,17 @@
 package geotrellis.store.index.zcurve
 
 import geotrellis.layer._
-import geotrellis.store._
 
-import org.scalatest._
-import scala.collection.immutable.TreeSet
 
 import jp.ne.opt.chronoscala.Imports._
 
 import java.time.temporal.ChronoUnit.MILLIS
 import java.time.{ZoneOffset, ZonedDateTime}
 
-class ZSpaceTimeKeySpec extends FunSpec with Matchers{
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
+
+class ZSpaceTimeKeyIndexSpec extends AnyFunSpec with Matchers {
   val y2k = ZonedDateTime.of(2000, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC)
   val upperBound = 8
   val keyBounds = KeyBounds(SpaceTimeKey(0, 0, 0L), SpaceTimeKey(100, 100, 100L))

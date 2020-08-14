@@ -20,12 +20,9 @@ import geotrellis.layer.ZoomedLayoutScheme
 import geotrellis.raster.resample.{NearestNeighbor, ResampleMethod}
 import geotrellis.raster.io.geotiff.OverviewStrategy
 import geotrellis.store.util.BlockingThreadPool
-import geotrellis.store.hadoop.cog.byteReader
-import geotrellis.util.ByteReader
 import geotrellis.util.annotations.experimental
 
 import org.apache.hadoop.conf.Configuration
-import java.net.URI
 
 import scala.concurrent.ExecutionContext
 

@@ -17,7 +17,6 @@
 package geotrellis.spark.store.slippy
 
 import geotrellis.layer.SpatialKey
-import geotrellis.spark._
 import geotrellis.util.Filesystem
 
 import org.apache.commons.io.FileUtils

@@ -19,7 +19,6 @@ package geotrellis.spark.store
 import geotrellis.layer._
 import geotrellis.store.{LayerQuery, BoundLayerQuery}
 import geotrellis.store.avro._
-import geotrellis.spark._
 import geotrellis.util._
 
 import org.apache.spark.rdd._

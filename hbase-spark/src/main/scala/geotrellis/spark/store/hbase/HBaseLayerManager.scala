@@ -21,8 +21,6 @@ import geotrellis.store._
 import geotrellis.store.avro.AvroRecordCodec
 import geotrellis.store.index._
 import geotrellis.store.hbase._
-import geotrellis.spark._
-import geotrellis.spark.store._
 import geotrellis.util._
 
 import org.apache.spark.SparkContext

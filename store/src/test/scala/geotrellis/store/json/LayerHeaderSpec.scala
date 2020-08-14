@@ -23,11 +23,13 @@ import geotrellis.store.file.FileLayerHeader
 import io.circe._
 import io.circe.syntax._
 import cats.syntax.either._
-import org.scalatest._
 
 import java.net.URI
 
-class LayerHeaderSpec extends FunSpec with Matchers {
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
+
+class LayerHeaderSpec extends AnyFunSpec with Matchers {
   val hadoopHeader = HadoopLayerHeader("key", "value", new URI("hdfs:/path/to"))
   val fileHeader = FileLayerHeader("key", "value", "/path/to")
 

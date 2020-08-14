@@ -18,11 +18,9 @@ import Dependencies._
 import GTBenchmarkPlugin.Keys._
 import sbt._
 import sbt.Keys._
-import sbtassembly.AssemblyPlugin.autoImport.{MergeStrategy, assemblyMergeStrategy}
-import sbtassembly.AssemblyKeys._
-import sbtassembly.{PathList, ShadeRule}
+import sbtassembly.AssemblyPlugin.autoImport._
 import com.typesafe.tools.mima.plugin.MimaKeys._
-import de.heikoseeberger.sbtheader.{CommentCreator, CommentStyle, FileType}
+import de.heikoseeberger.sbtheader.{CommentStyle, FileType}
 import de.heikoseeberger.sbtheader.HeaderPlugin.autoImport.{HeaderLicense, headerLicense, headerMappings}
 import sbtprotoc.ProtocPlugin.autoImport.PB
 
@@ -52,7 +50,9 @@ object Settings {
     "-language:existentials",
     "-language:experimental.macros",
     "-feature",
-    "-Ypartial-unification", // Required by Cats
+    "-Ypartial-unification", // required by Cats
+    // "-Yrangepos",            // required by SemanticDB compiler plugin
+    // "-Ywarn-unused-import",  // required by `RemoveUnused` rule
     "-target:jvm-1.8")
 
   lazy val commonSettings = Seq(
@@ -85,6 +85,7 @@ object Settings {
 
     addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.11.0" cross CrossVersion.full),
     addCompilerPlugin("org.scalamacros" %% "paradise" % "2.1.1" cross CrossVersion.full),
+    addCompilerPlugin("org.scalameta" % "semanticdb-scalac" % "4.3.20" cross CrossVersion.full),
 
     pomExtra := (
       <developers>
@@ -109,18 +110,13 @@ object Settings {
     ),
     headerLicense := Some(HeaderLicense.ALv2(java.time.Year.now.getValue.toString, "Azavea")),
     headerMappings := Map(
-      FileType.scala -> CommentStyle.cStyleBlockComment.copy(commentCreator = new CommentCreator() {
-        val Pattern = "(?s).*?(\\d{4}(-\\d{4})?).*".r
-        def findYear(header: String): Option[String] = header match {
-          case Pattern(years, _) => Some(years)
-          case _                 => None
-        }
-        def apply(text: String, existingText: Option[String]): String = {
+      FileType.scala -> CommentStyle.cStyleBlockComment.copy(
+        commentCreator = { (text, existingText) => {
           // preserve year of old headers
           val newText = CommentStyle.cStyleBlockComment.commentCreator.apply(text, existingText)
           existingText.flatMap(_ => existingText.map(_.trim)).getOrElse(newText)
-        }
-      })
+        } }
+      )
     )
   )
 

@@ -25,9 +25,9 @@ import geotrellis.raster.io.geotiff.tags._
 import geotrellis.raster.io.geotiff.util._
 import geotrellis.raster.io.geotiff.tags.codes.ColorSpace
 import geotrellis.raster.render.IndexedColorMap
-import geotrellis.util.{ByteReader, StreamingByteReader}
+import geotrellis.util.ByteReader
 import monocle.syntax.apply._
-import java.nio.{ByteBuffer, ByteOrder}
+import java.nio.ByteOrder
 import scala.collection.mutable.ListBuffer
 
 /** Container for GeoTiff metadata read by [[GeoTiffReader]] */

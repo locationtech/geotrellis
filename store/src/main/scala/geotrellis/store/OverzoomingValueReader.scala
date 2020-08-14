@@ -19,14 +19,12 @@ package geotrellis.store
 import geotrellis.layer.{SpatialComponent, SpatialKey, TileLayerMetadata, ZoomedLayoutScheme}
 import geotrellis.raster.resample.{ResampleMethod, TileResampleMethods}
 import geotrellis.raster.{CellGrid, RasterExtent}
-import geotrellis.store._
 import geotrellis.store.avro.AvroRecordCodec
 import geotrellis.util._
 
 import io.circe._
 
 import scala.reflect.ClassTag
-import java.net.URI
 
 trait OverzoomingValueReader extends ValueReader[LayerId] {
   def overzoomingReader[

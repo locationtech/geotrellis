@@ -22,9 +22,11 @@ import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.raster.resample._
 import geotrellis.raster.testkit._
 import geotrellis.vector._
-import org.scalatest._
 
-class GeoTiffRasterSourceSpec extends FunSpec with RasterMatchers with GivenWhenThen with GeoTiffTestUtils {
+import org.scalatest.GivenWhenThen
+import org.scalatest.funspec.AnyFunSpec
+
+class GeoTiffRasterSourceSpec extends AnyFunSpec with RasterMatchers with GivenWhenThen with GeoTiffTestUtils {
   lazy val url = baseGeoTiffPath("vlm/aspect-tiled.tif")
 
   lazy val source: GeoTiffRasterSource = GeoTiffRasterSource(url)

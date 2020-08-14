@@ -20,9 +20,7 @@ import geotrellis.raster._
 import geotrellis.vector._
 import geotrellis.proj4._
 
-import org.locationtech.jts.densify.Densifier
 
-import spire.syntax.cfor._
 import spire.math.Integral
 
 

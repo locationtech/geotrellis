@@ -17,12 +17,9 @@
 package geotrellis.raster
 
 import _root_.io.circe._
-import _root_.io.circe.syntax._
 import _root_.io.circe.generic.semiauto._
-import cats.syntax.either._
 
 import scala.collection.mutable
-import spire.syntax.cfor._
 import spire.math._
 import spire.implicits._
 

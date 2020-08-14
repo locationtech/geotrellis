@@ -17,7 +17,6 @@
 package geotrellis.layer
 
 import geotrellis.raster._
-import geotrellis.layer._
 import geotrellis.util._
 
 abstract class CellGridLayoutCollectionMethods[K: SpatialComponent, V <: CellGrid[Int], M: GetComponent[*, LayoutDefinition]]

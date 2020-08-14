@@ -24,14 +24,11 @@ import geotrellis.store.util._
 import geotrellis.store.cog._
 import geotrellis.store.index._
 import geotrellis.store.s3._
-import geotrellis.store.s3.cog._
 import geotrellis.spark.store.cog._
-import geotrellis.util._
 
 import org.apache.spark.SparkContext
 import software.amazon.awssdk.services.s3._
 import software.amazon.awssdk.services.s3.model._
-import org.log4s._
 import io.circe._
 
 import scala.concurrent.ExecutionContext

@@ -17,15 +17,15 @@
 package geotrellis.raster.io.geotiff.writer
 
 import geotrellis.raster.io.geotiff._
-import geotrellis.raster.io.geotiff.compression._
 import geotrellis.raster.testkit._
 import geotrellis.util._
 
-import org.scalatest._
-
 import java.io._
 
-class GeoTiffWriterTests extends FunSuite
+import org.scalatest.BeforeAndAfterAll
+import org.scalatest.funsuite.AnyFunSuite
+
+class GeoTiffWriterTests extends AnyFunSuite
     with BeforeAndAfterAll
     with RasterMatchers
     with GeoTiffTestUtils {

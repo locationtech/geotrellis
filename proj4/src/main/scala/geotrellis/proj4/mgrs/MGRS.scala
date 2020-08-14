@@ -16,7 +16,7 @@
 
 package geotrellis.proj4.mgrs
 
-import scala.math.{Pi, cos, floor, pow, round, sin, sqrt, tan}
+import scala.math.{Pi, cos, pow, round, sin, sqrt, tan}
 
 /**
  * A lat/long to Military Grid Reference System (MGRS) conversion utility

@@ -19,8 +19,6 @@ package geotrellis.spark.store
 import geotrellis.layer._
 import geotrellis.raster.{GridBounds, Tile, TileFeature}
 import geotrellis.store._
-import geotrellis.store.avro.codecs._
-import geotrellis.spark._
 import geotrellis.spark.testkit.io._
 
 import java.time.{ZoneOffset, ZonedDateTime}

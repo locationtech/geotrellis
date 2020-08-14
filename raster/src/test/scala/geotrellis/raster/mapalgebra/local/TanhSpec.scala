@@ -18,14 +18,12 @@ package geotrellis.raster.mapalgebra.local
 
 import geotrellis.raster._
 
-import org.scalatest._
-
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 import geotrellis.raster.testkit._
 
-class TanhSpec extends FunSpec
-                  with Matchers
-                  with RasterMatchers
-                  with TileBuilders {
+class TanhSpec extends AnyFunSpec with Matchers with RasterMatchers with TileBuilders {
+
   describe("Tanh") {
     it("finds the tanh of a double raster") {
       val rasterData = Array (

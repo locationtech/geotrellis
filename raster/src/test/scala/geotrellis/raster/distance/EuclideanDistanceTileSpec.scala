@@ -17,15 +17,14 @@
 package geotrellis.raster.distance
 
 import geotrellis.raster._
-import geotrellis.raster.rasterize._
-import geotrellis.raster.render._
 import geotrellis.raster.testkit._
 import geotrellis.vector._
 import scala.math.{sqrt, pow}
 
-import org.scalatest._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
-class EuclideanDistanceTileSpec extends FunSpec with Matchers with RasterMatchers {
+class EuclideanDistanceTileSpec extends AnyFunSpec with Matchers with RasterMatchers {
   describe("Euclidean Distance Tiles") {
     it("should produce the same result as using explicit nearest neighbor search") {
       val pts = Array(Point(0,0), Point(3,1), Point(7,5), Point(4,7), Point(8,3), Point(1,3))

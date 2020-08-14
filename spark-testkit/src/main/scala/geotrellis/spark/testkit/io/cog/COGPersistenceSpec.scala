@@ -28,23 +28,22 @@ import geotrellis.layer._
 import geotrellis.store._
 import geotrellis.store.cog.{COGCollectionLayerReader, COGValueReader}
 import geotrellis.store.index._
-import geotrellis.spark._
-import geotrellis.spark.store._
 import geotrellis.spark.store.cog._
 import geotrellis.spark.testkit.io._
 import geotrellis.spark.testkit.testfiles.cog.COGTestFiles
-import geotrellis.util._
-
 import _root_.io.circe._
 import org.apache.spark.rdd.RDD
+
 import org.scalatest._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
 import scala.reflect._
 
 abstract class COGPersistenceSpec[
   K: SpatialComponent: Ordering: Boundable: Encoder: Decoder: ClassTag,
   V <: CellGrid[Int]: GeoTiffReader: * => TileMergeMethods[V]: * => TilePrototypeMethods[V]: * => TileCropMethods[V]: ClassTag: GeoTiffBuilder
-] extends FunSpec with Matchers with BeforeAndAfterAll {
+] extends AnyFunSpec with Matchers with BeforeAndAfterAll {
 
   type TestReader = COGLayerReader[LayerId]
   type TestWriter = COGLayerWriter

@@ -17,24 +17,19 @@
 package geotrellis.raster.io.geotiff
 
 import geotrellis.raster._
-import geotrellis.raster.io.geotiff.writer.GeoTiffWriter
 import geotrellis.raster.io.geotiff.reader._
-import geotrellis.raster.mapalgebra.local._
-import geotrellis.util.{ByteReader, Filesystem}
+import geotrellis.util.Filesystem
 import geotrellis.vector.Extent
-
 import geotrellis.proj4._
 
 import geotrellis.raster.testkit._
 import java.nio.ByteBuffer
-import org.scalatest._
 
-class GeoTiffMultibandTileSpec extends FunSpec
-    with Matchers
-    with BeforeAndAfterAll
-    with RasterMatchers
-    with GeoTiffTestUtils
-    with TileBuilders {
+import org.scalatest.BeforeAndAfterAll
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
+
+class GeoTiffMultibandTileSpec extends AnyFunSpec with Matchers with BeforeAndAfterAll with RasterMatchers with GeoTiffTestUtils with TileBuilders {
 
   override def afterAll = purge
 

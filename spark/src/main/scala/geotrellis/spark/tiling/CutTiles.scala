@@ -21,7 +21,6 @@ import geotrellis.raster.merge._
 import geotrellis.raster.prototype._
 import geotrellis.raster.resample._
 import geotrellis.layer._
-import geotrellis.spark._
 import geotrellis.util._
 
 import org.log4s._
@@ -33,9 +32,9 @@ object CutTiles {
   @transient private[this] lazy val logger = getLogger
 
   def apply[
-    K1: (* => TilerKeyMethods[K1, K2]),
+    K1: * => TilerKeyMethods[K1, K2],
     K2: SpatialComponent: ClassTag,
-    V <: CellGrid[Int]: ClassTag: (* => TileMergeMethods[V]): (* => TilePrototypeMethods[V])
+    V <: CellGrid[Int]: ClassTag: * => TileMergeMethods[V]: * => TilePrototypeMethods[V]
   ] (
     rdd: RDD[(K1, V)],
     cellType: CellType,

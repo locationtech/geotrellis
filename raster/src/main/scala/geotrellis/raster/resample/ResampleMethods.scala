@@ -20,7 +20,6 @@ import geotrellis.raster._
 import geotrellis.vector.Extent
 import geotrellis.util.MethodExtensions
 
-import spire.syntax.cfor._
 
 
 trait ResampleMethods[T <: CellGrid[Int]] extends MethodExtensions[T] {

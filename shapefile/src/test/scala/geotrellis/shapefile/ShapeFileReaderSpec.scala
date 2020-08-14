@@ -18,9 +18,10 @@ package geotrellis.shapefile
 
 import geotrellis.vector._
 
-import org.scalatest._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
-class ShapeFileReaderSpec extends FunSpec with Matchers {
+class ShapeFileReaderSpec extends AnyFunSpec with Matchers {
   describe("ShapeFileReader") {
     it("should read multipolygons feature attribute") {
       val path = "shapefile/data/shapefiles/demographics/demographics.shp"

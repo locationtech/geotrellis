@@ -18,9 +18,11 @@ package geotrellis.raster.costdistance
 
 import geotrellis.raster._
 import geotrellis.vector._
-import org.scalatest._
 
-class CostDistanceWithPathsSpec extends FunSpec with Matchers {
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
+
+class CostDistanceWithPathsSpec extends AnyFunSpec with Matchers {
 
   val Eps = 1e-7
 

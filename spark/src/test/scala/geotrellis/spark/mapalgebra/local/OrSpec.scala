@@ -17,14 +17,12 @@
 package geotrellis.spark.mapalgebra.local
 
 import geotrellis.spark._
-import geotrellis.spark.store.hadoop._
-import geotrellis.spark.TileLayerRDD
 import geotrellis.spark.testkit.testfiles._
 import geotrellis.spark.testkit._
 
-import org.scalatest.FunSpec
+import org.scalatest.funspec.AnyFunSpec
 
-class OrSpec extends FunSpec with TestEnvironment with TestFiles {
+class OrSpec extends AnyFunSpec with TestEnvironment with TestFiles {
 
   describe("Or Operation") {
     val ones = AllOnesTestFile

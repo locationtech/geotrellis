@@ -19,8 +19,7 @@ package geotrellis.proj4.proj
 import org.locationtech.proj4j.proj._
 
 import org.locationtech.proj4j.CRSFactory
-import org.locationtech.proj4j.CoordinateReferenceSystem
-import org.locationtech.proj4j.CoordinateTransform
+import org.locationtech.proj4j.CoordinateReferenceSystem
 import org.locationtech.proj4j.CoordinateTransformFactory
 import org.locationtech.proj4j.ProjCoordinate
 import org.locationtech.proj4j.util.ProjectionUtil

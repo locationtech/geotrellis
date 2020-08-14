@@ -23,12 +23,11 @@ import geotrellis.raster._
 import geotrellis.store
 import geotrellis.store.cog._
 import geotrellis.spark._
-import geotrellis.spark.store._
-import geotrellis.spark.tiling._
 
-import org.scalatest._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
-class COGLayerMetadataSpec extends FunSpec with Matchers {
+class COGLayerMetadataSpec extends AnyFunSpec with Matchers {
   def generateLCMetadata(maxZoom: Int = 13, minZoom: Int = 0): COGLayerMetadata[SpatialKey] = {
     val cellType = IntConstantNoDataCellType
     val extent = Extent(1.5454921707580032E7, 4146985.8273180854, 1.5762771754498206E7, 4454374.804079672)

@@ -19,10 +19,10 @@ package geotrellis.util
 import java.nio.ByteBuffer
 import java.nio.file.{Paths, Files}
 
-import org.scalatest._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
-class FileRangeReaderSpec extends FunSpec
-  with Matchers {
+class FileRangeReaderSpec extends AnyFunSpec with Matchers {
 
   describe("Streaming bytes locally") {
     val path = "raster/data/aspect.tif"

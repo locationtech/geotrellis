@@ -16,11 +16,9 @@
 
 package geotrellis.spark.store.file.cog
 
-import geotrellis.store.{COGLayerType, LayerHeader}
+import geotrellis.store.COGLayerType
 import geotrellis.store.file.{FileLayerHeader, FileAttributeStore}
-import geotrellis.spark._
 import geotrellis.spark.store.cog._
-import geotrellis.spark.store.file._
 
 class COGFileAttributeStoreSpec extends COGAttributeStoreSpec {
   lazy val attributeStore = FileAttributeStore(outputLocalPath)

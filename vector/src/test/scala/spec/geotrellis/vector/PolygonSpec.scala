@@ -18,11 +18,10 @@ package geotrellis.vector
 
 import geotrellis.vector.testkit._
 
-import org.locationtech.jts.{geom=>jts}
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
-import org.scalatest._
-
-class PolygonSpec extends FunSpec with Matchers {
+class PolygonSpec extends AnyFunSpec with Matchers {
   describe("Polygon") {
     it("should be a closed Polygon if constructed with l(0) == l(-1)") {
       val p = Polygon(LineString(List[(Double,Double)]((0,0),(1,0),(1,1),(0,1),(0,0))))

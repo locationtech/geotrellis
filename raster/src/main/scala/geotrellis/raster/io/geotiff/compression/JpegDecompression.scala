@@ -21,17 +21,12 @@ import geotrellis.raster.io.geotiff.tags.{TiffTags, JpegTags, YCbCrTags, Colimet
 import geotrellis.raster.io.geotiff.tags.codes.ColorSpace
 import geotrellis.raster.io.geotiff.tags.codes.CompressionType._
 
-import monocle.syntax._
 import spire.syntax.cfor._
 
 import java.awt.image.DataBufferByte
 import java.io.ByteArrayInputStream
 import javax.imageio.{ImageIO, IIOException, ImageReader}
-import javax.imageio.metadata.IIOMetadata
-import javax.imageio.metadata.IIOMetadataFormatImpl
-import javax.imageio.metadata.IIOMetadataNode
 import javax.imageio.plugins.jpeg.JPEGImageReadParam
-import javax.imageio.stream.ImageInputStream
 
 object JpegDecompressor {
   def apply(tiffTags: TiffTags): JpegDecompressor =

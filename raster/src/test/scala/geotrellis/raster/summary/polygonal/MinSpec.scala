@@ -21,12 +21,11 @@ import geotrellis.raster.summary.polygonal.visitors.MinVisitor
 import geotrellis.raster.summary.types.MinValue
 import geotrellis.raster.testkit._
 import geotrellis.vector._
-import org.scalatest._
 
-class MinSpec extends FunSpec
-                 with Matchers
-                 with RasterMatchers
-                 with TileBuilders {
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
+
+class MinSpec extends AnyFunSpec with Matchers with RasterMatchers with TileBuilders {
 
   describe("Min") {
     val rs = createRaster(Array.fill(40*40)(1),40,40)

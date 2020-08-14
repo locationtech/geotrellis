@@ -18,13 +18,10 @@ package geotrellis.spark.store.hadoop
 
 import geotrellis.layer._
 import geotrellis.store.LayerId
-import geotrellis.store.AttributeStore.Fields
 import geotrellis.store.LayerManager
-import geotrellis.spark.store._
 import geotrellis.store.avro.AvroRecordCodec
 import geotrellis.store.hadoop._
 import geotrellis.store.index._
-import geotrellis.spark._
 import geotrellis.util._
 
 import org.apache.spark.SparkContext

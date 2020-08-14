@@ -18,9 +18,10 @@ package geotrellis.util
 
 import java.net.URI
 
-import org.scalatest._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
-class HttpRangeReaderProviderSpec extends FunSpec with Matchers {
+class HttpRangeReaderProviderSpec extends AnyFunSpec with Matchers {
   describe("HttpRangeReaderProviderSpec") {
     it("should create a HttpRangeReader from a URI") {
       val path = "http://localhost:8081/all-ones.tif"

@@ -16,11 +16,8 @@
 
 package geotrellis
 
-import geotrellis.layer.{KeyBounds, MapKeyTransform}
-import geotrellis.raster._
-import geotrellis.raster.io.geotiff.reader.GeoTiffReader
+import geotrellis.layer.KeyBounds
 
-import scala.util.{Failure, Success, Try}
 
 package object store extends Implicits {
 

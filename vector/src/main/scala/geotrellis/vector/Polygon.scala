@@ -21,7 +21,6 @@ import org.locationtech.jts.{geom => jts}
 import geotrellis.vector.GeomFactory._
 
 import scala.collection.GenTraversable
-import scala.collection.JavaConverters._
 
 trait PolygonConstructors {
   def apply(exterior: Point*)(implicit d: DummyImplicit): Polygon =

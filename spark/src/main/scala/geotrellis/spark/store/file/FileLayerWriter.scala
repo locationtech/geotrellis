@@ -22,9 +22,7 @@ import geotrellis.store.file.{FileAttributeStore, FileLayerHeader, KeyPathGenera
 import geotrellis.store.avro._
 import geotrellis.store.avro.codecs._
 import geotrellis.store.index._
-import geotrellis.spark._
 import geotrellis.spark.store._
-import geotrellis.spark.merge._
 import geotrellis.util._
 
 import org.log4s._

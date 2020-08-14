@@ -16,9 +16,7 @@
 
 package geotrellis.proj4
 
-import org.locationtech.proj4j._
-
-import org.scalatest._
+import org.scalatest.funsuite.AnyFunSuite
 
 /**
  * A class to run tests which are known to be failures.
@@ -26,7 +24,7 @@ import org.scalatest._
  * @author mdavis
  *
  */
-class TransformFailures extends FunSuite with BaseCoordinateTransformTest {
+class TransformFailures extends AnyFunSuite with BaseCoordinateTransformTest {
   ignore("EPSG_27700") {
     checkTransform("EPSG:4326", -2.89, 55.4,    "EPSG:27700", 343733.1404, 612144.530677, 0.1 )
     checkTransformAndInverse(

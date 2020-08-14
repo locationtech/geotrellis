@@ -20,8 +20,6 @@ import geotrellis.layer.SpatialComponent
 import geotrellis.raster._
 import geotrellis.raster.crop._
 import geotrellis.raster.stitch._
-import geotrellis.spark._
-import geotrellis.util._
 
 import org.apache.spark.rdd.RDD
 
@@ -38,6 +36,6 @@ trait Implicits {
 
   implicit class withBufferTilesRDDMethodsWrapper[
     K: SpatialComponent: ClassTag,
-    V <: CellGrid[Int]: Stitcher: ClassTag: (* => CropMethods[V])
+    V <: CellGrid[Int]: Stitcher: ClassTag: * => CropMethods[V]
   ](self: RDD[(K, V)]) extends BufferTilesRDDMethods[K, V](self)
 }

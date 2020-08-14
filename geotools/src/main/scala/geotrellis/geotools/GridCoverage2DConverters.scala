@@ -16,7 +16,7 @@
 
 package geotrellis.geotools
 
-import geotrellis.proj4.{CRS, LatLng}
+import geotrellis.proj4.CRS
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff.util._
 import geotrellis.vector.Extent

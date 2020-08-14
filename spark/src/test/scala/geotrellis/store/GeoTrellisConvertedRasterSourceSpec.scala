@@ -21,9 +21,10 @@ import geotrellis.raster._
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.raster.testkit._
 
-import org.scalatest.{FunSpec, GivenWhenThen}
+import org.scalatest.GivenWhenThen
+import org.scalatest.funspec.AnyFunSpec
 
-class GeoTrellisConvertedRasterSourceSpec extends FunSpec with RasterMatchers with GivenWhenThen with CatalogTestEnvironment {
+class GeoTrellisConvertedRasterSourceSpec extends AnyFunSpec with RasterMatchers with GivenWhenThen with CatalogTestEnvironment {
   val layerId = LayerId("landsat", 0)
   val uriMultiband = s"file://${TestCatalog.multibandOutputPath}?layer=${layerId.name}&zoom=${layerId.zoom}"
 

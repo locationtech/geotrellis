@@ -23,7 +23,6 @@ import geotrellis.store._
 import geotrellis.store.cog._
 import geotrellis.store.file.{FileAttributeStore, KeyPathGenerator}
 import geotrellis.store.index._
-import geotrellis.util._
 
 import _root_.io.circe._
 

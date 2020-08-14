@@ -20,13 +20,14 @@ import geotrellis.layer._
 import geotrellis.store._
 import geotrellis.store.index._
 import geotrellis.store.avro._
-import geotrellis.spark._
 import geotrellis.spark.store._
 import geotrellis.util._
 
 import _root_.io.circe._
 import org.apache.spark.rdd.RDD
 import org.scalatest._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
 import scala.reflect._
 
@@ -48,7 +49,7 @@ abstract class PersistenceSpec[
   K: AvroRecordCodec: Boundable: Encoder: Decoder: ClassTag,
   V: AvroRecordCodec: ClassTag,
   M: Encoder: Decoder: Component[*, Bounds[K]]
-] extends FunSpec with Matchers with BeforeAndAfterAll {
+] extends AnyFunSpec with Matchers with BeforeAndAfterAll {
 
   type TestReader = FilteringLayerReader[LayerId]
   type TestWriter = LayerWriter[LayerId]

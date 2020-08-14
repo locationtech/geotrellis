@@ -16,7 +16,6 @@
 
 package geotrellis.store
 
-import geotrellis.raster._
 import geotrellis.vector.Extent
 import geotrellis.layer.LayoutDefinition
 

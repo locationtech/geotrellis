@@ -17,7 +17,6 @@
 package geotrellis.raster.summary.polygonal.visitors
 
 import cats.Monoid
-import cats.syntax.monoid._
 import geotrellis.raster._
 import geotrellis.raster.histogram.FastMapHistogram
 import geotrellis.raster.summary.GridVisitor

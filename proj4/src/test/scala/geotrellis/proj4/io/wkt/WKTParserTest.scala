@@ -16,9 +16,9 @@
 
 package geotrellis.proj4.io.wkt
 
-import org.scalatest.FunSpec
+import org.scalatest.funspec.AnyFunSpec
 
-class WKTParserTest extends FunSpec {
+class WKTParserTest extends AnyFunSpec {
 
   it("Should parse a simple string") {
     import WKTParser._

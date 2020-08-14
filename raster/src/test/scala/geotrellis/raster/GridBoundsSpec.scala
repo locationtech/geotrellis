@@ -16,11 +16,13 @@
 
 package geotrellis.raster
 
-import org.scalatest._
-import spire.syntax.cfor._
 import spire.implicits._
 
-class GridBoundsSpec extends FunSpec with Matchers{
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
+
+class GridBoundsSpec extends AnyFunSpec with Matchers {
+
   describe("GridBounds.minus") {
     it("subtracts an overlapping GridBounds that overflows bottom left") {
       val minuend = GridBounds(0, 0, 100, 100)

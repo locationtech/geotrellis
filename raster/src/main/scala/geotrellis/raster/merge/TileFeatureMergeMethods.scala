@@ -23,7 +23,7 @@ import cats.Semigroup
 
 
 abstract class TileFeatureMergeMethods[
-  T <: CellGrid[Int]: (* => TileMergeMethods[T]),
+  T <: CellGrid[Int]: * => TileMergeMethods[T],
   D: Semigroup
 ](val self: TileFeature[T, D]) extends TileMergeMethods[TileFeature[T, D]] {
   def merge(other: TileFeature[T, D], baseCol: Int, baseRow: Int): TileFeature[T, D] =

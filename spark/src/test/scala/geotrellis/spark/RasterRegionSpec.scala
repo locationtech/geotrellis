@@ -26,10 +26,11 @@ import geotrellis.spark.testkit._
 import geotrellis.raster.testkit.{RasterMatchers, Resource}
 
 import org.apache.spark.rdd._
-import org.scalatest._
-import Inspectors._
+import org.scalatest.GivenWhenThen
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.Inspectors._
 
-class RasterRegionSpec extends FunSpec with TestEnvironment with RasterMatchers with LayoutRasterMatchers with GivenWhenThen {
+class RasterRegionSpec extends AnyFunSpec with TestEnvironment with RasterMatchers with LayoutRasterMatchers with GivenWhenThen {
   it("reads RDD of raster refs") {
     // we're going to read these and re-build gradient.tif
 

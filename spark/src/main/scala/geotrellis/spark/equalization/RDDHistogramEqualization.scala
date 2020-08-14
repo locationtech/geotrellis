@@ -41,7 +41,7 @@ object RDDHistogramEqualization {
     *
     * @param  rdd  An RDD of tile objects
     */
-  def singleband[K, V: (* => Tile): ClassTag, M](
+  def singleband[K, V: * => Tile: ClassTag, M](
     rdd: RDD[(K, V)] with Metadata[M]
   ): RDD[(K, Tile)] with Metadata[M] = {
     val histogram = rdd
@@ -59,7 +59,7 @@ object RDDHistogramEqualization {
     * @param  rdd        An RDD of tile objects
     * @param  histogram  A histogram derived from the whole RDD of tiles
     */
-  def singleband[K, V: (* => Tile): ClassTag, M, T <: AnyVal](
+  def singleband[K, V: * => Tile: ClassTag, M, T <: AnyVal](
     rdd: RDD[(K, V)] with Metadata[M],
     histogram: Histogram[T]
   ): RDD[(K, Tile)] with Metadata[M] = {
@@ -78,7 +78,7 @@ object RDDHistogramEqualization {
     *
     * @param  rdd  An RDD of multiband tile objects
     */
-  def multiband[K, V: (* => MultibandTile): ClassTag, M](
+  def multiband[K, V: * => MultibandTile: ClassTag, M](
     rdd: RDD[(K, V)] with Metadata[M]
   ): RDD[(K, MultibandTile)] with Metadata[M] = {
     val histograms = rdd
@@ -101,7 +101,7 @@ object RDDHistogramEqualization {
     * @param  rdd         An RDD of tile objects
     * @param  histograms  A histogram derived from the whole RDD of tiles
     */
-  def multiband[K, V: (* => MultibandTile): ClassTag, M, T <: AnyVal](
+  def multiband[K, V: * => MultibandTile: ClassTag, M, T <: AnyVal](
     rdd: RDD[(K, V)] with Metadata[M],
     histograms: Array[Histogram[T]]
   ): RDD[(K, MultibandTile)] with Metadata[M] = {

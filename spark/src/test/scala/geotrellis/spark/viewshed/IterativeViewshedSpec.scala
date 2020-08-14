@@ -24,16 +24,10 @@ import geotrellis.spark._
 import geotrellis.spark.testkit.TestEnvironment
 import geotrellis.vector._
 
-import scala.collection.mutable
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
-import org.locationtech.jts.{ geom => jts }
-
-import org.scalatest._
-
-
-class IterativeViewshedSpec extends FunSpec
-    with Matchers
-    with TestEnvironment {
+class IterativeViewshedSpec extends AnyFunSpec with Matchers with TestEnvironment {
 
   describe("Iterative Viewshed") {
     val ninf = Double.NegativeInfinity

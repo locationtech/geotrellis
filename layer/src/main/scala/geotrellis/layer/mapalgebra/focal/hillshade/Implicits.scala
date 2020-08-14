@@ -18,7 +18,6 @@ package geotrellis.layer.mapalgebra.focal.hillshade
 
 import geotrellis.layer._
 
-import reflect.ClassTag
 
 
 object Implicits extends Implicits

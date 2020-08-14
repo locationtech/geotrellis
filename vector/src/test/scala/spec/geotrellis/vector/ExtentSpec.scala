@@ -16,14 +16,14 @@
 
 package geotrellis.vector
 
-import geotrellis.vector.io._
 import geotrellis.vector.io.json.JsonFeatureCollection
-import org.scalatest.FunSpec
-import org.scalatest.Matchers
 
 import _root_.io.circe.generic.JsonCodec
 
-class ExtentSpec extends FunSpec with Matchers {
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
+
+class ExtentSpec extends AnyFunSpec with Matchers {
   describe("Extent") {
     it("should throw exceptions on invalid ranges") {
       intercept[ExtentRangeError] { Extent(10.0, 0.0, 0.0, 10.0) }

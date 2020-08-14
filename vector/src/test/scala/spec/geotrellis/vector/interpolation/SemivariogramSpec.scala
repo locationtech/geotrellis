@@ -16,11 +16,12 @@
 
 package geotrellis.vector.interpolation
 
-import geotrellis.vector.testkit._
 import geotrellis.vector.{Point, PointFeature}
-import org.scalatest._
 
-class SemivariogramSpec extends FunSpec with Matchers {
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
+
+class SemivariogramSpec extends AnyFunSpec with Matchers {
   describe("Linear Semivariogram") {
     it("Semivariogram (Bucketed)") {
       val points = Array[PointFeature[Double]](

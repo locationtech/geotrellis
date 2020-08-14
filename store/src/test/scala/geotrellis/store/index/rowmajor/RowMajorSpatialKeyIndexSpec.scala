@@ -16,12 +16,12 @@
 
 package geotrellis.store.index.rowmajor
 
-import scala.collection.immutable.TreeSet
-import org.scalatest._
-import geotrellis.store.index.KeyIndex
 import geotrellis.layer.{SpatialKey, KeyBounds}
 
-class RowMajorSpatialKeyIndexSpec extends FunSpec with Matchers{
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
+
+class RowMajorSpatialKeyIndexSpec extends AnyFunSpec with Matchers {
 
   val upperBound: Int = 64
 

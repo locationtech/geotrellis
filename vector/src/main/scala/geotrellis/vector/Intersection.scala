@@ -16,7 +16,6 @@
 
 package geotrellis.vector
 
-import geotrellis.vector._
 
 object Intersection {
 

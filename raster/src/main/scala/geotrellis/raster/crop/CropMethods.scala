@@ -16,7 +16,6 @@
 
 package geotrellis.raster.crop
 
-import geotrellis.vector._
 import geotrellis.raster._
 import geotrellis.util.MethodExtensions
 

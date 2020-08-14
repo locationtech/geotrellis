@@ -21,13 +21,9 @@ import geotrellis.raster.io.geotiff._
 import geotrellis.raster.io.geotiff.compression._
 import geotrellis.raster.testkit._
 
-import spire.syntax.cfor._
-import org.scalatest._
+import org.scalatest.funspec.AnyFunSpec
 
-class GeoTiffTileSpec extends FunSpec
-    with RasterMatchers
-    with TileBuilders
-    with GeoTiffTestUtils {
+class GeoTiffTileSpec extends AnyFunSpec with RasterMatchers with TileBuilders with GeoTiffTestUtils {
 
   describe("Creating a GeoTiff tile from an ArrayTile") {
     it("should work against a small int tile") {

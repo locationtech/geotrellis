@@ -21,7 +21,6 @@ import geotrellis.raster.rasterize.Rasterizer.Options
 import geotrellis.util.MethodExtensions
 import geotrellis.vector.Geometry
 
-import spire.syntax.cfor._
 
 
 /**

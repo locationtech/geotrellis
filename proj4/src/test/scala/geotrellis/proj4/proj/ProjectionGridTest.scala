@@ -16,12 +16,10 @@
 
 package geotrellis.proj4.proj
 
-import org.locationtech.proj4j.proj._
-
-import org.scalatest._
-
 import org.locationtech.proj4j.CRSFactory
-import org.locationtech.proj4j.CoordinateReferenceSystem
+
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.matchers.should.Matchers
 
 /**
   * Tests accuracy and correctness of projecting and reprojecting a grid of geographic coordinates.
@@ -29,7 +27,7 @@ import org.locationtech.proj4j.CoordinateReferenceSystem
   * @author Martin Davis (port by Rob Emanuele)
   *
   */
-class ProjectionGridTest extends FunSuite with Matchers {
+class ProjectionGridTest extends AnyFunSuite with Matchers {
   val TOLERANCE = 0.00001
 
   test("Albers") {

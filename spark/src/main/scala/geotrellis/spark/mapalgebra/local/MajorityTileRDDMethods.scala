@@ -18,13 +18,11 @@ package geotrellis.spark.mapalgebra.local
 
 import org.apache.spark.Partitioner
 
-import scala.collection.immutable.Map
 
 import geotrellis.raster._
 import geotrellis.raster.mapalgebra.local.Majority
 
 import geotrellis.spark._
-import geotrellis.spark.mapalgebra._
 
 import org.apache.spark.rdd.RDD
 

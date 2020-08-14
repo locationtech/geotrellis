@@ -21,9 +21,10 @@ import geotrellis.store.s3.util._
 import geotrellis.store.s3.S3ClientProducer
 import geotrellis.util.RangeReader
 
-import org.scalatest._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
-class S3RangeReaderProviderSpec extends FunSpec with Matchers {
+class S3RangeReaderProviderSpec extends AnyFunSpec with Matchers {
   val client = MockS3Client.instance
   S3TestUtils.cleanBucket(client, "fake-bucket")
   S3ClientProducer.set(() => client)

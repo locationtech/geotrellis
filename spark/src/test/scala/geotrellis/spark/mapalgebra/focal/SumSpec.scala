@@ -16,17 +16,15 @@
 
 package geotrellis.spark.mapalgebra.focal
 
-import geotrellis.vector.Extent
 import geotrellis.raster._
 import geotrellis.raster.Neighborhoods.{Square, Circle}
 
 import geotrellis.spark._
-import geotrellis.spark.mapalgebra.focal._
 import geotrellis.spark.testkit._
 
-import org.scalatest._
+import org.scalatest.funspec.AnyFunSpec
 
-class SumSpec extends FunSpec with TestEnvironment {
+class SumSpec extends AnyFunSpec with TestEnvironment {
 
   describe("Sum Focal Spec") {
 

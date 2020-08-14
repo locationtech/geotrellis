@@ -19,16 +19,15 @@ package geotrellis.geotools
 import geotrellis.proj4.LatLng
 import geotrellis.vector._
 
-import org.scalatest._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
 object SimpleFeatureToFeatureMethodsSpec {
   case class Foo(x: Int, y: String)
   implicit def mapToFoo(map: Map[String, Any]): Foo = Foo(42, "72")
 }
 
-class SimpleFeatureToFeatureMethodsSpec
-    extends FunSpec
-    with Matchers {
+class SimpleFeatureToFeatureMethodsSpec extends AnyFunSpec with Matchers {
 
   import SimpleFeatureToFeatureMethodsSpec._
 

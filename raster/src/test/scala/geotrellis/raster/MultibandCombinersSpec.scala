@@ -18,9 +18,10 @@ package geotrellis.raster
 
 import geotrellis.raster.testkit._
 
-import org.scalatest._
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.matchers.should.Matchers
 
-class MultibandCombinersSpec extends FunSuite with RasterMatchers with Matchers {
+class MultibandCombinersSpec extends AnyFunSuite with RasterMatchers with Matchers {
   val original = IntConstantTile(99, 3, 3)
 
   private def mkMultibandTile(arity: Int) = ArrayMultibandTile((0 to arity) map (_ => original))

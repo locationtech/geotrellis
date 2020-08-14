@@ -22,8 +22,9 @@ import geotrellis.layer._
 import geotrellis.spark._
 import geotrellis.spark.testkit.TestEnvironment
 import geotrellis.vector._
-import org.scalatest._
 
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
 object TimeSeriesSpecFunctions {
 
@@ -34,9 +35,7 @@ object TimeSeriesSpecFunctions {
     left ++ right
 }
 
-class TimeSeriesSpec extends FunSpec
-    with Matchers
-    with TestEnvironment {
+class TimeSeriesSpec extends AnyFunSpec with Matchers with TestEnvironment {
 
   val rdd = {
     val tile1 = IntArrayTile(Array.fill[Int](25)(1), 5, 5)

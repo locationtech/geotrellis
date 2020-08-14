@@ -18,18 +18,16 @@ package geotrellis.spark
 
 import geotrellis.proj4._
 import geotrellis.raster.{DoubleCellType, IntCellType, Tile}
-import geotrellis.raster.io.geotiff._
 import geotrellis.raster.testkit.{RasterMatchers, TileBuilders}
 import geotrellis.spark.util.KryoSerializer
 import geotrellis.spark.testkit._
-import geotrellis.vector._
 
-import org.apache.hadoop.fs.Path
-import org.scalatest._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funsuite.AnyFunSuite
 
 import java.io.{ByteArrayInputStream, ByteArrayOutputStream, ObjectInputStream, ObjectOutputStream}
 
-class SerializationTests extends FunSuite with Matchers with RasterMatchers with TileBuilders {
+class SerializationTests extends AnyFunSuite with Matchers with RasterMatchers with TileBuilders {
   test("Serializing CRS's") {
     val crs = CRS.fromString("+proj=longlat +datum=WGS84 +no_defs")
     assert(crs == LatLng)

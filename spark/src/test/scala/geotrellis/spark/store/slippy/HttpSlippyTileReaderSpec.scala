@@ -16,11 +16,10 @@
 
 package geotrellis.spark.store.slippy
 
-import geotrellis.layer.SpatialKey
+import org.scalatest.funspec.AnyFunSpec
 
-import org.scalatest._
+class HttpSlippyTileReaderSpec extends AnyFunSpec {
 
-class HttpSlippyTileReaderTest extends FunSpec {
   describe("HttpSlippyTileReader") {
     it("should return correct urls for given zoom level") {
       val reader =

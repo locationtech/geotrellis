@@ -16,17 +16,12 @@
 
 package geotrellis.raster
 
-import geotrellis.vector.Extent
 import geotrellis.raster.testkit._
-import geotrellis.raster.mapalgebra.local._
-import geotrellis.raster.resample._
 
-import org.scalatest._
-import scala.collection.mutable
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
-import spire.syntax.cfor._
-
-class DelayedConversionTileSpec extends FunSpec
+class DelayedConversionTileSpec extends AnyFunSpec
                   with Matchers
                   with RasterMatchers
                   with TileBuilders {

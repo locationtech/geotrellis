@@ -20,17 +20,14 @@ import geotrellis.raster.testkit._
 import geotrellis.raster._
 import geotrellis.raster.rasterize.Rasterizer.Options
 import geotrellis.vector._
-import geotrellis.vector.io._
 
-import org.scalatest._
-
-import scala.math.min
 import scala.util.Random
 
-class SinglebandTileMaskMethodsSpec extends FunSpec
-                  with Matchers
-                  with RasterMatchers
-                  with TileBuilders {
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
+
+class SinglebandTileMaskMethodsSpec extends AnyFunSpec with Matchers with RasterMatchers with TileBuilders {
+
   describe("singleband tile mask") {
     it("should work with integers") {
       val r1 = createTile(

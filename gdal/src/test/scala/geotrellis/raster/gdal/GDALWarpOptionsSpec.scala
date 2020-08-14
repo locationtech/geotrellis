@@ -28,9 +28,10 @@ import org.gdal.gdal._
 
 import scala.collection.JavaConverters._
 
-import org.scalatest._
+import org.scalatest.GivenWhenThen
+import org.scalatest.funspec.AnyFunSpec
 
-class GDALWarpOptionsSpec extends FunSpec with RasterMatchers with GivenWhenThen {
+class GDALWarpOptionsSpec extends AnyFunSpec with RasterMatchers with GivenWhenThen {
   import GDALWarpOptionsSpec._
 
   org.gdal.gdal.gdal.AllRegister()

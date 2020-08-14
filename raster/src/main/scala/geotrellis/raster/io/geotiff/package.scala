@@ -16,7 +16,6 @@
 
 package geotrellis.raster.io
 
-import geotrellis.raster._
 import geotrellis.raster.io.geotiff.compression._
 
 package object geotiff extends Implicits {

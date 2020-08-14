@@ -16,7 +16,6 @@
 
 package geotrellis.spark.mapalgebra
 
-import geotrellis.raster._
 import geotrellis.util.MethodExtensions
 
 import org.apache.spark.Partitioner

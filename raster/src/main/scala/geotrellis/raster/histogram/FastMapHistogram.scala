@@ -19,7 +19,6 @@ package geotrellis.raster.histogram
 import cats.Monoid
 import geotrellis.raster._
 
-import scala.math.{abs, ceil, max, min}
 import scala.util.Sorting
 import sys.error
 

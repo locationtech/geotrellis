@@ -25,7 +25,6 @@ import geotrellis.store.LayerId
 import geotrellis.store.file.cog._
 import geotrellis.store.index._
 import geotrellis.spark._
-import geotrellis.spark.store._
 import geotrellis.spark.store.cog._
 import geotrellis.spark.testkit._
 import geotrellis.spark.testkit.io._

@@ -16,7 +16,6 @@
 
 package geotrellis.spark.store.cassandra
 
-import geotrellis.layer._
 import geotrellis.store._
 import geotrellis.store.avro._
 import geotrellis.store.avro.codecs._

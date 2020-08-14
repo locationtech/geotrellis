@@ -16,7 +16,6 @@
 
 package geotrellis.spark.knn
 
-import scala.collection.immutable.Map
 
 import geotrellis.util.MethodExtensions
 import geotrellis.vector._

@@ -18,7 +18,6 @@ package geotrellis.store.json
 
 import geotrellis.layer._
 import geotrellis.proj4.CRS
-import geotrellis.vector._
 import geotrellis.vector.io.json.CrsFormats
 
 import _root_.io.circe._

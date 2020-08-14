@@ -24,19 +24,15 @@ import geotrellis.raster.resample._
 import geotrellis.raster.testkit._
 import geotrellis.store.index.rowmajor._
 import geotrellis.spark._
-import geotrellis.spark.store._
 import geotrellis.spark.testkit._
+
 import java.io.File
-
-
 import org.apache.commons.io.FileUtils
-import org.scalatest.{FunSpec, Matchers}
 
-class OverzoomingValueReaderSpec
-  extends FunSpec
-  with TestEnvironment
-  with Matchers
-  with RasterMatchers {
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
+
+class OverzoomingValueReaderSpec extends AnyFunSpec with TestEnvironment with Matchers with RasterMatchers {
 
   scala.util.Try(FileUtils.deleteDirectory(new File("/tmp/OZVR_test")))
 

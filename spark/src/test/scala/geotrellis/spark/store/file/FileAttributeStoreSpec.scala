@@ -17,7 +17,6 @@
 package geotrellis.spark.store.file
 
 import geotrellis.store.file.FileAttributeStore
-import geotrellis.spark._
 import geotrellis.spark.store._
 
 class FileAttributeStoreSpec extends AttributeStoreSpec {

@@ -16,9 +16,10 @@
 
 package geotrellis.layer
 
-import org.scalatest._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
-class KeyBoundsSpec extends FunSpec with Matchers {
+class KeyBoundsSpec extends AnyFunSpec with Matchers {
   val bounds1 = KeyBounds(SpatialKey(1,1), SpatialKey(3,3))
   val bounds2 = KeyBounds(SpatialKey(2,2), SpatialKey(4,4))
   val bounds3 = EmptyBounds

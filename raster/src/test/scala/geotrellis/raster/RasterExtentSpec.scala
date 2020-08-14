@@ -19,10 +19,11 @@ package geotrellis.raster
 import geotrellis.vector.Extent
 import geotrellis.raster.testkit._
 
-import org.scalatest._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
-class RasterExtentSpec extends FunSpec with Matchers
-                                       with TileBuilders {
+class RasterExtentSpec extends AnyFunSpec with Matchers with TileBuilders {
+
   describe("A RasterExtent object") {
     val e1 = Extent(0.0, 0.0, 1.0, 1.0)
     val e2 = Extent(0.0, 0.0, 20.0, 20.0)

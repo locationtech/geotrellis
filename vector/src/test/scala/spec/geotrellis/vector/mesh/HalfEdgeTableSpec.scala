@@ -16,9 +16,10 @@
 
 package geotrellis.vector.mesh
 
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
-class HalfEdgeTableSpec extends FunSpec with Matchers {
+class HalfEdgeTableSpec extends AnyFunSpec with Matchers {
   describe ("HalfEdgeTable") {
     it ("should add and remove edges correctly") {
       val het = new HalfEdgeTable(5)

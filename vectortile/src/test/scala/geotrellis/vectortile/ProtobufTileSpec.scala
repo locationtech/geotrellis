@@ -18,13 +18,14 @@ package geotrellis.vectortile
 
 import geotrellis.vector.{Extent, Point}
 
-import org.scalatest._
+import java.nio.file.{Files, Paths}
 
-import java.nio.file.{ Files, Paths }
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
 // --- //
 
-class ProtobufTileSpec extends FunSpec with Matchers {
+class ProtobufTileSpec extends AnyFunSpec with Matchers {
   val tileExtent: Extent = Extent(0, 0, 4096, 4096)
 
   def read(file: String): Array[Byte] = {

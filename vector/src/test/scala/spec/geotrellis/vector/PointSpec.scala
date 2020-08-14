@@ -16,12 +16,10 @@
 
 package geotrellis.vector
 
-import org.locationtech.jts.{geom => jts}
-import GeomFactory._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
-import org.scalatest._
-
-class PointSpec extends FunSpec with Matchers {
+class PointSpec extends AnyFunSpec with Matchers {
   describe("Point") {
 
     it ("should return true for comparing points with equal x and y") {

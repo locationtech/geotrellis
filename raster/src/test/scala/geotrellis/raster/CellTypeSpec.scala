@@ -17,15 +17,17 @@
 package geotrellis.raster
 
 import java.nio.file.Files
-import java.nio.file.attribute.FileAttribute
 
 import geotrellis.proj4.LatLng
 import geotrellis.raster.io.geotiff.GeoTiff
 import geotrellis.raster.io.geotiff.writer.TiffTagFieldValue
 import geotrellis.vector.Extent
-import org.scalatest._
 
-class CellTypeSpec extends FunSpec with Matchers with Inspectors {
+import org.scalatest.Inspectors
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
+
+class CellTypeSpec extends AnyFunSpec with Matchers with Inspectors {
   def roundTrip(ct: CellType) {
     withClue("fromName"){
       // Updated behavior.

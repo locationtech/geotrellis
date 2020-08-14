@@ -17,32 +17,22 @@
 package geotrellis.spark.density
 
 import scala.util.Random
-import scala.math.{max,min}
-
-import org.apache.spark.rdd.RDD
 
 import geotrellis.proj4._
 import geotrellis.raster._
-import geotrellis.raster.density._
 import geotrellis.raster.mapalgebra.focal._
-import geotrellis.raster.mapalgebra.local._
 import geotrellis.raster.testkit._
 import geotrellis.layer._
 import geotrellis.layer.stitch._
 import geotrellis.spark._
-import geotrellis.spark.stitch._
 import geotrellis.vector._
 import geotrellis.spark.testkit._
 
-import geotrellis.raster.render._
 
-import org.scalatest._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
-class RDDKernelDensitySpec extends FunSpec
-    with Matchers
-    with TestEnvironment
-    with RasterMatchers {
-
+class RDDKernelDensitySpec extends AnyFunSpec with Matchers with TestEnvironment with RasterMatchers {
   describe("Kernel Density Operation on RDD of features") {
     it("should produce the same result as non-RDD process") {
       // Generate points (random?)

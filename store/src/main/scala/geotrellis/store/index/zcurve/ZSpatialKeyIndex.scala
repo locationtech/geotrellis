@@ -18,7 +18,6 @@ package geotrellis.store.index.zcurve
 
 import geotrellis.layer._
 import geotrellis.store.index.KeyIndex
-import geotrellis.store.index.zcurve._
 
 class ZSpatialKeyIndex(val keyBounds: KeyBounds[SpatialKey]) extends KeyIndex[SpatialKey] {
   private def toZ(key: SpatialKey): Z2 = Z2(key.col, key.row)

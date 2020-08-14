@@ -18,11 +18,13 @@ package geotrellis.raster.mapalgebra.focal
 
 import geotrellis.raster._
 import geotrellis.raster.mapalgebra.focal.Angles._
-import org.scalatest._
 
 import scala.math._
 
-class SlopeSpec extends FunSpec with Matchers {
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
+
+class SlopeSpec extends AnyFunSpec with Matchers {
   describe("Slope") {
     it("should calculate Slope when the targetCell is set to Data") {
       val noData = byteNODATA

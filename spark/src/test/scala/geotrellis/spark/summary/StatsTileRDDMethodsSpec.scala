@@ -18,20 +18,17 @@ package geotrellis.spark.summary
 
 import geotrellis.layer._
 import geotrellis.spark._
-import geotrellis.spark.store.hadoop._
 import geotrellis.spark.testkit.testfiles._
 import geotrellis.spark.testkit._
 
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff._
 
-import geotrellis.vector._
 
-import org.scalatest.FunSpec
+import org.scalatest.funspec.AnyFunSpec
 
-import collection._
 
-class StatsTileRDDMethodsSpec extends FunSpec with TestEnvironment with TestFiles {
+class StatsTileRDDMethodsSpec extends AnyFunSpec with TestEnvironment with TestFiles {
 
   describe("RDD Stats Method Operations") {
 

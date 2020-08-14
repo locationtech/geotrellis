@@ -18,13 +18,12 @@ package geotrellis.raster.regiongroup
 
 import geotrellis.raster._
 import geotrellis.raster.testkit._
-import org.scalatest._
 
 import scala.collection.mutable
 
-class RegionGroupSpec extends FunSpec
-                         with RasterMatchers
-                         with TileBuilders {
+import org.scalatest.funspec.AnyFunSpec
+
+class RegionGroupSpec extends AnyFunSpec with RasterMatchers with TileBuilders {
   describe("RegionGroup") {
     it("should group regions.") {
       val r = createTile(
@@ -328,7 +327,7 @@ class RegionGroupSpec extends FunSpec
 }
 
 
-class RegionPartitionSpec extends FunSpec
+class RegionPartitionSpec extends AnyFunSpec
                              with RasterMatchers
                              with TileBuilders {
   describe("RegionPartition") {

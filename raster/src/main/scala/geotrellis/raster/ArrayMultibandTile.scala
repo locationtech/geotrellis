@@ -16,8 +16,6 @@
 
 package geotrellis.raster
 
-import geotrellis.raster.summary._
-import geotrellis.vector.Extent
 
 import spire.syntax.cfor._
 

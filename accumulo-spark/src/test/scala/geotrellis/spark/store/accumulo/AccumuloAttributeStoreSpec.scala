@@ -16,10 +16,8 @@
 
 package geotrellis.spark.store.accumulo
 
-import geotrellis.layer._
 import geotrellis.store._
 import geotrellis.store.accumulo._
-import geotrellis.spark._
 import geotrellis.spark.store._
 import org.apache.accumulo.core.client.security.tokens.PasswordToken
 

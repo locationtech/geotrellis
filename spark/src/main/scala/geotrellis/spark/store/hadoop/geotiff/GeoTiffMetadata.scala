@@ -18,10 +18,7 @@ package geotrellis.spark.store.hadoop.geotiff
 
 import geotrellis.proj4.CRS
 import geotrellis.vector._
-import geotrellis.vector.io._
 import geotrellis.layer._
-import geotrellis.spark._
-import geotrellis.spark.store._
 import geotrellis.util.annotations.experimental
 import geotrellis.spark.{Implicits => SparkImplicits}
 

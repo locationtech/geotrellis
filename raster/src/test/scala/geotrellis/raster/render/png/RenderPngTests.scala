@@ -25,9 +25,10 @@ import spire.syntax.cfor._
 import java.io._
 import javax.imageio._
 
-import org.scalatest._
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.matchers.should.Matchers
 
-class RenderPngTests extends FunSuite with Matchers with TileBuilders with RasterMatchers {
+class RenderPngTests extends AnyFunSuite with Matchers with TileBuilders with RasterMatchers {
   def testPng(png: Png, tile: Tile, colorMap: ColorMap): Unit = {
     val img = ImageIO.read(new ByteArrayInputStream(png.bytes))
 

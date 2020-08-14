@@ -18,12 +18,11 @@ package geotrellis.raster.io.arg
 
 import geotrellis.raster._
 import geotrellis.vector.Extent
+
 import geotrellis.raster.testkit._
+import org.scalatest.funsuite.AnyFunSuite
 
-import org.scalatest._
-
-class ArgTest extends FunSuite
-                 with RasterMatchers {
+class ArgTest extends AnyFunSuite with RasterMatchers {
   val array =
     Array(NODATA, -1, 2, -3,
       4, -5, 6, -7,

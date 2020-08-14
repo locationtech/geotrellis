@@ -22,8 +22,6 @@ import geotrellis.raster._
 import geotrellis.raster.io.geotiff._
 import geotrellis.store.hadoop._
 import geotrellis.store.hadoop.formats.BinaryFileInputFormat
-import geotrellis.spark.store.hadoop._
-import geotrellis.spark.ingest._
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.mapreduce._

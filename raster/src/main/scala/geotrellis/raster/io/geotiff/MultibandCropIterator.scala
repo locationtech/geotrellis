@@ -17,7 +17,6 @@
 package geotrellis.raster.io.geotiff
 
 import geotrellis.util.ByteReader
-import geotrellis.raster._
 
 /**
  * An extension of [[CropIterator]], this subclass works specifically with

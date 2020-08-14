@@ -17,10 +17,12 @@
 package geotrellis.raster.mapalgebra.focal
 
 import geotrellis.raster._
-import org.scalatest._
-import geotrellis.raster.testkit._
 
-class MeanSpec extends FunSpec with Matchers with FocalOpSpec with RasterMatchers {
+import geotrellis.raster.testkit._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
+
+class MeanSpec extends AnyFunSpec with Matchers with FocalOpSpec with RasterMatchers {
 
   val getCursorMeanResult = (getDoubleCursorResult _).curried(
     (r,n) => Mean.calculation(r,n))(Circle(1))

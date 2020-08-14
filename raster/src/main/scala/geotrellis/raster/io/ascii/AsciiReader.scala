@@ -17,7 +17,6 @@
 package geotrellis.raster.io.ascii
 
 import geotrellis.raster._
-import geotrellis.raster.io._
 
 class AsciiReader(path: String, noDataValue: Int) extends FileReader(path) {
   def readStateFromPath(cellType: CellType, 

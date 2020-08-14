@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
+package geotrellis.raster.io.geotiff
+
 import geotrellis.raster._
 
-import geotrellis.raster.testkit._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
-import org.scalatest._
-
-class ArrayMultibandTileSpec extends FunSpec with Matchers {
+class ArrayMultibandTileSpec extends AnyFunSpec with Matchers {
 
   val mbt1 =
     ArrayMultibandTile(

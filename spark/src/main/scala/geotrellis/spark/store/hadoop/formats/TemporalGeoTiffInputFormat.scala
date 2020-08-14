@@ -16,12 +16,9 @@
 
 package geotrellis.spark.store.hadoop.formats
 
-import geotrellis.spark.store.hadoop._
-import geotrellis.spark.ingest._
 import geotrellis.layer.TemporalProjectedExtent
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff._
-import geotrellis.vector._
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.mapreduce._
 import java.time.{ZoneOffset, ZonedDateTime}

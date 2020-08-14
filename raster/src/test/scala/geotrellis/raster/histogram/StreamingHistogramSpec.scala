@@ -17,18 +17,18 @@
 package geotrellis.raster.histogram
 
 import geotrellis.raster._
-import geotrellis.raster.io._
 
-import _root_.io.circe._
 import _root_.io.circe.syntax._
 import _root_.io.circe.parser._
 import cats.syntax.either._
-import org.scalatest._
+
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
 import scala.math.abs
 import scala.util.Random
 
-class StreamingHistogramSpec extends FunSpec with Matchers {
+class StreamingHistogramSpec extends AnyFunSpec with Matchers {
   val r = Random
   val list1 = List(1,2,3,3,4,5,6,6,6,7,8,9,9,9,9,10,11,12,12,13,14,14,15,16,17,17,18,19)
   val list2 = List(1, 32, 243, 243, 1024, 3125, 7776, 7776, 7776, 16807, 32768, 59049, 59049, 59049)

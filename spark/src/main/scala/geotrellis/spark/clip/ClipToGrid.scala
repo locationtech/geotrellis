@@ -16,10 +16,7 @@
 
 package geotrellis.spark.clip
 
-import geotrellis.raster.GridBounds
-import geotrellis.spark._
 import geotrellis.layer._
-import geotrellis.util._
 import geotrellis.vector._
 
 import org.locationtech.jts.geom.prep.{PreparedGeometry, PreparedGeometryFactory}

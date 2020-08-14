@@ -16,9 +16,10 @@
 
 package geotrellis.raster
 
-import org.scalatest._
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.matchers.should.Matchers
 
-class PackageTest extends FunSuite with Matchers {
+class PackageTest extends AnyFunSuite with Matchers {
   test("constants") {
     assert(NODATA === Int.MinValue)
   }

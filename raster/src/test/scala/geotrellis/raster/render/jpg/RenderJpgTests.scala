@@ -22,13 +22,15 @@ import geotrellis.raster.render.Jpg
 import geotrellis.raster.testkit._
 
 import spire.syntax.cfor._
-import org.scalatest._
 
 import java.io._
 import java.nio.file.{Files, Paths}
 import javax.imageio._
 
-class RenderJpgTests extends FunSuite with Matchers with TileBuilders with RasterMatchers {
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.matchers.should.Matchers
+
+class RenderJpgTests extends AnyFunSuite with Matchers with TileBuilders with RasterMatchers {
   def naiveRgbDistance(c1: Int, c2: Int): Double =
     (c1.red - c2.red) * (c1.red - c2.red) + (c1.green - c2.green) * (c1.green - c2.green) + (c1.blue - c2.blue) * (c1.blue - c2.blue)
 

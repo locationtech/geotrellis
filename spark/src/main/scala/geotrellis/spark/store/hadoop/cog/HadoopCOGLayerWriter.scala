@@ -26,12 +26,11 @@ import geotrellis.store.cog.{COGLayerStorageMetadata, ZoomRange, _}
 import geotrellis.store.cog.vrt.VRT
 import geotrellis.store.cog.vrt.VRT.IndexedSimpleSource
 import geotrellis.store.hadoop.{HadoopAttributeStore, HadoopLayerHeader, SerializableConfiguration}
-import geotrellis.store.hadoop.cog.byteReader
 import geotrellis.store.hadoop.util.HdfsUtils
 import geotrellis.store.index._
 import geotrellis.spark.store.cog._
 import geotrellis.spark.store.hadoop._
-import geotrellis.util.{ByteReader, RangeReader}
+import geotrellis.util.RangeReader
 import org.apache.hadoop.fs.Path
 import org.apache.spark.SparkContext
 import _root_.io.circe._

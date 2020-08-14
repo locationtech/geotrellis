@@ -19,11 +19,11 @@ package geotrellis.raster.summary
 import geotrellis.raster._
 
 import geotrellis.raster.testkit._
-import org.scalatest._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
-class StatsMethodsSpec extends FunSpec
-                          with RasterMatchers with TestFiles
-                          with Matchers {
+class StatsMethodsSpec extends AnyFunSpec with RasterMatchers with TestFiles with Matchers {
+
   describe("StatsMethods") {
     it("gets expected class breaks from test raster.") {
       val testRaster = {

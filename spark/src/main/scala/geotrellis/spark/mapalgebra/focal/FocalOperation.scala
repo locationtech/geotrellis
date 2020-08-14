@@ -22,7 +22,6 @@ import geotrellis.raster._
 import geotrellis.raster.buffer.BufferedTile
 import geotrellis.raster.mapalgebra.focal._
 import geotrellis.spark._
-import geotrellis.spark.buffer._
 import geotrellis.util._
 
 import org.apache.spark.rdd.RDD

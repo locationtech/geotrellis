@@ -20,12 +20,13 @@ import geotrellis.raster._
 import geotrellis.vector.interpolation._
 import geotrellis.vector._
 import geotrellis.vector.io.json.JsonFeatureCollection
-import geotrellis.raster.testkit._
 
 import spire.syntax.cfor._
-import org.scalatest._
 
-class KrigingSpec extends FunSpec with Matchers {
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
+
+class KrigingSpec extends AnyFunSpec with Matchers {
   def generateLogPoints(pointsData: Seq[PointFeature[Double]]): Seq[PointFeature[Double]] =
     (1 to pointsData.length)
       .map { i => PointFeature(pointsData(i - 1).geom, math.log(pointsData(i - 1).data)) }

@@ -20,9 +20,10 @@ import geotrellis.raster._
 import geotrellis.proj4._
 import geotrellis.vector._
 
-import org.scalatest._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
-class ZoomedLayoutSchemeSpec extends FunSpec with Matchers {
+class ZoomedLayoutSchemeSpec extends AnyFunSpec with Matchers {
   // From http://wiki.openstreetmap.org/wiki/Zoom_levels
   val zoomMeters: Map[Int, Double] =
     Map(

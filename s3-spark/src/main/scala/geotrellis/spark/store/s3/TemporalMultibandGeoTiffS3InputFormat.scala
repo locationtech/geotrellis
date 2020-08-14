@@ -19,7 +19,6 @@ package geotrellis.spark.store.s3
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff._
 import geotrellis.layer.TemporalProjectedExtent
-import geotrellis.spark._
 
 import org.apache.hadoop.mapreduce._
 

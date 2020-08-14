@@ -24,13 +24,11 @@ import geotrellis.layer._
 import geotrellis.store._
 import geotrellis.store.cog.{Extension, ZoomRange}
 import geotrellis.store.hadoop._
-import geotrellis.store.hadoop.cog.byteReader
 import geotrellis.store.hadoop.util._
 import geotrellis.store.index.Index
 import geotrellis.spark.store.cog._
 import geotrellis.spark.store.hadoop._
 import geotrellis.store.util.BlockingThreadPool
-import geotrellis.util._
 
 import org.apache.hadoop.fs.Path
 import org.apache.spark.SparkContext

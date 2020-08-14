@@ -18,10 +18,7 @@ package geotrellis.raster.io.geotiff
 
 import geotrellis.util.ByteReader
 import geotrellis.raster.io.geotiff.tags._
-import geotrellis.raster.io.geotiff.util._
 
-import monocle.syntax.apply._
-import spire.syntax.cfor._
 
 /**
   * This class implements [[SegmentBytes]] via an Array[Array[Byte]]

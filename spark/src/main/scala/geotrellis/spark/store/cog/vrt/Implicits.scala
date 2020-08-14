@@ -18,7 +18,6 @@ package geotrellis.spark.store.cog.vrt
 
 import geotrellis.store.cog.vrt.VRT
 import geotrellis.store.cog.vrt.VRT._
-import geotrellis.spark._
 import geotrellis.util._
 
 import org.apache.spark.util.CollectionAccumulator

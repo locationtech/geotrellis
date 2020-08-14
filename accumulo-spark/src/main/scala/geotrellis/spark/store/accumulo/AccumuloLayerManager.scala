@@ -18,16 +18,12 @@ package geotrellis.spark.store.accumulo
 
 import geotrellis.layer._
 import geotrellis.store._
-import geotrellis.store.AttributeStore.Fields
 import geotrellis.store.accumulo._
 import geotrellis.store.avro.AvroRecordCodec
 import geotrellis.store.index._
-import geotrellis.spark._
-import geotrellis.spark.store._
 import geotrellis.util._
 
 import org.apache.spark.SparkContext
-import org.apache.spark.rdd.RDD
 import io.circe._
 
 import scala.reflect.ClassTag

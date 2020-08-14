@@ -21,8 +21,6 @@ import geotrellis.raster._
 import geotrellis.raster.buffer.{BufferSizes, BufferedTile}
 import geotrellis.raster.crop._
 import geotrellis.raster.stitch._
-import geotrellis.layer.buffer.BufferTiles
-import geotrellis.spark._
 import geotrellis.util.MethodExtensions
 
 import org.apache.spark.rdd.RDD
@@ -33,7 +31,7 @@ import scala.reflect.ClassTag
 
 class BufferTilesRDDMethods[
   K: SpatialComponent: ClassTag,
-  V <: CellGrid[Int]: Stitcher: ClassTag: (* => CropMethods[V])
+  V <: CellGrid[Int]: Stitcher: ClassTag: * => CropMethods[V]
 ](val self: RDD[(K, V)]) extends MethodExtensions[RDD[(K, V)]] {
   def bufferTiles(bufferSize: Int): RDD[(K, BufferedTile[V])] =
     BufferTilesRDD(self, bufferSize)

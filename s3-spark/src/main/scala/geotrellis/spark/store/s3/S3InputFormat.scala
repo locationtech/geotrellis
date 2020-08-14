@@ -18,7 +18,6 @@ package geotrellis.spark.store.s3
 
 import geotrellis.store.s3.S3ClientProducer
 import geotrellis.store.hadoop._
-import geotrellis.spark.store.hadoop._
 
 import org.log4s._
 
@@ -27,7 +26,7 @@ import software.amazon.awssdk.services.s3.model.{ListObjectsV2Request, S3Object}
 import software.amazon.awssdk.services.s3.S3Client
 
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.mapreduce.{InputFormat, InputSplit, Job, JobContext}
+import org.apache.hadoop.mapreduce.{InputFormat, Job, JobContext}
 
 import scala.util.matching.Regex
 import scala.collection.JavaConverters._

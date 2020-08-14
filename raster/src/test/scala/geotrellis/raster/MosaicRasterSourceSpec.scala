@@ -26,9 +26,9 @@ import cats.syntax.apply._
 import cats.instances.option._
 import geotrellis.raster.resample.NearestNeighbor
 
-import org.scalatest._
+import org.scalatest.funspec.AnyFunSpec
 
-class MosaicRasterSourceSpec extends FunSpec with RasterMatchers with GeoTiffTestUtils {
+class MosaicRasterSourceSpec extends AnyFunSpec with RasterMatchers with GeoTiffTestUtils {
 
   describe("union operations") {
     // With Extent(0, 0, 1, 1)

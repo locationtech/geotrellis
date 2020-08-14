@@ -19,13 +19,10 @@ package geotrellis.spark.store
 import geotrellis.layer._
 import geotrellis.store._
 import geotrellis.store.avro._
-import geotrellis.spark._
 import geotrellis.util._
 
 import org.apache.spark.rdd._
 import org.apache.spark.SparkContext
-import cats.effect.{IO, Timer}
-import cats.syntax.apply._
 import io.circe._
 
 import scala.reflect._

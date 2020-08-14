@@ -17,16 +17,13 @@
 package geotrellis.raster.density
 
 import geotrellis.raster._
-import geotrellis.raster.density._
 import geotrellis.raster.testkit._
 import geotrellis.vector._
 
-import org.scalatest._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
-class KernelDensitySpec extends FunSpec
-                        with Matchers
-                        with RasterMatchers with TestFiles
-                        with TileBuilders
+class KernelDensitySpec extends AnyFunSpec with Matchers with RasterMatchers with TestFiles with TileBuilders
 {
   describe("kernelDensity") {
     it("matches expected values") {

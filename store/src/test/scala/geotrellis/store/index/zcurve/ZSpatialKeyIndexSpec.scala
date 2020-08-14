@@ -17,13 +17,12 @@
 package geotrellis.store.index.zcurve
 
 import geotrellis.layer._
-import geotrellis.store._
 
-import org.scalatest._
 
-import scala.collection.immutable.TreeSet
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
-class ZSpatialKeyIndexSpec extends FunSpec with Matchers {
+class ZSpatialKeyIndexSpec extends AnyFunSpec with Matchers {
 
   val upperBound = 64
   val keyBounds = KeyBounds(SpatialKey(0, 0), SpatialKey(100, 100))

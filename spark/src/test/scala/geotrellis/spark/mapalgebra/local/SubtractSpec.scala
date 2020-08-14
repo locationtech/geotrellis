@@ -17,13 +17,12 @@
 package geotrellis.spark.mapalgebra.local
 
 import geotrellis.spark._
-import geotrellis.spark.store.hadoop._
 import geotrellis.spark.testkit.testfiles._
 import geotrellis.spark.testkit._
 
-import org.scalatest.FunSpec
+import org.scalatest.funspec.AnyFunSpec
 
-class SubtractSpec extends FunSpec with TestEnvironment with TestFiles {
+class SubtractSpec extends AnyFunSpec with TestEnvironment with TestFiles {
 
   describe("Subtract Operation") {
     val ones = AllOnesTestFile

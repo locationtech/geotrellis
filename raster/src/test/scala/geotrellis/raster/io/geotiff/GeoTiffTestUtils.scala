@@ -18,7 +18,7 @@ package geotrellis.raster.io.geotiff
 
 import java.io.File
 
-import org.scalatest._
+import org.scalatest.matchers.should.Matchers
 
 object GeoTiffTestUtils {
   val testDirPath = "raster/data/geotiff-test-files"

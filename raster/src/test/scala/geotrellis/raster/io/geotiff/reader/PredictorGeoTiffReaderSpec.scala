@@ -20,13 +20,9 @@ import geotrellis.raster._
 import geotrellis.raster.io.geotiff._
 import geotrellis.raster.testkit._
 
-import spire.syntax.cfor._
-import org.scalatest._
+import org.scalatest.funspec.AnyFunSpec
 
-class PredictorGeoTiffReaderSpec extends FunSpec 
-    with RasterMatchers
-    with GeoTiffTestUtils {
-
+class PredictorGeoTiffReaderSpec extends AnyFunSpec with RasterMatchers with GeoTiffTestUtils {
 
   describe("Reading a geotiff with compression and predictor=2") {
     def read(compressionType: String, bandType: String): (Tile, Tile) = {

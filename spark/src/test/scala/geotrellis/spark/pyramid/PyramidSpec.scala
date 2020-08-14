@@ -18,8 +18,6 @@ package geotrellis.spark.pyramid
 
 import geotrellis.layer._
 import geotrellis.spark._
-import geotrellis.spark.stitch._
-import geotrellis.spark.tiling._
 import geotrellis.proj4._
 import geotrellis.raster._
 import geotrellis.vector._
@@ -28,9 +26,11 @@ import geotrellis.spark.testkit._
 import jp.ne.opt.chronoscala.Imports._
 
 import java.time.{ZoneOffset, ZonedDateTime}
-import org.scalatest._
 
-class PyramidSpec extends FunSpec with Matchers with TestEnvironment {
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
+
+class PyramidSpec extends AnyFunSpec with Matchers with TestEnvironment {
 
   describe("Pyramid") {
     it("should work with SpaceTimeKey rasters") {

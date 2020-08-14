@@ -21,15 +21,16 @@ import org.locationtech.proj4j.util._
 
 import java.io.File
 
-import org.scalatest._
 import org.scalatest.matchers.{ BeMatcher, MatchResult }
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.matchers.should.Matchers
 
 /**
  * Runs MetaCRS test files.
  *
  * @author mbdavis (port by Rob Emanuele)
  */
-class MetaCRSTest extends FunSuite with Matchers {
+class MetaCRSTest extends AnyFunSuite with Matchers {
   val crsFactory = new CRSFactory
 
   test("MetaCRSExample") {

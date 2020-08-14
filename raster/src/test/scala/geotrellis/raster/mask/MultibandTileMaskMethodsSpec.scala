@@ -16,18 +16,14 @@
 
 package geotrellis.raster.mask
 
-import geotrellis.raster.testkit._
 import geotrellis.raster._
 import geotrellis.raster.rasterize.Rasterizer.Options
 import geotrellis.vector._
-import geotrellis.vector.io._
 
-import org.scalatest._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
-import scala.math.min
-import scala.util.Random
-
-class MultibandTileMaskMethodsSpec extends FunSpec with Matchers {
+class MultibandTileMaskMethodsSpec extends AnyFunSpec with Matchers {
   describe("multiband mask") {
     it ("should mask and included intersecting cell centers if including exterior") {
 

@@ -20,9 +20,10 @@ import geotrellis.raster._
 import geotrellis.raster.testkit._
 import geotrellis.vector.Extent
 
-import org.scalatest._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
-class TileMergeMethodsSpec extends FunSpec
+class TileMergeMethodsSpec extends AnyFunSpec
     with Matchers
     with TileBuilders
     with RasterMatchers {

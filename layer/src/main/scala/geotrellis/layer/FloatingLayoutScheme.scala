@@ -18,7 +18,7 @@ package geotrellis.layer
 
 
 import geotrellis.raster._
-import geotrellis.vector.{Extent, ProjectedExtent}
+import geotrellis.vector.Extent
 
 object FloatingLayoutScheme {
   val DEFAULT_TILE_SIZE = 256

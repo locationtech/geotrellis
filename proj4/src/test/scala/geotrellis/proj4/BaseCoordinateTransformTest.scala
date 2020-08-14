@@ -19,15 +19,14 @@ package geotrellis.proj4
 import org.locationtech.proj4j._
 import org.locationtech.proj4j.units.Angle
 
-import org.scalatest._
+import org.scalatest.matchers.should.Matchers
 
 /**
   * Tests correctness and accuracy of Coordinate System transformations.
   *
   * @author Martin Davis (port by Rob Emanuele)
   */
-trait BaseCoordinateTransformTest extends Matchers
-{
+trait BaseCoordinateTransformTest extends Matchers {
   // ~= 1 / (2Pi * Earth radius)
   // in code: 1.0 / (2.0 * Math.PI * 6378137.0)
   final val APPROX_METRE_IN_DEGREES = 2.0e-8

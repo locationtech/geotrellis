@@ -17,7 +17,6 @@
 package geotrellis.spark.sigmoidal
 
 import geotrellis.raster._
-import geotrellis.spark._
 
 import org.apache.spark.rdd.RDD
 
@@ -26,11 +25,11 @@ object Implicits extends Implicits
 
 trait Implicits {
 
-  implicit class withRDDSinglebandSigmoidalMethods[K, V: (* => Tile)](
+  implicit class withRDDSinglebandSigmoidalMethods[K, V: * => Tile](
     val self: RDD[(K, V)]
   ) extends RDDSinglebandSigmoidalMethods[K, V]
 
-  implicit class withRDDMultibandSigmoidalMethods[K, V: (* => MultibandTile)](
+  implicit class withRDDMultibandSigmoidalMethods[K, V: * => MultibandTile](
     val self: RDD[(K, V)]
   ) extends RDDMultibandSigmoidalMethods[K, V]
 }

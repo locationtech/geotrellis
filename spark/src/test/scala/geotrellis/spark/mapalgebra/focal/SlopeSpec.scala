@@ -23,10 +23,10 @@ import geotrellis.layer._
 import geotrellis.spark._
 import geotrellis.spark.testkit._
 
-import org.scalatest.FunSpec
+import org.scalatest.funspec.AnyFunSpec
 import java.io._
 
-class SlopeSpec extends FunSpec with TestEnvironment {
+class SlopeSpec extends AnyFunSpec with TestEnvironment {
 
   describe("Slope Elevation Spec") {
     val calculator = ZFactor({ _ => 1.0 })

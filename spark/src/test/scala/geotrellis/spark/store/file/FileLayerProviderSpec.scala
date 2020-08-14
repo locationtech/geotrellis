@@ -16,16 +16,14 @@
 
 package geotrellis.spark.store.file
 
-import geotrellis.layer._
 import geotrellis.store._
 import geotrellis.store.file.{FileAttributeStore, FileValueReader}
 import geotrellis.spark.store._
 import geotrellis.spark.testkit.TestEnvironment
 
-import org.scalatest._
+import org.scalatest.funspec.AnyFunSpec
 
-
-class FileLayerProviderSpec extends FunSpec with TestEnvironment {
+class FileLayerProviderSpec extends AnyFunSpec with TestEnvironment {
   val uri = new java.net.URI("file:/tmp/catalog")
   it("construct FileAttributeStore from URI"){
     val store = AttributeStore(uri)

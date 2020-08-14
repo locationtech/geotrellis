@@ -16,7 +16,6 @@
 
 package geotrellis.spark.store.cassandra
 
-import geotrellis.layer._
 import geotrellis.store._
 import geotrellis.store.cassandra._
 import geotrellis.store.cassandra.conf.CassandraConfig

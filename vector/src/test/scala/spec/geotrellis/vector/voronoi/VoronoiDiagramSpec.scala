@@ -17,21 +17,17 @@
 package geotrellis.vector.voronoi
 
 import org.locationtech.jts.geom.Coordinate
-import org.apache.commons.math3.linear._
 
 // import geotrellis.raster._
 // import geotrellis.raster.rasterize._
 import geotrellis.vector._
-import geotrellis.vector.io._
-import geotrellis.vector.io.json._
 import geotrellis.vector.triangulation._
 
-import scala.util.Random
-import scala.math.pow
 
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
-class VoronoiDiagramSpec extends FunSpec with Matchers {
+class VoronoiDiagramSpec extends AnyFunSpec with Matchers {
 
   // def rasterizePoly(poly: Polygon, tile: MutableArrayTile, re: RasterExtent, erring: Boolean)(implicit trans: Int => Point) = {
   //   if (erring) {

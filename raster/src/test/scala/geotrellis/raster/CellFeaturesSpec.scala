@@ -17,11 +17,11 @@
 package geotrellis.raster
 
 import geotrellis.vector._
-import geotrellis.raster.testkit._
 
-import org.scalatest._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
-class CellFeaturesSpec extends FunSpec with Matchers {
+class CellFeaturesSpec extends AnyFunSpec with Matchers {
   describe("Tile") {
     it("should extract all int point features") {
       val ext = Extent(0.0, 0.0, 3.0, 3.0)

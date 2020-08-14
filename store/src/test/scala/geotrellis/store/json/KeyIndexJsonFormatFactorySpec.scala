@@ -23,10 +23,10 @@ import geotrellis.store.index._
 import io.circe.syntax._
 import cats.syntax.either._
 
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
-import org.scalatest._
-
-class KeyIndexJsonFormatFactorySpec extends FunSpec with Matchers {
+class KeyIndexJsonFormatFactorySpec extends AnyFunSpec with Matchers {
   describe("KeyIndexJsonFormatFactory"){
     it("should be able to serialize and deserialize a custom key index set through application.conf") {
       val expectedKeyBounds = KeyBounds(SpatialKey(1, 2), SpatialKey(5, 6))

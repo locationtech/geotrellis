@@ -18,16 +18,14 @@ package geotrellis.raster.merge
 
 import geotrellis.raster._
 import geotrellis.raster.resample._
-import geotrellis.vector._
 import geotrellis.util.MethodExtensions
 import cats.Semigroup
 
 
 abstract class RasterTileFeatureMergeMethods[
-  T <: CellGrid[Int] : (* => TileMergeMethods[T]),
+  T <: CellGrid[Int] : * => TileMergeMethods[T],
   D : Semigroup
 ](val self: TileFeature[Raster[T], D])(implicit ev0: Raster[T] => RasterMergeMethods[T]) extends MethodExtensions[TileFeature[Raster[T], D]] {
-  import Implicits._
 
   def merge(other: TileFeature[Raster[T], D]): TileFeature[Raster[T], D] =
     TileFeature(self.tile.merge(other.tile), Semigroup[D].combine(self.data, other.data))

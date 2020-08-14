@@ -17,15 +17,14 @@
 package geotrellis.raster.mapalgebra.focal.hillshade
 
 import geotrellis.raster._
-import geotrellis.raster.mapalgebra.focal._
 import geotrellis.raster.testkit._
-import org.scalatest._
 
 import scala.math._
 
-class SlopeAspectTests extends FunSpec 
-                          with Matchers 
-                          with RasterMatchers {
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
+
+class SlopeAspectTests extends AnyFunSpec with Matchers with RasterMatchers {
   describe("SurfacePoint") {
     it("should calculate trig values correctly") {
       val tolerance = 0.0000000001

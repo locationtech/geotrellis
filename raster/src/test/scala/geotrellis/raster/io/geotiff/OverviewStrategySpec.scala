@@ -2,9 +2,10 @@ package geotrellis.raster.io.geotiff
 
 import geotrellis.raster._
 
-import org.scalatest._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
-class OverviewStrategySpec extends FunSpec with Matchers {
+class OverviewStrategySpec extends AnyFunSpec with Matchers {
   val availableResolutions = List(
     CellSize(1, 1),
     CellSize(2, 2),

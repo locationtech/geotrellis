@@ -22,11 +22,10 @@ import geotrellis.spark._
 import geotrellis.spark.testkit._
 import geotrellis.raster.histogram.StreamingHistogram
 
-import org.scalatest._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
-class RDDHistogramMatchingSpec extends FunSpec
-    with Matchers
-    with TestEnvironment {
+class RDDHistogramMatchingSpec extends AnyFunSpec with Matchers with TestEnvironment {
 
     val sourceHistogram = {
       val h = StreamingHistogram(42)

@@ -17,16 +17,13 @@
 package geotrellis.raster.render.jpg
 
 import geotrellis.raster._
-import geotrellis.raster.render._
-import geotrellis.vector.Extent
-
-import scala.io.{Source}
 
 import java.io.{File, FileInputStream}
 
-import org.scalatest._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
-class JpgEncoderSpec extends FunSpec with Matchers {
+class JpgEncoderSpec extends AnyFunSpec with Matchers {
 
   def parseHexByte(s: String) = Integer.parseInt(s, 16).toByte
   def parseHexBytes(cs: Array[String]) = cs.map(parseHexByte _)

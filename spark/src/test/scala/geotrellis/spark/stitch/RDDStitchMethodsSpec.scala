@@ -23,12 +23,10 @@ import geotrellis.layer._
 import geotrellis.spark._
 import geotrellis.spark.testkit._
 import geotrellis.vector.Extent
-import org.scalatest.FunSpec
 
-class RDDStitchMethodsSpec extends FunSpec
-    with TileBuilders
-    with TileLayerRDDBuilders
-    with TestEnvironment {
+import org.scalatest.funspec.AnyFunSpec
+
+class RDDStitchMethodsSpec extends AnyFunSpec with TileBuilders with TileLayerRDDBuilders with TestEnvironment {
 
   describe("Stitching spatial rdds") {
     it("should correctly stitch back together single band tile rdd") {

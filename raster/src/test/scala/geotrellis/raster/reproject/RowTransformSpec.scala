@@ -24,11 +24,10 @@ import geotrellis.proj4._
 import geotrellis.vector.testkit._
 import geotrellis.raster.io.geotiff._
 
-import org.scalatest._
 
-import spire.syntax.cfor._
+import org.scalatest.funspec.AnyFunSpec
 
-class RowTransformSpec extends FunSpec
+class RowTransformSpec extends AnyFunSpec
     with TileBuilders
     with RasterMatchers
     with GeoTiffTestUtils {

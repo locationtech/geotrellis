@@ -20,7 +20,6 @@ import geotrellis.proj4.CRS
 import geotrellis.raster._
 import geotrellis.raster.mapalgebra.focal.Kernel
 import geotrellis.layer._
-import geotrellis.spark._
 import geotrellis.util.MethodExtensions
 import geotrellis.vector._
 import org.apache.spark.rdd.RDD

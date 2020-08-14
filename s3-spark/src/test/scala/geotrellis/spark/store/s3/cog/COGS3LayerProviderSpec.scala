@@ -23,9 +23,9 @@ import geotrellis.spark.store.s3._
 import geotrellis.spark.store.cog._
 import geotrellis.spark.testkit.TestEnvironment
 
-import org.scalatest._
+import org.scalatest.funspec.AnyFunSpec
 
-class COGS3LayerProviderSpec extends FunSpec with TestEnvironment {
+class COGS3LayerProviderSpec extends AnyFunSpec with TestEnvironment {
   val client = MockS3Client()
   S3TestUtils.cleanBucket(client, "fake-bucket")
   val uri = new java.net.URI("s3://fake-bucket/some-prefix")

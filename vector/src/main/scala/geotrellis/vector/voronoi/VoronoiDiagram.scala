@@ -22,8 +22,8 @@ import geotrellis.vector._
 import geotrellis.vector.mesh.HalfEdgeTable
 import geotrellis.vector.triangulation._
 
-import scala.collection.mutable.{ListBuffer, Map}
-import scala.math.{abs, max, sqrt}
+import scala.collection.mutable.ListBuffer
+import scala.math.{abs, sqrt}
 import spire.syntax.cfor._
 
 object VoronoiDiagram {

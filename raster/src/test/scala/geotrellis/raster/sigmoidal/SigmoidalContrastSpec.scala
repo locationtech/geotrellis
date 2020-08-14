@@ -18,11 +18,10 @@ package geotrellis.raster.sigmoidal
 
 import geotrellis.raster._
 
-import org.scalatest._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
-
-class SigmoidalContrastSpec extends FunSpec with Matchers
-{
+class SigmoidalContrastSpec extends AnyFunSpec with Matchers {
   describe("Sigmoidal Contrast") {
 
     it("should work on floating-point rasters") {

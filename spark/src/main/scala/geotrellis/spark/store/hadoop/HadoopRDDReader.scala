@@ -16,7 +16,7 @@
 
 package geotrellis.spark.store.hadoop
 
-import geotrellis.layer.{Boundable, Bounds, KeyBounds}
+import geotrellis.layer.{Boundable, KeyBounds}
 import geotrellis.store.avro._
 import geotrellis.store.avro.codecs._
 import geotrellis.store.hadoop._

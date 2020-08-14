@@ -16,9 +16,10 @@
 
 package geotrellis.raster.render
 
-import org.scalatest._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
-class ColorRampSpec extends FunSpec with Matchers {
+class ColorRampSpec extends AnyFunSpec with Matchers {
   val colors: Vector[Int] = Vector(0xFF0000, 0x0000FF)
   val ramp: ColorRamp = ColorRamp(colors)
 

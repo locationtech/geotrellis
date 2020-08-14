@@ -16,7 +16,7 @@
 
 package geotrellis.store.hadoop.util
 
-import geotrellis.store.hadoop.{HadoopCollectionLayerProvider, SCHEMES}
+import geotrellis.store.hadoop.SCHEMES
 import geotrellis.util.RangeReaderProvider
 
 import org.apache.hadoop.conf.Configuration

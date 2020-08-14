@@ -19,22 +19,18 @@ package geotrellis.spark.store.hadoop
 import geotrellis.raster.io.geotiff._
 import geotrellis.raster.testkit._
 import geotrellis.raster.{IntCellType, MultibandTile}
-import geotrellis.layer._
-import geotrellis.store.hadoop._
 import geotrellis.spark.store.hadoop
 import geotrellis.spark.testkit.TestEnvironment
 
 import org.apache.hadoop.fs.Path
-import org.scalatest._
+
+import org.scalatest.BeforeAndAfterAll
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
 import java.io._
 
-class HadoopRasterMethodsSpec extends FunSpec
-  with Matchers
-  with BeforeAndAfterAll
-  with RasterMatchers
-  with TileBuilders
-  with TestEnvironment {
+class HadoopRasterMethodsSpec extends AnyFunSpec with Matchers with BeforeAndAfterAll with RasterMatchers with TileBuilders with TestEnvironment {
 
   describe ("writing Rasters without errors and with correct tiles, crs and extent using Hadoop FSData{Input|Output} stream") {
     def expandGeoTiff(geoTiff: MultibandGeoTiff) =

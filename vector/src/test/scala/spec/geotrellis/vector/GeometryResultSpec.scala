@@ -16,12 +16,12 @@
 
 package geotrellis.vector
 
-import org.scalatest.FunSpec
-import org.scalatest.Matchers
-
 import org.locationtech.jts.geom.util.AffineTransformation
 
-class GeometryResultSpec extends FunSpec with Matchers {
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
+
+class GeometryResultSpec extends AnyFunSpec with Matchers {
   val affine = new AffineTransformation
 
   describe("GeometryResult") {

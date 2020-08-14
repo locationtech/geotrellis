@@ -20,9 +20,10 @@ import geotrellis.raster._
 import geotrellis.proj4._
 import geotrellis.vector._
 
-import org.scalatest._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
-class MapKeyTransformSpec extends FunSpec with Matchers {
+class MapKeyTransformSpec extends AnyFunSpec with Matchers {
   describe("MapKeyTransform") {
     it("converts a grid bounds that is on the borders of the tile layout correctly") {
       val crs = LatLng

@@ -21,13 +21,11 @@ import geotrellis.raster.summary.polygonal.visitors.SumVisitor
 import geotrellis.raster.summary.types.SumValue
 import geotrellis.raster.testkit._
 import geotrellis.vector._
-import org.scalatest._
 
-class SumSpec
-    extends FunSpec
-    with Matchers
-    with RasterMatchers
-    with TileBuilders {
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
+
+class SumSpec extends AnyFunSpec with Matchers with RasterMatchers with TileBuilders {
 
   describe("Sum") {
     val rs = createRaster(Array.fill(40 * 40)(1), 40, 40)

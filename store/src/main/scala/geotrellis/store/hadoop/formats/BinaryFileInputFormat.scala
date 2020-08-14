@@ -16,7 +16,6 @@
 
 package geotrellis.store.hadoop.formats
 
-import geotrellis.store.hadoop._
 import geotrellis.store.hadoop.util._
 
 import org.apache.hadoop.fs._

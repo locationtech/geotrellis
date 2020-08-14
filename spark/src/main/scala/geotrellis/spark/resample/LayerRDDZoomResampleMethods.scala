@@ -19,14 +19,13 @@ package geotrellis.spark.resample
 import geotrellis.raster._
 import geotrellis.raster.resample._
 import geotrellis.layer._
-import geotrellis.spark._
 import geotrellis.util._
 import geotrellis.vector.Extent
 import org.apache.spark.rdd._
 
 abstract class LayerRDDZoomResampleMethods[
   K: SpatialComponent,
-  V <: CellGrid[Int]: (* => TileResampleMethods[V])
+  V <: CellGrid[Int]: * => TileResampleMethods[V]
 ](val self: RDD[(K, V)] with Metadata[TileLayerMetadata[K]]) extends MethodExtensions[RDD[(K, V)] with Metadata[TileLayerMetadata[K]]] {
   def resampleToZoom(
     sourceZoom: Int,

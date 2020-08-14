@@ -23,7 +23,6 @@ import geotrellis.spark._
 import geotrellis.util.annotations.experimental
 import geotrellis.vector._
 
-import org.apache.log4j.Logger
 import org.apache.spark.rdd._
 
 import scala.reflect.ClassTag

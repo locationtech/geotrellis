@@ -16,16 +16,14 @@
 
 package geotrellis.spark.mapalgebra.local
 
-import geotrellis.raster._
 
 import geotrellis.spark._
-import geotrellis.spark.store.hadoop._
 import geotrellis.spark.testkit.testfiles._
 import geotrellis.spark.testkit._
 
-import org.scalatest.FunSpec
+import org.scalatest.funspec.AnyFunSpec
 
-class MinoritySpec extends FunSpec with TestEnvironment with TestFiles {
+class MinoritySpec extends AnyFunSpec with TestEnvironment with TestFiles {
 
   describe("Minority Operation") {
     val ones = AllOnesTestFile

@@ -16,7 +16,6 @@
 
 package geotrellis.vector
 
-import org.locationtech.jts.geom._
 
 /** A case class which represents a geometry with some metadata
   *

@@ -17,15 +17,15 @@
 package geotrellis.raster.io.json
 
 import geotrellis.raster.CellSize
-import geotrellis.raster.io._
 
-import io.circe._
 import io.circe.parser._
 import cats.syntax.either._
-import org.scalatest.{Assertions, FunSpec}
+
+import org.scalatest.Assertions
+import org.scalatest.funspec.AnyFunSpec
 
 
-class CellSizeJsonSpec extends FunSpec with Assertions {
+class CellSizeJsonSpec extends AnyFunSpec with Assertions {
 
   describe("CellSize should not be truncated when reading") {
     val json =

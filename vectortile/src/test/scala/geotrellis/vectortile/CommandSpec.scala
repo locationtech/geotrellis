@@ -16,13 +16,15 @@
 
 package geotrellis.vectortile
 
-import org.scalatest._
 import geotrellis.vectortile.internal.Command._
-import geotrellis.vectortile.internal.{ MoveTo, LineTo, ClosePath }
+import geotrellis.vectortile.internal.{MoveTo, LineTo, ClosePath}
+
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
 // --- //
 
-class CommandSpec extends FunSpec with Matchers {
+class CommandSpec extends AnyFunSpec with Matchers {
   describe("Z-encoding") {
     val ns: Array[Int] = Array(0,-1,1,-2,2,-3,3)
 

@@ -17,13 +17,10 @@
 package geotrellis.raster.io.geotiff
 
 import geotrellis.raster._
-import geotrellis.raster.io.geotiff._
-import geotrellis.raster.io.geotiff.util._
 
 import java.nio.ByteBuffer
 import spire.syntax.cfor._
 
-import java.util.BitSet
 
 abstract class Int32GeoTiffSegment(val bytes: Array[Byte]) extends GeoTiffSegment {
   protected val buffer = ByteBuffer.wrap(bytes).asIntBuffer

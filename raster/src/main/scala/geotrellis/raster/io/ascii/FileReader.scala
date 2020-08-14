@@ -18,7 +18,6 @@ package geotrellis.raster.io.ascii
 
 import geotrellis.raster._
 
-import java.io.File
 
 abstract class FileReader(val path: String) {
   def readStateFromCache(bytes: Array[Byte], 

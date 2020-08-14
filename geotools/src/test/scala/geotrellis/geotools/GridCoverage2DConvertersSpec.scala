@@ -23,9 +23,11 @@ import geotrellis.vector.testkit._
 import javax.media.jai.iterator.RectIterFactory
 import org.geotools.coverage.grid._
 import org.geotools.gce.geotiff._
-import org.scalatest._
 
-class GridCoverage2DConvertersSpec extends FunSpec with Matchers with GeoTiffTestUtils {
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
+
+class GridCoverage2DConvertersSpec extends AnyFunSpec with Matchers with GeoTiffTestUtils {
 
   case class TestFile(description: String, path: String, isMultiband: Boolean) {
     def gridCoverage2D: GridCoverage2D =

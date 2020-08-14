@@ -19,7 +19,6 @@ package geotrellis.raster.io.geotiff
 import geotrellis.raster.io.geotiff.util._
 import geotrellis.raster._
 
-import java.util.BitSet
 import java.nio.ByteBuffer
 import spire.syntax.cfor._
 

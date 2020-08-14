@@ -22,10 +22,9 @@ import geotrellis.raster.resample._
 import geotrellis.raster.testkit._
 import geotrellis.vector._
 
-import org.scalatest._
+import org.scalatest.funspec.AnyFunSpec
 
-class RasterizeReprojectSpec extends FunSpec
-    with RasterMatchers {
+class RasterizeReprojectSpec extends AnyFunSpec with RasterMatchers {
 
   describe("Rasterizing reprojection") {
     it("should fill in only valid region") {

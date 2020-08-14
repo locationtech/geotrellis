@@ -30,9 +30,10 @@ import geotrellis.spark.testkit._
 import org.apache.spark.rdd._
 import spire.syntax.cfor._
 
-import org.scalatest._
+import org.scalatest.GivenWhenThen
+import org.scalatest.funspec.AnyFunSpec
 
-class GDALRasterSummarySpec extends FunSpec with TestEnvironment with GivenWhenThen {
+class GDALRasterSummarySpec extends AnyFunSpec with TestEnvironment with GivenWhenThen {
   import geotrellis.GDALTestUtils._
 
   describe("Should collect GDALRasterSource RasterSummary correct") {

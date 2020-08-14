@@ -17,7 +17,6 @@
 package geotrellis.store
 
 import geotrellis.layer._
-import geotrellis.store._
 import geotrellis.util._
 
 /**

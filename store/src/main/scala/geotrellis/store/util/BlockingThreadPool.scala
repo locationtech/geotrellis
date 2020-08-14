@@ -37,7 +37,7 @@ object BlockingThreadPool extends Serializable {
     }
   }
 
-  lazy val conf: Config = pureconfig.loadConfigOrThrow[Config]("geotrellis.blocking-thread-pool")
+  lazy val conf: Config = ConfigSource.default.at("geotrellis.blocking-thread-pool").loadOrThrow[Config]
   implicit def blockingThreadPoolToConf(obj: BlockingThreadPool.type): Config = conf
 
   @transient lazy val pool: ExecutorService =

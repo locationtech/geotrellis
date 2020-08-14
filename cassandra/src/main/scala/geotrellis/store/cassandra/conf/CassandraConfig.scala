@@ -16,6 +16,7 @@
 
 package geotrellis.store.cassandra.conf
 
+import pureconfig.ConfigSource
 import pureconfig.generic.auto._
 
 case class CassandraConfig(
@@ -30,6 +31,6 @@ case class CassandraConfig(
 )
 
 object CassandraConfig {
-  lazy val conf: CassandraConfig = pureconfig.loadConfigOrThrow[CassandraConfig]("geotrellis.cassandra")
+  lazy val conf: CassandraConfig = ConfigSource.default.at("geotrellis.cassandra").loadOrThrow[CassandraConfig]
   implicit def cassandraConfigToClass(obj: CassandraConfig.type): CassandraConfig = conf
 }

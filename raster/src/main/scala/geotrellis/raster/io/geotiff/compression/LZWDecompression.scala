@@ -16,15 +16,10 @@
 
 package geotrellis.raster.io.geotiff.compression
 
-import geotrellis.raster.io.geotiff.reader._
-import geotrellis.raster.io.geotiff.tags._
 import geotrellis.raster.io.geotiff.tags.codes.CompressionType._
 
-import monocle.syntax._
 
-import scala.collection.immutable.HashMap
 
-import java.util.BitSet
 
 import spire.syntax.cfor._
 

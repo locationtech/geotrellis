@@ -16,9 +16,6 @@
 
 package geotrellis.store.hadoop
 
-import geotrellis.layer._
-import geotrellis.raster._
-import geotrellis.raster.resample._
 import geotrellis.store._
 import geotrellis.store.avro._
 import geotrellis.store.avro.codecs._

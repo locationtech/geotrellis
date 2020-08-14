@@ -17,8 +17,6 @@
 package geotrellis.raster.mask
 
 import geotrellis.raster._
-import geotrellis.raster.mapalgebra.local.{Mask, InverseMask}
-import geotrellis.raster.rasterize.Rasterizer
 import geotrellis.raster.rasterize.Rasterizer.Options
 import geotrellis.vector.{Geometry, Extent}
 

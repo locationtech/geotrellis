@@ -16,10 +16,7 @@
 
 package geotrellis.raster
 
-import geotrellis.vector.Extent
 
-import java.nio.ByteBuffer
-import spire.syntax.cfor._
 
 
 /**

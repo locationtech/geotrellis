@@ -24,11 +24,11 @@ import geotrellis.raster.io.geotiff.reader._
 import geotrellis.raster.resample._
 import geotrellis.vector._
 
-import org.scalatest._
-
 import java.io.File
 
-class LayoutTileSourceSpec extends FunSpec with RasterMatchers {
+import org.scalatest.funspec.AnyFunSpec
+
+class LayoutTileSourceSpec extends AnyFunSpec with RasterMatchers {
   /** Function to get paths from the raster/data dir.  */
   def rasterGeoTiffPath(name: String): String = {
     def baseDataPath = "raster/data"

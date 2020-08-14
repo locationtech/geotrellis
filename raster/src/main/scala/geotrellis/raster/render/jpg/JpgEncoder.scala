@@ -16,21 +16,17 @@
 
 package geotrellis.raster.render.jpg
 
-import geotrellis.raster.render._
 import geotrellis.raster._
 
 import java.io.{File, ByteArrayOutputStream}
 import java.nio.file.Files
-import java.io.OutputStream
 import javax.imageio._
 import javax.imageio.plugins.jpeg._
 import javax.imageio.stream._
 import java.awt.image.BufferedImage
 import java.util.Locale
 
-import scala.math.abs
 
-import spire.syntax.cfor._
 
 case class JpgEncoder(settings: Settings = Settings.DEFAULT) {
 

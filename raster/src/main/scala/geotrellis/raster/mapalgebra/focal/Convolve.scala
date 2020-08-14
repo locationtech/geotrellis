@@ -17,7 +17,6 @@
 package geotrellis.raster.mapalgebra.focal
 
 import geotrellis.raster._
-import spire.syntax.cfor._
 
 /**
  * Computes the convolution of a raster with a kernel.

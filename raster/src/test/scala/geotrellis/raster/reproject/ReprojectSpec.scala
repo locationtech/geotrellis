@@ -18,17 +18,16 @@ package geotrellis.raster.reproject
 
 import geotrellis.raster._
 import geotrellis.raster.resample._
-import geotrellis.raster.mosaic._
 import geotrellis.vector._
-import geotrellis.vector.io._
 import geotrellis.raster.testkit._
 import geotrellis.proj4._
 import geotrellis.raster.io.geotiff._
-import geotrellis.raster.io.geotiff.reader._
-import org.scalatest._
+
 import spire.syntax.cfor._
 
-class ReprojectSpec extends FunSpec
+import org.scalatest.funspec.AnyFunSpec
+
+class ReprojectSpec extends AnyFunSpec
     with TileBuilders
     with GeoTiffTestUtils
     with RasterMatchers {

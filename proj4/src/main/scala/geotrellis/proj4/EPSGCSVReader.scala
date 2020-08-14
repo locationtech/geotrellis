@@ -18,7 +18,6 @@ package geotrellis.proj4
 
 import com.opencsv.CSVReader
 
-import scala.collection.JavaConverters._
 import scala.collection.mutable.ListBuffer
 
 import java.io.InputStreamReader

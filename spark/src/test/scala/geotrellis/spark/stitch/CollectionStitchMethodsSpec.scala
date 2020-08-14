@@ -24,9 +24,9 @@ import geotrellis.spark._
 import geotrellis.spark.testkit._
 import geotrellis.vector.Extent
 
-import org.scalatest.FunSpec
+import org.scalatest.funspec.AnyFunSpec
 
-class CollectionStitchMethodsSpec extends FunSpec
+class CollectionStitchMethodsSpec extends AnyFunSpec
     with TileBuilders
     with TileLayerRDDBuilders
     with TestEnvironment {

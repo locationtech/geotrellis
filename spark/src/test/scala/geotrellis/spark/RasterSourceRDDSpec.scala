@@ -32,9 +32,11 @@ import geotrellis.spark.testkit._
 import geotrellis.raster.testkit._
 
 import org.scalatest.Inspectors._
-import org.scalatest._
+import org.scalatest.BeforeAndAfterAll
+import org.scalatest.funspec.AnyFunSpec
 
-class RasterSourceRDDSpec extends FunSpec with TestEnvironment with RasterMatchers with BeforeAndAfterAll {
+class RasterSourceRDDSpec extends AnyFunSpec with TestEnvironment with RasterMatchers with BeforeAndAfterAll {
+
   val uri = Resource.path("vlm/aspect-tiled.tif")
   def filePathByIndex(i: Int): String = Resource.path(s"vlm/aspect-tiled-$i.tif")
   lazy val rasterSource = GeoTiffRasterSource(uri)

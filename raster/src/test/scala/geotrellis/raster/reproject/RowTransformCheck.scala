@@ -18,7 +18,6 @@ package geotrellis.raster.reproject
 
 import geotrellis.proj4._
 import geotrellis.raster._
-import geotrellis.raster.testkit._
 import geotrellis.vector._
 
 import org.scalacheck._
@@ -26,7 +25,6 @@ import Prop._
 import Gen._
 import Arbitrary._
 
-import spire.syntax.cfor._
 
 trait RowTransformCheck { self: Properties =>
   case class TestCase(extent: Extent, srcX: Array[Double], srcY: Array[Double])

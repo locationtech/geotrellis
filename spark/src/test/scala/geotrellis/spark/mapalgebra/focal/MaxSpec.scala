@@ -21,9 +21,9 @@ import geotrellis.raster.mapalgebra.focal._
 import geotrellis.raster._
 import geotrellis.spark.testkit._
 
-import org.scalatest.FunSpec
+import org.scalatest.funspec.AnyFunSpec
 
-class MaxSpec extends FunSpec with TestEnvironment {
+class MaxSpec extends AnyFunSpec with TestEnvironment {
 
   describe("Max Focal Spec") {
 

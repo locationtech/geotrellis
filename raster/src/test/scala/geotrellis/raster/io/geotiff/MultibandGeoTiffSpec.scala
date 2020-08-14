@@ -18,13 +18,12 @@ package geotrellis.raster.io.geotiff
 
 import geotrellis.raster._
 import geotrellis.raster.resample.NearestNeighbor
-import geotrellis.raster.io.geotiff.reader._
 import geotrellis.raster.testkit.RasterMatchers
 
-import spire.syntax.cfor._
-import org.scalatest._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
-class MultibandGeoTiffSpec extends FunSpec with Matchers with RasterMatchers with GeoTiffTestUtils {
+class MultibandGeoTiffSpec extends AnyFunSpec with Matchers with RasterMatchers with GeoTiffTestUtils {
   describe("Building Overviews") {
     val tiff = {
       val t = MultibandGeoTiff(geoTiffPath("overviews/multiband.tif"))

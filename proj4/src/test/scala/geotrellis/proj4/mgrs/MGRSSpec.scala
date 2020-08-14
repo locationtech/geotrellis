@@ -16,9 +16,10 @@
 
 package geotrellis.proj4.mgrs
 
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
-class MGRSSpec extends FunSpec with Matchers {
+class MGRSSpec extends AnyFunSpec with Matchers {
 
   describe("MGRS") {
     it("should produce bounding boxes containing the original point (more or less)") {

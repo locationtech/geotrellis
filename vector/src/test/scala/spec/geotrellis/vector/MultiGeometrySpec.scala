@@ -16,9 +16,10 @@
 
 package geotrellis.vector
 
-import org.scalatest._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
-class MultiGeometrySpec extends FunSpec with Matchers {
+class MultiGeometrySpec extends AnyFunSpec with Matchers {
   describe("MultiGeometry.extent") {
     it("should return a 0 Extent when empty.") {
       val ex = Set(

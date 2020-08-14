@@ -25,7 +25,7 @@ import geotrellis.util.MethodExtensions
 
 class CollectionBufferTilesMethods[
   K: SpatialComponent,
-  V <: CellGrid[Int]: Stitcher: (* => CropMethods[V])
+  V <: CellGrid[Int]: Stitcher: * => CropMethods[V]
 ](val self: Seq[(K, V)]) extends MethodExtensions[Seq[(K, V)]] {
   def bufferTiles(bufferSize: Int): Seq[(K, BufferedTile[V])] =
     BufferTiles(self, bufferSize)

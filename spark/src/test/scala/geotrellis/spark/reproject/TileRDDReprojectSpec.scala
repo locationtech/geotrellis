@@ -19,22 +19,20 @@ package geotrellis.spark.reproject
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff._
 import geotrellis.raster.resample._
-import geotrellis.raster.reproject._
 import geotrellis.raster.reproject.Reproject.{Options => RasterReprojectOptions}
 import geotrellis.layer._
 import geotrellis.spark._
 import geotrellis.spark.reproject.Reproject.Options
 import geotrellis.spark.testkit._
 import geotrellis.vector._
-
 import geotrellis.proj4._
 
 import spire.syntax.cfor._
-
 import org.apache.spark._
-import org.scalatest.FunSpec
 
-class TileRDDReprojectSpec extends FunSpec with TestEnvironment {
+import org.scalatest.funspec.AnyFunSpec
+
+class TileRDDReprojectSpec extends AnyFunSpec with TestEnvironment {
 
   describe("TileRDDReproject") {
     val path = "raster/data/aspect.tif"

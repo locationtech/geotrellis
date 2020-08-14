@@ -16,9 +16,7 @@
 
 package geotrellis.proj4
 
-import org.locationtech.proj4j._
-
-import org.scalatest._
+import org.scalatest.funsuite.AnyFunSuite
 
 /**
   * Tests for implementation of PROJ4 features (such as projection parameters and datum transformations).
@@ -30,8 +28,7 @@ import org.scalatest._
   * @author Martin Davis
   *
   */
-class FeatureTest extends FunSuite with BaseCoordinateTransformTest
-{
+class FeatureTest extends AnyFunSuite with BaseCoordinateTransformTest {
   test("DatumConversion") {
     //  datum conversions not yet supported
     //  +proj=tmerc +lat_0=0 +lon_0=6 +k=1 +x_0=2500000 +y_0=0 +ellps=bessel +datum=potsdam +units=m +no_defs

@@ -16,23 +16,20 @@
 
 package geotrellis.spark.render
 
-import geotrellis.proj4.CRS
-import geotrellis.raster.{Tile, TileLayout}
 import geotrellis.layer._
-import geotrellis.spark._
-import geotrellis.spark.render._
 import geotrellis.spark.testkit.testfiles.TestFiles
 import geotrellis.spark.store.hadoop._
 import geotrellis.spark.testkit._
-import org.scalatest._
+import geotrellis.store.LayerId
+
 import org.apache.hadoop.fs._
 import org.apache.hadoop.conf._
 import org.apache.commons.io.IOUtils
 import java.net.URI
 
-import geotrellis.store.LayerId
+import org.scalatest.funspec.AnyFunSpec
 
-class SaveImagesSpec extends FunSpec with TestEnvironment {
+class SaveImagesSpec extends AnyFunSpec with TestEnvironment {
   lazy val sample = TestFiles.generateSpatial("all-ones")
   val tmpdir = System.getProperty("java.io.tmpdir")
   val fs = FileSystem.get(new URI(tmpdir), new Configuration)

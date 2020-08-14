@@ -16,16 +16,14 @@
 
 package geotrellis.proj4
 
-import org.locationtech.proj4j._
-
-import org.scalatest._
+import org.scalatest.funsuite.AnyFunSuite
 
 /**
  * Tests correctness and accuracy of Coordinate System transformations.
  *
  * @author Martin Davis (port by Rob Emanuele)
  */
-class CoordinateTransformTest extends FunSuite with BaseCoordinateTransformTest
+class CoordinateTransformTest extends AnyFunSuite with BaseCoordinateTransformTest
 {
   test("First") {
     checkTransformFromGeo("proj=lcc  datum=NAD83 lon_0=-100d30 lat_1=48d44 lat_2=47d26 lat_0=47 x_0=600000 y_0=0 units=us-ft", -98.76756444444445,48.13707861111111, 2391470.474,419526.909, 0.01 )

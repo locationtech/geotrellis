@@ -16,15 +16,12 @@
 
 package geotrellis.spark.rasterize
 
-import org.scalatest._
 import geotrellis.raster._
 import geotrellis.raster.rasterize.Rasterizer
 import geotrellis.layer._
 import geotrellis.spark._
-import geotrellis.spark.tiling._
 import geotrellis.spark.testkit._
 import geotrellis.spark.testkit.TestEnvironment
-import geotrellis.raster.rasterize.Rasterizer.Options
 import geotrellis.vector._
 import geotrellis.vector.io.wkt.WKT
 import geotrellis.vector.io.json._
@@ -34,9 +31,10 @@ import java.nio.file.Paths;
 
 import org.apache.spark._
 
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
-class RasterizeRDDSpec extends FunSpec with Matchers
-    with TestEnvironment {
+class RasterizeRDDSpec extends AnyFunSpec with Matchers with TestEnvironment {
 
   def readFile(path: String): String =
     new String(Files.readAllBytes(Paths.get(path)));

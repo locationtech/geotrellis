@@ -16,7 +16,6 @@
 
 package geotrellis
 
-import geotrellis.util.MethodExtensions
 
 import org.locationtech.jts.{geom => jts}
 

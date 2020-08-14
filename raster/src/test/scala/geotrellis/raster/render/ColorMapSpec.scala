@@ -17,18 +17,17 @@
 package geotrellis.raster.render
 
 import geotrellis.raster._
-import geotrellis.raster.render._
 import geotrellis.raster.render.png.IndexedPngEncoding
 import geotrellis.raster.testkit._
-
-import org.scalatest._
 
 import java.io._
 import java.awt.Color
 import javax.imageio._
 
-class ColorMapSpec extends FunSpec with Matchers
-                                   with TileBuilders {
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
+
+class ColorMapSpec extends AnyFunSpec with Matchers with TileBuilders {
   describe("color map construction") {
     it("should classify ints to colors") {
       val colorMap =

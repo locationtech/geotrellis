@@ -16,7 +16,7 @@
 
 package geotrellis.raster.transform
 
-import geotrellis.raster.{CellGrid, MultibandTile, Raster, Tile}
+import geotrellis.raster.{MultibandTile, Raster, Tile}
 
 object Implicits extends Implicits
 

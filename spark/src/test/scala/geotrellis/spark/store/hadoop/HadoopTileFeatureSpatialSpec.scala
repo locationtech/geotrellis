@@ -20,7 +20,6 @@ import geotrellis.layer._
 import geotrellis.raster.{Tile, TileFeature}
 import geotrellis.store._
 import geotrellis.store.hadoop._
-import geotrellis.spark._
 import geotrellis.spark.store._
 import geotrellis.store.index._
 import geotrellis.spark.testkit._

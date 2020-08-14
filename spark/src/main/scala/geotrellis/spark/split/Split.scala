@@ -19,7 +19,6 @@ package geotrellis.spark.split
 import geotrellis.raster._
 import geotrellis.raster.split._
 import geotrellis.raster.split.Split.Options
-import geotrellis.spark._
 import geotrellis.vector.ProjectedExtent
 import geotrellis.util._
 
@@ -28,7 +27,7 @@ import org.apache.spark.rdd.RDD
 object Split {
   /** Splits an RDD of tiles into tiles of size (tileCols x tileRows), and updates the ProjectedExtent component of the keys.
     */
- def apply[K: Component[*, ProjectedExtent], V <: CellGrid[Int]: (* => SplitMethods[V])](rdd: RDD[(K, V)], tileCols: Int, tileRows: Int): RDD[(K, V)] =
+ def apply[K: Component[*, ProjectedExtent], V <: CellGrid[Int]: * => SplitMethods[V]](rdd: RDD[(K, V)], tileCols: Int, tileRows: Int): RDD[(K, V)] =
     rdd
       .flatMap { case (key, tile) =>
         val splitLayout =

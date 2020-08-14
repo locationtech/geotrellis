@@ -19,7 +19,6 @@ package geotrellis.raster.render
 import geotrellis.raster._
 import geotrellis.util.MethodExtensions
 
-import spire.syntax.cfor._
 
 trait MultibandJpgRenderMethods extends MethodExtensions[MultibandTile] {
 

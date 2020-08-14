@@ -16,12 +16,12 @@
 
 package geotrellis.proj4.io.wkt
 
-import org.scalatest.FunSpec
+import org.scalatest.funspec.AnyFunSpec
 
 /**
  * @author Manuri Perera
  */
-class WKTTest extends FunSpec {
+class WKTTest extends AnyFunSpec {
   it("should return the WKTString corresponding to EPSG:3824") {
     val wktString = WKT.fromEpsgCode(3824).get
 

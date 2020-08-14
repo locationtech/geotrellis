@@ -17,12 +17,13 @@
 package geotrellis.store.avro
 
 import geotrellis.raster._
-import geotrellis.layer._
 import geotrellis.store.avro.codecs.Implicits._
-import org.scalatest._
+
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
 
-class TileFeatureCodecSpec extends FunSpec with Matchers with AvroTools  {
+class TileFeatureCodecSpec extends AnyFunSpec with Matchers with AvroTools  {
   describe("TileFeatureCodec") {
     val tile = IntArrayTile.fill(0, 10, 10)
 

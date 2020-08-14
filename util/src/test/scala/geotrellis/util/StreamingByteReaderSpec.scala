@@ -16,9 +16,10 @@
 
 package geotrellis.util
 
-import org.scalatest._
-
 import java.nio.ByteBuffer
+
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
 class MockRangeReader(arr: Array[Byte]) extends RangeReader {
   var numberOfReads = 0
@@ -29,7 +30,7 @@ class MockRangeReader(arr: Array[Byte]) extends RangeReader {
   }
 }
 
-class StreamingByteReaderSpec extends FunSpec with Matchers {
+class StreamingByteReaderSpec extends AnyFunSpec with Matchers {
   describe("StreamingByteReader") {
     val arr = Array.ofDim[Byte](Byte.MaxValue * 100)
     for(chunk <- 0 until 100;

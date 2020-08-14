@@ -16,16 +16,15 @@
 
 package geotrellis.vector.io.json
 
-import io.circe._
 import io.circe.generic._
 import io.circe.syntax._
 import cats.syntax.either._
-import org.scalatest._
-
 import geotrellis.vector._
 
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.flatspec.AnyFlatSpec
 
-class FeatureFormatsSpec extends FlatSpec with Matchers with GeoJsonSupport {
+class FeatureFormatsSpec extends AnyFlatSpec with Matchers with GeoJsonSupport {
 
   val pointFeature = PointFeature(Point(6.0,1.2), 123)
   val lineFeature = LineStringFeature(LineString(Point(1,2) :: Point(1,3) :: Nil), 321)

@@ -17,17 +17,14 @@
 package geotrellis.raster.summary.polygonal
 
 import geotrellis.raster._
-import geotrellis.raster.histogram.StreamingHistogram
 import geotrellis.raster.summary.polygonal.visitors.StreamingHistogramVisitor
 import geotrellis.vector._
 import geotrellis.raster.testkit._
-import org.scalatest._
 
-class HistogramSpec
-    extends FunSpec
-    with Matchers
-    with RasterMatchers
-    with TileBuilders {
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
+
+class HistogramSpec extends AnyFunSpec with Matchers with RasterMatchers with TileBuilders {
 
   describe("zonalHistogram") {
     val arr = Array.fill(40 * 40)(1.0)

@@ -16,13 +16,8 @@
 
 package geotrellis.raster.io.geotiff
 
-import geotrellis.raster._
-import geotrellis.raster.io.geotiff.util._
 
-import java.nio.ByteBuffer
-import java.util.BitSet
 
-import spire.syntax.cfor._
 
 class Int16RawGeoTiffSegment(bytes: Array[Byte]) extends Int16GeoTiffSegment(bytes) {
   def getInt(i: Int): Int = get(i).toInt

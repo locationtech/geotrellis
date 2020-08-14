@@ -18,7 +18,6 @@ package geotrellis.raster.io.geotiff.util
 
 import java.nio.{ByteBuffer, ByteOrder}
 
-import spire.syntax.cfor._
 
 abstract sealed class TiffTagOffsetSize {
   /** Size, in bytes, of the offset portion of a GeoTiff tag.

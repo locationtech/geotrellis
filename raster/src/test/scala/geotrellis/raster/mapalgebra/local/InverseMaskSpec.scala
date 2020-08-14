@@ -18,13 +18,11 @@ package geotrellis.raster.mapalgebra.local
 
 import geotrellis.raster._
 
-import org.scalatest._
-
-import scala.math.min
-
 import geotrellis.raster.testkit._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
-class InverseMaskSpec extends FunSpec 
+class InverseMaskSpec extends AnyFunSpec
                          with Matchers 
                          with RasterMatchers
                          with TileBuilders {

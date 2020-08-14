@@ -18,13 +18,11 @@ package geotrellis.raster.io.geotiff.reader
 
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff._
+
 import geotrellis.raster.testkit._
+import org.scalatest.funspec.AnyFunSpec
 
-import org.scalatest._
-
-class MultibandGeoTiffReaderSpec extends FunSpec
-    with RasterMatchers
-    with GeoTiffTestUtils {
+class MultibandGeoTiffReaderSpec extends AnyFunSpec with RasterMatchers with GeoTiffTestUtils {
 
   describe("Reading geotiffs with INTERLEAVE=PIXEL") {
     it("Uncompressed, Stripped") {

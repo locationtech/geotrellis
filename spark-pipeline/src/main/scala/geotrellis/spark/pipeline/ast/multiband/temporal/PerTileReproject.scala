@@ -20,7 +20,6 @@ import io.circe.syntax._
 
 import geotrellis.raster._
 import geotrellis.layer.TemporalProjectedExtent
-import geotrellis.spark._
 import geotrellis.spark.pipeline.ast._
 import geotrellis.spark.pipeline.json.transform
 

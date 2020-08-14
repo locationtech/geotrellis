@@ -16,11 +16,12 @@
 
 package geotrellis.store.accumulo.conf
 
+import pureconfig.ConfigSource
 import pureconfig.generic.auto._
 
 case class AccumuloConfig(catalog: String = "metadata")
 
 object AccumuloConfig {
-  lazy val conf: AccumuloConfig = pureconfig.loadConfigOrThrow[AccumuloConfig]("geotrellis.accumulo")
+  lazy val conf: AccumuloConfig = ConfigSource.default.at("geotrellis.accumulo").loadOrThrow[AccumuloConfig]
   implicit def accumuloConfigToClass(obj: AccumuloConfig.type): AccumuloConfig = conf
 }

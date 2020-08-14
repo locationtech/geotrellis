@@ -19,7 +19,6 @@ package geotrellis.vector
 import org.locationtech.jts.index.strtree.{STRtree, ItemBoundable, AbstractNode}
 import org.locationtech.jts.index.strtree.ItemDistance
 import org.locationtech.jts.geom.Coordinate
-import org.locationtech.jts.geom.GeometryFactory
 import org.locationtech.jts.geom.Envelope
 import org.locationtech.jts.operation.distance.DistanceOp
 

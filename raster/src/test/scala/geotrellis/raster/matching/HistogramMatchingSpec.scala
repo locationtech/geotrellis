@@ -19,10 +19,10 @@ package geotrellis.raster.matching
 import geotrellis.raster._
 import geotrellis.raster.histogram.StreamingHistogram
 
-import org.scalatest._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
-
-class HistogramMatchingSpec extends FunSpec with Matchers
+class HistogramMatchingSpec extends AnyFunSpec with Matchers
 {
   describe("Histogram Matching") {
 

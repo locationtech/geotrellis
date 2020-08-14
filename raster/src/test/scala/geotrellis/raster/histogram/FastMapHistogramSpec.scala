@@ -16,11 +16,11 @@
 
 package geotrellis.raster.histogram
 
-import geotrellis.raster._
 
-import org.scalatest._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
-class FastMapHistogramSpec extends FunSpec with Matchers {
+class FastMapHistogramSpec extends AnyFunSpec with Matchers {
   describe("mode") {
     it("should return NODATA if no items are counted") {
       val h = FastMapHistogram()

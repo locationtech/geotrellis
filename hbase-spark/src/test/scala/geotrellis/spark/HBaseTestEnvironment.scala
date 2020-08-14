@@ -17,14 +17,14 @@
 package geotrellis.spark
 
 import geotrellis.store.hbase._
-import geotrellis.spark.store.hbase._
 
 import geotrellis.spark.store.kryo.KryoRegistrator
 import geotrellis.spark.testkit.TestEnvironment
 
 import org.apache.spark.SparkConf
 import org.apache.zookeeper.client.FourLetterWordMain
-import org.scalatest._
+
+import org.scalatest.Suite
 
 trait HBaseTestEnvironment extends TestEnvironment { self: Suite =>
   override def setKryoRegistrator(conf: SparkConf) =

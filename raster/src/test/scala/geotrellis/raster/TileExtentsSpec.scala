@@ -16,12 +16,12 @@
 
 package geotrellis.raster
 
-import geotrellis._
 import geotrellis.vector.Extent
 
-import org.scalatest._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
-class TileExtentsSpec extends FunSpec with Matchers {
+class TileExtentsSpec extends AnyFunSpec with Matchers {
   describe("TileExtents") {
     it("should get middle tile extent by tile index for 3x4 tiles.") {
       val tileLayout = TileLayout(3, 4, 2, 2)

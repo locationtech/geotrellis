@@ -22,7 +22,6 @@ import geotrellis.util._
 import _root_.io.circe._
 import _root_.io.circe.syntax._
 import _root_.io.circe.generic.semiauto._
-import _root_.io.circe.generic.JsonCodec
 import cats.Functor
 import cats.syntax.either._
 

@@ -23,9 +23,7 @@ import geotrellis.store._
 import geotrellis.store.util._
 import geotrellis.store.cog.{Extension, ZoomRange}
 import geotrellis.store.file.{FileAttributeStore, FileLayerHeader, KeyPathGenerator}
-import geotrellis.store.file.cog.byteReader
 import geotrellis.spark.store.cog._
-import geotrellis.util._
 
 import org.apache.spark.SparkContext
 import _root_.io.circe._

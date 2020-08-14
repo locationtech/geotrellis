@@ -16,16 +16,15 @@
 
 package geotrellis.raster.mapalgebra.focal
 
-import geotrellis._
 
 import scala.collection.mutable.Set
-import scala.math._
-
-import org.scalatest._
 
 import Movement._
 
-class CursorMaskSpec extends FunSpec with Matchers {
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
+
+class CursorMaskSpec extends AnyFunSpec with Matchers {
   val testArray = Array(Array( 1,  2,  3,  4),
                         Array( 5,  6,  7,  8),
                         Array( 9, 10, 11, 12),

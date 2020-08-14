@@ -17,7 +17,6 @@
 package geotrellis.spark.store.hadoop
 
 import geotrellis.layer.SpatialKey
-import geotrellis.spark.render._
 import geotrellis.store.LayerId
 
 import org.apache.hadoop.conf.Configuration

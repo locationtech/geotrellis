@@ -16,9 +16,10 @@
 
 package geotrellis.raster.gdal
 
-import org.scalatest._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
-class GDALDataPathSpec extends FunSpec with Matchers {
+class GDALDataPathSpec extends AnyFunSpec with Matchers {
   val fileName = "file-1.tiff"
 
   describe("Formatting the given uris") {

@@ -29,7 +29,7 @@ import spire.syntax.fractional._
 import spire.syntax.cfor._
 
 import scala.collection.JavaConverters._
-import math.{min, max, ceil, floor}
+import math.{ceil, floor}
 
 
 /**
@@ -38,7 +38,7 @@ import math.{min, max, ceil, floor}
 object PolygonRasterizer {
   import scala.collection.mutable
   import java.util.{Arrays, Comparator}
-  import math.{abs,min,max}
+  import math.{min,max}
 
   type Segment = (Double, Double, Double, Double)
   type Interval = (Double, Double)

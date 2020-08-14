@@ -18,7 +18,6 @@ package geotrellis.util
 
 import java.net.URI
 import java.nio.file.Paths
-import java.io.File
 
 
 class FileRangeReaderProvider extends RangeReaderProvider {

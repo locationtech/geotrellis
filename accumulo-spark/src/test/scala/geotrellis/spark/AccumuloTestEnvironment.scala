@@ -21,7 +21,7 @@ import geotrellis.spark.testkit.TestEnvironment
 
 import org.apache.spark.SparkConf
 
-import org.scalatest._
+import org.scalatest.Suite
 
 trait AccumuloTestEnvironment extends TestEnvironment { self: Suite =>
   override def setKryoRegistrator(conf: SparkConf) =

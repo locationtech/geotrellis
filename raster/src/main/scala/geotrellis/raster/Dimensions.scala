@@ -17,7 +17,6 @@
 package geotrellis.raster
 
 import spire.math.Integral
-import spire.implicits._
 
 case class Dimensions[@specialized(Byte, Short, Int, Long) N: Integral](cols: N, rows: N) extends Product2[N, N] with Serializable {
   def _1 = cols

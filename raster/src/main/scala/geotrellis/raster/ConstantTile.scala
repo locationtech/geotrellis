@@ -16,7 +16,6 @@
 
 package geotrellis.raster
 
-import geotrellis.raster.resample._
 import geotrellis.vector.Extent
 
 import java.nio.ByteBuffer

@@ -16,8 +16,6 @@
 
 package geotrellis.spark.mapalgebra
 
-import geotrellis.layer.mapalgebra.CollectionCombineMethods
-import geotrellis.raster._
 import geotrellis.util.MethodExtensions
 import org.apache.spark.Partitioner
 import org.apache.spark.rdd.RDD

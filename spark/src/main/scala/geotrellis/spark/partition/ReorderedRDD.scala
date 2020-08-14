@@ -17,11 +17,8 @@
 package geotrellis.spark.partition
 
 import org.apache.spark._
-import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.rdd._
 
-import scala.collection.mutable.ListBuffer
-import scala.reflect.ClassTag
 
 
 case class ReorderedPartition(index: Int, parentPartition: Option[Partition]) extends Partition

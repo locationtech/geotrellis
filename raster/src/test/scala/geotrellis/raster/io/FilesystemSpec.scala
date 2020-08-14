@@ -17,10 +17,11 @@
 package geotrellis.raster.io
 
 import geotrellis.util.Filesystem
-import org.scalatest._
 
-class FilesystemSpec extends FunSpec
-                        with Matchers {
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
+
+class FilesystemSpec extends AnyFunSpec with Matchers {
   describe("Filesystem") {
     it("should give the same array for slurp and mapToByteArray for whole array") {
       val path = "raster/data/fake.img32.json"

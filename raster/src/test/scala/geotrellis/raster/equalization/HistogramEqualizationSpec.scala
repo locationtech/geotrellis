@@ -18,11 +18,10 @@ package geotrellis.raster.equalization
 
 import geotrellis.raster._
 
-import org.scalatest._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
-
-class HistogramEqualizationSpec extends FunSpec with Matchers
-{
+class HistogramEqualizationSpec extends AnyFunSpec with Matchers {
   val _a = List(0)
   val b  = List(1)
   val c  = List(2)

@@ -16,20 +16,13 @@
 
 package geotrellis.raster
 
-import geotrellis.vector.Extent
 import geotrellis.raster.testkit._
-import geotrellis.raster.mapalgebra.local._
-import geotrellis.raster.resample._
 
-import org.scalatest._
-import scala.collection.mutable
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.funspec.AnyFunSpec
 
-import spire.syntax.cfor._
+class DelayedConversionMultibandTileSpec extends AnyFunSpec with Matchers with RasterMatchers with TileBuilders {
 
-class DelayedConversionMultibandTileSpec extends FunSpec
-                  with Matchers
-                  with RasterMatchers
-                  with TileBuilders {
   describe("DelayedConversionMultibandTile") {
     it("should map over subset of bands") {
       val tile =
