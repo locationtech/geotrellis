@@ -16,6 +16,7 @@
 
 package geotrellis.proj4.io.wkt
 
+import scala.util.Try
 import scala.util.parsing.combinator.RegexParsers
 
 object WKTParser extends RegexParsers {
@@ -121,7 +122,7 @@ object WKTParser extends RegexParsers {
 
   def wktCS: Parser[WktCS] = localcs | projcs | geogcs | geoccs | compdcs | vertcs
 
-  def apply(wktString: String) : WktCS = {
+  def apply(wktString: String): WktCS = {
     val cleanWkt = wktString.replaceAll("\n", "")
     parseAll(wktCS, cleanWkt) match {
       case Success(wktObject, _) =>
@@ -134,4 +135,5 @@ object WKTParser extends RegexParsers {
     }
   }
 
+  def parse(wktString: String): Try[WktCS] = Try(apply(wktString))
 }

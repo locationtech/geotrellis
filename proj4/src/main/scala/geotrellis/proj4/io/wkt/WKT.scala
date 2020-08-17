@@ -51,19 +51,20 @@ object WKT {
     * @return
     */
   def getEpsgCode(wktString: String): Option[Int] = {
-    val wktParsed = WKTParser(wktString)
-    val db = parsed.find { case (_, wkt) => wkt == wktParsed }.map(_._1)
-    if(db.nonEmpty) db
-    else
-      wktParsed match {
-        case wkt: ProjCS =>
-          wkt.extension.flatMap {
-            case ExtensionProj4(proj4String) =>
-              CRS.fromString(proj4String).epsgCode
-            case _ => None
-          }
-        case _ => None
-      }
+    WKTParser.parse(wktString).toOption.flatMap { wktParsed =>
+      val db = parsed.find { case (_, wkt) => wkt == wktParsed }.map(_._1)
+      if (db.nonEmpty) db
+      else
+        wktParsed match {
+          case wkt: ProjCS =>
+            wkt.extension.flatMap {
+              case ExtensionProj4(proj4String) =>
+                CRS.fromString(proj4String).epsgCode
+              case _ => None
+            }
+          case _ => None
+        }
+    }
   }
 
   /**

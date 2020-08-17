@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Update GDAL up to 3.1 [#3279](https://github.com/locationtech/geotrellis/pull/3279)
 - Fix GeoTiff writer does not currently support WebMercator projection with no EPSG code set [#3281](https://github.com/locationtech/geotrellis/issues/3281)
 - Fix Tile combine should union cellTypes [#3284](https://github.com/locationtech/geotrellis/pull/3284)
+- Fix CRS.fromWKT function throws [#3209](https://github.com/locationtech/geotrellis/issues/3209)
 
 ## [3.4.1] - 2020-07-16
 
