@@ -613,7 +613,7 @@ abstract class GeoTiffTile(
           compressor.createDecompressor(),
           segmentLayout,
           compression,
-          cellType,
+          cellType.union(other.cellType),
           overviews = overviews
         )
       case _ =>

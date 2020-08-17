@@ -117,4 +117,13 @@ class PaddedTileSpec extends AnyFunSpec with Matchers with RasterMatchers {
 
     assertEqual(copy, expected)
   }
+
+  describe("PaddedTile cellType combine") {
+    it("should union cellTypes") {
+      val int = padded
+      val dt = padded.convert(DoubleCellType)
+
+      int.combine(dt)(_ + _).cellType shouldBe int.cellType.union(dt.cellType)
+    }
+  }
 }

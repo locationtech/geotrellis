@@ -538,7 +538,7 @@ case class CompositeTile(tiles: Seq[Tile],
   def combine(other: Tile)(f: (Int, Int) => Int): Tile = {
     (this, other).assertEqualDimensions
 
-    val result = ArrayTile.alloc(cellType, cols, rows)
+    val result = ArrayTile.alloc(cellType.union(other.cellType), cols, rows)
     val layoutCols = tileLayout.layoutCols
     val layoutRows = tileLayout.layoutRows
     val tileCols = tileLayout.tileCols

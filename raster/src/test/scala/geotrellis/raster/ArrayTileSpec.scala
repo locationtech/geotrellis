@@ -325,6 +325,15 @@ class ArrayTileSpec extends AnyFunSpec with Matchers with RasterMatchers with Ti
       assert(tile1 != tile2)
     }
   }
+
+  describe("ArrayTile cellType combine") {
+    it("should union cellTypes") {
+      val int = IntArrayTile(Array.ofDim[Int](2).fill(0), 1, 1)
+      val dt = DoubleArrayTile(Array.ofDim[Double](2).fill(0), 1, 1)
+
+      int.combine(dt)(_ + _).cellType shouldBe int.cellType.union(dt.cellType)
+    }
+  }
 }
 
 object ArrayTileSpec {
