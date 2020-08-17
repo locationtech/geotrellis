@@ -22,7 +22,6 @@ import geotrellis.vector.Extent
 import org.scalatest.funspec.AnyFunSpec
 
 class CroppedTileSpec extends AnyFunSpec with TileBuilders with RasterMatchers with TestFiles {
-
   describe("CroppedTileSpec") {
     it("should combine cropped tile") {
       val r = createTile(
@@ -41,6 +40,27 @@ class CroppedTileSpec extends AnyFunSpec with TileBuilders with RasterMatchers w
         4, 4, 4,
         4, 4, 4,
         4, 4, 4))
+    }
+  }
+
+  describe("CroppedTile cellType combine") {
+    it("should union cellTypes") {
+      val int = {
+        val r = createTile(
+          Array[Int](
+            1, 1, 1, 1, 1,
+            1, 2, 2, 2, 1,
+            1, 2, 2, 2, 1,
+            1, 2, 2, 2, 1,
+            1, 1, 1, 1, 1))
+
+        val sourceExtent = Extent(0, 0, 5, 5)
+        val targetExtent = Extent(1, 1, 4, 4)
+        CroppedTile(r, sourceExtent, targetExtent).toArrayTile
+      }
+      val dt = int.convert(DoubleCellType)
+
+      int.combine(dt)(_ + _).cellType shouldBe int.cellType.union(dt.cellType)
     }
   }
 }

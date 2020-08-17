@@ -83,6 +83,14 @@ class ConstantTileSpec extends AnyFunSpec with Matchers with RasterMatchers with
       val r1 = ConstantTile.fromBytes(t1.toBytes(), t1.cellType, cols, rows)
       assert(t1 === r1)
     }
+  }
 
+  describe("ConstantTile cellType combine") {
+    it("should union cellTypes") {
+      val int = IntConstantTile(-65536, 1, 1)
+      val dt = DoubleConstantTile(-Math.E, 1, 1)
+
+      int.combine(dt)(_ + _).cellType shouldBe int.cellType.union(dt.cellType)
+    }
   }
 }

@@ -98,4 +98,13 @@ class GeoTiffTileSpec extends AnyFunSpec with RasterMatchers with TileBuilders w
       assertEqual(actual, expected)
     }
   }
+
+  describe("GeoTiffTile cellType combine") {
+    it("should union cellTypes") {
+      val int = IntArrayTile(Array.ofDim[Int](2).fill(0), 1, 1).toGeoTiffTile()
+      val dt = DoubleArrayTile(Array.ofDim[Double](2).fill(0), 1, 1).toGeoTiffTile()
+
+      int.combine(dt)(_ + _).cellType shouldBe int.cellType.union(dt.cellType)
+    }
+  }
 }
