@@ -68,7 +68,7 @@ object CRS {
   def fromWKT(wktString: String): Option[CRS] = {
     val fromEpsgCode = WKT.getEpsgStringCode(wktString).map(fromName)
     if(fromEpsgCode.isEmpty) {
-      WKTParser(wktString) match {
+      WKTParser.parse(wktString).toOption.flatMap {
         case wkt: ProjCS =>
           wkt.extension.flatMap {
             case ExtensionProj4(proj4String) =>

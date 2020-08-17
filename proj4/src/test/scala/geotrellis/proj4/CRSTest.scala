@@ -80,4 +80,8 @@ class CRSTest extends AnyFunSpec with Inspectors {
       assert(!str.contains("$") && !str.contains("@"))
     }
   }
+
+  it("CRS.fromWKT should not throw on an incorrect input") {
+    assert(CRS.fromWKT("") == Option.empty[CRS])
+  }
 }
