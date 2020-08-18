@@ -69,7 +69,7 @@ object Dependencies {
   val sparkSql            = "org.apache.spark"           %% "spark-sql"                % Version.spark
   val pureconfig          = "com.github.pureconfig"      %% "pureconfig"               % "0.13.0"
   val logging             = "org.log4s"                  %% "log4s"                    % "1.8.2"
-  val scalatest           = "org.scalatest"              %% "scalatest"                % "3.2.1"
+  val scalatest           = "org.scalatest"              %% "scalatest"                % "3.2.0"
   val scalacheck          = "org.scalacheck"             %% "scalacheck"               % "1.14.3"
   val scalaXml            = "org.scala-lang.modules"     %% "scala-xml"                % "1.3.0"
   val jts                 = "org.locationtech.jts"        % "jts-core"                 % "1.16.1"
