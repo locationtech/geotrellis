@@ -1,0 +1,82 @@
+{
+  "definitions": {},
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "index-message.schema.json",
+  "type": "object",
+  "title": "IndexMessage",
+  "description" : "A description of the IndexMessage that is used to configure indices used in ingests.",
+  "required": [
+    "indices",
+    "typeName",
+    "dataType"
+  ],
+  "properties": {
+    "indices": {
+      "$id": "#/properties/indices",
+      "type": "array",
+      "title": "The indices Schema",
+      "items": {
+        "$id": "#/properties/indices/items",
+        "type": "object",
+        "title": "The Items Schema",
+        "required": [
+          "indexType",
+          "indexOptions"
+        ],
+        "properties": {
+          "indexName": {
+            "$id": "#/properties/indexName",
+            "type": ["string", "null"],
+            "title": "The indexName Schema",
+            "description" : "An index name. It is an optional name, index name would be inferred from indexOptions and indexType by default."
+          },
+          "indexType": {
+            "$id": "#/properties/indexType",
+            "type": "string",
+            "title": "The indexType Schema",
+            "description" : "An index type",
+            "examples": [
+              "spatial",
+              "spatial-temporal",
+              "spatial-temporal-depth"
+            ],
+            "pattern": "^(.*)$"
+          },
+          "indexOptions": {
+            "$id": "#/properties/indexOptions",
+            "type": "object",
+            "title": "The indexOptions Schema",
+            "description" : "A dictionary with values that are dependent on the each IndexType."
+          }
+        }
+      }
+    },
+    "typeName": {
+      "$id": "#/properties/typeName",
+      "type": "string",
+      "title": "The typeName Schema",
+      "description" : "An arbitrary name that would be used to identify DataType & IndexType and will be used in the ingest message",
+      "examples": [
+        "GeoTiffType"
+      ],
+      "pattern": "^(.*)$"
+    },
+    "dataType": {
+      "$id": "#/properties/dataType",
+      "type": "string",
+      "title": "The dataType Schema",
+      "description" : "A dataType this index would be used for",
+      "examples": [
+        "GEOTIFF"
+      ],
+      "pattern": "^(.*)$"
+    },
+    "namespace": {
+      "$id": "#/properties/namespace",
+      "type": ["string", "null"],
+      "title": "Storage (i.e. Cassandra) namespace",
+      "description" : "A namespace to refer during the connections establishment",
+      "pattern": "^(.*)$"
+    }
+  }
+}

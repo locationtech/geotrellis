@@ -23,7 +23,7 @@ object Version {
   val cassandra   = "3.7.2"
   val hbase       = "2.4.2"
   val geomesa     = "2.3.1"
-  val geowave     = "0.9.3"
+  val geowave     = "1.2.0"
   val hadoop      = "3.2.1"
   val gdal        = "3.1.0"
   val gdalWarp    = "1.1.1"
@@ -53,7 +53,10 @@ object Dependencies {
   }
 
   def circe(module: String) = Def.setting {
-    "io.circe" %% s"circe-$module" % "0.13.0"
+    if (module == "json-schema")
+      "io.circe" %% "circe-json-schema" % "0.1.0"
+    else
+      "io.circe" %% s"circe-$module" % "0.13.0"
   }
 
   def fs2(module: String) = Def.setting {
@@ -87,9 +90,10 @@ object Dependencies {
   val jsonSchemaValidator = "com.networknt"               % "json-schema-validator"    % "0.1.23"
   val accumuloCore        = "org.apache.accumulo"         % "accumulo-core"            % Version.accumulo
   val sl4jnop             = "org.slf4j"                   % "slf4j-nop"                % "1.7.25"
+  val logbackClassic      = "ch.qos.logback"              % "logback-classic"           % "1.2.3"
   val cassandraDriverCore = "com.datastax.cassandra"      % "cassandra-driver-core"    % Version.cassandra
   val guava               = "com.google.guava"            % "guava"                    % "16.0.1"
-  
+
   val geomesaJobs              = "org.locationtech.geomesa" %% "geomesa-jobs"               % Version.geomesa
   val geomesaAccumuloJobs      = "org.locationtech.geomesa" %% "geomesa-accumulo-jobs"      % Version.geomesa
   val geomesaAccumuloDatastore = "org.locationtech.geomesa" %% "geomesa-accumulo-datastore" % Version.geomesa
@@ -106,15 +110,17 @@ object Dependencies {
   val geotoolsShapefile   = "org.geotools"                 % "gt-shapefile"            % Version.geotools
   val geotoolsMetadata    = "org.geotools"                 % "gt-metadata"             % Version.geotools
   val geotoolsOpengis     = "org.geotools"                 % "gt-opengis"              % Version.geotools
-  
+
   // located in the OSGeo repo: https://repo.osgeo.org/repository/release/
   val jaiCore             = "javax.media" % "jai_core"     % "1.1.3"
 
-  val geowaveRaster       = "mil.nga.giat"                 % "geowave-adapter-raster"     % Version.geowave
-  val geowaveVector       = "mil.nga.giat"                 % "geowave-adapter-vector"     % Version.geowave
-  val geowaveStore        = "mil.nga.giat"                 % "geowave-core-store"         % Version.geowave
-  val geowaveGeotime      = "mil.nga.giat"                 % "geowave-core-geotime"       % Version.geowave
-  val geowaveAccumulo     = "mil.nga.giat"                 % "geowave-datastore-accumulo" % Version.geowave
+  val geowaveRaster       = "org.locationtech.geowave"     % "geowave-adapter-raster"     % Version.geowave
+  val geowaveVector       = "org.locationtech.geowave"     % "geowave-adapter-vector"     % Version.geowave
+  val geowaveIndex        = "org.locationtech.geowave"     % "geowave-core-index"         % Version.geowave
+  val geowaveStore        = "org.locationtech.geowave"     % "geowave-core-store"         % Version.geowave
+  val geowaveGeotime      = "org.locationtech.geowave"     % "geowave-core-geotime"       % Version.geowave
+  val geowaveAccumulo     = "org.locationtech.geowave"     % "geowave-datastore-accumulo" % Version.geowave
+  val geowaveCassandra    = "org.locationtech.geowave"     % "geowave-datastore-cassandra" % Version.geowave
 
   val scalaArm            = "com.jsuereth"                %% "scala-arm"               % "2.0"
 
@@ -150,8 +156,10 @@ object Dependencies {
   val jacksonModuleScala  = "com.fasterxml.jackson.module" %% "jackson-module-scala"     % "2.6.7"
 
   val shapeless           = "com.chuusai"  %% "shapeless" % "2.3.3"
-  
+  val newtype             = "io.estatico"  %% "newtype"   % "0.4.3"
+
   val unitApi             = "javax.measure" % "unit-api"  % "2.1.2"
 
   val scalaURI            = "io.lemonlabs" %% "scala-uri" % "1.5.1"
+  val java8Compat         = "org.scala-lang.modules" %% "scala-java8-compat" % "0.9.0"
 }

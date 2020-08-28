@@ -1,0 +1,31 @@
+<configuration debug="true">
+    <variable name="LEVEL" value="${LOG_LEVEL:-INFO}"/>
+
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%white(%d{HH:mm:ss.SSS}) %highlight(%-5level) %cyan(%logger{50}) - %msg %n</pattern>
+        </encoder>
+    </appender>
+
+    <root level="${LEVEL}">
+        <appender-ref ref="STDOUT" />
+    </root>
+
+    <logger name="org.apache.kafka" level="${LEVEL}"/>
+    <logger name="mil.navsea.geoindex" level="DEBUG"/>
+
+    <!-- In order to enable this logging you have to register QueryLogger with Cassandra session -->
+    <!-- https://docs.datastax.com/en/developer/java-driver/2.1/manual/logging/#logging-query-latencies -->
+
+    <!--
+    <logger name="com.datastax.driver.core.QueryLogger.NORMAL">
+        <level value="TRACE"/>
+    </logger>
+    <logger name="com.datastax.driver.core.QueryLogger.SLOW">
+        <level value="TRACE"/>
+    </logger>
+    <logger name="com.datastax.driver.core.QueryLogger.ERROR">
+        <level value="TRACE"/>
+    </logger>
+    -->
+</configuration>

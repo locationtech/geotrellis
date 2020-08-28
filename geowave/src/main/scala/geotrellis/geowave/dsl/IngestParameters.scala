@@ -1,0 +1,50 @@
+/*
+ * Copyright 2020 Azavea
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package geotrellis.geowave.dsl
+
+import java.net.URI
+
+import cats.syntax.either._
+import geotrellis.geowave.adapter.{DataType, TypeName}
+import geotrellis.geowave.conf.StoreConfiguration
+import geotrellis.geowave.dsl.json.{JsonValidator, _}
+import io.circe.generic.extras.semiauto._
+import io.circe.{Decoder, Encoder}
+import org.locationtech.geowave.core.store.api.{DataStore, Writer}
+
+case class IngestParameters[A](
+  typeName: TypeName,
+  dataType: DataType,
+  uri: URI,
+  options: Option[A] = None,
+  namespace: Option[String] = None
+) extends DataAdapterParameters {
+  def dataStore: DataStore = StoreConfiguration.getDataStore(namespace)
+  def writer[T]: Writer[T] = dataStore.createWriter[T](typeName.value)
+}
+
+object IngestParameters {
+  implicit def ingestParametersDecoder[A: Decoder] = deriveConfiguredDecoder[IngestParameters[A]]
+  implicit def ingestParametersEncoder[A: Encoder] = deriveConfiguredEncoder[IngestParameters[A]]
+
+  implicit def ingestParametersValidator[A: Decoder]: JsonValidator[IngestParameters[A]] = { json =>
+    JsonValidator
+      .validateIngestParameters(json)
+      .toEither
+      .flatMap(_ => json.as[IngestParameters[A]].leftMap(JsonValidatorErrors(_)))
+  }
+}

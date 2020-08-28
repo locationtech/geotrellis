@@ -1,0 +1,61 @@
+{
+  "definitions": {},
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "ingest-message.schema.json",
+  "type": "object",
+  "title": "IngestMessage",
+  "description" : "A description of the IngestMessage that is used to configure the ingest.",
+  "required": [
+    "typeName",
+    "dataType",
+    "uri"
+  ],
+  "properties": {
+    "typeName": {
+      "$id": "#/properties/typeName",
+      "type": "string",
+      "title": "The typeName Schema",
+      "description" : "A name that is used to identify DataType & IndexType it should be the same as it was configured in the IndexMessage",
+      "examples": [
+        "GeoTiffType"
+      ],
+      "pattern": "^(.*)$"
+    },
+    "dataType": {
+      "$id": "#/properties/dataType",
+      "type": "string",
+      "title": "The dataType Schema",
+      "description" : "A dataType the ingest would happen for",
+      "examples": [
+        "GEOTIFF"
+      ],
+      "pattern": "^(.*)$"
+    },
+    "uri": {
+      "$id": "#/properties/uri",
+      "type": "string",
+      "title": "The uri Schema",
+      "description": "Path to a file",
+      "examples": [
+        "file://path/to/file"
+      ],
+      "pattern": "^(.*)$"
+    },
+    "options": {
+      "$id": "#/properties/options",
+      "type": ["object", "null"],
+      "title": "The Ingest Options",
+      "description": "Data type specific options",
+      "properties": {},
+      "additionalProperties": true
+    },
+    "namespace": {
+      "$id": "#/properties/namespace",
+      "type": ["string", "null"],
+      "title": "Storage (i.e. Cassandra) namespace",
+      "description" : "A namespace to refer during the connections establishment",
+      "pattern": "^(.*)$"
+    }
+  },
+  "additionalProperties": false
+}

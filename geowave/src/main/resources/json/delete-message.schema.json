@@ -1,0 +1,108 @@
+{
+  "definitions": {},
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "delete-message.schema.json",
+  "type": "object",
+  "title": "The Root Schema",
+  "required": [
+    "typeName",
+    "indexName"
+  ],
+  "properties": {
+    "typeName": {
+      "$id": "#/properties/typeName",
+      "type": "string",
+      "title": "The typeName Schema",
+      "description" : "A name that is used to identify DataType & IndexType it should be the same as it was configured in the IndexMessage",
+      "examples": [
+        "GeoTiffType"
+      ],
+      "pattern": "^(.*)$"
+    },
+    "indexName": {
+      "$id": "#/properties/indexName",
+      "type": "string",
+      "title": "The indexName Schema",
+      "description" : "An index name. Index name would be inferred from indexOptions and indexType by default during the IndexMessage process."
+    },
+    "geometry": {
+      "$id": "#/properties/geometry",
+      "type": ["object", "null"],
+      "title": "The Geometry Schema",
+      "description" : "GeoJSON of a Geometry (Point, Polygon, MultiPolygon, etc) type.",
+      "required": [
+        "type",
+        "coordinates"
+      ]
+    },
+    "time": {
+      "$id": "#/properties/time",
+      "type": ["object", "null"],
+      "title": "The Time Schema",
+      "description" : "The time range definition in milliseconds with ISO strings.",
+      "required": [
+        "min",
+        "max"
+      ],
+      "properties": {
+        "min": {
+          "$id": "#/properties/time/properties/min",
+          "type": "string",
+          "title": "The Min Schema"
+        },
+        "max": {
+          "$id": "#/properties/time/properties/max",
+          "type": "string",
+          "title": "The Max Schema"
+        }
+      }
+    },
+    "elevation": {
+      "$id": "#/properties/elevation",
+      "type": ["object", "null"],
+      "title": "The elevation Schema",
+      "description" : "The elevation range definition in ingested units.",
+      "required": [
+        "min",
+        "max"
+      ],
+      "properties": {
+        "min": {
+          "$id": "#/properties/elevation/properties/min",
+          "type": "integer",
+          "title": "The Min Schema"
+        },
+        "max": {
+          "$id": "#/properties/elevation/properties/max",
+          "type": "integer",
+          "title": "The Max Schema"
+        }
+      }
+    },
+    "compareOp": {
+      "$id": "#/properties/compareOp",
+      "type": ["string", "null"],
+      "title": "The Compareop Schema",
+      "description" : "Type of query: intersection, inclusion, etc.",
+      "default": "INTERSECTS",
+      "examples": [
+        "CONTAINS",
+        "OVERLAPS",
+        "INTERSECTS",
+        "TOUCHES",
+        "WITHIN",
+        "DISJOINT",
+        "CROSSES",
+        "EQUALS"
+      ],
+      "pattern": "^(.*)$"
+    },
+    "namespace": {
+      "$id": "#/properties/namespace",
+      "type": ["string", "null"],
+      "title": "Storage (i.e. Cassandra) namespace",
+      "description" : "A namespace to refer during the connections establishment",
+      "pattern": "^(.*)$"
+    }
+  }
+}

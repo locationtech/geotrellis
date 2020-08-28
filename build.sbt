@@ -14,6 +14,7 @@ lazy val root = Project("geotrellis", file("."))
     gdal,
     `gdal-spark`,
     geotools,
+    geowave,
     hbase,
     `hbase-spark`,
     layer,
@@ -155,24 +156,15 @@ lazy val geotools = project
   )
   .settings(Settings.geotools)
 
-/* lazy val geomesa = project
-  .dependsOn(`spark-testkit` % Test, spark, geotools, `accumulo-spark`)
-  .settings(Settings.geomesa)
-  .settings(
-    scalaVersion := "2.11.12",
-    crossScalaVersions := Seq("2.11.12")
-  )
-
-lazy val geowave = project
-  .dependsOn(
-    proj4, raster, layer, store, accumulo,
-    `spark-testkit` % Test, geotools
-  )
+lazy val geowave = ( project in file("geowave") )
+  .dependsOn(raster, store, `raster-testkit` % Test)
   .settings(Settings.geowave)
-  .settings(
-    scalaVersion := "2.11.12",
-    crossScalaVersions := Seq("2.11.12")
-  ) */
+
+lazy val `geowave-benchmark` = ( project in file("geowave/benchmark") )
+  .dependsOn(geowave)
+  .enablePlugins(JmhPlugin)
+  .settings(Settings.geowaveBenchmark)
+  .settings(publish / skip := true)
 
 lazy val shapefile = project
   .dependsOn(raster, `raster-testkit` % Test)
