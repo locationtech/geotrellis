@@ -176,15 +176,16 @@ trait GeometryFormats {
     Encoder.encodeJson.contramap[GeometryCollection] { obj =>
       Json.obj(
         "type" -> "GeometryCollection".asJson,
-        "geometries" -> Vector(
-          obj.getAll[Point].map(_.asJson),
-          obj.getAll[LineString].map(_.asJson),
-          obj.getAll[Polygon].map(_.asJson),
-          obj.getAll[MultiPoint].map(_.asJson),
-          obj.getAll[MultiLineString].map(_.asJson),
-          obj.getAll[MultiPolygon].map(_.asJson),
-          obj.getAll[GeometryCollection].map(_.asJson)
-        ).flatten.asJson
+        "geometries" -> 
+          obj.geometries.collect {
+            case geom: Point => geom.asJson
+            case geom: LineString => geom.asJson
+            case geom: Polygon => geom.asJson
+            case geom: MultiPolygon => geom.asJson
+            case geom: MultiPoint => geom.asJson
+            case geom: MultiLineString => geom.asJson
+            case geom: GeometryCollection => geom.asJson
+          }.asJson
       )
     }
 

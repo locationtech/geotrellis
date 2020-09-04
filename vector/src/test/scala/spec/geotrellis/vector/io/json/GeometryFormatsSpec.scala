@@ -28,7 +28,19 @@ class GeometryFormatsSpec extends AnyFlatSpec with Matchers with GeoJsonSupport 
 
   val point = Point(6.0,1.2)
   val line = LineString(Point(1,2) :: Point(1,3) :: Nil)
-
+  val ml =
+    MultiLineString(LineString(Point(0,0), Point(0,1)) :: LineString(Point(1,0), Point(1,1)) :: Nil)
+  val mpoint =
+    MultiPoint(List(Point(0,0), Point(0,1)))
+  val mp = MultiPolygon(
+    Polygon(
+      LineString(Point(0,0), Point(0,1), Point(1,1), Point(0,0))
+    ),
+    Polygon(
+      LineString(Point(1,1), Point(1,2), Point(2,2), Point(1,1))
+    )
+  )
+  
   "GeometryFormats" should "know about Points" in {
     val body =
       """{
@@ -41,8 +53,6 @@ class GeometryFormatsSpec extends AnyFlatSpec with Matchers with GeoJsonSupport 
   }
 
   it should "know about MultiPoints" in {
-    val mp =
-      MultiPoint(List(Point(0,0), Point(0,1)))
 
     val body =
       """{
@@ -50,8 +60,8 @@ class GeometryFormatsSpec extends AnyFlatSpec with Matchers with GeoJsonSupport 
         |  "coordinates": [[0.0, 0.0], [0.0, 1.0]]
         |}""".stripMargin.parseJson
 
-    mp.asJson should equal (body)
-    body.as[MultiPoint].valueOr(throw _) should equal (mp)
+    mpoint.asJson should equal (body)
+    body.as[MultiPoint].valueOr(throw _) should equal (mpoint)
   }
 
   it should "handle 3d points by discarding the z-coordinate" in {
@@ -87,8 +97,6 @@ class GeometryFormatsSpec extends AnyFlatSpec with Matchers with GeoJsonSupport 
   }
 
   it should "know about MultiLineStrings" in {
-    val ml =
-      MultiLineString(LineString(Point(0,0), Point(0,1)) :: LineString(Point(1,0), Point(1,1)) :: Nil)
     val body =
       """{
         |  "type": "MultiLineString",
@@ -115,15 +123,6 @@ class GeometryFormatsSpec extends AnyFlatSpec with Matchers with GeoJsonSupport 
   }
 
   it should "know about MultiPolygons" in {
-    val mp = MultiPolygon(
-      Polygon(
-        LineString(Point(0,0), Point(0,1), Point(1,1), Point(0,0))
-      ),
-      Polygon(
-        LineString(Point(1,1), Point(1,2), Point(2,2), Point(1,1))
-      )
-    )
-
     val body =
       """{
         |  "type": "MultiPolygon",
@@ -149,6 +148,27 @@ class GeometryFormatsSpec extends AnyFlatSpec with Matchers with GeoJsonSupport 
         |}""".stripMargin.parseJson
 
     val gc: GeometryCollection = GeometryCollection(List(point, line))
+    gc.asJson should equal (body)
+    body.as[GeometryCollection].valueOr(throw _) should equal (gc)
+  }
+  
+  it should "know how to collection of collections" in {
+    val body =
+      """{
+        |  "type": "GeometryCollection",
+        |  "geometries": [{
+        |    "type": "MultiLineString",
+        |    "coordinates": [[[0.0, 0.0], [0.0, 1.0]], [[1.0, 0.0], [1.0, 1.0]]]
+        |  }, {
+        |    "type": "MultiPoint",
+        |    "coordinates": [[0.0, 0.0], [0.0, 1.0]]
+        |  }, {
+        |    "type": "MultiPolygon",
+        |    "coordinates": [[[[0.0, 0.0], [0.0, 1.0], [1.0, 1.0], [0.0, 0.0]]], [[[1.0, 1.0], [1.0, 2.0], [2.0, 2.0], [1.0, 1.0]]]]
+        |  }]
+        |}""".stripMargin.parseJson
+
+    val gc: GeometryCollection = GeometryCollection(List(ml,mpoint,mp))
     gc.asJson should equal (body)
     body.as[GeometryCollection].valueOr(throw _) should equal (gc)
   }
