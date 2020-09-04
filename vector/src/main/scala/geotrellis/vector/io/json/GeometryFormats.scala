@@ -177,7 +177,7 @@ trait GeometryFormats {
       Json.obj(
         "type" -> "GeometryCollection".asJson,
         "geometries" -> 
-          obj.geometries.collect({
+          obj.geometries.collect {
             case geom: Point => geom.asJson
             case geom: LineString => geom.asJson
             case geom: Polygon => geom.asJson
@@ -185,7 +185,7 @@ trait GeometryFormats {
             case geom: MultiPoint => geom.asJson
             case geom: MultiLineString => geom.asJson
             case geom: GeometryCollection => geom.asJson
-          }).asJson
+          }.asJson
       )
     }
 
