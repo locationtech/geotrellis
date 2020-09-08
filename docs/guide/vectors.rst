@@ -197,7 +197,7 @@ Working with Vectors in Spark
 =============================
 
 While GeoTrellis is focused on working with raster data in spark,
-we do have some functionality for working with vecto data in spark.
+we do have some functionality for working with vector data in spark.
 
 ClipToGrid
 ----------
