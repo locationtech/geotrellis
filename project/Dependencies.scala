@@ -18,14 +18,14 @@ import sbt._
 
 object Version {
   val geotools    = "24.2"
-  val spire       = "0.13.0"
+  val spire       = "0.17.0-M1"
   val accumulo    = "1.9.3"
   val cassandra   = "3.7.2"
   val hbase       = "2.2.5"
   val geomesa     = "2.3.1"
   val geowave     = "0.9.3"
   val hadoop      = "2.8.5"
-  val spark       = "2.4.7"
+  val spark       = "3.0.1"
   val gdal        = "3.1.0"
   val gdalWarp    = "1.1.1"
 
