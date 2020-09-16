@@ -33,7 +33,7 @@ import org.apache.hadoop.hbase.mapreduce.{IdentityTableMapper, TableInputFormat,
 import org.apache.hadoop.mapred.JobConf
 import org.apache.hadoop.mapreduce.Job
 import org.apache.spark.SparkContext
-import org.apache.spark.deploy.SparkHadoopUtil
+import org.apache.spark.deploy.GTSparkHadoopUtil
 import org.apache.spark.rdd.RDD
 
 import scala.reflect.ClassTag
@@ -85,7 +85,7 @@ object HBaseRDDReader {
     TableMapReduceUtil.initTableMapperJob(table, scan, classOf[IdentityTableMapper], null, null, job)
 
     val jconf = new JobConf(job.getConfiguration)
-    SparkHadoopUtil.get.addCredentials(jconf)
+    GTSparkHadoopUtil.get.addCredentials(jconf)
 
     sc.newAPIHadoopRDD(
       jconf,
