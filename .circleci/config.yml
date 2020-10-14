@@ -15,7 +15,7 @@ aliases:
 executors:
   executor-gdal:
     docker:
-      - image: daunnc/openjdk-gdal:3.1-jdk8-slim
+      - image: quay.io/azavea/openjdk-gdal:3.1-jdk8-slim
         environment:
           # https://circleci.com/docs/2.0/java-oom/
           _JAVA_OPTIONS: "-Xms64m -Xmx1536m"
@@ -24,7 +24,7 @@ executors:
 
   executor-s3:
     docker:
-      - image: daunnc/openjdk-gdal:3.1-jdk8-slim
+      - image: quay.io/azavea/openjdk-gdal:3.1-jdk8-slim
         environment:
           _JAVA_OPTIONS: "-Xms64m -Xmx1536m"
       - image: minio/minio:RELEASE.2019-05-02T19-07-09Z
@@ -36,7 +36,7 @@ executors:
 
   executor-cassandra:
     docker:
-      - image: daunnc/openjdk-gdal:3.1-jdk8-slim
+      - image: quay.io/azavea/openjdk-gdal:3.1-jdk8-slim
         environment:
           _JAVA_OPTIONS: "-Xms64m -Xmx1536m"
       - image: cassandra:3.11.6
@@ -48,7 +48,7 @@ executors:
 
   executor-hbase:
     docker:
-      - image: daunnc/openjdk-gdal:3.1-jdk8-slim
+      - image: quay.io/azavea/openjdk-gdal:3.1-jdk8-slim
         environment:
           _JAVA_OPTIONS: "-Xms64m -Xmx1536m"
       # https://github.com/pomadchin/hbase-docker
