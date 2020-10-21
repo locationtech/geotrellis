@@ -223,8 +223,6 @@ case class CroppedTile(
     * @param  f  A function from Double to Unit
     */
   def foreachDouble(f: Double => Unit): Unit = {
-    val tile = ArrayTile.alloc(cellType, cols, rows)
-
     cfor(0)(_ < rows, _ + 1) { row =>
       cfor(0)(_ < cols, _ + 1) { col =>
         f(getDouble(col, row))
