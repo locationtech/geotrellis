@@ -244,5 +244,37 @@ class LayoutTileSourceSpec extends AnyFunSpec with RasterMatchers {
         t.dimensions shouldBe Dimensions(256, 256)
       }
     }
+
+    it("should read reprojected and tiled to layout source without nodata stripe // see issue-3299") {
+      val path = Resource.path("vlm/nodata-row.tif")
+      val testZoomLevel = 19
+      val rs = GeoTiffRasterSource(path)
+
+      val scheme = ZoomedLayoutScheme(WebMercator)
+      val layout = scheme.levelForZoom(testZoomLevel).layout
+
+      val extent: Extent = rs.extent.reproject(rs.crs, WebMercator)
+      val SpatialKey(x, y) = layout.mapTransform(extent.center)
+
+      val neighborhood = for {
+        col <- ((x - 2) until (x + 2)).toList
+        row <- ((y - 2) until (y + 2)).toList
+      } yield (col, row)
+
+      def checkExtent(col: Int, row: Int, rs: RasterSource): Unit = {
+        val tile = rs
+          .tileToLayout(layout)
+          .read(SpatialKey(col, row), List(0))
+          .get
+          .band(0)
+        val arr = tile.toArray
+        val ones = tile.mapIfSet(i => 1).toArray()
+        ones.sum shouldBe(arr.size)
+      }
+
+      neighborhood map {
+        case (x, y) => checkExtent(x, y, rs)
+      }
+    }
   }
 }

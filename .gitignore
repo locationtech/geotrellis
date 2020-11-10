@@ -48,3 +48,6 @@ metastore_db/
 
 spark/src/test/resources/vlm/*catalog*
 
+
+# vscode
+.vscode

@@ -111,9 +111,10 @@ class GeoTiffResampleRasterSource(
       targetPixelBounds <- queryPixelBounds.intersection(this.dimensions)
     } yield {
       val targetExtent = gridExtent.extentFor(targetPixelBounds)
-      // buffer the targetExtent to read a buffered area from the source tiff
+      // Buffer the targetExtent to read a buffered area from the source tiff
       // so the resample would behave properly on borders
-      val bufferedTargetExtent = targetExtent.buffer(cellSize.width, cellSize.height)
+      // Buffer by half of CS to avoid resampling out of bounds
+      val bufferedTargetExtent = targetExtent.buffer(cellSize.width / 2, cellSize.height / 2)
       val sourcePixelBounds = closestTiffOverview.rasterExtent.gridBoundsFor(bufferedTargetExtent)
       val targetRasterExtent = RasterExtent(targetExtent, targetPixelBounds.width.toInt, targetPixelBounds.height.toInt)
       (sourcePixelBounds, targetRasterExtent)
