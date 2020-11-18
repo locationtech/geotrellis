@@ -9,8 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Fix `Encoder[GeometryCollection]` including subclasses of GeometryCollection twice in the json
    (MultiPolygon, Multipoint,MultiLinestring) [#3167](https://github.com/locationtech/geotrellis/issues/3167)
--Fix `LayoutTileSource` buffer should only be 1/2 a cellsize to avoid going out of bounds and creating `NODATA` values [#3302](https://github.com/locationtech/geotrellis/pull/3302)
+- Fix `LayoutTileSource` buffer should only be 1/2 a cellsize to avoid going out of bounds and creating `NODATA` values [#3302](https://github.com/locationtech/geotrellis/pull/3302)
 - Remove unused allocation from CroppedTile [#3297](https://github.com/locationtech/geotrellis/pull/3297)
+- Fix GeometryCollection::getAll extension method [#3295](https://github.com/locationtech/geotrellis/pull/3295)
 
 ## [3.5.0] - 2020-08-18
 
