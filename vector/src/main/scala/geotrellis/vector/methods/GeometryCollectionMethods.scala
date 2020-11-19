@@ -25,7 +25,7 @@ trait ExtraGeometryCollectionMethods extends MethodExtensions[GeometryCollection
   def getAll[G <: Geometry : ClassTag]: Seq[G] = {
     val lb = scala.collection.mutable.ListBuffer.empty[G]
     cfor(0)(_ < self.getNumGeometries, _ + 1){ i =>
-      if (classTag[G].runtimeClass.isInstance(self.getGeometryN(i)))
+      if (classTag[G].runtimeClass == self.getGeometryN(i).getClass)
         lb += self.getGeometryN(i).asInstanceOf[G]
     }
     lb.toSeq
