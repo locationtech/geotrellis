@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix `LayoutTileSource` buffer should only be 1/2 a cellsize to avoid going out of bounds and creating `NODATA` values [#3302](https://github.com/locationtech/geotrellis/pull/3302)
 - Remove unused allocation from CroppedTile [#3297](https://github.com/locationtech/geotrellis/pull/3297)
 - Fix GeometryCollection::getAll extension method [#3295](https://github.com/locationtech/geotrellis/pull/3295)
+- Update gdal-warp-bindings v1.1.1 [#3303](https://github.com/locationtech/geotrellis/pull/3303) 
+  - gdal-warp-bindings 1.1.1 is a bugfix release that addresses a crash when initializing the bindings on MacOS. See: 
+    - https://github.com/geotrellis/gdal-warp-bindings#macos
+    - https://github.com/geotrellis/gdal-warp-bindings/pull/99
 
 ## [3.5.0] - 2020-08-18
 
