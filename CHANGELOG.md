@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.5.1] - 2020-11-23
+
 ### Changed
 - Fix `Encoder[GeometryCollection]` including subclasses of GeometryCollection twice in the json
    (MultiPolygon, Multipoint,MultiLinestring) [#3167](https://github.com/locationtech/geotrellis/issues/3167)
