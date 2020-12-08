@@ -433,8 +433,7 @@ object Settings {
       openCSV,
       parserCombinators,
       scalatest % Test,
-      scalacheck % Test,
-      scaffeine
+      scalacheck % Test
     ),
     // https://github.com/sbt/sbt/issues/4609
     Test / fork := true
