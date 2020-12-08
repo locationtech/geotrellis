@@ -27,7 +27,7 @@ extending ``geotrellis-accumulo``.
 -  Supoort Accumulo backend for TileLayerRDDs.
 
 geotrellis-cassandra
--------------------
+--------------------
 
 Implements ``geotrellis.store`` types for `Apache Cassandra <http://cassandra.apache.org/>`__.
 
@@ -37,7 +37,7 @@ Implements ``geotrellis.store`` types for `Apache Cassandra <http://cassandra.ap
    efficiently using the layer query API.
 
 geotrellis-cassandra-spark
--------------------------
+--------------------------
 
 Implements ``geotrellis.spark.store`` types for `Apache Cassandra <https://cassandra.apache.org/>`__,
 extending ``geotrellis-cassandra``.
@@ -48,7 +48,7 @@ extending ``geotrellis-cassandra``.
 -  Supoort Accumulo backend for TileLayerRDDs.
 
 geotrellis-gdal
--------------------------
+---------------
 
 Implements GeoTrellis `GDAL <https://gdal.org/>`__ support.
 
@@ -58,7 +58,7 @@ Implements GeoTrellis `GDAL <https://gdal.org/>`__ support.
    Performs all transformations via GDALWarp.
 
 geotrellis-gdal-spark
--------------------------
+---------------------
 
 Contains geotrellis.raster.gdal.* integration tests for Spark.
 
@@ -93,7 +93,7 @@ store `GeoWave <https://github.com/ngageoint/geowave>`__.
 -  Save and load ``RDD``\ s of features to and from GeoWave.
 
 geotrellis-hbase
--------------------
+----------------
 
 Implements ``geotrellis.store`` types for `Apache HBase <http://hbase.apache.org/>`__.
 
@@ -103,7 +103,7 @@ Implements ``geotrellis.store`` types for `Apache HBase <http://hbase.apache.org
    efficiently using the layer query API.
 
 geotrellis-hbase-spark
--------------------------
+----------------------
 
 Implements ``geotrellis.spark.store`` types for `Apache hbase <https://hbase.apache.org/>`__,
 extending ``geotrellis-hbase``.
@@ -120,7 +120,7 @@ Datatypes to describe Layers (sets of spatially referenced rasters).
 
 *Provides:* ``geotrellis.layer.*``
 
--  Generic way to represent key value ``Seq``s as layers, where the key
+-  Generic way to represent key value ``Seq`` as layers, where the key
    represents a coordinate in space based on some uniform grid layout,
    optionally with a temporal component.
 -  Contains data types to describe ``LayoutSchemes`` and ``LayoutDefinitions``,
@@ -346,7 +346,7 @@ Plumbing for other GeoTrellis modules.
 -  Haversine implementation
 -  Lenses
 -  RangeReaderProvider for reading contiguous subsets of data from a source
-  - Implementations for FileRangeReader and HttpRangeReader
+- Implementations for FileRangeReader and HttpRangeReader
 
 geotrellis-vector
 -----------------

@@ -8,7 +8,7 @@ assignees: ''
 ---
 
 - [ ] Check out the `master` branch and ensure it contains all commits to be released
-- [ ] Update CHANGELOG.md and version.sbt to the release version as a single commit to `master`. [Example](https://github.com/locationtech/geotrellis/commit/e8fbbe2668aa0e99b7a631e9dc7802bc270c2bda)
+- [ ] Update CHANGELOG.md, version.sbt, and the `version` and `release` fields in `docs/conf.py` to the release version as a single commit to `master`. [Example](https://github.com/locationtech/geotrellis/commit/e8fbbe2668aa0e99b7a631e9dc7802bc270c2bda)
 - [ ] Create a new tag at the previous commit with `git tag -a vX.Y.Z -m "vX.Y.Z"`
 - [ ] Push the tag to `locationtech/geotrellis` with `git push --tags`
 - [ ] Follow the instructions in the setup section of [publish/README.md](https://github.com/locationtech/geotrellis/blob/master/publish/README.md#setup) to ensure that your local environment is configured for publishing the release

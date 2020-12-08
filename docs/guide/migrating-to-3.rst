@@ -12,7 +12,8 @@ One change brought about in 3.0 is the simplification of imports
 in both the ``raster`` and ``vector`` packages. Before, it was not
 uncommon to see files with a long list of imports such as this:
 
-.. code:: scala
+.. code-block:: scala
+
   import geotrellis.vector._
   import geotrellis.vector.io.wkb.WKB
   import geotrellis.raster._
@@ -22,7 +23,8 @@ uncommon to see files with a long list of imports such as this:
 
 With the simplification of imports, the above is now:
 
-.. code:: scala
+.. code-block:: scala
+
   import geotrellis.vector._
   import geotrellis.raster._
 

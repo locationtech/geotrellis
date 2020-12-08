@@ -410,8 +410,6 @@ type is `Stream[RDD[({SpatialKey | SpaceTimeKey}, {Tile | MultibandTile})]]`.
 +-----------------+-------------------------------------------------+
 | Key             | Options                                         |
 +=================+=================================================+
-| Layout Scheme   | Options                                         |
-+=================+=================================================+
 | end_zoom        | The lowest zoom level to build pyramid down to  |
 +-----------------+-------------------------------------------------+
 | resample_method | Floating layout scheme in a native projection   |
