@@ -127,7 +127,7 @@ lazy val `cassandra-spark` = project
 lazy val hbase = project
   .dependsOn(store)
   .settings(Settings.hbase)
-  .settings(projectDependencies := { Seq((layer / projectID).value.exclude("com.google.protobuf", "protobuf-java")) })
+  .settings(projectDependencies := { Seq((store / projectID).value.exclude("com.google.protobuf", "protobuf-java")) })
 
 lazy val `hbase-spark` = project
   .dependsOn(

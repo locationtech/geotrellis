@@ -484,7 +484,6 @@ object Settings {
     libraryDependencies ++= Seq(
       awsSdkS3 excludeAll ExclusionRule("com.fasterxml.jackson.core"),
       spire,
-      scaffeine,
       scalatest % Test
     ),
     /** https://github.com/lucidworks/spark-solr/issues/179 */
@@ -518,7 +517,6 @@ object Settings {
     libraryDependencies ++= Seq(
       sparkCore % Provided,
       spire,
-      scaffeine,
       sparkSql % Test,
       scalatest % Test
     ),
@@ -559,8 +557,7 @@ object Settings {
       chronoscala,
       sparkSql % Test,
       scalatest % Test,
-      logging,
-      scaffeine
+      logging
     ),
     mimaPreviousArtifacts := Set(
       "org.locationtech.geotrellis" %% "geotrellis-spark" % Version.previousVersion
@@ -671,7 +668,6 @@ object Settings {
       spire,
       chronoscala,
       logging,
-      scaffeine,
       uzaygezenCore,
       pureconfig,
       scalactic,

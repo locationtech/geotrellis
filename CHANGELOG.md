@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Remove explicit unused Scaffeine dependency from projects [#3314](https://github.com/locationtech/geotrellis/pull/3314)
+
 ## [3.5.1] - 2020-11-23
 
 ### Changed
