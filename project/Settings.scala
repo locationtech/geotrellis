@@ -23,6 +23,9 @@ import com.typesafe.tools.mima.plugin.MimaKeys._
 import de.heikoseeberger.sbtheader.{CommentStyle, FileType}
 import de.heikoseeberger.sbtheader.HeaderPlugin.autoImport.{HeaderLicense, headerLicense, headerMappings}
 import sbtprotoc.ProtocPlugin.autoImport.PB
+import mdoc.MdocPlugin.autoImport._
+
+import java.io.File
 
 object Settings {
   object Repositories {
@@ -425,6 +428,16 @@ object Settings {
       "org.scala-lang" % "scala-reflect" % scalaVersion.value
     )
   ) ++ commonSettings
+
+  lazy val mdoc = Seq(
+    name := "geotrellis-mdoc",
+    libraryDependencies ++= Seq(),
+    mdocIn := new File("docs-mdoc"),
+    mdocOut := new File("website/docs"),
+    mdocVariables := Map(
+      "VERSION" -> (ThisBuild / version).value
+    )
+  )
 
   lazy val proj4 = Seq(
     name := "geotrellis-proj4",

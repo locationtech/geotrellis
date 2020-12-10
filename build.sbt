@@ -38,6 +38,12 @@ lazy val root = Project("geotrellis", file("."))
   .settings(publish / skip := true)
   .settings(unidocProjectFilter in (ScalaUnidoc, unidoc) := inAnyProject)
 
+lazy val mdoc = project
+  .in(file("."))
+  .dependsOn(raster)
+  .enablePlugins(MdocPlugin)
+  .settings(Settings.mdoc)
+
 lazy val macros = project
   .settings(Settings.macros)
 
