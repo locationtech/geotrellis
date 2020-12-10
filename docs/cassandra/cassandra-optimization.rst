@@ -5,10 +5,10 @@ Bottom Line Up Front
 ====================
 
 The existing schema encoding in Cassandra for the GeoTrellis backend is probably about as fast
-as it can be for tile reads. 
+as it can be for tile reads.
 
 Issues related to this research
-------------------------------
+-------------------------------
 
 * `Original issue <https://github.com/locationtech/geotrellis/issues/2831>`__
 * `The actual PR <https://github.com/locationtech/geotrellis/pull/2855>`__
@@ -17,24 +17,24 @@ Issues related to this research
 Idea
 ====
 
-Some open source contributions were made to experiment with an alternative schema 
+Some open source contributions were made to experiment with an alternative schema
 encoding for the Cassandra GeoTrellis backend.  The general idea was that the schema used today
 makes no attempt to take advantage of the SFC locality guarantees that GeoTrellis
 works so hard to provide.  It would be nice if it were possible to use those locality
 guarantees to speed up read access to tiles.
 
 Read performance is still quite good with the existing schema encoding, but the hope was
-to make it even better by storing off keys in the same neighborhood within the SFC into 
-the same partitions in Cassandra.  Typically partitions in Cassandra are used for range query, 
-which is outside of scope for the GeoTrellis project since it goes against the underlying 
+to make it even better by storing off keys in the same neighborhood within the SFC into
+the same partitions in Cassandra.  Typically partitions in Cassandra are used for range query,
+which is outside of scope for the GeoTrellis project since it goes against the underlying
 design principles of the tiling API and can lead to bottlenecks at the coordinator level.
-However, if the partition size were configurable it could potentially be tuned and sized 
+However, if the partition size were configurable it could potentially be tuned and sized
 appropriately to take advantage of Cassandra's row and partition caches, effectively trading
-heap space, marginal additional write overhead, and marginal additional storage overhead for 
-faster read times.  Depending on the use case for GeoTrellis, it may be advantageous to 
-make this trade when working in applications that are heavier on reads than they are on writes. 
+heap space, marginal additional write overhead, and marginal additional storage overhead for
+faster read times.  Depending on the use case for GeoTrellis, it may be advantageous to
+make this trade when working in applications that are heavier on reads than they are on writes.
 
-That was the hope anyway... in practice the testing that was done did not seem to indicate 
+That was the hope anyway... in practice the testing that was done did not seem to indicate
 any performance benefits.
 
 Experiment
@@ -42,7 +42,7 @@ Experiment
 
 The existing schema encoding for storing GeoTrellis tiles in Cassandra looks like this:
 
-.. code:: sql
+.. code-block:: sql
 
     CREATE TABLE geotrellis_bench.tiles_write (
         key varint,
@@ -69,7 +69,7 @@ The existing schema encoding for storing GeoTrellis tiles in Cassandra looks lik
 The order in which the ``PRIMARY KEY`` is defined here is important as it dictates the size of the partition.
 In this case, because ``key`` is declared as the first field in the ``PRIMARY KEY`` it is used as the ``Parition Key``
 (in Cassandra parlance) and ``name`` and ``zoom`` are used as so-called ``Clustering Columns``.  The ``Partition Key``
-identifies on which node, within the Cassandra ring, the row data is stored (this is computed via a murmer3 
+identifies on which node, within the Cassandra ring, the row data is stored (this is computed via a murmer3
 hash by default).  The ``Clustering Columns`` identify the order in which the row is sorted on the node it
 was hashed to by the ``Partition Key``.
 
@@ -78,15 +78,15 @@ The ``key`` here is the range of the SFC.  The ``name`` is the name of the layer
 When Cassandra performs a read, it does so at the partition level, meaning an entire partition is read into memory
 at once.  It is therefore important to keep partition sizes down to avoid lots of heap churn within Cassandra.
 
-Typically once a partition has been read, it is discarded after a query is completed.  Thus, only range queries 
-benefit from partitions.  If, however, Cassandra's row cache could be leveraged to keep partitions "hot" in 
-memory after an initial read for some delta of time, then it would be possible to leverage the locality assumptions 
-of the SFC to potentially speed up amortized access time - namely that data in the same neighborhood of the SFC 
-tends to be accessed at the same time. 
+Typically once a partition has been read, it is discarded after a query is completed.  Thus, only range queries
+benefit from partitions.  If, however, Cassandra's row cache could be leveraged to keep partitions "hot" in
+memory after an initial read for some delta of time, then it would be possible to leverage the locality assumptions
+of the SFC to potentially speed up amortized access time - namely that data in the same neighborhood of the SFC
+tends to be accessed at the same time.
 
 In an attempt to take advantage of this, a new CQL encoding was introduced that looks like this:
 
-.. code:: sql
+.. code-block:: sql
 
     CREATE TABLE geotrellis_bench.tiles_read (
         name text,
@@ -117,7 +117,7 @@ three fields together determine the partition in which the row is stored and the
 
 The new ``zoombin`` parameter is calculated by a partitioning of the range of the SFC similar to the code below:
 
-.. code:: scala
+.. code-block:: scala
 
     @transient private lazy val zoomBinIntervals: ZoomBinIntervals = {
       /**
@@ -128,7 +128,7 @@ The new ``zoombin`` parameter is calculated by a partitioning of the range of th
         * first place.
         */
       val ranges = keyIndex.indexRanges(keyIndex.keyBounds)
-    
+
       val binRanges = ranges.toVector.map{ range =>
         val vb = new VectorBuilder[Interval[BigInt]]()
         cfor(range._1)(_ <= range._2, _ + tilesPerPartition){ i =>
@@ -136,7 +136,7 @@ The new ``zoombin`` parameter is calculated by a partitioning of the range of th
         }
         vb.result()
       }
-        
+
       CassandraIndexing.ZoomBinIntervals(binRanges.flatten.zipWithIndex)
     }
 
@@ -150,30 +150,30 @@ The new ``zoombin`` parameter is calculated by a partitioning of the range of th
 
 The ``tilesPerPartition`` is a configuration-driven value chosen by the client.  It is also used as the value
 for the ``rows_per_partition`` to cache in the Cassandra schema encoding and is positively correlated
-both to partition sizes and heap usage by Cassandra instances. 
+both to partition sizes and heap usage by Cassandra instances.
 
 Testing Environment
 -------------------
 
-To benchmark the differences between this new (hereby termed "read-optimized") schema encoding and the 
-existing (hereby termed "write-optimized") schema encoding, we compared write-heavy and read-heavy 
-operations.  
+To benchmark the differences between this new (hereby termed "read-optimized") schema encoding and the
+existing (hereby termed "write-optimized") schema encoding, we compared write-heavy and read-heavy
+operations.
 
 Hardware:
 ~~~~~~~~~
- - Single Node 
+ - Single Node
  - 4-core (8 thread) Xeon processor
  - 64 GB RAM
  - SSD
- 
+
 Cassandra Setup:
 ~~~~~~~~~~~~~~~~
  - `ccm <https://github.com/riptano/ccm>`__
  - 3 instances
  - vnodes turned on, 256 vnodes per instance
- 
+
 More "production grade" testing would have been done, but access to cloud resources for testing were limited
-so unfortunately the only benchmarking available was to simulate a full-scale Cassandra cluster 
+so unfortunately the only benchmarking available was to simulate a full-scale Cassandra cluster
 on a local developer asset.
 
 Workload:
@@ -186,7 +186,7 @@ Workload:
 Results
 =======
 
-For the write-heavy initial workload here are the results: 
+For the write-heavy initial workload here are the results:
 
 .. note::
 
@@ -204,17 +204,17 @@ For the 16x16 read-heavy workload here are the results:
     STDDEV read-time for READ optimized schema: 170.76438123917995ms
     STDDEV read-time for WRITE optimized schema: 23.697468219200122ms
 
-Not only were the read-optimized times, on the average, significantly worse than the write-optimized times, 
-they also exhibited more variance.  
+Not only were the read-optimized times, on the average, significantly worse than the write-optimized times,
+they also exhibited more variance.
 
 Changing the ``tilesPerPartition`` did seem to speed up read times, but never to the extent that the read-optimized
-schema beat out the write-optimized variant.  
+schema beat out the write-optimized variant.
 
-With these disappointing results, further investigation was suspended. 
+With these disappointing results, further investigation was suspended.
 
 Future Work
 ===========
 
 It would be interesting to run these tests against a production Cassandra cluster.  It would also be interesting
-to fiddle with more of the input parameters to the test cases since there are a lot of different variables 
-to contend with. 
+to fiddle with more of the input parameters to the test cases since there are a lot of different variables
+to contend with.

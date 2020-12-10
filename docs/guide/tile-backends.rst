@@ -43,9 +43,9 @@ Backend URI
 
 Instances of ``AttributeStore``, ``LayerWriter``, and ```LayerReader`` can be created from a URI.
 
-.. code:: scala
+.. code-block:: scala
 
-   val uri = new URI(""s3://bucket/catalog")
+   val uri = new URI("s3://bucket/catalog")
    val store = AttributeStore(uri)
    val reader = LayerReader(uri)
    val writer = LayerWriter(uri)

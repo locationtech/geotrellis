@@ -120,6 +120,7 @@ Ready? `Setup a GeoTrellis development environment. <tutorials/setup.html>`__
    :hidden:
 
    guide/core-concepts
+   Migrating to GeoTrellis 3 <guide/migrating-to-3>
    Using Rasters <guide/rasters>
    Using Vectors <guide/vectors>
    Spark and GeoTrellis <guide/spark>
