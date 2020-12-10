@@ -1,33 +1,28 @@
-# Website
+# GeoTrellis Docs Site
 
-This website is built using [Docusaurus 2](https://v2.docusaurus.io/), a modern static website generator.
+The GeoTrellis docs website is built using [Docusaurus 2](https://v2.docusaurus.io/).
 
-## Installation
+## Developing on the docs
 
-```console
-yarn install
-```
+Ensure you have Node 12+ installed.
 
-## Local Development
+In one terminal, run `./sbt "project mdoc;mdoc --watch"` in the parent directory.
+This will run the mdoc watcher which recompiles docs in `../docs-mdoc` and writes the output to `./docs`.
 
-```console
+Start the docusaurus dev server with:
+
+```shell
 yarn start
 ```
 
-This command starts a local development server and open up a browser window. Most changes are reflected live without having to restart the server.
+This will automatically recompile the docs site whenever the mdoc watcher writes updates to `./docs`.
 
-## Build
+### Adding a new Doc page
 
-```console
-yarn build
-```
+Stop the sbt mdoc watcher and the yarn dev server.
 
-This command generates static content into the `build` directory and can be served using any static contents hosting service.
+Add a new file to `../docs-mdoc`.
 
-## Deployment
+Add an entry to `./sidebars.js` so that the new page appears somewhere in the doc tree. The [Docusaurus sidebar](https://v2.docusaurus.io/docs/docs-introduction#sidebar) docs have more info on how to configure the sidebar.
 
-```console
-GIT_USER=<Your GitHub username> USE_SSH=true yarn deploy
-```
-
-If you are using GitHub pages for hosting, this command is a convenient way to build the website and push to the `gh-pages` branch.
+Restart both the mdoc watcher and the docusaurus server as described above.
