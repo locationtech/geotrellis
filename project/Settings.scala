@@ -431,7 +431,6 @@ object Settings {
 
   lazy val mdoc = Seq(
     name := "geotrellis-mdoc",
-    libraryDependencies ++= Seq(),
     mdocIn := new File("docs-mdoc"),
     mdocOut := new File("website/docs"),
     mdocVariables := Map(
