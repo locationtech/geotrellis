@@ -224,7 +224,6 @@ object Settings {
 
   lazy val `doc-examples` = Seq(
     name := "geotrellis-doc-examples",
-    publish / skip := true,
     scalacOptions ++= commonScalacOptions,
     libraryDependencies ++= Seq(
       sparkCore,
@@ -431,7 +430,6 @@ object Settings {
 
   lazy val mdoc = Seq(
     name := "geotrellis-mdoc",
-    libraryDependencies ++= Seq(),
     mdocIn := new File("docs-mdoc"),
     mdocOut := new File("website/docs"),
     mdocVariables := Map(

@@ -34,10 +34,10 @@
 
 set -o pipefail
 
-declare -r sbt_release_version="1.3.13"
-declare -r sbt_unreleased_version="1.4.0-M1"
+declare -r sbt_release_version="1.4.4"
+declare -r sbt_unreleased_version="1.4.4"
 
-declare -r latest_213="2.13.3"
+declare -r latest_213="2.13.4"
 declare -r latest_212="2.12.12"
 declare -r latest_211="2.11.12"
 declare -r latest_210="2.10.7"
@@ -471,7 +471,7 @@ process_args() {
       -trace)       require_arg integer "$1" "$2" && trace_level="$2" && shift 2 ;;
       -debug-inc)   addJava "-Dxsbt.inc.debug=true" && shift ;;
 
-      -no-colors)   addJava "-Dsbt.log.noformat=true" && shift ;;
+      -no-colors)   addJava "-Dsbt.log.noformat=true" && addJava "-Dsbt.color=false" && shift ;;
       -sbt-create)  sbt_create=true && shift ;;
       -sbt-dir)     require_arg path "$1" "$2" && sbt_dir="$2" && shift 2 ;;
       -sbt-boot)    require_arg path "$1" "$2" && addJava "-Dsbt.boot.directory=$2" && shift 2 ;;
