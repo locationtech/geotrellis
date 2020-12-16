@@ -39,7 +39,6 @@ lazy val root = Project("geotrellis", file("."))
   .settings(unidocProjectFilter in (ScalaUnidoc, unidoc) := inAnyProject)
 
 lazy val mdoc = project
-  .in(file("."))
   .dependsOn(raster)
   .enablePlugins(MdocPlugin)
   .settings(Settings.mdoc)
