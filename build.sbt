@@ -18,6 +18,7 @@ lazy val root = Project("geotrellis", file("."))
     `hbase-spark`,
     layer,
     macros,
+    mdoc,
     proj4,
     raster,
     `raster-testkit`,
@@ -39,9 +40,9 @@ lazy val root = Project("geotrellis", file("."))
   .settings(unidocProjectFilter in (ScalaUnidoc, unidoc) := inAnyProject)
 
 lazy val mdoc = project
-  .in(file("."))
   .dependsOn(raster)
   .enablePlugins(MdocPlugin)
+  .settings(publish / skip := true)
   .settings(Settings.mdoc)
 
 lazy val macros = project
