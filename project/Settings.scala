@@ -224,7 +224,6 @@ object Settings {
 
   lazy val `doc-examples` = Seq(
     name := "geotrellis-doc-examples",
-    publish / skip := true,
     scalacOptions ++= commonScalacOptions,
     libraryDependencies ++= Seq(
       sparkCore,

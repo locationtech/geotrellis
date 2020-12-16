@@ -183,6 +183,7 @@ lazy val util = project
 
 lazy val `doc-examples` = project
   .dependsOn(spark, `s3-spark`, `accumulo-spark`, `cassandra-spark`, `hbase-spark`, spark, `spark-testkit`, `spark-pipeline`)
+  .settings(publish / skip := true)
   .settings(Settings.`doc-examples`)
 
 lazy val bench = project
