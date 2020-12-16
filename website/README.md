@@ -9,6 +9,12 @@ Ensure you have Node 12+ installed.
 In one terminal, run `./sbt "project mdoc;mdoc --watch"` in the parent directory.
 This will run the mdoc watcher which recompiles docs in `../docs-mdoc` and writes the output to `./docs`.
 
+Install project dependencies:
+
+```shell
+yarn install --pure-lockfile
+```
+
 Start the docusaurus dev server with:
 
 ```shell
