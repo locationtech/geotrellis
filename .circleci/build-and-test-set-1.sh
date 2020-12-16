@@ -12,6 +12,7 @@
   "project util" test \
   "project raster" test \
   "project accumulo" test \
-  "project accumulo-spark" test && \
+  "project accumulo-spark" test \
+  "project mdoc" mdoc && \
 ./sbt -Dsbt.supershell=false "++$SCALA_VERSION" \
   "project gdal" test || { exit 1; }
