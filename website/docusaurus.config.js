@@ -9,6 +9,9 @@ module.exports = {
   organizationName: 'locationtech', // Usually your GitHub org/user name.
   projectName: 'geotrellis', // Usually your repo name.
   themeConfig: {
+    prism: {
+      additionalLanguages: ['java', 'scala'],
+    },
     navbar: {
       title: 'GeoTrellis',
       logo: {
