@@ -34,7 +34,10 @@ object Settings {
     val geosolutions    = "geosolutions" at "https://maven.geo-solutions.it/"
     val ivy2Local       = Resolver.file("local", file(Path.userHome.absolutePath + "/.ivy2/local"))(Resolver.ivyStylePatterns)
     val mavenLocal      = Resolver.mavenLocal
+    val maven           = DefaultMavenRepository
     val local           = Seq(ivy2Local, mavenLocal)
+    val external        = Seq(osgeoReleases, maven, eclipseReleases, geosolutions)
+    val all             = external ++ local
   }
 
   lazy val noForkInTests = Seq(
@@ -105,12 +108,7 @@ object Settings {
       </developers>
     ),
 
-    resolvers ++= Seq(
-      Resolver.mavenLocal,
-      Settings.Repositories.geosolutions,
-      Settings.Repositories.osgeoReleases,
-      Settings.Repositories.eclipseReleases
-    ),
+    externalResolvers := Settings.Repositories.all,
     headerLicense := Some(HeaderLicense.ALv2(java.time.Year.now.getValue.toString, "Azavea")),
     headerMappings := Map(
       FileType.scala -> CommentStyle.cStyleBlockComment.copy(
@@ -242,10 +240,6 @@ object Settings {
       spire,
       scalatest % Test
     ),
-    resolvers ++= Seq(
-      Repositories.osgeoReleases,
-      Repositories.eclipseReleases
-    ),
     console / initialCommands :=
       """
       import geotrellis.raster._
@@ -264,16 +258,14 @@ object Settings {
       jaiCore,
       jts,
       spire,
-      scalatest % Test
-    ) ++ Seq(
       geotoolsCoverage,
       geotoolsHsql,
       geotoolsMain,
       geotoolsReferencing,
       geotoolsGeoTiff % Test,
-      geotoolsShapefile % Test
-    ).map(_ exclude("javax.media", "jai_core")),
-    externalResolvers += Settings.Repositories.osgeoReleases,
+      geotoolsShapefile % Test,
+      scalatest % Test
+    ),
     console / initialCommands :=
       """
       import geotrellis.geotools._
@@ -330,10 +322,6 @@ object Settings {
       spire,
       sparkSql % Test,
       scalatest % Test
-    ),
-    resolvers ++= Seq(
-      Repositories.osgeoReleases,
-      Repositories.geosolutions
     ),
     assembly / assemblyMergeStrategy := {
       case "reference.conf" => MergeStrategy.concat
@@ -551,9 +539,8 @@ object Settings {
     name := "geotrellis-shapefile",
     libraryDependencies ++= Seq(
       jaiCore,
-      geotoolsShapefile exclude("javax.media", "jai_core")
+      geotoolsShapefile
     ),
-    resolvers += Repositories.osgeoReleases,
     Test / fork := false
   ) ++ commonSettings
 
