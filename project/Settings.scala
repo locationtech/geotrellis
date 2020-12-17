@@ -89,7 +89,7 @@ object Settings {
 
     credentials ++= List(Path.userHome / ".ivy2" / ".credentials").filter(_.asFile.canRead).map(Credentials(_)),
 
-    addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.11.0" cross CrossVersion.full),
+    addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.11.2" cross CrossVersion.full),
     addCompilerPlugin("org.scalamacros" %% "paradise" % "2.1.1" cross CrossVersion.full),
     addCompilerPlugin("org.scalameta" % "semanticdb-scalac" % "4.3.20" cross CrossVersion.full),
 
@@ -127,8 +127,6 @@ object Settings {
       accumuloCore
         exclude("org.jboss.netty", "netty")
         exclude("org.apache.hadoop", "hadoop-client"),
-      spire,
-      scalatest % Test,
       hadoopClient % Provided
     ),
     console / initialCommands :=
@@ -147,8 +145,9 @@ object Settings {
       accumuloCore
         exclude("org.jboss.netty", "netty")
         exclude("org.apache.hadoop", "hadoop-client"),
-      sparkCore % Provided, sparkSql % Test,
-      spire,
+      hadoopClient % Provided,
+      sparkCore % Provided,
+      sparkSql % Test,
       scalatest % Test
     ),
     console / initialCommands :=
@@ -179,9 +178,7 @@ object Settings {
         excludeAll(
         ExclusionRule("org.jboss.netty"), ExclusionRule("io.netty"),
         ExclusionRule("org.slf4j"), ExclusionRule("com.typesafe.akka")
-      ) exclude("org.apache.hadoop", "hadoop-client"),
-      spire,
-      scalatest % Test
+      ) exclude("org.apache.hadoop", "hadoop-client")
     ),
     console / initialCommands :=
       """
@@ -199,11 +196,12 @@ object Settings {
     libraryDependencies ++= Seq(
       cassandraDriverCore
         excludeAll(
-        ExclusionRule("org.jboss.netty"), ExclusionRule("io.netty"),
-        ExclusionRule("org.slf4j"), ExclusionRule("com.typesafe.akka")
-      ) exclude("org.apache.hadoop", "hadoop-client"),
-      sparkCore % Provided, sparkSql % Test,
-      spire,
+          ExclusionRule("org.jboss.netty"), ExclusionRule("io.netty"),
+          ExclusionRule("org.slf4j"), ExclusionRule("com.typesafe.akka")
+        ) exclude("org.apache.hadoop", "hadoop-client"),
+      hadoopClient % Provided,
+      sparkCore % Provided,
+      sparkSql % Test,
       scalatest % Test
     ),
     console / initialCommands :=
@@ -225,7 +223,6 @@ object Settings {
     scalacOptions ++= commonScalacOptions,
     libraryDependencies ++= Seq(
       sparkCore,
-      logging,
       scalatest % Test,
       sparkSql % Test
     )
@@ -237,7 +234,6 @@ object Settings {
       geomesaAccumuloJobs,
       geomesaAccumuloDatastore,
       geomesaUtils,
-      spire,
       scalatest % Test
     ),
     console / initialCommands :=
@@ -256,12 +252,15 @@ object Settings {
     name := "geotrellis-geotools",
     libraryDependencies ++= Seq(
       jaiCore,
-      jts,
-      spire,
+      unitApi,
       geotoolsCoverage,
       geotoolsHsql,
       geotoolsMain,
       geotoolsReferencing,
+      geotoolsMetadata,
+      geotoolsOpengis,
+      imageioExtUtilities,
+      jtUtilities,
       geotoolsGeoTiff % Test,
       geotoolsShapefile % Test,
       scalatest % Test
@@ -319,7 +318,6 @@ object Settings {
       kryoSerializers exclude("com.esotericsoftware", "kryo"),
       kryoShaded,
       sparkCore % Provided,
-      spire,
       sparkSql % Test,
       scalatest % Test
     ),
@@ -351,20 +349,17 @@ object Settings {
   lazy val hbase = Seq(
     name := "geotrellis-hbase",
     libraryDependencies ++= Seq(
-      hbaseCommon exclude("javax.servlet", "servlet-api"),
-      hbaseClient exclude("javax.servlet", "servlet-api"),
-      hbaseMapReduce exclude("javax.servlet", "servlet-api"),
-      hbaseServer exclude("org.mortbay.jetty", "servlet-api-2.5"),
-      hbaseHadoopCompact exclude("javax.servlet", "servlet-api"),
-      hbaseHadoop2Compact exclude("javax.servlet", "servlet-api"),
-      hbaseMetrics exclude("javax.servlet", "servlet-api"),
-      hbaseMetricsApi exclude("javax.servlet", "servlet-api"),
-      hbaseZooKeeper exclude("javax.servlet", "servlet-api"),
-      jacksonCoreAsl,
-      spire,
-      sparkSql % Test,
-      scalatest % Test
-    ),
+      hbaseCommon,
+      hbaseClient,
+      hbaseMapReduce,
+      hbaseServer,
+      hbaseHadoopCompact,
+      hbaseHadoop2Compact,
+      hbaseMetrics,
+      hbaseMetricsApi,
+      hbaseZooKeeper
+    ).map(_ exclude("javax.servlet", "servlet-api") exclude("org.mortbay.jetty", "servlet-api-2.5")),
+    libraryDependencies += jacksonCoreAsl,
     console / initialCommands :=
       """
       import geotrellis.raster._
@@ -379,18 +374,8 @@ object Settings {
   lazy val `hbase-spark` = Seq(
     name := "geotrellis-hbase-spark",
     libraryDependencies ++= Seq(
-      hbaseCommon exclude("javax.servlet", "servlet-api"),
-      hbaseClient exclude("javax.servlet", "servlet-api"),
-      hbaseMapReduce exclude("javax.servlet", "servlet-api"),
-      hbaseServer exclude("org.mortbay.jetty", "servlet-api-2.5"),
-      hbaseHadoopCompact exclude("javax.servlet", "servlet-api"),
-      hbaseHadoop2Compact exclude("javax.servlet", "servlet-api"),
-      hbaseMetrics exclude("javax.servlet", "servlet-api"),
-      hbaseMetricsApi exclude("javax.servlet", "servlet-api"),
-      hbaseZooKeeper exclude("javax.servlet", "servlet-api"),
-      jacksonCoreAsl,
+      hadoopClient % Provided,
       sparkCore % Provided,
-      spire,
       sparkSql % Test,
       scalatest % Test
     ),
@@ -412,7 +397,7 @@ object Settings {
     Compile / sourceGenerators += (Compile / sourceManaged).map(Boilerplate.genMacro).taskValue,
     libraryDependencies ++= Seq(
       spireMacro,
-      "org.scala-lang" % "scala-reflect" % scalaVersion.value
+      scalaReflect(scalaVersion.value)
     )
   ) ++ commonSettings
 
@@ -441,12 +426,9 @@ object Settings {
   lazy val raster = Seq(
     name := "geotrellis-raster",
     libraryDependencies ++= Seq(
-      pureconfig,
-      jts,
-      cats("core").value,
-      spire,
       squants,
-      monocle("core").value, monocle("macro").value,
+      monocle("core").value, 
+      monocle("macro").value,
       scalaXml,
       scalaURI.value,
       scalatest % Test,
@@ -482,7 +464,6 @@ object Settings {
     name := "geotrellis-s3",
     libraryDependencies ++= Seq(
       awsSdkS3 excludeAll ExclusionRule("com.fasterxml.jackson.core"),
-      spire,
       scalatest % Test
     ),
     /** https://github.com/lucidworks/spark-solr/issues/179 */
@@ -514,8 +495,8 @@ object Settings {
   lazy val `s3-spark` = Seq(
     name := "geotrellis-s3-spark",
     libraryDependencies ++= Seq(
+      hadoopClient % Provided,
       sparkCore % Provided,
-      spire,
       sparkSql % Test,
       scalatest % Test
     ),
@@ -539,7 +520,10 @@ object Settings {
     name := "geotrellis-shapefile",
     libraryDependencies ++= Seq(
       jaiCore,
-      geotoolsShapefile
+      geotoolsMain,
+      geotoolsOpengis,
+      geotoolsShapefile,
+      scalatest % Test
     ),
     Test / fork := false
   ) ++ commonSettings
@@ -549,13 +533,8 @@ object Settings {
     libraryDependencies ++= Seq(
       sparkCore % Provided,
       hadoopClient % Provided,
-      uzaygezenCore,
-      avro,
-      spire,
-      chronoscala,
       sparkSql % Test,
-      scalatest % Test,
-      logging
+      scalatest % Test
     ),
     mimaPreviousArtifacts := Set(
       "org.locationtech.geotrellis" %% "geotrellis-spark" % Version.previousVersion
@@ -574,11 +553,9 @@ object Settings {
 
   lazy val `spark-pipeline` = Seq(
     name := "geotrellis-spark-pipeline",
-    libraryDependencies ++= Seq(
-      circe("core").value,
-      circe("generic").value,
+    libraryDependencies ++= Seq(   
       circe("generic-extras").value,
-      circe("parser").value,
+      hadoopClient % Provided,
       sparkCore % Provided,
       sparkSql % Test,
       scalatest % Test
@@ -608,19 +585,17 @@ object Settings {
   lazy val `spark-testkit` = Seq(
     name := "geotrellis-spark-testkit",
     libraryDependencies ++= Seq(
+      hadoopClient % Provided,
       sparkCore % Provided,
       sparkSql % Provided,
-      hadoopClient % Provided,
-      scalatest,
-      chronoscala
+      scalatest
     )
   ) ++ commonSettings
 
   lazy val util = Seq(
     name := "geotrellis-util",
     libraryDependencies ++= Seq(
-      logging,
-      pureconfig,
+      log4s,
       scalaj,
       spire,
       scalatest % Test
@@ -631,10 +606,13 @@ object Settings {
     name := "geotrellis-vector",
     libraryDependencies ++= Seq(
       jts,
+      shapeless,
       pureconfig,
-      circe("core").value, circe("generic").value, circe("parser").value,
+      circe("core").value, 
+      circe("generic").value, 
+      circe("parser").value,
+      cats("core").value,
       apacheMath,
-      spire,
       scalatest % Test,
       scalacheck % Test
     )
@@ -648,8 +626,10 @@ object Settings {
   lazy val vectortile = Seq(
     name := "geotrellis-vectortile",
     libraryDependencies ++= Seq(
-      scalatest % Test,
-      scalapbRuntime % "protobuf"
+      scalapbRuntime % "protobuf",
+      scalapbLenses,
+      protobufJava,
+      scalatest % Test
     ),
     Compile / PB.protoSources:= Seq(file("vectortile/data")),
     Compile / PB.targets := Seq(
@@ -661,13 +641,8 @@ object Settings {
     name := "geotrellis-layer",
     libraryDependencies ++= Seq(
       hadoopClient % Provided,
-      apacheIO,
       avro,
-      spire,
       chronoscala,
-      logging,
-      uzaygezenCore,
-      pureconfig,
       scalactic,
       scalatest % Test
     ),
@@ -684,17 +659,16 @@ object Settings {
     name := "geotrellis-store",
     libraryDependencies ++= Seq(
       hadoopClient % Provided,
+      guava,
       apacheIO,
-      avro,
-      spire,
-      chronoscala,
-      spire,
-      fs2("core").value, fs2("io").value,
-      logging,
       scaffeine,
+      caffeine,
       uzaygezenCore,
-      pureconfig,
       scalaXml,
+      apacheLang3,
+      fs2("core").value, 
+      fs2("io").value,
+      cats("effect").value,
       scalatest % Test
     )
   ) ++ commonSettings
@@ -716,6 +690,7 @@ object Settings {
     name := "geotrellis-gdal-spark",
     libraryDependencies ++= Seq(
       gdalWarp,
+      hadoopClient % Provided,
       sparkCore % Provided,
       sparkSql % Test,
       scalatest % Test

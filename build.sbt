@@ -133,8 +133,8 @@ lazy val `cassandra-spark` = project
 
 lazy val hbase = project
   .dependsOn(store)
-  .settings(Settings.hbase)
   .settings(projectDependencies := { Seq((store / projectID).value.exclude("com.google.protobuf", "protobuf-java")) })
+  .settings(Settings.hbase)
 
 lazy val `hbase-spark` = project
   .dependsOn(
@@ -142,8 +142,8 @@ lazy val `hbase-spark` = project
     spark % "compile->compile;test->test", // <-- spark-testkit update should simplify this
     `spark-testkit` % Test
   )
+  .settings(projectDependencies := { Seq((hbase / projectID).value, (spark / projectID).value.exclude("com.google.protobuf", "protobuf-java")) })
   .settings(Settings.`hbase-spark`)
-  .settings(projectDependencies := { Seq((spark / projectID).value.exclude("com.google.protobuf", "protobuf-java")) })
 
 lazy val `spark-pipeline` = Project(id = "spark-pipeline", base = file("spark-pipeline")).
   dependsOn(spark, `s3-spark`, `spark-testkit` % "test").
