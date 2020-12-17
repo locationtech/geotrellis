@@ -42,8 +42,8 @@ class S3LayerCopier(
       val request =
         CopyObjectRequest.builder()
           .copySource(bucket + "/" + s3obj.key)
-          .bucket(bucket)
-          .key(s3obj.key.replace(s"${from.name}/${from.zoom}", s"${to.name}/${to.zoom}"))
+          .destinationBucket(bucket)
+          .destinationKey(s3obj.key.replace(s"${from.name}/${from.zoom}", s"${to.name}/${to.zoom}"))
           .build()
 
       s3Client.copyObject(request)
