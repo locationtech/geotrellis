@@ -1,5 +1,5 @@
 -J-Xmx1536m
--J-Xms64m
+-J-Xms32m
 -J-Xss2M
 -J-XX:+UseConcMarkSweepGC
 -J-XX:+CMSClassUnloadingEnabled
