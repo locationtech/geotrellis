@@ -26,7 +26,7 @@ GeoTrellis is currently available for Scala 2.11 and 2.12, using Spark 2.4.x.
 To get started with SBT, simply add the following to your build.sbt file:
 
 ```scala
-libraryDependencies += "org.locationtech.geotrellis" %% "geotrellis-raster" % "3.0.0"
+libraryDependencies += "org.locationtech.geotrellis" %% "geotrellis-raster" % "<latest version>"
 ```
 
 To grab the latest `SNAPSHOT`, `RC` or milestone build, add these resolvers:

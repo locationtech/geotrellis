@@ -55,8 +55,19 @@ class S3RangeReader(
       val responseStream = client.getObject(request)
       val length = responseStream.response.contentLength
 
+      /**
+        * The response stream is backed by [[org.apache.http.conn.EofSensorInputStream]].
+        * There is no need in closing the stream via close() after calling abort().
+        *
+        * abort() is a special version of close() which prevents
+        * re-use of the underlying connection, if any. Calling this method
+        * indicates that there should be no attempt to read until the end of
+        * the stream.
+        * * throws IOException in case of an IO problem on closing the underlying stream
+        *
+        * Source: https://github.com/apache/httpcomponents-core/blob/5.2.x/httpcore5/src/main/java/org/apache/hc/core5/http/io/EofSensorInputStream.java#L269-L283
+        */
       responseStream.abort()
-      responseStream.close()
       length
     }
   }
