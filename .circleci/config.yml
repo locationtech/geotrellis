@@ -18,7 +18,7 @@ executors:
       - image: quay.io/azavea/openjdk-gdal:3.1-jdk8-slim
         environment:
           # https://circleci.com/docs/2.0/java-oom/
-          _JAVA_OPTIONS: "-Xms32m -Xmx1472m"
+          _JAVA_OPTIONS: "-Xms64m -Xmx1536m"
       - image: nginx:1.18.0
         command: /bin/bash -c "cd /usr/share/nginx/html && curl -o all-ones.tif https://raw.githubusercontent.com/locationtech/geotrellis/v3.3.0/spark/src/test/resources/all-ones.tif && cd ~- && sed -i 's/listen       80;/listen       8081;/g' /etc/nginx/conf.d/default.conf && exec nginx -g 'daemon off;'"
 
@@ -26,7 +26,7 @@ executors:
     docker:
       - image: quay.io/azavea/openjdk-gdal:3.1-jdk8-slim
         environment:
-          _JAVA_OPTIONS: "-Xms32m -Xmx1536m"
+          _JAVA_OPTIONS: "-Xms64m -Xmx1536m"
       - image: minio/minio:RELEASE.2019-05-02T19-07-09Z
         environment:
           _JAVA_OPTIONS: "-Xms1m -Xmx512m"
@@ -38,7 +38,7 @@ executors:
     docker:
       - image: quay.io/azavea/openjdk-gdal:3.1-jdk8-slim
         environment:
-          _JAVA_OPTIONS: "-Xms32m -Xmx1536m"
+          _JAVA_OPTIONS: "-Xms64m -Xmx1536m"
       - image: cassandra:3.11.6
         environment:
           _JAVA_OPTIONS: "-Xms1m -Xmx512m"
@@ -50,7 +50,7 @@ executors:
     docker:
       - image: quay.io/azavea/openjdk-gdal:3.1-jdk8-slim
         environment:
-          _JAVA_OPTIONS: "-Xms32m -Xmx1536m"
+          _JAVA_OPTIONS: "-Xms64m -Xmx1536m"
       # https://github.com/pomadchin/hbase-docker
       - image: daunnc/hbase:2.1.4
         environment:
