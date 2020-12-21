@@ -280,6 +280,8 @@ class GDALRasterSourceRDDSpec extends AnyFunSpec with TestEnvironment with Befor
         implicit val cs = IO.contextShift(ExecutionContext.global)
 
         val res = parallelSpec(i)
+        
+        java.lang.System.gc()
       }
 
       it(s"should not fail on parallelization with a fixed thread pool") {
@@ -290,6 +292,8 @@ class GDALRasterSourceRDDSpec extends AnyFunSpec with TestEnvironment with Befor
         implicit val cs = IO.contextShift(ec)
 
         val res = parallelSpec(i)
+
+        java.lang.System.gc()
       }
     }
   }
