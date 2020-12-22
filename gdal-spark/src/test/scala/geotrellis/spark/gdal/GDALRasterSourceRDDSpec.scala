@@ -275,21 +275,23 @@ class GDALRasterSourceRDDSpec extends AnyFunSpec with TestEnvironment with Befor
         res
       }
 
-      it(s"should not fail on parallelization with a fork join pool") {
+      it("should not fail on parallelization with a fork join pool") {
         val i = 1000
         implicit val cs = IO.contextShift(ExecutionContext.global)
 
-        val res = parallelSpec(i)
+        parallelSpec(i)
       }
 
-      it(s"should not fail on parallelization with a fixed thread pool") {
+      it("should not fail on parallelization with a fixed thread pool") {
         val i = 1000
-        val n = 200
+        val n = 100
         val pool = Executors.newFixedThreadPool(n)
         val ec = ExecutionContext.fromExecutor(pool)
         implicit val cs = IO.contextShift(ec)
 
-        val res = parallelSpec(i)
+        parallelSpec(i)
+
+        pool.shutdown()
       }
     }
   }
