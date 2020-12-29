@@ -106,7 +106,7 @@ For some general information on coordinate systems and geospatial
 projections, see:
 
 -  `Snyder, 1987: Map projection; a working
-   manual <http://pubs.er.usgs.gov/usgspubs/pp/pp1395>`__
+   manual <https://pubs.er.usgs.gov/publication/pp1395>`__
 -  `Map
    projections <http://www.progonos.com/furuti/MapProj/Normal/TOC/cartTOC.html>`__
 -  `proj.4 Wiki <https://github.com/osgeo/proj.4/wiki>`__
