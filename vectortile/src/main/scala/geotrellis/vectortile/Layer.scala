@@ -215,13 +215,15 @@ ${sortedMeta.map({ case (k,v) => s"            ${k}: ${v}"}).mkString("\n")}
   tileWidth: Int,
   version: Int,
   tileExtent: Extent,
-  points: Seq[MVTFeature[Point]],
-  multiPoints: Seq[MVTFeature[MultiPoint]],
-  lines: Seq[MVTFeature[LineString]],
-  multiLines: Seq[MVTFeature[MultiLineString]],
-  polygons: Seq[MVTFeature[Polygon]],
-  multiPolygons: Seq[MVTFeature[MultiPolygon]]
-) extends Layer
+  mvtFeatures: MVTFeatures
+) extends Layer {
+  def points = mvtFeatures.points
+  def multiPoints = mvtFeatures.multiPoints
+  def lines = mvtFeatures.lines
+  def multiLines = mvtFeatures.multiLines
+  def polygons = mvtFeatures.polygons
+  def multiPolygons = mvtFeatures.multiPolygons
+}
 
 /**
   * A [[Layer]] decoded from Protobuf data. All of its Features are decoded
@@ -374,12 +376,14 @@ ${sortedMeta.map({ case (k,v) => s"            ${k}: ${v}"}).mkString("\n")}
       tileWidth,
       version,
       tileExtent,
-      points,
-      multiPoints,
-      lines,
-      multiLines,
-      polygons,
-      multiPolygons
+      MVTFeatures(
+        points,
+        multiPoints,
+        lines,
+        multiLines,
+        polygons,
+        multiPolygons
+      )
     )
   }
 }
