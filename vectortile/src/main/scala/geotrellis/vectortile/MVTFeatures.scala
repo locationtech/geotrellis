@@ -26,6 +26,13 @@ import geotrellis.vector.{
 }
 import cats.Monoid
 
+/** Container case class for collections of [[MVTFeature]]s
+  *
+  * This is separated for ease of use when reading geometries from
+  * places. With the `Monoid` instance for `MVTFeatures`, each geometry
+  * can be lifted into a seq in the relevant attribute, and then
+  * the separate `MVTFeatures` case classes can all be combined.
+  */
 final case class MVTFeatures(
   /** Every Point Feature in this Layer. */
   points: Seq[MVTFeature[Point]],
