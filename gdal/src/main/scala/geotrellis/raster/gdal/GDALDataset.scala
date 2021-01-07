@@ -240,7 +240,7 @@ case class GDALDataset(token: Long) extends AnyVal {
     * https://gdal.org/user/raster_data_model.html#affine-geotransform
     * https://github.com/mapbox/rasterio/blob/1.2b1/rasterio/_base.pyx#L865-L895
     */
-  private def extent(transform: Array[Double], cols: Int, rows: Int): Extent = {
+  def extent(transform: Array[Double], cols: Int, rows: Int): Extent = {
     val Array(upx, xres, xskew, upy, yskew, yres) = transform
 
     val ulx = upx + 0 * xres + 0 * xskew
@@ -351,7 +351,7 @@ case class GDALDataset(token: Long) extends AnyVal {
     cellSize(getTransform(datasetType))
   }
 
-  private def cellSize(transform: Array[Double]): CellSize = {
+  def cellSize(transform: Array[Double]): CellSize = {
     val Array(_, xres, xskew, _, yskew, yres) = transform
 
     if(xskew == 0d && yskew == 0d) CellSize(math.abs(xres), math.abs(yres))
