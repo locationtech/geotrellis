@@ -41,6 +41,8 @@ case class GDALDataset(token: Long) extends AnyVal {
 
   /** https://github.com/OSGeo/gdal/blob/b1c9c12ad373e40b955162b45d704070d4ebf7b0/gdal/doc/source/development/rfc/rfc43_getmetadatadomainlist.rst */
   def getMetadataDomainList(datasetType: DatasetType, band: Int): List[GDALMetadataDomain] = {
+    require(acceptableDatasets contains datasetType)
+
     val arr = Array.ofDim[Byte](100, 1 << 10)
     val returnValue = GDALWarp.get_metadata_domain_list(token, datasetType.value, numberOfAttempts, band, arr)
 
@@ -63,6 +65,8 @@ case class GDALDataset(token: Long) extends AnyVal {
   def getMetadata(domain: GDALMetadataDomain, band: Int): Map[String, String] = getMetadata(GDALDataset.SOURCE, domain, band)
 
   def getMetadata(datasetType: DatasetType, domain: GDALMetadataDomain, band: Int): Map[String, String] = {
+    require(acceptableDatasets contains datasetType)
+
     val arr = Array.ofDim[Byte](100, 1 << 10)
     val returnValue = GDALWarp.get_metadata(token, datasetType.value, numberOfAttempts, band, domain.name, arr)
 
@@ -88,6 +92,8 @@ case class GDALDataset(token: Long) extends AnyVal {
   def getMetadataItem(key: String, domain: GDALMetadataDomain, band: Int): String = getMetadataItem(GDALDataset.WARPED, key, domain, band)
 
   def getMetadataItem(datasetType: DatasetType, key: String, domain: GDALMetadataDomain, band: Int): String = {
+    require(acceptableDatasets contains datasetType)
+
     val arr = Array.ofDim[Byte](1 << 10)
     val returnValue = GDALWarp.get_metadata_item(token, datasetType.value, numberOfAttempts, band, key, domain.name, arr)
 
@@ -105,6 +111,7 @@ case class GDALDataset(token: Long) extends AnyVal {
 
   def getProjection(datasetType: DatasetType): Option[String] = {
     require(acceptableDatasets contains datasetType)
+
     val crs = Array.ofDim[Byte](1 << 10)
     val returnValue = GDALWarp.get_crs_wkt(token, datasetType.value, numberOfAttempts, crs)
 
@@ -121,6 +128,8 @@ case class GDALDataset(token: Long) extends AnyVal {
   def overviewDimensions: List[Dimensions[Int]] = overviewDimensions(GDALDataset.WARPED)
 
   def overviewDimensions(datasetType: DatasetType): List[Dimensions[Int]] = {
+    require(acceptableDatasets contains datasetType)
+
     val N = 1 << 8
     val widths = Array.ofDim[Int](N)
     val heights = Array.ofDim[Int](N)
@@ -140,6 +149,8 @@ case class GDALDataset(token: Long) extends AnyVal {
   def dimensions: Dimensions[Int] = dimensions(GDALDataset.WARPED)
 
   def dimensions(datasetType: DatasetType): Dimensions[Int] = {
+    require(acceptableDatasets contains datasetType)
+
     val dimensions = Array.ofDim[Int](2)
     val returnValue = GDALWarp.get_width_height(token, datasetType.value, numberOfAttempts, dimensions)
 
@@ -156,6 +167,8 @@ case class GDALDataset(token: Long) extends AnyVal {
   def getTransform: Array[Double] = getTransform(GDALDataset.WARPED)
 
   def getTransform(datasetType: DatasetType): Array[Double] = {
+    require(acceptableDatasets contains datasetType)
+
     val transform = Array.ofDim[Double](6)
     val returnValue = GDALWarp.get_transform(token, datasetType.value, numberOfAttempts, transform)
 
@@ -203,6 +216,7 @@ case class GDALDataset(token: Long) extends AnyVal {
 
   def resolutions(datasetType: DatasetType): List[RasterExtent] = {
     require(acceptableDatasets contains datasetType)
+
     val ext = extent(datasetType)
     overviewDimensions(datasetType).map { case Dimensions(cols, rows) => RasterExtent(ext, cols, rows) }
   }
@@ -211,7 +225,7 @@ case class GDALDataset(token: Long) extends AnyVal {
 
   def extent(datasetType: DatasetType): Extent = {
     require(acceptableDatasets contains datasetType)
-    this.rasterExtent(datasetType).extent
+    rasterExtent(datasetType).extent
   }
 
   /**
@@ -251,8 +265,8 @@ case class GDALDataset(token: Long) extends AnyVal {
 
   def bandCount(datasetType: DatasetType): Int = {
     require(acceptableDatasets contains datasetType)
-    val count = Array.ofDim[Int](1)
 
+    val count = Array.ofDim[Int](1)
     val returnValue = GDALWarp.get_band_count(token, datasetType.value, numberOfAttempts, count)
 
     errorHandler(returnValue, { positiveValue =>
@@ -269,8 +283,8 @@ case class GDALDataset(token: Long) extends AnyVal {
 
   def crs(datasetType: DatasetType): CRS = {
     require(acceptableDatasets contains datasetType)
-    val crs = Array.ofDim[Byte](1 << 16)
 
+    val crs = Array.ofDim[Byte](1 << 16)
     val returnValue = GDALWarp.get_crs_proj4(token, datasetType.value, numberOfAttempts, crs)
 
     errorHandler(returnValue, { positiveValue =>
@@ -288,9 +302,9 @@ case class GDALDataset(token: Long) extends AnyVal {
 
   def noDataValue(datasetType: DatasetType): Option[Double] = {
     require(acceptableDatasets contains datasetType)
+
     val nodata = Array.ofDim[Double](1)
     val success = Array.ofDim[Int](1)
-
     val returnValue = GDALWarp.get_band_nodata(token, datasetType.value, numberOfAttempts, 1, nodata, success)
 
     errorHandler(returnValue, { positiveValue =>
@@ -307,8 +321,8 @@ case class GDALDataset(token: Long) extends AnyVal {
 
   def dataType(datasetType: DatasetType): Int = {
     require(acceptableDatasets contains datasetType)
-    val dataType = Array.ofDim[Int](1)
 
+    val dataType = Array.ofDim[Int](1)
     val returnValue = GDALWarp.get_band_data_type(token, datasetType.value, numberOfAttempts, 1, dataType)
 
     errorHandler(returnValue, { positiveValue =>
@@ -348,10 +362,11 @@ case class GDALDataset(token: Long) extends AnyVal {
 
   def cellType(datasetType: DatasetType): CellType = {
     require(acceptableDatasets contains datasetType)
+
     val nd = noDataValue(datasetType)
-    val dt = GDALDataType.intToGDALDataType(this.dataType(datasetType))
+    val dt = GDALDataType.intToGDALDataType(dataType(datasetType))
     /** The necessary metadata about the [[CellType]] is available only on the RasterBand metadata level, that is why band = 1 here. */
-    lazy val md = this.getMetadata(ImageStructureDomain, 1)
+    lazy val md = getMetadata(ImageStructureDomain, 1)
     /** To handle the [[BitCellType]] it is possible to fetch NBITS information from the RasterBand metadata, **/
     lazy val bitsPerSample = md.get("NBITS").map(_.toInt)
     /** To handle the [[ByteCellType]] it is possible to fetch information about the sampleFormat from the RasterBand metadata. **/
@@ -361,11 +376,12 @@ case class GDALDataset(token: Long) extends AnyVal {
 
   def readTile(gb: GridBounds[Int] = GridBounds(dimensions), band: Int, datasetType: DatasetType = GDALDataset.WARPED): Tile = {
     require(acceptableDatasets contains datasetType)
+
     val GridBounds(xmin, ymin, xmax, ymax) = gb
     val srcWindow: Array[Int] = Array(xmin, ymin, xmax - xmin + 1, ymax - ymin + 1)
     val dstWindow: Array[Int] = Array(srcWindow(2), srcWindow(3))
-    val ct = this.cellType(datasetType)
-    val dt = this.dataType(datasetType)
+    val ct = cellType(datasetType)
+    val dt = dataType(datasetType)
     val bytes = Array.ofDim[Byte](dstWindow(0) * dstWindow(1) * ct.bytes)
 
     val returnValue = GDALWarp.get_data(token, datasetType.value, numberOfAttempts, srcWindow, dstWindow, band, dt, bytes)
