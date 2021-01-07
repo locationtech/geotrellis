@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Add initial GDAL Transform rotation support [#3331](https://github.com/locationtech/geotrellis/pull/3331)
+
 ### Changed
 - Remove explicit unused Scaffeine dependency from projects [#3314](https://github.com/locationtech/geotrellis/pull/3314)
 - Remove an excessive close after the abort call in S3RangeReader [#3324](https://github.com/locationtech/geotrellis/pull/3324)
