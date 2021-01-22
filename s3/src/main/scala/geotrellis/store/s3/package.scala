@@ -16,18 +16,21 @@
 
 package geotrellis.store
 
+import geotrellis.raster.CellGrid
+import geotrellis.raster.io.geotiff.GeoTiff
+import geotrellis.raster.render.{Jpg, Png}
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.model.{NoSuchKeyException, HeadObjectRequest}
 
 import scala.util.{Try, Success, Failure}
 
 package object s3 {
-  private[geotrellis] def makePath(chunks: String*) =
+  private[geotrellis] def makePath(chunks: String*): String =
     chunks
       .collect { case str if str.nonEmpty => if(str.endsWith("/")) str.dropRight(1) else str }
       .mkString("/")
 
-  implicit class S3ClientExtension(client: S3Client) {
+  implicit class S3ClientExtension(val client: S3Client) extends AnyVal {
     def objectExists(bucket: String, key: String): Boolean = {
       val request = HeadObjectRequest.builder()
         .bucket(bucket)
@@ -50,4 +53,10 @@ package object s3 {
       client.objectExists(bucket, key)
     }
   }
+
+  implicit class withJpgS3WriteMethods(val self: Jpg) extends JpgS3WriteMethods(self)
+
+  implicit class withPngS3WriteMethods(val self: Png) extends PngS3WriteMethods(self)
+
+  implicit class withGeoTiffS3WriteMethods[T <: CellGrid[Int]](val self: GeoTiff[T]) extends GeoTiffS3WriteMethods[T](self)
 }
