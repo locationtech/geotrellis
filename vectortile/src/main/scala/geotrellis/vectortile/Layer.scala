@@ -225,6 +225,31 @@ ${sortedMeta.map({ case (k,v) => s"            ${k}: ${v}"}).mkString("\n")}
   def multiPolygons = mvtFeatures.multiPolygons
 }
 
+object StrictLayer {
+  def apply(
+    name: String,
+    tileWidth: Int,
+    version: Int,
+    tileExtent: Extent,
+    points: Seq[MVTFeature[Point]],
+    multiPoints: Seq[MVTFeature[MultiPoint]],
+    lines: Seq[MVTFeature[LineString]],
+    multiLines: Seq[MVTFeature[MultiLineString]],
+    polygons: Seq[MVTFeature[Polygon]],
+    multiPolygons: Seq[MVTFeature[MultiPolygon]]
+  ): StrictLayer = StrictLayer(
+    name, tileWidth, version, tileExtent,
+    MVTFeatures(
+      points,
+      multiPoints,
+      lines,
+      multiLines,
+      polygons,
+      multiPolygons
+    )
+  )
+}
+
 /**
   * A [[Layer]] decoded from Protobuf data. All of its Features are decoded
   * lazily, making for very fast extraction of single features/geometries.
