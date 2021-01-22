@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Add rasters S3 write methods [#3333](https://github.com/locationtech/geotrellis/pull/3333)
+- Add initial GDAL Transform rotation support [#3331](https://github.com/locationtech/geotrellis/pull/3331)
 
 ### Changed
 - Remove explicit unused Scaffeine dependency from projects [#3314](https://github.com/locationtech/geotrellis/pull/3314)
