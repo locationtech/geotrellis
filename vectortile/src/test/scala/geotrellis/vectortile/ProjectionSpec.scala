@@ -35,12 +35,14 @@ class ProjectionSpec extends AnyFunSpec {
         tileWidth = 128,
         version = 2,
         tileExtent = tileExtent,
-        points = Seq(f),
-        multiPoints = Seq.empty,
-        lines = Seq.empty,
-        multiLines = Seq.empty,
-        polygons = Seq.empty,
-        multiPolygons = Seq.empty
+        MVTFeatures(
+          points = Seq(f),
+          multiPoints = Seq.empty,
+          lines = Seq.empty,
+          multiLines = Seq.empty,
+          polygons = Seq.empty,
+          multiPolygons = Seq.empty
+        )
       )
 
       val vt = VectorTile(Map("test" -> layer), tileExtent)

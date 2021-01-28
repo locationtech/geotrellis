@@ -45,7 +45,7 @@ class ProtobufTileSpec extends AnyFunSpec with Matchers {
       val layerId = "x"
       val mvtFeature = MVTFeature(Some(1), Point(10, 10), Map.empty)
       val layer = StrictLayer(layerId, 4096, 2, tileExtent,
-                              Seq(mvtFeature), Seq(), Seq(), Seq(), Seq(), Seq())
+                              MVTFeatures(Seq(mvtFeature), Nil, Nil, Nil, Nil, Nil))
       val tile = VectorTile(Map(layerId -> layer), tileExtent)
       val tile2 = VectorTile.fromBytes(tile.toBytes, tileExtent)
       val tileId = tile.layers(layerId).points.head.id
@@ -62,7 +62,7 @@ class ProtobufTileSpec extends AnyFunSpec with Matchers {
         "population" -> VInt64(6)
       ))
       val layer = StrictLayer(layerId, 4096, 2, tileExtent,
-                              Seq(mvtFeature), Seq(), Seq(), Seq(), Seq(), Seq())
+                              MVTFeatures(Seq(mvtFeature), Nil, Nil, Nil, Nil, Nil))
       val tile = VectorTile(Map(layerId -> layer), tileExtent)
       val tile2 = VectorTile.fromBytes(tile.toBytes, tileExtent)
       val tileId = tile.layers(layerId).points.head.data.toList.foreach {

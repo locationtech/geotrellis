@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Remove explicit unused Scaffeine dependency from projects [#3314](https://github.com/locationtech/geotrellis/pull/3314)
 - Remove an excessive close after the abort call in S3RangeReader [#3324](https://github.com/locationtech/geotrellis/pull/3324)
 - Fix sigmoidal contrast calculation [#3328](https://github.com/locationtech/geotrellis/pull/3328)
+- Separated monoidal component of `vectortile.StrictLayer` [#3330](https://github.com/locationtech/geotrellis/pull/3330)
 
 ## [3.5.1] - 2020-11-23
 
