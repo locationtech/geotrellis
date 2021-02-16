@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Fix MosaicRasterSource.tileToLayout behavior [#3338](https://github.com/locationtech/geotrellis/pull/3338)
+
 ## [3.5.2] - 2021-02-01
 
 ### Added

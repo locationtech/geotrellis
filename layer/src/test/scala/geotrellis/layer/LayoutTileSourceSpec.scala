@@ -23,9 +23,11 @@ import geotrellis.raster.geotiff._
 import geotrellis.raster.io.geotiff.reader._
 import geotrellis.raster.resample._
 import geotrellis.vector._
+import geotrellis.raster.io.geotiff.AutoHigherResolution
+
+import cats.data.NonEmptyList
 
 import java.io.File
-
 import org.scalatest.funspec.AnyFunSpec
 
 class LayoutTileSourceSpec extends AnyFunSpec with RasterMatchers {
@@ -269,21 +271,25 @@ class LayoutTileSourceSpec extends AnyFunSpec with RasterMatchers {
           .get
           .band(0)
         val arr = tile.toArray
-        val ones = tile.mapIfSet(i => 1).toArray()
-        ones.sum shouldBe(arr.size)
+        val ones = tile.mapIfSet(_ => 1).toArray()
+        ones.sum shouldBe arr.size
       }
 
       neighborhood map {
         case (x, y) => checkExtent(x, y, rs)
       }
+    }
 
-  describe("should correctly work with LayoutTileSource") {
-    it("should properly read all its keys") {
+    // https://github.com/locationtech/geotrellis/issues/3253
+    it("MosaicRasterSource should be properly tiled to layout") {
       val ld = LayoutDefinition(
         Extent(-2.003750834278925E7, -2.003750834278925E7, 2.003750834278925E7, 2.003750834278925E7),
         TileLayout(256, 256, 256, 256)
       )
 
+      // For SpatialKey(74, 96):
+      // rs1: GridBounds(133,0,388,12)
+      // rs2: GridBounds(355,105,512,360)
       val rasterSources = List(
         rasterGeoTiffPath("vlm/lc8-utm-1.tif"),
         rasterGeoTiffPath("vlm/lc8-utm-2.tif")
@@ -295,7 +301,24 @@ class LayoutTileSourceSpec extends AnyFunSpec with RasterMatchers {
         .reproject(WebMercator)
         .tileToLayout(ld, identity, NearestNeighbor, AutoHigherResolution)
 
-      layout.keys.foreach(layout.read)
+      val mosaicReprojected = mosaic
+        .reproject(WebMercator)
+        .resampleToGrid(ld, NearestNeighbor, AutoHigherResolution)
+
+      layout.keys.foreach { key =>
+        val extent = ld.mapTransform.keyToExtent(key)
+        val ltile = layout.read(key).map(_.band(0).toArrayTile)
+        val mtile = mosaicReprojected.read(extent.buffer(mosaicReprojected.cellSize.resolution / 2)).map(_.mapTile(_.band(0).toArrayTile))
+
+        (ltile, mtile) match {
+          case (Some(ltile), Some(mtile)) =>
+            val sample = Raster(ArrayTile.alloc(ltile.cellType, 256, 256), extent)
+            val rtile = sample.merge(mtile)
+            assertTilesEqual(ltile, rtile.tile)
+          case (None, None) =>
+          case (l, r) => throw new Exception(s"$l is not equal to $r")
+        }
+      }
     }
   }
 }

@@ -93,7 +93,29 @@ abstract class MosaicRasterSource extends RasterSource {
   }
 
   def read(bounds: GridBounds[Long], bands: Seq[Int]): Option[Raster[MultibandTile]] = {
-    val rasters = sources map { _.read(bounds, bands) }
+    /** The passed bounds are relative to the [[MosaicRasterSource]] bounds.
+      * However, each [[RasterSource]] has its own [[GridBounds]].
+      * Before passing [[GridBounds]] into each underlying [[RasterSource]]
+      * we need to map them into the each [[RasterSource]] relative grid space.
+      *
+      * This is done by calculating the relative offset using each [[RasterSource]]
+      * underlying [[Extent]].
+      */
+    def gridBoundsRelative(gb: GridBounds[Long], extent: Extent): GridBounds[Long] = {
+      val GridBounds(colMin, rowMin, colMax, rowMax) = gb
+
+      val sourceColOffset = GridExtent.floorWithTolerance((extent.xmin - gridExtent.extent.xmin) / gridExtent.cellwidth).toLong
+      val sourceRowOffset = GridExtent.floorWithTolerance((gridExtent.extent.ymax - extent.ymax) / gridExtent.cellheight).toLong
+
+      GridBounds(
+        colMin - sourceColOffset,
+        rowMin - sourceRowOffset,
+        colMax - sourceColOffset,
+        rowMax - sourceRowOffset
+      )
+    }
+
+    val rasters = sources.map { rs => rs.read(gridBoundsRelative(bounds, rs.extent), bands) }
     rasters.reduce
   }
 
