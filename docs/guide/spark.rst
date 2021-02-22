@@ -684,7 +684,7 @@ time, and calculating the maximum temperature per pixel for the layer:
         // Simply reduce by the key with a localMax
         .reduceByKey(_.localMax(_))
 
-Stiching Tiles into a single GeoTiff
+Stitching Tiles into a single GeoTiff
 ------------------------------------
 
 This example will show how to start with an
