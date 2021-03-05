@@ -92,9 +92,9 @@ object Settings {
       Path.userHome / ".sbt" / ".credentials"
     ).filter(_.asFile.canRead).map(Credentials(_)),
 
-    addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.11.2" cross CrossVersion.full),
+    addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.11.3" cross CrossVersion.full),
     addCompilerPlugin("org.scalamacros" %% "paradise" % "2.1.1" cross CrossVersion.full),
-    addCompilerPlugin("org.scalameta" % "semanticdb-scalac" % "4.3.20" cross CrossVersion.full),
+    addCompilerPlugin("org.scalameta" % "semanticdb-scalac" % "4.4.10" cross CrossVersion.full),
 
     pomExtra := (
       <developers>
