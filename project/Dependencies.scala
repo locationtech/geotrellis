@@ -17,7 +17,7 @@
 import sbt._
 
 object Version {
-  val geotools    = "23.2"
+  val geotools    = "24.2"
   val spire       = "0.13.0"
   val accumulo    = "1.9.3"
   val cassandra   = "3.7.2"
@@ -25,7 +25,7 @@ object Version {
   val geomesa     = "2.3.1"
   val geowave     = "0.9.3"
   val hadoop      = "2.8.5"
-  val spark       = "2.4.4"
+  val spark       = "2.4.7"
   val gdal        = "3.1.0"
   val gdalWarp    = "1.1.1"
 
@@ -48,8 +48,8 @@ object Dependencies {
 
   def cats(module: String) = Def.setting {
     module match {
-      case "effect" => "org.typelevel" %% s"cats-$module" % ver("1.3.1", "2.1.3").value
-      case _        => "org.typelevel" %% s"cats-$module" % ver("1.6.1", "2.1.1").value
+      case "effect" => "org.typelevel" %% s"cats-$module" % ver("1.3.1", "2.3.3").value
+      case _        => "org.typelevel" %% s"cats-$module" % ver("1.6.1", "2.4.2").value
     }
   }
 
@@ -58,7 +58,7 @@ object Dependencies {
   }
 
   def fs2(module: String) = Def.setting {
-    "co.fs2" %% s"fs2-$module" % ver("1.0.5", "2.4.2").value
+    "co.fs2" %% s"fs2-$module" % ver("1.0.5", "2.5.3").value
   }
 
   val scalaURI = Def.setting {
@@ -69,21 +69,21 @@ object Dependencies {
 
   val sparkCore           = "org.apache.spark"           %% "spark-core"               % Version.spark
   val sparkSql            = "org.apache.spark"           %% "spark-sql"                % Version.spark
-  val pureconfig          = "com.github.pureconfig"      %% "pureconfig"               % "0.13.0"
-  val log4s               = "org.log4s"                  %% "log4s"                    % "1.8.2"
-  val scalatest           = "org.scalatest"              %% "scalatest"                % "3.2.0"
-  val scalacheck          = "org.scalacheck"             %% "scalacheck"               % "1.14.3"
+  val pureconfig          = "com.github.pureconfig"      %% "pureconfig"               % "0.14.0"
+  val log4s               = "org.log4s"                  %% "log4s"                    % "1.9.0"
+  val scalatest           = "org.scalatest"              %% "scalatest"                % "3.2.5"
+  val scalacheck          = "org.scalacheck"             %% "scalacheck"               % "1.15.2"
   val scalaXml            = "org.scala-lang.modules"     %% "scala-xml"                % "1.3.0"
-  val jts                 = "org.locationtech.jts"        % "jts-core"                 % "1.16.1"
+  val jts                 = "org.locationtech.jts"        % "jts-core"                 % "1.17.1"
   val proj4j              = "org.locationtech.proj4j"     % "proj4j"                   % "1.1.1"
-  val openCSV             = "com.opencsv"                 % "opencsv"                  % "5.2"
+  val openCSV             = "com.opencsv"                 % "opencsv"                  % "5.3"
   val spire               = "org.spire-math"             %% "spire"                    % Version.spire
   val spireMacro          = "org.spire-math"             %% "spire-macros"             % Version.spire
-  val apacheIO            = "commons-io"                  % "commons-io"               % "2.7"
-  val apacheLang3         = "org.apache.commons"          % "commons-lang3"            % "3.10"
+  val apacheIO            = "commons-io"                  % "commons-io"               % "2.8.0"
+  val apacheLang3         = "org.apache.commons"          % "commons-lang3"            % "3.12.0"
   val apacheMath          = "org.apache.commons"          % "commons-math3"            % "3.6.1"
-  val chronoscala         = "jp.ne.opt"                  %% "chronoscala"              % "0.3.2"
-  val awsSdkS3            = "software.amazon.awssdk"      % "s3"                       % "2.13.74"
+  val chronoscala         = "jp.ne.opt"                  %% "chronoscala"              % "1.0.0"
+  val awsSdkS3            = "software.amazon.awssdk"      % "s3"                       % "2.16.13"
   val hadoopClient        = "org.apache.hadoop"           % "hadoop-client"            % Version.hadoop
   val avro                = "org.apache.avro"             % "avro"                     % "1.7.7"
   val parserCombinators   = "org.scala-lang.modules"     %% "scala-parser-combinators" % "1.1.2"
@@ -98,8 +98,8 @@ object Dependencies {
   val geomesaAccumuloDatastore = "org.locationtech.geomesa" %% "geomesa-accumulo-datastore" % Version.geomesa
   val geomesaUtils             = "org.locationtech.geomesa" %% "geomesa-utils"              % Version.geomesa
 
-  val scaffeine = "com.github.blemale"           %% "scaffeine" % "4.0.1"
-  val caffeine  = "com.github.ben-manes.caffeine" % "caffeine"  % "2.8.4"
+  val scaffeine = "com.github.blemale"           %% "scaffeine" % "4.0.2"
+  val caffeine  = "com.github.ben-manes.caffeine" % "caffeine"  % "2.8.5"
 
   val geotoolsCoverage    = "org.geotools"                 % "gt-coverage"             % Version.geotools
   val geotoolsHsql        = "org.geotools"                 % "gt-epsg-hsql"            % Version.geotools
@@ -110,8 +110,8 @@ object Dependencies {
   val geotoolsMetadata    = "org.geotools"                 % "gt-metadata"             % Version.geotools
   val geotoolsOpengis     = "org.geotools"                 % "gt-opengis"              % Version.geotools
 
-  val imageioExtUtilities = "it.geosolutions.imageio-ext"      % "imageio-ext-utilities" % "1.3.2"
-  val jtUtilities         = "it.geosolutions.jaiext.utilities" % "jt-utilities"          % "1.1.15"
+  val imageioExtUtilities = "it.geosolutions.imageio-ext"      % "imageio-ext-utilities" % "1.3.5"
+  val jtUtilities         = "it.geosolutions.jaiext.utilities" % "jt-utilities"          % "1.1.20"
   
   // located in the OSGeo repo: https://repo.osgeo.org/repository/release/
   val jaiCore             = "javax.media" % "jai_core"     % "1.1.3"
@@ -148,7 +148,7 @@ object Dependencies {
   val protobufJava        = "com.google.protobuf"          % "protobuf-java"           % "3.8.0"
 
   val squants             = "org.typelevel"               %% "squants"                 % "1.7.0"
-  val scalactic           = "org.scalactic"               %% "scalactic"               % "3.2.1"
+  val scalactic           = "org.scalactic"               %% "scalactic"               % "3.2.5"
 
   val gdalBindings        = "org.gdal"                     % "gdal"                    % Version.gdal
   val gdalWarp            = "com.azavea.geotrellis"        % "gdal-warp-bindings"      % Version.gdalWarp
@@ -160,5 +160,5 @@ object Dependencies {
 
   val shapeless           = "com.chuusai"  %% "shapeless" % "2.3.3"
   
-  val unitApi             = "javax.measure" % "unit-api"  % "1.0"
+  val unitApi             = "javax.measure" % "unit-api"  % "2.1.2"
 }
