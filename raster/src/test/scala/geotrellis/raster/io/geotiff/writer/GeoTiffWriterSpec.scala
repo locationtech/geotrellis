@@ -509,7 +509,7 @@ class GeoTiffWriterSpec extends AnyFunSpec with Matchers with BeforeAndAfterAll 
       val p1 = reread.options.colorMap.get.colors
       val p2 = indexed.options.colorMap.get.colors
 
-      Inspectors.forEvery(p1.zip(p2)) { case (c1, c2) ⇒
+      Inspectors.forEvery(p1.zip(p2)) { case (c1, c2) =>
         c1 should equal (c2)
       }
     }
@@ -525,7 +525,7 @@ class GeoTiffWriterSpec extends AnyFunSpec with Matchers with BeforeAndAfterAll 
       val p1 = reread.options.colorMap.get.colors
       val p2 = base.options.colorMap.get.colors
 
-      Inspectors.forEvery(p1.zip(p2)) { case (c1, c2) ⇒
+      Inspectors.forEvery(p1.zip(p2)) { case (c1, c2) =>
         c1 should equal (c2)
       }
     }
@@ -534,7 +534,7 @@ class GeoTiffWriterSpec extends AnyFunSpec with Matchers with BeforeAndAfterAll 
       val base = SinglebandGeoTiff(geoTiffPath("colormap.tif"))
       val illegal = Seq(FloatCellType, DoubleCellType, IntCellType)
 
-      Inspectors.forEvery(illegal) { cellType ⇒
+      Inspectors.forEvery(illegal) { cellType =>
         val naughty = base.copy(tile = base.tile.convert(cellType))
         intercept[IncompatibleGeoTiffOptionsException] {
           GeoTiffWriter.write(naughty, path)

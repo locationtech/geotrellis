@@ -173,10 +173,10 @@ trait TileBuilders {
     def filter(c: Int, r: Int) = targeted.contains(r * t.cols + c)
 
     val injected = if(t.cellType.isFloatingPoint) {
-      t.mapDouble((c, r, v) ⇒ (if(filter(c,r)) doubleNODATA else v): Double)
+      t.mapDouble((c, r, v) => (if(filter(c,r)) doubleNODATA else v): Double)
     }
     else {
-      t.map((c, r, v) ⇒ if(filter(c, r)) NODATA else v)
+      t.map((c, r, v) => if(filter(c, r)) NODATA else v)
     }
 
     injected

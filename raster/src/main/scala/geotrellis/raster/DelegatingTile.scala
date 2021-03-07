@@ -68,22 +68,22 @@ abstract class DelegatingTile extends Tile {
   def toBytes(): Array[Byte] =
     delegate.toBytes()
 
-  def foreach(f: Int ⇒ Unit): Unit =
+  def foreach(f: Int => Unit): Unit =
     delegate.foreach(f)
 
-  def foreachDouble(f: Double ⇒ Unit): Unit =
+  def foreachDouble(f: Double => Unit): Unit =
     delegate.foreachDouble(f)
 
-  def map(f: Int ⇒ Int): Tile =
+  def map(f: Int => Int): Tile =
     delegate.map(f)
 
-  def combine(r2: Tile)(f: (Int, Int) ⇒ Int): Tile =
+  def combine(r2: Tile)(f: (Int, Int) => Int): Tile =
     delegate.combine(r2)(f)
 
-  def mapDouble(f: Double ⇒ Double): Tile =
+  def mapDouble(f: Double => Double): Tile =
     delegate.mapDouble(f)
 
-  def combineDouble(r2: Tile)(f: (Double, Double) ⇒ Double): Tile =
+  def combineDouble(r2: Tile)(f: (Double, Double) => Double): Tile =
     delegate.combineDouble(r2)(f)
 
   def foreachIntVisitor(visitor: IntTileVisitor): Unit =

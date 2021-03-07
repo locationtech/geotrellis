@@ -18,7 +18,7 @@ package geotrellis.raster.resample
 
 import geotrellis.proj4.{LatLng, Transform, WebMercator}
 import geotrellis.raster.{Raster, RasterExtent, SinglebandRaster, Tile}
-import org.openjdk.jmh.annotations.{Mode ⇒ JMHMode, _}
+import org.openjdk.jmh.annotations.{Mode => JMHMode, _}
 import geotrellis.bench._
 
 @BenchmarkMode(Array(JMHMode.AverageTime))
@@ -37,13 +37,13 @@ class ResampleBench {
   def setup(): Unit = {
     val geotiff = readSinglebandGeoTiff("aspect-tif.tif")
     method = methodName match {
-      case "NearestNeighbor" ⇒ NearestNeighbor
-      case "Bilinear" ⇒ Bilinear
-      case "CubicConvolution" ⇒ CubicConvolution
-      case "CubicSpline" ⇒ CubicSpline
-      case "Lanczos" ⇒ Lanczos
-      case "Average" ⇒ Average
-      case "Mode" ⇒ Mode
+      case "NearestNeighbor" => NearestNeighbor
+      case "Bilinear" => Bilinear
+      case "CubicConvolution" => CubicConvolution
+      case "CubicSpline" => CubicSpline
+      case "Lanczos" => Lanczos
+      case "Average" => Average
+      case "Mode" => Mode
     }
     trans = Transform(LatLng, WebMercator)
     invTrans = Transform(WebMercator, LatLng)

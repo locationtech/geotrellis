@@ -366,9 +366,9 @@ object ArrayTileSpec {
     def apply(t: Tile) = {
       var count: Long = 0
       t.dualForeach(
-        z ⇒ if(isData(z)) count = count + 1
+        z => if(isData(z)) count = count + 1
       ) (
-        z ⇒ if(isData(z)) count = count + 1
+        z => if(isData(z)) count = count + 1
       )
       count
     }

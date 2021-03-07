@@ -70,8 +70,8 @@ object passing extends BeMatcher[MetaCRSTestCase] {
     val (success, x, y) = left.execute(crsFactory)
     MatchResult(
       success,
-      f"$srcCrsAuth:$srcCrs→$tgtCrsAuth:$tgtCrs ($srcOrd1, $srcOrd2, $srcOrd3) → ($tgtOrd1, $tgtOrd2, $tgtOrd3); got ($x, $y)",
-      f"$srcCrsAuth:$srcCrs→$tgtCrsAuth:$tgtCrs in tolerance")
+      f"$srcCrsAuth:$srcCrs->$tgtCrsAuth:$tgtCrs ($srcOrd1, $srcOrd2, $srcOrd3) -> ($tgtOrd1, $tgtOrd2, $tgtOrd3); got ($x, $y)",
+      f"$srcCrsAuth:$srcCrs->$tgtCrsAuth:$tgtCrs in tolerance")
   }
 }
 

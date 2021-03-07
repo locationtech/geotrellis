@@ -116,7 +116,7 @@ object TiffTagFieldValue {
 
       val divider = 1 << bitsPerSample
 
-      for(cmap ← geoTiff.options.colorMap) {
+      for(cmap <- geoTiff.options.colorMap) {
         val palette = IndexedColorMap.toTiffPalette(cmap)
         val size = math.min(palette.size, divider)
         // Indexed color palette is stored as three consecutive arrays containing

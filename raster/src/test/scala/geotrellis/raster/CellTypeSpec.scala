@@ -154,18 +154,18 @@ class CellTypeSpec extends AnyFunSpec with Matchers with Inspectors {
       type PhantomCell = AnyVal
       type PhantomNoData = AnyVal
 
-      forEvery(CellDef.all) { cd ⇒
+      forEvery(CellDef.all) { cd =>
         val cellDef = cd.asInstanceOf[CellDef[PhantomCell, PhantomNoData]]
         withClue(s"for cell type '$cellDef'") {
-          forEvery(cellDef.range.testPoints) { nd ⇒
+          forEvery(cellDef.range.testPoints) { nd =>
             withClue(s"for no data '$nd'") {
               val ct = cellDef(nd)
               roundTrip(ct)
               roundTripTiff(ct)
               assert(cellDef.toCode(nd) === ct.name)
               ct.widenedNoData(cellDef.alg) match {
-                case WideIntNoData(wnd) ⇒ assert(wnd === nd)
-                case WideDoubleNoData(wnd) ⇒ assert(wnd === nd)
+                case WideIntNoData(wnd) => assert(wnd === nd)
+                case WideDoubleNoData(wnd) => assert(wnd === nd)
               }
               assert(TiffTagFieldValue.createNoDataString(ct) === Some(nd.toString))
             }
@@ -268,23 +268,23 @@ class CellTypeSpec extends AnyFunSpec with Matchers with Inspectors {
         .map(_.withNoData(Some(noData)))
 
       forEvery(userDefinedCelltypes) {
-        case c: UserDefinedNoData[_] ⇒ c.noDataValue match {
-          case n: Byte ⇒ assert(n === noData.toByte)
-          case n: Short ⇒ assert(n === noData.toShort)
-          case n: Int ⇒ assert(n === noData.toInt)
-          case n: Float ⇒ assert(n === noData.toFloat)
-          case n: Double ⇒ assert(n === noData.toDouble)
+        case c: UserDefinedNoData[_] => c.noDataValue match {
+          case n: Byte => assert(n === noData.toByte)
+          case n: Short => assert(n === noData.toShort)
+          case n: Int => assert(n === noData.toInt)
+          case n: Float => assert(n === noData.toFloat)
+          case n: Double => assert(n === noData.toDouble)
         }
         case _ => ???
       }
     }
     it("should report nodata value for ConstantNoData") {
       forEvery(CellType.constantNoDataCellTypes) { _.noDataValue match {
-        case n: Byte ⇒ assert(n === byteNODATA || n === ubyteNODATA)
-        case n: Short ⇒ assert(n === shortNODATA || n === ushortNODATA)
-        case n: Int ⇒ assert(isNoData(n))
-        case n: Float ⇒ assert(isNoData(n))
-        case n: Double ⇒ assert(isNoData(n))
+        case n: Byte => assert(n === byteNODATA || n === ubyteNODATA)
+        case n: Short => assert(n === shortNODATA || n === ushortNODATA)
+        case n: Int => assert(isNoData(n))
+        case n: Float => assert(isNoData(n))
+        case n: Double => assert(isNoData(n))
       }}
     }
   }
