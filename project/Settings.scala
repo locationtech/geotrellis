@@ -24,6 +24,7 @@ import de.heikoseeberger.sbtheader.{CommentStyle, FileType}
 import de.heikoseeberger.sbtheader.HeaderPlugin.autoImport.{HeaderLicense, headerLicense, headerMappings}
 import sbtprotoc.ProtocPlugin.autoImport.PB
 import mdoc.MdocPlugin.autoImport._
+import org.scalastyle.sbt.ScalastylePlugin.autoImport.scalastyleFailOnError
 
 import java.io.File
 
@@ -72,6 +73,7 @@ object Settings {
     pomIncludeRepository := { _ => false },
     autoAPIMappings := true,
     Global / cancelable := true,
+    scalastyleFailOnError := true,
 
     publishTo := {
       val sonatype = "https://oss.sonatype.org/"
