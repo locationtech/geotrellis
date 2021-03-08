@@ -22,9 +22,9 @@ API
 
 .. code:: scala
 
-  def foreachRDD(foreachFunc: (RDD[T]) ⇒ Unit): Unit
-  def transform[U](transformFunc: (RDD[T]) ⇒ RDD[U])(implicit arg0: ClassTag[U]): DStream[U]
-  def transformWith[U, V](other: DStream[U], transformFunc: (RDD[T], RDD[U]) ⇒ RDD[V])(implicit arg0: ClassTag[U], arg1: ClassTag[V]): DStream[V]
+  def foreachRDD(foreachFunc: (RDD[T]) => Unit): Unit
+  def transform[U](transformFunc: (RDD[T]) => RDD[U])(implicit arg0: ClassTag[U]): DStream[U]
+  def transformWith[U, V](other: DStream[U], transformFunc: (RDD[T], RDD[U]) => RDD[V])(implicit arg0: ClassTag[U], arg1: ClassTag[V]): DStream[V]
 
 
 And other higher ordered functions, which makes possible GeoTrellis ``RDD`` functions usage without reimplementing,

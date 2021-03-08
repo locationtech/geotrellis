@@ -70,7 +70,7 @@ class HistogramSpec extends AnyFunSpec with Matchers with Inspectors {
             (' ', 5)
           )
 
-          forAll(expected) { case (char, count) ⇒
+          forAll(expected) { case (char, count) =>
             h.itemCount(charToInt(char)) should be (count)
           }
 
@@ -80,7 +80,7 @@ class HistogramSpec extends AnyFunSpec with Matchers with Inspectors {
 
           bins.map(_._2).sum should be (s.length)
 
-          forAll(expected.filter(_._2 > 0)) { case (char, count) ⇒
+          forAll(expected.filter(_._2 > 0)) { case (char, count) =>
             val label = charToInt(char)
             bins.find(_._1 == label) should be ('nonEmpty)
           }

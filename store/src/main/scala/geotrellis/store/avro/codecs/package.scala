@@ -24,7 +24,7 @@ import scala.collection.JavaConverters._
 package object codecs {
   private[codecs] def injectFields(from: Schema, to: FieldAssembler[Schema]): FieldAssembler[Schema] = {
     from.getFields.asScala.foldLeft(to){
-      case (builder, field) ⇒
+      case (builder, field) =>
         builder.name(field.name()).`type`(field.schema()).noDefault()
     }
   }

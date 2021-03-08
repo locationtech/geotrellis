@@ -110,7 +110,7 @@ sealed trait FixedNoDataEncoding extends CellTypeEncoding {
 }
 
 /** Base trait for encoding CellTypes with user defined NoData values. */
-sealed trait UserDefinedNoDataEncoding extends CellTypeEncoding { self ⇒
+sealed trait UserDefinedNoDataEncoding extends CellTypeEncoding { self =>
   val name: String
   val isFloatingPoint = false
 

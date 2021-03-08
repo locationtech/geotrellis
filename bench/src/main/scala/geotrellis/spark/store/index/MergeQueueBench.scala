@@ -44,7 +44,7 @@ class MergeQueueBench {
   def setupData(): Unit = {
     ranges = Vector.empty[(BigInt, BigInt)]
 
-    for (i ← 0 until size) {
+    for (i <- 0 until size) {
       val start: BigInt = BigInt(skip.toLong * i)
       val end: BigInt = start + span
       ranges = ranges :+ (start, end)

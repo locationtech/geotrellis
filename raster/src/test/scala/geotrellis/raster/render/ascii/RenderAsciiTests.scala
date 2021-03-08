@@ -40,10 +40,10 @@ class RenderAsciiTests extends AnyFunSuite with Matchers with TileBuilders with 
       AsciiArtEncoder.Palette.STIPLED,
       AsciiArtEncoder.Palette.BINARY
     )
-    forEvery(palettes) { palette ⇒
+    forEvery(palettes) { palette =>
       val sample = createConsecutiveTile(palette.length)
       val render = sample.renderAscii(palette)
-      forAll(palette.values) { c ⇒
+      forAll(palette.values) { c =>
         assert(render.contains(c))
       }
     }
@@ -101,7 +101,7 @@ class RenderAsciiTests extends AnyFunSuite with Matchers with TileBuilders with 
 
     println(render)
 
-    forEvery(render.toCharArray.distinct.filter(_ != '\n'))(c ⇒
+    forEvery(render.toCharArray.distinct.filter(_ != '\n'))(c =>
       assert(c == palette.nodata || palette.values.contains(c))
     )
 

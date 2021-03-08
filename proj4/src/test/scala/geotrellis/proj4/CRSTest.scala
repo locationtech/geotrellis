@@ -75,7 +75,7 @@ class CRSTest extends AnyFunSpec with Inspectors {
       LatLng, Sinusoidal, WebMercator, ConusAlbers
     )
 
-    forEvery(samples) { crs ⇒
+    forEvery(samples) { crs =>
       val str = crs.toString
       assert(!str.contains("$") && !str.contains("@"))
     }

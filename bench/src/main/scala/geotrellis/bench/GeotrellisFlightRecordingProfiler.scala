@@ -42,7 +42,7 @@ class GeotrellisFlightRecordingProfiler(initLine: String) extends FlightRecordin
   val settingsFile = getClass.getResource("/fine.jfc").getPath
 
   def optionString(opts: Map[String, String]) =
-    opts.map(p ⇒ s"${p._1}=${p._2}").mkString(",")
+    opts.map(p => s"${p._1}=${p._2}").mkString(",")
 
   val startOptions = Map(
     "name" -> getClass.getSimpleName,

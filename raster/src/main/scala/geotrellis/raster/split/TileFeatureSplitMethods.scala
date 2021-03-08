@@ -26,7 +26,7 @@ abstract class TileFeatureSplitMethods[
 
   def split(tileLayout: TileLayout, options: Options): Seq[TileFeature[T, D]] = {
     val results = self.tile.split(tileLayout, options)
-    results.map(t ⇒ TileFeature(t, self.data))
+    results.map(t => TileFeature(t, self.data))
   }
 }
 
