@@ -30,7 +30,7 @@ import scala.reflect.ClassTag
 import java.time.ZonedDateTime
 
 object RasterSourceRDD {
-  final val DEFAULT_PARTITION_BYTES: Long = 128l * 1024 * 1024
+  final val DEFAULT_PARTITION_BYTES: Long = 128L * 1024 * 1024
 
   def read(
     readingSources: Seq[ReadingSource],
@@ -318,22 +318,22 @@ object RasterSourceRDD {
   private def partition[T: ClassTag](
     chunks: Traversable[T],
     maxPartitionSize: Long
-  )(chunkSize: T => Long = { c: T => 1l }): Array[Array[T]] = {
+  )(chunkSize: T => Long = { c: T => 1L }): Array[Array[T]] = {
     if (chunks.isEmpty) {
       Array[Array[T]]()
     } else {
       val partition = ArrayBuilder.make[T]
       partition.sizeHintBounded(128, chunks)
-      var partitionSize: Long = 0l
-      var partitionCount: Long = 0l
+      var partitionSize: Long = 0L
+      var partitionCount: Long = 0L
       val partitions = ArrayBuilder.make[Array[T]]
 
       def finalizePartition(): Unit = {
         val res = partition.result
         if (res.nonEmpty) partitions += res
         partition.clear()
-        partitionSize = 0l
-        partitionCount = 0l
+        partitionSize = 0L
+        partitionCount = 0L
       }
 
       def addToPartition(chunk: T): Unit = {

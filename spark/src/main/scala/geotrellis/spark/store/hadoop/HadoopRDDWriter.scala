@@ -53,7 +53,7 @@ object HadoopRDDWriter {
     */
   class MultiMapWriter(layerPath: String, partition: Int, blockSize: Long, indexInterval: Int) {
     private var writer: MapFile.Writer = null // avoids creating a MapFile for empty partitions
-    private var bytesRemaining = 0l
+    private var bytesRemaining = 0L
 
     private def getWriter(firstIndex: BigInt) = {
       val path = new Path(layerPath, f"part-r-${partition}%05d-${firstIndex}")

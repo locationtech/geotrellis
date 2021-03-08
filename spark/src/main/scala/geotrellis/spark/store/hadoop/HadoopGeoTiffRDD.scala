@@ -80,7 +80,7 @@ object HadoopGeoTiffRDD {
   ) extends RasterReader.Options
 
   private val DefaultMaxTileSize = 256
-  private val DefaultPartitionBytes = 128l * 1024 * 1024
+  private val DefaultPartitionBytes = 128L * 1024 * 1024
 
   object Options {
     def DEFAULT = Options()

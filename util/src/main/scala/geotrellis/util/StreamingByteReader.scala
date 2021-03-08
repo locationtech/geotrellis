@@ -42,8 +42,8 @@ class StreamingByteReader(rangeReader: RangeReader, chunkSize: Int = 45876) exte
 
   private var chunkBytes: Array[Byte] = _
   private var chunkBuffer: ByteBuffer = _
-  private var chunkRange: NumericRange[Long] = 1l to 0l // empty
-  private var filePosition: Long = 0l
+  private var chunkRange: NumericRange[Long] = 1L to 0L // empty
+  private var filePosition: Long = 0L
   private var byteOrder: ByteOrder = ByteOrder.BIG_ENDIAN
 
   def position: Long = filePosition
