@@ -328,7 +328,7 @@ object RasterSourceRDD {
       var partitionCount: Long = 0l
       val partitions = ArrayBuilder.make[Array[T]]
 
-      def finalizePartition() {
+      def finalizePartition(): Unit = {
         val res = partition.result
         if (res.nonEmpty) partitions += res
         partition.clear()
@@ -336,7 +336,7 @@ object RasterSourceRDD {
         partitionCount = 0l
       }
 
-      def addToPartition(chunk: T) {
+      def addToPartition(chunk: T): Unit = {
         partition += chunk
         partitionSize += chunkSize(chunk)
         partitionCount += 1

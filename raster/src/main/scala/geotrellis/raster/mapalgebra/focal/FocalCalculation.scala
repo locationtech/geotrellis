@@ -161,10 +161,10 @@ abstract class CellwiseCalculation[T] (
     case _ => sys.error("Cannot use cellwise calculation with this traversal strategy.")
   }
 
-  def add(r: Tile, x: Int, y: Int)
-  def remove(r: Tile, x: Int, y: Int)
+  def add(r: Tile, x: Int, y: Int): Unit
+  def remove(r: Tile, x: Int, y: Int): Unit
   def reset(): Unit
-  def setValue(x: Int, y: Int)
+  def setValue(x: Int, y: Int): Unit
 }
 
 trait CellwiseStrategyCalculation {

@@ -88,7 +88,7 @@ final case class ByteRawArrayTile(arr: Array[Byte], val cols: Int, val rows: Int
     * @param   i  The index of the datum
     * @param   z  The datum
     */
-  def update(i: Int, z: Int) { arr(i) = z.toByte }
+  def update(i: Int, z: Int): Unit = { arr(i) = z.toByte }
 
   /**
     * Update the datum at the specified index.
@@ -96,7 +96,7 @@ final case class ByteRawArrayTile(arr: Array[Byte], val cols: Int, val rows: Int
     * @param   i  The index of the datum
     * @param   z  The datum
     */
-  def updateDouble(i: Int, z: Double) { arr(i) = z.toByte }
+  def updateDouble(i: Int, z: Double): Unit = { arr(i) = z.toByte }
 }
 
 /**
@@ -133,7 +133,7 @@ final case class ByteConstantNoDataArrayTile(arr: Array[Byte], val cols: Int, va
     * @param   i  The index of the datum
     * @param   z  The datum
     */
-  def update(i: Int, z: Int) { arr(i) = i2b(z) }
+  def update(i: Int, z: Int): Unit = { arr(i) = i2b(z) }
 
   /**
     * Update the datum at the specified index.
@@ -141,7 +141,7 @@ final case class ByteConstantNoDataArrayTile(arr: Array[Byte], val cols: Int, va
     * @param   i  The index of the datum
     * @param   z  The datum
     */
-  def updateDouble(i: Int, z: Double) { arr(i) = d2b(z) }
+  def updateDouble(i: Int, z: Double): Unit = { arr(i) = d2b(z) }
 }
 
 /**
@@ -180,7 +180,7 @@ final case class ByteUserDefinedNoDataArrayTile(arr: Array[Byte], val cols: Int,
     * @param   i  The index of the datum
     * @param   z  The datum
     */
-  def update(i: Int, z: Int) { arr(i) = i2udb(z) }
+  def update(i: Int, z: Int): Unit = { arr(i) = i2udb(z) }
 
   /**
     * Update the datum at the specified index.
@@ -188,7 +188,7 @@ final case class ByteUserDefinedNoDataArrayTile(arr: Array[Byte], val cols: Int,
     * @param   i  The index of the datum
     * @param   z  The datum
     */
-  def updateDouble(i: Int, z: Double) { arr(i) = d2udb(z) }
+  def updateDouble(i: Int, z: Double): Unit = { arr(i) = d2udb(z) }
 }
 
 /**

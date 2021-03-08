@@ -49,7 +49,7 @@ case class PngEncoder(settings: Settings) {
   // how many bits to shift to get the uppermost byte.
   final val SHIFT: Int = (DEPTH - 1) * 8
 
-  def writeHeader(dos: DataOutputStream, raster: Tile) {
+  def writeHeader(dos: DataOutputStream, raster: Tile): Unit = {
     val width = raster.cols
     val height = raster.rows
 
@@ -67,7 +67,7 @@ case class PngEncoder(settings: Settings) {
     cIHDR.writeTo(dos)
   }
 
-  def writeBackgroundInfo(dos: DataOutputStream) {
+  def writeBackgroundInfo(dos: DataOutputStream): Unit = {
     settings.colorType match {
       case GreyPngEncoding(Some(ndColor)) =>
         // write a single 2-byte color value
@@ -124,7 +124,7 @@ case class PngEncoder(settings: Settings) {
   }
 
   // TODO: figure out how to share code without impacting performance
-  def writePixelData(dos: DataOutputStream, raster: Tile) {
+  def writePixelData(dos: DataOutputStream, raster: Tile): Unit = {
     settings.filter match {
       case PaethFilter => writePixelDataPaeth(dos, raster)
       case NoFilter => writePixelDataNoFilter(dos, raster)
@@ -132,7 +132,7 @@ case class PngEncoder(settings: Settings) {
     }
   }
 
-  def writePixelDataNoFilter(dos: DataOutputStream, raster: Tile) {
+  def writePixelDataNoFilter(dos: DataOutputStream, raster: Tile): Unit = {
     // dereference some useful information from the raster
     val cols = raster.cols
     val size = cols * raster.rows
@@ -172,7 +172,7 @@ case class PngEncoder(settings: Settings) {
     cIDAT.writeTo(dos)
   }
 
-  def writePixelDataPaeth(dos: DataOutputStream, raster: Tile) {
+  def writePixelDataPaeth(dos: DataOutputStream, raster: Tile): Unit = {
     // dereference some useful information from the raster
     val cols = raster.cols
     val size = cols * raster.rows
@@ -255,12 +255,12 @@ case class PngEncoder(settings: Settings) {
   }
 
   // signal the end of the PNG data
-  def writeEnd(dos: DataOutputStream) {
+  def writeEnd(dos: DataOutputStream): Unit = {
     val cIEND = new Chunk(IEND)
     cIEND.writeTo(dos)
   }
 
-  def writeOutputStream(os: OutputStream, raster: Tile) {
+  def writeOutputStream(os: OutputStream, raster: Tile): Unit = {
     // wrap our actual OutputStream to enable us to write bytes and such.
     val dos = new DataOutputStream(os)
 
@@ -284,7 +284,7 @@ case class PngEncoder(settings: Settings) {
     baos.toByteArray
   }
 
-  def writePath(path: String, raster: Tile) {
+  def writePath(path: String, raster: Tile): Unit = {
     val fos = new FileOutputStream(new File(path))
     writeOutputStream(fos, raster)
     fos.close()

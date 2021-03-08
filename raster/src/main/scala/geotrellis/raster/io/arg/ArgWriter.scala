@@ -32,7 +32,7 @@ case class ArgWriter(cellType: CellType) {
   def cellTypeName = cellType.name
   def dataType = "arg"
 
-  def writeMetadataJSON(path: String, name: String, re: RasterExtent) {
+  def writeMetadataJSON(path: String, name: String, re: RasterExtent): Unit = {
     val metadata = s"""{
         |  "layer": "$name",
         |  "datatype": "$cellTypeName",
@@ -69,7 +69,7 @@ case class ArgWriter(cellType: CellType) {
    * @param tile: Tile to write to disk
    * @param metadataName: Name to be included in json metadata as 'layer', used in catalog
    */
-  def write(outputFilePath: String, tile: Tile, extent: Extent, metadataName: String) {
+  def write(outputFilePath: String, tile: Tile, extent: Extent, metadataName: String): Unit = {
     val path = outputFilePath
     val base: String = 
       if (path.endsWith(".arg") || path.endsWith(".json") || path.endsWith(".")) {
@@ -86,7 +86,7 @@ case class ArgWriter(cellType: CellType) {
     }
   }
 
-  def writeData(path: String, tile: Tile) {
+  def writeData(path: String, tile: Tile): Unit = {
     val dos = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(path)))
     CellWriter.byType(cellType).writeCells(tile, dos)
     dos.close()

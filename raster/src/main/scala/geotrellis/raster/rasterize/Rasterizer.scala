@@ -145,7 +145,7 @@ object Rasterizer {
     * The function f is a closure that should alter a mutable variable
     * by side effect (to avoid boxing).
     */
-  def foreachCellByPoint(geom: Point, re: RasterExtent)(f: (Int, Int) => Unit) {
+  def foreachCellByPoint(geom: Point, re: RasterExtent)(f: (Int, Int) => Unit): Unit = {
     val col = re.mapXToGrid(geom.x)
     val row = re.mapYToGrid(geom.y)
     f(col, row)
@@ -156,14 +156,14 @@ object Rasterizer {
     * at each pixel in the raster extent covered by the geometry.  The
     * two arguments to the function 'f' are the column and row.
     */
-  def foreachCellByMultiPoint(p: MultiPoint, re: RasterExtent)(f: (Int, Int) => Unit) {
+  def foreachCellByMultiPoint(p: MultiPoint, re: RasterExtent)(f: (Int, Int) => Unit): Unit = {
     p.points.foreach(foreachCellByPoint(_, re)(f))
   }
 
   /**
     * Invoke a function on each point in a sequences of Points.
     */
-  def foreachCellByPointSeq(pSet: Seq[Point], re: RasterExtent)(f: (Int, Int) => Unit) {
+  def foreachCellByPointSeq(pSet: Seq[Point], re: RasterExtent)(f: (Int, Int) => Unit): Unit = {
     pSet.foreach(foreachCellByPoint(_, re)(f))
   }
 
@@ -174,7 +174,7 @@ object Rasterizer {
     * @param re  RasterExtent used to determine cols and rows
     * @param f   Function to apply: f(cols, row, feature)
     */
-  def foreachCellByMultiLineString(g: MultiLineString, re: RasterExtent)(f: (Int, Int) => Unit) {
+  def foreachCellByMultiLineString(g: MultiLineString, re: RasterExtent)(f: (Int, Int) => Unit): Unit = {
     g.lines.foreach(foreachCellByLineString(_, re)(f))
   }
 
@@ -190,7 +190,7 @@ object Rasterizer {
     g: MultiLineString,
     re: RasterExtent,
     c: Connectivity
-  )(f: (Int, Int) => Unit) {
+  )(f: (Int, Int) => Unit): Unit = {
     g.lines.foreach(foreachCellByLineString(_, re, c)(f))
   }
 
@@ -211,7 +211,7 @@ object Rasterizer {
     * @param options  The options parameter controls whether to treat pixels as points or areas and whether to report partially-intersected areas.
     * @param f        Function to apply: f(cols, row, feature)
     */
-  def foreachCellByPolygon(p: Polygon, re: RasterExtent, options: Options)(f: (Int, Int) => Unit) {
+  def foreachCellByPolygon(p: Polygon, re: RasterExtent, options: Options)(f: (Int, Int) => Unit): Unit = {
      PolygonRasterizer.foreachCellByPolygon(p, re, options)(f)
   }
 
@@ -231,7 +231,7 @@ object Rasterizer {
    * @param options  The options parameter controls whether to treat pixels as points or areas and whether to report partially-intersected areas.
    * @param f        Function to apply: f(cols, row, feature)
    */
-  def foreachCellByMultiPolygon[D](p: MultiPolygon, re: RasterExtent, options: Options)(f: (Int, Int) => Unit) {
+  def foreachCellByMultiPolygon[D](p: MultiPolygon, re: RasterExtent, options: Options)(f: (Int, Int) => Unit): Unit = {
     p.polygons.foreach(PolygonRasterizer.foreachCellByPolygon(_, re, options)(f))
   }
 
@@ -244,7 +244,7 @@ object Rasterizer {
     line: LineString,
     re: RasterExtent,
     c: Connectivity
-  )(f: (Int, Int) => Unit) {
+  )(f: (Int, Int) => Unit): Unit = {
     val coords = line.getCoordinates()
     var i = 1; while (i < coords.size) {
       val x1 = re.mapXToGrid(coords(i-1).x)
@@ -261,7 +261,7 @@ object Rasterizer {
     * LineString.  The iteration happens in the direction from the
     * first point to the last point.
     */
-  def foreachCellByLineString(line: LineString, re: RasterExtent)(f: (Int, Int) => Unit) {
+  def foreachCellByLineString(line: LineString, re: RasterExtent)(f: (Int, Int) => Unit): Unit = {
     val coords = line.getCoordinates()
     var i = 1; while (i < coords.size) {
       val x1 = re.mapXToGrid(coords(i-1).x)
@@ -350,7 +350,7 @@ object Rasterizer {
     * LineString.  The iteration happens in the direction from the
     * first point to the last point.
     */
-  def foreachCellByLineStringDouble(line: LineString, re: RasterExtent)(f: (Int, Int) => Unit) {
+  def foreachCellByLineStringDouble(line: LineString, re: RasterExtent)(f: (Int, Int) => Unit): Unit = {
     val coords = line.getCoordinates()
     var i = 1; while (i < coords.size) {
       foreachCellInGridLineDouble(coords(i-1).x, coords(i-1).y, coords(i+0).x, coords(i+0).y, re, line.isClosed || i != coords.size - 1)(f)

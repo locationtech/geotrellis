@@ -90,7 +90,7 @@ final case class IntRawArrayTile(arr: Array[Int], val cols: Int, val rows: Int)
     * @param   i  The index
     * @param   z  The value to place at that index
     */
-  def update(i: Int, z: Int) { arr(i) = z }
+  def update(i: Int, z: Int): Unit = { arr(i) = z }
 
   /**
     * Update the datum at the given index in the array.
@@ -98,7 +98,7 @@ final case class IntRawArrayTile(arr: Array[Int], val cols: Int, val rows: Int)
     * @param   i  The index
     * @param   z  The value to place at that index
     */
-  def updateDouble(i: Int, z: Double) { arr(i) = z.toInt }
+  def updateDouble(i: Int, z: Double): Unit = { arr(i) = z.toInt }
 }
 
 /**
@@ -130,7 +130,7 @@ final case class IntConstantNoDataArrayTile(arr: Array[Int], val cols: Int, val 
     * @param   i  The index
     * @param   z  The value to place at that index
     */
-  def update(i: Int, z: Int) { arr(i) = z }
+  def update(i: Int, z: Int): Unit = { arr(i) = z }
 
   /**
     * Update the datum at the given index in the array.
@@ -138,7 +138,7 @@ final case class IntConstantNoDataArrayTile(arr: Array[Int], val cols: Int, val 
     * @param   i  The index
     * @param   z  The value to place at that index
     */
-  def updateDouble(i: Int, z: Double) { arr(i) = d2i(z) }
+  def updateDouble(i: Int, z: Double): Unit = { arr(i) = d2i(z) }
 }
 
 /**
@@ -172,7 +172,7 @@ final case class IntUserDefinedNoDataArrayTile(arr: Array[Int], val cols: Int, v
     * @param   i  The index
     * @param   z  The value to place at that index
     */
-  def update(i: Int, z: Int) { arr(i) = i2udi(z) }
+  def update(i: Int, z: Int): Unit = { arr(i) = i2udi(z) }
 
   /**
     * Update the datum at the given index in the array.
@@ -180,7 +180,7 @@ final case class IntUserDefinedNoDataArrayTile(arr: Array[Int], val cols: Int, v
     * @param   i  The index
     * @param   z  The value to place at that index
     */
-  def updateDouble(i: Int, z: Double) { arr(i) = d2udi(z) }
+  def updateDouble(i: Int, z: Double): Unit = { arr(i) = d2udi(z) }
 }
 
 /**

@@ -85,7 +85,7 @@ class WKBWriter(outputDimension: Int, byteOrder: Int) {
     * @param os the out stream to write to
     * @throws IOException if an I/O error occurs
     */
-  private def write(geom: Geometry, os: OutStream) {
+  private def write(geom: Geometry, os: OutStream): Unit = {
     geom match {
       case g: Point => writePoint(g, os)
       case g: LineString => writeLineString(g, os)
@@ -98,7 +98,7 @@ class WKBWriter(outputDimension: Int, byteOrder: Int) {
     }
   }
 
-  private def writePoint(pt: Point, os: OutStream) {
+  private def writePoint(pt: Point, os: OutStream): Unit = {
     if (pt.getCoordinateSequence.size() == 0)
       throw new IllegalArgumentException("Empty Points cannot be represented in WKB")
     writeByteOrder(os)
@@ -106,13 +106,13 @@ class WKBWriter(outputDimension: Int, byteOrder: Int) {
     writeCoordinateSequence(pt.getCoordinateSequence, false, os)
   }
 
-  private def writeLineString(line: LineString, os: OutStream) {
+  private def writeLineString(line: LineString, os: OutStream): Unit = {
     writeByteOrder(os)
     writeGeometryType(WKBConstants.wkbLineString, line, os)
     writeCoordinateSequence(line.getCoordinateSequence, true, os)
   }
 
-  private def writePolygon(poly: Polygon, os: OutStream)
+  private def writePolygon(poly: Polygon, os: OutStream): Unit =
   {
     writeByteOrder(os)
     writeGeometryType(WKBConstants.wkbPolygon, poly, os)
@@ -123,7 +123,7 @@ class WKBWriter(outputDimension: Int, byteOrder: Int) {
     }
   }
 
-  private def writeGeometryCollection(geometryType: Int, gc: GeometryCollection, os: OutStream) {
+  private def writeGeometryCollection(geometryType: Int, gc: GeometryCollection, os: OutStream): Unit = {
     writeByteOrder(os)
     writeGeometryType(geometryType, gc, os)
     writeInt(gc.getNumGeometries, os)
@@ -131,7 +131,7 @@ class WKBWriter(outputDimension: Int, byteOrder: Int) {
       write(gc.getGeometryN(i), os)
   }
 
-  private def writeByteOrder(os: OutStream) {
+  private def writeByteOrder(os: OutStream): Unit = {
     if (byteOrder == ByteOrderValues.LITTLE_ENDIAN)
       buf(0) = WKBConstants.wkbNDR
     else
@@ -139,7 +139,7 @@ class WKBWriter(outputDimension: Int, byteOrder: Int) {
     os.write(buf, 1)
   }
 
-  private def writeGeometryType(geometryType: Int, g: Geometry, os: OutStream ) {
+  private def writeGeometryType(geometryType: Int, g: Geometry, os: OutStream ): Unit = {
     val flag3D = if (outputDimension == 3)  0x80000000 else 0
     srid match {
       case Some(srid: Int) =>
@@ -152,12 +152,12 @@ class WKBWriter(outputDimension: Int, byteOrder: Int) {
     }
   }
 
-  private def writeInt(intValue: Int, os: OutStream) {
+  private def writeInt(intValue: Int, os: OutStream): Unit = {
     ByteOrderValues.putInt(intValue, buf, byteOrder)
     os.write(buf, 4)
   }
 
-  private def writeCoordinate(seq: CoordinateSequence, index: Int, os: OutStream) {
+  private def writeCoordinate(seq: CoordinateSequence, index: Int, os: OutStream): Unit = {
     ByteOrderValues.putDouble(seq.getX(index), buf, byteOrder)
     os.write(buf, 8)
     ByteOrderValues.putDouble(seq.getY(index), buf, byteOrder)
@@ -174,7 +174,7 @@ class WKBWriter(outputDimension: Int, byteOrder: Int) {
     }
   }
 
-  private def writeCoordinateSequence(seq: CoordinateSequence, writeSize: Boolean, os: OutStream) {
+  private def writeCoordinateSequence(seq: CoordinateSequence, writeSize: Boolean, os: OutStream): Unit = {
     if (writeSize) writeInt(seq.size(), os)
     for (i <- 0 until seq.size()) writeCoordinate(seq, i, os)
   }

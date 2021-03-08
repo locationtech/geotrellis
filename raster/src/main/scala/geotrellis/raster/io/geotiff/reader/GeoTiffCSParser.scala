@@ -269,7 +269,7 @@ class GeoTiffCSParser(geoKeyDirectory: GeoKeyDirectory) {
     gtgp
   }
 
-  private def getPCSData(pcs: Int, gtgp: GeoTiffCSParameters) {
+  private def getPCSData(pcs: Int, gtgp: GeoTiffCSParameters): Unit = {
     val (optDatum, optZone, optMapSystem) = pcsToDatumZoneAndMapSystem(pcs)
 
     val optDatumName = optMapSystem match {
@@ -661,7 +661,7 @@ class GeoTiffCSParser(geoKeyDirectory: GeoKeyDirectory) {
     }
     else angle
 
-  private def setProjectionParameters(gtgp: GeoTiffCSParameters) {
+  private def setProjectionParameters(gtgp: GeoTiffCSParameters): Unit = {
     var originLong, originLat, rectGridAngle = 0.0
     var falseEasting, falseNorthing = 0.0
     var originScale = 1.0

@@ -40,7 +40,7 @@ final class AsciiReadState(path: String,
     new BufferedReader(fr)
   }
 
-  def initSource(pos: Int, size: Int) {
+  def initSource(pos: Int, size: Int): Unit = {
     assert (pos == 0)
     assert (size == rasterExtent.cols * rasterExtent.rows)
 
@@ -80,7 +80,7 @@ final class AsciiReadState(path: String,
   }
 
   @inline
-  def assignFromSource(sourceIndex: Int, dest: MutableArrayTile, destIndex: Int) {
+  def assignFromSource(sourceIndex: Int, dest: MutableArrayTile, destIndex: Int): Unit = {
     dest(destIndex) = ints(sourceIndex)
   }
 }

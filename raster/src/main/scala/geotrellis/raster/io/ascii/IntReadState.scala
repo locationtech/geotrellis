@@ -22,7 +22,7 @@ trait IntReadState extends ReadState {
   // must override
   def getNoDataValue: Int
 
-  protected[this] override def translate(tile: MutableArrayTile) {
+  protected[this] override def translate(tile: MutableArrayTile): Unit = {
     var i = 0
     val len = tile.size
     val nd = getNoDataValue

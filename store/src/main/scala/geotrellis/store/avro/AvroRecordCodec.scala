@@ -24,7 +24,7 @@ import scala.reflect.ClassTag
 @implicitNotFound("Cannot find AvroRecordCodec for ${T}. Try to import geotrellis.spark.io.avro.codecs.Implicits._")
 abstract class AvroRecordCodec[T: ClassTag] extends AvroCodec[T, GenericRecord] {
   def schema: Schema
-  def encode(thing: T, rec: GenericRecord)
+  def encode(thing: T, rec: GenericRecord): Unit
   def decode(rec: GenericRecord): T
 
   def encode(thing: T): GenericRecord = {

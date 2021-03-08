@@ -50,7 +50,7 @@ abstract class MutableArrayTile extends ArrayTile {
     * @param  row    The row
     * @param  value  The value
     */
-  def set(col:Int, row:Int, value:Int) {
+  def set(col:Int, row:Int, value:Int): Unit = {
     update(row * cols + col, value)
   }
 
@@ -62,7 +62,7 @@ abstract class MutableArrayTile extends ArrayTile {
     * @param  row    The row
     * @param  value  The value
     */
-  def setDouble(col:Int, row:Int, value:Double) {
+  def setDouble(col:Int, row:Int, value:Double): Unit = {
     updateDouble(row * cols + col, value)
   }
 

@@ -80,7 +80,7 @@ case class GeoTiffSegmentLayout(
     var partitionCount: Long = 0l
     val partitions = mutable.ArrayBuilder.make[Array[GridBounds[Int]]]
 
-    def finalizePartition() {
+    def finalizePartition(): Unit = {
       val res = partition.result
       if (res.nonEmpty) partitions += res
       partition.clear()
@@ -88,7 +88,7 @@ case class GeoTiffSegmentLayout(
       partitionCount = 0l
     }
 
-    def addToPartition(window: GridBounds[Int]) {
+    def addToPartition(window: GridBounds[Int]): Unit = {
       partition += window
       partitionSize += window.size
       partitionCount += 1

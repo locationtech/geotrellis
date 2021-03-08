@@ -26,7 +26,7 @@ import java.util.{Comparator, TreeMap}
 
 /** Account for a bug in Kryo < 2.22 for serializing TreeMaps */
 class XTreeMapSerializer extends MapSerializer {
-  override def write (kryo: Kryo, output: Output, map: java.util.Map[_, _]) {
+  override def write (kryo: Kryo, output: Output, map: java.util.Map[_, _]): Unit = {
     val treeMap = map.asInstanceOf[TreeMap[_, _]]
     kryo.writeClassAndObject(output, treeMap.comparator())
     super.write(kryo, output, map)
@@ -43,7 +43,7 @@ class XTreeMapSerializer extends MapSerializer {
 
 class KryoRegistrator extends SparkKryoRegistrator {
 
-  override def registerClasses(kryo: Kryo) {
+  override def registerClasses(kryo: Kryo): Unit = {
     // TreeMap serializaiton has a bug; we fix it here as we're stuck on low
     // Kryo versions due to Spark. Hack-tastic.
     kryo.register(classOf[TreeMap[_, _]], (new XTreeMapSerializer).asInstanceOf[com.esotericsoftware.kryo.Serializer[TreeMap[_, _]]])

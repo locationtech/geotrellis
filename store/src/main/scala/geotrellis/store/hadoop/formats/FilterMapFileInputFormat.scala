@@ -275,6 +275,6 @@ class FilterMapFileInputFormat() extends FileInputFormat[BigIntWritable, BytesWr
     def getProgress(): Float = 0.0f // Not sure how to measure this, or if we need to.
 
     override
-    def close() { if(mapFile != null) { mapFile.close() } }
+    def close(): Unit = { if(mapFile != null) { mapFile.close() } }
   }
 }

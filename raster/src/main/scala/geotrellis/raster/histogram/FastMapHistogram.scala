@@ -135,7 +135,7 @@ class FastMapHistogram(_size: Int, _buckets: Array[Int], _counts: Array[Long], _
     * Adjust the histogram so that that it is as if the given value
     * 'item' has been seen 'count' times.
     */
-  def setItem(item: Int, count: Long) {
+  def setItem(item: Int, count: Long): Unit = {
     // We use our hashing strategy to figure out which bucket this
     // item gets.  if the bucket is empty, we're adding the item,
     // whereas if its not we are just increasing the item's count.
@@ -177,7 +177,7 @@ class FastMapHistogram(_size: Int, _buckets: Array[Int], _counts: Array[Long], _
   /**
     * Forget any encounters with the value 'item'.
     */
-  def uncountItem(item: Int) {
+  def uncountItem(item: Int): Unit = {
     // We use our hashing strategy to figure out which bucket this
     // item gets.  if the bucket is empty, we never counted this
     // item. otherwise, we need to remove this value and its counts.
@@ -189,7 +189,7 @@ class FastMapHistogram(_size: Int, _buckets: Array[Int], _counts: Array[Long], _
     counts(i) = 0
   }
 
-  private def resize() {
+  private def resize(): Unit = {
     // It's important that size always be a power of 2. We grow our
     // hash table by x4 until it starts getting big, at which point we
     // only grow by x2.
@@ -264,7 +264,7 @@ class FastMapHistogram(_size: Int, _buckets: Array[Int], _counts: Array[Long], _
     *
     * @param  f  A unit function of one integer parameter
     */
-  def foreachValue(f: Int => Unit) {
+  def foreachValue(f: Int => Unit): Unit = {
     var i = 0
     while (i < size) {
       if (buckets(i) != UNSET) f(buckets(i))

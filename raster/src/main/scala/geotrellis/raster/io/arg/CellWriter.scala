@@ -33,9 +33,9 @@ object CellWriter {
 }
 
 trait CellWriter {
-  protected[this] def writeCell(raster: Tile, col: Int, row: Int, cols: Int, dos: DataOutputStream)
+  protected[this] def writeCell(raster: Tile, col: Int, row: Int, cols: Int, dos: DataOutputStream): Unit
 
-  def writeCells(raster: Tile, dos: DataOutputStream) {
+  def writeCells(raster: Tile, dos: DataOutputStream): Unit = {
     val cols = raster.cols
     val rows = raster.rows
 
@@ -52,7 +52,7 @@ trait CellWriter {
 }
 
 object BoolCellWriter extends CellWriter {
-  override def writeCells(raster: Tile, dos: DataOutputStream) {
+  override def writeCells(raster: Tile, dos: DataOutputStream): Unit = {
     val cols = raster.cols
     val rows = raster.rows
 
@@ -81,7 +81,7 @@ object BoolCellWriter extends CellWriter {
 trait IntCellWriter extends CellWriter {
   def noDataValue: Int
   def writeValue(z: Int, dos: DataOutputStream): Unit
-  @inline final def writeCell(raster: Tile, col: Int, row: Int, cols: Int, dos: DataOutputStream) {
+  @inline final def writeCell(raster: Tile, col: Int, row: Int, cols: Int, dos: DataOutputStream): Unit = {
     val z = raster.get(col, row)
     if (isNoData(z)) writeValue(noDataValue, dos) else writeValue(z, dos)
   }
@@ -89,30 +89,30 @@ trait IntCellWriter extends CellWriter {
 
 trait FloatCellWriter extends CellWriter {
   def writeValue(z: Double, dos: DataOutputStream): Unit
-  @inline final def writeCell(raster: Tile, col: Int, row: Int, cols: Int, dos: DataOutputStream) {
+  @inline final def writeCell(raster: Tile, col: Int, row: Int, cols: Int, dos: DataOutputStream): Unit = {
     writeValue(raster.getDouble(col, row), dos)
   }
 }
 
 object Int8CellWriter extends IntCellWriter {
   @inline final def noDataValue = Byte.MinValue
-  @inline final def writeValue(z: Int, dos: DataOutputStream) { dos.writeByte(z) }
+  @inline final def writeValue(z: Int, dos: DataOutputStream): Unit = { dos.writeByte(z) }
 }
 
 object Int16CellWriter extends IntCellWriter {
   @inline final def noDataValue = Short.MinValue
-  @inline final def writeValue(z: Int, dos: DataOutputStream) { dos.writeShort(z) }
+  @inline final def writeValue(z: Int, dos: DataOutputStream): Unit = { dos.writeShort(z) }
 }
 
 object Int32CellWriter extends IntCellWriter {
   @inline final def noDataValue = Int.MinValue
-  @inline final def writeValue(z: Int, dos: DataOutputStream) { dos.writeInt(z) }
+  @inline final def writeValue(z: Int, dos: DataOutputStream): Unit = { dos.writeInt(z) }
 }
 
 object Float32CellWriter extends FloatCellWriter {
-  @inline final def writeValue(z: Double, dos: DataOutputStream) { dos.writeFloat(z.toFloat) }
+  @inline final def writeValue(z: Double, dos: DataOutputStream): Unit = { dos.writeFloat(z.toFloat) }
 }
 
 object Float64CellWriter extends FloatCellWriter {
-  @inline final def writeValue(z: Double, dos: DataOutputStream) { dos.writeDouble(z) }
+  @inline final def writeValue(z: Double, dos: DataOutputStream): Unit = { dos.writeDouble(z) }
 }

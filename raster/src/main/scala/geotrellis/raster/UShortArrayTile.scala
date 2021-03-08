@@ -87,7 +87,7 @@ class UShortRawArrayTile(arr: Array[Short], val cols: Int, val rows: Int)
     * @param   i  The index
     * @param   z  The value to place at that index
     */
-  def update(i: Int, z: Int) { arr(i) = z.toShort }
+  def update(i: Int, z: Int): Unit = { arr(i) = z.toShort }
 
   /**
     * Update the datum at the given index in the array.
@@ -95,7 +95,7 @@ class UShortRawArrayTile(arr: Array[Short], val cols: Int, val rows: Int)
     * @param   i  The index
     * @param   z  The value to place at that index
     */
-  def updateDouble(i: Int, z: Double) { arr(i) = z.toShort }
+  def updateDouble(i: Int, z: Double): Unit = { arr(i) = z.toShort }
 }
 
 /**
@@ -127,7 +127,7 @@ class UShortConstantNoDataArrayTile(arr: Array[Short], val cols: Int, val rows: 
     * @param   i  The index
     * @param   z  The value to place at that index
     */
-  def update(i: Int, z: Int) { arr(i) = i2us(z) }
+  def update(i: Int, z: Int): Unit = { arr(i) = i2us(z) }
 
   /**
     * Update the datum at the given index in the array.
@@ -135,7 +135,7 @@ class UShortConstantNoDataArrayTile(arr: Array[Short], val cols: Int, val rows: 
     * @param   i  The index
     * @param   z  The value to place at that index
     */
-  def updateDouble(i: Int, z: Double) { arr(i) = d2us(z) }
+  def updateDouble(i: Int, z: Double): Unit = { arr(i) = d2us(z) }
 }
 
 /**
@@ -169,7 +169,7 @@ class UShortUserDefinedNoDataArrayTile(arr: Array[Short], val cols: Int, val row
     * @param   i  The index
     * @param   z  The value to place at that index
     */
-  def update(i: Int, z: Int) { arr(i) = i2uds(z) }
+  def update(i: Int, z: Int): Unit = { arr(i) = i2uds(z) }
 
   /**
     * Update the datum at the given index in the array.
@@ -177,7 +177,7 @@ class UShortUserDefinedNoDataArrayTile(arr: Array[Short], val cols: Int, val row
     * @param   i  The index
     * @param   z  The value to place at that index
     */
-  def updateDouble(i: Int, z: Double) { arr(i) = d2uds(z) }
+  def updateDouble(i: Int, z: Double): Unit = { arr(i) = d2uds(z) }
 }
 
 /**

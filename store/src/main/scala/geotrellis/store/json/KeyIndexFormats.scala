@@ -39,7 +39,7 @@ case class KeyIndexFormatEntry[K: Encoder: Decoder: ClassTag, T <: KeyIndex[K]: 
 }
 
 trait KeyIndexRegistrator {
-  def register(keyIndexRegistry: KeyIndexRegistry)
+  def register(keyIndexRegistry: KeyIndexRegistry): Unit
 }
 
 class KeyIndexEncoder[K](entries: Seq[KeyIndexFormatEntry[K, _]]) extends Encoder[KeyIndex[K]] {

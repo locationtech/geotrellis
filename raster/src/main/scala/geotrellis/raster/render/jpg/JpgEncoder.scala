@@ -38,7 +38,7 @@ case class JpgEncoder(settings: Settings = Settings.DEFAULT) {
     writeParams
   }
 
-  def writeOutputStream(os: ImageOutputStream, raster: Tile) {
+  def writeOutputStream(os: ImageOutputStream, raster: Tile): Unit = {
     val img: BufferedImage = raster.toBufferedImage
 
     // Write to provided output stream
