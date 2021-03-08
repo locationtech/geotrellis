@@ -95,7 +95,7 @@ abstract class ConstantTile extends Tile {
     *
     * @param  f  A function from Int to Unit
     */
-  def foreach(f: Int => Unit) {
+  def foreach(f: Int => Unit): Unit = {
     var i = 0
     val len = size
     while (i < len) { f(iVal); i += 1 }

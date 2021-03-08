@@ -27,11 +27,11 @@ object AsciiWriter {
   def cellType = "ascii"
   def dataType = ""
 
-  def write(path: String, raster: Tile, extent: Extent, name: String) {
+  def write(path: String, raster: Tile, extent: Extent, name: String): Unit = {
     write(path, raster, extent, name, NODATA)
   }
 
-  def write(path: String, raster: Tile, extent: Extent, name: String, noData: Int) {
+  def write(path: String, raster: Tile, extent: Extent, name: String, noData: Int): Unit = {
     val g = RasterExtent(extent, raster.cols, raster.rows)
     val e = extent
 

@@ -62,8 +62,8 @@ final case class UByteRawArrayTile(arr: Array[Byte], val cols: Int, val rows: In
   val cellType = UByteCellType
   def apply(i: Int): Int = arr(i) & 0xFF
   def applyDouble(i: Int): Double = (arr(i) & 0xFF).toDouble
-  def update(i: Int, z: Int) { arr(i) = z.toByte }
-  def updateDouble(i: Int, z: Double) { arr(i) = z.toByte }
+  def update(i: Int, z: Int): Unit = { arr(i) = z.toByte }
+  def updateDouble(i: Int, z: Double): Unit = { arr(i) = z.toByte }
 }
 
 /**
@@ -95,7 +95,7 @@ final case class UByteConstantNoDataArrayTile(arr: Array[Byte], val cols: Int, v
     * @param   i  The index
     * @param   z  The value to place at that index
     */
-  def update(i: Int, z: Int) { arr(i) = i2ub(z) }
+  def update(i: Int, z: Int): Unit = { arr(i) = i2ub(z) }
 
   /**
     * Update the datum at the given index in the array.
@@ -103,7 +103,7 @@ final case class UByteConstantNoDataArrayTile(arr: Array[Byte], val cols: Int, v
     * @param   i  The index
     * @param   z  The value to place at that index
     */
-  def updateDouble(i: Int, z: Double) { arr(i) = d2ub(z) }
+  def updateDouble(i: Int, z: Double): Unit = { arr(i) = d2ub(z) }
 }
 
 /**
@@ -137,7 +137,7 @@ final case class UByteUserDefinedNoDataArrayTile(arr: Array[Byte], val cols: Int
     * @param   i  The index
     * @param   z  The value to place at that index
     */
-  def update(i: Int, z: Int) { arr(i) = i2udb(z) }
+  def update(i: Int, z: Int): Unit = { arr(i) = i2udb(z) }
 
   /**
     * Update the datum at the given index in the array.
@@ -145,7 +145,7 @@ final case class UByteUserDefinedNoDataArrayTile(arr: Array[Byte], val cols: Int
     * @param   i  The index
     * @param   z  The value to place at that index
     */
-  def updateDouble(i: Int, z: Double) { arr(i) = d2udb(z) }
+  def updateDouble(i: Int, z: Double): Unit = { arr(i) = d2udb(z) }
 }
 
 /**

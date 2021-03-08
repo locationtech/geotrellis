@@ -169,7 +169,7 @@ object YCbCrConverter {
     /**
      * Initializes tables for YCC->RGB color space conversion.
      */
-    private def buildYCCtoRGBtable() {
+    private def buildYCCtoRGBtable(): Unit = {
       var i = 0
       var x = -CENTERJSAMPLE
       while(i <= MAXJSAMPLE) {

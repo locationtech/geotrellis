@@ -53,7 +53,7 @@ trait ReadState {
   /**
     * Called for cleanup after the ReadState is no longer used.
     */
-  def destroy() {}
+  def destroy(): Unit = {}
 
   /**
     * Overwrite this to translate data from source to destination,

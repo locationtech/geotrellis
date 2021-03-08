@@ -52,7 +52,7 @@ object Hillshade {
       val cosAz = cos(azimuth)
       val sinAz = sin(azimuth)
 
-      def setValue(x: Int, y: Int, s: SurfacePoint) {
+      def setValue(x: Int, y: Int, s: SurfacePoint): Unit = {
         s.`dz/dx` = s.`dz/dx` * zFactor
         s.`dz/dy` = s.`dz/dy` * zFactor
         val c = cosAz * s.cosAspect + sinAz * s.sinAspect // cos(azimuth - aspect)

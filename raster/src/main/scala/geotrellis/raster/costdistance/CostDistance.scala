@@ -181,7 +181,7 @@ object CostDistance {
 
   type Cost = (Int, Int, Double)
 
-  private def calcNeighbors(c: Int, r: Int, cost: Tile, d: DoubleArrayTile, p: PriorityQueue[Cost]) {
+  private def calcNeighbors(c: Int, r: Int, cost: Tile, d: DoubleArrayTile, p: PriorityQueue[Cost]): Unit = {
     val l = dirs.length
     var z = 0
 

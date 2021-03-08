@@ -86,7 +86,7 @@ final case class FloatRawArrayTile(arr: Array[Float], val cols: Int, val rows: I
     * @param   i  The index
     * @param   z  The value to place at that index
     */
-  def update(i: Int, z: Int) { arr(i) = z.toFloat }
+  def update(i: Int, z: Int): Unit = { arr(i) = z.toFloat }
 
   /**
     * Update the datum at the given index in the array.
@@ -94,7 +94,7 @@ final case class FloatRawArrayTile(arr: Array[Float], val cols: Int, val rows: I
     * @param   i  The index
     * @param   z  The value to place at that index
     */
-  def updateDouble(i: Int, z: Double) { arr(i) = z.toFloat }
+  def updateDouble(i: Int, z: Double): Unit = { arr(i) = z.toFloat }
 }
 
 /**
@@ -127,7 +127,7 @@ final case class FloatConstantNoDataArrayTile(arr: Array[Float], val cols: Int, 
     * @param   i  The index
     * @param   z  The value to place at that index
     */
-  def update(i: Int, z: Int) { arr(i) = i2f(z) }
+  def update(i: Int, z: Int): Unit = { arr(i) = i2f(z) }
 
   /**
     * Update the datum at the given index in the array.
@@ -135,7 +135,7 @@ final case class FloatConstantNoDataArrayTile(arr: Array[Float], val cols: Int, 
     * @param   i  The index
     * @param   z  The value to place at that index
     */
-  def updateDouble(i: Int, z: Double) { arr(i) = d2f(z) }
+  def updateDouble(i: Int, z: Double): Unit = { arr(i) = d2f(z) }
 }
 
 /**
@@ -169,7 +169,7 @@ final case class FloatUserDefinedNoDataArrayTile(arr: Array[Float], val cols: In
     * @param   i  The index
     * @param   z  The value to place at that index
     */
-  def update(i: Int, z: Int) { arr(i) = i2udf(z) }
+  def update(i: Int, z: Int): Unit = { arr(i) = i2udf(z) }
 
   /**
     * Update the datum at the given index in the array.
@@ -177,7 +177,7 @@ final case class FloatUserDefinedNoDataArrayTile(arr: Array[Float], val cols: In
     * @param   i  The index
     * @param   z  The value to place at that index
     */
-  def updateDouble(i: Int, z: Double) { arr(i) = d2udf(z) }
+  def updateDouble(i: Int, z: Double): Unit = { arr(i) = d2udf(z) }
 }
 
 /**

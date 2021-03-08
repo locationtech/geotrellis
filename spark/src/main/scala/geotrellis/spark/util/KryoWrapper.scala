@@ -42,12 +42,12 @@ class KryoWrapper[T: ClassTag] extends Serializable {
   }
 
   // Used for Java serialization.
-  private def writeObject(out: java.io.ObjectOutputStream) {
+  private def writeObject(out: java.io.ObjectOutputStream): Unit = {
     getValueSerialized()
     out.defaultWriteObject()
   }
 
-  private def readObject(in: java.io.ObjectInputStream) {
+  private def readObject(in: java.io.ObjectInputStream): Unit = {
     in.defaultReadObject()
     setValueSerialized(valueSerialized)
     //println(s"Reading KryoWrapper $this - $value")

@@ -89,7 +89,7 @@ final case class DoubleRawArrayTile(arr: Array[Double], val cols: Int, val rows:
     * @param   i  The index
     * @param   z  The value to place at that index
     */
-  def update(i: Int, z: Int) { arr(i) = z.toDouble }
+  def update(i: Int, z: Int): Unit = { arr(i) = z.toDouble }
 
   /**
     * Update the datum at the given index in the array.
@@ -97,7 +97,7 @@ final case class DoubleRawArrayTile(arr: Array[Double], val cols: Int, val rows:
     * @param   i  The index
     * @param   z  The value to place at that index
     */
-  def updateDouble(i: Int, z: Double) { arr(i) = z.toDouble }
+  def updateDouble(i: Int, z: Double): Unit = { arr(i) = z.toDouble }
 }
 
 /**
@@ -130,7 +130,7 @@ final case class DoubleConstantNoDataArrayTile(arr: Array[Double], val cols: Int
     * @param   i  The index
     * @param   z  The value to place at that index
     */
-  def update(i: Int, z: Int) { arr(i) = i2d(z) }
+  def update(i: Int, z: Int): Unit = { arr(i) = i2d(z) }
 
   /**
     * Update the datum at the given index in the array.
@@ -138,7 +138,7 @@ final case class DoubleConstantNoDataArrayTile(arr: Array[Double], val cols: Int
     * @param   i  The index
     * @param   z  The value to place at that index
     */
-  def updateDouble(i: Int, z: Double) { arr(i) = z }
+  def updateDouble(i: Int, z: Double): Unit = { arr(i) = z }
 }
 
 /**
@@ -172,7 +172,7 @@ final case class DoubleUserDefinedNoDataArrayTile(arr: Array[Double], val cols: 
     * @param   i  The index
     * @param   z  The value to place at that index
     */
-  def update(i: Int, z: Int) { arr(i) = i2udd(z) }
+  def update(i: Int, z: Int): Unit = { arr(i) = i2udd(z) }
 
   /**
     * Update the datum at the given index in the array.
@@ -180,7 +180,7 @@ final case class DoubleUserDefinedNoDataArrayTile(arr: Array[Double], val cols: 
     * @param   i  The index
     * @param   z  The value to place at that index
     */
-  def updateDouble(i: Int, z: Double) { arr(i) = d2udd(z) }
+  def updateDouble(i: Int, z: Double): Unit = { arr(i) = d2udd(z) }
 }
 
 /**

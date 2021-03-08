@@ -293,7 +293,7 @@ trait TileBuilders {
     ArrayTile(Array.fill(100)(n), 10, 10)
 
   /* prints out a raster to console */
-  def printR(tile: Tile) {
+  def printR(tile: Tile): Unit = {
     for(row <- 0 until tile.rows) {
       for(col <- 0 until tile.cols) {
         val v = tile.get(col, row)

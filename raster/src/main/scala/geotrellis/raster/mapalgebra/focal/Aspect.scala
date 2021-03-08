@@ -45,7 +45,7 @@ object Aspect {
     new SurfacePointCalculation[Tile](tile, n, bounds, cs, target)
       with DoubleArrayTileResult
     {
-      def setValue(x: Int, y: Int, s: SurfacePoint) {
+      def setValue(x: Int, y: Int, s: SurfacePoint): Unit = {
         resultTile.setDouble(x, y, s.aspectAzimuth)
       }
     }

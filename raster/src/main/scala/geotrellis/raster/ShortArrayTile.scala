@@ -88,7 +88,7 @@ final case class ShortRawArrayTile(arr: Array[Short], val cols: Int, val rows: I
     * @param   i  The index
     * @param   z  The value to place at that index
     */
-  def update(i: Int, z: Int) { arr(i) = z.toShort }
+  def update(i: Int, z: Int): Unit = { arr(i) = z.toShort }
 
   /**
     * Update the datum at the given index in the array.
@@ -96,7 +96,7 @@ final case class ShortRawArrayTile(arr: Array[Short], val cols: Int, val rows: I
     * @param   i  The index
     * @param   z  The value to place at that index
     */
-  def updateDouble(i: Int, z: Double) { arr(i) = z.toShort }
+  def updateDouble(i: Int, z: Double): Unit = { arr(i) = z.toShort }
 }
 
 /**
@@ -170,7 +170,7 @@ final case class ShortUserDefinedNoDataArrayTile(arr: Array[Short], val cols: In
     * @param   i  The index
     * @param   z  The value to place at that index
     */
-  def update(i: Int, z: Int) { arr(i) = i2uds(z) }
+  def update(i: Int, z: Int): Unit = { arr(i) = i2uds(z) }
 
   /**
     * Update the datum at the given index in the array.
@@ -178,7 +178,7 @@ final case class ShortUserDefinedNoDataArrayTile(arr: Array[Short], val cols: In
     * @param   i  The index
     * @param   z  The value to place at that index
     */
-  def updateDouble(i: Int, z: Double) { arr(i) = d2uds(z) }
+  def updateDouble(i: Int, z: Double): Unit = { arr(i) = d2uds(z) }
 }
 
 /**

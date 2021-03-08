@@ -30,18 +30,18 @@ final class Chunk(chunkType:Int) {
   val cos = new CheckedOutputStream(baos, crc)
   writeInt(chunkType)
 
-  def writeInt(i:Int) {
+  def writeInt(i:Int): Unit = {
     cos.write(byte(i >> 24))
     cos.write(byte(i >> 16))
     cos.write(byte(i >> 8))
     cos.write(byte(i))
   }
 
-  def writeByte(b:Byte) {
+  def writeByte(b:Byte): Unit = {
     cos.write(b)
   }
 
-  def writeTo(out:DataOutputStream) {
+  def writeTo(out:DataOutputStream): Unit = {
     cos.flush()
     out.writeInt(baos.size() - 4)
     baos.writeTo(out)

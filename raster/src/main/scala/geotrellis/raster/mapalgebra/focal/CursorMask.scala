@@ -152,7 +152,7 @@ class CursorMask(d:Int,f:(Int,Int)=>Boolean) {
     }
   }
 
-  def foreachMasked(mv:Movement)(f:(Int,Int)=>Unit) {
+  def foreachMasked(mv:Movement)(f:(Int,Int)=>Unit): Unit = {
     mv match {
       case Left => foreach(0,0,0,maskedAfterMoveLeft)(f)
       case Right => foreach(1,0,0,unmaskedAfterMoveLeft)(f)
@@ -162,7 +162,7 @@ class CursorMask(d:Int,f:(Int,Int)=>Boolean) {
     }
   }
 
-  def foreachUnmasked(mv:Movement)(f:(Int,Int)=>Unit) {
+  def foreachUnmasked(mv:Movement)(f:(Int,Int)=>Unit): Unit = {
     mv match {
       case Left => foreach(0,0,0,unmaskedAfterMoveLeft)(f)
       case Right => foreach(1,0,0,maskedAfterMoveLeft)(f)

@@ -50,7 +50,7 @@ trait BufferTiles {
     val rows = tile.rows
 
     // ex: adding "TopLeft" corner of this tile to contribute to "TopLeft" tile at key
-    def addSlice(spatialKey: SpatialKey, direction: => raster.buffer.Direction) {
+    def addSlice(spatialKey: SpatialKey, direction: => raster.buffer.Direction): Unit = {
       if(includeKey(spatialKey)) {
         val bufferSizes = getBufferSizes(spatialKey)
 

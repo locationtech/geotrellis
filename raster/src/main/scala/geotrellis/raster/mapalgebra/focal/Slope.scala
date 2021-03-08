@@ -50,7 +50,7 @@ object Slope {
     {
       val zFactor = z
 
-      def setValue(x: Int, y: Int, s: SurfacePoint) {
+      def setValue(x: Int, y: Int, s: SurfacePoint): Unit = {
         resultTile.setDouble(x, y, degrees(s.slope(zFactor)))
       }
     }

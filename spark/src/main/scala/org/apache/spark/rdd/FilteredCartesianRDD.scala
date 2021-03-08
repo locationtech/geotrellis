@@ -115,7 +115,7 @@ sealed class FilteredCartesianRDD[T: ClassTag, U: ClassTag, V: ClassTag](
     }
   )
 
-  override def clearDependencies() {
+  override def clearDependencies(): Unit = {
     super.clearDependencies()
     rdd1 = null
     rdd2 = null
