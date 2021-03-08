@@ -50,7 +50,7 @@ object IndexRanges {
       }
 
       if (sum >= binWidth) {
-        sum = 0l
+        sum = 0L
         i += 1
       }
     }

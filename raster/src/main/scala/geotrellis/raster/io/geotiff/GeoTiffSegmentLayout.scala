@@ -76,16 +76,16 @@ case class GeoTiffSegmentLayout(
   def partitionWindowsBySegments(windows: Seq[GridBounds[Int]], maxPartitionSize: Long): Array[Array[GridBounds[Int]]] = {
     val partition = mutable.ArrayBuilder.make[GridBounds[Int]]
     partition.sizeHintBounded(128, windows)
-    var partitionSize: Long = 0l
-    var partitionCount: Long = 0l
+    var partitionSize: Long = 0L
+    var partitionCount: Long = 0L
     val partitions = mutable.ArrayBuilder.make[Array[GridBounds[Int]]]
 
     def finalizePartition() {
       val res = partition.result
       if (res.nonEmpty) partitions += res
       partition.clear()
-      partitionSize = 0l
-      partitionCount = 0l
+      partitionSize = 0L
+      partitionCount = 0L
     }
 
     def addToPartition(window: GridBounds[Int]) {

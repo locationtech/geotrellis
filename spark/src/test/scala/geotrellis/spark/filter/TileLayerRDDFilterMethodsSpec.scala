@@ -84,9 +84,9 @@ class TileLayerRDDFilterMethodsSpec extends AnyFunSpec with TestEnvironment {
     val (_, rdd) = createTileLayerRDD(originalRaster, 5, 5, gt.crs)
     val temporalRdd =
       rdd
-        .withContext { _.map { case (k, v) => SpaceTimeKey(k, TemporalKey(1000l)) -> v } }
+        .withContext { _.map { case (k, v) => SpaceTimeKey(k, TemporalKey(1000L)) -> v } }
         .mapContext { md => md.copy(bounds = md.bounds match {
-          case KeyBounds(minKey, maxKey) => KeyBounds(SpaceTimeKey(minKey, TemporalKey(1000l)), SpaceTimeKey(maxKey, TemporalKey(1000l)))
+          case KeyBounds(minKey, maxKey) => KeyBounds(SpaceTimeKey(minKey, TemporalKey(1000L)), SpaceTimeKey(maxKey, TemporalKey(1000L)))
           case _ => EmptyBounds
         }) }
     val allKeys = KeyBounds(SpatialKey(0,0), SpatialKey(4,4))
