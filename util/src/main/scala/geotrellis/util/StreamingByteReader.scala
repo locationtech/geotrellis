@@ -112,7 +112,7 @@ class StreamingByteReader(rangeReader: RangeReader, chunkSize: Int = 45876) exte
       readChunk(filePosition to (filePosition + len - 1))
     }
 
-    if (filePosition != chunkRange.start + chunkBuffer.position)
+    if (filePosition != chunkRange.start + chunkBuffer.position())
       chunkBuffer.position((filePosition - chunkRange.start).toInt)
 
     trimmed.toInt

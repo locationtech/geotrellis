@@ -387,7 +387,7 @@ object StrictLayer {
         case POINT => points += f
         case LINESTRING => lines += f
         case POLYGON => polys += f
-        case _ => Unit // `UNKNOWN` or `Unrecognized`.
+        case _ => () // `UNKNOWN` or `Unrecognized`.
       }
     }
 
