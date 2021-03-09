@@ -17,7 +17,6 @@
 package geotrellis.raster
 
 import geotrellis.vector.Point
-import geotrellis.vector._
 import geotrellis.util.{MethodExtensions, np}
 
 object Implicits extends Implicits
@@ -60,6 +59,8 @@ trait Implicits
   implicit class withMultibandTileMethods(val self: MultibandTile) extends MethodExtensions[MultibandTile]
       with DelayedConversionMultibandTileMethods
 
+  import geotrellis.vector.methods.Implicits.withExtraPointMethods
+
   implicit class SinglebandRasterAnyRefMethods(val self: SinglebandRaster) extends AnyRef {
     def getValueAtPoint(point: Point): Int =
       getValueAtPoint(point.x, point.y)
@@ -84,7 +85,7 @@ trait Implicits
     def assertEqualDimensions(): Unit =
       if(Set(rs.map(_.dimensions)).size != 1) {
         val dimensions = rs.map(_.dimensions).toSeq
-        throw new GeoAttrsError("Cannot combine tiles with different dimensions." +
+        throw GeoAttrsError("Cannot combine tiles with different dimensions." +
           s"$dimensions are not all equal")
       }
   }
@@ -92,7 +93,7 @@ trait Implicits
   implicit class TileTupleExtensions(t: (Tile, Tile)) {
     def assertEqualDimensions(): Unit =
       if(t._1.dimensions != t._2.dimensions) {
-        throw new GeoAttrsError("Cannot combine rasters with different dimensions." +
+        throw GeoAttrsError("Cannot combine rasters with different dimensions." +
           s"${t._1.dimensions} does not match ${t._2.dimensions}")
       }
   }
