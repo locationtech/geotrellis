@@ -118,7 +118,7 @@ object CRS {
 
   /** Mix-in for singleton CRS implementations where distinguished string should be the name of the object. */
   private[proj4] trait ObjectNameToString { self: CRS =>
-    override def toString: String = self.getClass.getSimpleName.replaceAllLiterally("$", "")
+    override def toString: String = self.getClass.getSimpleName.replace("$", "")
   }
 }
 

@@ -242,7 +242,7 @@ class GeoTiffCSParser(geoKeyDirectory: GeoKeyDirectory) {
         gtgp.zone = zone
         gtgp.mapSystem = mapSystem
       }
-      case None => Unit
+      case None => ()
     }
 
     if ((gtgp.mapSystem == MapSys_UTM_North || gtgp.mapSystem == MapSys_UTM_South)
@@ -470,7 +470,7 @@ class GeoTiffCSParser(geoKeyDirectory: GeoKeyDirectory) {
       projParms(5) = (ProjFalseEastingGeoKey, getValueIfNotNull(projParms(5)))
       projParms(6) = (ProjFalseNorthingGeoKey, getValueIfNotNull(projParms(6)))
     }
-    case _ => Unit
+    case _ => ()
   }
 
   private def getValueIfNotNull(tuple: (Int, Double)) =
@@ -923,7 +923,7 @@ class GeoTiffCSParser(geoKeyDirectory: GeoKeyDirectory) {
         gtgp.projectionParameters(5) = (ProjFalseEastingGeoKey, falseEasting)
         gtgp.projectionParameters(6) = (ProjFalseNorthingGeoKey, falseNorthing)
       }
-      case _ => Unit
+      case _ => ()
     }
 
     for (i <- 0 until gtgp.projectionParameters.size) {
@@ -936,7 +936,7 @@ class GeoTiffCSParser(geoKeyDirectory: GeoKeyDirectory) {
           if (gtgp.lengthInMeters != 0.0 && gtgp.lengthInMeters != 1.0) {
             gtgp.projectionParameters(i) = (v._1, v._2 * gtgp.lengthInMeters)
           }
-        case _ => Unit
+        case _ => ()
       }
     }
   }
