@@ -100,8 +100,12 @@ abstract class MosaicRasterSource extends RasterSource {
       *
       * This is done by calculating the relative offset using each [[RasterSource]]
       * underlying [[Extent]].
+
+      * @param gb     global bounds, relative to the [[MosaicRasterSource]]
+      * @param extent extent of the [[RasterSource]]
+      * @return       relative to the extent [[GridBounds]]
       */
-    def gridBoundsRelative(gb: GridBounds[Long], extent: Extent): GridBounds[Long] = {
+    def relativeGridBounds(gb: GridBounds[Long], extent: Extent): GridBounds[Long] = {
       val GridBounds(colMin, rowMin, colMax, rowMax) = gb
 
       val sourceColOffset = GridExtent.floorWithTolerance((extent.xmin - gridExtent.extent.xmin) / gridExtent.cellwidth).toLong
@@ -115,7 +119,7 @@ abstract class MosaicRasterSource extends RasterSource {
       )
     }
 
-    val rasters = sources.map { rs => rs.read(gridBoundsRelative(bounds, rs.extent), bands) }
+    val rasters = sources.map { rs => rs.read(relativeGridBounds(bounds, rs.extent), bands) }
     rasters.reduce
   }
 

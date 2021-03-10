@@ -89,7 +89,7 @@ class LayoutTileSource[K: SpatialComponent](
           *   val rowOffset = bounds.rowMin - sourcePixelBounds.rowMin
           *
           * However, if the source is a [[MosaicRasterSource]], offsets are still relative to the underlying [[RasterSource]].
-          * In this case it is possible offsets through the returned extent.
+          * In this case it is possible to compute offsets through the returned extent.
           */
 
         // the actual returned extent
