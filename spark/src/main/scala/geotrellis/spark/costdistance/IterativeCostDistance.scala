@@ -77,7 +77,7 @@ object IterativeCostDistance {
   class ChangesAccumulator extends AccumulatorV2[KeyCostPair, Changes] {
     private val list: Changes = mutable.ArrayBuffer.empty
 
-    def copy: ChangesAccumulator = {
+    def copy(): ChangesAccumulator = {
       val other = new ChangesAccumulator
       other.merge(this)
       other
@@ -88,7 +88,7 @@ object IterativeCostDistance {
     def isZero: Boolean = list.isEmpty
     def merge(other: AccumulatorV2[KeyCostPair, Changes]): Unit =
       this.synchronized { list ++= other.value }
-    def reset: Unit = this.synchronized { list.clear }
+    def reset(): Unit = this.synchronized { list.clear }
     def value: Changes = list
   }
 

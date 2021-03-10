@@ -619,7 +619,7 @@ case class CompositeTile(tiles: Seq[Tile],
           }
           if(layoutCol != tileLayout.layoutCols - 1) {
             val pad = " " * 5
-            sb.append(s"$pad| ").r
+            sb.append(s"$pad| ").toString.r
           }
         }
         sb.append(s"\n")

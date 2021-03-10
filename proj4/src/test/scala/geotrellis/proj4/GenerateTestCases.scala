@@ -39,13 +39,12 @@ object GenerateTestCases {
   def main(args: Array[String]): Unit = {
     val knownCodes =
       loan(scala.io.Source.fromInputStream(getClass().getResourceAsStream("/proj4/nad/epsg"))) { source =>
-        source.getLines
+        source.getLines()
           .filter { _ startsWith "<" }
           .map { s => s.tail.take(s.indexOf('>') - 1) }
           .filterNot { _ == "4326" }
           .to[Vector]
       }
-
     val output = new java.io.FileWriter("proj4/src/test/resources/proj4-epsg.csv");
 
     val csvWriter = new com.opencsv.CSVWriter(output)
