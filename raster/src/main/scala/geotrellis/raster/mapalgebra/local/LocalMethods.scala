@@ -80,7 +80,7 @@ trait LocalMethods extends MethodExtensions[Tile]
     Negate(self)
 
   /** Negate (multiply by -1) each value in a raster. */
-  def unary_-(): Tile = localNegate()
+  def unary_- : Tile = localNegate()
 
   /**
     * Bitwise negation of Tile.
@@ -114,7 +114,7 @@ trait LocalMethods extends MethodExtensions[Tile]
    *  holds the x values. The arctan is calculated from y / x.
    *  @note               A double raster is always returned.
    */
-   def localAtan2(r: Tile): Tile =
+  def localAtan2(r: Tile): Tile =
     Atan2(self, r)
 
   /**
