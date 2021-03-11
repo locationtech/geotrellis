@@ -1,6 +1,6 @@
 import sbt.Keys._
 
-ThisBuild / scalaVersion := Version.scala211
+ThisBuild / scalaVersion := Version.scala212
 ThisBuild / organization := "org.locationtech.geotrellis"
 ThisBuild / crossScalaVersions := List(Version.scala212, Version.scala211)
 ThisBuild / scapegoatVersion := Version.scapegoat
