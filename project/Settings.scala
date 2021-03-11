@@ -45,7 +45,7 @@ object Settings {
     Test / parallelExecution := false
   )
 
-  val commonScalacOptions = Seq(
+  lazy val commonScalacOptions = Seq(
     "-deprecation",
     "-unchecked",
     "-feature",
@@ -399,7 +399,7 @@ object Settings {
     name := "geotrellis-macros",
     Compile / sourceGenerators += (Compile / sourceManaged).map(Boilerplate.genMacro).taskValue,
     libraryDependencies ++= Seq(
-      spireMacro,
+      spire("spire-macros").value,
       scalaReflect(scalaVersion.value)
     )
   ) ++ commonSettings
@@ -430,7 +430,7 @@ object Settings {
     name := "geotrellis-raster",
     libraryDependencies ++= Seq(
       squants,
-      monocle("core").value, 
+      monocle("core").value,
       monocle("macro").value,
       scalaXml,
       scalaURI.value,
@@ -556,7 +556,7 @@ object Settings {
 
   lazy val `spark-pipeline` = Seq(
     name := "geotrellis-spark-pipeline",
-    libraryDependencies ++= Seq(   
+    libraryDependencies ++= Seq(
       circe("generic-extras").value,
       hadoopClient % Provided,
       sparkCore % Provided,
@@ -600,7 +600,7 @@ object Settings {
     libraryDependencies ++= Seq(
       log4s,
       scalaj,
-      spire,
+      spire("spire").value,
       scalatest % Test
     )
   ) ++ commonSettings
@@ -611,8 +611,8 @@ object Settings {
       jts,
       shapeless,
       pureconfig,
-      circe("core").value, 
-      circe("generic").value, 
+      circe("core").value,
+      circe("generic").value,
       circe("parser").value,
       cats("core").value,
       apacheMath,
@@ -669,7 +669,7 @@ object Settings {
       uzaygezenCore,
       scalaXml,
       apacheLang3,
-      fs2("core").value, 
+      fs2("core").value,
       fs2("io").value,
       cats("effect").value,
       scalatest % Test

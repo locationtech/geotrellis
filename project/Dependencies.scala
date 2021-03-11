@@ -18,7 +18,6 @@ import sbt._
 
 object Version {
   val geotools    = "24.2"
-  val spire       = "0.13.0"
   val accumulo    = "1.9.3"
   val cassandra   = "3.7.2"
   val hbase       = "2.2.5"
@@ -34,11 +33,13 @@ object Version {
 import sbt.Keys._
 
 object Dependencies {
-  private def ver(for211: String, for212: String) = Def.setting {
+
+  private def ver(for211: String, for212: String, for213: Option[String] = None) = Def.setting {
     CrossVersion.partialVersion(scalaVersion.value) match {
       case Some((2, 11)) => for211
       case Some((2, 12)) => for212
-      case _ => sys.error("not good")
+      case Some((2, 13)) => for213.getOrElse(for212)
+      case x => sys.error(s"Encountered unsupported Scala version ${x.getOrElse("undefined")}")
     }
   }
 
@@ -67,6 +68,15 @@ object Dependencies {
 
   def scalaReflect(version: String) = "org.scala-lang" % "scala-reflect" % version
 
+  def spire(module: String) = Def.setting {
+    CrossVersion.partialVersion(scalaVersion.value) match {
+      case Some((2, 11)) => "org.spire-math" %% "spire" % "0.13.0"
+      case Some((2, 12)) => "org.spire-math" %% "spire" % "0.13.0" // 0.17.0 exists for 2.12
+      case Some((2, 13)) => "org.typelevel"  %% "spire" % "0.17.0"
+      case x => sys.error(s"Encountered unsupported Scala version ${x.getOrElse("undefined")}")
+    }
+  }
+
   val sparkCore           = "org.apache.spark"           %% "spark-core"               % Version.spark
   val sparkSql            = "org.apache.spark"           %% "spark-sql"                % Version.spark
   val pureconfig          = "com.github.pureconfig"      %% "pureconfig"               % "0.14.0"
@@ -77,8 +87,6 @@ object Dependencies {
   val jts                 = "org.locationtech.jts"        % "jts-core"                 % "1.17.1"
   val proj4j              = "org.locationtech.proj4j"     % "proj4j"                   % "1.1.1"
   val openCSV             = "com.opencsv"                 % "opencsv"                  % "5.3"
-  val spire               = "org.spire-math"             %% "spire"                    % Version.spire
-  val spireMacro          = "org.spire-math"             %% "spire-macros"             % Version.spire
   val apacheIO            = "commons-io"                  % "commons-io"               % "2.8.0"
   val apacheLang3         = "org.apache.commons"          % "commons-lang3"            % "3.12.0"
   val apacheMath          = "org.apache.commons"          % "commons-math3"            % "3.6.1"
