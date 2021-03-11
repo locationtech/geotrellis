@@ -16,6 +16,7 @@
 
 import Dependencies._
 import GTBenchmarkPlugin.Keys._
+import com.sksamuel.scapegoat.sbt.ScapegoatSbtPlugin.autoImport.scapegoatDisabledInspections
 import sbt._
 import sbt.Keys._
 import sbtassembly.AssemblyPlugin.autoImport._
@@ -121,7 +122,8 @@ object Settings {
           existingText.flatMap(_ => existingText.map(_.trim)).getOrElse(newText)
         } }
       )
-    )
+    ),
+    scapegoatDisabledInspections := Seq("ObjectNames")
   )
 
   lazy val accumulo = Seq(
