@@ -35,39 +35,39 @@ import scala.reflect.ClassTag
 object Implicits extends Implicits
 
 trait Implicits
-    extends buffer.Implicits
+    extends geotrellis.spark.buffer.Implicits
     with CrsFormats
     with StoreCodecs
-    with clip.Implicits
-    with costdistance.Implicits
-    with crop.Implicits
-    with density.Implicits
-    with distance.Implicits
-    with equalization.Implicits
-    with filter.Implicits
-    with join.Implicits
-    with knn.Implicits
-    with mapalgebra.focal.hillshade.Implicits
-    with mapalgebra.focal.Implicits
-    with mapalgebra.Implicits
-    with mapalgebra.local.Implicits
-    with mapalgebra.local.temporal.Implicits
-    with mapalgebra.zonal.Implicits
-    with mask.Implicits
-    with matching.Implicits
-    with merge.Implicits
-    with partition.Implicits
-    with regrid.Implicits
-    with reproject.Implicits
-    with resample.Implicits
-    with rasterize.Implicits
-    with sigmoidal.Implicits
-    with split.Implicits
-    with stitch.Implicits
-    with summary.Implicits
-    with tiling.Implicits
-    with timeseries.Implicits
-    with viewshed.Implicits
+    with geotrellis.spark.clip.Implicits
+    with geotrellis.spark.costdistance.Implicits
+    with geotrellis.spark.crop.Implicits
+    with geotrellis.spark.density.Implicits
+    with geotrellis.spark.distance.Implicits
+    with geotrellis.spark.equalization.Implicits
+    with geotrellis.spark.filter.Implicits
+    with geotrellis.spark.join.Implicits
+    with geotrellis.spark.knn.Implicits
+    with geotrellis.spark.mapalgebra.focal.hillshade.Implicits
+    with geotrellis.spark.mapalgebra.focal.Implicits
+    with geotrellis.spark.mapalgebra.Implicits
+    with geotrellis.spark.mapalgebra.local.Implicits
+    with geotrellis.spark.mapalgebra.local.temporal.Implicits
+    with geotrellis.spark.mapalgebra.zonal.Implicits
+    with geotrellis.spark.mask.Implicits
+    with geotrellis.spark.matching.Implicits
+    with geotrellis.spark.merge.Implicits
+    with geotrellis.spark.partition.Implicits
+    with geotrellis.spark.regrid.Implicits
+    with geotrellis.spark.reproject.Implicits
+    with geotrellis.spark.resample.Implicits
+    with geotrellis.spark.rasterize.Implicits
+    with geotrellis.spark.sigmoidal.Implicits
+    with geotrellis.spark.split.Implicits
+    with geotrellis.spark.stitch.Implicits
+    with geotrellis.spark.summary.Implicits
+    with geotrellis.spark.tiling.Implicits
+    with geotrellis.spark.timeseries.Implicits
+    with geotrellis.spark.viewshed.Implicits
     with Serializable {
 
   /** Auto wrap a partitioner when something is requestion an Option[Partitioner];
