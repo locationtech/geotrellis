@@ -16,8 +16,8 @@
 
 package geotrellis.raster.render
 
-import geotrellis.raster._
-import geotrellis.raster.render.jpg._
+import geotrellis.raster.Tile
+import geotrellis.raster.render.jpg.{JpgEncoder, Settings}
 import geotrellis.util.MethodExtensions
 
 
