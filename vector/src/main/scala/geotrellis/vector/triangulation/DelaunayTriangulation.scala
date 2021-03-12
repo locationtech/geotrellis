@@ -501,7 +501,7 @@ case class DelaunayTriangulation(
     removeIncidentEdge(vi)
   }
 
-  private def removeVertexAndFill(vi: Int, tris: Map[(Int, Int, Int), HalfEdge[Int, Int]], bnd: Option[Int]): Seq[Int] = {
+  private def removeVertexAndFill(vi: Int, tris: Map[(Int, Int, Int), HalfEdge[Int, Int]], bnd: Option[Int]): ListBuffer[Int] = {
     val exteriorRing = ListBuffer.empty[Int]
 
     decoupleVertex(vi)
