@@ -121,7 +121,11 @@ object Settings {
           existingText.flatMap(_ => existingText.map(_.trim)).getOrElse(newText)
         } }
       )
-    )
+    ),
+    evictionWarningOptions in update := EvictionWarningOptions.default
+      .withWarnTransitiveEvictions(false)
+      .withWarnDirectEvictions(false)
+      .withWarnScalaVersionEviction(false)
   )
 
   lazy val accumulo = Seq(
