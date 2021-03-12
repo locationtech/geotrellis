@@ -17,13 +17,13 @@
 package geotrellis.raster
 
 import geotrellis.vector.Point
-import geotrellis.vector._
+import geotrellis.vector.withExtraPointMethods
 import geotrellis.util.{MethodExtensions, np}
 
 object Implicits extends Implicits
 
 trait Implicits
-    extends costdistance.Implicits
+    extends geotrellis.raster.costdistance.Implicits
     with geotrellis.raster.crop.Implicits
     with geotrellis.raster.density.Implicits
     with geotrellis.raster.distance.Implicits
