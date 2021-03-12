@@ -25,7 +25,6 @@ import org.apache.hadoop.mapreduce._
 import org.apache.hadoop.mapreduce.lib.input._
 
 import scala.collection.JavaConverters._
-import scala.collection.mutable
 
 object FilterMapFileInputFormat {
   // Define some key names for Hadoop configuration
