@@ -114,4 +114,5 @@
  <check level="warning" class="org.scalastyle.scalariform.PublicMethodsHaveTypeChecker" enabled="true"/>
  <check level="warning" class="org.scalastyle.file.NewLineAtEofChecker" enabled="true"/>
  <check level="warning" class="org.scalastyle.file.NoNewLineAtEofChecker" enabled="false"/>
+ <check class="org.scalastyle.scalariform.CyclomaticComplexityChecker" enabled="false"/>
 </scalastyle>
