@@ -40,6 +40,10 @@ object Settings {
     val all             = external ++ local
   }
 
+  lazy val scala211 = "2.11.12"
+  lazy val scala212 = "2.12.13"
+  lazy val scala213 = "2.13.5"
+
   lazy val noForkInTests = Seq(
     Test / fork := false,
     Test / parallelExecution := false
@@ -56,10 +60,10 @@ object Settings {
     "-language:existentials",
     "-language:experimental.macros",
     "-feature",
-    "-Ypartial-unification", // required by Cats
     // "-Yrangepos",            // required by SemanticDB compiler plugin
     // "-Ywarn-unused-import",  // required by `RemoveUnused` rule
-    "-target:jvm-1.8")
+    "-target:jvm-1.8"
+  )
 
   lazy val commonSettings = Seq(
     description := "geographic data processing library for high performance applications",
@@ -93,7 +97,6 @@ object Settings {
     ).filter(_.asFile.canRead).map(Credentials(_)),
 
     addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.11.3" cross CrossVersion.full),
-    addCompilerPlugin("org.scalamacros" %% "paradise" % "2.1.1" cross CrossVersion.full),
     addCompilerPlugin("org.scalameta" % "semanticdb-scalac" % "4.4.10" cross CrossVersion.full),
 
     pomExtra := (
@@ -612,6 +615,7 @@ object Settings {
   lazy val vector = Seq(
     name := "geotrellis-vector",
     libraryDependencies ++= Seq(
+      scalaReflect(scalaVersion.value),
       jts,
       shapeless,
       pureconfig,
