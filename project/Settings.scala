@@ -17,7 +17,7 @@
 import Dependencies._
 import GTBenchmarkPlugin.Keys._
 import sbt._
-import sbt.Keys._
+import sbt.Keys.{crossScalaVersions, _}
 import sbtassembly.AssemblyPlugin.autoImport._
 import com.typesafe.tools.mima.plugin.MimaKeys._
 import de.heikoseeberger.sbtheader.{CommentStyle, FileType}
@@ -43,6 +43,9 @@ object Settings {
   lazy val scala211 = "2.11.12"
   lazy val scala212 = "2.12.13"
   lazy val scala213 = "2.13.5"
+
+  lazy val crossScalaVersionsAll = List(scala213, scala212, scala211)
+  lazy val crossScalaVersionsSparkOnly = List(scala212, scala211)
 
   lazy val noForkInTests = Seq(
     Test / fork := false,
@@ -70,6 +73,7 @@ object Settings {
     licenses := Seq("Apache-2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0.html")),
     homepage := Some(url("https://geotrellis.io")),
     scmInfo := Some(ScmInfo(url("https://github.com/locationtech/geotrellis"), "scm:git:git@github.com:locationtech/geotrellis.git")),
+    crossScalaVersions := crossScalaVersionsAll,
     scalacOptions ++= commonScalacOptions,
     publishMavenStyle := true,
     Test / publishArtifact := false,
@@ -151,6 +155,7 @@ object Settings {
 
   lazy val `accumulo-spark` = Seq(
     name := "geotrellis-accumulo-spark",
+    crossScalaVersions := crossScalaVersionsSparkOnly,
     libraryDependencies ++= Seq(
       accumuloCore
         exclude("org.jboss.netty", "netty")
@@ -173,6 +178,7 @@ object Settings {
   ) ++ commonSettings ++ noForkInTests
 
   lazy val bench = Seq(
+    crossScalaVersions := crossScalaVersionsSparkOnly,
     libraryDependencies += sl4jnop,
     jmhIterations := Some(5),
     jmhTimeUnit := None, // Each benchmark should determing the appropriate time unit.
@@ -203,6 +209,7 @@ object Settings {
 
   lazy val `cassandra-spark` = Seq(
     name := "geotrellis-cassandra-spark",
+    crossScalaVersions := crossScalaVersionsSparkOnly,
     libraryDependencies ++= Seq(
       cassandraDriverCore
         excludeAll(
@@ -230,6 +237,7 @@ object Settings {
 
   lazy val `doc-examples` = Seq(
     name := "geotrellis-doc-examples",
+    crossScalaVersions := crossScalaVersionsSparkOnly,
     scalacOptions ++= commonScalacOptions,
     libraryDependencies ++= Seq(
       sparkCore,
@@ -383,6 +391,7 @@ object Settings {
 
   lazy val `hbase-spark` = Seq(
     name := "geotrellis-hbase-spark",
+    crossScalaVersions := crossScalaVersionsSparkOnly,
     libraryDependencies ++= Seq(
       hadoopClient % Provided,
       sparkCore % Provided,
@@ -417,7 +426,8 @@ object Settings {
     mdocOut := new File("website/docs"),
     mdocVariables := Map(
       "VERSION" -> (ThisBuild / version).value
-    )
+    ),
+    crossScalaVersions := crossScalaVersionsSparkOnly
   )
 
   lazy val proj4 = Seq(
@@ -504,6 +514,7 @@ object Settings {
 
   lazy val `s3-spark` = Seq(
     name := "geotrellis-s3-spark",
+    crossScalaVersions := crossScalaVersionsSparkOnly,
     libraryDependencies ++= Seq(
       hadoopClient % Provided,
       sparkCore % Provided,
@@ -540,6 +551,7 @@ object Settings {
 
   lazy val spark = Seq(
     name := "geotrellis-spark",
+    crossScalaVersions := crossScalaVersionsSparkOnly,
     libraryDependencies ++= Seq(
       sparkCore % Provided,
       hadoopClient % Provided,
@@ -563,6 +575,7 @@ object Settings {
 
   lazy val `spark-pipeline` = Seq(
     name := "geotrellis-spark-pipeline",
+    crossScalaVersions := crossScalaVersionsSparkOnly,
     libraryDependencies ++= Seq(
       circe("generic-extras").value,
       hadoopClient % Provided,
@@ -594,6 +607,7 @@ object Settings {
 
   lazy val `spark-testkit` = Seq(
     name := "geotrellis-spark-testkit",
+    crossScalaVersions := crossScalaVersionsSparkOnly,
     libraryDependencies ++= Seq(
       hadoopClient % Provided,
       sparkCore % Provided,
@@ -699,6 +713,7 @@ object Settings {
 
   lazy val `gdal-spark` = Seq(
     name := "geotrellis-gdal-spark",
+    crossScalaVersions := crossScalaVersionsSparkOnly,
     libraryDependencies ++= Seq(
       gdalWarp,
       hadoopClient % Provided,

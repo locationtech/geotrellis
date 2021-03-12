@@ -1,8 +1,7 @@
 import sbt.Keys._
 
-ThisBuild / scalaVersion := Settings.scala212
 ThisBuild / organization := "org.locationtech.geotrellis"
-ThisBuild / crossScalaVersions := List(Settings.scala213, Settings.scala212, Settings.scala211)
+ThisBuild / scalaVersion := Settings.scala212
 
 lazy val root = Project("geotrellis", file("."))
   .aggregate(
@@ -38,39 +37,6 @@ lazy val root = Project("geotrellis", file("."))
   .settings(Settings.commonSettings)
   .settings(publish / skip := true)
   .settings(ScalaUnidoc / unidoc / unidocProjectFilter := inAnyProject -- inProjects(mdoc))
-
-// aggregate of only modules that can build on 2.13, mostly because they do not have Spark dependencies
-lazy val only213 = project
-  .aggregate(
-    accumulo,
-//    `accumulo-spark`,
-    cassandra,
-//    `cassandra-spark`,
-//    `doc-examples`,
-    gdal,
-//    `gdal-spark`,
-    geotools,
-    hbase,
-//    `hbase-spark`,
-    layer,
-    macros,
-    mdoc,
-    proj4,
-    raster,
-    `raster-testkit`,
-    s3,
-//    `s3-spark`,
-    shapefile,
-//    spark,
-//    `spark-pipeline`,
-//    `spark-testkit`,
-    store,
-    util,
-    vector,
-    `vector-testkit`,
-    vectortile
-  )
-  .settings(Settings.commonSettings)
 
 lazy val mdoc = project
   .dependsOn(raster)
