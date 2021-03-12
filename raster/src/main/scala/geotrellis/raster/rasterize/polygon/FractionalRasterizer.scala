@@ -30,7 +30,7 @@ object FractionalRasterizer {
 
   private type Segment = (Double, Double, Double, Double)
 
-  private def polygonToEdges(poly: Polygon, re: RasterExtent): Seq[Segment] = {
+  private def polygonToEdges(poly: Polygon, re: RasterExtent): mutable.ArrayBuffer[Segment] = {
 
     val arrayBuffer = mutable.ArrayBuffer.empty[Segment]
 
