@@ -66,7 +66,7 @@ object VoronoiDiagram {
 
   private final val EPSILON = 1e-10
 
-  private def cellBoundsNew(het: HalfEdgeTable, verts: Int => Coordinate, extent: Extent)(incidentEdge: Int): Seq[CellBound] = {
+  private def cellBoundsNew(het: HalfEdgeTable, verts: Int => Coordinate, extent: Extent)(incidentEdge: Int): ListBuffer[CellBound] = {
     import het._
 
     var e = incidentEdge
@@ -118,7 +118,7 @@ object VoronoiDiagram {
     l
   }
 
-  private def cellExtentIntersection(het: HalfEdgeTable, verts: Int => Coordinate, incidentEdge: Int)(cell: Seq[CellBound], extent: Extent) = {
+  private def cellExtentIntersection(het: HalfEdgeTable, verts: Int => Coordinate, incidentEdge: Int)(cell: ListBuffer[CellBound], extent: Extent) = {
     val Extent(xmin, ymin, xmax, ymax) = extent
     val expts = ListBuffer((xmin, ymin), (xmax, ymin), (xmax, ymax), (xmin, ymax)).map{ case (x, y) => new Coordinate(x, y) }
 
@@ -185,7 +185,7 @@ object VoronoiDiagram {
       None
     } else {
       clippedCorners += clippedCorners.head
-      val poly = Polygon(clippedCorners.map(Point(_)))
+      val poly = Polygon(clippedCorners.map(Point(_)).toSeq)
       Some(poly)
     }
   }

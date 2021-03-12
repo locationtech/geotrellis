@@ -199,7 +199,7 @@ package object internal {
     ): Seq[Command] = {
       def work(lines: Array[LineString]): Seq[Command] = {
         var curs: (Int, Int) = (0, 0)
-        var buff = new ListBuffer[Command]
+        val buff = new ListBuffer[Command]
 
         lines.foreach({l =>
           val diffs: Array[(Int, Int)] = collapse(
@@ -313,7 +313,7 @@ package object internal {
           buff.appendAll(Seq(MoveTo(Array(diffs.head)), LineTo(diffs.tail), ClosePath))
         })
 
-        buff
+        buff.toSeq
       }
 
       poly match {

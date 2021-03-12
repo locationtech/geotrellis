@@ -56,7 +56,7 @@ trait AttributeStore extends AttributeCaching with LayerAttributeStore {
    * This function should be re-implemented by AttributeStore subclasses so that
    * catalogs with large numbers of layers can be queried efficiently.
    */
-  def layersWithZoomLevels: Map[String, Seq[Int]] = layerIds.groupBy(_.name).mapValues(_.map(_.zoom))
+  def layersWithZoomLevels: Map[String, Seq[Int]] = layerIds.groupBy(_.name).mapValues(_.map(_.zoom)).toMap
 
   /** Return a sequence of available zoom levels for a named layer.
    *

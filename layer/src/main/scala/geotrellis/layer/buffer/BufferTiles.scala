@@ -84,7 +84,7 @@ trait BufferTiles {
     addSlice(SpatialKey(col+1, row+1), TopLeft)
     addSlice(SpatialKey(col-1, row+1), TopRight)
 
-    parts
+    parts.toSeq
   }
 
   def bufferWithNeighbors[
