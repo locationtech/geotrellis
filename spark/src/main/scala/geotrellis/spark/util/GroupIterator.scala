@@ -27,7 +27,7 @@ class GroupConsecutiveIterator[T, R](iter: Iterator[T])(f: T => R)
 
   def hasNext = remaining.hasNext
 
-  def next = {
+  def next() = {
     val cur = f(remaining.head)
     val (left, right) = remaining.span(x => f(x) == cur)
     remaining = right.buffered

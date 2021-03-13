@@ -216,8 +216,8 @@ object HdfsUtils {
           val lineScanner =
             new LineScanner {
               def hasNext = scanner.hasNextLine
-              def next = scanner.nextLine
-              def close = scanner.close
+              def next() = scanner.nextLine
+              def close() = scanner.close
             }
 
           Some(lineScanner)
@@ -233,8 +233,8 @@ object HdfsUtils {
           val lineScanner =
             new LineScanner {
               def hasNext = scanner.hasNextLine
-              def next = scanner.nextLine
-              def close = { scanner.close; fdis.close }
+              def next() = scanner.nextLine
+              def close() = { scanner.close; fdis.close }
             }
 
           Some(lineScanner)

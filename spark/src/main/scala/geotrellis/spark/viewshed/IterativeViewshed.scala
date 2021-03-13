@@ -84,7 +84,7 @@ object IterativeViewshed {
   private class RayCatcher extends AccumulatorV2[Message, Messages] {
     private val messages = mutable.Map.empty[SpatialKey, List[Message]]
 
-    def copy: RayCatcher = {
+    def copy(): RayCatcher = {
       val other = new RayCatcher
       other.merge(this)
       other
@@ -116,7 +116,7 @@ object IterativeViewshed {
         messages ++= newMessages
      }
 
-    def reset: Unit = this.synchronized { messages.clear }
+    def reset(): Unit = this.synchronized { messages.clear }
 
     def value: Messages = messages.toMap
   }
