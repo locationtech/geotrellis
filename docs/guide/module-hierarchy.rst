@@ -90,7 +90,7 @@ store `GeoWave <https://github.com/ngageoint/geowave>`__.
 
 *Provides:* ``geotrellis.spark.io.geowave.*``
 
--  Save and load ``RDD``\ s of features to and from GeoWave.
+-  Provides `GeoTrellisDataAdapter` to store GeoTrellis raster tiles and other Avro encoded records through GeoWave `DataTypeAdapter` interface.
 
 geotrellis-hbase
 ----------------
