@@ -4,4 +4,5 @@
 
 ./sbt -Dsbt.supershell=false "++$SCALA_VERSION" \
   "project cassandra" test \
-  "project cassandra-spark" test || { exit 1; }
+  "project cassandra-spark" test \
+  "project geowave" test || { exit 1; }
