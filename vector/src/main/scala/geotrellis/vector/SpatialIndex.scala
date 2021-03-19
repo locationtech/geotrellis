@@ -100,7 +100,7 @@ class SpatialIndex[T](val measure: Measure = Measure.Euclidean) extends Serializ
     }
 
   def pointsInExtent(extent: Extent): Vector[T] =
-    pointsInExtentAsIterable(extent).to[Vector]
+    pointsInExtentAsIterable(extent).toVector
 
   def pointsInExtentAsJavaList(extent: Extent): java.util.List[T] =
     rtree.query(new Envelope(extent.xmin, extent.xmax, extent.ymin, extent.ymax)).asInstanceOf[java.util.List[T]]

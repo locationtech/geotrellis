@@ -49,7 +49,7 @@ object MetaCRSTestFileReader {
       .filter(r => r.nonEmpty && !r.head.startsWith("#"))
       .drop(1)
       .map(parseTest)
-      .to[List]
+      .toList
   }
 
   private def parseTest(cols: Array[String]): MetaCRSTestCase = {

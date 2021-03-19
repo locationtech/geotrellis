@@ -43,7 +43,7 @@ object GenerateTestCases {
           .filter { _ startsWith "<" }
           .map { s => s.tail.take(s.indexOf('>') - 1) }
           .filterNot { _ == "4326" }
-          .to[Vector]
+          .toVector
       }
     val output = new java.io.FileWriter("proj4/src/test/resources/proj4-epsg.csv");
 
