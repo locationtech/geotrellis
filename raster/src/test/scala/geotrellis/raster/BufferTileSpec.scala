@@ -31,21 +31,67 @@ class BufferTileSpec extends AnyFunSpec with Matchers with RasterMatchers with T
   // center is all 1s, buffer is all 0
   val padded: BufferTile = new BufferTile(
     ArrayTile(Array(
-      0,0,0,0,
-      0,1,1,0,
-      0,1,1,0,
-      0,0,0,0), 4, 4),
+      1,2,3,4,
+      1,1,1,4,
+      1,1,1,4,
+      1,2,3,4), 4, 4),
     GridBounds(1, 1, 2, 2)
   )
 
   it("padded + tile => tile") {
     val ans = padded + tile
-    info("\n" + ans.asciiDraw())
+    ans.get(0,0) shouldBe 3
+    ans.dimensions shouldBe Dimensions(2, 2)
+    // info("\n" + ans.asciiDraw())
   }
 
   it("padded + padded => padded") {
-    val ans = padded + padded
-    info("\n" + ans.asciiDraw())
+    val ans = (padded.combine(padded)(_ + _)).asInstanceOf[BufferTile]
+
+    ans.bufferTop shouldBe 1
+    ans.bufferLeft shouldBe 1
+    ans.bufferRight shouldBe 1
+    ans.bufferBottom shouldBe 1
+    ans.dimensions shouldBe Dimensions(2, 2)
+
+    // info("\n" + ans.sourceTile.asciiDraw())
+    val ansDouble = (padded.combineDouble(padded)(_ + _)).asInstanceOf[BufferTile]
+
+    ansDouble.bufferTop shouldBe 1
+    ansDouble.bufferLeft shouldBe 1
+    ansDouble.bufferRight shouldBe 1
+    ansDouble.bufferBottom shouldBe 1
+    ansDouble.dimensions shouldBe Dimensions(2, 2)
   }
 
+  it("padded + padded => padded (as Tile)") {
+    val tile: Tile = padded
+    val ans = (tile.combine(tile)(_ + _)).asInstanceOf[BufferTile]
+
+    ans.bufferTop shouldBe 1
+    ans.bufferLeft shouldBe 1
+    ans.bufferRight shouldBe 1
+    ans.bufferBottom shouldBe 1
+    ans.dimensions shouldBe Dimensions(2, 2)
+    // info("\n" + ans.sourceTile.asciiDraw())
+
+    val ansDouble = (tile.combineDouble(tile)(_ + _)).asInstanceOf[BufferTile]
+
+    ansDouble.bufferTop shouldBe 1
+    ansDouble.bufferLeft shouldBe 1
+    ansDouble.bufferRight shouldBe 1
+    ansDouble.bufferBottom shouldBe 1
+    ansDouble.dimensions shouldBe Dimensions(2, 2)
+  }
+
+  it("tile center bounds must be contained by underlying tile") {
+    BufferTile(tile, GridBounds[Int](0,0,1,1))
+
+    assertThrows[IllegalArgumentException] {
+      BufferTile(tile, GridBounds[Int](0,0,2,2))
+    }
+    assertThrows[IllegalArgumentException] {
+      BufferTile(tile, GridBounds[Int](-1,0,1,1))
+    }
+  }
 }
