@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - Deprecate method SpatialIndex#traversePointsInExtent [#3349](https://github.com/locationtech/geotrellis/issues/3349)
+- GDALRasterSource gives segmentation fault when reading rasters with NBITS=1 [#3300](https://github.com/locationtech/geotrellis/issues/3300)
 
 ## [3.5.2] - 2021-02-01
 
