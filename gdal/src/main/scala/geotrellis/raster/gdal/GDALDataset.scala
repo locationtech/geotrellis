@@ -382,7 +382,18 @@ case class GDALDataset(token: Long) extends AnyVal {
     val dstWindow: Array[Int] = Array(srcWindow(2), srcWindow(3))
     val ct = cellType(datasetType)
     val dt = dataType(datasetType)
-    val bytes = Array.ofDim[Byte](dstWindow(0) * dstWindow(1) * ct.bytes)
+
+    /**
+      * GDAL allows [[BitCellType]] reads only as [[GDALWarp.GDT_Byte]].
+      * In this case we need to read data as [[ByteCellType]] and to covert it later into the [[BitCellType]].
+      */
+    val rct = ct match {
+      case BitCellType => ByteCellType
+      case _           => ct
+    }
+
+    /** Allocation should rely on the underlying GDAL data type. */
+    val bytes = Array.ofDim[Byte](dstWindow(0) * dstWindow(1) * rct.bytes)
 
     val returnValue = GDALWarp.get_data(token, datasetType.value, numberOfAttempts, srcWindow, dstWindow, band, dt, bytes)
 
@@ -393,7 +404,12 @@ case class GDALDataset(token: Long) extends AnyVal {
       )
     })
 
-    ArrayTile.fromBytes(bytes, ct, dstWindow(0), dstWindow(1))
+    val tile = ArrayTile.fromBytes(bytes, rct, dstWindow(0), dstWindow(1))
+
+    ct match {
+      case BitCellType => tile.convert(ct)
+      case _           => tile
+    }
   }
 
   def readMultibandTile(gb: GridBounds[Int] = GridBounds(dimensions), bands: Seq[Int] = 1 to bandCount, datasetType: DatasetType = GDALDataset.WARPED): MultibandTile =

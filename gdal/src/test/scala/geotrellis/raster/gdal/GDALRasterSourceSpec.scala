@@ -194,8 +194,10 @@ class GDALRasterSourceSpec extends AnyFunSpec with RasterMatchers with GivenWhen
           val craster = raster.mapTile(_.convert(ct))
           GeoTiff(craster, LatLng).write(path)
 
-          GDALRasterSource(path).cellType shouldBe ct
-          GeoTiffRasterSource(path).cellType shouldBe ct
+          val (grs, rs) = GDALRasterSource(path) -> GeoTiffRasterSource(path)
+          grs.cellType shouldBe ct
+          rs.cellType shouldBe ct
+          assertEqual(grs.read().get, rs.read().get)
         }
       }
     }
