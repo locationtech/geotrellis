@@ -23,9 +23,9 @@ import org.locationtech.jts.geom.{GeometryFactory, PrecisionModel}
 import org.locationtech.jts.precision.GeometryPrecisionReducer
 
 object GeomFactory {
-  val precisionType: String = JtsConfig.precisionType
-  val precisionModel: PrecisionModel = JtsConfig.precisionModel
+  lazy val precisionType: String = JtsConfig.precisionType
+  lazy val precisionModel: PrecisionModel = JtsConfig.precisionModel
   lazy val simplifier: GeometryPrecisionReducer = JtsConfig.simplifier
 
-  val factory: GeometryFactory = new geom.GeometryFactory(precisionModel)
+  lazy val factory: GeometryFactory = new geom.GeometryFactory(precisionModel)
 }
