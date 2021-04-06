@@ -25,10 +25,11 @@ import org.log4s._
 import scala.collection.JavaConverters._
 
 class S3LayerDeleter(
-  val attributeStore: AttributeStore,
-  s3Client: => S3Client
-) extends LayerDeleter[LayerId] {
+                      val attributeStore: AttributeStore,
+                      s3Client: => S3Client
+                    ) extends LayerDeleter[LayerId] {
   @transient private[this] lazy val logger = getLogger
+  @transient private[this] lazy val requestLimit = 1000
 
   def delete(id: LayerId): Unit = {
     try {
@@ -51,17 +52,20 @@ class S3LayerDeleter(
         iter
           .map { s3obj => ObjectIdentifier.builder.key(s3obj.key).build() }
           .toList
-      val deleteDefinition =
-        Delete.builder()
-          .objects(objIdentifiers: _*)
-          .build()
-      val deleteRequest =
-        DeleteObjectsRequest.builder()
-          .bucket(bucket)
-          .delete(deleteDefinition)
-          .build()
-      s3Client.deleteObjects(deleteRequest)
-      attributeStore.delete(id)
+
+      for (objIdentifiersChunk <- objIdentifiers.grouped(requestLimit)) {
+        val deleteDefinition =
+          Delete.builder()
+            .objects(objIdentifiersChunk: _*)
+            .build()
+        val deleteRequest =
+          DeleteObjectsRequest.builder()
+            .bucket(bucket)
+            .delete(deleteDefinition)
+            .build()
+        s3Client.deleteObjects(deleteRequest)
+        attributeStore.delete(id)
+      }
     } catch {
       case e: AttributeNotFoundError =>
         logger.info(s"Metadata for $id was not found. Any associated layer data (if any) will require manual deletion")
