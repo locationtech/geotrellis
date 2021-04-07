@@ -26,8 +26,9 @@ import scala.collection.JavaConverters._
 
 class S3LayerDeleter(
   val attributeStore: AttributeStore,
-  s3Client: => S3Client
-) extends LayerDeleter[LayerId] {
+  s3Client: => S3Client,
+  val requestLimit: Int = 1000
+  ) extends LayerDeleter[LayerId] {
   @transient private[this] lazy val logger = getLogger
 
   def delete(id: LayerId): Unit = {
@@ -47,21 +48,21 @@ class S3LayerDeleter(
 
       if (iter.isEmpty) throw new LayerDeleteError(id)
 
-      val objIdentifiers =
-        iter
-          .map { s3obj => ObjectIdentifier.builder.key(s3obj.key).build() }
-          .toList
-      val deleteDefinition =
-        Delete.builder()
-          .objects(objIdentifiers: _*)
-          .build()
-      val deleteRequest =
-        DeleteObjectsRequest.builder()
-          .bucket(bucket)
-          .delete(deleteDefinition)
-          .build()
-      s3Client.deleteObjects(deleteRequest)
-      attributeStore.delete(id)
+      iter
+        .map { s3obj => ObjectIdentifier.builder.key(s3obj.key).build() }
+        .grouped(requestLimit).foreach{ objIdentifiersChunk =>
+          val deleteDefinition =
+            Delete.builder()
+              .objects(objIdentifiersChunk.toSeq: _*)
+              .build()
+          val deleteRequest =
+            DeleteObjectsRequest.builder()
+              .bucket(bucket)
+              .delete(deleteDefinition)
+              .build()
+          s3Client.deleteObjects(deleteRequest)
+          attributeStore.delete(id)
+      }
     } catch {
       case e: AttributeNotFoundError =>
         logger.info(s"Metadata for $id was not found. Any associated layer data (if any) will require manual deletion")
@@ -76,6 +77,9 @@ class S3LayerDeleter(
 object S3LayerDeleter {
   def apply(attributeStore: AttributeStore, s3Client: => S3Client): S3LayerDeleter =
     new S3LayerDeleter(attributeStore, s3Client)
+
+  def apply(attributeStore: AttributeStore, s3Client: => S3Client, requestLimit: Int): S3LayerDeleter =
+    new S3LayerDeleter(attributeStore, s3Client, requestLimit)
 
   def apply(bucket: String, prefix: String, s3Client: => S3Client): S3LayerDeleter = {
     val attStore = S3AttributeStore(bucket, prefix, s3Client)
