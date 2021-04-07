@@ -17,40 +17,40 @@
 package geotrellis.raster
 
 import geotrellis.vector.Point
-import geotrellis.vector._
+import geotrellis.vector.withExtraPointMethods
 import geotrellis.util.{MethodExtensions, np}
 
 object Implicits extends Implicits
 
 trait Implicits
-    extends costdistance.Implicits
-    with crop.Implicits
-    with density.Implicits
-    with distance.Implicits
-    with equalization.Implicits
-    with hydrology.Implicits
-    with interpolation.Implicits
-    with io.json.Implicits
-    with mapalgebra.focal.Implicits
-    with mapalgebra.focal.hillshade.Implicits
-    with mapalgebra.local.Implicits
-    with mapalgebra.zonal.Implicits
-    with mask.Implicits
-    with matching.Implicits
-    with merge.Implicits
-    with prototype.Implicits
-    with rasterize.Implicits
-    with regiongroup.Implicits
-    with render.Implicits
-    with reproject.Implicits
-    with resample.Implicits
-    with sigmoidal.Implicits
-    with split.Implicits
-    with summary.Implicits
-    with summary.polygonal.Implicits
-    with transform.Implicits
-    with vectorize.Implicits
-    with viewshed.Implicits {
+    extends geotrellis.raster.costdistance.Implicits
+    with geotrellis.raster.crop.Implicits
+    with geotrellis.raster.density.Implicits
+    with geotrellis.raster.distance.Implicits
+    with geotrellis.raster.equalization.Implicits
+    with geotrellis.raster.hydrology.Implicits
+    with geotrellis.raster.interpolation.Implicits
+    with geotrellis.raster.io.json.Implicits
+    with geotrellis.raster.mapalgebra.focal.Implicits
+    with geotrellis.raster.mapalgebra.focal.hillshade.Implicits
+    with geotrellis.raster.mapalgebra.local.Implicits
+    with geotrellis.raster.mapalgebra.zonal.Implicits
+    with geotrellis.raster.mask.Implicits
+    with geotrellis.raster.matching.Implicits
+    with geotrellis.raster.merge.Implicits
+    with geotrellis.raster.prototype.Implicits
+    with geotrellis.raster.rasterize.Implicits
+    with geotrellis.raster.regiongroup.Implicits
+    with geotrellis.raster.render.Implicits
+    with geotrellis.raster.reproject.Implicits
+    with geotrellis.raster.resample.Implicits
+    with geotrellis.raster.sigmoidal.Implicits
+    with geotrellis.raster.split.Implicits
+    with geotrellis.raster.summary.Implicits
+    with geotrellis.raster.summary.polygonal.Implicits
+    with geotrellis.raster.transform.Implicits
+    with geotrellis.raster.vectorize.Implicits
+    with geotrellis.raster.viewshed.Implicits {
 
   // Implicit method extension for core types
 
@@ -84,7 +84,7 @@ trait Implicits
     def assertEqualDimensions(): Unit =
       if(Set(rs.map(_.dimensions)).size != 1) {
         val dimensions = rs.map(_.dimensions).toSeq
-        throw new GeoAttrsError("Cannot combine tiles with different dimensions." +
+        throw GeoAttrsError("Cannot combine tiles with different dimensions." +
           s"$dimensions are not all equal")
       }
   }
@@ -92,7 +92,7 @@ trait Implicits
   implicit class TileTupleExtensions(t: (Tile, Tile)) {
     def assertEqualDimensions(): Unit =
       if(t._1.dimensions != t._2.dimensions) {
-        throw new GeoAttrsError("Cannot combine rasters with different dimensions." +
+        throw GeoAttrsError("Cannot combine rasters with different dimensions." +
           s"${t._1.dimensions} does not match ${t._2.dimensions}")
       }
   }
