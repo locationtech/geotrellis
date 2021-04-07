@@ -433,7 +433,7 @@ object Settings {
       monocle("core").value, 
       monocle("macro").value,
       scalaXml,
-      scalaURI.value,
+      scalaURI,
       scalatest % Test,
       scalacheck % Test
     ),

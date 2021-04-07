@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Make JTSConfig load lazy [#3369](https://github.com/locationtech/geotrellis/pull/3369)
 - GDALWarpOptions incorrect rpc flag [#3370](https://github.com/locationtech/geotrellis/issues/3370)
 - S3LayerDeleter cannot handle over 1000 objects to delete [#3371](https://github.com/locationtech/geotrellis/issues/3371)
+- Drop Scala 2.11 cross compilation [#3259](https://github.com/locationtech/geotrellis/issues/3259)
 
 ## [3.5.2] - 2021-02-01
 
