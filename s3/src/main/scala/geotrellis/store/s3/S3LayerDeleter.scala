@@ -25,14 +25,11 @@ import org.log4s._
 import scala.collection.JavaConverters._
 
 class S3LayerDeleter(
-      val attributeStore: AttributeStore,
-      s3Client: => S3Client,
-      val requestLimit: Int = 1000
-    ) extends LayerDeleter[LayerId] {
+  val attributeStore: AttributeStore,
+  s3Client: => S3Client,
+  val requestLimit: Int = 1000
+  ) extends LayerDeleter[LayerId] {
   @transient private[this] lazy val logger = getLogger
-
-  def apply(attributeStore: AttributeStore, s3Client: => S3Client, requestLimit: Int): S3LayerDeleter =
-    new S3LayerDeleter(attributeStore, s3Client, requestLimit)
 
   def delete(id: LayerId): Unit = {
     try {
@@ -80,6 +77,9 @@ class S3LayerDeleter(
 object S3LayerDeleter {
   def apply(attributeStore: AttributeStore, s3Client: => S3Client): S3LayerDeleter =
     new S3LayerDeleter(attributeStore, s3Client)
+
+  def apply(attributeStore: AttributeStore, s3Client: => S3Client, requestLimit: Int): S3LayerDeleter =
+    new S3LayerDeleter(attributeStore, s3Client, requestLimit)
 
   def apply(bucket: String, prefix: String, s3Client: => S3Client): S3LayerDeleter = {
     val attStore = S3AttributeStore(bucket, prefix, s3Client)
