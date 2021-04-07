@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - GDALRasterSource gives segmentation fault when reading rasters with NBITS=1 [#3300](https://github.com/locationtech/geotrellis/issues/3300)
 - Make JTSConfig load lazy [#3369](https://github.com/locationtech/geotrellis/pull/3369)
 - GDALWarpOptions incorrect rpc flag [#3370](https://github.com/locationtech/geotrellis/issues/3370)
+- S3LayerDeleter cannot handle over 1000 objects to delete [#3371](https://github.com/locationtech/geotrellis/issues/3371)
 
 ## [3.5.2] - 2021-02-01
 
