@@ -34,35 +34,31 @@ object Version {
 import sbt.Keys._
 
 object Dependencies {
-  private def ver(for211: String, for212: String) = Def.setting {
+  private def ver(for212: String, for213: Option[String] = None) = Def.setting {
     CrossVersion.partialVersion(scalaVersion.value) match {
-      case Some((2, 11)) => for211
       case Some((2, 12)) => for212
+      case Some((2, 13)) if for213.nonEmpty => for213.get
       case _ => sys.error("not good")
     }
   }
 
   def monocle(module: String) = Def.setting {
-    "com.github.julien-truffaut" %% s"monocle-$module" % ver("1.5.1-cats", "2.1.0").value
+    "com.github.julien-truffaut" %% s"monocle-$module" % "2.1.0"
   }
 
   def cats(module: String) = Def.setting {
     module match {
-      case "effect" => "org.typelevel" %% s"cats-$module" % ver("1.3.1", "2.3.3").value
-      case _        => "org.typelevel" %% s"cats-$module" % ver("1.6.1", "2.4.2").value
+      case "effect" => "org.typelevel" %% s"cats-$module" % "2.3.3"
+      case _        => "org.typelevel" %% s"cats-$module" % "2.4.2"
     }
   }
 
   def circe(module: String) = Def.setting {
-    "io.circe" %% s"circe-$module" % ver("0.11.1", "0.13.0").value
+    "io.circe" %% s"circe-$module" % "0.13.0"
   }
 
   def fs2(module: String) = Def.setting {
-    "co.fs2" %% s"fs2-$module" % ver("1.0.5", "2.5.3").value
-  }
-
-  val scalaURI = Def.setting {
-    "io.lemonlabs" %% "scala-uri" % ver("1.4.10", "1.5.1").value
+    "co.fs2" %% s"fs2-$module" % "2.5.3"
   }
 
   def scalaReflect(version: String) = "org.scala-lang" % "scala-reflect" % version
@@ -161,4 +157,6 @@ object Dependencies {
   val shapeless           = "com.chuusai"  %% "shapeless" % "2.3.3"
   
   val unitApi             = "javax.measure" % "unit-api"  % "2.1.2"
+
+  val scalaURI            = "io.lemonlabs" %% "scala-uri" % "1.5.1"
 }

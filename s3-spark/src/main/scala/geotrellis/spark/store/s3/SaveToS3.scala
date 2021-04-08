@@ -20,7 +20,6 @@ import geotrellis.layer.SpatialKey
 import geotrellis.store.LayerId
 import geotrellis.store.s3._
 import geotrellis.store.util.BlockingThreadPool
-import geotrellis.store.compact.FS2Utils
 
 import software.amazon.awssdk.services.s3.model.{PutObjectRequest, PutObjectResponse, S3Exception}
 import software.amazon.awssdk.services.s3.S3Client
@@ -75,7 +74,7 @@ object SaveToS3 {
     rdd.foreachPartition { partition =>
       val s3client = s3Client
       val requests: fs2.Stream[IO, (PutObjectRequest, RequestBody)] =
-        FS2Utils.fromIterator[IO](
+        fs2.Stream.fromIterator[IO](
           partition.map { case (key, data) =>
             val bytes = ev(data)
             val (bucket, path) = keyToPrefix(key)
