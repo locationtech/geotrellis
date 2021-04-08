@@ -110,6 +110,8 @@ object Settings {
         case x => sys.error(s"Encountered unsupported Scala version ${x.getOrElse("undefined")}")
     }),
 
+    libraryDependencies += scalaReflect(scalaVersion.value),
+
     pomExtra := (
       <developers>
         <developer>
@@ -418,10 +420,7 @@ object Settings {
   lazy val macros = Seq(
     name := "geotrellis-macros",
     Compile / sourceGenerators += (Compile / sourceManaged).map(Boilerplate.genMacro).taskValue,
-    libraryDependencies ++= Seq(
-      spireMacro,
-      scalaReflect(scalaVersion.value)
-    )
+    libraryDependencies += spireMacro
   ) ++ commonSettings
 
   lazy val mdoc = Seq(
