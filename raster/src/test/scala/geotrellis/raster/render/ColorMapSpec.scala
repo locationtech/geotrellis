@@ -57,12 +57,12 @@ class ColorMapSpec extends AnyFunSpec with Matchers with TileBuilders {
 
   describe("color map creation") {
     it("should build a color map with fully specifiable options") {
-      val ndColor = RGBA(0, 0, 0, 100.0)
-      val fallbackColor = RGBA(255, 0, 0, 0)
+      val ndColor = render.RGBA.fromRGBA(0, 0, 0, 100.0)
+      val fallbackColor = render.RGBA.fromRGBA(255, 0, 0, 0)
       val colorMap =
         ColorMap((0, 1))
-          .withNoDataColor(ndColor)
-          .withFallbackColor(fallbackColor)
+          .withNoDataColor(ndColor.int)
+          .withFallbackColor(fallbackColor.int)
           .withBoundaryType(Exact)
 
       colorMap.options shouldBe (ColorMap.Options(Exact, ndColor.int, fallbackColor.int, false))

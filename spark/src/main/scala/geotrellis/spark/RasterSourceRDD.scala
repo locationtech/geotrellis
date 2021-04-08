@@ -87,7 +87,7 @@ object RasterSourceRDD {
           rs.sourceToTargetBand.map { case (sourceBand, targetBand) =>
             (key, (targetBand, layoutSource.read(key, Seq(sourceBand))))
           }
-        } }
+        }.toTraversable }
       }
 
     sourcesRDD.persist()
@@ -270,7 +270,7 @@ object RasterSourceRDD {
   def temporal(source: RasterSource, layout: LayoutDefinition, keyExtractor: KeyExtractor.Aux[SpaceTimeKey, ZonedDateTime])(implicit sc: SparkContext): MultibandTileLayerRDD[SpaceTimeKey] =
     temporal(Seq(source), layout, keyExtractor)
 
-  def apply[K: SpatialComponent: Boundable, M: Boundable](
+  def apply[K: SpatialComponent: Boundable: ClassTag, M: Boundable](
     sources: Seq[RasterSource],
     layout: LayoutDefinition,
     keyExtractor: KeyExtractor.Aux[K, M],

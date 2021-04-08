@@ -26,7 +26,7 @@ sealed abstract class PngColorEncoding(val n: Byte, val depth: Int) {
 // greyscale and color opaque rasters
 case class GreyPngEncoding(transparent: Option[Int]) extends PngColorEncoding(0, 1) {
  def convertColorMap(colorMap: ColorMap): ColorMap =
-   colorMap.mapColors { c => c.blue }
+   colorMap.mapColors { c => RGBA(c).blue }
 }
 trait GreyPngEncodingConvertable { implicit def toGreyPngEncoding(self: GreyPngEncodingConvertable): GreyPngEncoding = GreyPngEncoding() }
 object GreyPngEncoding extends GreyPngEncodingConvertable {
@@ -53,7 +53,7 @@ case class IndexedPngEncoding(rgbs: Array[Int], as: Array[Int]) extends PngColor
 // greyscale and color rasters with an alpha byte
 case object GreyaPngEncoding extends PngColorEncoding(4, 2) {
  def convertColorMap(colorMap: ColorMap): ColorMap =
-   colorMap.mapColors { c => c.int & 0xffff }
+   colorMap.mapColors { c => c & 0xffff }
 }
 
 case object RgbaPngEncoding extends PngColorEncoding(6, 4) {
@@ -75,18 +75,18 @@ object PngColorEncoding {
       var i = 0
       while (i < len) {
         val c = colors(i)
-        rgbs(i) = c.toARGB
-        as(i) = c.alpha
+        rgbs(i) = RGBA(c).toARGB
+        as(i) = RGBA(c).alpha
         i += 1
       }
 
       // Fallback index
-      rgbs(254) = fallbackColor.toARGB
-      as(254) = fallbackColor.alpha
+      rgbs(254) = RGBA(fallbackColor).toARGB
+      as(254) = RGBA(fallbackColor).alpha
 
       // NoData index
-      rgbs(255) = noDataColor.toARGB
-      as(255) = noDataColor.alpha
+      rgbs(255) = RGBA(noDataColor).toARGB
+      as(255) = RGBA(noDataColor).alpha
       IndexedPngEncoding(rgbs, as)
     } else {
       var opaque = true
@@ -94,19 +94,19 @@ object PngColorEncoding {
       var i = 0
       while (i < len) {
         val c = colors(i)
-        opaque &&= c.isOpaque
-        grey &&= c.isGrey
+        opaque &&= RGBA(c).isOpaque
+        grey &&= RGBA(c).isGrey
         i += 1
       }
-      opaque &&= fallbackColor.isOpaque
-      grey &&= fallbackColor.isGrey
-      opaque &&= noDataColor.isOpaque
-      grey &&= noDataColor.isGrey
+      opaque &&= RGBA(fallbackColor).isOpaque
+      grey &&= RGBA(fallbackColor).isGrey
+      opaque &&= RGBA(noDataColor).isOpaque
+      grey &&= RGBA(noDataColor).isGrey
 
       if (grey && opaque) {
-        GreyPngEncoding(noDataColor.int)
+        GreyPngEncoding(noDataColor)
       } else if (opaque) {
-        RgbPngEncoding(noDataColor.int)
+        RgbPngEncoding(noDataColor)
       } else if (grey) {
         GreyaPngEncoding
       } else {

@@ -34,10 +34,10 @@ object Version {
 import sbt.Keys._
 
 object Dependencies {
-  private def ver(for212: String, for213: Option[String] = None) = Def.setting {
+  private def ver(for212: String, for213: String) = Def.setting {
     CrossVersion.partialVersion(scalaVersion.value) match {
       case Some((2, 12)) => for212
-      case Some((2, 13)) if for213.nonEmpty => for213.get
+      case Some((2, 13)) => for213
       case _ => sys.error("not good")
     }
   }
@@ -61,10 +61,12 @@ object Dependencies {
     "co.fs2" %% s"fs2-$module" % "2.5.3"
   }
 
+  def apacheSpark(module: String) = Def.setting {
+    "org.apache.spark"  %% s"spark-$module" % ver("3.0.1", "3.2.0-SNAPSHOT").value
+  }
+
   def scalaReflect(version: String) = "org.scala-lang" % "scala-reflect" % version
 
-  val sparkCore           = "org.apache.spark"           %% "spark-core"               % Version.spark
-  val sparkSql            = "org.apache.spark"           %% "spark-sql"                % Version.spark
   val pureconfig          = "com.github.pureconfig"      %% "pureconfig"               % "0.14.0"
   val log4s               = "org.log4s"                  %% "log4s"                    % "1.9.0"
   val scalatest           = "org.scalatest"              %% "scalatest"                % "3.2.5"
@@ -73,8 +75,8 @@ object Dependencies {
   val jts                 = "org.locationtech.jts"        % "jts-core"                 % "1.17.1"
   val proj4j              = "org.locationtech.proj4j"     % "proj4j"                   % "1.1.1"
   val openCSV             = "com.opencsv"                 % "opencsv"                  % "5.3"
-  val spire               = "org.spire-math"             %% "spire"                    % Version.spire
-  val spireMacro          = "org.spire-math"             %% "spire-macros"             % Version.spire
+  val spire               = "org.typelevel"              %% "spire"                    % Version.spire
+  val spireMacro          = "org.typelevel"              %% "spire-macros"             % Version.spire
   val apacheIO            = "commons-io"                  % "commons-io"               % "2.8.0"
   val apacheLang3         = "org.apache.commons"          % "commons-lang3"            % "3.12.0"
   val apacheMath          = "org.apache.commons"          % "commons-math3"            % "3.6.1"

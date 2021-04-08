@@ -73,7 +73,7 @@ trait TileLayerRDDMatchers extends RasterMatchers {
     rdd.collect.map { case (_, tile) => rasterShouldBe(tile, value) }
   }
 
-  def rastersEqual[K](
+  def rastersEqual[K: ClassTag](
     first: RDD[(K, Tile)],
     second: RDD[(K, Tile)])(implicit d: DummyImplicit): Unit = {
     first.count should be(second.count)
@@ -95,7 +95,7 @@ trait TileLayerRDDMatchers extends RasterMatchers {
     }
 
     val grouped: Map[K, Array[(K, Tile)]] =
-      ft.union(st).groupBy(_._1)
+      ft.union(st).groupBy(_._1).toMap.map { case (k ,v) => (k, v.toArray) }
 
     for( (key, tiles) <- grouped) {
       tiles.size should be (2)

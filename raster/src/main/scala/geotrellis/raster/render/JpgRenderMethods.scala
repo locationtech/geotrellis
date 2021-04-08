@@ -38,7 +38,7 @@ trait JpgRenderMethods extends MethodExtensions[Tile] {
     *
     */
   def renderJpg(settings: Settings): Jpg =
-    JpgEncoder(settings).writeByteArray(self.map(_.toARGB))
+    JpgEncoder(settings).writeByteArray(self.map(RGBA(_).toARGB))
 
   def renderJpg(colorRamp: ColorRamp): Jpg =
     renderJpg(colorRamp, Settings.DEFAULT)
@@ -72,5 +72,5 @@ trait JpgRenderMethods extends MethodExtensions[Tile] {
     * generate quantile class breaks.
     */
   def renderJpg(colorMap: ColorMap, settings: Settings): Jpg =
-    JpgEncoder(settings).writeByteArray(colorMap.render(self).map(_.toARGB))
+    JpgEncoder(settings).writeByteArray(colorMap.render(self).map(RGBA(_).toARGB))
 }

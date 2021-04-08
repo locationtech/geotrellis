@@ -62,7 +62,7 @@ class TilerMethodsSpec extends AnyFunSpec with Matchers with TestEnvironment {
       val rdd: RDD[(Int, Tile)] = sc.parallelize(Array( (1, tile1), (2, tile2) ))
       val tiled =
         rdd.cutTiles(IntConstantNoDataCellType, layoutDefinition)
-          .reduceByKey { case (tile1, tile2) => if(tile1.get(0,0) > tile2.get(0,0)) tile2.merge(tile1) else tile1.merge(tile2) }
+          .reduceByKey { (tile1, tile2) => if(tile1.get(0,0) > tile2.get(0,0)) tile2.merge(tile1) else tile1.merge(tile2) }
           .collect
           .toMap
 

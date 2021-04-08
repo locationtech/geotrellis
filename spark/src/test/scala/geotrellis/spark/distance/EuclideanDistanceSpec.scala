@@ -126,7 +126,7 @@ class EuclideanDistanceSpec extends AnyFunSpec with TestEnvironment with Matcher
         (keyToDirection(key), (dt, ex))
       }.toMap
       println("  Extracting BoundaryDelaunay objects")
-      val bounds = triangulations.mapValues{ case (dt, ex) => (BoundaryDelaunay(dt, ex), ex) }
+      val bounds = triangulations.map { case (k, (dt, ex)) => k -> (BoundaryDelaunay(dt, ex), ex) }
       val (center, centerEx) = triangulations(Center)
 
       println("  Forming baseline EuclideanDistanceTile")

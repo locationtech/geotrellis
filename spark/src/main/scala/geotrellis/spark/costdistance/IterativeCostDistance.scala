@@ -190,7 +190,7 @@ object IterativeCostDistance {
       val _changes: Map[SpatialKey, Seq[SimpleCostDistance.Cost]] =
         accumulator.value
           .groupBy(_._1)
-          .map({ case (k, list) => (k, list.map({ case (_, v) => v })) })
+          .map({ case (k, list) => (k, list.map({ case (_, v) => v }).toSeq) })
       val changes = sparkContext.broadcast(_changes)
       logger.debug(s"At least ${changes.value.size} changed tiles")
 

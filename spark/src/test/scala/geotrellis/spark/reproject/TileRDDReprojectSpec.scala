@@ -60,22 +60,16 @@ class TileRDDReprojectSpec extends AnyFunSpec with TestEnvironment {
       val (_, actualRdd) =
         if(constantBuffer) {
           rdd.reproject(
-            LatLng,
-            FloatingLayoutScheme(25),
+            destCrs = LatLng,
+            layoutScheme = FloatingLayoutScheme(25),
             bufferSize = 2,
-            Options(
-              rasterReprojectOptions = RasterReprojectOptions(method = method, errorThreshold = 0),
-              matchLayerExtent = true
-            )
+            options = RasterReprojectOptions(method = method, errorThreshold = 0)
           )
         } else {
           rdd.reproject(
             LatLng,
             FloatingLayoutScheme(25),
-            Options(
-              rasterReprojectOptions = RasterReprojectOptions(method = method, errorThreshold = 0),
-              matchLayerExtent = true
-            )
+            RasterReprojectOptions(method = method, errorThreshold = 0)
           )
         }
 
@@ -170,10 +164,7 @@ class TileRDDReprojectSpec extends AnyFunSpec with TestEnvironment {
         mbrdd.reproject(
           LatLng,
           FloatingLayoutScheme(25),
-          Options(
-            rasterReprojectOptions = RasterReprojectOptions(NearestNeighbor, errorThreshold = 0),
-            matchLayerExtent = true
-          )
+          RasterReprojectOptions(NearestNeighbor, errorThreshold = 0)
         )
 
       val actual: Raster[MultibandTile] =
@@ -253,10 +244,7 @@ class TileRDDReprojectSpec extends AnyFunSpec with TestEnvironment {
         mbrdd.reproject(
           LatLng,
           FloatingLayoutScheme(25),
-          Options(
-            rasterReprojectOptions = RasterReprojectOptions(NearestNeighbor, errorThreshold = 0),
-            matchLayerExtent = true
-          )
+          RasterReprojectOptions(NearestNeighbor, errorThreshold = 0)
         )
 
       val actual: Raster[TileFeature[Tile, Int]] =

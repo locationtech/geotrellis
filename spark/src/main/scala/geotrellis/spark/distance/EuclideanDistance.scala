@@ -60,7 +60,7 @@ object EuclideanDistance {
       }
     }
 
-    result
+    result.toSeq
   }
 
   private[spark] def neighborEuclideanDistance(center: DelaunayTriangulation, neighbors: Map[Direction, (BoundaryDelaunay, Extent)], re: RasterExtent): Option[Tile] = {

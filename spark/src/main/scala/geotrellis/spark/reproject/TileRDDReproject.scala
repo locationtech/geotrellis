@@ -27,6 +27,7 @@ import geotrellis.raster.reproject._
 import geotrellis.raster.stitch._
 import geotrellis.spark._
 import geotrellis.spark.buffer.BufferTilesRDD
+import geotrellis.spark.reproject.Reproject
 import geotrellis.vector._
 import geotrellis.util._
 
@@ -97,17 +98,17 @@ object TileRDDReproject {
         // the extent of the reprojected input region.  This may require snapping
         // to a different GridExtent depending on the settings in
         // rasterReprojectOptions.
-        if (options.matchLayerExtent) {
-          val tre = ReprojectRasterExtent(layout, crs, destCrs, options.rasterReprojectOptions)
+        if ((options: Reproject.Options).matchLayerExtent) {
+          val tre = ReprojectRasterExtent(layout, crs, destCrs, (options: Reproject.Options).rasterReprojectOptions)
 
           layoutScheme.levelFor(tre.extent, tre.cellSize)
         } else {
-          options.rasterReprojectOptions.parentGridExtent match {
+          (options: Reproject.Options).rasterReprojectOptions.parentGridExtent match {
             case Some(ge) =>
               layoutScheme.levelFor(targetDataExtent, ge.cellSize)
 
             case None =>
-              options.rasterReprojectOptions.targetCellSize match {
+              (options: Reproject.Options).rasterReprojectOptions.targetCellSize match {
                 case Some(ct) =>
                   layoutScheme.levelFor(targetDataExtent, ct)
 
@@ -123,17 +124,17 @@ object TileRDDReproject {
         if (options.matchLayerExtent) {
           val tre = ReprojectRasterExtent(
             sourceDataGridExtent, crs, destCrs,
-            options.rasterReprojectOptions.copy(
+            (options: Reproject.Options).rasterReprojectOptions.copy(
               parentGridExtent=None, targetCellSize=None, targetRasterExtent=None))
 
           layoutScheme.levelFor(tre.extent, tre.cellSize)
         } else {
           val tre = ReprojectRasterExtent(
             sourceDataGridExtent, crs, destCrs,
-            options.rasterReprojectOptions)
+            (options: Reproject.Options).rasterReprojectOptions)
 
-          if (options.rasterReprojectOptions.targetCellSize.isDefined
-              || options.rasterReprojectOptions.parentGridExtent.isDefined) {
+          if ((options: Reproject.Options).rasterReprojectOptions.targetCellSize.isDefined
+              || (options: Reproject.Options).rasterReprojectOptions.parentGridExtent.isDefined) {
             // options targetCellSize or parentGridExtent will have effected cellSize
             layoutScheme.levelFor(tre.extent, tre.cellSize)
           } else {
@@ -143,7 +144,7 @@ object TileRDDReproject {
         }
     }
 
-    val rasterReprojectOptions = options.rasterReprojectOptions.copy(
+    val rasterReprojectOptions = (options: Reproject.Options).rasterReprojectOptions.copy(
       parentGridExtent = Some(targetLayerLayout),
       targetCellSize = None,
       targetRasterExtent = None

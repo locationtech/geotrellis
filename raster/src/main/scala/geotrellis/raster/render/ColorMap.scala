@@ -368,7 +368,10 @@ object IndexedColorMap {
   )
   /** Converts a ColorMap to sequence of short triplets in encoding expected by GeoTiff 'Palette' color space.*/
   def toTiffPalette(cm: ColorMap): Seq[(Short, Short, Short)] =
-    fromColorMap(cm).colors.map(c => (upsample(c.red), upsample(c.green), upsample(c.blue)))
+    fromColorMap(cm).colors.map { c =>
+      val rgba = RGBA(c)
+      (upsample(rgba.red), upsample(rgba.green), upsample(rgba.blue))
+    }
 
   /** Flattens the given colormap into an indexed variant, throwing away any defined boundaries. */
   def fromColorMap(cm: ColorMap) = new IndexedColorMap(cm.colors)

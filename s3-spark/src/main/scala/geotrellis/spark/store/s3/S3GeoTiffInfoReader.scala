@@ -62,7 +62,7 @@ class S3GeoTiffInfoReader(
         .contents
         .asScala
     val s3keys = s3objects.map(_.key)
-    sc.parallelize(s3keys)
+    sc.parallelize[String](s3keys.toSeq)
       .flatMap(key => if(tiffExtensions.exists(key.endsWith)) Some(s"s3://$bucket/$key") else None)
   }
 
