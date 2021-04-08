@@ -141,7 +141,7 @@ class ColorSpec extends AnyFunSpec with Matchers {
   describe("RGBA value class") {
     it("should be able to create RGB values") {
       // an RGB constructor should create an RGBA with a fully opaque A
-      RGB(1, 2, 3) should be (RGBA.fromRGBA(1, 2, 3, 255))
+      RGB(1, 2, 3) should be (RGBA.fromRGBA(1, 2, 3, 255).int)
 
       // we need to be able to convert from RGBA to ARGB for the current jpg writer implementation
       RGB(1, 2, 3) should be (RGBA.fromRGBA(2, 3, 255, 1).toARGB)

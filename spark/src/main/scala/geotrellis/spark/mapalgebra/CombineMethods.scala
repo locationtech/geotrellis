@@ -35,6 +35,6 @@ abstract class CombineMethods[K: ClassTag, V: ClassTag] extends MethodExtensions
     val union = self.sparkContext.union(self :: others.toList)
     partitioner
       .fold(union.groupByKey(Partitioner.defaultPartitioner(self, others.toSeq: _*)))(union.groupByKey(_))
-      .mapValues { case tiles => f(tiles) }
+      .mapValues { tiles => f(tiles) }
   }
 }

@@ -97,7 +97,7 @@ object Settings {
     addCompilerPlugin("org.scalameta" % "semanticdb-scalac" % "4.4.10" cross CrossVersion.full),
 
     libraryDependencies ++= (CrossVersion.partialVersion(scalaVersion.value) match {
-      case Some((2, 13)) => Seq.empty
+      case Some((2, 13)) => Nil
       case Some((2, 12)) => Seq(
         compilerPlugin("org.scalamacros" % "paradise" % "2.1.1" cross CrossVersion.full),
         "org.scala-lang.modules" %% "scala-collection-compat" % "2.4.2"
@@ -105,10 +105,7 @@ object Settings {
         case x => sys.error(s"Encountered unsupported Scala version ${x.getOrElse("undefined")}")
     }),
     Compile / scalacOptions ++= (CrossVersion.partialVersion(scalaVersion.value) match {
-        case Some((2, 13)) => Seq(
-          "-Ymacro-annotations" // replaces paradise in 2.13
-          // "-Wconf:cat=deprecation&msg=Auto-application:silent" // there are many of these, silence until fixed
-        )
+        case Some((2, 13)) => Seq("-Ymacro-annotations") // replaces paradise in 2.13
         case Some((2, 12)) => Seq("-Ypartial-unification") // required by Cats
         case x => sys.error(s"Encountered unsupported Scala version ${x.getOrElse("undefined")}")
     }),
@@ -140,6 +137,12 @@ object Settings {
       )
     )
   )
+
+  lazy val sparkCompatDependencies = Def.setting { CrossVersion.partialVersion(scalaVersion.value) match {
+    case Some((2, 13)) => Seq("org.scala-lang.modules" %% "scala-parallel-collections" % "0.2.0") // spark uses it as a par collections compat
+    case Some((2, 12)) => Nil
+    case x => sys.error(s"Encountered unsupported Scala version ${x.getOrElse("undefined")}")
+  } }
 
   lazy val accumulo = Seq(
     name := "geotrellis-accumulo",
@@ -555,7 +558,7 @@ object Settings {
       hadoopClient % Provided,
       apacheSpark("sql").value % Test,
       scalatest % Test
-    ),
+    ) ++ sparkCompatDependencies.value,
     mimaPreviousArtifacts := Set(
       "org.locationtech.geotrellis" %% "geotrellis-spark" % Version.previousVersion
     ),

@@ -80,9 +80,9 @@ class HistogramSpec extends AnyFunSpec with TestEnvironment with TestFiles {
       }
 
       val expected =
-        zoneValues.toMap.mapValues { list =>
-          list.distinct
-            .map { v => (v, list.filter(_ == v).length) }
+        zoneValues.toMap.map { case (key, list) =>
+          key -> list.distinct
+            .map { v => (v, list.count(_ == v)) }
             .toMap
         }
 
