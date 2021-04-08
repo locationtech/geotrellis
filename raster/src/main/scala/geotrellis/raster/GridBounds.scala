@@ -162,7 +162,7 @@ case class GridBounds[@specialized(Int, Long) N: Integral](
       if(overlapRowMax < rowMax) {
         result += GridBounds(overlapColMin, overlapRowMax + 1, overlapColMax, rowMax)
       }
-      result
+      result.toSeq
     }
 
   /**

@@ -68,7 +68,7 @@ private[vectortile] case object ClosePath extends Command
 /** Contains convenience functions for handling [[Command]]s. */
 private[vectortile] object Command {
   /** Attempt to parse a list of Command/Parameter Integers. */
-  def commands(cmds: Seq[Int]): ListBuffer[Command] = {
+  def commands(cmds: Seq[Int]): Seq[Command] = {
     @tailrec def work(cmds: Seq[Int], curr: ListBuffer[Command]): ListBuffer[Command] = cmds match {
       case Nil => curr
       case ns => (parseCmd(ns.head): @unchecked) match {
@@ -102,7 +102,7 @@ private[vectortile] object Command {
       }
     }
 
-    work(cmds, new ListBuffer[Command])
+    work(cmds, new ListBuffer[Command]).toSeq
   }
 
   /** Convert a list of parsed Commands back into their original Command
