@@ -90,8 +90,8 @@ class GridExtent[@specialized(Int, Long) N: Integral](
 
   /** Convert map coordinates (x, y) to grid coordinates (col, row). */
   final def mapToGrid(x: Double, y: Double): (N, N) = {
-    val col = floorWithTolerance((x - extent.xmin) / cellwidth).toInt
-    val row = floorWithTolerance((extent.ymax - y) / cellheight).toInt
+    val col = Integral[N].fromDouble(floorWithTolerance((x - extent.xmin) / cellwidth))
+    val row = Integral[N].fromDouble(floorWithTolerance((extent.ymax - y) / cellheight))
     (col, row)
   }
 
