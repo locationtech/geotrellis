@@ -1,16 +1,11 @@
 package geotrellis.store.cassandra;
 
 import com.datastax.driver.core.DataType;
-import com.datastax.driver.core.exceptions.InvalidTypeException;
 import com.datastax.driver.core.ProtocolVersion;
 import com.datastax.driver.core.TypeCodec;
-import com.datastax.driver.core.TypeCodec.PrimitiveLongCodec;
 
 import java.nio.ByteBuffer;
-
 import java.math.BigInteger;
-import java.util.Arrays;
-
 
 /*
  * This coded is used for backward compatibilty only.

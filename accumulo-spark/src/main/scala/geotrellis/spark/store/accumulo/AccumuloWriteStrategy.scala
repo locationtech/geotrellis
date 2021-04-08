@@ -20,7 +20,6 @@ import geotrellis.store.accumulo._
 import geotrellis.store.hadoop.util._
 import geotrellis.spark.util._
 import geotrellis.store.util.BlockingThreadPool
-import geotrellis.store.compact.FS2Utils
 
 import org.apache.hadoop.mapreduce.Job
 import org.apache.hadoop.fs.Path
@@ -125,7 +124,7 @@ class SocketWriteStrategy(
         val writer = instance.connector.createBatchWriter(table, kwConfig.value)
 
         try {
-          val mutations: fs2.Stream[IO, Mutation] = FS2Utils.fromIterator[IO](
+          val mutations: fs2.Stream[IO, Mutation] = fs2.Stream.fromIterator[IO](
             partition.map { case (key, value) =>
               val mutation = new Mutation(key.getRow)
               mutation.put(key.getColumnFamily, key.getColumnQualifier, System.currentTimeMillis(), value)
