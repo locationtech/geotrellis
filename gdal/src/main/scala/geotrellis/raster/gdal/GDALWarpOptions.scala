@@ -92,8 +92,8 @@ case class GDALWarpOptions(
   order: Option[Int] = None,
   /** -tps, force use of thin plate spline transformer based on available GCPs. */
   tps: Boolean = false,
-  /** -rps, force use of RPCs. */
-  rps: Boolean = false,
+  /** -rpc, force use of RPCs. */
+  rpc: Boolean = false,
   /** -geoloc, force use of Geolocation Arrays. */
   geoloc: Boolean = false,
   /** -refine_gcps, refines the GCPs by automatically eliminating outliers. Outliers will be eliminated until minimum_gcps
@@ -177,7 +177,7 @@ case class GDALWarpOptions(
     { if(to.nonEmpty) { "-to" +: to.map { case (k, v) => s"$k=$v" } } else Nil } :::
     { if(novShiftGrid) List("-novshiftgrid") else Nil } :::
     order.toList.flatMap { n => List("-order", s"$n") } :::
-    { if(tps) List("-tps") else Nil } ::: { if(rps) List("-rps") else Nil } :::
+    { if(tps) List("-tps") else Nil } ::: { if(rpc) List("-rpc") else Nil } :::
     { if(geoloc) List("-geoloc") else Nil } ::: refineGCPs.toList.flatMap { case (tolerance, minimumGCPs) =>
       List("-refine_gcps", s"$tolerance", s"$minimumGCPs")
     } ::: { if(wo.nonEmpty) { "-wo" +: wo.map { case (k, v) => s"$k=$v" } } else Nil } :::
@@ -216,7 +216,7 @@ case class GDALWarpOptions(
       novShiftGrid,
       order orElse that.order,
       tps,
-      rps,
+      rpc,
       geoloc,
       refineGCPs orElse that.refineGCPs,
       { if(wo.isEmpty) that.wo else wo },

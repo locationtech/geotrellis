@@ -183,7 +183,7 @@ class StreamingHistogram(
     /* Add delta covering the whole range */
     if (left != None && right != None) {
       val delta = right.get._1 - left.get._1
-      _deltas.put(Delta(delta, left.get, right.get), Unit)
+      _deltas.put(Delta(delta, left.get, right.get), ())
     }
 
     /* Add the average of the two combined buckets */
@@ -230,14 +230,14 @@ class StreamingHistogram(
       if (larger != None) {
         val large = larger.get
         val delta = large._1 - b._1
-        _deltas.put(Delta(delta, b, large), Unit)
+        _deltas.put(Delta(delta, b, large), ())
       }
 
       /* Add delta between new bucket and next-smallest bucket */
       if (smaller != None) {
         val small = smaller.get
         val delta = b._1 - small._1
-        _deltas.put(Delta(delta, small, b), Unit)
+        _deltas.put(Delta(delta, small, b), ())
       }
     }
 

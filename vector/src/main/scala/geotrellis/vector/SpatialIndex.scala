@@ -73,6 +73,12 @@ class SpatialIndex[T](val measure: Measure = Measure.Euclidean) extends Serializ
   def nearest(ex: Extent): T =
     rtree.nearestNeighbour(ex.jtsEnvelope, null, measure).asInstanceOf[T]
 
+  @deprecated(
+    """As of Scala 2.13, Iterable is preferred over Traversable, which will be removed in Scala 3.
+       Use pointsInExtentAsIterable instead.
+       """.stripMargin,
+    "3.5.3"
+  )
   def traversePointsInExtent(extent: Extent): Traversable[T] =
     new Traversable[T] {
       override def foreach[U](f: T => U): Unit = {
@@ -81,10 +87,20 @@ class SpatialIndex[T](val measure: Measure = Measure.Euclidean) extends Serializ
         }
         rtree.query(extent.jtsEnvelope, visitor)
       }
+
+      // Traversable implementations must override iterator in 2.13
+      def iterator: Iterator[T] =
+        rtree.query(extent.jtsEnvelope).asScala.map(_.asInstanceOf[T]).iterator
+    }
+
+  def pointsInExtentAsIterable(extent: Extent): Iterable[T] =
+    new Iterable[T] {
+      override def iterator: Iterator[T] =
+        rtree.query(extent.jtsEnvelope).asScala.map(_.asInstanceOf[T]).iterator
     }
 
   def pointsInExtent(extent: Extent): Vector[T] =
-    traversePointsInExtent(extent).to[Vector]
+    pointsInExtentAsIterable(extent).toVector
 
   def pointsInExtentAsJavaList(extent: Extent): java.util.List[T] =
     rtree.query(new Envelope(extent.xmin, extent.xmax, extent.ymin, extent.ymax)).asInstanceOf[java.util.List[T]]

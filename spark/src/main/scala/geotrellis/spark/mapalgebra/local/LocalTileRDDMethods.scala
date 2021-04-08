@@ -131,7 +131,7 @@ trait LocalTileRDDMethods[K] extends TileRDDMethods[K]
   /**
     * Negate (multiply by -1) each value in a raster.
     */
-  def unary_-() = localNegate()
+  def unary_- = localNegate()
 
   /**
     * Bitwise negation of Tile.
