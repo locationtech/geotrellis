@@ -107,9 +107,7 @@ abstract class MosaicRasterSource extends RasterSource {
       */
     def relativeGridBounds(gb: GridBounds[Long], extent: Extent): GridBounds[Long] = {
       val GridBounds(colMin, rowMin, colMax, rowMax) = gb
-
-      val sourceColOffset = GridExtent.floorWithTolerance((extent.xmin - gridExtent.extent.xmin) / gridExtent.cellwidth).toLong
-      val sourceRowOffset = GridExtent.floorWithTolerance((gridExtent.extent.ymax - extent.ymax) / gridExtent.cellheight).toLong
+      val (sourceColOffset, sourceRowOffset) = gridExtent.mapToGrid(extent.xmin, extent.ymax)
 
       GridBounds(
         colMin - sourceColOffset,
