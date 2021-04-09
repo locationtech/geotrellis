@@ -31,7 +31,7 @@ class SigmoidalContrastSpec extends AnyFunSpec with Matchers {
       val c = Double.MaxValue
       val data = List(a, a+x, b, c-x, c)
       val tile = DoubleArrayTile(data.map(_.toDouble).toArray, 1, 5).sigmoidal(0.5, 10)
-      val array = tile.toArrayDouble
+      val array = tile.toArrayDouble()
 
       (array(0)/a)  should be <= (1.2)
       (array(1)/a) should be <= (1.2)
@@ -46,7 +46,7 @@ class SigmoidalContrastSpec extends AnyFunSpec with Matchers {
       val c = (1<<16)-1
       val data = List(a, a+x, b, c-x, c).map(_.toShort)
       val tile = UShortArrayTile(data.map(_.toShort).toArray, 1, 5, UShortCellType).sigmoidal(0.5, 10)
-      val array = tile.toArray
+      val array = tile.toArray()
 
       (array(0) - a)  should be <= (442)
       array(1) should be <= x
@@ -62,7 +62,7 @@ class SigmoidalContrastSpec extends AnyFunSpec with Matchers {
       val c = (1<<15)-1
       val data = List(a, a+x, b, c-x, c).map(_.toShort)
       val tile = ShortArrayTile(data.map(_.toShort).toArray, 1, 5, ShortCellType).sigmoidal(0.5, 10)
-      val array = tile.toArray
+      val array = tile.toArray()
 
       (array(0) - a)  should be <= (442)
       array(1) should be <= x
@@ -81,8 +81,8 @@ class SigmoidalContrastSpec extends AnyFunSpec with Matchers {
 
       val tile1 = ShortArrayTile(data1.map(_.toShort).toArray, 1, 3, ShortCellType)
       val tile2 = ShortArrayTile(data2.map(_.toShort).toArray, 1, 3, ShortCellType)
-      val tile = ArrayMultibandTile(tile1, tile2).equalize
-      val array = tile.bands.flatMap(_.toArray)
+      val tile = ArrayMultibandTile(tile1, tile2).equalize()
+      val array = tile.bands.flatMap(_.toArray())
 
       (array.head - a) should be <= (442)
       (c - array.last) should be <= (442)

@@ -38,7 +38,7 @@ class TileSpec extends AnyFunSpec
     val tile = IntArrayTile(data, 3, 3)
 
     it("should preserve the data") {
-      tile.toArray should be (data)
+      tile.toArray() should be (data)
     }
 
     it("should get coordinate values") {
@@ -47,7 +47,7 @@ class TileSpec extends AnyFunSpec
 
     it("should create empty tiles") {
       val r = ArrayTile.empty(IntConstantNoDataCellType, 10, 10)
-      val d = r.toArray
+      val d = r.toArray()
       for(i <- 0 until 10 * 10) {
         d(i) should be (NODATA)
       }
@@ -133,7 +133,7 @@ class TileSpec extends AnyFunSpec
 
       newMin should be (1)
       newMax should be (100)
-      nr.toArray.toSet should be ((for(i <- 1 to 100) yield { i }).toSet)
+      nr.toArray().toSet should be ((for(i <- 1 to 100) yield { i }).toSet)
     }
   }
 
@@ -219,7 +219,7 @@ class TileSpec extends AnyFunSpec
         9, 4)
       val ext = Extent(0.0, 0.0, 9.0, 4.0)
       val nre = RasterExtent(Extent(0.0, 1.0, 4.0, 4.0), 4, 3)
-      rd.resample(ext, nre).toArray should be (Array(1, 10, 100, 1000,
+      rd.resample(ext, nre).toArray() should be (Array(1, 10, 100, 1000,
                                                 2, 20, 200, 2000,
                                                 3, 30, 300, 3000))
     }
@@ -234,7 +234,7 @@ class TileSpec extends AnyFunSpec
       val ext = Extent(0.0, 0.0, 9.0, 4.0)
       val nre = RasterExtent(Extent(-1.0, 2.0, 3.0, 5.0), 1.0, 1.0, 4, 3)
       val nd = NODATA
-      rd.resample(ext, nre).toArray should be (Array(nd, nd, nd, nd,
+      rd.resample(ext, nre).toArray() should be (Array(nd, nd, nd, nd,
                                                 nd, 1, 10, 100,
                                                 nd, 2, 20, 200))
     }
@@ -248,7 +248,7 @@ class TileSpec extends AnyFunSpec
         9, 4)
       val ext = Extent(0.0, 0.0, 9.0, 4.0)
       val nre = RasterExtent(Extent(0.0, 1.0, 9.0, 4.0), 3, 3)
-      rd.resample(ext, nre).toArray should be (Array(10, -2, 2,
+      rd.resample(ext, nre).toArray() should be (Array(10, -2, 2,
                                                 20, -2, 2,
                                                 30, -2, 2))
     }
@@ -393,7 +393,7 @@ class TileSpec extends AnyFunSpec
 
       val xmutable = x.mutable
       xmutable.setDouble(1, 0, NODATA)
-      val xn = xmutable.toArrayTile
+      val xn = xmutable.toArrayTile()
 
       xn.percentile(0) shouldBe NODATA
     }

@@ -40,7 +40,7 @@ class CoshSpec extends AnyFunSpec
       ).map(_ * math.Pi)
       val expected = rasterData.map(math.cosh(_))
       val rs = createTile(rasterData, 6, 6)
-      val result = rs.localCosh
+      val result = rs.localCosh()
       for (y <- 0 until 6) {
         for (x <- 0 until 6) {
           val theCosh = result.getDouble(x, y)
@@ -68,7 +68,7 @@ class CoshSpec extends AnyFunSpec
                                .toList
                                .init
       val rs = createTile(rasterData, 4, 4)
-      val result = rs.localCosh
+      val result = rs.localCosh()
       for (y <- 0 until 4) {
         for (x <- 0 until 4) {
           val isLastValue = (x == 3 && y == 3)

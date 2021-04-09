@@ -66,8 +66,8 @@ class PercentageSpec extends AnyFunSpec with TestEnvironment with TestFiles {
         TileLayout(3, 4, 3, 2)
       )
 
-      val actual = rdd.zonalPercentage(zonesRDD).stitch
-      val expected = rdd.stitch.zonalPercentage(zonesRDD.stitch)
+      val actual = rdd.zonalPercentage(zonesRDD).stitch()
+      val expected = rdd.stitch().zonalPercentage(zonesRDD.stitch())
 
       (actual.cols, actual.rows) should be (expected.cols, expected.rows)
 

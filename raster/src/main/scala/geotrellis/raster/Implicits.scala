@@ -108,7 +108,7 @@ trait Implicits
       * @return
       */
     def percentile(pctBreaks: Array[Double]): Array[Double] = {
-      np.percentile(tile.toArrayDouble.filter(isData(_)), pctBreaks)
+      np.percentile(tile.toArrayDouble().filter(isData(_)), pctBreaks)
     }
 
     /**
@@ -121,7 +121,7 @@ trait Implicits
       * @return
       */
     def percentile(pctBreak: Double): Double = {
-      np.percentile(tile.toArrayDouble.filter(isData(_)), pctBreak)
+      np.percentile(tile.toArrayDouble().filter(isData(_)), pctBreak)
     }
   }
 

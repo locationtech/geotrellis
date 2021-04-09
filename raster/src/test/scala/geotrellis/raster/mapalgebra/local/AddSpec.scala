@@ -104,8 +104,8 @@ class AddSpec extends AnyFunSpec
     def ri(n:Int) = ArrayTile(Array.fill(100)(n), 10, 10)
     def rd(n:Double) = ArrayTile(Array.fill(100)(n), 10 ,10)
 
-    def addInts(ns:Int*) = (ns.map(n => ri(n))).localAdd
-    def addDoubles(ns:Double*) = (ns.map(n => rd(n))).localAdd
+    def addInts(ns:Int*) = (ns.map(n => ri(n))).localAdd()
+    def addDoubles(ns:Double*) = (ns.map(n => rd(n))).localAdd()
 
     it("adds integers") {
       val a = 3

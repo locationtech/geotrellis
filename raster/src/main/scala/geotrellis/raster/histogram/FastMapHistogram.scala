@@ -225,7 +225,7 @@ class FastMapHistogram(_size: Int, _buckets: Array[Int], _counts: Array[Long], _
     limit = (size * FACTOR).toInt
   }
 
-  def totalCount = total
+  def totalCount(): Long = total
 
   /**
     * Return a mutable copy of the present [[FastMapHistogram]].
@@ -236,7 +236,7 @@ class FastMapHistogram(_size: Int, _buckets: Array[Int], _counts: Array[Long], _
     * Return an integer array containing the values seen by this
     * histogram.
     */
-  def rawValues() = {
+  def rawValues(): Array[Int] = {
     val keys = Array.ofDim[Int](used)
     var i = 0
     var j = 0
@@ -275,7 +275,7 @@ class FastMapHistogram(_size: Int, _buckets: Array[Int], _counts: Array[Long], _
   /**
     * The total number of items seen by this histogram.
     */
-  def itemCount(item: Int) = {
+  def itemCount(item: Int): Long = {
     val i = hashItem(item, mask, buckets)
     if (buckets(i) == UNSET) 0 else counts(i)
   }
@@ -284,7 +284,7 @@ class FastMapHistogram(_size: Int, _buckets: Array[Int], _counts: Array[Long], _
     * Returns the smallest value seen by the histogram, if it has seen
     * any values.
     */
-  def minValue: Option[Int] = {
+  def minValue(): Option[Int] = {
     var zmin = Int.MaxValue
     var i = 0
     while (i < size) {
@@ -302,7 +302,7 @@ class FastMapHistogram(_size: Int, _buckets: Array[Int], _counts: Array[Long], _
     * Returns the largest value seen by the histogram, if it has seen
     * any values.
     */
-  def maxValue: Option[Int] = {
+  def maxValue(): Option[Int] = {
     var zmax = Int.MinValue
     var i = 0
     while (i < size) {
@@ -332,7 +332,7 @@ class FastMapHistogram(_size: Int, _buckets: Array[Int], _counts: Array[Long], _
     * Return the smallest and largest values seen by the histogram, if
     * it has seen any values.
     */
-  override def minMaxValues: Option[(Int, Int)] = {
+  override def minMaxValues(): Option[(Int, Int)] = {
     var zmin = Int.MaxValue
     var zmax = Int.MinValue
     var i = 0
@@ -359,12 +359,12 @@ class FastMapHistogram(_size: Int, _buckets: Array[Int], _counts: Array[Long], _
   /**
     * The number of buckets utilized by this [[FastMapHistogram]].
     */
-  def bucketCount() = used
+  def bucketCount(): Int = used
 
   /**
     * The maximum number of buckets this histogram can hold.
     */
-  def maxBucketCount: Int = MAXSIZE
+  def maxBucketCount(): Int = MAXSIZE
 
   /**
     * Return the sum of this histogram and the given one (the sum is

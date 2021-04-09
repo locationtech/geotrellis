@@ -35,7 +35,7 @@ object Variance extends Serializable {
     apply(rs)
 
   def apply(rs: Seq[Tile]): Tile = {
-    rs.assertEqualDimensions
+    rs.assertEqualDimensions()
 
     val layerCount = rs.length
     if (layerCount == 0) sys.error(s"Can't compute variance of empty sequence.")

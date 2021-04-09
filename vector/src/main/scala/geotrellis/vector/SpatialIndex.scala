@@ -140,7 +140,7 @@ class SpatialIndex[T](val measure: Measure = Measure.Euclidean) extends Serializ
     pq.enqueue(rtreeNodeAsPQitem(rtree.getRoot))
 
     do {
-      val item = pq.dequeue
+      val item = pq.dequeue()
 
       if (kNNqueue.size < k || item.d < kNNqueue.head.d) {
         if (item.x.getLevel == 0) {

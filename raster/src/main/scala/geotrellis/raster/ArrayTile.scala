@@ -30,7 +30,7 @@ abstract class ArrayTile extends Tile with Serializable {
     *
     * @return  The object on which the method was invoked
     */
-  def toArrayTile = this
+  def toArrayTile() = this
 
   /**
     * Returns a [[Tile]] equivalent to this [[ArrayTile]], except with
@@ -196,7 +196,7 @@ abstract class ArrayTile extends Tile with Serializable {
     * @return         The result, an ArrayTile
     */
   def combine(other: ArrayTile)(f: (Int, Int) => Int): ArrayTile = {
-    (this, other).assertEqualDimensions
+    (this, other).assertEqualDimensions()
 
     val output = ArrayTile.alloc(cellType.union(other.cellType), cols, rows)
     var i = 0
@@ -243,7 +243,7 @@ abstract class ArrayTile extends Tile with Serializable {
     * @return         The result, an ArrayTile
     */
   def combineDouble(other: ArrayTile)(f: (Double, Double) => Double): ArrayTile = {
-    (this, other).assertEqualDimensions
+    (this, other).assertEqualDimensions()
 
     val output = ArrayTile.alloc(cellType.union(other.cellType), cols, rows)
     var i = 0
@@ -362,14 +362,14 @@ abstract class ArrayTile extends Tile with Serializable {
     *
     * @return  The list
     */
-  def toList = toArray.toList
+  def toList = toArray().toList
 
   /**
     * Return the under-laying array of this [[ArrayTile]] as a list.
     *
     * @return  The list
     */
-  def toListDouble = toArrayDouble.toList
+  def toListDouble = toArrayDouble().toList
 
   /**
     * Return a copy of the underlying array of the present
@@ -377,7 +377,7 @@ abstract class ArrayTile extends Tile with Serializable {
     *
     * @return  The copy as an Array[Int]
     */
-  def toArray: Array[Int] = {
+  def toArray(): Array[Int] = {
     val len = size
     val arr = Array.ofDim[Int](len)
     var i = 0
@@ -394,7 +394,7 @@ abstract class ArrayTile extends Tile with Serializable {
     *
     * @return  The copy as an Array[Double]
     */
-  def toArrayDouble: Array[Double] = {
+  def toArrayDouble(): Array[Double] = {
     val len = size
     val arr = Array.ofDim[Double](len)
     var i = 0

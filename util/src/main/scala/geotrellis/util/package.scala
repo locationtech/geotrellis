@@ -31,7 +31,7 @@ package object util {
     * with a specific type.
     */
   implicit class withGetComponentMethods[T](val self: T) extends MethodExtensions[T] {
-    def getComponent[C]()(implicit component: GetComponent[T, C]): C =
+    def getComponent[C](implicit component: GetComponent[T, C]): C =
       component.get(self)
   }
 

@@ -78,8 +78,8 @@ object HistogramMatching {
     targetHistogram: Histogram[T2]
   ): Tile = {
     val cellType = tile.cellType
-    val localIntensityToCdf = intensityToCdf(cellType, sourceHistogram.cdf)_
-    val localTransform = transform(targetHistogram.cdf, localIntensityToCdf)_
+    val localIntensityToCdf = intensityToCdf(cellType, sourceHistogram.cdf())_
+    val localTransform = transform(targetHistogram.cdf(), localIntensityToCdf)_
 
     tile.mapDouble(localTransform)
   }

@@ -46,7 +46,7 @@ class BoundedPriorityQueue[A: Ordering](val maxSize: Int) extends Serializable{
   def iterator() = pq.iterator
 
   private def maybeReplaceLowest(a: A) = {
-    if (pq.comparator.compare(a, peek) > 0) {
+    if (pq.comparator.compare(a, peek()) > 0) {
       pq.poll
       pq.add(a)
     }
@@ -104,12 +104,12 @@ object KNearestRDD {
     def merge(a: BoundedPriorityQueue[G], b: BoundedPriorityQueue[G]) = {
       implicit val ord: Ordering[G] = a.pq.comparator.asInstanceOf[Ordering[G]].reverse
       val result = BoundedPriorityQueue[G](a.maxSize)
-      a.iterator.asScala.foreach { item => result += item }
-      b.iterator.asScala.foreach { item => result += item }
+      a.iterator().asScala.foreach { item => result += item }
+      b.iterator().asScala.foreach { item => result += item }
       result
     }
 
     val result = rdd.aggregate(zero)({ (bpqs, toAdd) => bpqs.map { _ += toAdd } }, { (a, b) => zipWith(a.toList, b.toList)(merge).toTraversable })
-    result.map(_.iterator.asScala.toList).toList
+    result.map(_.iterator().asScala.toList).toList
   }
 }

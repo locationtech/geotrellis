@@ -182,8 +182,8 @@ object Accumulation {
         if (flag == 0) {
           data.set(c, r, sum)
         }
-        if(!stack.isEmpty) {
-          val t = stack.pop
+        if(stack.nonEmpty) {
+          val t = stack.pop()
           c = t._1
           r = t._2
         }

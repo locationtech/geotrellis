@@ -41,9 +41,7 @@ class S3GeoTiffRDDSpec
     with TestEnvironment
     with BeforeAndAfterEach {
 
-  override def afterEach() {
-    super.afterEach()
-  }
+  override def afterEach() = super.afterEach()
 
   implicit def toOption[T](t: T): Option[T] = Option(t)
 
@@ -75,7 +73,7 @@ class S3GeoTiffRDDSpec
           .apply[ProjectedExtent, ProjectedExtent, Tile](bucket, key, fn, options, None)
           .map(_._1)
 
-      source1.collect.toSet.size should be < source2.collect.toSet.size
+      source1.collect().toSet.size should be < source2.collect().toSet.size
     }
 
     it("should read the same rasters when reading small windows or with no windows, Spatial, SinglebandGeoTiff") {
@@ -94,12 +92,12 @@ class S3GeoTiffRDDSpec
       val source2 =
         S3GeoTiffRDD.spatial(bucket, key, S3GeoTiffRDD.Options(maxTileSize = Some(128), getClient = () => MockS3Client()))
 
-      source1.count should be < (source2.count)
+      source1.count() should be < (source2.count())
 
       val (_, md) = source1.collectMetadata[SpatialKey](FloatingLayoutScheme(256))
 
-      val stitched1: Tile = source1.tileToLayout(md).stitch.tile
-      val stitched2: Tile = source2.tileToLayout(md).stitch.tile
+      val stitched1: Tile = source1.tileToLayout(md).stitch().tile
+      val stitched2: Tile = source2.tileToLayout(md).stitch().tile
 
       assertEqual(stitched1, stitched2)
     }
@@ -121,11 +119,11 @@ class S3GeoTiffRDDSpec
         S3GeoTiffRDD.spatialMultiband(bucket, key, S3GeoTiffRDD.Options(maxTileSize=Some(128), getClient = () => MockS3Client()))
       }
 
-      //source1.count should be < (source2.count)
+      //source1.count() should be < (source2.count())
       val (_, md) = source1.collectMetadata[SpatialKey](FloatingLayoutScheme(20, 40))
 
-      val stitched1 = source1.tileToLayout(md).stitch
-      val stitched2 = source2.tileToLayout(md).stitch
+      val stitched1 = source1.tileToLayout(md).stitch()
+      val stitched2 = source2.tileToLayout(md).stitch()
 
       assertEqual(stitched1, stitched2)
     }
@@ -156,13 +154,13 @@ class S3GeoTiffRDDSpec
           getClient = () => MockS3Client()))
       }
 
-      source1.count should be < (source2.count)
+      source1.count() should be < (source2.count())
 
-      val (wholeInfo, _) = source1.first
+      val (wholeInfo, _) = source1.first()
       val dateTime = wholeInfo.time
 
-      val collection = source2.collect
-      val length = source2.count
+      val collection = source2.collect()
+      val length = source2.count()
 
       cfor(0)(_ < length, _ + 1) { i =>
         val (info, _) = collection(i)
@@ -203,14 +201,14 @@ class S3GeoTiffRDDSpec
           getClient = () => MockS3Client()))
       }
 
-      source1.count should be < (source2.count)
+      source1.count() should be < (source2.count())
 
       val (wholeInfo, _) = source1.first()
       val dateTime = wholeInfo.time
 
-      val collection = source2.collect
+      val collection = source2.collect()
 
-      cfor(0)(_ < source2.count, _ + 1){ i =>
+      cfor(0)(_ < source2.count(), _ + 1){ i =>
         val (info, _) = collection(i)
 
         info.time should be (dateTime)
@@ -231,7 +229,7 @@ class S3GeoTiffRDDSpec
       val source =
         S3GeoTiffRDD.spatial(bucket, key, S3GeoTiffRDD.Options(maxTileSize = 512, numPartitions = 32, getClient = () => MockS3Client()))
 
-      source.count.toInt should be > 0
+      source.count().toInt should be > 0
     }
   }
 }

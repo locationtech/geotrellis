@@ -28,9 +28,9 @@ class IntersectionSpec extends AnyFunSpec with Matchers {
       val poly = Polygon((0.6,0.6), (0.75,0.25), (1.0,1.0), (-0.1,0.5), (0.6,0.6))
 
       val gc = lowertri.intersection(poly).asInstanceOf[GeometryCollection]
-      val inter = gc.getAll[Polygon].head.normalized
+      val inter = gc.getAll[Polygon].head.normalized()
 
-      Intersection.polygonalRegions(lowertri, poly).map(_.normalized) should be (Seq(inter))
+      Intersection.polygonalRegions(lowertri, poly).map(_.normalized()) should be (Seq(inter))
     }
 
     it("should produce no result for line-polygon intersection") {
@@ -50,9 +50,9 @@ class IntersectionSpec extends AnyFunSpec with Matchers {
       val gc = GeometryCollection(Seq(poly, line))
 
       val res = lowertri.intersection(poly).asInstanceOf[GeometryCollection]
-      val inter = res.getAll[Polygon].head.normalized
+      val inter = res.getAll[Polygon].head.normalized()
 
-      Intersection.polygonalRegions(lowertri, gc).map(_.normalized) should be (Seq(inter))
+      Intersection.polygonalRegions(lowertri, gc).map(_.normalized()) should be (Seq(inter))
     }
   }
 }

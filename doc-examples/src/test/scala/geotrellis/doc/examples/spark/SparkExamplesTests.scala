@@ -62,7 +62,7 @@ class SparkExamplesTests extends AnyFunSuite with Matchers with TestEnvironment 
           band.focalMax(neighborhood, Some(bufferedTile.targetArea))
         }
       }
-      .collect
+      .collect()
       .toMap
 
     // Check some values

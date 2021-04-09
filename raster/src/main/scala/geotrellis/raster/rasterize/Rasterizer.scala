@@ -393,7 +393,7 @@ object Rasterizer {
     }
 
     // Find cell of first intersection with extent and ray
-    val (initialPoint, finalPoint): (Point, Option[Point]) = re.extent.toPolygon & LineString((x0, y0), (x1, y1)) match {
+    val (initialPoint, finalPoint): (Point, Option[Point]) = re.extent.toPolygon() & LineString((x0, y0), (x1, y1)) match {
       case NoResult => return
       case PointResult(p) => (p, None)
       case LineStringResult(l) =>

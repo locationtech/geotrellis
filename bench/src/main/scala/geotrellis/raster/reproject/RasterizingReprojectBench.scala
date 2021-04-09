@@ -44,7 +44,7 @@ class RasterizingReprojectBench  {
   @Setup(Level.Trial)
   def setup(params: BenchmarkParams): Unit = {
     val len = size * size
-    raster = ProjectedRaster(ArrayTile(init(len)(Random.nextInt), size, size), srcExtent, srcCrs)
+    raster = ProjectedRaster(ArrayTile(init(len)(Random.nextInt()), size, size), srcExtent, srcCrs)
     destRE = ProjectedRasterExtent(raster.projectedExtent.reproject(destCrs), destCrs, size, size)
   }
 

@@ -64,7 +64,7 @@ ${layers.values.map(_.pretty).mkString}
     * WebMercator to LatLng, and metadata is dropped.
     */
   def toGeoJson: String =
-    layers.values.flatMap(_.features).map(_.geom.reproject(WebMercator,LatLng)).toGeoJson
+    layers.values.flatMap(_.features).map(_.geom.reproject(WebMercator,LatLng)).toGeoJson()
 
   /** Return a VectorTile to a Spark-friendly structure. */
   def toIterable: Iterable[MVTFeature[Geometry]] =

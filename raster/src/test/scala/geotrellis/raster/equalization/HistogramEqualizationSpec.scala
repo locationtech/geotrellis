@@ -36,24 +36,24 @@ class HistogramEqualizationSpec extends AnyFunSpec with Matchers {
   describe("Histogram Equalization") {
 
     it("should work on floating-point rasters") {
-      val tile = DoubleArrayTile(data.map(_.toDouble).toArray, 1, 8).equalize
-      val array = tile.toArrayDouble
+      val tile = DoubleArrayTile(data.map(_.toDouble).toArray, 1, 8).equalize()
+      val array = tile.toArrayDouble()
 
       array.head should be (Double.MinValue)
       array.last should be (Double.MaxValue)
     }
 
     it("should work on unsigned integral rasters") {
-      val tile = UShortArrayTile(data.map(_.toShort).toArray, 1, 8, UShortCellType).equalize
-      val array = tile.toArray
+      val tile = UShortArrayTile(data.map(_.toShort).toArray, 1, 8, UShortCellType).equalize()
+      val array = tile.toArray()
 
       array.head should be (0)
       array.last should be ((1<<16)-1)
     }
 
     it("should work on signed integral rasters") {
-      val tile = ShortArrayTile(data.map(_.toShort).toArray, 1, 8, ShortCellType).equalize
-      val array = tile.toArray
+      val tile = ShortArrayTile(data.map(_.toShort).toArray, 1, 8, ShortCellType).equalize()
+      val array = tile.toArray()
 
       array.head should be (-(1<<15))
       array.last should be ((1<<15)-1)
@@ -70,9 +70,9 @@ class HistogramEqualizationSpec extends AnyFunSpec with Matchers {
         )
         h
       }
-      val lowerTileArray = DoubleArrayTile(Array(1.0,2.0,4.0), 1, 3, DoubleCellType).equalize(histogram).toArrayDouble
-      val targetTileArray = DoubleArrayTile(Array(1.5,3.0,6.0), 1, 3, DoubleCellType).equalize(histogram).toArrayDouble
-      val higherTileArray = DoubleArrayTile(Array(2.0,4.0,8.0), 1, 3, DoubleCellType).equalize(histogram).toArrayDouble
+      val lowerTileArray = DoubleArrayTile(Array(1.0,2.0,4.0), 1, 3, DoubleCellType).equalize(histogram).toArrayDouble()
+      val targetTileArray = DoubleArrayTile(Array(1.5,3.0,6.0), 1, 3, DoubleCellType).equalize(histogram).toArrayDouble()
+      val higherTileArray = DoubleArrayTile(Array(2.0,4.0,8.0), 1, 3, DoubleCellType).equalize(histogram).toArrayDouble()
 
       (0 until 3).foreach({ i =>
         lowerTileArray(i) should be < (targetTileArray(i))
@@ -86,8 +86,8 @@ class HistogramEqualizationSpec extends AnyFunSpec with Matchers {
 
       val tile1 = ShortArrayTile(data1.map(_.toShort).toArray, 1, 8, ShortCellType)
       val tile2 = ShortArrayTile(data2.map(_.toShort).toArray, 1, 8, ShortCellType)
-      val tile = ArrayMultibandTile(tile1, tile2).equalize
-      val array = tile.bands.flatMap(_.toArray)
+      val tile = ArrayMultibandTile(tile1, tile2).equalize()
+      val array = tile.bands.flatMap(_.toArray())
 
       array.head should be (-(1<<15))
       array.last should be ((1<<15)-1)

@@ -41,7 +41,7 @@ class VoronoiDiagramSpec extends AnyFunSpec with Matchers {
   // def rasterizeVoronoi(voronoi: VoronoiDiagram)(implicit trans: Int => Point): Unit = {
   //   val tile = IntArrayTile.fill(255, 325, 600)
   //   val re = RasterExtent(voronoi.extent,325,600)
-  //   voronoi.voronoiCells.foreach{ poly =>
+  //   voronoi.voronoiCells().foreach{ poly =>
   //     rasterizePoly(poly, tile, re, !(poly.isValid && voronoi.extent.covers(poly)))
   //   }
   //   val cm = ColorMap(scala.collection.immutable.Map(1 -> 0x000000ff, 2 -> 0xff0000ff, 255 -> 0xffffffff))
@@ -59,7 +59,7 @@ class VoronoiDiagramSpec extends AnyFunSpec with Matchers {
         poly.isValid && extent.covers(poly)
       }
 
-      voronoi.voronoiCells.forall (validCoveredPolygon(_)) should be (true)
+      voronoi.voronoiCells().forall (validCoveredPolygon(_)) should be (true)
       //rasterizeVoronoi(voronoi)
     }
 
@@ -74,7 +74,7 @@ class VoronoiDiagramSpec extends AnyFunSpec with Matchers {
         poly.isValid && extent.covers(poly)
       }
 
-      voronoi.voronoiCells.forall (validCoveredPolygon(_)) should be (true)
+      voronoi.voronoiCells().forall (validCoveredPolygon(_)) should be (true)
       // rasterizeVoronoi(voronoi)
     }
 
@@ -89,7 +89,7 @@ class VoronoiDiagramSpec extends AnyFunSpec with Matchers {
         poly.isValid && extent.covers(poly)
       }
 
-      val cells = voronoi.voronoiCells
+      val cells = voronoi.voronoiCells()
       (cells.forall (validCoveredPolygon(_)) && cells.length == 3) should be (true)
       // rasterizeVoronoi(voronoi)
     }
@@ -104,7 +104,7 @@ class VoronoiDiagramSpec extends AnyFunSpec with Matchers {
         extent.covers(poly) && poly.covers(extent)
       }
 
-      val cells = voronoi.voronoiCells
+      val cells = voronoi.voronoiCells()
       (cells.length == 1 && sameAsExtent(cells(0))) should be (true)
       // rasterizeVoronoi(voronoi)
     }
@@ -118,7 +118,7 @@ class VoronoiDiagramSpec extends AnyFunSpec with Matchers {
         extent.covers(poly) && poly.covers(extent)
       }
 
-      val cells = voronoi.voronoiCells
+      val cells = voronoi.voronoiCells()
       (cells.length == 1 && sameAsExtent(cells(0))) should be (true)
     }
 
@@ -143,7 +143,7 @@ class VoronoiDiagramSpec extends AnyFunSpec with Matchers {
 
       val polys: Seq[Polygon] = extents.flatMap{ ex =>
         val vd = new VoronoiDiagram(dt, ex)
-        vd.voronoiCells
+        vd.voronoiCells()
       }
 
       polys.forall(_.isValid) should be (true)

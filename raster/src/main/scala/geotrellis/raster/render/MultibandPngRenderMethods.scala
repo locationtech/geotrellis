@@ -32,6 +32,6 @@ trait MultibandPngRenderMethods extends MethodExtensions[MultibandTile] {
     * with integer data whose values range from 0 to 255.
     */
   def renderPng(): Png = {
-    self.color().renderPng
+    self.color().renderPng()
   }
 }

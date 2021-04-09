@@ -24,7 +24,7 @@ trait ExtraPointMethods extends MethodExtensions[Point] {
   def y: Double = self.getCoordinate.getY
 
   def &(g: Geometry): PointOrNoResult = self.intersection(g)
-  def &(ex: Extent): PointOrNoResult = self.intersection(ex.toPolygon)
+  def &(ex: Extent): PointOrNoResult = self.intersection(ex.toPolygon())
 
   def -(g: Geometry): PointGeometryDifferenceResult = self.difference(g)
 

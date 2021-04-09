@@ -71,29 +71,29 @@ class RegridSpec extends AnyFunSpec with TestEnvironment with RasterMatchers {
     it("should allow chipping into smaller tiles") {
       val newLayer = simpleLayer.regrid(16)
 
-      assert(simpleLayer.stitch.dimensions == newLayer.stitch.dimensions)
-      assertEqual(simpleLayer.stitch, newLayer.stitch)
+      assert(simpleLayer.stitch().dimensions == newLayer.stitch().dimensions)
+      assertEqual(simpleLayer.stitch(), newLayer.stitch())
     }
 
     it("should allow joining into larger tiles") {
       val newLayer = simpleLayer.regrid(64)
 
-      assert(newLayer.stitch.dimensions == Dimensions(128, 128))
-      assertEqual(simpleLayer.stitch.tile, newLayer.stitch.tile.crop(0,0,127,95))
+      assert(newLayer.stitch().dimensions == Dimensions(128, 128))
+      assertEqual(simpleLayer.stitch().tile, newLayer.stitch().tile.crop(0,0,127,95))
     }
 
     it("should allow breaking into non-square tiles") {
       val newLayer = simpleLayer.regrid(50, 25)
 
-      assert(newLayer.stitch.dimensions == Dimensions(150, 100))
-      assertEqual(simpleLayer.stitch.tile, newLayer.stitch.tile.crop(0,0,127,95))
+      assert(newLayer.stitch().dimensions == Dimensions(150, 100))
+      assertEqual(simpleLayer.stitch().tile, newLayer.stitch().tile.crop(0,0,127,95))
     }
 
     it("should work for spatiotemporal data") {
       val newLayer = temporalLayer.regrid(50, 25)
 
-      assert(newLayer.toSpatial(0L).stitch.dimensions == Dimensions(150, 100))
-      assertEqual(temporalLayer.toSpatial(0L).stitch.tile, newLayer.toSpatial(0L).stitch.tile.crop(0,0,127,95))
+      assert(newLayer.toSpatial(0L).stitch().dimensions == Dimensions(150, 100))
+      assertEqual(temporalLayer.toSpatial(0L).stitch().tile, newLayer.toSpatial(0L).stitch().tile.crop(0,0,127,95))
     }
   }
 

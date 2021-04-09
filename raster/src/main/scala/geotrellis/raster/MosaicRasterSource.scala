@@ -157,8 +157,8 @@ object MosaicRasterSource {
           throw GeoAttrsError(s"illegal cellheights: ${l.cellheight} and ${r.cellheight}")
 
         val newExtent = l.extent.combine(r.extent)
-        val newRows = Integral[N].fromDouble(math.round(newExtent.height / l.cellheight))
-        val newCols = Integral[N].fromDouble(math.round(newExtent.width / l.cellwidth))
+        val newRows = Integral[N].fromDouble(math.round(newExtent.height / l.cellheight).toDouble)
+        val newCols = Integral[N].fromDouble(math.round(newExtent.width / l.cellwidth).toDouble)
         new GridExtent[N](newExtent, l.cellwidth, l.cellheight, newCols, newRows)
       }
     }

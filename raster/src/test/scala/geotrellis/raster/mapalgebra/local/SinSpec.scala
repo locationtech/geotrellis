@@ -39,7 +39,7 @@ class SinSpec extends AnyFunSpec
       ).map(_*math.Pi)
       val expected = rasterData.map(math.sin(_))
       val rs = createTile(rasterData, 6, 6)
-      val result = rs.localSin
+      val result = rs.localSin()
       for (y <- 0 until 6) {
         for (x <- 0 until 6) {
           val theSin = result.getDouble(x, y)
@@ -66,7 +66,7 @@ class SinSpec extends AnyFunSpec
                                .toList
                                .init
       val rs = createTile(rasterData, 4, 4)
-      val result = rs.localSin
+      val result = rs.localSin()
       for (y <- 0 until 4) {
         for (x <- 0 until 4) {
           val isLastValue = (x == 3 && y == 3)

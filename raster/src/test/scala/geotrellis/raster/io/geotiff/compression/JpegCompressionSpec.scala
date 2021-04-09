@@ -35,7 +35,7 @@ class JpegCompressionSpec extends AnyFunSpec
     with BeforeAndAfterAll
     with GeoTiffTestUtils {
 
-  override def afterAll = purge
+  override def afterAll() = purge
 
   describe("Reading GeoTiffs with JPEG compression") {
     it("Does not cause Too many open files exception") {
@@ -66,8 +66,8 @@ class JpegCompressionSpec extends AnyFunSpec
       try {
         val result = Future.sequence(parList.map { _.map { _ =>
           val (xmin, ymin) = (
-            (Random.nextDouble * (extent.width - 1)) + extent.xmin,
-            (Random.nextDouble * (extent.height - 1)) + extent.ymin
+            (Random.nextDouble() * (extent.width - 1)) + extent.xmin,
+            (Random.nextDouble() * (extent.height - 1)) + extent.ymin
           )
 
           val windowExtent = Extent(

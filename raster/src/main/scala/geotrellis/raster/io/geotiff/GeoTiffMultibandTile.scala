@@ -510,7 +510,7 @@ abstract class GeoTiffMultibandTile(
  def crop(bounds: GridBounds[Int], bandIndices: Array[Int]): ArrayMultibandTile = {
    val iter = crop(List(bounds), bandIndices)
    if (iter.isEmpty) throw GeoAttrsError(s"No intersections of ${bounds} vs ${dimensions}")
-   else iter.next._2
+   else iter.next()._2
  }
 
   /**
@@ -1072,13 +1072,13 @@ abstract class GeoTiffMultibandTile(
 
   override
   def combine(f: Array[Int] => Int): Tile =
-    _combine(_.initValueHolder)({ segmentCombiner => segmentCombiner.placeValue _ })({ segmentCombiner =>
+    _combine(_.initValueHolder())({ segmentCombiner => segmentCombiner.placeValue _ })({ segmentCombiner =>
       { i => segmentCombiner.setFromValues(i, f) }
     })
 
   override
   def combineDouble(f: Array[Double] => Double): Tile =
-    _combine(_.initValueHolderDouble)({ segmentCombiner => segmentCombiner.placeValueDouble _ })({ segmentCombiner =>
+    _combine(_.initValueHolderDouble())({ segmentCombiner => segmentCombiner.placeValueDouble _ })({ segmentCombiner =>
       { i => segmentCombiner.setFromValuesDouble(i, f) }
     })
 
@@ -1103,7 +1103,7 @@ abstract class GeoTiffMultibandTile(
             j += 1
           }
 
-          arr(segmentIndex) = compressor.compress(segmentCombiner.getBytes, segmentIndex)
+          arr(segmentIndex) = compressor.compress(segmentCombiner.getBytes(), segmentIndex)
         }
 
         (arr, compressor)
@@ -1126,7 +1126,7 @@ abstract class GeoTiffMultibandTile(
             setFromValues(segmentCombiner)(i)
           }
 
-          arr(segmentIndex) = compressor.compress(segmentCombiner.getBytes, segmentIndex)
+          arr(segmentIndex) = compressor.compress(segmentCombiner.getBytes(), segmentIndex)
         }
 
         (arr, compressor)
@@ -1194,7 +1194,7 @@ abstract class GeoTiffMultibandTile(
             j += 1
           }
 
-          arr(segmentIndex) = compressor.compress(segmentCombiner.getBytes, segmentIndex)
+          arr(segmentIndex) = compressor.compress(segmentCombiner.getBytes(), segmentIndex)
         }
         (arr, compressor)
       } else {
@@ -1217,7 +1217,7 @@ abstract class GeoTiffMultibandTile(
               set(segmentCombiner)(i, segment0, i, segment1, i)
             }
 
-            arr(segmentIndex) = compressor.compress(segmentCombiner.getBytes, segmentIndex)
+            arr(segmentIndex) = compressor.compress(segmentCombiner.getBytes(), segmentIndex)
         }
 
         (arr, compressor)

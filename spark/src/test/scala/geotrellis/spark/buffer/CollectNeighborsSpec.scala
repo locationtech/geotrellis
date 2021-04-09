@@ -55,8 +55,8 @@ class CollectNeighborsSpec extends AnyFunSpec with TestEnvironment {
 
     val neighbors: Map[SpatialKey, Iterable[(Direction, (SpatialKey, String))]] =
       rdd
-        .collectNeighbors
-        .collect
+        .collectNeighbors()
+        .collect()
         .toMap
 
     it("should not contain keys that would be a neighbor but with no center") {

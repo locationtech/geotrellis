@@ -51,22 +51,22 @@ trait HistogramJsonFormats {
 
   implicit val histogramDoubleEncoder: Encoder[Histogram[Double]] =
     Encoder.encodeJson.contramap[Histogram[Double]] { h =>
-      h.minValue.flatMap { min =>
-        h.maxValue.map { max => (min, max) }
+      h.minValue().flatMap { min =>
+        h.maxValue().map { max => (min, max) }
       } match {
         case Some((min, max)) =>
           var pairs = ArrayBuffer[Json]()
           h.foreach { (value, count) => pairs += Vector(value, count.toDouble).asJson }
           Json.obj(
             "buckets" -> pairs.asJson,
-            "maxBucketCount" -> h.maxBucketCount.asJson,
+            "maxBucketCount" -> h.maxBucketCount().asJson,
             "minimum" -> min.asJson,
             "maximum" -> max.asJson
           )
 
         case None => // Empty histogram
           Json.obj(
-            "maxBucketCount" -> h.maxBucketCount.asJson
+            "maxBucketCount" -> h.maxBucketCount().asJson
           )
       }
     }

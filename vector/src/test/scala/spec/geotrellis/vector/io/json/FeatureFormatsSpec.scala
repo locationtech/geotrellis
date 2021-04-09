@@ -166,7 +166,7 @@ class FeatureFormatsSpec extends AnyFlatSpec with Matchers with GeoJsonSupport {
     ]
 }"""
 
-    val features = geojson.parseGeoJson[JsonFeatureCollection].getAllPolygons()
+    val features = geojson.parseGeoJson[JsonFeatureCollection]().getAllPolygons()
     features.length should be (2)
   }
 

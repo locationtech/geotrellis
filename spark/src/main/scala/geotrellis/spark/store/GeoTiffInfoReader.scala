@@ -84,7 +84,7 @@ private [geotrellis] trait GeoTiffInfoReader extends Serializable {
     windows.persist()
 
     val repartition = {
-      val windowCount = windows.count.toInt
+      val windowCount = windows.count().toInt
       if (windowCount > windows.partitions.length) {
         logger.info(s"Repartition into ${windowCount} partitions.")
         windows.repartition(windowCount)

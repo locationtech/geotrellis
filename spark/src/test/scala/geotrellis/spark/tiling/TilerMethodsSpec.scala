@@ -63,13 +63,13 @@ class TilerMethodsSpec extends AnyFunSpec with Matchers with TestEnvironment {
       val tiled =
         rdd.cutTiles(IntConstantNoDataCellType, layoutDefinition)
           .reduceByKey { (tile1, tile2) => if(tile1.get(0,0) > tile2.get(0,0)) tile2.merge(tile1) else tile1.merge(tile2) }
-          .collect
+          .collect()
           .toMap
 
       tiled.size should be (4*4 - 2)
 
       val n = NODATA
-      tiled( SpatialKey(1,2) ).toArray should be (
+      tiled( SpatialKey(1,2) ).toArray() should be (
         Array(
           1, 1, 2, 2,
           1, 1, 2, 2,
@@ -78,7 +78,7 @@ class TilerMethodsSpec extends AnyFunSpec with Matchers with TestEnvironment {
           n, n, 2, 2)
       )
 
-      tiled( SpatialKey(1,1) ).toArray should be (
+      tiled( SpatialKey(1,1) ).toArray() should be (
         Array(
           1, 1, 1, 1,
           1, 1, 1, 1,

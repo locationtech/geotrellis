@@ -33,7 +33,7 @@ import org.scalatest.funspec.AnyFunSpec
 
 class GeoTiffWriterSpec extends AnyFunSpec with Matchers with BeforeAndAfterAll with RasterMatchers with TileBuilders with GeoTiffTestUtils {
 
-  override def afterAll = purge
+  override def afterAll() = purge
 
   private val testCRS = CRS.fromName("EPSG:3857")
   private val testExtent = Extent(100.0, 400.0, 120.0, 420.0)
@@ -213,7 +213,7 @@ class GeoTiffWriterSpec extends AnyFunSpec with Matchers with BeforeAndAfterAll 
     it ("should read write multibandraster with compression correctly") {
       val geoTiff = {
         val gt = MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-pixel.tif"))
-        MultibandGeoTiff(Raster(gt.raster.tile.toArrayTile, gt.raster.extent), gt.crs, options = GeoTiffOptions(compression.DeflateCompression))
+        MultibandGeoTiff(Raster(gt.raster.tile.toArrayTile(), gt.raster.extent), gt.crs, options = GeoTiffOptions(compression.DeflateCompression))
       }
 
       GeoTiffWriter.write(geoTiff, path)
@@ -504,7 +504,7 @@ class GeoTiffWriterSpec extends AnyFunSpec with Matchers with BeforeAndAfterAll 
       addToPurge(path)
 
       reread.options.colorSpace should be (ColorSpace.Palette)
-      reread.options.colorMap should be('defined)
+      reread.options.colorMap should be(Symbol("defined"))
 
       val p1 = reread.options.colorMap.get.colors
       val p2 = indexed.options.colorMap.get.colors

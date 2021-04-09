@@ -51,7 +51,7 @@ class RDDStitchMethodsSpec extends AnyFunSpec with TileBuilders with TileLayerRD
           TileLayout(2, 2, 4, 4)
         )
 
-      assertEqual(tile, layer.stitch.tile)
+      assertEqual(tile, layer.stitch().tile)
     }
 
     it("should correctly stitch back together multi band tile rdd") {
@@ -95,7 +95,7 @@ class RDDStitchMethodsSpec extends AnyFunSpec with TileBuilders with TileLayerRD
           TileLayout(2, 2, 4, 4)
         )
 
-      assertEqual(tile, layer.stitch.tile)
+      assertEqual(tile, layer.stitch().tile)
     }
 
     it("should reconstitute a tiled raster to its original size") {
@@ -147,7 +147,7 @@ class RDDStitchMethodsSpec extends AnyFunSpec with TileBuilders with TileLayerRD
       ))
       val reference = IntArrayTile.ofDim(27,27).map{ (x: Int, y: Int, _) => math.max(x, y) }
 
-      assertEqual(tiles.stitch, reference)
+      assertEqual(tiles.stitch(), reference)
     }
 
     it("should sparse stitch an RDD with an offset extent") {

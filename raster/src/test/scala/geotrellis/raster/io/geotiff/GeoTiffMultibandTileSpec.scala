@@ -31,7 +31,7 @@ import org.scalatest.funspec.AnyFunSpec
 
 class GeoTiffMultibandTileSpec extends AnyFunSpec with Matchers with BeforeAndAfterAll with RasterMatchers with GeoTiffTestUtils with TileBuilders {
 
-  override def afterAll = purge
+  override def afterAll() = purge
 
   describe ("GeoTiffMultibandTile creation") {
 
@@ -131,7 +131,7 @@ class GeoTiffMultibandTileSpec extends AnyFunSpec with Matchers with BeforeAndAf
         MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-pixel.tif")).tile.convert(UShortCellType)
 
       val expected =
-        MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-pixel.tif")).tile.toArrayTile.convert(UShortCellType)
+        MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-pixel.tif")).tile.toArrayTile().convert(UShortCellType)
 
       assertEqual(expected, actual)
     }
@@ -168,7 +168,7 @@ class GeoTiffMultibandTileSpec extends AnyFunSpec with Matchers with BeforeAndAf
         tiles.combine(List(0,2))({ seq: Seq[Int] => seq.sum })
       }
       val expected = {
-        val tiles = MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-pixel.tif")).tile.toArrayTile
+        val tiles = MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-pixel.tif")).tile.toArrayTile()
         tiles.combine(List(0,2))({ seq: Seq[Int] => seq.sum })
       }
 
@@ -176,7 +176,7 @@ class GeoTiffMultibandTileSpec extends AnyFunSpec with Matchers with BeforeAndAf
     }
 
     it("should work correctly on integer-valued tiles") {
-      val tiles = MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-pixel.tif")).tile.toArrayTile
+      val tiles = MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-pixel.tif")).tile.toArrayTile()
       val band0 = tiles.band(0)
       val band2 = tiles.band(2)
       val actual = tiles.combine(List(0,2))({ seq: Seq[Int] => seq.sum })
@@ -192,9 +192,9 @@ class GeoTiffMultibandTileSpec extends AnyFunSpec with Matchers with BeforeAndAf
           ArrayTile(Array.ofDim[Float](150*140).fill(2.5f), 150, 140),
           ArrayTile(Array.ofDim[Float](150*140).fill(3.5f), 150, 140))
       val tiles = GeoTiffMultibandTile(original)
-      val band0 = tiles.band(0).toArrayDouble
-      val band2 = tiles.band(2).toArrayDouble
-      val actual = tiles.combineDouble(List(0,2))({ seq: Seq[Double] => seq.sum }).toArray
+      val band0 = tiles.band(0).toArrayDouble()
+      val band2 = tiles.band(2).toArrayDouble()
+      val actual = tiles.combineDouble(List(0,2))({ seq: Seq[Double] => seq.sum }).toArray()
       val expected = band0.zip(band2).map({ pair => pair._1 + pair._2 })
 
       (actual.zip(expected)).foreach({ pair =>
@@ -206,21 +206,21 @@ class GeoTiffMultibandTileSpec extends AnyFunSpec with Matchers with BeforeAndAf
   describe("Multiband subset map methods") {
 
     it("should work correctly on integer-valued tiles") {
-      val tiles = MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-pixel.tif")).tile.toArrayTile
+      val tiles = MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-pixel.tif")).tile.toArrayTile()
       val actual = tiles.map(List(0,2))({ (band,z) => z + band + 3 })
-      val expectedBand0 = tiles.band(0).map({ z => z + 0 + 3 }).toArray
-      val expectedBand1 = tiles.band(1).toArray
-      val expectedBand2 = tiles.band(2).map({ z => z + 2 + 3 }).toArray
+      val expectedBand0 = tiles.band(0).map({ z => z + 0 + 3 }).toArray()
+      val expectedBand1 = tiles.band(1).toArray()
+      val expectedBand2 = tiles.band(2).map({ z => z + 2 + 3 }).toArray()
 
-      (actual.band(0).toArray.zip(expectedBand0)).foreach({ pair =>
+      (actual.band(0).toArray().zip(expectedBand0)).foreach({ pair =>
         assert(pair._1 == pair._2, "actual should equal expected in band 0")
       })
 
-      (actual.band(1).toArray.zip(expectedBand1)).foreach({ pair =>
+      (actual.band(1).toArray().zip(expectedBand1)).foreach({ pair =>
         assert(pair._1 == pair._2, "actual should equal expected in band 1")
       })
 
-      (actual.band(2).toArray.zip(expectedBand2)).foreach({ pair =>
+      (actual.band(2).toArray().zip(expectedBand2)).foreach({ pair =>
         assert(pair._1 == pair._2, "actual should equal expected in band 2")
       })
     }
@@ -233,19 +233,19 @@ class GeoTiffMultibandTileSpec extends AnyFunSpec with Matchers with BeforeAndAf
           ArrayTile(Array.ofDim[Float](150*140).fill(3.5f), 150, 140))
       val tiles = GeoTiffMultibandTile(original)
       val actual = tiles.mapDouble(List(0,2))({ (band,z) => z + band + 3.5 })
-      val expectedBand0 = tiles.band(0).mapDouble({ z => z + 0 + 3.5 }).toArrayDouble
-      val expectedBand1 = tiles.band(1).toArrayDouble
-      val expectedBand2 = tiles.band(2).mapDouble({ z => z + 2 + 3.5 }).toArrayDouble
+      val expectedBand0 = tiles.band(0).mapDouble({ z => z + 0 + 3.5 }).toArrayDouble()
+      val expectedBand1 = tiles.band(1).toArrayDouble()
+      val expectedBand2 = tiles.band(2).mapDouble({ z => z + 2 + 3.5 }).toArrayDouble()
 
-      (actual.band(0).toArrayDouble.zip(expectedBand0)).foreach({ pair =>
+      (actual.band(0).toArrayDouble().zip(expectedBand0)).foreach({ pair =>
         assert(pair._1 == pair._2, "actual should equal expected in band 0")
       })
 
-      (actual.band(1).toArrayDouble.zip(expectedBand1)).foreach({ pair =>
+      (actual.band(1).toArrayDouble().zip(expectedBand1)).foreach({ pair =>
         assert(pair._1 == pair._2, "actual should equal expected in band 1")
       })
 
-      (actual.band(2).toArrayDouble.zip(expectedBand2)).foreach({ pair =>
+      (actual.band(2).toArrayDouble().zip(expectedBand2)).foreach({ pair =>
         assert(pair._1 == pair._2, "actual should equal expected in band 2")
       })
     }
@@ -254,7 +254,7 @@ class GeoTiffMultibandTileSpec extends AnyFunSpec with Matchers with BeforeAndAf
   describe("Multiband bands (reorder) method") {
 
     it("should be inexpensive") {
-      val tile0 = MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-pixel.tif")).tile.toArrayTile
+      val tile0 = MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-pixel.tif")).tile.toArrayTile()
       val tile1 = tile0.subsetBands(List(1, 2, 0))
 
       tile0.band(0) should be theSameInstanceAs tile1.band(2)
@@ -263,7 +263,7 @@ class GeoTiffMultibandTileSpec extends AnyFunSpec with Matchers with BeforeAndAf
     }
 
     it("result should have correct bandCount") {
-      val tile0 = MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-pixel.tif")).tile.toArrayTile
+      val tile0 = MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-pixel.tif")).tile.toArrayTile()
       val tile1 = tile0.subsetBands(List(1, 2, 0))
       val tile2 = tile0.subsetBands(List(1, 2))
 
@@ -272,7 +272,7 @@ class GeoTiffMultibandTileSpec extends AnyFunSpec with Matchers with BeforeAndAf
     }
 
     it("result should work properly with foreach") {
-      val tile0 = MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-pixel.tif")).tile.toArrayTile
+      val tile0 = MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-pixel.tif")).tile.toArrayTile()
       val tile1 = tile0.subsetBands(List(1, 2, 0))
       val tile2 = tile1.subsetBands(List(1, 2, 0))
 
@@ -288,7 +288,7 @@ class GeoTiffMultibandTileSpec extends AnyFunSpec with Matchers with BeforeAndAf
     }
 
     it("should disallow \"invalid\" bandSequences") {
-      val tile0 = MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-pixel.tif")).tile.toArrayTile
+      val tile0 = MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-pixel.tif")).tile.toArrayTile()
       an [IllegalArgumentException] should be thrownBy {
         tile0.subsetBands(0,1,2,3) // There are only 3 bands
       }
@@ -300,7 +300,7 @@ class GeoTiffMultibandTileSpec extends AnyFunSpec with Matchers with BeforeAndAf
     it("should map a single band, striped, pixel interleave") {
 
       val tile =
-        MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-pixel.tif")).tile.toArrayTile.map(1)(_ + 3)
+        MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-pixel.tif")).tile.toArrayTile().map(1)(_ + 3)
 
       tile.band(0).foreach { z => z should be (1) }
       tile.band(1).foreach { z => z should be (5) }
@@ -310,7 +310,7 @@ class GeoTiffMultibandTileSpec extends AnyFunSpec with Matchers with BeforeAndAf
     it("should map a single band, tiled, pixel interleave") {
 
       val tile =
-        MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-tiled-pixel.tif")).tile.toArrayTile.map(1)(_ + 3)
+        MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-tiled-pixel.tif")).tile.toArrayTile().map(1)(_ + 3)
 
       tile.band(0).foreach { z => z should be (1) }
       tile.band(1).foreach { z => z should be (5) }
@@ -320,7 +320,7 @@ class GeoTiffMultibandTileSpec extends AnyFunSpec with Matchers with BeforeAndAf
     it("should map a single band, striped, band interleave") {
 
       val tile =
-        MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-band.tif")).tile.toArrayTile.map(1)(_ + 3)
+        MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-band.tif")).tile.toArrayTile().map(1)(_ + 3)
 
       tile.band(0).foreach { z => z should be (1) }
       tile.band(1).foreach { z => z should be (5) }
@@ -330,7 +330,7 @@ class GeoTiffMultibandTileSpec extends AnyFunSpec with Matchers with BeforeAndAf
     it("should map a single band, tiled, band interleave") {
 
       val tile =
-        MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-tiled-band.tif")).tile.toArrayTile.map(1)(_ + 3)
+        MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-tiled-band.tif")).tile.toArrayTile().map(1)(_ + 3)
 
       tile.band(0).foreach { z => z should be (1) }
       tile.band(1).foreach { z => z should be (5) }
@@ -340,7 +340,7 @@ class GeoTiffMultibandTileSpec extends AnyFunSpec with Matchers with BeforeAndAf
     it("should map over all bands, pixel interleave") {
 
       val tile =
-        MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-pixel.tif")).tile.toArrayTile.map { (b, z) => b * 10 + z }
+        MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-pixel.tif")).tile.toArrayTile().map { (b, z) => b * 10 + z }
 
       tile.band(0).foreach { z => z should be (1) }
       tile.band(1).foreach { z => z should be (12) }
@@ -350,7 +350,7 @@ class GeoTiffMultibandTileSpec extends AnyFunSpec with Matchers with BeforeAndAf
     it("should map over all bands, tiled") {
 
       val tile =
-        MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-tiled-pixel.tif")).tile.toArrayTile.map { (b, z) => ((b+1) * 10) + z }
+        MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-tiled-pixel.tif")).tile.toArrayTile().map { (b, z) => ((b+1) * 10) + z }
 
       tile.band(0).foreach { z => z should be (11) }
       tile.band(1).foreach { z => z should be (22) }
@@ -360,7 +360,7 @@ class GeoTiffMultibandTileSpec extends AnyFunSpec with Matchers with BeforeAndAf
     it("should mapDouble a single band, striped, pixel interleave") {
 
       val tile =
-        MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-pixel.tif")).tile.toArrayTile.convert(DoubleConstantNoDataCellType).mapDouble(1)(_ + 3.3)
+        MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-pixel.tif")).tile.toArrayTile().convert(DoubleConstantNoDataCellType).mapDouble(1)(_ + 3.3)
 
       tile.band(0).foreach { z => z should be (1) }
       tile.band(1).foreach { z => z should be (5) }
@@ -370,7 +370,7 @@ class GeoTiffMultibandTileSpec extends AnyFunSpec with Matchers with BeforeAndAf
     it("should mapDouble a single band, tiled, band interleave") {
 
       val tile =
-        MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-tiled-band.tif")).tile.toArrayTile.convert(DoubleConstantNoDataCellType).mapDouble(1)(_ + 3.3)
+        MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-tiled-band.tif")).tile.toArrayTile().convert(DoubleConstantNoDataCellType).mapDouble(1)(_ + 3.3)
 
       tile.band(0).foreach { z => z should be (1) }
       tile.band(1).foreach { z => z should be (5) }
@@ -384,9 +384,9 @@ class GeoTiffMultibandTileSpec extends AnyFunSpec with Matchers with BeforeAndAf
     it("should foreach a single band, striped, pixel interleave") {
 
       val tile =
-        MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-pixel.tif")).tile.toArrayTile
+        MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-pixel.tif")).tile.toArrayTile()
 
-      val cellCount = tile.band(1).toArray.size
+      val cellCount = tile.band(1).toArray().size
 
       var count = 0
       tile.foreach(1) { z =>
@@ -399,9 +399,9 @@ class GeoTiffMultibandTileSpec extends AnyFunSpec with Matchers with BeforeAndAf
     it("should foreach a single band, tiled, pixel interleave") {
 
       val tile =
-        MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-tiled-pixel.tif")).tile.toArrayTile
+        MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-tiled-pixel.tif")).tile.toArrayTile()
 
-      val cellCount = tile.band(1).toArray.size
+      val cellCount = tile.band(1).toArray().size
 
       var count = 0
       tile.foreach(1) { z =>
@@ -414,9 +414,9 @@ class GeoTiffMultibandTileSpec extends AnyFunSpec with Matchers with BeforeAndAf
     it("should foreach a single band, striped, band interleave") {
 
       val tile =
-        MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-band.tif")).tile.toArrayTile
+        MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-band.tif")).tile.toArrayTile()
 
-      val cellCount = tile.band(1).toArray.size
+      val cellCount = tile.band(1).toArray().size
 
       var count = 0
       tile.foreach(1) { z =>
@@ -429,9 +429,9 @@ class GeoTiffMultibandTileSpec extends AnyFunSpec with Matchers with BeforeAndAf
     it("should foreach a single band, tiled, band interleave") {
 
       val tile =
-        MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-tiled-band.tif")).tile.toArrayTile
+        MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-tiled-band.tif")).tile.toArrayTile()
 
-      val cellCount = tile.band(1).toArray.size
+      val cellCount = tile.band(1).toArray().size
 
       var count = 0
       tile.foreach(1) { z =>
@@ -444,9 +444,9 @@ class GeoTiffMultibandTileSpec extends AnyFunSpec with Matchers with BeforeAndAf
     it("should foreachDouble all bands, striped, pixel interleave") {
 
       val tile =
-        MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-pixel.tif")).tile.toArrayTile
+        MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-pixel.tif")).tile.toArrayTile()
 
-      val cellCount = tile.band(1).toArray.size
+      val cellCount = tile.band(1).toArray().size
 
       val counts = Array.ofDim[Int](3)
       tile.foreachDouble { (b, z) =>
@@ -462,9 +462,9 @@ class GeoTiffMultibandTileSpec extends AnyFunSpec with Matchers with BeforeAndAf
     it("should foreachDouble all bands, tiled, pixel interleave") {
 
       val tile =
-        MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-tiled-pixel.tif")).tile.toArrayTile
+        MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-tiled-pixel.tif")).tile.toArrayTile()
 
-      val cellCount = tile.band(1).toArray.size
+      val cellCount = tile.band(1).toArray().size
 
       val counts = Array.ofDim[Int](3)
       tile.foreachDouble { (b, z) =>
@@ -480,9 +480,9 @@ class GeoTiffMultibandTileSpec extends AnyFunSpec with Matchers with BeforeAndAf
     it("should foreachDouble all bands, striped, band interleave") {
 
       val tile =
-        MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-band.tif")).tile.toArrayTile
+        MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-band.tif")).tile.toArrayTile()
 
-      val cellCount = tile.band(1).toArray.size
+      val cellCount = tile.band(1).toArray().size
 
       val counts = Array.ofDim[Int](3)
       tile.foreachDouble { (b, z) =>
@@ -498,9 +498,9 @@ class GeoTiffMultibandTileSpec extends AnyFunSpec with Matchers with BeforeAndAf
     it("should foreachDouble all bands, tiled, band interleave") {
 
       val tile =
-        MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-tiled-band.tif")).tile.toArrayTile
+        MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-tiled-band.tif")).tile.toArrayTile()
 
-      val cellCount = tile.band(1).toArray.size
+      val cellCount = tile.band(1).toArray().size
 
       val counts = Array.ofDim[Int](3)
       tile.foreachDouble { (b, z) =>
@@ -518,7 +518,7 @@ class GeoTiffMultibandTileSpec extends AnyFunSpec with Matchers with BeforeAndAf
     it("should multiband foreach all values, striped, pixel interleave") {
 
       val tile =
-        MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-pixel.tif")).tile.toArrayTile
+        MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-pixel.tif")).tile.toArrayTile()
 
       val bandCount = tile.bandCount
       val cellCount = tile.rows * tile.cols
@@ -535,7 +535,7 @@ class GeoTiffMultibandTileSpec extends AnyFunSpec with Matchers with BeforeAndAf
     it("should multiband foreach all values, tiled, pixel interleave") {
 
       val tile =
-        MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-tiled-pixel.tif")).tile.toArrayTile
+        MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-tiled-pixel.tif")).tile.toArrayTile()
 
       val bandCount = tile.bandCount
       val cellCount = tile.rows * tile.cols
@@ -552,7 +552,7 @@ class GeoTiffMultibandTileSpec extends AnyFunSpec with Matchers with BeforeAndAf
     it("should multiband foreach all values, striped, band interleave") {
 
       val tile =
-        MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-band.tif")).tile.toArrayTile
+        MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-band.tif")).tile.toArrayTile()
 
       val bandCount = tile.bandCount
       val cellCount = tile.rows * tile.cols
@@ -569,7 +569,7 @@ class GeoTiffMultibandTileSpec extends AnyFunSpec with Matchers with BeforeAndAf
     it("should multiband foreach all values, tiled, band interleave") {
 
       val tile =
-        MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-tiled-band.tif")).tile.toArrayTile
+        MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-tiled-band.tif")).tile.toArrayTile()
 
       val bandCount = tile.bandCount
       val cellCount = tile.rows * tile.cols
@@ -586,7 +586,7 @@ class GeoTiffMultibandTileSpec extends AnyFunSpec with Matchers with BeforeAndAf
     it("should multiband foreachDouble all values, striped, pixel interleave") {
 
       val tile =
-        MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-pixel.tif")).tile.toArrayTile
+        MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-pixel.tif")).tile.toArrayTile()
 
       val bandCount = tile.bandCount
       val cellCount = tile.rows * tile.cols
@@ -603,7 +603,7 @@ class GeoTiffMultibandTileSpec extends AnyFunSpec with Matchers with BeforeAndAf
     it("should multiband foreachDouble all values, tiled, pixel interleave") {
 
       val tile =
-        MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-tiled-pixel.tif")).tile.toArrayTile
+        MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-tiled-pixel.tif")).tile.toArrayTile()
 
       val bandCount = tile.bandCount
       val cellCount = tile.rows * tile.cols
@@ -620,7 +620,7 @@ class GeoTiffMultibandTileSpec extends AnyFunSpec with Matchers with BeforeAndAf
     it("should multiband foreachDouble all values, striped, band interleave") {
 
       val tile =
-        MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-band.tif")).tile.toArrayTile
+        MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-band.tif")).tile.toArrayTile()
 
       val bandCount = tile.bandCount
       val cellCount = tile.rows * tile.cols
@@ -637,7 +637,7 @@ class GeoTiffMultibandTileSpec extends AnyFunSpec with Matchers with BeforeAndAf
     it("should multiband foreachDouble all values, tiled, band interleave") {
 
       val tile =
-        MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-tiled-band.tif")).tile.toArrayTile
+        MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-tiled-band.tif")).tile.toArrayTile()
 
       val bandCount = tile.bandCount
       val cellCount = tile.rows * tile.cols

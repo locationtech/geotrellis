@@ -51,7 +51,7 @@ class AccumulationSpec extends AnyFunSpec with Matchers with RasterMatchers with
             0,2,4,7,34,1),
             ncols,nrows)
 
-      assertEqual(inTile.accumulation, outTile)
+      assertEqual(inTile.accumulation(), outTile)
     } 
 
     it("Calulates the accumulation of water using a flow dirrection raster using multiple flow directions") {
@@ -79,7 +79,7 @@ class AccumulationSpec extends AnyFunSpec with Matchers with RasterMatchers with
             0,2,6,14,30,62),
             ncols,nrows)
 
-      assertEqual(inTile.accumulation, outTile)
+      assertEqual(inTile.accumulation(), outTile)
     } 
   }
 }

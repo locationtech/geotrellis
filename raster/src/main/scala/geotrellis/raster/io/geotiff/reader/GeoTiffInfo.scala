@@ -183,12 +183,12 @@ object GeoTiffInfo {
       }
 
       def getGeoTiffInfo(tiffTags: TiffTags, overviews: List[GeoTiffInfo] = Nil): GeoTiffInfo = {
-        val interleaveMethod = tiffTags.interleaveMethod
+        val interleaveMethod = tiffTags.interleaveMethod()
 
-        val decompressor = Decompressor(tiffTags, byteReader.order)
+        val decompressor = Decompressor(tiffTags, byteReader.order())
 
         val storageMethod: StorageMethod =
-          if(tiffTags.hasStripStorage) {
+          if(tiffTags.hasStripStorage()) {
             val rowsPerStrip: Int =
               (tiffTags
                 &|-> TiffTags._basicTags

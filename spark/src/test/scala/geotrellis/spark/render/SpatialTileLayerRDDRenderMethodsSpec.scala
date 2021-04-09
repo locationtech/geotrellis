@@ -44,7 +44,7 @@ class SpatialTileLayerRDDRenderMethodsSpec extends AnyFunSpec with TestEnvironme
       import geotrellis.raster.io.geotiff._
       val tiff = SinglebandGeoTiff(new java.io.File(inputHomeLocalPath, "elevation.tif").getAbsolutePath)
 
-      val (raster, rdd) = createTileLayerRDD(tiff.raster.mapTile(_.toArrayTile), 100, 100, tiff.crs)
+      val (raster, rdd) = createTileLayerRDD(tiff.raster.mapTile(_.toArrayTile()), 100, 100, tiff.crs)
 
       val colorMap =
         ColorMap(
@@ -63,7 +63,7 @@ class SpatialTileLayerRDDRenderMethodsSpec extends AnyFunSpec with TestEnvironme
         )
 
       val expected = raster.tile.color(colorMap)
-      val actual = rdd.color(colorMap).stitch
+      val actual = rdd.color(colorMap).stitch()
 
       assertEqual(actual, expected)
     }

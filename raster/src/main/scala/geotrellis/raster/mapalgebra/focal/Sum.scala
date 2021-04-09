@@ -31,7 +31,7 @@ object Sum {
   }
 
   def apply(tile: Tile, n: Neighborhood, bounds: Option[GridBounds[Int]] = None, target: TargetCell = TargetCell.All): Tile =
-    calculation(tile, n, bounds, target).execute
+    calculation(tile, n, bounds, target).execute()
 }
 
 class CursorSumCalc(r: Tile, n: Neighborhood, bounds: Option[GridBounds[Int]], target: TargetCell)

@@ -127,7 +127,7 @@ class SinglebandTileMaskMethodsSpec extends AnyFunSpec with Matchers with Raster
           val expected =
             if (mask.intersects(Point(re.gridToMap(x, y)))) tile.get(x, y)
             else NODATA
-          withClue(s"\n\nMASK: ${mask.toGeoJson}\nRASTEREXT $re\n\n") {
+          withClue(s"\n\nMASK: ${mask.toGeoJson()}\nRASTEREXT $re\n\n") {
             v should be(expected)
           }
         }

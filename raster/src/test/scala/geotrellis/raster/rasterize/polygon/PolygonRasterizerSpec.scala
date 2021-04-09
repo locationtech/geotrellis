@@ -40,7 +40,7 @@ class PolygonRasterizerSpec extends AnyFunSuite with RasterMatchers with TileBui
     val triangle = Polygon( LineString(Seq[(Double,Double)]((2,8),(5,5),(6,7), (6,7), (2,8))))
 
     val outsideSquare = Polygon( LineString(Seq[(Double,Double)]((51,59), (51,56), (54,56), (54,59), (51,59)) ))
-    val envelopingSquare = Extent(0.0, 0.0, 10.0, 10.0).toPolygon
+    val envelopingSquare = Extent(0.0, 0.0, 10.0, 10.0).toPolygon()
 
     // intersection on cell midpoint
     val square2 = Polygon( LineString(Seq[(Double,Double)]( (1.0,9.0), (1.0,8.5), (1.0,6.0), (4.0, 6.0), (4.0, 8.5), (4.0, 9.0), (1.0, 9.0) )))

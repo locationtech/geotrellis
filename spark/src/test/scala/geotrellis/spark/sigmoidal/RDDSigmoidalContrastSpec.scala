@@ -38,7 +38,7 @@ class RDDSigmoidalContrastSpec extends AnyFunSpec with Matchers with TestEnviron
       val tile1: Tile = DoubleArrayTile(data1.map(_.toDouble).toArray, 1, 2)
       val tile2: Tile = DoubleArrayTile(data2.map(_.toDouble).toArray, 1, 3)
       val rdd = ContextRDD(sc.parallelize(List((0, tile1), (1, tile2))), 33).sigmoidal(.5, 10)
-      val array = rdd.collect.flatMap(_._2.toArrayDouble)
+      val array = rdd.collect().flatMap(_._2.toArrayDouble())
 
       (array(0)/a)  should be <= (1.2)
       (array(1)/a) should be <= (1.2)
@@ -56,8 +56,8 @@ class RDDSigmoidalContrastSpec extends AnyFunSpec with Matchers with TestEnviron
 
       val tile1: Tile = UShortArrayTile(data1.toArray, 1, 2, UShortCellType)
       val tile2: Tile = UShortArrayTile(data2.toArray, 1, 3, UShortCellType)
-      val rdd = ContextRDD(sc.parallelize(List((0, tile1), (1, tile2))), 33).equalize
-      val array = rdd.collect.flatMap(_._2.toArray)
+      val rdd = ContextRDD(sc.parallelize(List((0, tile1), (1, tile2))), 33).equalize()
+      val array = rdd.collect().flatMap(_._2.toArray())
 
       (array(0) - a)  should be <= (442)
       array(1) should be <= x
@@ -76,8 +76,8 @@ class RDDSigmoidalContrastSpec extends AnyFunSpec with Matchers with TestEnviron
 
       val tile1: Tile = ShortArrayTile(data1.toArray, 1, 2, ShortCellType)
       val tile2: Tile = ShortArrayTile(data2.toArray, 1, 3, ShortCellType)
-      val rdd = ContextRDD(sc.parallelize(List((0, tile1), (1, tile2))), 33).equalize
-      val array = rdd.collect.flatMap(_._2.toArray)
+      val rdd = ContextRDD(sc.parallelize(List((0, tile1), (1, tile2))), 33).equalize()
+      val array = rdd.collect().flatMap(_._2.toArray())
 
       (array(0) - a)  should be <= (442)
       array(1) should be <= x
@@ -100,8 +100,8 @@ class RDDSigmoidalContrastSpec extends AnyFunSpec with Matchers with TestEnviron
       val tile2: MultibandTile = ArrayMultibandTile(
         ShortArrayTile(data2.toArray, 1, 3, ShortCellType),
         ShortArrayTile(data2.toArray, 1, 3, ShortCellType))
-      val rdd = ContextRDD(sc.parallelize(List((0, tile1), (1, tile2))), 33).equalize
-      val array = rdd.collect.flatMap(_._2.bands.flatMap(_.toArray))
+      val rdd = ContextRDD(sc.parallelize(List((0, tile1), (1, tile2))), 33).equalize()
+      val array = rdd.collect().flatMap(_._2.bands.flatMap(_.toArray()))
 
       (array.head - a) should be <= (442)
       (c - array.last) should be <= (442)

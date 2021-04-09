@@ -41,7 +41,7 @@ class PixelInterleaveBandArrayTile(inner: ArrayTile, bandCount: Int, bandIndex: 
   def applyDouble(i: Int): Double = inner.applyDouble(i * bandCount + bandIndex)
   def copy: ArrayTile = mutable
 
-  def toBytes(): Array[Byte] = mutable.toBytes
+  def toBytes(): Array[Byte] = mutable.toBytes()
 
   def mutable: MutableArrayTile = {
     val tile = ArrayTile.alloc(cellType, cols, rows)
@@ -64,8 +64,8 @@ class PixelInterleaveBandArrayTile(inner: ArrayTile, bandCount: Int, bandIndex: 
   }
 
   def withNoData(noDataValue: Option[Double]) =
-    PixelInterleaveBandArrayTile(inner.withNoData(noDataValue).toArrayTile, bandCount, bandIndex)
+    PixelInterleaveBandArrayTile(inner.withNoData(noDataValue).toArrayTile(), bandCount, bandIndex)
 
   def interpretAs(newCellType: CellType) =
-    PixelInterleaveBandArrayTile(inner.interpretAs(newCellType).toArrayTile, bandCount, bandIndex)
+    PixelInterleaveBandArrayTile(inner.interpretAs(newCellType).toArrayTile(), bandCount, bandIndex)
 }

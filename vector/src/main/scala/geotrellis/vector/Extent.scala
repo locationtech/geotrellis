@@ -51,7 +51,7 @@ object Extent {
 
   // The following enables extents to be written to GeoJSON (among other uses)
   implicit def toPolygon(extent: Extent): Polygon =
-    extent.toPolygon
+    extent.toPolygon()
 
   implicit def envelope2Extent(env: jts.Envelope): Extent =
     Extent(env)

@@ -51,7 +51,7 @@ trait ExtraLineStringMethods extends MethodExtensions[LineString] {
   def &(p: Point): PointOrNoResult = self.intersection(p)
   def &(mp: MultiPoint): MultiPointAtLeastOneDimensionIntersectionResult = self.intersection(mp)
   def &[G <: Geometry : AtLeastOneDimension](g: G): OneDimensionAtLeastOneDimensionIntersectionResult = self.intersection(g)
-  def &(ex: Extent): OneDimensionAtLeastOneDimensionIntersectionResult = self.intersection(ex.toPolygon)
+  def &(ex: Extent): OneDimensionAtLeastOneDimensionIntersectionResult = self.intersection(ex.toPolygon())
 
   def -(p: Point): LineStringResult = self.difference(p)
   def -(mp: MultiPoint): LineStringResult = self.difference(mp)

@@ -53,7 +53,7 @@ class StreamingByteReader(rangeReader: RangeReader, chunkSize: Int = 45876) exte
     this
   }
 
-  def order: ByteOrder = byteOrder
+  def order(): ByteOrder = byteOrder
 
   def order(byteOrder: ByteOrder): Unit = {
     this.byteOrder = byteOrder

@@ -82,7 +82,7 @@ object ZoomResample {
           val resampleKeyBounds: KeyBounds[K] =
             boundsAtZoom(sourceZoom, rdd.metadata.bounds, targetZoom).get
 
-          resampleKeyBounds.toGridBounds.intersection(tgb) match {
+          resampleKeyBounds.toGridBounds().intersection(tgb) match {
             case Some(resampleGridBounds) => {
               val resampled: RDD[(K, V)] = rdd.flatMap { case (key, tile) =>
                 val gbaz: Option[GridBounds[Int]] =

@@ -33,7 +33,7 @@ class SinglebandCropIteratorSpec extends AnyFunSpec
     val path = geoTiffPath("ls8_int32.tif")
     val geoTiff = {
       val tiff = SinglebandGeoTiff(path)
-      tiff.copy(tile = tiff.tile.toArrayTile)
+      tiff.copy(tile = tiff.tile.toArrayTile())
     }
     val cols = geoTiff.imageData.cols
     val rows = geoTiff.imageData.rows
@@ -71,10 +71,10 @@ class SinglebandCropIteratorSpec extends AnyFunSpec
           geoTiff.raster.tile.crop(256, 256, 512, 512))
 
       val actual: Array[Tile] =
-        Array(singlebandIterator.next.tile,
-          singlebandIterator.next.tile,
-          singlebandIterator.next.tile,
-          singlebandIterator.next.tile)
+        Array(singlebandIterator.next().tile,
+          singlebandIterator.next().tile,
+          singlebandIterator.next().tile,
+          singlebandIterator.next().tile)
 
       cfor(0)(_ < actual.length, _ + 1) { i =>
         assertEqual(expected(i), actual(i))
@@ -88,7 +88,7 @@ class SinglebandCropIteratorSpec extends AnyFunSpec
         new SinglebandCropIterator(geoTiff, windowedCols, windowedRows)
 
       val expected = geoTiff.tile
-      val actual = singlebandIterator.next.tile
+      val actual = singlebandIterator.next().tile
 
       assertEqual(expected, actual)
     }
@@ -108,12 +108,12 @@ class SinglebandCropIteratorSpec extends AnyFunSpec
           geoTiff.raster.tile.crop(500, 450, 512, 512))
 
       val actual: Array[Tile] =
-        Array(singlebandIterator.next.tile,
-          singlebandIterator.next.tile,
-          singlebandIterator.next.tile,
-          singlebandIterator.next.tile,
-          singlebandIterator.next.tile,
-          singlebandIterator.next.tile)
+        Array(singlebandIterator.next().tile,
+          singlebandIterator.next().tile,
+          singlebandIterator.next().tile,
+          singlebandIterator.next().tile,
+          singlebandIterator.next().tile,
+          singlebandIterator.next().tile)
 
       cfor(0)(_ < actual.length, _ + 1) { i =>
         assertEqual(expected(i), actual(i))
@@ -127,10 +127,10 @@ class SinglebandCropIteratorSpec extends AnyFunSpec
         new SinglebandCropIterator(geoTiff, windowedCols, windowedRows)
 
       cfor(0)(_ < 3, _ + 1) { i =>
-        singlebandIterator.next.tile
+        singlebandIterator.next().tile
         singlebandIterator.hasNext should be (true)
       }
-      singlebandIterator.next.tile
+      singlebandIterator.next().tile
       singlebandIterator.hasNext should be (false)
     }
   }

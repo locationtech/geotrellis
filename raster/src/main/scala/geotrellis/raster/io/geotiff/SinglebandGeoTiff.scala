@@ -38,7 +38,7 @@ case class SinglebandGeoTiff(
     SinglebandGeoTiff(f(tile), extent, crs, tags, options, overviews)
 
   def withStorageMethod(storageMethod: StorageMethod): SinglebandGeoTiff =
-    SinglebandGeoTiff(tile.toArrayTile, extent, crs, tags, options.copy(storageMethod = storageMethod), overviews)
+    SinglebandGeoTiff(tile.toArrayTile(), extent, crs, tags, options.copy(storageMethod = storageMethod), overviews)
 
   def imageData: GeoTiffImageData =
     tile match {

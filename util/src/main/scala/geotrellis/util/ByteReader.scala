@@ -69,7 +69,7 @@ object ByteReader {
       def getDouble = byteBuffer.getDouble
       def getLong = byteBuffer.getLong
 
-      def order = byteBuffer.order()
+      def order() = byteBuffer.order()
       def order(byteOrder: ByteOrder): Unit =
         byteBuffer.order(byteOrder)
     }

@@ -54,7 +54,7 @@ class HistogramMatchingSpec extends AnyFunSpec with Matchers
       val actual = tile.matchHistogram(sourceHistogram, targetHistogram)
       val expected = DoubleArrayTile(Array[Double](5, 1, 2, 3, 4, 5), 2, 3)
 
-      actual.toArray.toList should be (expected.toArray.toList)
+      actual.toArray().toList should be (expected.toArray().toList)
     }
 
     it("should work on unsigned integral rasters") {
@@ -62,7 +62,7 @@ class HistogramMatchingSpec extends AnyFunSpec with Matchers
       val actual = tile.matchHistogram(sourceHistogram, targetHistogram)
       val expected = UShortArrayTile(Array[Short](5, 1, 2, 3, 4, 5), 2, 3)
 
-      actual.toArray.toList should be (expected.toArray.toList)
+      actual.toArray().toList should be (expected.toArray().toList)
     }
 
     it("should work on signed integral rasters") {
@@ -70,14 +70,14 @@ class HistogramMatchingSpec extends AnyFunSpec with Matchers
       val actual = tile.matchHistogram(sourceHistogram, targetHistogram)
       val expected = ShortArrayTile(Array[Short](5, 1, 2, 3, 4, 5), 2, 3)
 
-      actual.toArray.toList should be (expected.toArray.toList)
+      actual.toArray().toList should be (expected.toArray().toList)
     }
 
     it("should work on multiband tiles") {
       val band1 = ShortArrayTile(Array[Short](16, 1, 2, 4, 8, 16), 2, 3)
       val band2 = ShortArrayTile(Array[Short](4, 8, 16, 16, 1, 2), 2, 3)
       val tile = ArrayMultibandTile(band1, band2)
-      val actual = tile.matchHistogram(sourceHistograms, targetHistograms).bands.flatMap({ _.toArray.toList })
+      val actual = tile.matchHistogram(sourceHistograms, targetHistograms).bands.flatMap({ _.toArray().toList })
       val expected = List(5, 1, 2, 3, 4, 5, 3, 4, 5, 5, 1, 2)
 
       actual should be (expected)

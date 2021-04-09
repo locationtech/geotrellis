@@ -29,7 +29,7 @@ object VectorExamples {
     // GeoJson methods implicitly added to vector types,
     // including any Traversable[Feature[G, D]]
 
-    val geojson: String = features.toGeoJson
+    val geojson: String = features.toGeoJson()
 
     println(geojson)
   }

@@ -45,16 +45,16 @@ class RDDCostDistanceMethodsSpec extends AnyFunSpec with Matchers with TestEnvir
   describe("Cost-Distance Extension Methods") {
 
     it("The costdistance Method Should Work (1/2)") {
-      val expected = IterativeCostDistance(rdd, points).collect.toList
-      val actual = rdd.costdistance(points).collect.toList
+      val expected = IterativeCostDistance(rdd, points).collect().toList
+      val actual = rdd.costdistance(points).collect().toList
 
       actual should be (expected)
     }
 
     it("The costdistance Method Should Work (2/2)") {
       val resolution = IterativeCostDistance.computeResolution(rdd)
-      val expected = IterativeCostDistance(rdd, points, resolution).collect.toList
-      val actual = rdd.costdistance(points, resolution).collect.toList
+      val expected = IterativeCostDistance(rdd, points, resolution).collect().toList
+      val actual = rdd.costdistance(points, resolution).collect().toList
 
       actual should be (expected)
     }

@@ -32,7 +32,7 @@ class SinglebandCropIterator(geoTiff: SinglebandGeoTiff,
   windowedCols: Int,
   windowedRows: Int) extends CropIterator(geoTiff, windowedCols, windowedRows) {
 
-  def next: SinglebandGeoTiff = {
+  def next(): SinglebandGeoTiff = {
     if (hasNext) {
       if (colCount + 1 > colIterations)
         adjustValues

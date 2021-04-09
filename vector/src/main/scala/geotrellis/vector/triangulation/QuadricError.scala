@@ -53,7 +53,7 @@ object QuadricError {
     ))
 
     do {
-      val pa = trans(e.src)
+      val pa = trans(e.src())
       val pb = trans(e.vert)
 
       val d1 = new Coordinate(pb.getX - pa.getX, pb.getY - pa.getY, pb.getZ - pa.getZ)
@@ -69,7 +69,7 @@ object QuadricError {
 
       accum = accum.add(plane.outerProduct(plane))
       e = e.next
-    } while (e.src != end)
+    } while (e.src() != end)
 
     accum
   }

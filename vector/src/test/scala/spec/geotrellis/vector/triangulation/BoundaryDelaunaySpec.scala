@@ -28,7 +28,7 @@ import org.scalatest.funspec.AnyFunSpec
 class BoundaryDelaunaySpec extends AnyFunSpec with Matchers {
 
   def randInRange(low: Double, high: Double): Double = {
-    val x = Random.nextDouble
+    val x = Random.nextDouble()
     low * (1-x) + high * x
   }
 
@@ -52,7 +52,7 @@ class BoundaryDelaunaySpec extends AnyFunSpec with Matchers {
       val pts = (for ( i <- 1 to 1000 ) yield randomPoint(ex)).toArray
       val dt = DelaunayTriangulation(pts)
       val bdt = BoundaryDelaunay(dt, ex)
-      val bdtTris = bdt.triangleMap.getTriangles.keys.toSet
+      val bdtTris = bdt.triangleMap.getTriangles().keys.toSet
 
       def circumcircleLeavesExtent(tri: Int): Boolean = {
         import dt.halfEdgeTable._
@@ -61,11 +61,11 @@ class BoundaryDelaunaySpec extends AnyFunSpec with Matchers {
         val (radius, center, valid) = circleCenter(getDest(tri), getDest(getNext(tri)), getDest(getNext(getNext(tri))))
         val ppd = new PointPairDistance
 
-        DistanceToPoint.computeDistance(ex.toPolygon, center, ppd)
+        DistanceToPoint.computeDistance(ex.toPolygon(), center, ppd)
         !valid || ppd.getDistance < radius
       }
 
-      dt.triangleMap.getTriangles.toSeq.forall{ case (idx, tri) => {
+      dt.triangleMap.getTriangles().toSeq.forall{ case (idx, tri) => {
         if (circumcircleLeavesExtent(tri))
           bdtTris.contains(idx)
         else {

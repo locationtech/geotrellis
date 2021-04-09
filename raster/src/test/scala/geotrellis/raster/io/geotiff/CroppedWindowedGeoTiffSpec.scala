@@ -28,12 +28,12 @@ object Reader {
   def singleBand(path: String, extent: Extent): (Raster[Tile], Raster[Tile]) = {
     val expected = {
       val tiff = SinglebandGeoTiff(path, extent)
-      tiff.copy(tile = tiff.tile.toArrayTile)
+      tiff.copy(tile = tiff.tile.toArrayTile())
     }.raster
 
     val actual = {
       val tiff = SinglebandGeoTiff(path)
-      tiff.copy(tile = tiff.tile.toArrayTile)
+      tiff.copy(tile = tiff.tile.toArrayTile())
     }.raster.crop(extent)
     (expected, actual)
   }

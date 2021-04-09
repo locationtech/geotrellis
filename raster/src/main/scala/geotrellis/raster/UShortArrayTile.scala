@@ -29,7 +29,7 @@ abstract class UShortArrayTile(val array: Array[Short], cols: Int, rows: Int)
     * Return an array of bytes representing the data behind this
     * [[UShortArrayTile]].
     */
-  def toBytes: Array[Byte] = {
+  def toBytes(): Array[Byte] = {
     val pixels = new Array[Byte](array.length * cellType.bytes)
     val bytebuff = ByteBuffer.wrap(pixels)
     bytebuff.asShortBuffer.put(array)

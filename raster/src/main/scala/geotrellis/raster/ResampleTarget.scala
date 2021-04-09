@@ -105,13 +105,13 @@ object ResampleTarget {
     resampleTarget match {
       case TargetDimensions(cols, rows) =>
         val updated = current.withDimensions(cols.toLong, rows.toLong).toGridType[Int]
-        Reproject.Options(method = resampleMethod, targetRasterExtent = Some(updated.toRasterExtent))
+        Reproject.Options(method = resampleMethod, targetRasterExtent = Some(updated.toRasterExtent()))
 
       case TargetAlignment(grid) =>
         Reproject.Options(method = resampleMethod, parentGridExtent = Some(grid.toGridType[Long]))
 
       case TargetRegion(region) =>
-        Reproject.Options(method = resampleMethod, targetRasterExtent = Some(region.toGridType[Int].toRasterExtent))
+        Reproject.Options(method = resampleMethod, targetRasterExtent = Some(region.toGridType[Int].toRasterExtent()))
 
       case TargetCellSize(cellSize) =>
         Reproject.Options(method = resampleMethod, targetCellSize = Some(cellSize))

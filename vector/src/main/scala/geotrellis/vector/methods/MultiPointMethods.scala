@@ -29,7 +29,7 @@ trait ExtraMultiPointMethods extends MethodExtensions[MultiPoint] {
   def &(p: Point): PointOrNoResult = self.intersection(p)
   def &(mp: MultiPoint): MultiPointMultiPointIntersectionResult = self.intersection(mp)
   def &[G <: Geometry : AtLeastOneDimension](g: G): MultiPointAtLeastOneDimensionIntersectionResult = self.intersection(g)
-  def &(ex: Extent): MultiPointAtLeastOneDimensionIntersectionResult = self.intersection(ex.toPolygon)
+  def &(ex: Extent): MultiPointAtLeastOneDimensionIntersectionResult = self.intersection(ex.toPolygon())
 
   def -(g: Geometry): MultiPointGeometryDifferenceResult = self.difference(g)
 

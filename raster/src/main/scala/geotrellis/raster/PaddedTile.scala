@@ -115,7 +115,7 @@ case class PaddedTile(chunk: Tile, colOffset: Int, rowOffset: Int, cols: Int, ro
     }
   }
 
-  def mutable(): MutableArrayTile =
+  def mutable: MutableArrayTile =
     mutable(cellType)
 
   def mutable(targetCellType: CellType): MutableArrayTile = {
@@ -169,11 +169,11 @@ case class PaddedTile(chunk: Tile, colOffset: Int, rowOffset: Int, cols: Int, ro
     arr
   }
 
-  def toBytes(): Array[Byte] = toArrayTile.toBytes
+  def toBytes(): Array[Byte] = toArrayTile().toBytes()
 
 
   def combine(other: Tile)(f: (Int, Int) => Int): Tile = {
-    (this, other).assertEqualDimensions
+    (this, other).assertEqualDimensions()
 
     val tile = ArrayTile.alloc(cellType.union(other.cellType), cols, rows)
     cfor(0)(_ < rows, _ + 1) { row =>
@@ -186,7 +186,7 @@ case class PaddedTile(chunk: Tile, colOffset: Int, rowOffset: Int, cols: Int, ro
   }
 
   def combineDouble(other: Tile)(f: (Double, Double) => Double): Tile = {
-    (this, other).assertEqualDimensions
+    (this, other).assertEqualDimensions()
 
     val tile = ArrayTile.alloc(cellType, cols, rows)
     cfor(0)(_ < rows, _ + 1) { row =>

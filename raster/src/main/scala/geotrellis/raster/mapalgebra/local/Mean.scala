@@ -31,7 +31,7 @@ object Mean extends Serializable {
     apply(rs)
 
   def apply(rs: Seq[Tile]): Tile = {
-    rs.assertEqualDimensions
+    rs.assertEqualDimensions()
 
     val layerCount = rs.length
     if(layerCount == 0) {

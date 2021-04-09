@@ -271,7 +271,7 @@ object GeoTiffTile {
       }
 
     cfor(0)(_ < segmentCount, _ + 1) { i =>
-      val bytes = segmentTiles(i).toBytes
+      val bytes = segmentTiles(i).toBytes()
       segmentBytes(i) = compressor.compress(bytes, i)
     }
 
@@ -285,7 +285,7 @@ object GeoTiffTile {
       }
     }
 
-    apply(new ArraySegmentBytes(segmentBytes), compressor.createDecompressor, segmentLayout, options.compression, tile.cellType)
+    apply(new ArraySegmentBytes(segmentBytes), compressor.createDecompressor(), segmentLayout, options.compression, tile.cellType)
   }
 }
 
@@ -666,7 +666,7 @@ abstract class GeoTiffTile(
    * @return An Array[Int] that conatains all of the values in the tile
    */
   def toArray(): Array[Int] =
-    toArrayTile.toArray
+    toArrayTile().toArray()
 
   /**
    * Converts the given implementation to an Array
@@ -674,7 +674,7 @@ abstract class GeoTiffTile(
    * @return An Array[Double] that conatains all of the values in the tile
    */
   def toArrayDouble(): Array[Double] =
-    toArrayTile.toArrayDouble
+    toArrayTile().toArrayDouble()
 
   /**
    * Converts GeoTiffTile to an ArrayTile
@@ -726,7 +726,7 @@ abstract class GeoTiffTile(
   def crop(bounds: GridBounds[Int]): MutableArrayTile = {
     val iter = crop(List(bounds))
     if(iter.isEmpty) throw GeoAttrsError(s"No intersections of ${bounds} vs ${dimensions}")
-    else iter.next._2
+    else iter.next()._2
   }
 
   /**
@@ -802,7 +802,7 @@ abstract class GeoTiffTile(
    * @return An Array[Byte] of the GeoTiffTile
    */
   def toBytes(): Array[Byte] =
-    toArrayTile.toBytes
+    toArrayTile().toBytes()
 
   override def toString: String = s"GeoTiffTile($cols,$rows,$cellType)"
 }

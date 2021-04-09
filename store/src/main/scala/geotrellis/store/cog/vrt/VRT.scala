@@ -137,7 +137,7 @@ case class VRT(
     val rasterYSize = layoutRows
 
     <VRTDataset rasterXSize={rasterXSize.toString} rasterYSize={rasterYSize.toString}>
-      <SRS>{xml.Unparsed(crs.toWKT.get)}</SRS>
+      <SRS>{xml.Unparsed(crs.toWKT().get)}</SRS>
       <GeoTransform>{geoTransformString}</GeoTransform>
       {bands}
     </VRTDataset>

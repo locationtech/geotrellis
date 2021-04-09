@@ -49,7 +49,7 @@ trait JpgRenderMethods extends MethodExtensions[Tile] {
       val quantileBreaks = histogram.quantileBreaks(colorRamp.numStops)
       renderJpg(new IntColorMap(quantileBreaks.zip(colorRamp.colors).toMap).cache(histogram), settings)
     } else {
-      val histogram = self.histogramDouble
+      val histogram = self.histogramDouble()
       renderJpg(ColorMap.fromQuantileBreaks(histogram, colorRamp), settings)
     }
   }

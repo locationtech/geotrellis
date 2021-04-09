@@ -197,7 +197,7 @@ object SimpleCostDistance {
       }
     }
 
-    while (!q.isEmpty) processNext
+    while (!q.isEmpty) processNext()
 
     costTile
   }

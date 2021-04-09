@@ -35,7 +35,7 @@ class RowTransformSpec extends AnyFunSpec
 
   val LLtoWM = Transform(LatLng, WebMercator)
   val WMtoLL = Transform(WebMercator, LatLng)
-  val pointsWM = GeoJson.fromFile[JsonFeatureCollection](path).getAllPoints
+  val pointsWM = GeoJson.fromFile[JsonFeatureCollection](path).getAllPoints()
   val pointsLL = pointsWM.map(_.reproject(WMtoLL))
 
   val srcX = pointsLL.map(_.x).toArray

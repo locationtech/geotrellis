@@ -29,7 +29,7 @@ object BoundaryDelaunay {
   def isMeshValid(triangles: TriangleMap, het: HalfEdgeTable): Boolean = {
     import het._
     var valid = true
-    triangles.getTriangles.map { case (idx, e0) => {
+    triangles.getTriangles().map { case (idx, e0) => {
       val (a, b, c) = idx
       var e = e0
       do {
@@ -49,7 +49,7 @@ object BoundaryDelaunay {
     val halfEdgeTable = new HalfEdgeTable(3 * dt.pointSet.length - 6)  // Allocate for half as many edges as would be expected
 
     val liveVertices = collection.mutable.Set.empty[Int]
-    val isLinear = dt.isLinear
+    val isLinear = dt.isLinear()
 
     def addPoint(v: Vertex): Vertex = {
       val ix = v
@@ -72,7 +72,7 @@ object BoundaryDelaunay {
 
       !valid || {
         val ppd = new PointPairDistance
-        DistanceToPoint.computeDistance(extent.toPolygon, center, ppd)
+        DistanceToPoint.computeDistance(extent.toPolygon(), center, ppd)
         ppd.getDistance < radius
       }
     }
@@ -143,14 +143,14 @@ object BoundaryDelaunay {
       import dt.halfEdgeTable._
 
       val correspondingEdge = collection.mutable.Map.empty[(Vertex, Vertex), ResultEdge]
-      var e = dt.boundary
+      var e = dt.boundary()
 
       do {
         val edge = halfEdgeTable.createHalfEdge(getDest(e))
         addPoint(getDest(e))
         correspondingEdge += (getSrc(e), getDest(e)) -> edge
         e = getNext(e)
-      } while (e != dt.boundary)
+      } while (e != dt.boundary())
 
       do {
         val edge = correspondingEdge((getSrc(e), getDest(e)))
@@ -159,9 +159,9 @@ object BoundaryDelaunay {
         halfEdgeTable.setFlip(flip, edge)
         halfEdgeTable.setNext(edge, correspondingEdge((getDest(e), getDest(getNext(e)))))
         e = getNext(e)
-      } while (e != dt.boundary)
+      } while (e != dt.boundary())
 
-      correspondingEdge((getSrc(dt.boundary), getDest(dt.boundary)))
+      correspondingEdge((getSrc(dt.boundary()), getDest(dt.boundary())))
     }
 
     val outerEdges = collection.mutable.Set.empty[(Vertex, Vertex)]
@@ -170,11 +170,11 @@ object BoundaryDelaunay {
     def copyConvertBoundingLoop(): ResultEdge = {
       import dt.halfEdgeTable._
 
-      val first = copyConvertEdge(dt.boundary)
+      val first = copyConvertEdge(dt.boundary())
       var last = first
-      outerEdges += ((getSrc(dt.boundary), getDest(dt.boundary)))
-      innerEdges += (getDest(dt.boundary), getSrc(dt.boundary)) -> (getFlip(dt.boundary), first)
-      var e = getNext(dt.boundary)
+      outerEdges += ((getSrc(dt.boundary()), getDest(dt.boundary())))
+      innerEdges += (getDest(dt.boundary()), getSrc(dt.boundary())) -> (getFlip(dt.boundary()), first)
+      var e = getNext(dt.boundary())
 
       do {
         val copy = copyConvertEdge(e)
@@ -184,7 +184,7 @@ object BoundaryDelaunay {
         halfEdgeTable.setNext(halfEdgeTable.getFlip(copy), halfEdgeTable.getFlip(last))
         last = copy
         e = getNext(e)
-      } while (e != dt.boundary)
+      } while (e != dt.boundary())
       halfEdgeTable.setNext(last, first)
       halfEdgeTable.setNext(halfEdgeTable.getFlip(first), halfEdgeTable.getFlip(last))
 
@@ -214,8 +214,8 @@ object BoundaryDelaunay {
 
       val workQueue = collection.mutable.Queue( (e0, opp0) )
 
-      while (!workQueue.isEmpty) {
-        val (e, opp) = workQueue.dequeue
+      while (workQueue.nonEmpty) {
+        val (e, opp) = workQueue.dequeue()
         val isOuterEdge = outerEdges.contains(getSrc(e) -> getDest(e))
         val isInInnerRing = innerEdges.contains(getSrc(e) -> getDest(e))
         if (!isOuterEdge && isInInnerRing) {
@@ -319,7 +319,7 @@ object BoundaryDelaunay {
       import dt.halfEdgeTable._
 
       val newBound: ResultEdge = copyConvertBoundingLoop()
-      var e = dt.boundary
+      var e = dt.boundary()
       var ne = newBound
 
       do {
@@ -327,24 +327,24 @@ object BoundaryDelaunay {
         recursiveAddTris(getFlip(e), ne)
         e = getNext(e)
         ne = halfEdgeTable.getNext(ne)
-      } while (e != dt.boundary)
+      } while (e != dt.boundary())
 
-      fillInnerLoop
+      fillInnerLoop()
 
       newBound
     }
 
     val boundary =
-      if (dt.isLinear) {
+      if (dt.isLinear()) {
         dt.numVertices match {
           case 0 => -1
           case 1 =>
             addPoint(dt.liveVertices.toSeq(0))
             -1
-          case _ => copyConvertLinearBound
+          case _ => copyConvertLinearBound()
         }
       } else
-        copyConvertBoundingTris
+        copyConvertBoundingTris()
 
     BoundaryDelaunay(IndexedPointSet(verts.toMap), liveVertices.toSet, halfEdgeTable, triangles, boundary, isLinear)
   }
@@ -385,7 +385,7 @@ case class BoundaryDelaunay(
     val indexToCoord = { i: Int => Point(pointSet.getCoordinate(i)) }
     val mp = geotrellis.vector.MultiPolygon(triangleMap.triangleVertices.map{ case (i,j,k) => Polygon(indexToCoord(i), indexToCoord(j), indexToCoord(k), indexToCoord(i)) })
     val wktString = geotrellis.vector.io.wkt.WKT.write(mp)
-    new java.io.PrintWriter(wktFile) { write(wktString); close }
+    new java.io.PrintWriter(wktFile) { write(wktString); close() }
   }
 
   def isMeshValid(): Boolean = { BoundaryDelaunay.isMeshValid(triangleMap, halfEdgeTable) }

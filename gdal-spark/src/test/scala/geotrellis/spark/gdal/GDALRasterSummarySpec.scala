@@ -144,7 +144,7 @@ class GDALRasterSummarySpec extends AnyFunSpec with TestEnvironment with GivenWh
     res.length shouldBe rasterRefRdd.count()
     res.length shouldBe 72
 
-    contextRDD.stitch.tile.band(0).renderPng().write("/tmp/raster-source-contextrdd-gdal.png")
+    contextRDD.stitch().tile.band(0).renderPng().write("/tmp/raster-source-contextrdd-gdal.png")
   }
 
   it("Should cleanup GDAL Datasets by the end of the loop (10 iterations)") {
@@ -156,7 +156,7 @@ class GDALRasterSummarySpec extends AnyFunSpec with TestEnvironment with GivenWh
 
     cfor(0)(_ < 11, _ + 1) { _ =>
       val reference = GDALRasterSource(inputPath).reproject(targetCRS, method = method).tileToLayout(layout, method)
-      val RasterExtent(Extent(axmin, aymin, axmax, aymax), acw, ach, acols, arows) = reference.source.gridExtent.toRasterExtent
+      val RasterExtent(Extent(axmin, aymin, axmax, aymax), acw, ach, acols, arows) = reference.source.gridExtent.toRasterExtent()
 
       axmin shouldBe exmin +- 1e-5
       aymin shouldBe eymin +- 1e-5

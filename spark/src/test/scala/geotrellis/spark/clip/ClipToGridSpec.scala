@@ -154,14 +154,14 @@ class ClipToGridSpec extends AnyFunSpec with TestEnvironment {
 
       def outerPoly(k: SpatialKey): Polygon =
         try {
-          layoutDefinition.mapTransform(k).intersection(shellExtent).get.toPolygon
+          layoutDefinition.mapTransform(k).intersection(shellExtent).get.toPolygon()
         } catch {
           case e: Throwable => println(s"Failed at $k"); throw e
         }
 
       def innerPoly(k: SpatialKey): Polygon =
         try {
-          (layoutDefinition.mapTransform(k).toPolygon - holeExtent.toPolygon).as[Polygon].get
+          (layoutDefinition.mapTransform(k).toPolygon() - holeExtent.toPolygon()).as[Polygon].get
         } catch {
           case e: Throwable => println(s"Failed at $k"); throw e
         }
@@ -206,23 +206,23 @@ class ClipToGridSpec extends AnyFunSpec with TestEnvironment {
           withKey(SpatialKey(1, 2))(outerPoly(_)),
 
           // Center - Upper
-          withKey(SpatialKey(2, 2))(layoutDefinition.mapTransform.apply(_).toPolygon),
-          withKey(SpatialKey(3, 2))(layoutDefinition.mapTransform.apply(_).toPolygon),
-          withKey(SpatialKey(4, 2))(layoutDefinition.mapTransform.apply(_).toPolygon),
-          withKey(SpatialKey(5, 2))(layoutDefinition.mapTransform.apply(_).toPolygon),
+          withKey(SpatialKey(2, 2))(layoutDefinition.mapTransform.apply(_).toPolygon()),
+          withKey(SpatialKey(3, 2))(layoutDefinition.mapTransform.apply(_).toPolygon()),
+          withKey(SpatialKey(4, 2))(layoutDefinition.mapTransform.apply(_).toPolygon()),
+          withKey(SpatialKey(5, 2))(layoutDefinition.mapTransform.apply(_).toPolygon()),
 
           // Center - Bottom
-          withKey(SpatialKey(2, 8))(layoutDefinition.mapTransform.apply(_).toPolygon),
-          withKey(SpatialKey(3, 8))(layoutDefinition.mapTransform.apply(_).toPolygon),
-          withKey(SpatialKey(4, 8))(layoutDefinition.mapTransform.apply(_).toPolygon),
-          withKey(SpatialKey(5, 8))(layoutDefinition.mapTransform.apply(_).toPolygon),
+          withKey(SpatialKey(2, 8))(layoutDefinition.mapTransform.apply(_).toPolygon()),
+          withKey(SpatialKey(3, 8))(layoutDefinition.mapTransform.apply(_).toPolygon()),
+          withKey(SpatialKey(4, 8))(layoutDefinition.mapTransform.apply(_).toPolygon()),
+          withKey(SpatialKey(5, 8))(layoutDefinition.mapTransform.apply(_).toPolygon()),
 
           // Center - Left
-          withKey(SpatialKey(2, 7))(layoutDefinition.mapTransform.apply(_).toPolygon),
-          withKey(SpatialKey(2, 6))(layoutDefinition.mapTransform.apply(_).toPolygon),
-          withKey(SpatialKey(2, 5))(layoutDefinition.mapTransform.apply(_).toPolygon),
-          withKey(SpatialKey(2, 4))(layoutDefinition.mapTransform.apply(_).toPolygon),
-          withKey(SpatialKey(2, 3))(layoutDefinition.mapTransform.apply(_).toPolygon),
+          withKey(SpatialKey(2, 7))(layoutDefinition.mapTransform.apply(_).toPolygon()),
+          withKey(SpatialKey(2, 6))(layoutDefinition.mapTransform.apply(_).toPolygon()),
+          withKey(SpatialKey(2, 5))(layoutDefinition.mapTransform.apply(_).toPolygon()),
+          withKey(SpatialKey(2, 4))(layoutDefinition.mapTransform.apply(_).toPolygon()),
+          withKey(SpatialKey(2, 3))(layoutDefinition.mapTransform.apply(_).toPolygon()),
 
           // Inner - Upper
           withKey(SpatialKey(3, 3))(innerPoly(_)),

@@ -42,8 +42,8 @@ class RDDHistogramEqualizationSpec extends AnyFunSpec with Matchers with TestEnv
     it("should work with floating-point rasters") {
       val tile1: Tile = DoubleArrayTile(data1.map(_.toDouble).toArray, 1, 8)
       val tile2: Tile = DoubleArrayTile(data2.map(_.toDouble).toArray, 1, 8)
-      val rdd = ContextRDD(sc.parallelize(List((0, tile1), (1, tile2))), 33).equalize
-      val array = rdd.collect.map(_._2.toArrayDouble)
+      val rdd = ContextRDD(sc.parallelize(List((0, tile1), (1, tile2))), 33).equalize()
+      val array = rdd.collect().map(_._2.toArrayDouble())
 
       array.head.head should be (Double.MinValue)
       array.last.head should be (Double.MaxValue)
@@ -52,8 +52,8 @@ class RDDHistogramEqualizationSpec extends AnyFunSpec with Matchers with TestEnv
     it("should work with unsigned integral rasters") {
       val tile1: Tile = UShortArrayTile(data1.map(_.toShort).toArray, 1, 8, UShortCellType)
       val tile2: Tile = UShortArrayTile(data2.map(_.toShort).toArray, 1, 8, UShortCellType)
-      val rdd = ContextRDD(sc.parallelize(List((0, tile1), (1, tile2))), 33).equalize
-      val array = rdd.collect.map(_._2.toArray)
+      val rdd = ContextRDD(sc.parallelize(List((0, tile1), (1, tile2))), 33).equalize()
+      val array = rdd.collect().map(_._2.toArray())
 
       array.head.head should be (0)
       array.last.head should be ((1<<16)-1)
@@ -62,8 +62,8 @@ class RDDHistogramEqualizationSpec extends AnyFunSpec with Matchers with TestEnv
     it("should work with signed integral rasters") {
       val tile1: Tile = ShortArrayTile(data1.map(_.toShort).toArray, 1, 8, ShortCellType)
       val tile2: Tile = ShortArrayTile(data2.map(_.toShort).toArray, 1, 8, ShortCellType)
-      val rdd = ContextRDD(sc.parallelize(List((0, tile1), (1, tile2))), 33).equalize
-      val array = rdd.collect.map(_._2.toArray)
+      val rdd = ContextRDD(sc.parallelize(List((0, tile1), (1, tile2))), 33).equalize()
+      val array = rdd.collect().map(_._2.toArray())
 
       array.head.head should be (-(1<<15))
       array.last.head should be ((1<<15)-1)
@@ -81,8 +81,8 @@ class RDDHistogramEqualizationSpec extends AnyFunSpec with Matchers with TestEnv
       val tile2: MultibandTile = ArrayMultibandTile(
         ShortArrayTile(data3.map(_.toShort).toArray, 1, 8, ShortCellType),
         ShortArrayTile(data4.map(_.toShort).toArray, 1, 8, ShortCellType))
-      val rdd = ContextRDD(sc.parallelize(List((0, tile1), (1, tile2))), 33).equalize
-      val array = rdd.collect.flatMap(_._2.bands.flatMap(_.toArray))
+      val rdd = ContextRDD(sc.parallelize(List((0, tile1), (1, tile2))), 33).equalize()
+      val array = rdd.collect().flatMap(_._2.bands.flatMap(_.toArray()))
 
       array.head should be (-(1<<15))
       array.last should be ((1<<15)-1)

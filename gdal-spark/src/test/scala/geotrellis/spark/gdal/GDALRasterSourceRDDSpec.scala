@@ -58,7 +58,7 @@ class GDALRasterSourceRDDSpec extends AnyFunSpec with TestEnvironment with Befor
       val expectedKeys =
         layout
           .mapTransform
-          .keysForGeometry(reprojectedSource.extent.toPolygon)
+          .keysForGeometry(reprojectedSource.extent.toPolygon())
           .toSeq
           .sortBy { key => (key.col, key.row) }
 
@@ -151,8 +151,8 @@ class GDALRasterSourceRDDSpec extends AnyFunSpec with TestEnvironment with Befor
       // geotrellis.raster.io.geotiff.GeoTiff(reprojectedExpectedRDD.stitch, targetCRS).write("/tmp/expected.tif")
       // geotrellis.raster.io.geotiff.GeoTiff(reprojectedSourceRDD.stitch, targetCRS).write("/tmp/actual.tif")
 
-      val actual = reprojectedSourceRDD.stitch.tile.band(0)
-      val expected = reprojectedExpectedRDD.stitch.tile.band(0)
+      val actual = reprojectedSourceRDD.stitch().tile.band(0)
+      val expected = reprojectedExpectedRDD.stitch().tile.band(0)
 
       var (diff, pixels, mismatched) = (0d, 0d, 0)
       cfor(0)(_ < math.min(actual.cols, expected.cols), _ + 1) { c =>
@@ -268,7 +268,7 @@ class GDALRasterSourceRDDSpec extends AnyFunSpec with TestEnvironment with Befor
               dirtyCalls(reprojRS(i).source)
             })
           }
-        }.parSequence.unsafeRunSync
+        }.parSequence.unsafeRunSync()
 
         println(java.lang.Thread.activeCount())
 

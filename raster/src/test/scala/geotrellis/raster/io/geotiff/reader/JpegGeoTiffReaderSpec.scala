@@ -31,13 +31,13 @@ class JpegGeoTiffReaderSpec extends AnyFunSpec with RasterMatchers with GeoTiffT
       // run gdal_translate -co compression=deflate jpeg-test.tif jpeg-test-deflate.tif to create our expected.
 
       val gt = GeoTiffReader.readMultiband(geoTiffPath(s"jpeg-test-small.tif"))
-      val actual = gt.tile.toArrayTile
+      val actual = gt.tile.toArrayTile()
       // gdal_translate jpeg-test-small.tif jpeg-test-small-uncompressed.tif
       val gt2 = GeoTiffReader.readMultiband(geoTiffPath(s"jpeg-test-small-uncompressed.tif"))
-      val expected = gt2.tile.toArrayTile
+      val expected = gt2.tile.toArrayTile()
 
       // val gt2 = GeoTiffReader.readMultiband(geoTiffPath(s"jpeg-test-deflate-small.tif"))
-      // val expected = gt2.tile.toArrayTile
+      // val expected = gt2.tile.toArrayTile()
 
       /*val jpegTestWrittenPath = s"$testDirPath/jpeg-test-written.tif"
       GeoTiff(Raster(actual, gt.raster.extent), gt.crs).copy(
@@ -46,7 +46,7 @@ class JpegGeoTiffReaderSpec extends AnyFunSpec with RasterMatchers with GeoTiffT
 
       // yes, this test looks a bit weird now
       // val gt3 = GeoTiffReader.readMultiband(geoTiffPath(s"jpeg-test-written.tif"))
-      // val actualRead = gt3.tile.toArrayTile
+      // val actualRead = gt3.tile.toArrayTile()
 
       assertEqual(actual, expected)
     }

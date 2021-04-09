@@ -85,13 +85,13 @@ class TemporalGeoTiffS3InputFormatSpec extends AnyFunSpec with Matchers with Tes
         classOf[TemporalProjectedExtent],
         classOf[Tile])
 
-      source.cache
-      val sourceCount = source.count
+      source.cache()
+      val sourceCount = source.count()
       sourceCount should not be (0)
       info(s"Source RDD count: ${sourceCount}")
 
       Ingest[TemporalProjectedExtent, SpaceTimeKey](source, LatLng, layoutScheme){ (rdd, level) =>
-        val rddCount = rdd.count
+        val rddCount = rdd.count()
         rddCount should not be (0)
         info(s"Tiled RDD count: ${rddCount}")
       }

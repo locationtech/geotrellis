@@ -132,7 +132,7 @@ class LocalMapSpec extends AnyFunSpec
       val r = f(a, 3, 3)
 
       val r2 = r.map { z:Int => z + 1 }
-      val d = r2.toArray
+      val d = r2.toArray()
       d should be (a.map { _ + 1 })
     }
   }

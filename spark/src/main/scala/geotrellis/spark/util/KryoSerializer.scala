@@ -51,6 +51,6 @@ object KryoSerializer {
   }
 
   def deserializeStream[T: ClassTag](is: InputStream): T = {
-    ser.newInstance().deserializeStream(is).readObject[T]
+    ser.newInstance().deserializeStream(is).readObject[T]()
   }
 }

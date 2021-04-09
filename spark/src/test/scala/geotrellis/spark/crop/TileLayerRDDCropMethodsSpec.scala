@@ -30,7 +30,7 @@ class TileLayerRDDCropMethodsSpec extends AnyFunSpec with TestEnvironment {
   describe("TileLayerRDD Crop Methods") {
     val path = "raster/data/aspect.tif"
     val gt = SinglebandGeoTiff(path)
-    val originalRaster = gt.raster.mapTile(_.toArrayTile).resample(500, 500)
+    val originalRaster = gt.raster.mapTile(_.toArrayTile()).resample(500, 500)
     val (_, rdd) = createTileLayerRDD(originalRaster, 5, 5, gt.crs)
     val md = rdd.metadata
     val overall = md.extent
@@ -40,43 +40,43 @@ class TileLayerRDDCropMethodsSpec extends AnyFunSpec with TestEnvironment {
     val shifted = Extent(xmin + overall.width / 2, ymin + overall.height / 2, xmax + overall.width / 2, ymax + overall.height / 2)
 
     it("should correctly crop by the rdd extent") {
-      val count = rdd.crop(overall).count
+      val count = rdd.crop(overall).count()
       count should be (25)
     }
 
     it("should correctly crop by an extent half the area of the rdd extent") {
       val cropped = rdd.crop(half)
-      val count = cropped.count
+      val count = cropped.count()
       count should be (9)
 
-      val gb = cropped.metadata.bounds.get.toGridBounds
+      val gb = cropped.metadata.bounds.get.toGridBounds()
       gb.width * gb.height should be (9)
     }
 
     it("should correctly crop by a small extent") {
       val cropped = rdd.crop(small)
-      val count = cropped.count
+      val count = cropped.count()
       count should be (1)
 
-      val gb = cropped.metadata.bounds.get.toGridBounds
+      val gb = cropped.metadata.bounds.get.toGridBounds()
       gb.width * gb.height should be (1)
     }
 
     it("should correctly crop by a shifted extent") {
       val cropped = rdd.crop(shifted)
-      val count = cropped.count
+      val count = cropped.count()
       count should be (9)
 
-      val gb = cropped.metadata.bounds.get.toGridBounds
+      val gb = cropped.metadata.bounds.get.toGridBounds()
       gb.width * gb.height should be (9)
     }
 
     it("should correctly crop by a shifted extent (clamp = false)") {
       val cropped = rdd.crop(shifted)
-      val stitched = cropped.stitch.tile
+      val stitched = cropped.stitch().tile
 
       val croppednc = rdd.crop(shifted, CropOptions(clamp = false))
-      val stitchednc = croppednc.stitch.tile
+      val stitchednc = croppednc.stitch().tile
 
       assertEqual(stitched, stitchednc)
     }

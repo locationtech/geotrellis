@@ -48,7 +48,7 @@ class BufferTilesSpec extends AnyFunSpec with TestEnvironment with RasterMatcher
   describe("The BufferTiles functionality") {
     val path = "raster/data/aspect.tif"
     val gt = SinglebandGeoTiff(path)
-    val originalRaster = gt.mapTile(_.toArrayTile).raster.resample(500, 500)
+    val originalRaster = gt.mapTile(_.toArrayTile()).raster.resample(500, 500)
     val (_, wholeRdd) = createTileLayerRDD(originalRaster, 5, 5, gt.crs)
     val metadata = wholeRdd.metadata
     val wholeCollection = wholeRdd.toCollection
@@ -76,28 +76,28 @@ class BufferTilesSpec extends AnyFunSpec with TestEnvironment with RasterMatcher
 
     it("should work when the RDD is a diagonal strip") {
       val partialRdd = ContextRDD(wholeRdd.filter({ case (k, _) => k.col == k.row }), metadata)
-      BufferTilesRDD(partialRdd, 1).count
+      BufferTilesRDD(partialRdd, 1).count()
     }
 
     it("should work when the RDD is a square minus the main diagonal") {
       val partialRdd = ContextRDD(wholeRdd.filter({ case (k, _) => k.col != k.row }), metadata)
-      BufferTilesRDD(partialRdd, 1).count
+      BufferTilesRDD(partialRdd, 1).count()
     }
 
     it("should work when the RDD is the other diagonal strip") {
       val partialRdd = ContextRDD(wholeRdd.filter({ case (k, _) => k.col == (4- k.row) }), metadata)
-      BufferTilesRDD(partialRdd, 1).count
+      BufferTilesRDD(partialRdd, 1).count()
     }
 
     it("should work when the RDD is a square minus the other diagonal") {
       val partialRdd = ContextRDD(wholeRdd.filter({ case (k, _) => k.col != (4- k.row) }), metadata)
-      BufferTilesRDD(partialRdd, 1).count
+      BufferTilesRDD(partialRdd, 1).count()
     }
 
     it("the lightweight RDD version should work for the whole collection") {
       val bounds = metadata.bounds
 
-      val buffers = BufferTilesRDD(ContextRDD(wholeRdd, metadata), { _: SpatialKey => BufferSizes(2,2,2,2) }).collect
+      val buffers = BufferTilesRDD(ContextRDD(wholeRdd, metadata), { _: SpatialKey => BufferSizes(2,2,2,2) }).collect()
       val tile11 = buffers.find{ case (key, _) => key == SpatialKey(1, 1) }.get._2.tile
       val baseline = originalRaster.crop(98, 98, 201, 201, Crop.Options.DEFAULT)
       assertEqual(baseline.tile, tile11)
@@ -106,7 +106,7 @@ class BufferTilesSpec extends AnyFunSpec with TestEnvironment with RasterMatcher
     it("the lightweight RDD version should work with the main diagonal missing") {
       val partialRdd = ContextRDD(wholeRdd.filter({ case (k, _) => k.col != k.row }), metadata)
       val bounds = metadata.bounds
-      val members = partialRdd.collect.map(_._1).toSet
+      val members = partialRdd.collect().map(_._1).toSet
 
       val blank = originalRaster.tile.prototype(100, 100)
       println(blank)
@@ -117,7 +117,7 @@ class BufferTilesSpec extends AnyFunSpec with TestEnvironment with RasterMatcher
         holey.update(x * 100, x * 100, blank)
       }
 
-      val buffers = BufferTilesRDD(partialRdd, { _: SpatialKey => BufferSizes(2,2,2,2) }).collect
+      val buffers = BufferTilesRDD(partialRdd, { _: SpatialKey => BufferSizes(2,2,2,2) }).collect()
       val tile11 = buffers.find{ case (key, _) => key == SpatialKey(2, 1) }.get._2.tile
       println(tile11)
       // Holey crop!

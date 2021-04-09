@@ -57,21 +57,21 @@ trait SinglebandTileSummaryMethods extends MethodExtensions[Tile] {
     * Generate quantile class breaks for a given raster.
     */
   def classBreaksDouble(numBreaks: Int): Array[Double] =
-    histogramDouble.quantileBreaks(numBreaks)
+    histogramDouble().quantileBreaks(numBreaks)
 
   /**
     * Determine statistical data for the given histogram.
     *
     * This includes mean, median, mode, stddev, and min and max values.
     */
-  def statistics: Option[Statistics[Int]] = histogram.statistics
+  def statistics: Option[Statistics[Int]] = histogram.statistics()
 
   /**
     * Determine statistical data for the given histogram.
     *
     * This includes mean, median, mode, stddev, and min and max values.
     */
-  def statisticsDouble: Option[Statistics[Double]] = histogramDouble.statistics
+  def statisticsDouble: Option[Statistics[Double]] = histogramDouble().statistics()
 
   /**
     * Calculate a raster in which each value is set to the standard
@@ -87,7 +87,7 @@ trait SinglebandTileSummaryMethods extends MethodExtensions[Tile] {
     require(statistics.nonEmpty)
     val Statistics(_, mean, _, _, stddev, _, _) = statistics.get
 
-    val indata = self.toArray
+    val indata = self.toArray()
     val len = indata.length
     val result = Array.ofDim[Int](len)
 

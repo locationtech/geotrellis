@@ -32,15 +32,15 @@ class MeanSpec extends AnyFunSpec with TestEnvironment with TestFiles {
     val multi = inc.withContext { _.mapValues { tile => MultibandTile(tile, tile) } }
 
     val tileLayout = inc.metadata.tileLayout
-    val count = (inc.count * tileLayout.tileCols * tileLayout.tileRows).toInt
+    val count = (inc.count() * tileLayout.tileCols * tileLayout.tileRows).toInt
     val totalExtent = inc.metadata.extent
 
     it("should get correct mean over whole raster extent") {
-      inc.polygonalSummaryValue(totalExtent.toPolygon, MeanVisitor).toOption.get.mean should be((count - 1) / 2.0)
+      inc.polygonalSummaryValue(totalExtent.toPolygon(), MeanVisitor).toOption.get.mean should be((count - 1) / 2.0)
     }
 
     it("should get correct mean over whole raster extent for a MultibandTileRDD") {
-      multi.polygonalSummaryValue(totalExtent.toPolygon, MeanVisitor).toOption.get map { _.mean should be((count - 1) / 2.0) }
+      multi.polygonalSummaryValue(totalExtent.toPolygon(), MeanVisitor).toOption.get map { _.mean should be((count - 1) / 2.0) }
     }
 
     it("should get correct mean over a quarter of the extent") {
@@ -53,8 +53,8 @@ class MeanSpec extends AnyFunSpec with TestEnvironment with TestFiles {
         totalExtent.xmin + xd / 2,
         totalExtent.ymin + yd / 2
       )
-      val result = inc.polygonalSummaryValue(quarterExtent.toPolygon, MeanVisitor).toOption.get
-      val expected = inc.stitch.polygonalSummary(quarterExtent.toPolygon, MeanVisitor).toOption.get
+      val result = inc.polygonalSummaryValue(quarterExtent.toPolygon(), MeanVisitor).toOption.get
+      val expected = inc.stitch().polygonalSummary(quarterExtent.toPolygon(), MeanVisitor).toOption.get
 
       result.mean should be (expected.mean)
     }
@@ -69,8 +69,8 @@ class MeanSpec extends AnyFunSpec with TestEnvironment with TestFiles {
         totalExtent.xmin + xd / 2,
         totalExtent.ymin + yd / 2
       )
-      val result = multi.polygonalSummaryValue(quarterExtent.toPolygon, MeanVisitor).toOption.get
-      val expected = multi.stitch.polygonalSummary(quarterExtent.toPolygon, MeanVisitor).toOption.get
+      val result = multi.polygonalSummaryValue(quarterExtent.toPolygon(), MeanVisitor).toOption.get
+      val expected = multi.stitch().polygonalSummary(quarterExtent.toPolygon(), MeanVisitor).toOption.get
 
       result.size should be (expected.size)
 
@@ -89,11 +89,11 @@ class MeanSpec extends AnyFunSpec with TestEnvironment with TestFiles {
     val totalExtent = inc.metadata.extent
 
     it("should get correct mean over whole raster extent") {
-      inc.polygonalSummaryValue(totalExtent.toPolygon, MeanVisitor).toOption.get.mean should be((count - 1) / 2.0)
+      inc.polygonalSummaryValue(totalExtent.toPolygon(), MeanVisitor).toOption.get.mean should be((count - 1) / 2.0)
     }
 
     it("should get correct mean over whole raster extent for MultibandTiles") {
-      multi.polygonalSummaryValue(totalExtent.toPolygon, MeanVisitor).toOption.get map { _.mean should be((count - 1) / 2.0) }
+      multi.polygonalSummaryValue(totalExtent.toPolygon(), MeanVisitor).toOption.get map { _.mean should be((count - 1) / 2.0) }
     }
 
     it("should get correct mean over a quarter of the extent") {
@@ -106,8 +106,8 @@ class MeanSpec extends AnyFunSpec with TestEnvironment with TestFiles {
         totalExtent.xmin + xd / 2,
         totalExtent.ymin + yd / 2
       )
-      val result = inc.polygonalSummaryValue(quarterExtent.toPolygon, MeanVisitor).toOption.get
-      val expected = inc.stitch.polygonalSummary(quarterExtent.toPolygon, MeanVisitor).toOption.get
+      val result = inc.polygonalSummaryValue(quarterExtent.toPolygon(), MeanVisitor).toOption.get
+      val expected = inc.stitch().polygonalSummary(quarterExtent.toPolygon(), MeanVisitor).toOption.get
 
       result.mean should be (expected.mean)
     }
@@ -122,8 +122,8 @@ class MeanSpec extends AnyFunSpec with TestEnvironment with TestFiles {
         totalExtent.xmin + xd / 2,
         totalExtent.ymin + yd / 2
       )
-      val result = multi.polygonalSummaryValue(quarterExtent.toPolygon, MeanVisitor).toOption.get
-      val expected = multi.stitch.polygonalSummary(quarterExtent.toPolygon, MeanVisitor).toOption.get
+      val result = multi.polygonalSummaryValue(quarterExtent.toPolygon(), MeanVisitor).toOption.get
+      val expected = multi.stitch().polygonalSummary(quarterExtent.toPolygon(), MeanVisitor).toOption.get
 
       result.size should be (expected.size)
 

@@ -28,13 +28,13 @@ abstract class IntArrayTile(val array: Array[Int], cols: Int, rows: Int)
   /**
     * Return the array associated with the present [[IntArrayTile]].
     */
-  override def toArray = array.clone
+  override def toArray(): Array[Int] = array.clone
 
   /**
     * Return an array of bytes representing the data behind this
     * [[IntArrayTile]].
     */
-  def toBytes: Array[Byte] = {
+  def toBytes(): Array[Byte] = {
     val pixels = new Array[Byte](array.size * cellType.bytes)
     val bytebuff = ByteBuffer.wrap(pixels)
     bytebuff.asIntBuffer.put(array)

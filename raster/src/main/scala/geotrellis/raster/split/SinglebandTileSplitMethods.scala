@@ -45,7 +45,7 @@ trait SinglebandTileSplitMethods extends SplitMethods[Tile] {
         val gb = GridBounds(firstCol, firstRow, lastCol, lastRow)
         tiles(layoutRow * tileLayout.layoutCols + layoutCol) =
           if(options.cropped) CroppedTile(self, gb)
-          else CroppedTile(self, gb).toArrayTile
+          else CroppedTile(self, gb).toArrayTile()
       }
     }
 

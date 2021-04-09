@@ -70,7 +70,7 @@ class VarietySpec extends AnyFunSpec
         6, 4
       )
 
-      val result = Seq(r1, r2, r3, r4, r5).localVariety
+      val result = Seq(r1, r2, r3, r4, r5).localVariety()
 
       for(col <- 0 until 6) {
         for(row <- 0 until 4) {

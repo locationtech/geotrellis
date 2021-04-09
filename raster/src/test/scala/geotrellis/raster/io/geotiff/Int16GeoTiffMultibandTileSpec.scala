@@ -39,7 +39,7 @@ class Int16GeoTiffMultibandTileSpec extends AnyFunSpec
 
     it("should combine all bands with pixel interleave, striped") {
       val tile =
-        MultibandGeoTiff(p("striped", "pixel")).tile.toArrayTile
+        MultibandGeoTiff(p("striped", "pixel")).tile.toArrayTile()
 
       val actual = tile.combine(_.sum)
       val expected = ShortRawArrayTile(Array.ofDim[Short](tile.cols * tile.rows).fill(6), tile.cols, tile.rows)
@@ -49,7 +49,7 @@ class Int16GeoTiffMultibandTileSpec extends AnyFunSpec
 
     it("should combine all bands with pixel interleave, tiled") {
       val tile =
-        MultibandGeoTiff(p("tiled", "pixel")).tile.toArrayTile
+        MultibandGeoTiff(p("tiled", "pixel")).tile.toArrayTile()
 
       val actual = tile.combine(_.sum)
       val expected = ShortRawArrayTile(Array.ofDim[Short](tile.cols * tile.rows).fill(6), tile.cols, tile.rows)
@@ -59,7 +59,7 @@ class Int16GeoTiffMultibandTileSpec extends AnyFunSpec
 
     it("should combine all bands with band interleave, striped") {
       val tile =
-        MultibandGeoTiff(p("striped", "band")).tile.toArrayTile
+        MultibandGeoTiff(p("striped", "band")).tile.toArrayTile()
 
       val actual = tile.combine(_.sum)
       val expected = ShortRawArrayTile(Array.ofDim[Short](tile.cols * tile.rows).fill(6), tile.cols, tile.rows)
@@ -69,7 +69,7 @@ class Int16GeoTiffMultibandTileSpec extends AnyFunSpec
 
     it("should combine all bands with band interleave, tiled") {
       val tile =
-        MultibandGeoTiff(p("tiled", "band")).tile.toArrayTile
+        MultibandGeoTiff(p("tiled", "band")).tile.toArrayTile()
 
       val actual = tile.combine(_.sum)
       val expected = ShortRawArrayTile(Array.ofDim[Short](tile.cols * tile.rows).fill(6), tile.cols, tile.rows)

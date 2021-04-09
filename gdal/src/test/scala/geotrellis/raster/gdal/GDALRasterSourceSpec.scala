@@ -226,7 +226,7 @@ class GDALRasterSourceSpec extends AnyFunSpec with RasterMatchers with GivenWhen
         moisac
           .reprojectToRegion(
             targetCRS,
-            targetGridExtent.toRasterExtent,
+            targetGridExtent.toRasterExtent(),
             NearestNeighbor,
             AutoHigherResolution
           )

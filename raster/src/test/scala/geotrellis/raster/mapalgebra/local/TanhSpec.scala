@@ -37,7 +37,7 @@ class TanhSpec extends AnyFunSpec with Matchers with RasterMatchers with TileBui
       ).map(_*math.Pi)
       val expected = rasterData.map(math.tanh(_))
       val r = createTile(rasterData, 6, 6)
-      val result = r.localTanh
+      val result = r.localTanh()
       for (y <- 0 until 6) {
         for (x <- 0 until 6) {
           val theTanh = result.getDouble(x, y)
@@ -64,7 +64,7 @@ class TanhSpec extends AnyFunSpec with Matchers with RasterMatchers with TileBui
                                .toList
                                .init
       val r = createTile(rasterData, 4, 4)
-      val result = r.localTanh
+      val result = r.localTanh()
       for (y <- 0 until 4) {
         for (x <- 0 until 4) {
           val isLastValue = (x == 3 && y == 3)

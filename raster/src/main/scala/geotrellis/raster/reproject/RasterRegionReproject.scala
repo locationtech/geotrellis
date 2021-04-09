@@ -105,7 +105,7 @@ object RasterRegionReproject {
     { i: Int =>
       if (i >= 0 && i < destRasterExtent.rows) {
         val scanline = LineString(destRasterExtent.gridToMap(0, i), destRasterExtent.gridToMap(destRasterExtent.cols - 1, i))
-        val chunks = (scanline & destRegion).toGeometry match {
+        val chunks = (scanline & destRegion).toGeometry() match {
           case None => Array.empty[Geometry]
           case Some(g) =>
             if (g.isInstanceOf[GeometryCollection])

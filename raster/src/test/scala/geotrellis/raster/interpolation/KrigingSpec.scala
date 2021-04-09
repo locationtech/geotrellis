@@ -34,7 +34,7 @@ class KrigingSpec extends AnyFunSpec with Matchers {
   describe("Kriging Simple Interpolation : Nickel") {
     val path = "raster/data/nickel.json"
     val f = scala.io.Source.fromFile(path)
-    val collection = f.mkString.parseGeoJson[JsonFeatureCollection]
+    val collection = f.mkString.parseGeoJson[JsonFeatureCollection]()
     f.close()
     val points = generateLogPoints(collection.getAllPointFeatures[Double]())
     val sv: Semivariogram = NonLinearSemivariogram(points.toArray, 30000, 0, Spherical)
@@ -59,7 +59,7 @@ class KrigingSpec extends AnyFunSpec with Matchers {
   describe("Kriging Ordinary Interpolation : Nickel") {
     val path = "raster/data/nickel.json"
     val f = scala.io.Source.fromFile(path)
-    val collection = f.mkString.parseGeoJson[JsonFeatureCollection]
+    val collection = f.mkString.parseGeoJson[JsonFeatureCollection]()
     f.close()
     val points =
       generateLogPoints(collection.getAllPointFeatures[Double]())
@@ -111,7 +111,7 @@ class KrigingSpec extends AnyFunSpec with Matchers {
     }
     val path = "raster/data/venice.json"
     val f = scala.io.Source.fromFile(path)
-    val collection = f.mkString.parseGeoJson[JsonFeatureCollection]
+    val collection = f.mkString.parseGeoJson[JsonFeatureCollection]()
     f.close()
     val veniceData = collection.getAllPointFeatures[Double]()
 

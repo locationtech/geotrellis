@@ -47,7 +47,7 @@ import scala.io.Source
     val json = try {
       Source
         .fromInputStream(objStream)
-        .getLines
+        .getLines()
         .mkString(" ")
     } finally objStream.close()
 

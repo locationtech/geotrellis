@@ -65,7 +65,7 @@ class GDALReprojectRasterSourceSpec extends AnyFunSpec with RasterMatchers with 
     def testReprojection(method: ResampleMethod) = {
       val rasterSource = GDALRasterSource(uri)
       val expectedRasterSource = GDALRasterSource(expectedUri(method))
-      val expectedRasterExtent = expectedRasterSource.gridExtent.toRasterExtent
+      val expectedRasterExtent = expectedRasterSource.gridExtent.toRasterExtent()
       val warpRasterSource = rasterSource.reprojectToRegion(LatLng, expectedRasterExtent, method)
       val testBounds =
         GridBounds(0, 0, expectedRasterExtent.cols, expectedRasterExtent.rows)

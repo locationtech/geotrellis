@@ -27,10 +27,10 @@ class GridExtentSpec extends AnyFunSpec with Matchers {
   def isWhole(x: Double): Boolean = (x.round - x).abs < geotrellis.util.Constants.FLOAT_EPSILON
 
   def generateExtent(cw: Double, ch: Double, minCols: Int = 1, minRows: Int = 1): Extent = {
-    val x0 = scala.util.Random.nextDouble * 100
-    val y0 = scala.util.Random.nextDouble * 100
-    val x1 = cw * (scala.util.Random.nextInt.abs % 20 + minCols) + x0
-    val y1 = ch * (scala.util.Random.nextInt.abs % 20 + minRows) + y0
+    val x0 = scala.util.Random.nextDouble() * 100
+    val y0 = scala.util.Random.nextDouble() * 100
+    val x1 = cw * (scala.util.Random.nextInt().abs % 20 + minCols) + x0
+    val y1 = ch * (scala.util.Random.nextInt().abs % 20 + minRows) + y0
 
     Extent(x0, y0, x1, y1)
   }
@@ -87,16 +87,16 @@ class GridExtentSpec extends AnyFunSpec with Matchers {
     it("should allow aligned grid creation") {
 
       (for (i <- (0 to 10000).toSeq) yield {
-        val cw = scala.util.Random.nextDouble
-        val ch = scala.util.Random.nextDouble
+        val cw = scala.util.Random.nextDouble()
+        val ch = scala.util.Random.nextDouble()
         val baseEx @ Extent(x0, y0, x1, y1) = generateExtent(cw, ch)
 
         val base = GridExtent[Int](baseEx, CellSize(cw, ch))
 
-        val xa = scala.util.Random.nextDouble * (x1 - x0) + x0
-        val xb = scala.util.Random.nextDouble * (x1 - x0) + x0
-        val ya = scala.util.Random.nextDouble * (y1 - y0) + y0
-        val yb = scala.util.Random.nextDouble * (y1 - y0) + y0
+        val xa = scala.util.Random.nextDouble() * (x1 - x0) + x0
+        val xb = scala.util.Random.nextDouble() * (x1 - x0) + x0
+        val ya = scala.util.Random.nextDouble() * (y1 - y0) + y0
+        val yb = scala.util.Random.nextDouble() * (y1 - y0) + y0
 
         val ex = Extent(min(xa, xb), min(ya, yb), max(xa, xb), max(ya, yb))
 
@@ -118,10 +118,10 @@ class GridExtentSpec extends AnyFunSpec with Matchers {
 
         val base = GridExtent[Int](baseEx, CellSize(1.0, 1.0))
 
-        val xa = scala.util.Random.nextDouble * (x1 - x0) + x0
-        val xb = scala.util.Random.nextDouble * (x1 - x0) + x0
-        val ya = scala.util.Random.nextDouble * (y1 - y0) + y0
-        val yb = scala.util.Random.nextDouble * (y1 - y0) + y0
+        val xa = scala.util.Random.nextDouble() * (x1 - x0) + x0
+        val xb = scala.util.Random.nextDouble() * (x1 - x0) + x0
+        val ya = scala.util.Random.nextDouble() * (y1 - y0) + y0
+        val yb = scala.util.Random.nextDouble() * (y1 - y0) + y0
 
         val ex = Extent(min(xa, xb), min(ya, yb), max(xa, xb), max(ya, yb))
 

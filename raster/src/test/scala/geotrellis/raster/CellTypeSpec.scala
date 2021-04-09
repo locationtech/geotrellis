@@ -28,7 +28,7 @@ import org.scalatest.matchers.should.Matchers
 import org.scalatest.funspec.AnyFunSpec
 
 class CellTypeSpec extends AnyFunSpec with Matchers with Inspectors {
-  def roundTrip(ct: CellType) {
+  def roundTrip(ct: CellType) = {
     withClue("fromName"){
       // Updated behavior.
       val str = ct.name

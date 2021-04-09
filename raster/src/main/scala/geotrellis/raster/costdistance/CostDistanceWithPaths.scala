@@ -66,7 +66,7 @@ case class CostDistanceWithPathsResult(
 object CostDistanceWithPaths {
 
   def apply(cost: Tile, source: (Int, Int)): CostDistanceWithPathsResult =
-    new CostDistanceWithPaths(cost.toArrayTile, source).compute
+    new CostDistanceWithPaths(cost.toArrayTile(), source).compute
 
 }
 

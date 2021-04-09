@@ -51,7 +51,7 @@ object EuclideanDistanceTile {
     val vor = VoronoiDiagram(pts, rasterExtent.extent)
     val tile = ArrayTile.empty(cellType, rasterExtent.cols, rasterExtent.rows)
 
-    vor.voronoiCellsWithPoints.foreach(rasterizeDistanceCell(rasterExtent, tile))
+    vor.voronoiCellsWithPoints().foreach(rasterizeDistanceCell(rasterExtent, tile))
     tile
   }
 

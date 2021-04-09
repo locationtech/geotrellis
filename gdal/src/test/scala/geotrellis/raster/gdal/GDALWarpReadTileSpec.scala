@@ -33,7 +33,7 @@ class GDALWarpReadTileSpec extends AnyFunSpec with RasterMatchers {
       val filePath = Resource.path("vlm/aspect-tiled.tif")
       val dataset = GDALDataset(filePath)
       val gdalTile = dataset.readMultibandTile()
-      val gtTile = GeoTiffReader.readMultiband(filePath).tile.toArrayTile
+      val gtTile = GeoTiffReader.readMultiband(filePath).tile.toArrayTile()
 
       gdalTile.cellType shouldBe gtTile.cellType
       assertEqual(gdalTile, gtTile)
@@ -45,7 +45,7 @@ class GDALWarpReadTileSpec extends AnyFunSpec with RasterMatchers {
       val ext = Extent(680138.59203, 4904905.667, 680189.7, 4904955.9)
       val dataset = GDALDataset(filePath)
       val gdalTile = dataset.readMultibandTile(dataset.rasterExtent.gridBoundsFor(ext, clamp = false))
-      val gtTile = GeoTiffReader.readMultiband(filePath, ext).tile.toArrayTile
+      val gtTile = GeoTiffReader.readMultiband(filePath, ext).tile.toArrayTile()
 
       gdalTile.cellType shouldBe gtTile.cellType
       assertEqual(gdalTile, gtTile)

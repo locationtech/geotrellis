@@ -59,7 +59,7 @@ class RenderPngTests extends AnyFunSuite with Matchers with TileBuilders with Ra
       createValueTile(50, 4)
 
     val tile =
-      CompositeTile(Seq(tileNW, tileNE, tileSW, tileSE), TileLayout(2, 2, 50, 50)).toArrayTile
+      CompositeTile(Seq(tileNW, tileNE, tileSW, tileSE), TileLayout(2, 2, 50, 50)).toArrayTile()
 
     val colorMap =
       ColorMap(
@@ -87,7 +87,7 @@ class RenderPngTests extends AnyFunSuite with Matchers with TileBuilders with Ra
       createValueTile(50, NODATA)
 
     val tile =
-      CompositeTile(Seq(tileNW, tileNE, tileSW, tileSE), TileLayout(2, 2, 50, 50)).toArrayTile
+      CompositeTile(Seq(tileNW, tileNE, tileSW, tileSE), TileLayout(2, 2, 50, 50)).toArrayTile()
 
     val colorMap =
       ColorMap(
@@ -117,7 +117,7 @@ class RenderPngTests extends AnyFunSuite with Matchers with TileBuilders with Ra
     val tile =
       CompositeTile(Seq(tileNW, tileNE, tileSW, tileSE), TileLayout(2, 2, 50, 50))
         .convert(DoubleConstantNoDataCellType)
-        .toArrayTile
+        .toArrayTile()
 
     val colorMap =
       ColorMap(
@@ -145,12 +145,12 @@ class RenderPngTests extends AnyFunSuite with Matchers with TileBuilders with Ra
       createValueTile(50, 4)
 
     val intTile =
-      CompositeTile(Seq(tileNW, tileNE, tileSW, tileSE), TileLayout(2, 2, 50, 50)).toArrayTile
+      CompositeTile(Seq(tileNW, tileNE, tileSW, tileSE), TileLayout(2, 2, 50, 50)).toArrayTile()
 
     val doubleTile =
       CompositeTile(Seq(tileNW, tileNE, tileSW, tileSE), TileLayout(2, 2, 50, 50))
         .convert(DoubleConstantNoDataCellType)
-        .toArrayTile
+        .toArrayTile()
 
 
     val intColorMap =
@@ -197,7 +197,7 @@ class RenderPngTests extends AnyFunSuite with Matchers with TileBuilders with Ra
       createConsecutiveTile(50, 50, 7501)
 
     val tile =
-      CompositeTile(Seq(tileNW, tileNE, tileSW, tileSE), TileLayout(2, 2, 50, 50)).toArrayTile
+      CompositeTile(Seq(tileNW, tileNE, tileSW, tileSE), TileLayout(2, 2, 50, 50)).toArrayTile()
 
     val colorMap =
       ColorRamp(0xFF0000FF, 0x0000FFFF)
@@ -221,7 +221,7 @@ class RenderPngTests extends AnyFunSuite with Matchers with TileBuilders with Ra
       createConsecutiveTile(50, 50, 7501).convert(FloatConstantNoDataCellType)
 
     val tile =
-      CompositeTile(Seq(tileNW, tileNE, tileSW, tileSE), TileLayout(2, 2, 50, 50)).toArrayTile
+      CompositeTile(Seq(tileNW, tileNE, tileSW, tileSE), TileLayout(2, 2, 50, 50)).toArrayTile()
 
     val colorMap =
       ColorRamp(0xFF0000FF, 0x0000FFFF)
@@ -250,7 +250,7 @@ class RenderPngTests extends AnyFunSuite with Matchers with TileBuilders with Ra
       createValueTile(50, NODATA)
 
     val tile =
-      CompositeTile(Seq(tileNW, tileNE, tileSW, tileSE), TileLayout(2, 2, 50, 50)).toArrayTile
+      CompositeTile(Seq(tileNW, tileNE, tileSW, tileSE), TileLayout(2, 2, 50, 50)).toArrayTile()
 
     val colorMap =
       ColorRamp(0xFF0000FF, 0x0000FFFF)
@@ -415,7 +415,7 @@ class RenderPngTests extends AnyFunSuite with Matchers with TileBuilders with Ra
     bmm shouldBe (0, 36)
     amm shouldBe (0, 255)
 
-    val color = MultibandTile(r, g, b, a).color
+    val color = MultibandTile(r, g, b, a).color()
 
     color.findMinMax shouldBe (0, rmm._2 << 24 | gmm._2 << 16 | bmm._2 << 8 | amm._2)
 
@@ -466,7 +466,7 @@ class RenderPngTests extends AnyFunSuite with Matchers with TileBuilders with Ra
     gmm shouldBe (0, 35)
     bmm shouldBe (0, 35)
 
-    val color = MultibandTile(r, g, b).color
+    val color = MultibandTile(r, g, b).color()
 
     color.findMinMax shouldBe (0, rmm._2 << 24 | gmm._2 << 16 | bmm._2 << 8 | 0xFF)
 

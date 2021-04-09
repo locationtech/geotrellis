@@ -121,7 +121,7 @@ class S3COGLayerWriter(
       val requestBody = RequestBody.fromBytes(bytes)
 
       s3Client.putObject(request, requestBody)
-      samplesAccumulator.reset
+      samplesAccumulator.reset()
     }
   }
 }

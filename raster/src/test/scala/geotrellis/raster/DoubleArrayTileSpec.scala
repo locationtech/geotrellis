@@ -29,7 +29,7 @@ class DoubleArrayTileSpec extends AnyFunSpec with Matchers with RasterMatchers w
     it("converts back and forth.") {
       val tile = probabilityRaster
       val (cols, rows) = (tile.cols, tile.rows)
-      val tile2 = DoubleArrayTile.fromBytes(tile.toBytes, cols, rows)
+      val tile2 = DoubleArrayTile.fromBytes(tile.toBytes(), cols, rows)
       cfor(0)(_ < rows, _ + 1) { row =>
         cfor(0)(_ < cols, _ + 1) { col =>
           withClue(s"Values different at ($col, $row)") {

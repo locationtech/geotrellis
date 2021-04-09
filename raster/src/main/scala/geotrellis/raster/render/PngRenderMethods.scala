@@ -51,7 +51,7 @@ trait PngRenderMethods extends MethodExtensions[Tile] {
 
   def renderPng(colorRamp: ColorRamp): Png = {
     if(self.cellType.isFloatingPoint) {
-      val histogram = self.histogramDouble
+      val histogram = self.histogramDouble()
       renderPng(ColorMap.fromQuantileBreaks(histogram, colorRamp))
     } else {
       val histogram = self.histogram

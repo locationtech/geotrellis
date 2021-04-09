@@ -54,7 +54,7 @@ class JpegDecompressor(tiffTags: TiffTags) extends Decompressor {
     if(!readers.hasNext) {
       throw new IIOException("Could not instantiate JPEGImageReader")
     }
-    val reader = readers.next
+    val reader = readers.next()
     val tablesSource = ImageIO.createImageInputStream(new ByteArrayInputStream(jpegTables))
     val imageSource = inputBytes.map { ib =>
       ImageIO.createImageInputStream(new ByteArrayInputStream(ib))

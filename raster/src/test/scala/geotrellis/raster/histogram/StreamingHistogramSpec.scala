@@ -39,7 +39,7 @@ class StreamingHistogramSpec extends AnyFunSpec with Matchers {
   describe("mode calculation") {
     it("should return None if no items are counted") {
       val h = StreamingHistogram()
-      h.mode should be (None)
+      h.mode() should be (None)
     }
 
     it("should return the same result for mode and statistics.mode") {
@@ -47,20 +47,20 @@ class StreamingHistogramSpec extends AnyFunSpec with Matchers {
 
       list3.foreach({i => h.countItem(i) })
 
-      val mode = h.mode.get
+      val mode = h.mode().get
       mode should equal (59049)
-      mode should equal (h.statistics.get.mode)
+      mode should equal (h.statistics().get.mode)
     }
 
-    it(".mode and .statistics.mode should agree on a mode of a unique list") {
+    it(".mode and .statistics().mode should agree on a mode of a unique list") {
       val h = StreamingHistogram()
       val list = List(9, 8, 7, 6, 5, 4, 3, 2, -10)
       for(i <- list) {
         h.countItem(i)
       }
 
-      val mode = h.mode.get
-      mode should equal (h.statistics.get.mode)
+      val mode = h.mode().get
+      mode should equal (h.statistics().get.mode)
     }
   }
 
@@ -70,8 +70,8 @@ class StreamingHistogramSpec extends AnyFunSpec with Matchers {
 
       list1.foreach({ i => h.countItem(i) })
 
-      h.median.get should equal (8.75)
-      h.median.get should equal (h.statistics.get.median)
+      h.median().get should equal (8.75)
+      h.median().get should equal (h.statistics().get.median)
     }
 
     it("median should work when n is large with repeated elements") {
@@ -81,8 +81,8 @@ class StreamingHistogramSpec extends AnyFunSpec with Matchers {
         .flatten.take(list1.length * 10000)
         .foreach({ i => h.countItem(i) })
 
-      h.median.get should equal (8.75)
-      h.median.get should equal (h.statistics.get.median)
+      h.median().get should equal (8.75)
+      h.median().get should equal (h.statistics().get.median)
     }
 
     it("median should work when n is large with unique elements") {
@@ -96,10 +96,10 @@ class StreamingHistogramSpec extends AnyFunSpec with Matchers {
        * neighborhood of 1e-4.*/
       Iterator.continually(list1)
         .flatten.take(list1.length * 10000)
-        .foreach({ i => h.countItem(i + (3.0 + r.nextGaussian) / 60000.0) })
+        .foreach({ i => h.countItem(i + (3.0 + r.nextGaussian()) / 60000.0) })
 
-      math.round(h.median.get).toInt should equal (9)
-      h.median.get should equal (h.statistics.get.median)
+      math.round(h.median().get).toInt should equal (9)
+      h.median().get should equal (h.statistics().get.median)
     }
   }
 
@@ -109,9 +109,9 @@ class StreamingHistogramSpec extends AnyFunSpec with Matchers {
 
       list2.foreach({ i => h.countItem(i) })
 
-      val mean = h.mean.get
+      val mean = h.mean().get
       abs(mean - 18194.14285714286) should be < 1e-7
-      mean should equal (h.statistics.get.mean)
+      mean should equal (h.statistics().get.mean)
     }
 
     it("mean should work when n is large with repeated elements") {
@@ -121,9 +121,9 @@ class StreamingHistogramSpec extends AnyFunSpec with Matchers {
         .flatten.take(list2.length * 10000)
         .foreach({ i => h.countItem(i) })
 
-      val mean = h.mean.get
+      val mean = h.mean().get
       abs(mean - 18194.14285714286) should be < 1e-7
-      mean should equal (h.statistics.get.mean)
+      mean should equal (h.statistics().get.mean)
     }
 
     it("mean should work when n is large with unique elements") {
@@ -138,25 +138,25 @@ class StreamingHistogramSpec extends AnyFunSpec with Matchers {
        * faulty. */
       Iterator.continually(list2)
         .flatten.take(list2.length * 10000)
-        .foreach({ i => h.countItem(i + r.nextGaussian / 10000.0) })
+        .foreach({ i => h.countItem(i + r.nextGaussian() / 10000.0) })
 
-      val mean = h.mean.get
+      val mean = h.mean().get
       abs(mean - 18194.14285714286) should be < 1e-4
-      mean should equal (h.statistics.get.mean)
+      mean should equal (h.statistics().get.mean)
     }
   }
 
   describe("quantileBreaks") {
     it("should return a single element when only one type of value has been counted") {
       val arrTile = FloatArrayTile.fill(1.0f, 100, 200, FloatConstantNoDataCellType)
-      val hist = arrTile.histogramDouble
+      val hist = arrTile.histogramDouble()
       hist.quantileBreaks(5) should be (Seq(1.0, 1.0, 1.0, 1.0, 1.0))
     }
 
     it("should return a single element when only one type of value has been counted, merged with an empty tile histogram") {
       val arrTile = FloatArrayTile.fill(1.0f, 100, 200, FloatConstantNoDataCellType)
       val arrTile2 = FloatArrayTile.empty(100, 200, FloatConstantNoDataCellType)
-      val hist = arrTile.histogramDouble.merge(arrTile2.histogramDouble)
+      val hist = arrTile.histogramDouble().merge(arrTile2.histogramDouble())
       hist.quantileBreaks(5) should be (Seq(1.0, 1.0, 1.0, 1.0, 1.0))
     }
 
@@ -164,7 +164,7 @@ class StreamingHistogramSpec extends AnyFunSpec with Matchers {
       val arrTile = FloatArrayTile.empty(100, 200)
       arrTile.setDouble(5, 3, 1.0)
       arrTile.setDouble(5, 5, 2.0)
-      val hist = arrTile.histogramDouble
+      val hist = arrTile.histogramDouble()
       val breaks = hist.quantileBreaks(100)
       breaks.head should be (1.0)
       breaks.last should be (2.0)
@@ -193,10 +193,10 @@ class StreamingHistogramSpec extends AnyFunSpec with Matchers {
       val h1 = StreamingHistogram()
       val h2 = decode[StreamingHistogram](h1.asJson.noSpaces).valueOr(throw _)
 
-      h1.statistics should equal (h2.statistics)
+      h1.statistics() should equal (h2.statistics())
       h1.quantileBreaks(42) should equal (h2.quantileBreaks(42))
-      h1.bucketCount should equal (h2.bucketCount)
-      h1.maxBucketCount should equal (h2.maxBucketCount)
+      h1.bucketCount() should equal (h2.bucketCount())
+      h1.maxBucketCount() should equal (h2.maxBucketCount())
     }
 
     it("should successfully round-trip a non-trivial histogram") {
@@ -209,10 +209,10 @@ class StreamingHistogramSpec extends AnyFunSpec with Matchers {
         .foreach({ i => h1.countItem(i.toDouble) })
 
       val h2 = decode[StreamingHistogram](h1.asJson.noSpaces).valueOr(throw _)
-      h1.statistics should equal (h2.statistics)
+      h1.statistics() should equal (h2.statistics())
       h1.quantileBreaks(42) should equal (h2.quantileBreaks(42))
-      h1.bucketCount should equal (h2.bucketCount)
-      h1.maxBucketCount should equal (h2.maxBucketCount)
+      h1.bucketCount() should equal (h2.bucketCount())
+      h1.maxBucketCount() should equal (h2.maxBucketCount())
     }
 
     it("should produce a result which behaves the same as the original") {
@@ -235,10 +235,10 @@ class StreamingHistogramSpec extends AnyFunSpec with Matchers {
           h2.countItem(i.toDouble)
         })
 
-      h1.statistics should equal (h2.statistics)
+      h1.statistics() should equal (h2.statistics())
       h1.quantileBreaks(42) should equal (h2.quantileBreaks(42))
-      h1.bucketCount should equal (h2.bucketCount)
-      h1.maxBucketCount should equal (h2.maxBucketCount)
+      h1.bucketCount() should equal (h2.bucketCount())
+      h1.maxBucketCount() should equal (h2.maxBucketCount())
     }
 
     it("should produce non-sterile offspring") {
@@ -268,10 +268,10 @@ class StreamingHistogramSpec extends AnyFunSpec with Matchers {
           h2.countItem(i.toDouble)
         })
 
-      h1.statistics should equal (h2.statistics)
+      h1.statistics() should equal (h2.statistics())
       h1.quantileBreaks(42) should equal (h2.quantileBreaks(42))
-      h1.bucketCount should equal (h2.bucketCount)
-      h1.maxBucketCount should equal (h2.maxBucketCount)
+      h1.bucketCount() should equal (h2.bucketCount())
+      h1.maxBucketCount() should equal (h2.maxBucketCount())
     }
 
   }
@@ -282,14 +282,14 @@ class StreamingHistogramSpec extends AnyFunSpec with Matchers {
     val default = tile.histogramDouble()
     val custom = tile.histogramDouble(200)
 
-    default.statistics should not be (custom.statistics)
+    default.statistics() should not be (custom.statistics())
   }
 
   describe("Counting") {
     it("binCounts should report non-zero bin counts") {
       val tile = DoubleArrayTile(Array[Double](52, 54, 61, 32, 52, 50, 11, 21, 18), 3, 3)
       val result = tile.histogramDouble(3)
-      result.binCounts.map({ pair => pair._2 > 0.0 }) should be (Array(true, true, true))
+      result.binCounts().map({ pair => pair._2 > 0.0 }) should be (Array(true, true, true))
     }
 
     it("itemCount should report non-zero values when appropriate") {

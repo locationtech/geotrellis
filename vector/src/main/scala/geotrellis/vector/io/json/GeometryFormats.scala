@@ -57,7 +57,7 @@ trait GeometryFormats {
       val lines: Vector[LineString] =
         arr
            .map(readLineCoords)
-           .map(_.closed)
+           .map(_.closed())
 
       Polygon(lines.head, lines.tail.toSet)
     case _ => throw new Exception("Polygon coordinates array expected")

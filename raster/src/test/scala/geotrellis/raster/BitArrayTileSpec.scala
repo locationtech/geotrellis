@@ -25,7 +25,7 @@ class BitArrayTileSpec extends AnyFunSpec with Matchers {
     it("should map an inverse function correctly.") {
       val arr = Array[Byte](0,1,2,3,4,5,6,7,8)
       val b = BitArrayTile(arr,3*8,3)
-      val result = b.map(i => i+1).toArrayTile
+      val result = b.map(i => i+1).toArrayTile()
       for(i <- 0 until b.size) {
         b(i) should not be result(i)
       }

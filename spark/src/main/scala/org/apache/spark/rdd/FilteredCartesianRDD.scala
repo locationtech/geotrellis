@@ -91,8 +91,8 @@ sealed class FilteredCartesianRDD[T: ClassTag, U: ClassTag, V: ClassTag](
      * of metardds will only be computed once per task execution.
      * This is essentially a partition-wise .collect it may cause network traffic.
      */
-    val meta1 = metardd1.iterator(part1, context).next
-    val meta2 = metardd2.iterator(part2, context).next
+    val meta1 = metardd1.iterator(part1, context).next()
+    val meta2 = metardd2.iterator(part2, context).next()
 
     /* Information gathered from the metardd partitions is used
      * to determine if the RDD.iterator methods of parents should be invoked.

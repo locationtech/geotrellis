@@ -142,7 +142,7 @@ object LandsatMultibandRDDExample {
               MultibandTile(red, green, blue)
             }
           }
-          .stitch
+          .stitch()
 
       GeoTiff(raster, metadata.crs).write("/tmp/landsat-test.tif")
     } finally {

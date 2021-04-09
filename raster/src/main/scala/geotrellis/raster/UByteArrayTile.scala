@@ -30,7 +30,7 @@ abstract class UByteArrayTile(val array: Array[Byte], cols: Int, rows: Int)
     * Return an array of bytes representing the data behind this
     * [[UByteArrayTile]].
     */
-  def toBytes: Array[Byte] = array.clone
+  def toBytes(): Array[Byte] = array.clone
 
   /**
     * Return a copy of the present [[UByteArrayTile]].

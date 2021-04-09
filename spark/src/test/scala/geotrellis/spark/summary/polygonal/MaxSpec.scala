@@ -34,7 +34,7 @@ class MaxSpec extends AnyFunSpec with TestEnvironment with TestFiles {
     val multi = inc.withContext { _.mapValues { tile => MultibandTile(tile, tile) } }
 
     val tileLayout = inc.metadata.tileLayout
-    val count = (inc.count * tileLayout.tileCols * tileLayout.tileRows).toInt
+    val count = (inc.count() * tileLayout.tileCols * tileLayout.tileRows).toInt
     val totalExtent = inc.metadata.extent
 
     val xd = totalExtent.xmax - totalExtent.xmin
@@ -69,23 +69,23 @@ class MaxSpec extends AnyFunSpec with TestEnvironment with TestFiles {
     }
 
     it("should get correct double max over whole raster extent") {
-      inc.polygonalSummaryValue(totalExtent.toPolygon, MaxVisitor).toOption.get should be(MaxValue(count - 1))
+      inc.polygonalSummaryValue(totalExtent.toPolygon(), MaxVisitor).toOption.get should be(MaxValue(count - 1))
     }
 
     it("should get correct double max over whole raster extent for MultibandTileRDD") {
-      multi.polygonalSummaryValue(totalExtent.toPolygon, MaxVisitor).toOption.get map { _ should be(MaxValue(count - 1)) }
+      multi.polygonalSummaryValue(totalExtent.toPolygon(), MaxVisitor).toOption.get map { _ should be(MaxValue(count - 1)) }
     }
 
     it("should get correct double max over a quarter of the extent") {
-      val result = inc.polygonalSummaryValue(quarterExtent.toPolygon, MaxVisitor).toOption.get
-      val expected = inc.stitch.polygonalSummary(quarterExtent.toPolygon, MaxVisitor).toOption.get
+      val result = inc.polygonalSummaryValue(quarterExtent.toPolygon(), MaxVisitor).toOption.get
+      val expected = inc.stitch().polygonalSummary(quarterExtent.toPolygon(), MaxVisitor).toOption.get
 
       result should be (expected)
     }
 
     it("should get correct double max over a quarter of the extent for MultibandTileRDD") {
-      val result = multi.polygonalSummaryValue(quarterExtent.toPolygon, MaxVisitor).toOption.get
-      val expected = multi.stitch.polygonalSummary(quarterExtent.toPolygon, MaxVisitor).toOption.get
+      val result = multi.polygonalSummaryValue(quarterExtent.toPolygon(), MaxVisitor).toOption.get
+      val expected = multi.stitch().polygonalSummary(quarterExtent.toPolygon(), MaxVisitor).toOption.get
 
       result.size should be (expected.size)
 
@@ -96,14 +96,14 @@ class MaxSpec extends AnyFunSpec with TestEnvironment with TestFiles {
 
     it("should get correct double max over a two triangle multipolygon") {
       val result = inc.polygonalSummaryValue(mp, MaxVisitor).toOption.get
-      val expected = inc.stitch.polygonalSummary(mp, MaxVisitor).toOption.get
+      val expected = inc.stitch().polygonalSummary(mp, MaxVisitor).toOption.get
 
       result should be (expected)
     }
 
     it("should get correct double max over a two triangle multipolygon for MultibandTileRDD") {
       val result = multi.polygonalSummaryValue(mp, MaxVisitor).toOption.get
-      val expected = multi.stitch.polygonalSummary(mp, MaxVisitor).toOption.get
+      val expected = multi.stitch().polygonalSummary(mp, MaxVisitor).toOption.get
 
       result.size should be (expected.size)
 
@@ -124,11 +124,11 @@ class MaxSpec extends AnyFunSpec with TestEnvironment with TestFiles {
     val totalExtent = inc.metadata.extent
 
     it("should get correct double max over whole raster extent") {
-      inc.polygonalSummaryValue(totalExtent.toPolygon, MaxVisitor).toOption.get should be(MaxValue(count - 1))
+      inc.polygonalSummaryValue(totalExtent.toPolygon(), MaxVisitor).toOption.get should be(MaxValue(count - 1))
     }
 
     it("should get correct double max over whole raster extent for MultibandTiles") {
-      multi.polygonalSummaryValue(totalExtent.toPolygon, MaxVisitor).toOption.get map { _ should be(MaxValue(count - 1)) }
+      multi.polygonalSummaryValue(totalExtent.toPolygon(), MaxVisitor).toOption.get map { _ should be(MaxValue(count - 1)) }
     }
 
     it("should get correct double max over a quarter of the extent") {
@@ -142,8 +142,8 @@ class MaxSpec extends AnyFunSpec with TestEnvironment with TestFiles {
         totalExtent.ymin + yd / 2
       )
 
-      val result = inc.polygonalSummaryValue(quarterExtent.toPolygon, MaxVisitor).toOption.get
-      val expected = inc.stitch.polygonalSummary(quarterExtent.toPolygon, MaxVisitor).toOption.get
+      val result = inc.polygonalSummaryValue(quarterExtent.toPolygon(), MaxVisitor).toOption.get
+      val expected = inc.stitch().polygonalSummary(quarterExtent.toPolygon(), MaxVisitor).toOption.get
 
       result should be (expected)
     }
@@ -159,8 +159,8 @@ class MaxSpec extends AnyFunSpec with TestEnvironment with TestFiles {
         totalExtent.ymin + yd / 2
       )
 
-      val result = multi.polygonalSummaryValue(quarterExtent.toPolygon, MaxVisitor).toOption.get
-      val expected = multi.stitch.polygonalSummary(quarterExtent.toPolygon, MaxVisitor).toOption.get
+      val result = multi.polygonalSummaryValue(quarterExtent.toPolygon(), MaxVisitor).toOption.get
+      val expected = multi.stitch().polygonalSummary(quarterExtent.toPolygon(), MaxVisitor).toOption.get
 
       result.size should be (expected.size)
 
@@ -190,7 +190,7 @@ class MaxSpec extends AnyFunSpec with TestEnvironment with TestFiles {
       val mp = MultiPolygon(tri1, tri2)
 
       val result = inc.polygonalSummaryValue(mp, MaxVisitor).toOption.get
-      val expected = inc.stitch.polygonalSummary(mp, MaxVisitor).toOption.get
+      val expected = inc.stitch().polygonalSummary(mp, MaxVisitor).toOption.get
 
       result should be (expected)
     }
@@ -216,7 +216,7 @@ class MaxSpec extends AnyFunSpec with TestEnvironment with TestFiles {
       val mp = MultiPolygon(tri1, tri2)
 
       val result = multi.polygonalSummaryValue(mp, MaxVisitor).toOption.get
-      val expected = multi.stitch.polygonalSummary(mp, MaxVisitor).toOption.get
+      val expected = multi.stitch().polygonalSummary(mp, MaxVisitor).toOption.get
 
       result.size should be (expected.size)
 

@@ -51,7 +51,7 @@ class IterativeViewshedSpec extends AnyFunSpec with Matchers with TestEnvironmen
         operator = Or,
 	scatter = false
       )
-      var actual = 0 ; viewshed.collect.foreach({ case (_, v) => v.foreach({ z => if (isData(z)) actual += z }) })
+      var actual = 0 ; viewshed.collect().foreach({ case (_, v) => v.foreach({ z => if (isData(z)) actual += z }) })
       val expected = 15*15
 
       actual should be (expected)
@@ -76,7 +76,7 @@ class IterativeViewshedSpec extends AnyFunSpec with Matchers with TestEnvironmen
         operator = Or,
 	scatter = false
       )
-      var actual = 0 ; viewshed.collect.foreach({ case (_, v) => v.foreach({ z => if (isData(z)) actual += z }) })
+      var actual = 0 ; viewshed.collect().foreach({ case (_, v) => v.foreach({ z => if (isData(z)) actual += z }) })
       val expected = 171
 
       actual should be (expected)
@@ -107,8 +107,8 @@ class IterativeViewshedSpec extends AnyFunSpec with Matchers with TestEnvironmen
         operator = Or
       )
 
-      var noScatterCount = 0 ; viewshedNoScatter.collect.foreach({ case (_, v) => v.foreach({ z => if (isData(z)) noScatterCount += z }) })
-      var yesScatterCount = 0 ; viewshedYesScatter.collect.foreach({ case (_, v) => v.foreach({ z => if (isData(z)) yesScatterCount += z }) })
+      var noScatterCount = 0 ; viewshedNoScatter.collect().foreach({ case (_, v) => v.foreach({ z => if (isData(z)) noScatterCount += z }) })
+      var yesScatterCount = 0 ; viewshedYesScatter.collect().foreach({ case (_, v) => v.foreach({ z => if (isData(z)) yesScatterCount += z }) })
 
 
       noScatterCount should be < yesScatterCount
@@ -143,9 +143,9 @@ class IterativeViewshedSpec extends AnyFunSpec with Matchers with TestEnvironmen
         1,     ND,    1,     ND,    1
       )
       val actual = viewshed
-        .collect
+        .collect()
         .filter({ case (key, _) => key == SpatialKey(1,2) })
-        .head._2.toArray
+        .head._2.toArray()
 
       actual should be (expected)
     }
@@ -173,7 +173,7 @@ class IterativeViewshedSpec extends AnyFunSpec with Matchers with TestEnvironmen
       )
       val expected = 15 * 15 * 1
       var actual: Int = 0
-      viewshed.collect.foreach({ case (k, v) => actual += v.toArray.sum })
+      viewshed.collect().foreach({ case (k, v) => actual += v.toArray().sum })
 
       actual should be (expected)
     }
@@ -209,7 +209,7 @@ class IterativeViewshedSpec extends AnyFunSpec with Matchers with TestEnvironmen
 	scatter = false
       )
       var actual: Int = 0
-      viewshed.collect.foreach({ case (k, v) => actual += v.get(2, 2) })
+      viewshed.collect().foreach({ case (k, v) => actual += v.get(2, 2) })
 
       actual should be (expected)
     }

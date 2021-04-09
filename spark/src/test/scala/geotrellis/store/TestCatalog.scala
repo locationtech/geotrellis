@@ -53,7 +53,7 @@ object TestCatalog {
         RasterSourceRDD.spatial(List(rs.resampleToGrid(layout)), layout)
           .withContext( tiledd =>
             // the tiles are actually `PaddedTile`, this forces them to be ArrayTile
-            tiledd.mapValues { mb: MultibandTile => ArrayMultibandTile(mb.bands.map(_.toArrayTile))}
+            tiledd.mapValues { mb: MultibandTile => ArrayMultibandTile(mb.bands.map(_.toArrayTile()))}
           )
 
       val id = LayerId("landsat", index)
@@ -77,7 +77,7 @@ object TestCatalog {
         RasterSourceRDD.spatial(List(rs.resampleToGrid(layout)), layout)
           .withContext( tiledd =>
             tiledd.mapValues { mb: MultibandTile =>
-              ArrayMultibandTile(mb.bands.map(_.toArrayTile)).band(0)  // Get only first band
+              ArrayMultibandTile(mb.bands.map(_.toArrayTile())).band(0)  // Get only first band
             }
           )
 

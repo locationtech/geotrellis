@@ -76,7 +76,7 @@ object Split {
         val gb = GridBounds(firstCol, firstRow, lastCol, lastRow)
         tiles(layoutRow * tileLayout.layoutCols + layoutCol) =
           if(options.cropped) CroppedTile(tile, gb)
-          else CroppedTile(tile, gb).toArrayTile
+          else CroppedTile(tile, gb).toArrayTile()
       }
     }
 

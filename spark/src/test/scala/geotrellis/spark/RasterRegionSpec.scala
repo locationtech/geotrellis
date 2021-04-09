@@ -81,7 +81,7 @@ class RasterRegionSpec extends AnyFunSpec with TestEnvironment with RasterMatche
     }
 
     Then("get a RasterRegion for each region of each file")
-    rdd.count shouldBe (8*8*3) // three 256x256 files split into 32x32 windows
+    rdd.count() shouldBe (8*8*3) // three 256x256 files split into 32x32 windows
 
     Then("convert each RasterRegion to a tile")
     val realRdd: MultibandTileLayerRDD[SpatialKey] =
@@ -91,10 +91,10 @@ class RasterRegionSpec extends AnyFunSpec with TestEnvironment with RasterMatche
         } yield (key, raster.tile)
       })
 
-    realRdd.count shouldBe (8*8*3) // we shouldn't have lost anything
+    realRdd.count() shouldBe (8*8*3) // we shouldn't have lost anything
 
     Then("Each row matches the layout")
-    val rows = realRdd.collect
+    val rows = realRdd.collect()
     forAll(rows) { case (key, tile) =>
       realRdd.metadata.bounds should containKey(key)
       tile should have (

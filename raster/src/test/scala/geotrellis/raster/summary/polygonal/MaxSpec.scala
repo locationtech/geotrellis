@@ -31,8 +31,8 @@ class MaxSpec extends AnyFunSpec with Matchers with RasterMatchers with TileBuil
     val rs = createRaster(Array.fill(40 * 40)(1.0), 40, 40)
     val tile = rs.tile
     val extent = rs.extent
-    val zone = Extent(10, -10, 30, 10).toPolygon
-    val disjointZone = Extent(50, 50, 60, 60).toPolygon
+    val zone = Extent(10, -10, 30, 10).toPolygon()
+    val disjointZone = Extent(50, 50, 60, 60).toPolygon()
 
     val nodataRS = createRaster(Array.fill(40 * 40)(doubleNODATA), 40, 40)
     val nodataTile = nodataRS.tile

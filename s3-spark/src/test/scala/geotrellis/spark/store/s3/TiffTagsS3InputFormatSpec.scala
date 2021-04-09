@@ -54,8 +54,8 @@ class TiffTagsS3InputFormatSpec extends AnyFunSpec with Matchers with TestEnviro
         classOf[TiffTagsS3InputFormat],
         classOf[GetObjectRequest],
         classOf[TiffTags])
-      source.map(x=>x).cache
-      val sourceCount = source.count
+      source.map(x=>x).cache()
+      val sourceCount = source.count()
       sourceCount should not be (0)
       info(s"Source RDD count: ${sourceCount}")
     }

@@ -65,8 +65,8 @@ class HistogramSpec extends AnyFunSpec with TestEnvironment with TestFiles {
         TileLayout(3, 4, 3, 2)
       )
 
-      val r = rdd.stitch
-      val zones = zonesRDD.stitch
+      val r = rdd.stitch()
+      val zones = zonesRDD.stitch()
       val (cols, rows) = (r.cols, r.rows)
 
       val zoneValues = mutable.Map[Int, mutable.ListBuffer[Int]]()

@@ -53,8 +53,8 @@ abstract trait Histogram[@specialized (Int, Double) T <: AnyVal] extends Seriali
    * Return the smallest and largest items seen as a tuple.
    */
   def minMaxValues(): Option[(T, T)] = {
-    val min = minValue
-    val max = maxValue
+    val min = minValue()
+    val max = maxValue()
     if (min.nonEmpty && max.nonEmpty)
       Some(min.get, max.get)
     else

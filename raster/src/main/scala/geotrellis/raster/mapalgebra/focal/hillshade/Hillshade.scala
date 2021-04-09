@@ -74,7 +74,7 @@ object Hillshade {
       val aspectRads = radians(90.0 - aspectValue)
       val v = (cosZe * cos(slopeRads)) +
         (sinZe * sin(slopeRads) * cos(az - aspectRads))
-      round(127.0 * max(0.0, v))
+      round(127.0 * max(0.0, v)).toDouble
     }
     hr.convert(ShortConstantNoDataCellType)
   }

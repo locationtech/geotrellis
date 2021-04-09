@@ -29,7 +29,7 @@ import org.scalatest.funspec.AnyFunSpec
 object TimeSeriesSpecFunctions {
 
   def projection(tile: Tile): Set[Int] =
-    tile.toArray.toSet.filter(_ > 0)
+    tile.toArray().toSet.filter(_ > 0)
 
   def reduction(left: Set[Int], right: Set[Int]): Set[Int] =
     left ++ right

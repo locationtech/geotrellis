@@ -347,7 +347,7 @@ class PolygonSpec extends AnyFunSpec with Matchers {
       val p2 = Polygon(LineString(Point(-2,4), Point(-2,6), Point(12,6), Point(12,4), Point(-2,4)))
       val p3 = Polygon(LineString(Point(0,6), Point(0,10), Point(10,10), Point(10,6), Point(0,6)))
       val p4 = Polygon(LineString(Point(0,0), Point(0,4), Point(10,4), Point(10,0), Point(0,0)))
-      p1 - p2 should be (MultiPolygonResult(MultiPolygon(p3, p4).normalized))
+      p1 - p2 should be (MultiPolygonResult(MultiPolygon(p3, p4).normalized()))
     }
 
     // -- SymDifference
@@ -597,7 +597,7 @@ class PolygonSpec extends AnyFunSpec with Matchers {
     it ("should maintain immutability over normalization") {
       val p = Polygon(LineString(Point(0,0), Point(0,10), Point(10,10), Point(10,0), Point(0,0)))
       val expected = p.copy
-      p.normalized
+      p.normalized()
       p.equals(expected) should be (true)
     }
 

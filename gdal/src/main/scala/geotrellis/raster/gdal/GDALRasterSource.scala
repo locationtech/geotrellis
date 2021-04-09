@@ -155,7 +155,7 @@ class GDALRasterSource(
 
   def read(bounds: GridBounds[Long], bands: Seq[Int]): Option[Raster[MultibandTile]] = {
     val it = readBounds(List(bounds).flatMap(_.intersection(this.dimensions)), bands)
-    if (it.hasNext) Some(it.next) else None
+    if (it.hasNext) Some(it.next()) else None
   }
 
   override def readExtents(extents: Traversable[Extent]): Iterator[Raster[MultibandTile]] = {

@@ -27,14 +27,14 @@ private[vector] trait GeometryResultMethods extends Serializable {
     * this fails to cast or is [[NoResult]], will result in None.
     */
   def as[G <: Geometry : ClassTag]: Option[G] =
-    toGeometry.flatMap { g =>
+    toGeometry().flatMap { g =>
       if(classTag[G].runtimeClass.isInstance(g)) Some(g.asInstanceOf[G])
       else None
     }
 
   /** returns this result as a MultiPoint if it's a Point or MultiPoint, otherwise returns None */
   def asMultiPoint: Option[MultiPoint] =
-    toGeometry.flatMap { g =>
+    toGeometry().flatMap { g =>
       g match {
         case p: Point => Some(MultiPoint(p))
         case mp: MultiPoint => Some(mp)
@@ -44,7 +44,7 @@ private[vector] trait GeometryResultMethods extends Serializable {
 
   /** returns this result as a MultiLineStrng if it's a LineString or MultiLineString, otherwise returns None */
   def asMultiLineString: Option[MultiLineString] =
-    toGeometry.flatMap { g =>
+    toGeometry().flatMap { g =>
       g match {
         case l: LineString => Some(MultiLineString(l))
         case ml: MultiLineString => Some(ml)
@@ -54,7 +54,7 @@ private[vector] trait GeometryResultMethods extends Serializable {
 
   /** returns this result as a MultiPolygon if it's a Polygon or MultiPolygon, otherwise returns None */
   def asMultiPolygon: Option[MultiPolygon] =
-    toGeometry.flatMap { g =>
+    toGeometry().flatMap { g =>
       g match {
         case p: Polygon => Some(MultiPolygon(p))
         case mp: MultiPolygon => Some(mp)
@@ -64,7 +64,7 @@ private[vector] trait GeometryResultMethods extends Serializable {
 
   /** returns this result as a MultiPoint if it's a Point or MultiPoint, otherwise returns None */
   def asGeometryCollection: GeometryCollection =
-    toGeometry match {
+    toGeometry() match {
       case Some(g) => GeometryCollection(Seq(g))
       case None => GeometryCollection()
     }
@@ -73,7 +73,7 @@ private[vector] trait GeometryResultMethods extends Serializable {
 abstract sealed trait GeometryResult extends GeometryResultMethods
 object GeometryResult {
   implicit def resultToGeometry(result: GeometryResult): Option[Geometry] =
-    result.toGeometry
+    result.toGeometry()
 
   implicit def jtsToResult(geom: Geometry): GeometryResult =
     geom match {

@@ -112,7 +112,7 @@ object RasterSummary {
       }
       .reduceByKey { _ combine _ }
       .values
-      .collect
+      .collect()
       .toSeq
   }
 

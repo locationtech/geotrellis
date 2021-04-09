@@ -73,7 +73,7 @@ class GeoTiffReprojectRasterSourceSpec extends AnyFunSpec with RasterMatchers wi
 
           val expected: Raster[MultibandTile] = {
             val rr = implicitly[RasterRegionReproject[MultibandTile]]
-            rr.regionReproject(sourceTiff.raster, sourceTiff.crs, LatLng, testRasterExtent, testRasterExtent.extent.toPolygon, method)
+            rr.regionReproject(sourceTiff.raster, sourceTiff.crs, LatLng, testRasterExtent, testRasterExtent.extent.toPolygon(), method)
           }
 
           val actual = warpRasterSource.read(bound).get

@@ -54,7 +54,7 @@ class CollectionStitchMethodsSpec extends AnyFunSpec
           TileLayout(2, 2, 4, 4)
         ).toCollection
 
-      assertEqual(tile, layer.stitch.tile)
+      assertEqual(tile, layer.stitch().tile)
     }
 
     it("should correctly stitch back together multi band tile collection") {
@@ -98,7 +98,7 @@ class CollectionStitchMethodsSpec extends AnyFunSpec
           TileLayout(2, 2, 4, 4)
         ).toCollection
 
-      assertEqual(tile, layer.stitch.tile)
+      assertEqual(tile, layer.stitch().tile)
     }
 
     it("should correctly sparse stitch a singleband tile with an offset extent") {
@@ -174,7 +174,7 @@ class CollectionStitchMethodsSpec extends AnyFunSpec
         Raster(tile, extent),
         TileLayout(4, 4, 1, 1)
       ).toCollection
-    assertEqual(layer.sparseStitch.get.tile, tile)
+    assertEqual(layer.sparseStitch().get.tile, tile)
   }
 
   it("should correctly sparse stitch an empty collection") {
@@ -188,6 +188,6 @@ class CollectionStitchMethodsSpec extends AnyFunSpec
     )
     val layer = ContextCollection(Seq.empty[(SpatialKey, Tile)], md)
 
-    layer.sparseStitch shouldBe None
+    layer.sparseStitch() shouldBe None
   }
 }

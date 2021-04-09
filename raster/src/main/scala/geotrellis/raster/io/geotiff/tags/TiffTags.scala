@@ -57,7 +57,7 @@ case class TiffTags(
   def rasterExtent: RasterExtent = RasterExtent(extent, cols, rows)
 
   def segmentOffsets: Array[Long] =
-    if (this.hasStripStorage)
+    if (this.hasStripStorage())
       (this &|->
         TiffTags._basicTags ^|->
         BasicTags._stripOffsets get).get
@@ -67,7 +67,7 @@ case class TiffTags(
         TileTags._tileOffsets get).get
 
   def segmentByteCounts: Array[Long] =
-    if (this.hasStripStorage)
+    if (this.hasStripStorage())
       (this &|->
         TiffTags._basicTags ^|->
         BasicTags._stripByteCounts get).get
@@ -78,7 +78,7 @@ case class TiffTags(
 
 
   def storageMethod: StorageMethod =
-    if(hasStripStorage) {
+    if(hasStripStorage()) {
       val rowsPerStrip: Int =
         (this
           &|-> TiffTags._basicTags
@@ -100,7 +100,7 @@ case class TiffTags(
     }
 
   def geoTiffSegmentLayout: GeoTiffSegmentLayout =
-    GeoTiffSegmentLayout(this.cols, this.rows, this.storageMethod, this.interleaveMethod, this.bandType)
+    GeoTiffSegmentLayout(this.cols, this.rows, this.storageMethod, this.interleaveMethod(), this.bandType)
 
   def cellSize =
     CellSize(this.extent.width / this.cols, this.extent.height / this.rows)
@@ -130,10 +130,10 @@ case class TiffTags(
     }
 
   def hasPixelInterleave: Boolean =
-    interleaveMethod == PixelInterleave
+    interleaveMethod() == PixelInterleave
 
   def rowsInStrip(index: Int): Option[Long] =
-    if (hasStripStorage) {
+    if (hasStripStorage()) {
       (this &|->
         TiffTags._basicTags ^|->
         BasicTags._stripByteCounts get) match {
@@ -161,7 +161,7 @@ case class TiffTags(
     }
 
   def rowsInSegment(index: Int): Int =
-    if (hasStripStorage)
+    if (hasStripStorage())
       rowsInStrip(index).get.toInt
     else
       (this &|->
@@ -172,7 +172,7 @@ case class TiffTags(
     bitsPerSample * bandCount
 
   def bytesPerPixel: Int =
-    (this.bitsPerPixel + 7) / 8
+    (this.bitsPerPixel() + 7) / 8
 
   def bitsPerSample: Int =
     (this
@@ -183,12 +183,12 @@ case class TiffTags(
     {(imageSegmentBitsSize(index) + 7) / 8 }
 
   def imageSegmentBitsSize(index: Int): Long =
-    if (hasStripStorage) {
+    if (hasStripStorage()) {
       val c = {
         // For 1 bit rasters, take into account
         // that the rows are padded with extra bits to make
         // up the last byte.
-        if(bitsPerPixel == 1) {
+        if(bitsPerPixel() == 1) {
           val m = (cols + 7) / 8
           8 * m
         } else {
@@ -196,7 +196,7 @@ case class TiffTags(
         }
       }
 
-      (rowsInStrip(index).get * c * bitsPerPixel) / bandCount
+      (rowsInStrip(index).get * c * bitsPerPixel()) / bandCount
     }
     else {
       // We don't need the same check for 1 bit rasters as above,
@@ -210,14 +210,14 @@ case class TiffTags(
           TileTags._tileLength get)
       ) match {
         case (Some(tileWidth), Some(tileHeight)) =>
-          (bitsPerPixel * tileWidth * tileHeight) / bandCount
+          (bitsPerPixel() * tileWidth * tileHeight) / bandCount
         case _ =>
           throw new MalformedGeoTiffException("Cannot find TileWidth and TileLength tags for tiled GeoTiff.")
       }
     }
 
   def rowSize: Int =
-    if (hasStripStorage) cols
+    if (hasStripStorage()) cols
     else (this &|-> TiffTags._tileTags ^|-> TileTags._tileWidth get).get.toInt
 
   def cols = (this &|-> TiffTags._basicTags ^|-> BasicTags._imageWidth get)
@@ -390,7 +390,7 @@ case class TiffTags(
           val y = mapPoint.y - scaleY
           val z = mapPoint.z + scaleZ
 
-          pixelSampleType match {
+          pixelSampleType() match {
             case Some(PixelIsPoint) =>
               // If PixelIsPoint, we have to consider the tie point to be
               // the center of the pixel
@@ -526,7 +526,7 @@ case class TiffTags(
       }
 
     // pixel sample type
-    pixelSampleType match {
+    pixelSampleType() match {
       case Some(v) if v == PixelIsPoint =>
         headTags = headTags + ((Tags.AREA_OR_POINT, "POINT"))
       case Some(v) if v == PixelIsArea =>
@@ -546,7 +546,7 @@ case class TiffTags(
       BasicTags._samplesPerPixel get
 
   def segmentCount: Int =
-    if (hasStripStorage) {
+    if (hasStripStorage()) {
       (this
         &|-> TiffTags._basicTags
         ^|-> BasicTags._stripByteCounts get) match {
@@ -641,7 +641,7 @@ object TiffTags {
     }
 
     // If it's undefined GDAL interprets the entire TIFF as a single strip
-    if(tiffTags.hasStripStorage) {
+    if(tiffTags.hasStripStorage()) {
         val rowsPerStrip =
           (tiffTags
             &|-> TiffTags._basicTags

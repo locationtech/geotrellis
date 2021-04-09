@@ -76,7 +76,7 @@ class FlowDirectionSpec extends AnyFunSpec with Matchers with RasterMatchers wit
                                  NODATA,64,16,
                                       1,64,32),
                             ncols,nrows)
-       val computed = e.flowDirection
+       val computed = e.flowDirection()
       assertEqual(computed, m)
     }
   }}

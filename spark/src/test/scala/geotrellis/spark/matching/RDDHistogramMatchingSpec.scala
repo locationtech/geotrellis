@@ -56,7 +56,7 @@ class RDDHistogramMatchingSpec extends AnyFunSpec with Matchers with TestEnviron
       val tile1 = DoubleArrayTile(Array[Double](16, 1, 2), 1, 3).asInstanceOf[Tile]
       val tile2 = DoubleArrayTile(Array[Double](4, 8, 16), 1, 3).asInstanceOf[Tile]
       val rdd = ContextRDD(sc.parallelize(List((SpatialKey(0,0), tile1), (SpatialKey(0,0), tile2))), 33)
-      val actual = rdd.matchHistogram(sourceHistogram, targetHistogram).flatMap({ _._2.toArray.toList }).collect
+      val actual = rdd.matchHistogram(sourceHistogram, targetHistogram).flatMap({ _._2.toArray().toList }).collect()
       val expected = List[Double](5, 1, 2, 3, 4, 5)
 
       actual should be (expected)
@@ -66,7 +66,7 @@ class RDDHistogramMatchingSpec extends AnyFunSpec with Matchers with TestEnviron
       val tile1 = UShortArrayTile(Array[Short](16, 1, 2), 1, 3).asInstanceOf[Tile]
       val tile2 = UShortArrayTile(Array[Short](4, 8, 16), 1, 3).asInstanceOf[Tile]
       val rdd = ContextRDD(sc.parallelize(List((SpatialKey(0,0), tile1), (SpatialKey(0,0), tile2))), 33)
-      val actual = rdd.matchHistogram(sourceHistogram, targetHistogram).flatMap({ _._2.toArray.toList }).collect
+      val actual = rdd.matchHistogram(sourceHistogram, targetHistogram).flatMap({ _._2.toArray().toList }).collect()
       val expected = List[Double](5, 1, 2, 3, 4, 5)
 
       actual should be (expected)
@@ -76,7 +76,7 @@ class RDDHistogramMatchingSpec extends AnyFunSpec with Matchers with TestEnviron
       val tile1 = ShortArrayTile(Array[Short](16, 1, 2), 1, 3).asInstanceOf[Tile]
       val tile2 = ShortArrayTile(Array[Short](4, 8, 16), 1, 3).asInstanceOf[Tile]
       val rdd = ContextRDD(sc.parallelize(List((SpatialKey(0,0), tile1), (SpatialKey(0,0), tile2))), 33)
-      val actual = rdd.matchHistogram(sourceHistogram, targetHistogram).flatMap({ _._2.toArray.toList }).collect
+      val actual = rdd.matchHistogram(sourceHistogram, targetHistogram).flatMap({ _._2.toArray().toList }).collect()
       val expected = List[Double](5, 1, 2, 3, 4, 5)
 
       actual should be (expected)
@@ -91,8 +91,8 @@ class RDDHistogramMatchingSpec extends AnyFunSpec with Matchers with TestEnviron
       val actual = rdd
         .matchHistogram(sourceHistograms, targetHistograms)
         .flatMap({ case (_, v) =>
-          v.bands.flatMap({ _.toArray.toList })
-        }).collect
+          v.bands.flatMap({ _.toArray().toList })
+        }).collect()
       val expected = List[Double](5, 1, 2, 3, 4, 5, 3, 4, 5, 5, 1, 2)
 
       actual should be (expected)

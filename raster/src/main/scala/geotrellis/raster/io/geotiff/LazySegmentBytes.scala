@@ -46,7 +46,7 @@ class LazySegmentBytes(
   def length: Int = tiffTags.segmentCount
 
   val (segmentOffsets, segmentByteCounts) =
-    if (tiffTags.hasStripStorage) {
+    if (tiffTags.hasStripStorage()) {
       val stripOffsets = tiffTags &|->
         TiffTags._basicTags ^|->
         BasicTags._stripOffsets get

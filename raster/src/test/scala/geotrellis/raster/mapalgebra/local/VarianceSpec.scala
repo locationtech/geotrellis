@@ -71,7 +71,7 @@ class VarianceSpec extends AnyFunSpec
 
       val seq = Seq(r1, r2, r3, r4)
 
-      val res = seq.localVariance
+      val res = seq.localVariance()
 
       cfor(0)(_ < rows, _ + 1) { row =>
         cfor(0)(_ < cols, _ + 1) { col =>
@@ -124,7 +124,7 @@ class VarianceSpec extends AnyFunSpec
 
       val seq = Seq(r1, r2, r3, r4)
 
-      val res = seq.localVariance
+      val res = seq.localVariance()
 
       cfor(0)(_ < rows, _ + 1) { row =>
         cfor(0)(_ < cols, _ + 1) { col =>

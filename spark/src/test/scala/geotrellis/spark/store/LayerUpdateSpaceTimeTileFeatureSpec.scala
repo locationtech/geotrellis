@@ -84,7 +84,7 @@ trait LayerUpdateSpaceTimeTileFeatureSpec
         val (minKey, _) = sample.sortByKey().first()
         val (maxKey, _) = sample.sortByKey(false).first()
         val kb = KeyBounds(minKey, maxKey.setComponent(SpatialKey(maxKey.col + 20, maxKey.row + 20)))
-        val updatedLayerId = layerId.createTemporaryId
+        val updatedLayerId = layerId.createTemporaryId()
         val updatedKeyIndex = keyIndexMethod.createIndex(kb)
 
         val usample = sample.map { case (key, value) => (key.setComponent(SpatialKey(key.col + 10, key.row + 10)), value) }
@@ -97,7 +97,7 @@ trait LayerUpdateSpaceTimeTileFeatureSpec
       }
 
       it("should update correctly inside the bounds of a metatile") {
-        val id = layerId.createTemporaryId
+        val id = layerId.createTemporaryId()
 
         val tiles =
           Seq(
@@ -113,10 +113,10 @@ trait LayerUpdateSpaceTimeTileFeatureSpec
             TileLayout(1, 1, 6, 4)
           )
 
-        assert(rdd.count == 4)
+        assert(rdd.count() == 4)
 
         writer.write(id, rdd, keyIndexMethod)
-        assert(reader.read[SpaceTimeKey, Tile, TileLayerMetadata[SpaceTimeKey]](id).count == 4)
+        assert(reader.read[SpaceTimeKey, Tile, TileLayerMetadata[SpaceTimeKey]](id).count() == 4)
 
         val updateRdd =
           createSpaceTimeTileLayerRDD(
@@ -124,13 +124,13 @@ trait LayerUpdateSpaceTimeTileFeatureSpec
             TileLayout(1, 1, 6, 4)
           )
 
-        assert(updateRdd.count == 1)
+        assert(updateRdd.count() == 1)
         updateRdd.withContext(_.mapValues { tile => tile + 1 })
 
         writer.update[SpaceTimeKey, Tile, TileLayerMetadata[SpaceTimeKey]](id, updateRdd)
         val read: TileLayerRDD[SpaceTimeKey] = reader.read(id)
 
-        val readTiles = read.collect.sortBy { case (k, _) => k.instant }.toArray
+        val readTiles = read.collect().sortBy { case (k, _) => k.instant }.toArray
         readTiles.size should be (4)
         assertEqual(readTiles(0)._2, Array(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1))
         assertEqual(readTiles(1)._2, Array(2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2))

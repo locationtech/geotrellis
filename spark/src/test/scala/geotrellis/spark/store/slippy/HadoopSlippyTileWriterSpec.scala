@@ -46,7 +46,7 @@ class HadoopSlippyTileWriterSpec extends AnyFunSpec with Matchers with TestEnvir
 
       val reader =
         new FileSlippyTileReader[Tile](testPath)({ (key, bytes) =>
-          SinglebandGeoTiff(bytes).tile.toArrayTile
+          SinglebandGeoTiff(bytes).tile.toArrayTile()
         })
 
       rastersEqual(reader.read(TestFiles.ZOOM_LEVEL), AllOnesTestFile)

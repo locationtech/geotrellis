@@ -337,7 +337,7 @@ object TileRDDReproject {
     // Bounds of tiles we need to examine
     val bounds: GridBounds[Int] = keyBounds match {
       case Some(kb) =>
-        kb.toGridBounds
+        kb.toGridBounds()
       case None =>
         GridBounds(0, 0, layout.layoutCols, layout.layoutRows)
     }

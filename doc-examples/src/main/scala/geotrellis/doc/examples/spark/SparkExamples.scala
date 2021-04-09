@@ -97,7 +97,7 @@ object SparkExamples {
         .filter()                            // Use the filter/query API to
         .where(Intersects(areaOfInterest))   // filter so that only tiles intersecting
         .result                              // the Extent are contained in the result
-        .stitch                 // Stitch together this RDD into a Raster[Tile]
+        .stitch()                 // Stitch together this RDD into a Raster[Tile]
 
     GeoTiff(raster, metadata.crs).write("/some/path/result.tif")
   }
@@ -164,7 +164,7 @@ object SparkExamples {
             .map { case (key, tile) => (key.getComponent[SpatialKey], tile) }
             .reduceByKey(_.localMax(_))
         }
-        .stitch
+        .stitch()
 
     GeoTiff(raster, queryResult.metadata.crs).write("/path/to/result.tif")
   }

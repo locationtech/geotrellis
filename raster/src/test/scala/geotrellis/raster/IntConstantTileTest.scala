@@ -25,7 +25,7 @@ class IntConstantTileTest extends AnyFunSuite with RasterMatchers with Matchers 
   test("building") {
     val d1 = IntConstantTile(99, 2, 2)
     val d2 = IntArrayTile(Array.fill(4)(99), 2, 2)
-    assert(d1.toArray === d2.toArray)
+    assert(d1.toArray() === d2.toArray())
   }
 
   test("basic operations") {

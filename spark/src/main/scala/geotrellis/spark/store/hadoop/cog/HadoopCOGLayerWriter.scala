@@ -133,7 +133,7 @@ class HadoopCOGLayerWriter(
         config.value
       ) { _.write(os.toByteArray) }
 
-      samplesAccumulator.reset
+      samplesAccumulator.reset()
     }
   }
 }

@@ -104,11 +104,11 @@ class StatsTileRDDMethodsSpec extends AnyFunSpec with TestEnvironment with TestF
     it ("should find double histogram of aspect and match merged quantile breaks") {
       val path = "raster/data/aspect.tif"
       val gt = SinglebandGeoTiff(path)
-      val originalRaster = gt.raster.mapTile(_.toArrayTile).resample(500, 500)
+      val originalRaster = gt.raster.mapTile(_.toArrayTile()).resample(500, 500)
       val (_, rdd) = createTileLayerRDD(originalRaster, 5, 5, gt.crs)
 
-      val hist = rdd.histogram
-      val hist2 = rdd.histogram
+      val hist = rdd.histogram()
+      val hist2 = rdd.histogram()
 
       hist.merge(hist2).quantileBreaks(70) should be (hist.quantileBreaks(70))
     }
@@ -118,14 +118,14 @@ class StatsTileRDDMethodsSpec extends AnyFunSpec with TestEnvironment with TestF
     ignore ("should be able to sample a fraction of an RDD to compute a histogram") {
       val path = "raster/data/aspect.tif"
       val gt = SinglebandGeoTiff(path)
-      val originalRaster = gt.raster.mapTile(_.toArrayTile).resample(500, 500)
+      val originalRaster = gt.raster.mapTile(_.toArrayTile()).resample(500, 500)
       val (_, rdd) = createTileLayerRDD(originalRaster, 5, 5, gt.crs)
 
       val hist1 = rdd.histogram(72)
       val hist2 = rdd.histogram(72, 1.0/25)
 
-      hist2.totalCount.toDouble should be >= (hist1.totalCount / 25.0)
-      hist2.totalCount.toDouble should be <= (hist1.totalCount / 12.5)
+      hist2.totalCount().toDouble should be >= (hist1.totalCount() / 25.0)
+      hist2.totalCount().toDouble should be <= (hist1.totalCount() / 12.5)
     }
   }
 }
