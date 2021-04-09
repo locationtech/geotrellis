@@ -61,8 +61,8 @@ class S3LayerDeleter(
               .delete(deleteDefinition)
               .build()
           s3Client.deleteObjects(deleteRequest)
-          attributeStore.delete(id)
       }
+      attributeStore.delete(id)
     } catch {
       case e: AttributeNotFoundError =>
         logger.info(s"Metadata for $id was not found. Any associated layer data (if any) will require manual deletion")
