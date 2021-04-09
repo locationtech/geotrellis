@@ -52,7 +52,7 @@ executors:
         environment:
           _JAVA_OPTIONS: "-Xms64m -Xmx1536m"
       # https://github.com/pomadchin/hbase-docker
-      - image: daunnc/hbase:2.4.2
+      - image: daunnc/hbase:2.2.4
         environment:
           _JAVA_OPTIONS: "-Xms1m -Xmx512m"
           HBASE_DOCKER_HOSTNAME: localhost
