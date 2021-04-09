@@ -74,6 +74,7 @@ jobs:
             export SCALA_VERSION=<< parameters.scala-version >>
             export RUN_SET=<< parameters.test-set >>
             .circleci/build-and-test.sh
+          no_output_timeout: 30m
       - save_cache: *save_build_cache
 
   cassandra:
