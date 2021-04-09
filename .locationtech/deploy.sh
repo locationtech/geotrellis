@@ -3,4 +3,4 @@
  set -e
  set -x
 
-./.locationtech/deploy-212.sh
+./.locationtech/deploy-212.sh && ./.locationtech/deploy-213.sh

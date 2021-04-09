@@ -21,10 +21,10 @@ object Version {
   val spire       = "0.17.0-M1"
   val accumulo    = "1.9.3"
   val cassandra   = "3.7.2"
-  val hbase       = "2.2.5"
+  val hbase       = "2.4.2"
   val geomesa     = "2.3.1"
   val geowave     = "0.9.3"
-  val hadoop      = "2.8.5"
+  val hadoop      = "3.2.1"
   val gdal        = "3.1.0"
   val gdalWarp    = "1.1.1"
 
@@ -134,8 +134,10 @@ object Dependencies {
   val hbaseMetricsApi     = "org.apache.hbase" % "hbase-metrics-api"    % Version.hbase
   val hbaseZooKeeper      = "org.apache.hbase" % "hbase-zookeeper"      % Version.hbase
 
-  val woodstoxCore        = "com.fasterxml.woodstox" % "woodstox-core" % "6.2.5"
-  val stax2Api            = "org.codehaus.woodstox" % "stax2-api" % "4.2.1"
+  val woodstoxCore          = "com.fasterxml.woodstox" % "woodstox-core"          % "6.2.5"
+  val stax2Api              = "org.codehaus.woodstox"  % "stax2-api"              % "4.2.1"
+  val commonsConfiguration2 = "org.apache.commons"     % "commons-configuration2" % "2.7"
+  val re2j                  = "com.google.re2j"        % "re2j"                   % "1.6"
 
   val jacksonCoreAsl      = "org.codehaus.jackson"         % "jackson-core-asl"        % "1.9.13"
 

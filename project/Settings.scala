@@ -384,7 +384,8 @@ object Settings {
       hbaseMetricsApi,
       hbaseZooKeeper,
       woodstoxCore,
-      stax2Api
+      stax2Api,
+      commonsConfiguration2
     ).map(_ exclude("javax.servlet", "servlet-api") exclude("org.mortbay.jetty", "servlet-api-2.5")),
     libraryDependencies += jacksonCoreAsl,
     console / initialCommands :=
@@ -555,6 +556,10 @@ object Settings {
   lazy val spark = Seq(
     name := "geotrellis-spark",
     libraryDependencies ++= Seq(
+      woodstoxCore,
+      stax2Api,
+      commonsConfiguration2,
+      re2j,
       apacheSpark("core").value % Provided,
       hadoopClient % Provided,
       apacheSpark("sql").value % Test,
