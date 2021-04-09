@@ -134,6 +134,9 @@ object Dependencies {
   val hbaseMetricsApi     = "org.apache.hbase" % "hbase-metrics-api"    % Version.hbase
   val hbaseZooKeeper      = "org.apache.hbase" % "hbase-zookeeper"      % Version.hbase
 
+  val woodstoxCore        = "com.fasterxml.woodstox" % "woodstox-core" % "6.2.5"
+  val stax2Api            = "org.codehaus.woodstox" % "stax2-api" % "4.2.1"
+
   val jacksonCoreAsl      = "org.codehaus.jackson"         % "jackson-core-asl"        % "1.9.13"
 
   val uzaygezenCore       = "com.google.uzaygezen"         % "uzaygezen-core"          % "0.2"

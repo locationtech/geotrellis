@@ -74,6 +74,9 @@ trait TestEnvironment extends BeforeAndAfterAll
       .setMaster(sparkMaster)
       .setAppName("Test Context")
       .set("spark.default.parallelism", "4")
+      // Since Spark 3.2.0 this flag is set to true by default
+      // We need it to be set to false, since it is required by the HBase TableInputFormat
+      .set("spark.hadoopRDD.ignoreEmptySplits", "false")
 
     // Shortcut out of using Kryo serialization if we want to test against
     // java serialization.

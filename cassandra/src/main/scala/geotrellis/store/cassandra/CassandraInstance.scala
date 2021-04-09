@@ -115,7 +115,7 @@ object BaseCassandraInstance {
       val builder =
         Cluster
           .builder()
-          // Spark 3 bring dropwizard 4.1.1
+          // Spark 3 brings dropwizard 4.1.1
           // https://docs.datastax.com/en/developer/java-driver/3.5/manual/metrics/#metrics-4-compatibility
           // TODO: Upd cassandra driver up to 4.9
           .withoutJMXReporting()

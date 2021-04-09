@@ -382,7 +382,9 @@ object Settings {
       hbaseHadoop2Compact,
       hbaseMetrics,
       hbaseMetricsApi,
-      hbaseZooKeeper
+      hbaseZooKeeper,
+      woodstoxCore,
+      stax2Api
     ).map(_ exclude("javax.servlet", "servlet-api") exclude("org.mortbay.jetty", "servlet-api-2.5")),
     libraryDependencies += jacksonCoreAsl,
     console / initialCommands :=
