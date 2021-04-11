@@ -24,7 +24,7 @@ import scala.language.implicitConversions
  * source.
  */
 trait ByteReader {
-  def position: Long
+  def position(): Long
   def position(i: Long): ByteReader
 
   def getBytes(length: Int): Array[Byte]

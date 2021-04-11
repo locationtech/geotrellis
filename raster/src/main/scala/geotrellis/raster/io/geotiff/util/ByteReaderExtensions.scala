@@ -59,7 +59,7 @@ trait ByteReaderExtensions {
           arr(i) = ub2s(bb.get)
         }
       } else {
-        val oldPos = byteReader.position
+        val oldPos = byteReader.position()
         byteReader.position(offset)
 
         cfor(0)(_ < length, _ + 1) { i =>
@@ -81,7 +81,7 @@ trait ByteReaderExtensions {
           arr(i) = us2i(bb.getShort)
         }
       } else {
-        val oldPos = byteReader.position
+        val oldPos = byteReader.position()
         byteReader.position(offset)
 
         cfor(0)(_ < length, _ + 1) { i =>
@@ -104,7 +104,7 @@ trait ByteReaderExtensions {
           arr(i) = ui2l(bb.getInt)
         }
       } else {
-        val oldPos = byteReader.position
+        val oldPos = byteReader.position()
 
         byteReader.position(offset)
         cfor(0)(_ < length, _ + 1) { i =>
@@ -126,7 +126,7 @@ trait ByteReaderExtensions {
           arr(i) = bb.getLong
         }
       } else {
-        val oldPos = byteReader.position
+        val oldPos = byteReader.position()
 
         byteReader.position(offset)
         cfor(0)(_ < length, _ + 1) { i =>
@@ -147,7 +147,7 @@ trait ByteReaderExtensions {
           sb.append(bb.get.toChar)
         }
       } else {
-        val oldPos = byteReader.position
+        val oldPos = byteReader.position()
         byteReader.position(offset)
 
         cfor(0)(_ < length, _ + 1) { i =>
@@ -169,7 +169,7 @@ trait ByteReaderExtensions {
           arr(i) = (ui2l(bb.getInt), ui2l(bb.getInt))
         }
       } else {
-        val oldPos = byteReader.position
+        val oldPos = byteReader.position()
         byteReader.position(offset)
 
         cfor(0)(_ < length, _ + 1) { i =>
@@ -193,7 +193,7 @@ trait ByteReaderExtensions {
         }
         arr
       } else {
-        val oldPosition = byteReader.position
+        val oldPosition = byteReader.position()
         byteReader.position(offset)
         val arr = byteReader.getBytes(len)
         byteReader.position(oldPosition)
@@ -210,7 +210,7 @@ trait ByteReaderExtensions {
           arr(i) = bb.getShort
         }
       } else {
-        val oldPos = byteReader.position
+        val oldPos = byteReader.position()
         byteReader.position(offset)
 
         cfor(0)(_ < length, _ + 1) { i =>
@@ -232,7 +232,7 @@ trait ByteReaderExtensions {
           arr(i) = bb.getInt
         }
       } else {
-        val oldPos = byteReader.position
+        val oldPos = byteReader.position()
         byteReader.position(offset)
 
         cfor(0)(_ < length, _ + 1) { i =>
@@ -255,7 +255,7 @@ trait ByteReaderExtensions {
         }
       } else {
 
-        val oldPos = byteReader.position
+        val oldPos = byteReader.position()
         byteReader.position(offset)
 
         cfor(0)(_ < length, _ + 1) { i =>
@@ -278,7 +278,7 @@ trait ByteReaderExtensions {
           arr(i) = bb.getFloat
         }
       } else {
-        val oldPos = byteReader.position
+        val oldPos = byteReader.position()
         byteReader.position(offset)
 
         cfor(0)(_ < length, _ + 1) { i =>
@@ -301,7 +301,7 @@ trait ByteReaderExtensions {
         }
       } else {
 
-        val oldPos = byteReader.position
+        val oldPos = byteReader.position()
         byteReader.position(offset)
 
         cfor(0)(_ < length, _ + 1) { i =>

@@ -22,7 +22,7 @@ import org.locationtech.jts.geom.util.SineStarFactory
 import org.locationtech.jts.util.GeometricShapeFactory
 
 object GeometryBuilder {
-  implicit def builderToGeom[T <: Geometry](b: GeometryBuilder[T]): T = b.build
+  implicit def builderToGeom[T <: Geometry](b: GeometryBuilder[T]): T = b.build()
 
   def polygon(f: GeometricShapeFactory => Polygon): GeometryBuilder[Polygon] =
     new GeometryBuilder[Polygon] {

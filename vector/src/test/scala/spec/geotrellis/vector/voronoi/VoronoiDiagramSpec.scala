@@ -124,7 +124,7 @@ class VoronoiDiagramSpec extends AnyFunSpec with Matchers {
 
     it("should produce a Voronoi diagram from a real dataset") {
       val parksStream = getClass.getResourceAsStream("/wkt/parks_pts.wkt")
-      val parksWKT = scala.io.Source.fromInputStream(parksStream).getLines.mkString
+      val parksWKT = scala.io.Source.fromInputStream(parksStream).getLines().mkString
       val pts = geotrellis.vector.io.wkt.WKT.read(parksWKT).asInstanceOf[MultiPoint].points
 
       val dt = DelaunayTriangulation(pts.map{_.getCoordinate}.toArray)

@@ -35,34 +35,34 @@ package object testkit {
 
     def matchLine(l1: LineString, l2: LineString, tolerance: Double): Boolean = {
       val (n1, n2) = (l1.copy.asInstanceOf[LineString], l2.copy.asInstanceOf[LineString])
-      n1.normalize
-      n2.normalize
+      n1.normalize()
+      n2.normalize()
       n1.points.zip(n2.points)
         .map { case (p1, p2) => matchPoint(p1, p2, tolerance) }.foldLeft(true)(_ && _)
     }
 
     def matchPolygon(p1: Polygon, p2: Polygon, tolerance: Double): Boolean = {
-      val (np1, np2) = (p1.normalized, p2.normalized)
+      val (np1, np2) = (p1.normalized(), p2.normalized())
       matchLine(np1.exterior, np2.exterior, tolerance) &&
       np1.holes.zip(np2.holes)
         .map { case (l1, l2) => matchLine(l1, l2, tolerance) }.foldLeft(true)(_ && _)
     }
 
     def matchMultiPoint(mp1: MultiPoint, mp2: MultiPoint, tolerance: Double): Boolean =
-      mp1.normalized.points.zip(mp2.normalized.points)
+      mp1.normalized().points.zip(mp2.normalized().points)
          .map { case (p1, p2) => matchPoint(p1, p2, tolerance) }.foldLeft(true)(_ && _)
 
     def matchMultiLine(ml1: MultiLineString, ml2: MultiLineString, tolerance: Double): Boolean =
-      ml1.normalized.lines.zip(ml2.normalized.lines)
+      ml1.normalized().lines.zip(ml2.normalized().lines)
          .map { case (l1, l2) => matchLine(l1, l2, tolerance) }.foldLeft(true)(_ && _)
 
     def matchMultiPolygon(mp1: MultiPolygon, mp2: MultiPolygon, tolerance: Double): Boolean =
-      mp1.normalized.polygons.zip(mp2.normalized.polygons)
+      mp1.normalized().polygons.zip(mp2.normalized().polygons)
          .map { case (p1, p2) => matchPolygon(p1, p2, tolerance) }.foldLeft(true)(_ && _)
 
     def matchGeometryCollection(gc1: GeometryCollection, gc2: GeometryCollection, tolerance: Double): Boolean = {
-      val ngc1 = gc1.normalized
-      val ngc2 = gc2.normalized
+      val ngc1 = gc1.normalized()
+      val ngc2 = gc2.normalized()
       ngc1.getAll[Point].zip(ngc2.getAll[Point]).map { case (p1, p2) => matchPoint(p1, p2, tolerance) }.foldLeft(true)(_ && _) &&
       ngc1.getAll[LineString].zip(ngc2.getAll[LineString]).map { case (l1, l2) => matchLine(l1, l2, tolerance) }.foldLeft(true)(_ && _) &&
       ngc1.getAll[Polygon].zip(ngc2.getAll[Polygon]).map { case (p1, p2) => matchPolygon(p1, p2, tolerance) }.foldLeft(true)(_ && _) &&
@@ -107,7 +107,7 @@ package object testkit {
   }
 
   case class ExtentMatcher(extent: Extent, tolerance: Double) extends Matcher[Extent] {
-    def doMatch(left: Extent): Boolean = GeometryMatcher.matchPolygon(left.toPolygon, extent.toPolygon, tolerance)
+    def doMatch(left: Extent): Boolean = GeometryMatcher.matchPolygon(left.toPolygon(), extent.toPolygon(), tolerance)
 
     def apply(left: Extent) =
       MatchResult(

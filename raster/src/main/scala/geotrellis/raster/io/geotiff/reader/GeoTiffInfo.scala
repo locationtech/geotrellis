@@ -120,7 +120,7 @@ object GeoTiffInfo {
     withOverviews: Boolean,
     byteReaderExternal: Option[ByteReader] = None
   ): GeoTiffInfo = {
-    val oldPos = byteReader.position
+    val oldPos = byteReader.position()
     try {
       byteReader.position(0)
       // set byte ordering

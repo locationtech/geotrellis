@@ -41,7 +41,7 @@ class StreamingByteReaderSpec extends AnyFunSpec with Matchers {
     it("should start with a position of 0") {
       val br = new StreamingByteReader(new MockRangeReader(arr))
 
-      br.position should be (0)
+      br.position() should be (0)
     }
 
     it("should not read upon move within current change") {

@@ -46,7 +46,7 @@ class StreamingByteReader(rangeReader: RangeReader, chunkSize: Int = 45876) exte
   private var filePosition: Long = 0L
   private var byteOrder: ByteOrder = ByteOrder.BIG_ENDIAN
 
-  def position: Long = filePosition
+  def position(): Long = filePosition
 
   def position(newPosition: Long): ByteReader = {
     filePosition = newPosition

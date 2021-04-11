@@ -699,7 +699,7 @@ object TiffTags {
 
   private def readModelPixelScaleTag(byteReader: ByteReader, tiffTags: TiffTags, tagMetadata: TiffTagMetadata)(implicit ttos: TiffTagOffsetSize) = {
 
-    val oldPos = byteReader.position
+    val oldPos = byteReader.position()
 
     byteReader.position(tagMetadata.offset)
 
@@ -716,7 +716,7 @@ object TiffTags {
 
   private def readModelTiePointsTag(byteReader: ByteReader, tiffTags: TiffTags, tagMetadata: TiffTagMetadata)(implicit ttos: TiffTagOffsetSize) = {
 
-    val oldPos = byteReader.position
+    val oldPos = byteReader.position()
 
     val numberOfPoints = tagMetadata.length / 6
 
@@ -748,7 +748,7 @@ object TiffTags {
 
   private def readGeoKeyDirectoryTag(byteReader: ByteReader, tiffTags: TiffTags, tagMetadata: TiffTagMetadata)(implicit ttos: TiffTagOffsetSize) = {
 
-    val oldPos = byteReader.position
+    val oldPos = byteReader.position()
 
     byteReader.position(tagMetadata.offset)
 
