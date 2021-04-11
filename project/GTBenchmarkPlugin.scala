@@ -91,7 +91,7 @@ object GTBenchmarkPlugin extends AutoPlugin {
 
     val args = s" $t $f $i $wi $tu -rf $rf -rff $rff $extra $pat"
     state.value.log.debug("Starting: jmh:run " + args)
-    (run in Jmh).toTask(args)
+    (Jmh / run).toTask(args)
   }
 
   val benchFilesParser: Def.Initialize[State => Parser[File]] = Def.setting { (state: State) =>
@@ -101,8 +101,8 @@ object GTBenchmarkPlugin extends AutoPlugin {
     )
 
     val dirs = Seq(
-      extracted.get(scalaSource in Compile),
-      extracted.get(scalaSource in Test)
+      extracted.get(Compile / scalaSource),
+      extracted.get(Test / scalaSource)
     )
 
     def benchFileParser(dir: File) = fileParser(dir)
