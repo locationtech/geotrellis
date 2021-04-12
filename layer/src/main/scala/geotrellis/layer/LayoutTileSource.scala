@@ -82,10 +82,22 @@ class LayoutTileSource[K: SpatialComponent](
       if (raster.tile.cols == layout.tileCols && raster.tile.rows == layout.tileRows) {
         raster.tile
       } else {
-        // raster is smaller but not bigger than I think ...
-        // its offset is relative to the raster we wished we had
-        val colOffset = bounds.colMin - sourcePixelBounds.colMin
-        val rowOffset = bounds.rowMin - sourcePixelBounds.rowMin
+        /** Raster is smaller but not bigger than I think ...
+          * Its offset is relative to the raster we wished we had.
+          * When the source represents a single [[RasterSource]], it is possible co compute offsets this way:
+          *   val colOffset = bounds.colMin - sourcePixelBounds.colMin
+          *   val rowOffset = bounds.rowMin - sourcePixelBounds.rowMin
+          *
+          * However, if the source is a [[MosaicRasterSource]], offsets are still relative to the underlying [[RasterSource]].
+          * In this case it is possible to compute offsets through the returned extent.
+          */
+
+        // the actual returned extent
+        val actualExtent = raster.extent
+        // expected extent
+        val expectedRasterExtent = RasterExtent(layout.mapTransform(spatialComponent), layout.tileCols, layout.tileRows)
+        val (colOffset, rowOffset) = expectedRasterExtent.mapToGrid(actualExtent.xmin, actualExtent.ymax)
+
         raster.tile.mapBands { (_, band) =>
           PaddedTile(band, colOffset.toInt, rowOffset.toInt, layout.tileCols, layout.tileRows)
         }

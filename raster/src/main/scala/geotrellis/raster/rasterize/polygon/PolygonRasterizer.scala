@@ -72,7 +72,7 @@ object PolygonRasterizer {
 
   private def intervalDifference(a : List[Interval], b: Interval) : List[Interval] = a.flatMap(intervalDifference(_,b))
 
-  private def mergeIntervals(sortedIntervals : Seq[Interval]) : Array[Double] = {
+  private def mergeIntervals(sortedIntervals : mutable.ListBuffer[Interval]) : Array[Double] = {
     if (sortedIntervals.length > 0) {
       val head = sortedIntervals.head
       val stack = mutable.Stack(head._1, head._2)

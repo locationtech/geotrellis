@@ -159,7 +159,7 @@ workflows:
       - common:
           matrix:
             parameters:
-              scala-version: ["2.12.13", "2.11.12"]
+              scala-version: ["2.12.13"]
               test-set: ["1", "2"]
           filters:
             branches:
@@ -170,7 +170,7 @@ workflows:
       - cassandra:
           matrix:
             parameters:
-              scala-version: ["2.12.13", "2.11.12"]
+              scala-version: ["2.12.13"]
           filters:
             branches:
               only: /.*/
@@ -180,7 +180,7 @@ workflows:
       - s3:
           matrix:
             parameters:
-              scala-version: ["2.12.13", "2.11.12"]
+              scala-version: ["2.12.13"]
           filters:
             branches:
               only: /.*/
@@ -190,7 +190,7 @@ workflows:
       - hbase:
           matrix:
             parameters:
-              scala-version: ["2.12.13", "2.11.12"]
+              scala-version: ["2.12.13"]
           filters:
             branches:
               only: /.*/
@@ -213,7 +213,7 @@ workflows:
             - hbase
           matrix:
             parameters:
-              scala-version: ["2.12.13", "2.11.12"]
+              scala-version: ["2.12.13"]
           filters:
             branches:
               only: master

@@ -16,17 +16,17 @@
 
 package geotrellis.spark.mapalgebra.local
 
-import geotrellis.layer._
-import geotrellis.raster._
+import geotrellis.layer.{SpatialComponent, TemporalComponent, SpatialKey, TemporalKey}
 import geotrellis.layer.mapalgebra.local.temporal.LocalTemporalStatistics
+import geotrellis.raster.Tile
 import geotrellis.util._
 
 import org.apache.spark.Partitioner
 import org.apache.spark.rdd.RDD
 
 import jp.ne.opt.chronoscala.Imports._
-import java.time._
 
+import java.time._
 import scala.reflect.ClassTag
 
 

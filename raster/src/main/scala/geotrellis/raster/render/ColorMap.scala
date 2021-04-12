@@ -16,11 +16,11 @@
 
 package geotrellis.raster.render
 
-import geotrellis.raster._
 import geotrellis.raster.histogram.Histogram
 import spire.syntax.cfor._
 import spire.std.any._
 import _root_.io.circe._
+import geotrellis.raster.{ArrayTile, IntCellType, Tile, d2i, i2d, isNoData}
 
 import scala.util.Try
 

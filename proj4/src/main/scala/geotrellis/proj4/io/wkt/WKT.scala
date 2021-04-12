@@ -22,7 +22,7 @@ import scala.io.Source
 
 object WKT {
   private val wktResourcePath = "/proj4/wkt/epsg.properties"
-  lazy val parsed: Map[Int, WktCS] = records.mapValues(WKTParser.apply)
+  lazy val parsed: Map[Int, WktCS] = records.mapValues(WKTParser.apply).toMap
   lazy val projections: Set[WktCS] = parsed.values.toSet
   lazy val records: Map[Int, String] = parseWktEpsgResource
 
