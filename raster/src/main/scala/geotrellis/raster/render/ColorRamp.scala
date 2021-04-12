@@ -69,7 +69,7 @@ class ColorRamp(val colors: Vector[Int]) extends Serializable {
       colors
         .map { color =>
           val (r, g, b) = RGBA(color).unzipRGB
-          RGBA.fromRGBA(r, g, b, alphaPct).int
+          RGBA.fromRGBAPct(r, g, b, alphaPct).int
         }
 
     ColorRamp(newColors)

@@ -43,7 +43,7 @@ object RGBA {
   def fromRGBA(r: Int, g: Int, b: Int, a: Int): RGBA =
     new RGBA((r << 24) + (g << 16) + (b << 8) + a)
 
-  def fromRGBA(r: Int, g: Int, b: Int, alphaPct: Double): RGBA = {
+  def fromRGBAPct(r: Int, g: Int, b: Int, alphaPct: Double): RGBA = {
     assert(0 <= alphaPct && alphaPct <= 100)
     fromRGBA(r, g, b, (alphaPct * 2.55).toInt)
   }
