@@ -168,6 +168,7 @@ class CoordinateTransformTest extends AnyFunSuite with BaseCoordinateTransformTe
   }
 
   test("EPSG_4326") {
+    // Adjusted with the Proj4j 1.1.2 update, see https://github.com/locationtech/proj4j/pull/71
   	checkTransformAndInverse(
   			"EPSG:4326", -126.54, 54.15,
   			"EPSG:3005", 964813.103719, 1016486.305862,
@@ -175,11 +176,11 @@ class CoordinateTransformTest extends AnyFunSuite with BaseCoordinateTransformTe
 
     checkTransformAndInverse(
         "EPSG:32633",  249032.839239894, 7183612.30572229,
-        "EPSG:4326", 9.735465995810884, 64.68347938257097,
+        "EPSG:4326", 9.735465995870696, 64.68347938261206,
         0.000001, 0.3 * APPROX_METRE_IN_DEGREES )
 
     checkTransformAndInverse(
-        "EPSG:32636",  500000, 4649776.22482,
+        "EPSG:32636",  500000, 4649776.224819178,
         "EPSG:4326", 33, 42,
         0.000001, 20 * APPROX_METRE_IN_DEGREES )
   }
