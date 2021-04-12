@@ -57,7 +57,6 @@ object Settings {
     "-language:existentials",
     "-language:experimental.macros",
     "-feature",
-    // "-Ypartial-unification", // required by Cats
     // "-Yrangepos",            // required by SemanticDB compiler plugin
     // "-Ywarn-unused-import",  // required by `RemoveUnused` rule
     "-target:jvm-1.8")
@@ -382,10 +381,7 @@ object Settings {
       hbaseHadoop2Compact,
       hbaseMetrics,
       hbaseMetricsApi,
-      hbaseZooKeeper,
-      woodstoxCore,
-      stax2Api,
-      commonsConfiguration2
+      hbaseZooKeeper
     ).map(_ exclude("javax.servlet", "servlet-api") exclude("org.mortbay.jetty", "servlet-api-2.5")),
     libraryDependencies += jacksonCoreAsl,
     console / initialCommands :=
@@ -403,6 +399,9 @@ object Settings {
     name := "geotrellis-hbase-spark",
     libraryDependencies ++= Seq(
       hadoopClient % Provided,
+      woodstoxCore % Provided,
+      stax2Api % Provided,
+      commonsConfiguration2 % Provided,
       apacheSpark("core").value % Provided,
       apacheSpark("sql").value % Test,
       scalatest % Test
@@ -556,10 +555,10 @@ object Settings {
   lazy val spark = Seq(
     name := "geotrellis-spark",
     libraryDependencies ++= Seq(
-      woodstoxCore,
-      stax2Api,
-      commonsConfiguration2,
-      re2j,
+      woodstoxCore % Provided,
+      stax2Api % Provided,
+      commonsConfiguration2 % Provided,
+      re2j % Provided,
       apacheSpark("core").value % Provided,
       hadoopClient % Provided,
       apacheSpark("sql").value % Test,
