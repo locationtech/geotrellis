@@ -372,17 +372,10 @@ object Settings {
 
   lazy val hbase = Seq(
     name := "geotrellis-hbase",
-    libraryDependencies ++= Seq(
-      hbaseCommon,
-      hbaseClient,
-      hbaseMapReduce,
-      hbaseServer,
-      hbaseHadoopCompact,
-      hbaseHadoop2Compact,
-      hbaseMetrics,
-      hbaseMetricsApi,
-      hbaseZooKeeper
-    ).map(_ exclude("javax.servlet", "servlet-api") exclude("org.mortbay.jetty", "servlet-api-2.5")),
+    libraryDependencies += 
+      hbaseMapReduce 
+        exclude("javax.servlet", "servlet-api") 
+        exclude("org.mortbay.jetty", "servlet-api-2.5"),
     libraryDependencies += jacksonCoreAsl,
     console / initialCommands :=
       """
