@@ -41,7 +41,7 @@ class RasterizeRDDSpec extends AnyFunSpec with Matchers with TestEnvironment {
 
   val septaRailLines = {
     val s = readFile("vector/data/septaRail.geojson")
-    s.parseGeoJson[JsonFeatureCollection].getAllLineStrings
+    s.parseGeoJson[JsonFeatureCollection]().getAllLineStrings()
   }
 
   val septaExtent = septaRailLines.map(_.extent).reduce(_ combine _)
@@ -69,13 +69,13 @@ class RasterizeRDDSpec extends AnyFunSpec with Matchers with TestEnvironment {
           RasterExtent(keyExtent, 256, 256),
           1)
       }
-    }.stitch
+    }.stitch()
 
     tilesEqual(actual.tile, expected)
   }
 
   it("rasterize polygon"){
-    val wkt = scala.io.Source.fromInputStream(getClass.getResourceAsStream("/wkt/huc10-conestoga.wkt")).getLines.mkString
+    val wkt = scala.io.Source.fromInputStream(getClass.getResourceAsStream("/wkt/huc10-conestoga.wkt")).getLines().mkString
     val huc10 = WKT.read(wkt).asInstanceOf[MultiPolygon]
 
     val layout = TileLayout(3,3,256,256)
@@ -97,7 +97,7 @@ class RasterizeRDDSpec extends AnyFunSpec with Matchers with TestEnvironment {
           RasterExtent(keyExtent, 256, 256),
           1)
       }
-    }.stitch
+    }.stitch()
 
     info("MD: " + rasterizedRdd.metadata.tileLayout.toString)
     info("Expected" + expected.dimensions.toString)
@@ -145,7 +145,7 @@ class RasterizeRDDSpec extends AnyFunSpec with Matchers with TestEnvironment {
       .fromFeatureWithZIndex(features, ct, ld)
       .collect().head._2
 
-    tile.toArray.sum should be (432)
+    tile.toArray().sum should be (432)
   }
 
   it("rasterize feature with z-buffer 2"){
@@ -160,7 +160,7 @@ class RasterizeRDDSpec extends AnyFunSpec with Matchers with TestEnvironment {
       .fromFeatureWithZIndex(features, ct, ld)
       .collect().head._2
 
-    tile.toArray.sum should be (336)
+    tile.toArray().sum should be (336)
   }
 
   it("should retain the given partitioner") {

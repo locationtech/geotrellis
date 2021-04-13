@@ -42,7 +42,7 @@ class VectorJoinRDDSpec extends AnyFunSpec with Matchers with TestEnvironment {
     val right: RDD[LineString] = sc.parallelize(Array(line1, line2, line2))
     val pred = { (a: Geometry, b: Geometry) => a intersects b }
 
-    val res: Vector[(Polygon, LineString)] = VectorJoin(left, right, pred).collect.toVector
+    val res: Vector[(Polygon, LineString)] = VectorJoin(left, right, pred).collect().toVector
 
     res should contain only ((polyA, line1))
   }
@@ -53,7 +53,7 @@ class VectorJoinRDDSpec extends AnyFunSpec with Matchers with TestEnvironment {
     val right: RDD[LineString] = sc.parallelize(Array(line1, line2, line2))
     val pred = { (a: Geometry, b: Geometry) => a intersects b }
 
-    val res: Vector[(Polygon, LineString)] = left.vectorJoin(right, pred).collect.toVector
+    val res: Vector[(Polygon, LineString)] = left.vectorJoin(right, pred).collect().toVector
 
     res should contain only ((polyA, line1))
   }
@@ -64,7 +64,7 @@ class VectorJoinRDDSpec extends AnyFunSpec with Matchers with TestEnvironment {
     val right: RDD[Polygon] = sc.parallelize(Array(polyA, polyB, polyC, polyC, polyC, polyB))
     val pred = { (a: Geometry, b: Geometry) => a intersects b }
 
-    val res: Vector[(LineString, Polygon)] = left.vectorJoin(right, pred).collect.toVector
+    val res: Vector[(LineString, Polygon)] = left.vectorJoin(right, pred).collect().toVector
 
     res should contain only ((line1, polyA))
   }
@@ -75,7 +75,7 @@ class VectorJoinRDDSpec extends AnyFunSpec with Matchers with TestEnvironment {
     val right: RDD[Polygon] = sc.parallelize(Array(polyA, polyB, polyC, polyC, polyC, polyB), 6)
     val pred = { (a: Geometry, b: Geometry) => a intersects b }
 
-    val res: Vector[(LineString, Polygon)] = left.vectorJoin(right, pred).collect.toVector
+    val res: Vector[(LineString, Polygon)] = left.vectorJoin(right, pred).collect().toVector
 
     res should contain only ((line1, polyA))
   }

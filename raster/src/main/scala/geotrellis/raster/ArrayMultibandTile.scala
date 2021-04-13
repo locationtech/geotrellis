@@ -107,7 +107,7 @@ class ArrayMultibandTile(_bands: Array[Tile]) extends MultibandTile with MacroMu
     *
     * @return  The object on which the method was invoked
     */
-  def toArrayTile = this
+  def toArrayTile() = this
 
   /**
     * Retrieve one band of an [[ArrayMultibandTile]].

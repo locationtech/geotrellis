@@ -216,7 +216,7 @@ object GeoTrellisRasterSource {
         .fold(query)(t => query.where(At(t)))
         .result
         .withContext { _.map { case (key, tile) => (key, MultibandTile(tile)) } }
-        .toSpatial
+        .toSpatial()
     }
 
     def spaceTimeMultibandTileRead = {
@@ -229,7 +229,7 @@ object GeoTrellisRasterSource {
         .fold(query)(t => query.where(At(t)))
         .result
         .withContext { _.map { case (key, tile) => (key, tile.subsetBands(bands)) } }
-        .toSpatial
+        .toSpatial()
     }
 
     val header = reader.attributeStore.readHeader[LayerHeader](layerId)

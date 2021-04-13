@@ -81,7 +81,7 @@ case class GeoTiffSegmentLayout(
     val partitions = mutable.ArrayBuilder.make[Array[GridBounds[Int]]]
 
     def finalizePartition(): Unit = {
-      val res = partition.result
+      val res = partition.result()
       if (res.nonEmpty) partitions += res
       partition.clear()
       partitionSize = 0L
@@ -114,7 +114,7 @@ case class GeoTiffSegmentLayout(
     }
 
     finalizePartition()
-    partitions.result
+    partitions.result()
   }
 
   private def bestWindowSize(maxSize: Int, segment: Int): Int = {
@@ -203,7 +203,7 @@ case class GeoTiffSegmentLayout(
           )
       }
     }
-    result.result
+    result.result()
   }
 
   def bandSegmentCount: Int =
@@ -368,7 +368,7 @@ trait GeoTiffSegmentLayoutTransform {
         }
       }
 
-      ab.result
+      ab.result()
     } else {
       Array.empty[Int]
     }

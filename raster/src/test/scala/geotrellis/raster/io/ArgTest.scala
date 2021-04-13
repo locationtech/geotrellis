@@ -32,7 +32,7 @@ class ArgTest extends AnyFunSuite {
   }
 
   test("make sure it's an array of zeros") {
-    assert(tile.toArrayDouble === Array.fill(100)(0.0))
+    assert(tile.toArrayDouble() === Array.fill(100)(0.0))
   }
 
   test("update raster.data(3)") {
@@ -46,7 +46,7 @@ class ArgTest extends AnyFunSuite {
   }
 
   test("map over raster values") {
-    val data2 = tile.mapDouble(_ % 3.0).toArrayDouble
+    val data2 = tile.mapDouble(_ % 3.0).toArrayDouble()
     assert(data2(0) === 0.0)
     assert(data2(1) === 1.0)
     assert(data2(2) === 2.0)

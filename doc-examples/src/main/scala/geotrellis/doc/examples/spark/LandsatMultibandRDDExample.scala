@@ -93,8 +93,8 @@ object LandsatMultibandRDDExample {
             // Round the center coordinates in case there's any floating point errors
             val center =
               (
-                BigDecimal(x).setScale(5, RoundingMode.HALF_UP).doubleValue(),
-                BigDecimal(y).setScale(5, RoundingMode.HALF_UP).doubleValue()
+                BigDecimal(x).setScale(5, RoundingMode.HALF_UP).doubleValue,
+                BigDecimal(y).setScale(5, RoundingMode.HALF_UP).doubleValue
               )
 
             // Get the scene ID from the path
@@ -142,7 +142,7 @@ object LandsatMultibandRDDExample {
               MultibandTile(red, green, blue)
             }
           }
-          .stitch
+          .stitch()
 
       GeoTiff(raster, metadata.crs).write("/tmp/landsat-test.tif")
     } finally {

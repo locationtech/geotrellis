@@ -39,49 +39,49 @@ class SimpleFeatureToGeometryMethodsSpec extends AnyFunSpec with Matchers {
 
     it("should work on Features of Points") {
       val simpleFeature = GeometryToSimpleFeature(point, Some(crs), nonEmptyList)
-      val actual: Point = simpleFeature.toGeometry[Point]
+      val actual: Point = simpleFeature.toGeometry[Point]()
       val expected = point
       actual should be (expected)
     }
 
     it("should work on Features of Lines") {
       val simpleFeature = GeometryToSimpleFeature(line, Some(crs), nonEmptyList)
-      val actual: LineString = simpleFeature.toGeometry[LineString]
+      val actual: LineString = simpleFeature.toGeometry[LineString]()
       val expected = line
       actual should be (expected)
     }
 
     it("should work on Features of Polygons") {
       val simpleFeature = GeometryToSimpleFeature(polygon, Some(crs), nonEmptyList)
-      val actual: Polygon = simpleFeature.toGeometry[Polygon]
+      val actual: Polygon = simpleFeature.toGeometry[Polygon]()
       val expected = polygon
       actual should be (expected)
     }
 
     it("should work on Features of MultiPoints") {
       val simpleFeature = GeometryToSimpleFeature(multiPoint, Some(crs), nonEmptyList)
-      val actual: MultiPoint = simpleFeature.toGeometry[MultiPoint]
+      val actual: MultiPoint = simpleFeature.toGeometry[MultiPoint]()
       val expected = multiPoint
       actual should be (expected)
     }
 
     it("should work on Features of MultiLines") {
       val simpleFeature = GeometryToSimpleFeature(multiLine, Some(crs), nonEmptyList)
-      val actual: MultiLineString = simpleFeature.toGeometry[MultiLineString]
+      val actual: MultiLineString = simpleFeature.toGeometry[MultiLineString]()
       val expected = multiLine
       actual should be (expected)
     }
 
     it("should work on Features of MultiPolygons") {
       val simpleFeature = GeometryToSimpleFeature(multiPolygon, Some(crs), nonEmptyList)
-      val actual: MultiPolygon = simpleFeature.toGeometry[MultiPolygon]
+      val actual: MultiPolygon = simpleFeature.toGeometry[MultiPolygon]()
       val expected = multiPolygon
       actual should be (expected)
     }
 
     it("should work on Features of Geometry") {
       val simpleFeature = GeometryToSimpleFeature(point, Some(crs), nonEmptyList)
-      val actual: Geometry = simpleFeature.toGeometry[Geometry]
+      val actual: Geometry = simpleFeature.toGeometry[Geometry]()
       val expected = point
       actual should be (expected)
     }
@@ -89,7 +89,7 @@ class SimpleFeatureToGeometryMethodsSpec extends AnyFunSpec with Matchers {
     it("should throw in response to mis-matches") {
       val simpleFeature = GeometryToSimpleFeature(point, Some(crs), nonEmptyList)
       intercept[Exception] {
-        println(simpleFeature.toGeometry[LineString])
+        println(simpleFeature.toGeometry[LineString]())
       }
     }
   }

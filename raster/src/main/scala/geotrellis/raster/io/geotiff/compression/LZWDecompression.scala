@@ -67,7 +67,7 @@ class LZWDecompressor(segmentSizes: Array[Int]) extends Decompressor {
   def decompress(segment: Array[Byte], segmentIndex: Int): Array[Byte] = {
     val bis = new LZWBitInputStream(segment)
 
-    var tokenTable = TokenTable.initial
+    var tokenTable = TokenTable.initial()
     var tokenTableIndex = 258
 
     var outputArrayIndex = 0
@@ -77,7 +77,7 @@ class LZWDecompressor(segmentSizes: Array[Int]) extends Decompressor {
     var threshold = 9
 
     def initializeTokenTable = {
-      tokenTable = TokenTable.initial
+      tokenTable = TokenTable.initial()
       tokenTableIndex = 258
       threshold = 9
     }

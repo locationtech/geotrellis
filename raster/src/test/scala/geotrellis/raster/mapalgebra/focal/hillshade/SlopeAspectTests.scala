@@ -33,8 +33,8 @@ class SlopeAspectTests extends AnyFunSpec with Matchers with RasterMatchers {
           val s = new SurfacePoint
           s.`dz/dx` = x
           s.`dz/dy` = y
-          val aspect = s.aspect
-          val slope = s.slope
+          val aspect = s.aspect()
+          val slope = s.slope()
           
           if(isData(slope)) {
             abs(s.cosSlope - cos(slope)) should be < tolerance

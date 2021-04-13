@@ -193,10 +193,10 @@ class MultiPointSpec extends AnyFunSpec with Matchers {
 
     it ("should union with a MultiPolygon and return a PolygonResult") {
       val mpt = MultiPoint(Seq(Point(1,1)))
-      val p = Polygon(LineString(Point(0,0), Point(2,0), Point(2,2), Point(0,2), Point(0,0))).normalized
+      val p = Polygon(LineString(Point(0,0), Point(2,0), Point(2,2), Point(0,2), Point(0,0))).normalized()
       val mp = MultiPolygon(p)
       val PolygonResult(actual) = mpt | mp
-      actual.normalized should be (p)
+      actual.normalized() should be (p)
     }
 
     it ("should union with a MultiPolygon and return a MultiPolygonResult") {
@@ -435,7 +435,7 @@ class MultiPointSpec extends AnyFunSpec with Matchers {
     it ("should maintain immutability over normalization") {
       val mp = MultiPoint(Point(2,2), Point(1,1), Point(3,2), Point(1,1))
       val expected = mp.copy
-      mp.normalized
+      mp.normalized()
       mp.equals(expected) should be (true)
     }
 

@@ -29,7 +29,7 @@ class IfCellSpec extends AnyFunSpec with TestEnvironment with TestFiles {
     val dec = DecreasingTestFile
 
     val (cols: Int, rows: Int, tots: Int) = {
-      val tile = inc.stitch
+      val tile = inc.stitch()
       (tile.cols, tile.rows, tile.cols * tile.rows - 1)
     }
 

@@ -79,9 +79,8 @@ class UniversalKriging(points: Array[PointFeature[Double]],
   /**
     * Overloaded constructor, for default attribute matrix generation
     */
-  def this(points: Array[PointFeature[Double]], bandwidth: Double, model: ModelType) {
+  def this(points: Array[PointFeature[Double]], bandwidth: Double, model: ModelType) =
     this(points, (x, y) => Array(x, y, x * x, x * y, y * y), bandwidth, model)
-  }
 
   /**
     * Universal Kriging training with the sample points

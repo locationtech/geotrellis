@@ -46,7 +46,7 @@ object AsciiWriter {
     pw.write("cellsize %.12f\n".formatLocal(Locale.ENGLISH, g.cellwidth))
     pw.write(s"nodata_value $noData\n")
 
-    val data = raster.toArray
+    val data = raster.toArray()
 
     var y = 0
     while (y < g.rows) {

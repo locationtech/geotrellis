@@ -57,13 +57,13 @@ class HadoopRasterMethodsSpec extends AnyFunSpec with Matchers with BeforeAndAft
     it("should write GeoTiff with tags") {
       val geoTiff = MultibandGeoTiff(existencePath)
 
-      val expected = geoTiff.tile.toArrayTile
+      val expected = geoTiff.tile.toArrayTile()
       val expectedTags = geoTiff.tags
 
       geoTiff.write(new Path(pathTiff))
 
       val actualTiff = hadoop.HadoopGeoTiffReader.readMultiband(new Path(pathTiff))
-      val actual = actualTiff.tile.toArrayTile
+      val actual = actualTiff.tile.toArrayTile()
       val actualTags = actualTiff.tags
 
       actual should be (expected)
@@ -73,13 +73,13 @@ class HadoopRasterMethodsSpec extends AnyFunSpec with Matchers with BeforeAndAft
     it("should write GeoTiff with tags with gzip") {
       val geoTiff = MultibandGeoTiff(existencePath)
 
-      val expected = geoTiff.tile.toArrayTile
+      val expected = geoTiff.tile.toArrayTile()
       val expectedTags = geoTiff.tags
 
       geoTiff.write(new Path(pathTiffGz))
 
       val actualTiff = hadoop.HadoopGeoTiffReader.readMultiband(new Path(pathTiffGz))
-      val actual = actualTiff.tile.toArrayTile
+      val actual = actualTiff.tile.toArrayTile()
       val actualTags = actualTiff.tags
 
       actual should be (expected)
@@ -89,7 +89,7 @@ class HadoopRasterMethodsSpec extends AnyFunSpec with Matchers with BeforeAndAft
     it("should write Png") {
       val geoTiff = expandGeoTiff(MultibandGeoTiff(existencePath))
 
-      val expected = geoTiff.tile.toArrayTile.convert(IntCellType).renderPng()
+      val expected = geoTiff.tile.toArrayTile().convert(IntCellType).renderPng()
       expected.write(new Path(pathPng))
 
       val actual = hadoop.HadoopPngReader.read(new Path(pathPng))
@@ -99,7 +99,7 @@ class HadoopRasterMethodsSpec extends AnyFunSpec with Matchers with BeforeAndAft
 
     it("should write Png with gzip") {
       val geoTiff = expandGeoTiff(MultibandGeoTiff(existencePath))
-      val expected = geoTiff.tile.toArrayTile.convert(IntCellType).renderPng()
+      val expected = geoTiff.tile.toArrayTile().convert(IntCellType).renderPng()
       expected.write(new Path(pathPngGz))
 
       val actual = hadoop.HadoopPngReader.read(new Path(pathPngGz))
@@ -109,7 +109,7 @@ class HadoopRasterMethodsSpec extends AnyFunSpec with Matchers with BeforeAndAft
 
     it("should write Jpg") {
       val geoTiff = expandGeoTiff(MultibandGeoTiff(existencePath))
-      val expected = geoTiff.tile.toArrayTile.convert(IntCellType).renderJpg()
+      val expected = geoTiff.tile.toArrayTile().convert(IntCellType).renderJpg()
       expected.write(new Path(pathJpg))
 
       val actual = hadoop.HadoopPngReader.read(new Path(pathJpg))
@@ -119,7 +119,7 @@ class HadoopRasterMethodsSpec extends AnyFunSpec with Matchers with BeforeAndAft
 
     it("should write Jpg with gzip") {
       val geoTiff = expandGeoTiff(MultibandGeoTiff(existencePath))
-      val expected = geoTiff.tile.toArrayTile.convert(IntCellType).renderJpg()
+      val expected = geoTiff.tile.toArrayTile().convert(IntCellType).renderJpg()
       expected.write(new Path(pathJpgGz))
 
       val actual = hadoop.HadoopPngReader.read(new Path(pathJpgGz))

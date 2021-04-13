@@ -229,7 +229,7 @@ class IntColorMap(breaksToColors: Map[Int, Int], val options: Options = Options.
     new IntColorMap(breaksToColors, options.copy(classBoundaryType = classBoundaryType))
 
   def cache(h: Histogram[Int]): ColorMap = {
-    val ch = h.mutable
+    val ch = h.mutable()
     val cachedColors = h.values()
     cfor(0)( _ < cachedColors.length, _ + 1) { i =>
       val z = cachedColors(i)
@@ -270,14 +270,14 @@ class IntCachedColorMap(val colors: Vector[Int], h: Histogram[Int], val options:
   def mapDouble(z: Double): Int = map(d2i(z))
 
   def mapColors(f: Int => Int): ColorMap = {
-    val ch = h.mutable
+    val ch = h.mutable()
     h.foreachValue(z => ch.setItem(z, f(h.itemCount(z).toInt)))
     new IntCachedColorMap(colors, ch, options)
   }
 
   def mapColorsToIndex(): ColorMap = {
     val colorIndexMap = colors.zipWithIndex.toMap
-    val ch = h.mutable
+    val ch = h.mutable()
 
     h.foreachValue(z => ch.setItem(z, colorIndexMap(h.itemCount(z).toInt)))
     new IntCachedColorMap((0 to colors.length).toVector, ch, options)
@@ -368,7 +368,10 @@ object IndexedColorMap {
   )
   /** Converts a ColorMap to sequence of short triplets in encoding expected by GeoTiff 'Palette' color space.*/
   def toTiffPalette(cm: ColorMap): Seq[(Short, Short, Short)] =
-    fromColorMap(cm).colors.map(c => (upsample(c.red), upsample(c.green), upsample(c.blue)))
+    fromColorMap(cm).colors.map { c =>
+      val rgba = RGBA(c)
+      (upsample(rgba.red), upsample(rgba.green), upsample(rgba.blue))
+    }
 
   /** Flattens the given colormap into an indexed variant, throwing away any defined boundaries. */
   def fromColorMap(cm: ColorMap) = new IndexedColorMap(cm.colors)

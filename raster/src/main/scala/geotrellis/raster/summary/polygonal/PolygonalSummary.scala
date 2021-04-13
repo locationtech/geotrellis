@@ -45,7 +45,7 @@ object PolygonalSummary {
   )(implicit
     getRasterExtent: GetComponent[A, RasterExtent]): PolygonalSummaryResult[R] = {
     val rasterExtent: RasterExtent = getRasterExtent.get(raster)
-    val rasterArea: Polygon = rasterExtent.extent.toPolygon
+    val rasterArea: Polygon = rasterExtent.extent.toPolygon()
     if (rasterArea.disjoint(geometry)) {
       NoIntersection
     } else {

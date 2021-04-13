@@ -50,7 +50,7 @@ class ReprojectRasterExtentSpec extends AnyFunSpec
       // println(formatExtent("GTA", rea))
       // println(formatExtent("EXP", ree))
 
-      actualExtent.toPolygon should matchGeom (expectedExtent.toPolygon, 1.0)
+      actualExtent.toPolygon() should matchGeom (expectedExtent.toPolygon(), 1.0)
       actualCols should be (expectedCols +- 1)
       actualRows should be (expectedRows +- 1)
     }
@@ -72,7 +72,7 @@ class ReprojectRasterExtentSpec extends AnyFunSpec
       // println(formatExtent("GTA", rea))
       // println(formatExtent("EXP", ree))
 
-      actualExtent.toPolygon should matchGeom (expectedExtent.toPolygon, 10.0)
+      actualExtent.toPolygon() should matchGeom (expectedExtent.toPolygon(), 10.0)
       actualCols should be (expectedCols +- 10)
       actualRows should be (expectedRows +- 10)
     }
@@ -94,7 +94,7 @@ class ReprojectRasterExtentSpec extends AnyFunSpec
       // println(formatExtent("GTA", rea))
       // println(formatExtent("EXP", ree))
 
-      actualExtent.toPolygon should matchGeom (expectedExtent.toPolygon, 1.0)
+      actualExtent.toPolygon() should matchGeom (expectedExtent.toPolygon(), 1.0)
       actualCols should be (expectedCols +- 10)
       actualRows should be (expectedRows +- 10)
     }
@@ -107,7 +107,7 @@ class ReprojectRasterExtentSpec extends AnyFunSpec
       val destinationRE = ReprojectRasterExtent(originalRE, crs, WebMercator)
 
       assert(destinationRE.extent covers region)
-      assert(destinationRE.extent.toPolygon intersects region)
+      assert(destinationRE.extent.toPolygon() intersects region)
     }
   }
 }

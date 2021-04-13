@@ -122,7 +122,7 @@ trait COGLayerUpdateSpaceTimeTileSpec
         }
         val (maxKey, _) = sample.sortByKey(false).first()
         val kb = KeyBounds(minKey, maxKey.setComponent(SpatialKey(maxKey.col + 20, maxKey.row + 20)))
-        val updatedLayerId = layerId.createTemporaryId
+        val updatedLayerId = layerId.createTemporaryId()
         val updatedKeyIndex = keyIndexMethod.createIndex(kb)
 
         val usample = sample.map { case (key, value) => (key.setComponent(SpatialKey(key.col + 10, key.row + 10)), value) }
@@ -133,16 +133,16 @@ trait COGLayerUpdateSpaceTimeTileSpec
           sample
             .metadata
             .copy(bounds = ukb)
-            .copy(extent = sample.metadata.mapTransform(ukb.toGridBounds).bufferByLayout(sample.metadata.layout))
+            .copy(extent = sample.metadata.mapTransform(ukb.toGridBounds()).bufferByLayout(sample.metadata.layout))
         )
 
         writer.write[SpaceTimeKey, Tile](updatedLayerId.name, sample, updatedLayerId.zoom, updatedKeyIndex)
         writer.update[SpaceTimeKey, Tile](updatedLayerId.name, updatedSample, updatedLayerId.zoom, mergeFunc = mergeFunc)
 
         /** !!IMPORTANT: the place where empty tiles are filtered out */
-        val resultKeys = reader.read[SpaceTimeKey, Tile](updatedLayerId).filter(!_._2.isNoDataTile).map(_._1).collect.toList
+        val resultKeys = reader.read[SpaceTimeKey, Tile](updatedLayerId).filter(!_._2.isNoDataTile).map(_._1).collect().toList
         val sampleKeys = sample.map(_._1).collect().toList
-        val udpatedSampleKeys = updatedSample.map(_._1).collect.toList
+        val udpatedSampleKeys = updatedSample.map(_._1).collect().toList
 
         resultKeys should contain theSameElementsAs (udpatedSampleKeys ++ sampleKeys)
         resultKeys.length shouldBe sampleKeys.length * 2
@@ -150,7 +150,7 @@ trait COGLayerUpdateSpaceTimeTileSpec
 
       it("should update correctly inside the bounds of a metatile") {
         val tileLayout = TileLayout(8, 8, 4, 4)
-        val id = layerId.createTemporaryId
+        val id = layerId.createTemporaryId()
 
         val tiles =
           Seq(
@@ -162,7 +162,7 @@ trait COGLayerUpdateSpaceTimeTileSpec
 
         /** !!IMPORTANT: the place where empty tiles are filtered out, due to the same reason as in previous test */
         val rdd = createSpaceTimeTileLayerRDD(tiles, tileLayout).withContext { _.filter(!_._2.isNoDataTile) }
-        assert(rdd.count == 4)
+        assert(rdd.count() == 4)
 
         writer.write(id.name, rdd, id.zoom, keyIndexMethod)
 
@@ -172,13 +172,13 @@ trait COGLayerUpdateSpaceTimeTileSpec
             tileLayout
           ).withContext { _.filter(!_._2.isNoDataTile) }
 
-        assert(updateRdd.count == 1)
+        assert(updateRdd.count() == 1)
 
         updateRdd.withContext(_.mapValues { tile => tile + 1 })
         writer.update[SpaceTimeKey, Tile](id.name, updateRdd, id.zoom, mergeFunc = mergeFunc)
         val read: TileLayerRDD[SpaceTimeKey] = reader.read[SpaceTimeKey, Tile](id).withContext { _.filter(!_._2.isNoDataTile) }
 
-        val readTiles = read.collect.sortBy { case (k, _) => k.instant }.toArray
+        val readTiles = read.collect().sortBy { case (k, _) => k.instant }.toArray
         readTiles.size should be (4)
         assertEqual(readTiles(0)._2, Array(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1))
         assertEqual(readTiles(1)._2, Array(2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2))
@@ -200,7 +200,7 @@ trait COGLayerUpdateSpaceTimeTileSpec
         // this will force multiple zoom ranges to be created
         val options = COGLayerWriter.Options.DEFAULT.copy(maxTileSize = mdHighZoom.tileCols)
 
-        val tmpLayer = layerId.createTemporaryId.name
+        val tmpLayer = layerId.createTemporaryId().name
 
         writer.write[SpaceTimeKey, Tile](tmpLayer, sampleHighZoom, maxZoom, keyIndexMethod, mergeFunc = mergeFunc, options = options)
         writer.update[SpaceTimeKey, Tile](tmpLayer, sampleHighZoom, maxZoom, mergeFunc = mergeFunc, options = options)
@@ -216,7 +216,7 @@ trait COGLayerUpdateSpaceTimeTileSpec
         val createOptions = DEFAULT.copy(maxTileSize = sample.metadata.tileCols) // suggests one ZoomRange per each zoom
         val updateOptions = DEFAULT.copy(maxTileSize = sample.metadata.tileCols * 2) // suggests one ZoomRange per two zooms
 
-        val tmpLayerId = layerId.createTemporaryId.name
+        val tmpLayerId = layerId.createTemporaryId().name
 
         writer.write[SpaceTimeKey, Tile](tmpLayerId, sample, layerId.zoom, keyIndexMethod, mergeFunc = mergeFunc, options = createOptions)
         writer.update[SpaceTimeKey, Tile](tmpLayerId, sample, layerId.zoom, mergeFunc = mergeFunc, options = updateOptions)

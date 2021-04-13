@@ -122,14 +122,14 @@ case class CroppedTile(
     *
     * @return  An [[ArrayTile]]
     */
-  def toArrayTile: ArrayTile = mutable
+  def toArrayTile(): ArrayTile = mutable
 
   /**
     * Return the [[MutableArrayTile]] equivalent of this tile.
     *
     * @return  An MutableArrayTile
     */
-  def mutable(): MutableArrayTile =
+  def mutable: MutableArrayTile =
     mutable(cellType)
 
   /**
@@ -162,7 +162,7 @@ case class CroppedTile(
     *
     * @return  The copy as an Array[Int]
     */
-  def toArray: Array[Int] = {
+  def toArray(): Array[Int] = {
     val arr = Array.ofDim[Int](cols * rows)
 
     var i = 0
@@ -181,7 +181,7 @@ case class CroppedTile(
     *
     * @return  The copy as an Array[Int]
     */
-  def toArrayDouble: Array[Double] = {
+  def toArrayDouble(): Array[Double] = {
     val arr = Array.ofDim[Double](cols * rows)
 
     var i = 0
@@ -200,7 +200,7 @@ case class CroppedTile(
     *
     * @return  An array of bytes
     */
-  def toBytes(): Array[Byte] = toArrayTile.toBytes
+  def toBytes(): Array[Byte] = toArrayTile().toBytes()
 
   /**
     * Execute a function on each cell of the tile.  The function
@@ -337,7 +337,7 @@ case class CroppedTile(
     * @return         The result, an Tile
     */
   def combine(other: Tile)(f: (Int, Int) => Int): Tile = {
-    (this, other).assertEqualDimensions
+    (this, other).assertEqualDimensions()
 
     val tile = ArrayTile.alloc(cellType.union(other.cellType), cols, rows)
     cfor(0)(_ < rows, _ + 1) { row =>
@@ -360,7 +360,7 @@ case class CroppedTile(
     * @return         The result, an Tile
     */
   def combineDouble(other: Tile)(f: (Double, Double) => Double): Tile = {
-    (this, other).assertEqualDimensions
+    (this, other).assertEqualDimensions()
 
     val tile = ArrayTile.alloc(cellType, cols, rows)
     cfor(0)(_ < rows, _ + 1) { row =>

@@ -268,7 +268,7 @@ case class GDALWarpOptions(
         )
       case _ =>
         val re = {
-          val targetRasterExtent = resampleTarget(reprojectedRasterExtent).toRasterExtent
+          val targetRasterExtent = resampleTarget(reprojectedRasterExtent).toRasterExtent()
           if(this.alignTargetPixels) targetRasterExtent.alignTargetPixels else targetRasterExtent
         }
 
@@ -292,7 +292,7 @@ case class GDALWarpOptions(
 
       case _ =>
         val re = {
-          val targetRasterExtent = resampleTarget(gridExtent).toRasterExtent
+          val targetRasterExtent = resampleTarget(gridExtent).toRasterExtent()
           if(this.alignTargetPixels) targetRasterExtent.alignTargetPixels else targetRasterExtent
         }
 

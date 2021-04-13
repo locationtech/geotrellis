@@ -34,7 +34,7 @@ class SumSpec extends AnyFunSpec with TestEnvironment with TestFiles {
     val multi = ones.withContext { _.mapValues { tile => MultibandTile(tile, tile, tile) }}
 
     val tileLayout = ones.metadata.tileLayout
-    val count = (ones.count * tileLayout.tileCols * tileLayout.tileRows).toInt
+    val count = (ones.count() * tileLayout.tileCols * tileLayout.tileRows).toInt
     val totalExtent = ones.metadata.extent
 
     val xd = totalExtent.xmax - totalExtent.xmin
@@ -68,23 +68,23 @@ class SumSpec extends AnyFunSpec with TestEnvironment with TestFiles {
     }
 
     it("should get correct double sum over whole raster extent") {
-      ones.polygonalSummaryValue(totalExtent.toPolygon, SumVisitor).toOption.get should be(SumValue(count))
+      ones.polygonalSummaryValue(totalExtent.toPolygon(), SumVisitor).toOption.get should be(SumValue(count))
     }
 
     it("should get correct double sum over whole raster extent for MultibandTileRDD") {
-      multi.polygonalSummaryValue(totalExtent.toPolygon, SumVisitor).toOption.get map { _  should be(SumValue(count)) }
+      multi.polygonalSummaryValue(totalExtent.toPolygon(), SumVisitor).toOption.get map { _  should be(SumValue(count)) }
     }
 
     it("should get correct double sum over a quarter of the extent") {
-      val result = ones.polygonalSummaryValue(quarterExtent.toPolygon, SumVisitor).toOption.get
-      val expected = ones.stitch.polygonalSummary(quarterExtent.toPolygon, SumVisitor).toOption.get
+      val result = ones.polygonalSummaryValue(quarterExtent.toPolygon(), SumVisitor).toOption.get
+      val expected = ones.stitch().polygonalSummary(quarterExtent.toPolygon(), SumVisitor).toOption.get
 
       result should be (expected)
     }
 
     it("should get correct double sum over a quarter of the extent for MultibandTileRDD") {
-      val result = multi.polygonalSummaryValue(quarterExtent.toPolygon, SumVisitor).toOption.get
-      val expected = multi.stitch.polygonalSummary(quarterExtent.toPolygon, SumVisitor).toOption.get
+      val result = multi.polygonalSummaryValue(quarterExtent.toPolygon(), SumVisitor).toOption.get
+      val expected = multi.stitch().polygonalSummary(quarterExtent.toPolygon(), SumVisitor).toOption.get
 
       result.size should be (expected.size)
 
@@ -95,14 +95,14 @@ class SumSpec extends AnyFunSpec with TestEnvironment with TestFiles {
 
     it("should get correct double sum over half of the extent in diamond shape") {
       val result = ones.polygonalSummaryValue(diamondPoly, SumVisitor).toOption.get
-      val expected = ones.stitch.polygonalSummary(diamondPoly, SumVisitor).toOption.get
+      val expected = ones.stitch().polygonalSummary(diamondPoly, SumVisitor).toOption.get
 
       result should be (expected)
     }
 
     it("should get correct double sum over half of the extent in diamond shape for MultibandTileRDD") {
       val result = multi.polygonalSummaryValue(diamondPoly, SumVisitor).toOption.get
-      val expected = multi.stitch.polygonalSummary(diamondPoly, SumVisitor).toOption.get
+      val expected = multi.stitch().polygonalSummary(diamondPoly, SumVisitor).toOption.get
 
       result.size should be (expected.size)
 
@@ -113,14 +113,14 @@ class SumSpec extends AnyFunSpec with TestEnvironment with TestFiles {
 
     it("should get correct double sum over polygon with hole") {
       val result = ones.polygonalSummaryValue(polyWithHole, SumVisitor).toOption.get
-      val expected = ones.stitch.polygonalSummary(polyWithHole, SumVisitor).toOption.get
+      val expected = ones.stitch().polygonalSummary(polyWithHole, SumVisitor).toOption.get
 
       result should be (expected)
     }
 
     it("should get correct double sum over polygon with hole for MultibandTileRDD") {
       val result = multi.polygonalSummaryValue(polyWithHole, SumVisitor).toOption.get
-      val expected = multi.stitch.polygonalSummary(polyWithHole, SumVisitor).toOption.get
+      val expected = multi.stitch().polygonalSummary(polyWithHole, SumVisitor).toOption.get
 
       result.size should be (expected.size)
 
@@ -169,23 +169,23 @@ class SumSpec extends AnyFunSpec with TestEnvironment with TestFiles {
     }
 
     it("should get correct double sum over whole raster extent") {
-      ones.polygonalSummaryValue(totalExtent.toPolygon, SumVisitor).toOption.get should be(SumValue(count))
+      ones.polygonalSummaryValue(totalExtent.toPolygon(), SumVisitor).toOption.get should be(SumValue(count))
     }
 
     it("should get correct double sum over whole raster extent for MultibandTiles") {
-      multi.polygonalSummaryValue(totalExtent.toPolygon, SumVisitor).toOption.get map { _  should be(SumValue(count)) }
+      multi.polygonalSummaryValue(totalExtent.toPolygon(), SumVisitor).toOption.get map { _  should be(SumValue(count)) }
     }
 
     it("should get correct double sum over a quarter of the extent") {
-      val result = ones.polygonalSummaryValue(quarterExtent.toPolygon, SumVisitor).toOption.get
-      val expected = ones.stitch.polygonalSummary(quarterExtent.toPolygon, SumVisitor).toOption.get
+      val result = ones.polygonalSummaryValue(quarterExtent.toPolygon(), SumVisitor).toOption.get
+      val expected = ones.stitch().polygonalSummary(quarterExtent.toPolygon(), SumVisitor).toOption.get
 
       result should be (expected)
     }
 
     it("should get correct double sum over a quarter of the extent for MultibandTiles") {
-      val result = multi.polygonalSummaryValue(quarterExtent.toPolygon, SumVisitor).toOption.get
-      val expected = multi.stitch.polygonalSummary(quarterExtent.toPolygon, SumVisitor).toOption.get
+      val result = multi.polygonalSummaryValue(quarterExtent.toPolygon(), SumVisitor).toOption.get
+      val expected = multi.stitch().polygonalSummary(quarterExtent.toPolygon(), SumVisitor).toOption.get
 
       result.size should be (expected.size)
 
@@ -196,14 +196,14 @@ class SumSpec extends AnyFunSpec with TestEnvironment with TestFiles {
 
     it("should get correct double sum over half of the extent in diamond shape") {
       val result = ones.polygonalSummaryValue(diamondPoly, SumVisitor).toOption.get
-      val expected = ones.stitch.polygonalSummary(diamondPoly, SumVisitor).toOption.get
+      val expected = ones.stitch().polygonalSummary(diamondPoly, SumVisitor).toOption.get
 
       result should be (expected)
     }
 
     it("should get correct double sum over half of the extent in diamond shape for MultibandTiles") {
       val result = multi.polygonalSummaryValue(diamondPoly, SumVisitor).toOption.get
-      val expected = multi.stitch.polygonalSummary(diamondPoly, SumVisitor).toOption.get
+      val expected = multi.stitch().polygonalSummary(diamondPoly, SumVisitor).toOption.get
 
       result.size should be (expected.size)
 
@@ -214,14 +214,14 @@ class SumSpec extends AnyFunSpec with TestEnvironment with TestFiles {
 
     it("should get correct double sum over polygon with hole") {
       val result = ones.polygonalSummaryValue(polyWithHole, SumVisitor).toOption.get
-      val expected = ones.stitch.polygonalSummary(polyWithHole, SumVisitor).toOption.get
+      val expected = ones.stitch().polygonalSummary(polyWithHole, SumVisitor).toOption.get
 
       result should be (expected)
     }
 
     it("should get correct double sum over polygon with hole for MultibandTiles") {
       val result = multi.polygonalSummaryValue(polyWithHole, SumVisitor).toOption.get
-      val expected = multi.stitch.polygonalSummary(polyWithHole, SumVisitor).toOption.get
+      val expected = multi.stitch().polygonalSummary(polyWithHole, SumVisitor).toOption.get
 
       result.size should be (expected.size)
 

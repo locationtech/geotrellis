@@ -114,7 +114,7 @@ object SaveToHadoop {
     rdd: RDD[(K, Array[Byte])],
     keyToUri: K => String
   ): Long =
-    setup(rdd, keyToUri).count
+    setup(rdd, keyToUri).count()
 
   /**
     * Saves to Hadoop FileSystem, returns an count of records saved.
@@ -127,5 +127,5 @@ object SaveToHadoop {
     keyToUri: K => String,
     toBytes: (K, V) => Array[Byte]
   ): Long =
-    setup(rdd, keyToUri, toBytes).count
+    setup(rdd, keyToUri, toBytes).count()
 }

@@ -185,7 +185,7 @@ object BufferTilesRDD extends BufferTiles {
     apply(
       rdd,
       { key: K =>
-        val k = key.getComponent[SpatialKey]()
+        val k = key.getComponent[SpatialKey]
         layerBounds.contains(k.col, k.row)
       },
       { _: K => BufferSizes(bufferSize, bufferSize, bufferSize, bufferSize) },
@@ -338,7 +338,7 @@ object BufferTilesRDD extends BufferTiles {
     val grouped =
       targetPartitioner match {
         case Some(p) => sliced.groupByKey(p)
-        case None => sliced.groupByKey
+        case None => sliced.groupByKey()
       }
 
     grouped

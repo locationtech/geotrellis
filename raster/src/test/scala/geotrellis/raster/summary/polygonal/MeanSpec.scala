@@ -30,7 +30,7 @@ class MeanSpec extends AnyFunSpec with Matchers with RasterMatchers with TileBui
     val rs = createRaster(Array.fill(40*40)(1),40,40)
     val tile = rs.tile
     val extent = rs.extent
-    val zone = Extent(10,-10,30,10).toPolygon
+    val zone = Extent(10,-10,30,10).toPolygon()
 
     val multibandTile = MultibandTile(tile, tile, tile)
     val multibandRaster = Raster(multibandTile, extent)

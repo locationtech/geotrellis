@@ -37,7 +37,7 @@ object EuclideanDistanceExamples {
 
     val sc: SparkContext = ???
 
-    val geomWKT = scala.io.Source.fromFile("geotrellis/spark/src/test/resources/wkt/schools.wkt").getLines.mkString
+    val geomWKT = scala.io.Source.fromFile("geotrellis/spark/src/test/resources/wkt/schools.wkt").getLines().mkString
     val LayoutLevel(z, ld) = ZoomedLayoutScheme(WebMercator).levelForZoom(12)
     val maptrans = ld.mapTransform
 
@@ -57,7 +57,7 @@ object EuclideanDistanceExamples {
 
     val tileRDD: RDD[(SpatialKey, Tile)] = inputRDD.euclideanDistance(ld)
 
-    val maxDistance = tileRDD.map(_._2.findMinMaxDouble).collect.foldLeft(-1.0/0.0){ (max, minMax) => scala.math.max(max, minMax._2) }
+    val maxDistance = tileRDD.map(_._2.findMinMaxDouble).collect().foldLeft(-1.0/0.0){ (max, minMax) => scala.math.max(max, minMax._2) }
     val cm = ColorMap(Range.BigDecimal.inclusive(0.0, maxDistance, maxDistance/512).map(_.toDouble).toArray, ColorRamps.BlueToRed)
     tileRDD.stitch().renderPng(cm).write("schools.png")
   }

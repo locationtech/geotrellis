@@ -29,13 +29,13 @@ class GeometryResultSpec extends AnyFunSpec with Matchers {
       val p = Polygon(LineString(List[(Double,Double)]((0,0),(1,0),(1,1),(0,1),(0,0))))
       val p2 = affine.translate(0.5, 0.5).transform(p).asInstanceOf[Polygon]
 
-      (p & p2).toGeometry.isDefined should be (true)
+      (p & p2).toGeometry().isDefined should be (true)
     }
 
     it("should return None for empty intersection") {
       val p = Polygon(LineString(List[(Double,Double)]((0,0),(1,0),(1,1),(0,1),(0,0))))
       val p2 = affine.translate(5.0, 5.0).transform(p).asInstanceOf[Polygon]
-      (p & p2).toGeometry.isDefined should be (false)
+      (p & p2).toGeometry().isDefined should be (false)
     }
 
     it("should use asMultiLine to be able to union over a set of lines") {
@@ -54,14 +54,14 @@ class GeometryResultSpec extends AnyFunSpec with Matchers {
           }
         }
       result.isDefined should be (true)
-      result.get.normalized should be (
+      result.get.normalized() should be (
         MultiLineString(
           LineString((0.0,0.0), (1.0,1.0)),
           LineString((1.0,1.0), (2.0,2.0)),
           LineString((2.0,2.0), (3.0,3.0)),
           LineString((0.0,2.0), (1.0,1.0)),
           LineString((1.0,1.0), (2.0,0.0))
-        ).normalized
+        ).normalized()
       )
     }
   }

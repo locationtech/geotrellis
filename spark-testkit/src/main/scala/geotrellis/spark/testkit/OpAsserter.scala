@@ -37,7 +37,7 @@ trait OpAsserter { self: TestEnvironment =>
     sparkOp: TileLayerRDD[SpatialKey] => TileLayerRDD[SpatialKey],
     asserter: (Tile, Tile) => Unit = tilesEqual
   ) = {
-    val tile = SinglebandGeoTiff(new File(inputHomeLocalPath, path).getPath).tile.toArrayTile
+    val tile = SinglebandGeoTiff(new File(inputHomeLocalPath, path).getPath).tile.toArrayTile()
     testTile(sc, tile, layoutCols, layoutRows)(rasterOp, sparkOp, asserter)
   }
 
@@ -51,7 +51,7 @@ trait OpAsserter { self: TestEnvironment =>
      sparkOp: TileLayerCollection[SpatialKey] => TileLayerCollection[SpatialKey],
      asserter: (Tile, Tile) => Unit = tilesEqual
    ) = {
-    val tile = SinglebandGeoTiff(new File(inputHomeLocalPath, path).getPath).tile.toArrayTile
+    val tile = SinglebandGeoTiff(new File(inputHomeLocalPath, path).getPath).tile.toArrayTile()
     testTileCollection(sc, tile, layoutCols, layoutRows)(rasterOp, sparkOp, asserter)
   }
 
@@ -72,8 +72,8 @@ trait OpAsserter { self: TestEnvironment =>
         layoutRows
       )(sc)
 
-    val rasterResult = rasterOp(tile, rasterRDD.metadata.layout.toRasterExtent)
-    val sparkResult = sparkOp(rasterRDD).stitch
+    val rasterResult = rasterOp(tile, rasterRDD.metadata.layout.toRasterExtent())
+    val sparkResult = sparkOp(rasterRDD).stitch()
 
     asserter(rasterResult, sparkResult.tile)
   }
@@ -96,8 +96,8 @@ trait OpAsserter { self: TestEnvironment =>
 
     val rasterCollection = rasterRDD.toCollection
 
-    val rasterResult = rasterOp(tile, rasterCollection.metadata.layout.toRasterExtent)
-    val sparkResult = sparkOp(rasterCollection).stitch
+    val rasterResult = rasterOp(tile, rasterCollection.metadata.layout.toRasterExtent())
+    val sparkResult = sparkOp(rasterCollection).stitch()
 
     asserter(rasterResult, sparkResult.tile)
   }

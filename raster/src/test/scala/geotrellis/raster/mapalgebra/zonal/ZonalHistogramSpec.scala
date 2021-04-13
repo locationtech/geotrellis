@@ -73,9 +73,9 @@ class ZonalHistogramSpec extends AnyFunSpec
     }
 
     val expected =
-      zoneValues.toMap.mapValues { list =>
-        list.distinct
-            .map { v => (v, list.filter(_ == v).length) }
+      zoneValues.toMap.map { case (k, list) =>
+        k -> list.distinct
+            .map { v => (v, list.count(_ == v)) }
             .toMap
       }
 

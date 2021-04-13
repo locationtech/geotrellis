@@ -46,8 +46,8 @@ class GridExtent[@specialized(Int, Long) N: Integral](
   if (rows <= 0) throw GeoAttrsError(s"invalid rows: $rows")
 
   require(
-    cols == Integral[N].fromDouble(math.round(extent.width / cellwidth)) &&
-    rows == Integral[N].fromDouble(math.round(extent.height / cellheight)),
+    cols == Integral[N].fromDouble(math.round(extent.width / cellwidth).toDouble) &&
+    rows == Integral[N].fromDouble(math.round(extent.height / cellheight).toDouble),
     s"$extent at $cellSize does not match $dimensions"
   )
 
@@ -56,8 +56,8 @@ class GridExtent[@specialized(Int, Long) N: Integral](
 
   def this(extent: Extent, cellSize: CellSize) =
     this(extent, cellSize.width, cellSize.height,
-      cols = Integral[N].fromDouble(math.round(extent.width / cellSize.width)),
-      rows = Integral[N].fromDouble(math.round(extent.height / cellSize.height)))
+      cols = Integral[N].fromDouble(math.round(extent.width / cellSize.width).toDouble),
+      rows = Integral[N].fromDouble(math.round(extent.height / cellSize.height).toDouble))
 
   def cellSize = CellSize(cellwidth, cellheight)
 
@@ -262,8 +262,8 @@ class GridExtent[@specialized(Int, Long) N: Integral](
     val alignedExtent = Extent(xmin, ymin, xmax, ymax)
     val cols = math.round(alignedExtent.width / cellwidth)
     val rows = math.round(alignedExtent.height / cellheight)
-    val ncols = Integral[N].fromDouble(cols)
-    val nrows = Integral[N].fromDouble(rows)
+    val ncols = Integral[N].fromDouble(cols.toDouble)
+    val nrows = Integral[N].fromDouble(rows.toDouble)
 
     new GridExtent[N](alignedExtent, cellwidth, cellheight, ncols, nrows)
   }
@@ -286,7 +286,7 @@ class GridExtent[@specialized(Int, Long) N: Integral](
     * the given extent is covered, that lines up with the grid.
     */
   def createAlignedRasterExtent(targetExtent: Extent): RasterExtent =
-    createAlignedGridExtent(targetExtent).toRasterExtent
+    createAlignedGridExtent(targetExtent).toRasterExtent()
 
   /**
     * This method copies gdalwarp -tap logic:
@@ -417,7 +417,7 @@ object GridExtent {
     * */
   def floorWithTolerance(value: Double): Double = {
     val roundedValue = math.round(value)
-    if (math.abs(value - roundedValue) < GridExtent.epsilon) roundedValue
+    if (math.abs(value - roundedValue) < GridExtent.epsilon) roundedValue.toDouble
     else math.floor(value)
   }
 

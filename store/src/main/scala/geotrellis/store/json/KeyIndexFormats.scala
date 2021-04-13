@@ -135,8 +135,8 @@ trait KeyIndexFormats {
     }
   }
 
-  implicit def keyIndexEncoder[K: ClassTag]: Encoder[KeyIndex[K]] = KeyIndexJsonFormatFactory.getKeyIndexEncoder[K]
-  implicit def keyIndexDecoder[K: ClassTag]: Decoder[KeyIndex[K]] = KeyIndexJsonFormatFactory.getKeyIndexDecoder[K]
+  implicit def keyIndexEncoder[K: ClassTag]: Encoder[KeyIndex[K]] = KeyIndexJsonFormatFactory.getKeyIndexEncoder[K]()
+  implicit def keyIndexDecoder[K: ClassTag]: Decoder[KeyIndex[K]] = KeyIndexJsonFormatFactory.getKeyIndexDecoder[K]()
 
   implicit val hilbertSpatialKeyIndexEncoder: Encoder[HilbertSpatialKeyIndex] =
     Encoder.encodeJson.contramap[HilbertSpatialKeyIndex] { obj =>

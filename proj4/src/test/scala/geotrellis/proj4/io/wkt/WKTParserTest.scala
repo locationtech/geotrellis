@@ -29,6 +29,7 @@ class WKTParserTest extends AnyFunSpec {
       case NoSuccess(msg, _) =>
         info(msg)
         fail()
+      case _ => fail()
     }
   }
 
@@ -41,6 +42,7 @@ class WKTParserTest extends AnyFunSpec {
       case NoSuccess(msg, _) =>
         info(msg)
         fail()
+      case _ => fail()
     }
   }
 
@@ -53,6 +55,7 @@ class WKTParserTest extends AnyFunSpec {
       case NoSuccess(msg, _) =>
         info(msg)
         fail()
+      case _ => fail()
     }
   }
 
@@ -65,6 +68,7 @@ class WKTParserTest extends AnyFunSpec {
       case NoSuccess(msg, _) =>
         info(msg)
         fail()
+      case _ => fail()
     }
   }
 
@@ -77,6 +81,7 @@ class WKTParserTest extends AnyFunSpec {
       case NoSuccess(msg, _) =>
         info(msg)
         fail()
+      case _ => fail()
     }
   }
 
@@ -89,6 +94,7 @@ class WKTParserTest extends AnyFunSpec {
       case NoSuccess(msg, _) =>
         info(msg)
         fail()
+      case _ => fail()
     }
   }
 
@@ -101,6 +107,7 @@ class WKTParserTest extends AnyFunSpec {
       case NoSuccess(msg, _) =>
         info(msg)
         fail()
+      case _ => fail()
     }
   }
 
@@ -113,6 +120,7 @@ class WKTParserTest extends AnyFunSpec {
       case NoSuccess(msg, _) =>
         info(msg)
         fail()
+      case _ => fail()
     }
   }
 
@@ -125,6 +133,7 @@ class WKTParserTest extends AnyFunSpec {
       case NoSuccess(msg, _) =>
         info(msg)
         fail()
+      case _ => fail()
     }
   }
 
@@ -137,6 +146,7 @@ class WKTParserTest extends AnyFunSpec {
       case NoSuccess(msg, _) =>
         info(msg)
         fail()
+      case _ => fail()
     }
   }
 
@@ -149,6 +159,7 @@ class WKTParserTest extends AnyFunSpec {
       case NoSuccess(msg, _) =>
         info(msg)
         fail()
+      case _ => fail()
     }
   }
 
@@ -161,6 +172,7 @@ class WKTParserTest extends AnyFunSpec {
       case NoSuccess(msg, _) =>
         info(msg)
         fail()
+      case _ => fail()
     }
   }
 
@@ -173,6 +185,7 @@ class WKTParserTest extends AnyFunSpec {
       case NoSuccess(msg, _) =>
         info(msg)
         fail()
+      case _ => fail()
     }
   }
 
@@ -186,6 +199,7 @@ class WKTParserTest extends AnyFunSpec {
       case NoSuccess(msg, _) =>
         info(msg)
         fail()
+      case _ => fail()
     }
   }
 
@@ -198,6 +212,7 @@ class WKTParserTest extends AnyFunSpec {
       case NoSuccess(msg, _) =>
         info(msg)
         fail()
+      case _ => fail()
     }
   }
 
@@ -210,6 +225,7 @@ class WKTParserTest extends AnyFunSpec {
       case NoSuccess(msg, _) =>
         info(msg)
         fail()
+      case _ => fail()
     }
   }
 
@@ -226,6 +242,7 @@ class WKTParserTest extends AnyFunSpec {
       case NoSuccess(msg, _) =>
         info(msg)
         fail()
+      case _ => fail()
     }
   }
 
@@ -241,6 +258,7 @@ class WKTParserTest extends AnyFunSpec {
       case NoSuccess(msg, _) =>
         info(msg)
         fail()
+      case _ => fail()
     }
   }
 
@@ -256,6 +274,7 @@ class WKTParserTest extends AnyFunSpec {
       case NoSuccess(msg, _) =>
         info(msg)
         fail()
+      case _ => fail()
     }
   }
 
@@ -269,6 +288,7 @@ class WKTParserTest extends AnyFunSpec {
       case NoSuccess(msg, _) =>
         info(msg)
         fail()
+      case _ => fail()
     }
   }
 
@@ -282,6 +302,7 @@ class WKTParserTest extends AnyFunSpec {
       case NoSuccess(msg, _) =>
         info(msg)
         fail()
+      case _ => fail()
     }
   }
 
@@ -296,6 +317,7 @@ class WKTParserTest extends AnyFunSpec {
       case NoSuccess(msg, _) =>
         info(msg)
         fail()
+      case _ => fail()
     }
   }
 
@@ -308,6 +330,7 @@ class WKTParserTest extends AnyFunSpec {
       case NoSuccess(msg, _) =>
         info(msg)
         fail()
+      case _ => fail()
     }
   }
 
@@ -332,6 +355,7 @@ class WKTParserTest extends AnyFunSpec {
       case NoSuccess(msg, _) =>
         info(msg)
         fail()
+      case _ => fail()
     }
   }
 
@@ -345,6 +369,7 @@ class WKTParserTest extends AnyFunSpec {
       case NoSuccess(msg, _) =>
         info(msg)
         fail()
+      case _ => fail()
     }
   }
 
@@ -357,6 +382,7 @@ class WKTParserTest extends AnyFunSpec {
       case NoSuccess(msg, _) =>
         info(msg)
         fail()
+      case _ => fail()
     }
   }
 
@@ -373,6 +399,7 @@ class WKTParserTest extends AnyFunSpec {
       case NoSuccess(msg, _) =>
         info(msg)
         fail()
+      case _ => fail()
     }
   }
 
@@ -413,6 +440,7 @@ class WKTParserTest extends AnyFunSpec {
       case NoSuccess(msg, _) =>
         info(msg)
         fail()
+      case _ => fail()
     }
   }
 
@@ -430,6 +458,7 @@ class WKTParserTest extends AnyFunSpec {
       case NoSuccess(msg, _) =>
         info(msg)
         fail()
+      case _ => fail()
     }
   }
 
@@ -444,6 +473,7 @@ class WKTParserTest extends AnyFunSpec {
       case NoSuccess(msg, _) =>
         info(msg)
         fail()
+      case _ => fail()
     }
   }
 
@@ -456,6 +486,7 @@ class WKTParserTest extends AnyFunSpec {
       case NoSuccess(msg, _) =>
         info(msg)
         fail()
+      case _ => fail()
     }
   }
 
@@ -476,6 +507,7 @@ class WKTParserTest extends AnyFunSpec {
       case NoSuccess(msg, _) =>
         info(msg)
         fail()
+      case _ => fail()
     }
   }
 
@@ -500,6 +532,7 @@ class WKTParserTest extends AnyFunSpec {
       case NoSuccess(msg, _) =>
         info(msg)
         fail()
+      case _ => fail()
     }
   }
 
@@ -543,6 +576,7 @@ class WKTParserTest extends AnyFunSpec {
       case NoSuccess(msg, _) =>
         info(msg)
         fail()
+      case _ => fail()
     }
   }
 
@@ -579,6 +613,7 @@ class WKTParserTest extends AnyFunSpec {
       case NoSuccess(msg, _) =>
         info(msg)
         fail()
+      case _ => fail()
     }
   }
 
@@ -680,6 +715,7 @@ class WKTParserTest extends AnyFunSpec {
       case NoSuccess(msg, _) =>
         info(msg)
         fail()
+      case _ => fail()
     }
   }
 
@@ -718,6 +754,7 @@ class WKTParserTest extends AnyFunSpec {
       case NoSuccess(msg, _) =>
         info(msg)
         fail()
+      case _ => fail()
     }
   }
 

@@ -38,12 +38,12 @@ class RDDKernelDensitySpec extends AnyFunSpec with Matchers with TestEnvironment
       // Generate points (random?)
       def randomPointFeature(extent: Extent) : PointFeature[Double] = {
         def randInRange (low : Double, high : Double) : Double = {
-          val x = Random.nextDouble
+          val x = Random.nextDouble()
           low * (1-x) + high * x
         }
         new PointFeature(Point(randInRange(extent.xmin,extent.xmax),
                                randInRange(extent.ymin,extent.ymax)),
-                         Random.nextInt % 50 + 50)
+                         Random.nextInt() % 50 + 50)
       }
 
       val extent = Extent.fromString("-109,37,-102,41") // Colorado (is rect!)
@@ -87,12 +87,12 @@ class RDDKernelDensitySpec extends AnyFunSpec with Matchers with TestEnvironment
       // Generate points (random?)
       def randomPointFeature(extent: Extent) : PointFeature[Int] = {
         def randInRange (low : Double, high : Double) : Double = {
-          val x = Random.nextDouble
+          val x = Random.nextDouble()
           low * (1-x) + high * x
         }
         new PointFeature(Point(randInRange(extent.xmin,extent.xmax),
                                randInRange(extent.ymin,extent.ymax)),
-                         Random.nextInt % 50 + 50)
+                         Random.nextInt() % 50 + 50)
       }
 
       val extent = Extent.fromString("-109,37,-102,41") // Colorado (is rect!)

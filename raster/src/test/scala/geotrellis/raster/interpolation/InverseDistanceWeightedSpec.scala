@@ -35,10 +35,10 @@ class InverseDistanceWeightedSpec extends AnyFunSpec with Matchers with RasterMa
       val path = "raster/data/schoolgeo.json"
 
       val f = scala.io.Source.fromFile(path)
-      val collection = f.mkString.parseGeoJson[JsonFeatureCollection]
+      val collection = f.mkString.parseGeoJson[JsonFeatureCollection]()
       f.close
 
-      val points = collection.getAllPointFeatures[Int]
+      val points = collection.getAllPointFeatures[Int]()
 
       val result = points.inverseDistanceWeighted(re)
 
@@ -74,7 +74,7 @@ class InverseDistanceWeightedSpec extends AnyFunSpec with Matchers with RasterMa
         PointFeature(Point(5,92), sampleValue2),
         PointFeature(Point(0,90), 10)
       )
-      val result = points.inverseDistanceWeighted(re, InverseDistanceWeighted.Options(equalWeightRadius = 3, onSet = x => Math.round(x)))
+      val result = points.inverseDistanceWeighted(re, InverseDistanceWeighted.Options(equalWeightRadius = 3, onSet = x => Math.round(x).toDouble))
 
       assert(result.tile.get(0, 0) === Math.round((sampleValue1+sampleValue2)/2.0))
     }

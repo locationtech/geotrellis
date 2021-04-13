@@ -40,7 +40,7 @@ class StitchedDelaunaySpec extends AnyFunSpec with Matchers {
   }
 
   def randInRange(low: Double, high: Double): Double = {
-    val x = Random.nextDouble
+    val x = Random.nextDouble()
     low * (1-x) + high * x
   }
 
@@ -98,7 +98,7 @@ class StitchedDelaunaySpec extends AnyFunSpec with Matchers {
       // stitch.writeWKT("stitched.wkt")
       // triangulations.foreach{ case (dir, tri) => tri.writeWKT(s"triangles${dir}.wkt") }
 
-       stitch.triangles.forall { case (ai, bi, ci) => {
+       stitch.triangles().forall { case (ai, bi, ci) => {
         val a = stitch.indexToCoord(ai)
         val b = stitch.indexToCoord(bi)
         val c = stitch.indexToCoord(ci)
@@ -111,7 +111,7 @@ class StitchedDelaunaySpec extends AnyFunSpec with Matchers {
 
     it ("Should correctly stitch a problematic data set") {
       val wktIS = getClass.getResourceAsStream("/wkt/erringPoints.wkt")
-      val wktString = scala.io.Source.fromInputStream(wktIS).getLines.mkString
+      val wktString = scala.io.Source.fromInputStream(wktIS).getLines().mkString
       val points: Array[Coordinate] = WKT.read(wktString).asInstanceOf[MultiPoint].points.map(_.getCoordinate)
 
       val keyedPoints: Seq[(Direction, Array[Coordinate])] =
@@ -140,7 +140,7 @@ class StitchedDelaunaySpec extends AnyFunSpec with Matchers {
       // stitch.writeWKT("stitched.wkt")
       // triangulations.foreach{ case (dir, tri) => tri.writeWKT(s"triangles${dir}.wkt") }
 
-      stitch.triangles.forall { case (ai, bi, ci) => {
+      stitch.triangles().forall { case (ai, bi, ci) => {
         val a = stitch.indexToCoord(ai)
         val b = stitch.indexToCoord(bi)
         val c = stitch.indexToCoord(ci)
@@ -180,12 +180,12 @@ class StitchedDelaunaySpec extends AnyFunSpec with Matchers {
       cfor(0)(_ < stitch.pointSet.length, _ + 1) { i =>
         println(s"${i}: ${stitch.pointSet.getCoordinate(i)}")
       }
-      println(s"Resulting triangles: ${stitch.triangles}")
+      println(s"Resulting triangles: ${stitch.triangles()}")
 
       val dt = DelaunayTriangulation(points)
       println(s"Raw triangulation result: ${dt.triangleMap.triangleVertices}")
 
-      (dt.triangleMap.triangleVertices.sameElements(stitch.triangles)) should be (true)
+      (dt.triangleMap.triangleVertices.sameElements(stitch.triangles())) should be (true)
     }
   }
 }

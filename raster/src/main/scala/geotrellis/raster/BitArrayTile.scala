@@ -128,7 +128,7 @@ final case class BitArrayTile(val array: Array[Byte], cols: Int, rows: Int)
     *
     * @return  An array of bytes
     */
-  def toBytes: Array[Byte] = array.clone
+  def toBytes(): Array[Byte] = array.clone
 
   def withNoData(noDataValue: Option[Double]): Tile =
     BitArrayTile(array, cols, rows)

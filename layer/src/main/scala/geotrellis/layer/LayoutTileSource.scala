@@ -165,7 +165,7 @@ class LayoutTileSource[K: SpatialComponent](
           intersection.ymax + buffY
         )
 
-        layout.mapTransform.keysForGeometry(buffered.toPolygon).map(tileKeyTransform)
+        layout.mapTransform.keysForGeometry(buffered.toPolygon()).map(tileKeyTransform)
       case None =>
         Set.empty[K]
     }

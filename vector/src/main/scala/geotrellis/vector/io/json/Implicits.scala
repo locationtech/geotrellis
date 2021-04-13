@@ -38,7 +38,7 @@ trait Implicits extends GeoJsonSupport {
 
   implicit class ExtentsToGeoJson(val extent: Extent) {
     def toGeoJson(): String = {
-      extent.toPolygon.toGeoJson
+      extent.toPolygon().toGeoJson()
     }
   }
 
@@ -78,11 +78,11 @@ trait Implicits extends GeoJsonSupport {
       circeParse(s).flatMap(_.as[G]) match {
         case Right(g) => Seq(g)
         case Left(_) =>
-          Try(s.parseGeoJson[JsonFeatureCollection]) match {
+          Try(s.parseGeoJson[JsonFeatureCollection]()) match {
             case Success(featureCollection) =>
               featureCollection.getAll[G]
             case Failure(_) =>
-              Try(s.parseGeoJson[GeometryCollection]) match {
+              Try(s.parseGeoJson[GeometryCollection]()) match {
                 case Success(gc) => gc.getAll[G]
                 case Failure(e) => Seq() // throw e
               }
@@ -97,7 +97,7 @@ trait Implicits extends GeoJsonSupport {
       circeParse(s).flatMap(_.as[F]) match {
         case Right(g) => Seq(g)
         case Left(_) =>
-          Try(s.parseGeoJson[JsonFeatureCollection]) match {
+          Try(s.parseGeoJson[JsonFeatureCollection]()) match {
             case Success(featureCollection) => featureCollection.getAll[F]
             case Failure(e) => Seq() // throw e
           }

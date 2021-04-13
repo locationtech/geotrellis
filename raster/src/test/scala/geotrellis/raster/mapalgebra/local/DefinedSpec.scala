@@ -30,7 +30,7 @@ class DefinedSpec extends AnyFunSpec
   describe("Defined") {
     it("returns correct result for an integer raster") {
       val r = positiveIntegerNoDataRaster
-      val result = r.localDefined
+      val result = r.localDefined()
       for(col <- 0 until r.cols) {
         for(row <- 0 until r.rows) {
           if(isNoData(r.get(col,row))) result.get(col,row) should be (0)
@@ -41,7 +41,7 @@ class DefinedSpec extends AnyFunSpec
 
     it("returns correct result for a double raster") {
       val r = probabilityNoDataRaster
-      val result = r.localDefined
+      val result = r.localDefined()
       for(col <- 0 until r.cols) {
         for(row <- 0 until r.rows) {
           if(isNoData(r.getDouble(col,row))) result.get(col,row) should be (0)

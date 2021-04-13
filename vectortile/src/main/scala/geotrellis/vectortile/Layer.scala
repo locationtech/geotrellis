@@ -115,12 +115,12 @@ import scala.collection.mutable.ListBuffer
       lines.map(f => unfeature(f.id, keyMap, valMap, LINESTRING, pgl.toCommands(Left(f.geom), tileExtent.northWest, resolution), f.data)),
       multiLines.map(f => unfeature(f.id, keyMap, valMap, LINESTRING, pgl.toCommands(Right(f.geom), tileExtent.northWest, resolution), f.data)),
       polygons.map { f =>
-        val geom = if(forcePolygonWinding) f.geom.normalized else f.geom
+        val geom = if(forcePolygonWinding) f.geom.normalized() else f.geom
         unfeature(f.id, keyMap, valMap, POLYGON,
                   pgy.toCommands(Left(geom), tileExtent.northWest, resolution), f.data)
       },
       multiPolygons.map { f =>
-        val geom = if(forcePolygonWinding) f.geom.normalized else f.geom
+        val geom = if(forcePolygonWinding) f.geom.normalized() else f.geom
         unfeature(f.id, keyMap, valMap, POLYGON,
                   pgy.toCommands(Right(geom), tileExtent.northWest, resolution), f.data)
       }
@@ -189,7 +189,7 @@ s"""
         feature {
           id = ${f.id}
           geometry (WKT) = ${f.geom}
-          geometry (LatLng GeoJson) = ${f.geom.reproject(WebMercator, LatLng).toGeoJson}
+          geometry (LatLng GeoJson) = ${f.geom.reproject(WebMercator, LatLng).toGeoJson()}
           ${prettyMeta(f.data)}
         }
 """
@@ -201,10 +201,7 @@ s"""
     if (meta.isEmpty) "metadata {}" else {
       val sortedMeta = meta.toSeq.sortBy(_._1)
 
-      s"""
-          metadata {
-${sortedMeta.map({ case (k,v) => s"            ${k}: ${v}"}).mkString("\n")}
-          }"""
+      s"""metadata { ${sortedMeta.map({ case (k,v) => s"            ${k}: ${v}"}).mkString("\n")}}"""
     }
   }
 }

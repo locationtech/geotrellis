@@ -254,7 +254,7 @@ class R2ViewshedSpec extends AnyFunSpec with Matchers with RasterMatchers with T
         scatter = true
       )
 
-      (noScatter.toArray.sum) should be < (yesScatter.toArray.sum)
+      (noScatter.toArray().sum) should be < (yesScatter.toArray().sum)
     }
 
     // ---------------------------------
@@ -321,9 +321,9 @@ class R2ViewshedSpec extends AnyFunSpec with Matchers with RasterMatchers with T
         scatter = false
       )
 
-      val lowCount = low.toArray.sum
-      val mediumCount = medium.toArray.sum
-      val hiCount = hi.toArray.sum
+      val lowCount = low.toArray().sum
+      val mediumCount = medium.toArray().sum
+      val hiCount = hi.toArray().sum
 
       lowCount should be (33)
       mediumCount should be (40)

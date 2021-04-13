@@ -23,8 +23,6 @@ import geotrellis.spark._
 import geotrellis.spark.testkit._
 import geotrellis.spark.testkit.TestEnvironment
 
-import org.joda.time._
-
 import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.matchers.should.Matchers
 
@@ -64,7 +62,7 @@ class SparkExamplesTests extends AnyFunSuite with Matchers with TestEnvironment 
           band.focalMax(neighborhood, Some(bufferedTile.targetArea))
         }
       }
-      .collect
+      .collect()
       .toMap
 
     // Check some values

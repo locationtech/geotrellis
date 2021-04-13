@@ -52,7 +52,7 @@ executors:
         environment:
           _JAVA_OPTIONS: "-Xms64m -Xmx1536m"
       # https://github.com/pomadchin/hbase-docker
-      - image: daunnc/hbase:2.1.4
+      - image: daunnc/hbase:2.2.4
         environment:
           _JAVA_OPTIONS: "-Xms1m -Xmx512m"
           HBASE_DOCKER_HOSTNAME: localhost
@@ -74,6 +74,7 @@ jobs:
             export SCALA_VERSION=<< parameters.scala-version >>
             export RUN_SET=<< parameters.test-set >>
             .circleci/build-and-test.sh
+          no_output_timeout: 30m
       - save_cache: *save_build_cache
 
   cassandra:
@@ -121,6 +122,21 @@ jobs:
             .circleci/build-and-test-hbase.sh
       - save_cache: *save_build_cache
 
+  accumulo:
+    parameters:
+      scala-version:
+        type: string
+    executor: executor-gdal
+    steps:
+      - checkout
+      - restore_cache: *restore_build_cache
+      - run:
+          name: Test HBase
+          command: |
+            export SCALA_VERSION=<< parameters.scala-version >>
+            .circleci/build-and-test-accumulo.sh
+      - save_cache: *save_build_cache
+
   scaladocs:
     parameters:
       scala-version:
@@ -159,7 +175,7 @@ workflows:
       - common:
           matrix:
             parameters:
-              scala-version: ["2.12.13"]
+              scala-version: ["2.12.13", "2.13.5"]
               test-set: ["1", "2"]
           filters:
             branches:
@@ -170,7 +186,7 @@ workflows:
       - cassandra:
           matrix:
             parameters:
-              scala-version: ["2.12.13"]
+              scala-version: ["2.12.13", "2.13.5"]
           filters:
             branches:
               only: /.*/
@@ -180,7 +196,7 @@ workflows:
       - s3:
           matrix:
             parameters:
-              scala-version: ["2.12.13"]
+              scala-version: ["2.12.13", "2.13.5"]
           filters:
             branches:
               only: /.*/
@@ -190,7 +206,17 @@ workflows:
       - hbase:
           matrix:
             parameters:
-              scala-version: ["2.12.13"]
+              scala-version: ["2.12.13", "2.13.5"]
+          filters:
+            branches:
+              only: /.*/
+            tags:
+              only: /^v.*/
+
+      - accumulo:
+          matrix:
+            parameters:
+              scala-version: [ "2.12.13", "2.13.5" ]
           filters:
             branches:
               only: /.*/
@@ -213,7 +239,7 @@ workflows:
             - hbase
           matrix:
             parameters:
-              scala-version: ["2.12.13"]
+              scala-version: ["2.12.13", "2.13.5"]
           filters:
             branches:
               only: master

@@ -93,13 +93,13 @@ class PyramidSpec extends AnyFunSpec with Matchers with TestEnvironment {
           else 10
         (key.spatialKey: @unchecked) match {
           case SpatialKey(0, 0) =>
-            tile.toArray.distinct should be (Array(1 * multi))
+            tile.toArray().distinct should be (Array(1 * multi))
           case SpatialKey(1, 0) =>
-            tile.toArray.distinct should be (Array(2 * multi))
+            tile.toArray().distinct should be (Array(2 * multi))
           case SpatialKey(0, 1) =>
-            tile.toArray.distinct should be (Array(3 * multi))
+            tile.toArray().distinct should be (Array(3 * multi))
           case SpatialKey(1, 1) =>
-            tile.toArray.distinct should be (Array(4 * multi))
+            tile.toArray().distinct should be (Array(4 * multi))
         }
       }
     }
@@ -192,13 +192,13 @@ class PyramidSpec extends AnyFunSpec with Matchers with TestEnvironment {
           else 10
         (key.spatialKey: @unchecked) match {
           case SpatialKey(0, 0) =>
-            tile.toArray.distinct should be (Array(1 * multi))
+            tile.toArray().distinct should be (Array(1 * multi))
           case SpatialKey(1, 0) =>
-            tile.toArray.distinct should be (Array(2 * multi))
+            tile.toArray().distinct should be (Array(2 * multi))
           case SpatialKey(0, 1) =>
-            tile.toArray.distinct should be (Array(3 * multi))
+            tile.toArray().distinct should be (Array(3 * multi))
           case SpatialKey(1, 1) =>
-            tile.toArray.distinct should be (Array(4 * multi))
+            tile.toArray().distinct should be (Array(4 * multi))
         }
       }
     }
@@ -230,7 +230,7 @@ class PyramidSpec extends AnyFunSpec with Matchers with TestEnvironment {
       assert(pyramid.minZoom == 0)
       assert(pyramid.maxZoom == 2)
 
-      val tile2x2 = pyramid(0).stitch.tile
+      val tile2x2 = pyramid(0).stitch().tile
 
       // should end up with the proper top-level tile
       assert(tile2x2.dimensions == Dimensions(2, 2))

@@ -127,7 +127,7 @@ object Regrid {
                 )
             }
           }}
-          .groupByKey
+          .groupByKey()
           .mapValues { tiles => implicitly[Stitcher[V]].stitch(tiles, tileCols, tileRows) }
 
       ContextRDD(tiled, newMd)

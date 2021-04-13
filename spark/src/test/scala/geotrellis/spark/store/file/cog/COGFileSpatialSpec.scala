@@ -65,8 +65,8 @@ class COGFileSpatialSpec
       val reader = FileCOGLayerReader("spark/src/test/resources/cog-layer")
       val layer = reader.read[SpatialKey, MultibandTile](LayerId("stitch-layer", 11))
       val ext = Extent(14990677.113, 6143014.652, 15068031.386, 6198584.372)
-      val actual = layer.stitch.crop(ext).tile
-      val expected = GeoTiff.readMultiband("spark/src/test/resources/cog-layer/stitched.tiff").crop(ext).tile.toArrayTile
+      val actual = layer.stitch().crop(ext).tile
+      val expected = GeoTiff.readMultiband("spark/src/test/resources/cog-layer/stitched.tiff").crop(ext).tile.toArrayTile()
       assertEqual(actual.tile, expected)
     }
   }
@@ -83,7 +83,7 @@ class COGFileSpatialSpec
       val expected =
         layerReader
           .read[SpatialKey, MultibandTile](id)
-          .stitch
+          .stitch()
           .tile
           .subsetBands(2, 1, 0)
 
@@ -93,7 +93,7 @@ class COGFileSpatialSpec
           .withContext { rdd =>
             rdd.mapValues { v => MultibandTile(v.flatten) }
           }
-          .stitch
+          .stitch()
           .tile
 
       assertEqual(actual, expected)

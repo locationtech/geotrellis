@@ -145,7 +145,7 @@ class ColorRasterSpec extends AnyFunSpec with Matchers with RasterMatchers with 
 
       intercept[Exception] {
         r.color(ColorMap(map, ColorMap.Options(Exact, 5, fallbackColor = 7, strict = true)))
-         .toArray
+         .toArray()
       }
     }
   }
@@ -271,7 +271,7 @@ class ColorRasterSpec extends AnyFunSpec with Matchers with RasterMatchers with 
 
       intercept[Exception] {
         r.color(ColorMap(map, ColorMap.Options(Exact, 5, fallbackColor = 7, strict = true)))
-         .toArray
+         .toArray()
       }
     }
   }

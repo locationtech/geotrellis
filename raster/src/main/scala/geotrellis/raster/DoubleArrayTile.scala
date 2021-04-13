@@ -25,7 +25,7 @@ abstract class DoubleArrayTile(val array: Array[Double], cols: Int, rows: Int)
     extends MutableArrayTile {
   val cellType: DoubleCells with NoDataHandling
 
-  override def toArrayDouble = array.clone
+  override def toArrayDouble(): Array[Double] = array.clone
 
   /**
     * Convert the present [[DoubleArrayTile]] to an array of bytes and
@@ -33,7 +33,7 @@ abstract class DoubleArrayTile(val array: Array[Double], cols: Int, rows: Int)
     *
     * @return  An array of bytes
     */
-  def toBytes: Array[Byte] = {
+  def toBytes(): Array[Byte] = {
     val pixels = new Array[Byte](array.size * cellType.bytes)
     val bytebuff = ByteBuffer.wrap(pixels)
     bytebuff.asDoubleBuffer.put(array)

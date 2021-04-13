@@ -45,7 +45,7 @@ abstract class BaseS3RecordReader[K, V](s3Client: S3Client) extends RecordReader
     logger.debug(s"Initialize split on bucket '$bucket' with $keyCount keys")
   }
 
-  def getProgress: Float = curCount / keyCount
+  def getProgress: Float = (curCount / keyCount).toFloat
 
   def readObjectRequest(objectRequest: GetObjectRequest): (K, V)
 

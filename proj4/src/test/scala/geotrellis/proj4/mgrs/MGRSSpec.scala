@@ -26,8 +26,8 @@ class MGRSSpec extends AnyFunSpec with Matchers {
       println("MGRS conversion:")
       val numIters = 2500
       val allIters = for ( iteration <- 1 to numIters ) yield {
-        val long = 360.0 * scala.util.Random.nextDouble - 180.0
-        val lat = 164.0 * scala.util.Random.nextDouble - 80.0
+        val long = 360.0 * scala.util.Random.nextDouble() - 180.0
+        val lat = 164.0 * scala.util.Random.nextDouble() - 80.0
         val results = for (accuracy <- 1 to 5) yield {
           val mgrsString = MGRS.longLatToMGRS(long, lat, accuracy)
           val bbox = MGRS.mgrsToBBox(mgrsString)

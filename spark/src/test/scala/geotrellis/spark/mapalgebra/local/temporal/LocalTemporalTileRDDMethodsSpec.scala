@@ -73,7 +73,7 @@ class LocalTemporalSpec extends AnyFunSpec with TestEnvironment {
         .groupBy { case (key, tile) =>
           key.time
         }
-        .collect
+        .collect()
         .sortWith { (x, y) => x._1.isBefore(y._1) }
         .map { case (time, iter) =>
           val tiles =
@@ -105,7 +105,7 @@ class LocalTemporalSpec extends AnyFunSpec with TestEnvironment {
       // Years 1, 4 and 7 have the mins.
       rasters.zip(List(1, 4, 7)).foreach { case ((date, tile), idx) =>
         date.getYear should be(idx)
-        val tileArray = tile.toArray
+        val tileArray = tile.toArray()
         val correct = (idx to (idx + 80)).toArray
         tileArray should be(correct)
       }
@@ -127,7 +127,7 @@ class LocalTemporalSpec extends AnyFunSpec with TestEnvironment {
       // Months 5, 10 and 12 have the maxs.
 
       rasters.zip(List(5, 10, 12)).foreach { case ((date, tile), idx) =>
-        val tileArray = tile.toArray
+        val tileArray = tile.toArray()
         val correct = (idx to (idx + 80)).toArray
         tileArray should be(correct)
       }
@@ -175,7 +175,7 @@ class LocalTemporalSpec extends AnyFunSpec with TestEnvironment {
       expectedTiles.size should be(4)
 
       rasters.zip(expectedTiles.toSeq) foreach { case ((_, tile), expected) =>
-        tile.toArrayDouble should be(expected.toArrayDouble)
+        tile.toArrayDouble() should be(expected.toArrayDouble())
       }
     }
   }

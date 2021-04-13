@@ -25,7 +25,7 @@ import org.apache.spark.rdd._
 import scala.reflect.ClassTag
 
 trait TileLayerRDDMatchers extends RasterMatchers {
-  implicit def rddToTile(rdd: RDD[(SpatialKey, Tile)]) = rdd.stitch
+  implicit def rddToTile(rdd: RDD[(SpatialKey, Tile)]) = rdd.stitch()
 
   /*
    * Takes a 3-tuple, min, max, and count and checks
@@ -33,7 +33,7 @@ trait TileLayerRDDMatchers extends RasterMatchers {
    * b. if number of tiles == count
    */
   def rasterShouldBe[K](rdd: RDD[(K, Tile)], minMax: (Int, Int)): Unit = {
-    val res = rdd.map(_._2.findMinMax).collect
+    val res = rdd.map(_._2.findMinMax).collect()
     withClue(s"Actual MinMax: ${res.toSeq}; expecting: ${minMax}") {
       res.count(_ == minMax) should be(res.length)
     }
@@ -43,12 +43,12 @@ trait TileLayerRDDMatchers extends RasterMatchers {
     first: RDD[(K, Tile)],
     second: RDD[(K, Tile)]): Unit = {
 
-    val firstKeys = first.sortBy(_._1).map(_._1).collect
-    val secondKeys = second.sortBy(_._1).map(_._1).collect
+    val firstKeys = first.sortBy(_._1).map(_._1).collect()
+    val secondKeys = second.sortBy(_._1).map(_._1).collect()
 
     (firstKeys zip secondKeys) foreach { case (key1, key2) => key1 should be(key2) }
 
-    first.count should be(second.count)
+    first.count() should be(second.count())
   }
 
   /*
@@ -58,7 +58,7 @@ trait TileLayerRDDMatchers extends RasterMatchers {
    */
   def rasterShouldBe(rdd: RDD[(SpatialKey, Tile)], value: Int, count: Int): Unit = {
     rasterShouldBe(rdd, value)
-    rdd.count should be(count)
+    rdd.count() should be(count)
   }
 
   def rastersEqual(
@@ -69,17 +69,17 @@ trait TileLayerRDDMatchers extends RasterMatchers {
   }
 
   def rasterShouldBe(rdd: RDD[(SpaceTimeKey, Tile)], value: Int, count: Int)(implicit d: DummyImplicit): Unit = {
-    rdd.count should be (count)
-    rdd.collect.map { case (_, tile) => rasterShouldBe(tile, value) }
+    rdd.count() should be (count)
+    rdd.collect().map { case (_, tile) => rasterShouldBe(tile, value) }
   }
 
-  def rastersEqual[K](
+  def rastersEqual[K: ClassTag](
     first: RDD[(K, Tile)],
     second: RDD[(K, Tile)])(implicit d: DummyImplicit): Unit = {
-    first.count should be(second.count)
+    first.count() should be(second.count())
 
-    val ft = first.collect
-    val st = second.collect
+    val ft = first.collect()
+    val st = second.collect()
 
     val keys1 = ft.map(_._1).toSet
     val keys2 = st.map(_._1).toSet
@@ -95,7 +95,7 @@ trait TileLayerRDDMatchers extends RasterMatchers {
     }
 
     val grouped: Map[K, Array[(K, Tile)]] =
-      ft.union(st).groupBy(_._1)
+      ft.union(st).groupBy(_._1).toMap.map { case (k ,v) => (k, v.toArray) }
 
     for( (key, tiles) <- grouped) {
       tiles.size should be (2)

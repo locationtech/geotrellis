@@ -32,6 +32,6 @@ trait MultibandJpgRenderMethods extends MethodExtensions[MultibandTile] {
     * with integer data whose values range from 0 to 255.
     */
   def renderJpg(): Jpg = {
-    self.color().renderJpg
+    self.color().renderJpg()
   }
 }

@@ -59,7 +59,7 @@ class NearestNeighborResampleSpec extends AnyFunSpec with Matchers with TestFile
       val dst = RasterExtent(e, 100.0 / 3, 100.0 / 3, 3, 3)
       val rr = resample(tile, e, dst)
       //println(rr.asciiDraw)
-      assert(rr.toArray === Array(1, 3, 5, 11, 13, 15, 21, 23, 25))
+      assert(rr.toArray() === Array(1, 3, 5, 11, 13, 15, 21, 23, 25))
     }
 
     it("should northeast of src") {
@@ -117,7 +117,7 @@ class NearestNeighborResampleSpec extends AnyFunSpec with Matchers with TestFile
       raster.cols should be (4)
       raster.rows should be (4)
 
-      val d = raster.toArray
+      val d = raster.toArray()
 
       d(0) should be (1)
       d(3) should be (2)

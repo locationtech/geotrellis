@@ -325,7 +325,7 @@ class DelayedConversionMultibandTile(inner: MultibandTile, override val targetCe
     result
   }
 
-  def toArrayTile: ArrayMultibandTile = inner.toArrayTile
+  def toArrayTile(): ArrayMultibandTile = inner.toArrayTile()
 
   override def toString: String = s"DelayedConversionMultibandTile($cols,$rows,$cellType)"
 }

@@ -90,7 +90,7 @@ abstract class MutableIntHistogram extends MutableHistogram[Int] with IntHistogr
     // X * (Q - E)   = T
     // X             = T / (Q - E)
     val eSubtotal: Long = eItems.foldLeft(0L)((t, i) => t + h.itemCount(i))
-    val oSubtotal: Long = h.totalCount - eSubtotal
+    val oSubtotal: Long = h.totalCount() - eSubtotal
     var eValue: Long = oSubtotal / (num - eLen)
 
     eItems.foreach(i => h.setItem(i, eValue))
@@ -105,7 +105,7 @@ abstract class MutableIntHistogram extends MutableHistogram[Int] with IntHistogr
     // first, we create a list of percentages to use, along with determining
     // how many cells should fit in one "ideal" quantile bucket.
     val quantiles: Array[Double] = evenQuantiles(num)
-    val size: Int = (quantiles(0) * totalCount).toInt
+    val size: Int = (quantiles(0) * totalCount()).toInt
 
     // then we need to make a copy of ourself to do some preprocessing on to
     // remove extreme values. an extreme value is one that would automatically
@@ -115,9 +115,9 @@ abstract class MutableIntHistogram extends MutableHistogram[Int] with IntHistogr
 
     // now we'll store some data about the histogram, our quantiles, etc, for
     // future use and fast access.
-    val total    = h.totalCount
+    val total    = h.totalCount()
     val limits   = quantiles.map(_ * total)
-    val maxValue = h.maxValue
+    val maxValue = h.maxValue()
 
     // this is the array of breaks we will return
     val breaks = Array.ofDim[Int](quantiles.length)
@@ -135,7 +135,7 @@ abstract class MutableIntHistogram extends MutableHistogram[Int] with IntHistogr
     // we're going to move incrementally through the values while comparing
     // a running total against our current quantile (qIndex). we know that the
     // last break is "everything else" so we stop when we reach that one.
-    while (qIndex < breaks.length && j < values.length) {
+    while (qIndex < breaks.length && j < values().length) {
       val i = localValue(j)
       val count = h.itemCount(i)
       val newTotal = currTotal + count

@@ -118,7 +118,7 @@ class FilterMapFileInputFormat() extends FileInputFormat[BigIntWritable, BytesWr
         .mapFileRanges(dataFileStatus.asScala.map(_.getPath.getParent).toSeq, conf)
         .filter { case (_, iMin: BigInt, iMax: BigInt) =>
           // both file ranges and query ranges are sorted, use in-sync traversal
-          while (it.hasNext && it.head._2 < iMin) it.next
+          while (it.hasNext && it.head._2 < iMin) it.next()
           if (it.hasNext) iMin <= it.head._2 && (iMax == -1 || it.head._1 <= iMax)
           else false
         }

@@ -75,7 +75,7 @@ object ClipToGrid {
     if(preds.covers(e)) { Some(Feature(e, feature.data)) }
     else if(preds.coveredBy(e)) { Some(feature) }
     else {
-      (feature.geom & e).toGeometry.map { g =>
+      (feature.geom & e).toGeometry().map { g =>
         Feature(g, feature.data)
       }
     }
@@ -152,19 +152,19 @@ object ClipToGrid {
 
     def preparedPredicates(pg: PreparedGeometry) =
       new Predicates {
-        def covers(e: Extent) = pg.covers(e.toPolygon)
+        def covers(e: Extent) = pg.covers(e.toPolygon())
         def coveredBy(e: Extent) = keys.size < 2
       }
 
     lazy val polyPredicates =
       new Predicates {
-        def covers(e: Extent) = feature.geom.covers(e.toPolygon)
+        def covers(e: Extent) = feature.geom.covers(e.toPolygon())
         def coveredBy(e: Extent) = keys.size < 2
       }
 
     lazy val gcPredicates =
       new Predicates {
-        def covers(e: Extent) = feature.geom.covers(e.toPolygon)
+        def covers(e: Extent) = feature.geom.covers(e.toPolygon())
         def coveredBy(e: Extent) = keys.size < 2
       }
 

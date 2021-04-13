@@ -29,7 +29,7 @@ class NotSpec extends AnyFunSpec
                  with TileBuilders {
   describe("Not") {
     it("negates an Int raster") {
-      assertEqual(createValueTile(10,9).localNot, 
+      assertEqual(createValueTile(10,9).localNot(),
                   createValueTile(10,-10))
     }
   }

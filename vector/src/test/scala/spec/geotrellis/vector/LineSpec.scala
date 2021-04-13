@@ -62,12 +62,12 @@ class LineSpec extends AnyFunSpec with Matchers {
 
     it ("should close a line") {
       val l = LineString(Point(0,0), Point(2,0), Point(2,2), Point(0,2))
-      l.closed should be (LineString(Point(0,0), Point(2,0), Point(2,2), Point(0,2), Point(0,0)))
+      l.closed() should be (LineString(Point(0,0), Point(2,0), Point(2,2), Point(0,2), Point(0,0)))
     }
 
     it ("should close a line if already closed") {
       val l = LineString(Point(0,0), Point(2,0), Point(2,2), Point(0,2), Point(0,0))
-      l.closed should be (LineString(Point(0,0), Point(2,0), Point(2,2), Point(0,2), Point(0,0)))
+      l.closed() should be (LineString(Point(0,0), Point(2,0), Point(2,2), Point(0,2), Point(0,0)))
     }
 
 
@@ -220,7 +220,7 @@ class LineSpec extends AnyFunSpec with Matchers {
       val p2 = Polygon(LineString(Point(0.5,0.5), Point(2.5,0.5), Point(2.5,2.5), Point(0.5,2.5), Point(0.5,0.5)))
       val mp = MultiPolygon(p1, p2)
       val MultiPolygonResult(result) = l | mp
-      result.normalized should be (MultiPolygon(p1, p2).normalized)
+      result.normalized() should be (MultiPolygon(p1, p2).normalized())
     }
 
     it ("should union with a MultiPolygon and return a GeometryCollectionResult") {
@@ -511,7 +511,7 @@ class LineSpec extends AnyFunSpec with Matchers {
     it ("should maintain immutability over normalization") {
       val l = LineString(Point(30,20), Point(10,10), Point(20,20), Point(30,30), Point(20,10))
       val expected = l.copy
-      l.normalized
+      l.normalized()
       l.equals(expected) should be (true)
     }
 

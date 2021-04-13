@@ -47,7 +47,7 @@ class GeoTiffTileSpec extends AnyFunSpec with RasterMatchers with TileBuilders w
     it("should work against econic.tif Striped NoCompression") {
       val options = GeoTiffOptions(Striped, NoCompression, interleaveMethod = BandInterleave)
       val expected = SinglebandGeoTiff(s"$baseDataPath/econic.tif").tile
-      val actual = expected.toGeoTiffTile(options).toArrayTile
+      val actual = expected.toGeoTiffTile(options).toArrayTile()
 
       assertEqual(expected, actual)
     }

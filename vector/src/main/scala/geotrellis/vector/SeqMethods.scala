@@ -26,7 +26,7 @@ trait SeqMethods {
 
     val ml: MultiLineString = MultiLineString(lines)
 
-    def unionGeometries = ml.union
+    def unionGeometries: Geometry = ml.union
     def intersectionGeometries: MultiLineStringMultiLineStringIntersectionResult =
     lines.reduce[Geometry] {
       _.intersection(_)
@@ -40,7 +40,7 @@ trait SeqMethods {
       _.symDifference(_)
     }
 
-    def toMultiLineString = ml
+    def toMultiLineString: MultiLineString = ml
 
     def extent: Extent = ml.extent
   }
@@ -49,21 +49,21 @@ trait SeqMethods {
 
     val mp: MultiPoint = MultiPoint(points)
 
-    def unionGeometries() = mp.union
-    def intersectionGeometries() =
+    def unionGeometries: Geometry = mp.union
+    def intersectionGeometries: Geometry =
       points.reduce[Geometry] {
         _.intersection(_)
       }
-    def differenceGeometries() =
+    def differenceGeometries: Geometry =
       points.reduce[Geometry] {
         _.difference(_)
       }
-    def symDifferenceGeometries() =
+    def symDifferenceGeometries: Geometry =
       points.reduce[Geometry] {
         _.symDifference(_)
       }
 
-    def toMultiPoint = mp
+    def toMultiPoint: MultiPoint = mp
 
     def extent: Extent = mp.extent
   }
@@ -72,66 +72,57 @@ trait SeqMethods {
 
     val mp: MultiPolygon = MultiPolygon(polygons)
 
-    def unionGeometries(): TwoDimensionsTwoDimensionsSeqUnionResult =
+    def unionGeometries: TwoDimensionsTwoDimensionsSeqUnionResult =
       if(polygons.isEmpty) NoResult
       else new CascadedPolygonUnion(polygons.toSeq.asJava).union()
 
-    def intersectionGeometries() =
-      polygons.reduce[Geometry] {
-        _.intersection(_)
-      }
-    def differenceGeometries() =
-      polygons.reduce[Geometry] {
-        _.difference(_)
-      }
-    def symDifferenceGeometries() =
-      polygons.reduce[Geometry] {
-        _.symDifference(_)
-      }
+    def intersectionGeometries: Geometry = polygons.reduce[Geometry] { _.intersection(_) }
+    def differenceGeometries: Geometry = polygons.reduce[Geometry] { _.difference(_) }
+    def symDifferenceGeometries: Geometry = polygons.reduce[Geometry] { _.symDifference(_) }
 
-    def toMultiPolygon() = mp
+    def toMultiPolygon: MultiPolygon = mp
 
     def extent: Extent = mp.extent
   }
 
   implicit class SeqMultiLineStringExtensions(val multilines: Traversable[MultiLineString]) {
 
-    private val seq = multilines.map(_.lines).flatten
+    private val seq = multilines.flatMap(_.lines)
     val ml: MultiLineString = MultiLineString(seq)
 
-    def unionGeometries() = ml.union
-    def intersectionGeometries() = seq.intersectionGeometries
-    def differenceGeometries() = seq.differenceGeometries
-    def symDifferenceGeometries() = seq.symDifferenceGeometries
+    def unionGeometries: Geometry = ml.union
+    def intersectionGeometries: MultiLineStringMultiLineStringIntersectionResult = seq.intersectionGeometries
+    def differenceGeometries: MultiLineStringMultiLineStringDifferenceResult = seq.differenceGeometries
+    def symDifferenceGeometries: MultiLineStringMultiLineStringSymDifferenceResult = seq.symDifferenceGeometries
 
     def extent: Extent = ml.extent
   }
 
   implicit class SeqMultiPointExtensions(val multipoints: Traversable[MultiPoint]) {
 
-    private val seq = multipoints.map(_.points).flatten
+    private val seq = multipoints.flatMap(_.points)
     val mp: MultiPoint = MultiPoint(seq)
 
-    def unionGeometries() = mp.union
-    def intersectionGeometries() = seq.intersectionGeometries
-    def differenceGeometries() = seq.differenceGeometries
-    def symDifferenceGeometries() = seq.symDifferenceGeometries
+    def unionGeometries: Geometry = mp.union
+    def intersectionGeometries: Geometry = seq.intersectionGeometries
+    def differenceGeometries: Geometry = seq.differenceGeometries
+    def symDifferenceGeometries: Geometry = seq.symDifferenceGeometries
 
     def extent: Extent = mp.extent
   }
 
   implicit class SeqMultiPolygonExtensions(val multipolygons: Traversable[MultiPolygon]) {
 
-    private val seq = multipolygons.map(_.polygons).flatten
+    private val seq = multipolygons.flatMap(_.polygons)
     val mp: MultiPolygon = MultiPolygon(seq)
 
-    def unionGeometries(): TwoDimensionsTwoDimensionsSeqUnionResult =
+    def unionGeometries: TwoDimensionsTwoDimensionsSeqUnionResult =
       if(multipolygons.isEmpty) NoResult
       else new CascadedPolygonUnion(mp.polygons.toSeq.asJava).union
 
-    def intersectionGeometries() = seq.intersectionGeometries
-    def differenceGeometries() = seq.differenceGeometries
-    def symDifferenceGeometries() = seq.symDifferenceGeometries
+    def intersectionGeometries: Geometry = seq.intersectionGeometries
+    def differenceGeometries: Geometry = seq.differenceGeometries
+    def symDifferenceGeometries: Geometry = seq.symDifferenceGeometries
 
     def extent: Extent = mp.extent
   }

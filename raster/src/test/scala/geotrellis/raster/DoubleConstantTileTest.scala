@@ -25,7 +25,7 @@ class DoubleConstantTileTest extends AnyFunSuite with RasterMatchers with Matche
   test("building") {
     val d1 = DoubleConstantTile(99.0, 2, 2)
     val d2 = DoubleArrayTile(Array.fill(4)(99.0), 2, 2)
-    assert(d1.toArrayDouble === d2.toArrayDouble)
+    assert(d1.toArrayDouble() === d2.toArrayDouble())
   }
 
   test("basic operations") {

@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Add method SpatialIndex#pointsInExtentAsIterable [#3349](https://github.com/locationtech/geotrellis/issues/3349)
+- Spark 3 & Hadoop 3 Support [#3218](https://github.com/locationtech/geotrellis/issues/3218)
+- Scala 2.13 cross compilation [2893](https://github.com/locationtech/geotrellis/issues/2893)
 
 ### Changed
 - Deprecate method SpatialIndex#traversePointsInExtent [#3349](https://github.com/locationtech/geotrellis/issues/3349)

@@ -50,12 +50,12 @@ class CommandSpec extends AnyFunSpec with Matchers {
 
       res(0) match {
         case MoveTo(ds) => ds shouldBe Array((2,2))
-        case _ => fail
+        case _ => fail()
       }
 
       res(1) match {
         case LineTo(ds) => ds shouldBe Array((3,2),(-3,2))
-        case _ => fail
+        case _ => fail()
       }
 
       res(2) shouldBe ClosePath

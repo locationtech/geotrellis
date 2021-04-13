@@ -29,7 +29,7 @@ class MultiLineStringSpec extends AnyFunSpec with Matchers {
         )
 
       val expected = ml.copy
-      ml.normalized
+      ml.normalized()
       ml.equals(expected) should be (true)
     }
 
@@ -70,7 +70,7 @@ class MultiLineStringSpec extends AnyFunSpec with Matchers {
         case _ => MultiLineString()
       }
 
-      actual.normalized should be (expected)
+      actual.normalized() should be (expected)
     }
   }
 }

@@ -28,7 +28,7 @@ import java.io._
 
 class PartitionerSpec extends AnyFunSpec with TestEnvironment {
 
-  val tile = SinglebandGeoTiff(new File(inputHomeLocalPath, "aspect.tif").getPath).tile.toArrayTile
+  val tile = SinglebandGeoTiff(new File(inputHomeLocalPath, "aspect.tif").getPath).tile.toArrayTile()
   val (_, rasterRDD) = createTileLayerRDD(tile, 4, 3)
 
   val calculator = ZFactor((lat: Double) => lat)

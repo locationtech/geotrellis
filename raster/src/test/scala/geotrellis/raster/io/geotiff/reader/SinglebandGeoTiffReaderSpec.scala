@@ -67,16 +67,16 @@ class SinglebandGeoTiffReaderSpec extends AnyFunSpec with RasterMatchers with Ge
       val expected =
         SinglebandGeoTiff(geoTiffPath("1band/aspect_byte_uncompressed_tiled.tif"))
           .tile
-          .toArrayTile
+          .toArrayTile()
           .map { b => if(b == 0) 0 else 1 }
           .convert(BitCellType)
-          .toArrayTile
+          .toArrayTile()
 
       assertEqual(actual, expected)
     }
 
     it("must read Striped Bit aspect, convert to byte, and match gdal converted byte file") {
-      val actual = GeoTiffReader.readSingleband(geoTiffPath("1band/aspect_bit_uncompressed_striped.tif")).tile.toArrayTile.convert(UByteCellType)
+      val actual = GeoTiffReader.readSingleband(geoTiffPath("1band/aspect_bit_uncompressed_striped.tif")).tile.toArrayTile().convert(UByteCellType)
       val expected = GeoTiffReader.readSingleband(geoTiffPath("1band/aspect_bit-to-byte_uncompressed_striped.tif")).tile
 
       assertEqual(actual, expected)
@@ -283,7 +283,7 @@ class SinglebandGeoTiffReaderSpec extends AnyFunSpec with RasterMatchers with Ge
       ) {
         println(s"     Testing $c $s:")
         withClue(s"Failed for Compression $c, storage $s") {
-          val tile = SinglebandGeoTiff(geoTiffPath(s"$c/$s/$t.tif")).tile.toArrayTile
+          val tile = SinglebandGeoTiff(geoTiffPath(s"$c/$s/$t.tif")).tile.toArrayTile()
 
           assertEqual(tile, expected)
         }
@@ -338,7 +338,7 @@ class SinglebandGeoTiffReaderSpec extends AnyFunSpec with RasterMatchers with Ge
       ) {
           println(s"     Testing $c $s:")
           withClue(s"Failed for Compression $c, storage $s") {
-            val tile = SinglebandGeoTiff(geoTiffPath(s"$c/$s/$t.tif")).tile.toArrayTile
+            val tile = SinglebandGeoTiff(geoTiffPath(s"$c/$s/$t.tif")).tile.toArrayTile()
 
             assertEqual(tile, expected)
           }
@@ -364,7 +364,7 @@ class SinglebandGeoTiffReaderSpec extends AnyFunSpec with RasterMatchers with Ge
       ) {
         println(s"     Testing $c $s:")
         withClue(s"Failed for Compression $c, storage $s") {
-          val tile = SinglebandGeoTiff(geoTiffPath(s"$c/$s/$t.tif")).tile.toArrayTile
+          val tile = SinglebandGeoTiff(geoTiffPath(s"$c/$s/$t.tif")).tile.toArrayTile()
 
           assertEqual(tile, expected)
         }
@@ -390,7 +390,7 @@ class SinglebandGeoTiffReaderSpec extends AnyFunSpec with RasterMatchers with Ge
       ) {
         println(s"     Testing $c $s:")
         withClue(s"Failed for Compression $c, storage $s") {
-          val tile = SinglebandGeoTiff(geoTiffPath(s"$c/$s/$t.tif")).tile.toArrayTile
+          val tile = SinglebandGeoTiff(geoTiffPath(s"$c/$s/$t.tif")).tile.toArrayTile()
 
           assertEqual(tile, expected)
         }
@@ -416,7 +416,7 @@ class SinglebandGeoTiffReaderSpec extends AnyFunSpec with RasterMatchers with Ge
       ) {
         println(s"     Testing $c $s:")
         withClue(s"Failed for Compression $c, storage $s") {
-          val tile = SinglebandGeoTiff(geoTiffPath(s"$c/$s/$t.tif")).tile.toArrayTile
+          val tile = SinglebandGeoTiff(geoTiffPath(s"$c/$s/$t.tif")).tile.toArrayTile()
 
           assertEqual(tile, expected)
         }
@@ -442,7 +442,7 @@ class SinglebandGeoTiffReaderSpec extends AnyFunSpec with RasterMatchers with Ge
       ) {
         println(s"     Testing $c $s:")
         withClue(s"Failed for Compression $c, storage $s") {
-          val tile = SinglebandGeoTiff(geoTiffPath(s"$c/$s/$t.tif")).tile.toArrayTile
+          val tile = SinglebandGeoTiff(geoTiffPath(s"$c/$s/$t.tif")).tile.toArrayTile()
 
           assertEqual(tile, expected)
         }
@@ -466,7 +466,7 @@ class SinglebandGeoTiffReaderSpec extends AnyFunSpec with RasterMatchers with Ge
       ) {
         println(s"     Testing $c $s:")
         withClue(s"Failed for Compression $c, storage $s") {
-          val tile = SinglebandGeoTiff(geoTiffPath(s"$c/$s/$t.tif")).tile.toArrayTile
+          val tile = SinglebandGeoTiff(geoTiffPath(s"$c/$s/$t.tif")).tile.toArrayTile()
 
           assertEqual(tile, expected)
         }
@@ -485,7 +485,7 @@ class SinglebandGeoTiffReaderSpec extends AnyFunSpec with RasterMatchers with Ge
         withClue(s"Failed for Storage $s, type $t") {
           val gtiff = geoTiff(s, t)
           val tile = gtiff.tile
-          assertEqual(tile, tile.toArrayTile)
+          assertEqual(tile, tile.toArrayTile())
         }
       }
     }
@@ -500,7 +500,7 @@ class SinglebandGeoTiffReaderSpec extends AnyFunSpec with RasterMatchers with Ge
         withClue(s"Failed for Storage $s, type $t") {
           val tile = geoTiff(s, t).tile
           val m1 = tile.map { z => z + 1 }
-          val m2 = tile.toArrayTile.map { z => z + 1 }
+          val m2 = tile.toArrayTile().map { z => z + 1 }
           assertEqual(m1, m2)
         }
       }
@@ -516,7 +516,7 @@ class SinglebandGeoTiffReaderSpec extends AnyFunSpec with RasterMatchers with Ge
         withClue(s"Failed for Storage $s, type $t") {
           val tile = geoTiff(s, t).tile
           val m1 = tile.mapDouble { z => z + 1.0 }
-          val m2 = tile.toArrayTile.mapDouble { z => z + 1.0 }
+          val m2 = tile.toArrayTile().mapDouble { z => z + 1.0 }
           assertEqual(m1, m2)
         }
       }

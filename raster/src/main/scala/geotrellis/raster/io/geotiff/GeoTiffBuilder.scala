@@ -140,12 +140,12 @@ object GeoTiffBuilder {
         require(layoutCol < tileLayout.layoutCols, s"col $layoutCol < ${tileLayout.layoutCols}")
         require(layoutRow < tileLayout.layoutRows, s"row $layoutRow < ${tileLayout.layoutRows}")
         val index = tileLayout.layoutCols * layoutRow + layoutCol
-        val bytes = tile.interpretAs(cellType).toBytes
+        val bytes = tile.interpretAs(cellType).toBytes()
         segmentBytes(index) = compressor.compress(bytes, index)
       }
 
       lazy val emptySegment =
-        ArrayTile.empty(cellType, tileLayout.tileCols, tileLayout.tileRows).toBytes
+        ArrayTile.empty(cellType, tileLayout.tileCols, tileLayout.tileRows).toBytes()
 
       cfor (0)(_ < segmentBytes.length, _ + 1){ index =>
         if (null == segmentBytes(index)) {
@@ -155,7 +155,7 @@ object GeoTiffBuilder {
 
       GeoTiffTile(
         new ArraySegmentBytes(segmentBytes),
-        compressor.createDecompressor,
+        compressor.createDecompressor(),
         segmentLayout,
         compression,
         cellType)
@@ -221,7 +221,7 @@ object GeoTiffBuilder {
               val layoutRow = key._2
               val bandSegmentOffset = bandSegmentCount * bandIndex
               val index = tileLayout.layoutCols * layoutRow + layoutCol + bandSegmentOffset
-              val bytes = tile.band(bandIndex).interpretAs(cellType).toBytes
+              val bytes = tile.band(bandIndex).interpretAs(cellType).toBytes()
               segmentBytes(index) = compressor.compress(bytes, index)
             }
           }
@@ -231,7 +231,7 @@ object GeoTiffBuilder {
 
       GeoTiffMultibandTile(
         new ArraySegmentBytes(segmentBytes),
-        compressor.createDecompressor,
+        compressor.createDecompressor(),
         segmentLayout,
         compression,
         bandCount,

@@ -57,7 +57,7 @@ trait ExtraPolygonMethods extends MethodExtensions[Polygon] {
   def &(ml: MultiLineString): OneDimensionAtLeastOneDimensionIntersectionResult = self.intersection(ml)
   def &(p: Polygon): TwoDimensionsTwoDimensionsIntersectionResult = self.intersection(p)
   def &(mp: MultiPolygon): TwoDimensionsTwoDimensionsIntersectionResult = self.intersection(mp)
-  def &(ex: Extent): TwoDimensionsTwoDimensionsIntersectionResult = self.intersection(ex.toPolygon)
+  def &(ex: Extent): TwoDimensionsTwoDimensionsIntersectionResult = self.intersection(ex.toPolygon())
 
   def -(p: Point): PolygonAtMostOneDimensionDifferenceResult = self.difference(p)
   def -(mp: MultiPoint): PolygonAtMostOneDimensionDifferenceResult = self.difference(mp)

@@ -49,7 +49,7 @@ class MoranSpec extends AnyFunSpec with RasterMatchers {
   describe("RasterMoransI") {
     it("computes square moran (chess)") {
       val r = chess.tileMoransI(Nesw(1))
-      assert(r.toArrayDouble === Array.fill(64)(-1.0))
+      assert(r.toArrayDouble() === Array.fill(64)(-1.0))
     }
 
     it("computes diagonal moran (chess)") {

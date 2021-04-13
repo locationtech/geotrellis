@@ -44,7 +44,7 @@ class StitcherSpec extends AnyFunSpec with Matchers with TileBuilders {
           1,   3, 3, 3,   1
         ), 5, 3)
 
-      actual.toArray should be (expected.toArray)
+      actual.toArray() should be (expected.toArray())
     }
   }
 }

@@ -60,7 +60,7 @@ object CellFeatures {
       def cellFeatures[G <: Geometry](raster: R, geom: Geometry, options: Rasterizer.Options, cellGeom: (Long, Long) => G): Iterator[Feature[G, D]] = {
         val grid = getGrid(raster)
         val mask = BitArrayTile.empty(cols = grid.cols, rows = grid.rows)
-        Rasterizer.foreachCellByGeometry(geom, grid.toRasterExtent) { case (col, row) => mask.set(col, row, 1) }
+        Rasterizer.foreachCellByGeometry(geom, grid.toRasterExtent()) { case (col, row) => mask.set(col, row, 1) }
         for {
           row <- Iterator.range(0, grid.rows)
           col <- Iterator.range(0, grid.cols) if mask.get(col, row) == 1
@@ -118,7 +118,7 @@ object CellFeatures {
         val y = grid.gridRowToMap(row)
         val hcw = grid.cellSize.width / 2.0
         val hch = grid.cellSize.height / 2.0
-        Extent(x - hcw, y - hch, x + hcw, y + hch).toPolygon
+        Extent(x - hcw, y - hch, x + hcw, y + hch).toPolygon()
       }
       ev.cellFeatures(self, geom, Rasterizer.Options(partial, PixelIsArea), cellGeom)
     }

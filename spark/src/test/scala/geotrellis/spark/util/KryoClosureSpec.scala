@@ -32,13 +32,13 @@ class KryoClosureSpec extends AnyFunSpec with TestEnvironment {
 
     it("should be better then Java serialization") {
       intercept[org.apache.spark.SparkException] {
-        rdd.map(transformer).collect
+        rdd.map(transformer).collect()
       }
     }
 
     it("should be totally awesome at serialization"){
       val out = rdd.map(KryoClosure(transformer))
-      out.collect should be (Array.fill(10)(17))
+      out.collect() should be (Array.fill(10)(17))
     }
   }
 }

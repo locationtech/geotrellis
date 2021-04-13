@@ -75,7 +75,7 @@ object StreamingHistogram {
     new StreamingHistogram(size, minimumSeen, maximumSeen)
 
   def apply(other: Histogram[Double]): StreamingHistogram = {
-    val h = apply(other.maxBucketCount)
+    val h = apply(other.maxBucketCount())
     other.foreach(h.countItem _)
     h
   }
@@ -169,19 +169,19 @@ class StreamingHistogram(
     _deltas.remove(delta)
 
     /* Remove delta to the left of the combined buckets */
-    if (left != None) {
+    if (left.isDefined) {
       val oldDelta = middle1._1 - left.get._1
       _deltas.remove(Delta(oldDelta, left.get, middle1))
     }
 
     /* Remove delta to the right of the combined buckets */
-    if (right != None) {
+    if (right.isDefined) {
       val oldDelta = right.get._1 - middle2._1
       _deltas.remove(Delta(oldDelta, middle2, right.get))
     }
 
     /* Add delta covering the whole range */
-    if (left != None && right != None) {
+    if (left.isDefined && right.isDefined) {
       val delta = right.get._1 - left.get._1
       _deltas.put(Delta(delta, left.get, right.get), ())
     }
@@ -219,7 +219,7 @@ class StreamingHistogram(
       }
 
       /* Remove delta containing new bucket */
-      if (smaller != None && larger != None) {
+      if (smaller.isDefined && larger.isDefined) {
         val large = larger.get
         val small = smaller.get
         val delta = large._1 - small._1
@@ -227,14 +227,14 @@ class StreamingHistogram(
       }
 
       /* Add delta between new bucket and next-largest bucket */
-      if (larger != None) {
+      if (larger.isDefined) {
         val large = larger.get
         val delta = large._1 - b._1
         _deltas.put(Delta(delta, b, large), ())
       }
 
       /* Add delta between new bucket and next-smallest bucket */
-      if (smaller != None) {
+      if (smaller.isDefined) {
         val small = smaller.get
         val delta = b._1 - small._1
         _deltas.put(Delta(delta, small, b), ())
@@ -327,7 +327,7 @@ class StreamingHistogram(
   /**
     * Return an array of bucket values.
     */
-  def values(): Array[Double] = buckets.map(_.label).toArray
+  def values(): Array[Double] = buckets().map(_.label).toArray
   def rawValues(): Array[Double] = values()
 
   /**
@@ -336,27 +336,27 @@ class StreamingHistogram(
     * signature of the function 'f').
     */
   def foreach(f: (Double, Long) => Unit): Unit =
-    buckets.map({ case Bucket(item, count) => f(item, count) })
+    buckets().foreach({ case Bucket(item, count) => f(item, count) })
 
   /**
     * Execute the given function on each bucket label.
     */
   def foreachValue(f: Double => Unit): Unit =
-    buckets.map({ case Bucket(item, _) => f(item) })
+    buckets().foreach({ case Bucket(item, _) => f(item) })
 
   /**
     * Generate Statistics.
     */
   def statistics(): Option[Statistics[Double]] = {
-    val zmin = minValue
-    val zmax = maxValue
+    val zmin = minValue()
+    val zmax = maxValue()
 
     if (zmin.nonEmpty && zmax.nonEmpty) {
-      val dataCount = totalCount
-      val localMean = mean.get
-      val localMedian = median.get
-      val localMode = mode.get
-      val ex2 = buckets.map({ case Bucket(item, count) => item * item * count }).sum / totalCount
+      val dataCount = totalCount()
+      val localMean = mean().get
+      val localMedian = median().get
+      val localMode = mode().get
+      val ex2 = buckets().map({ case Bucket(item, count) => item * item * count }).sum / totalCount()
       val stddev = sqrt(ex2 - localMean * localMean)
 
       Some(Statistics[Double](dataCount, localMean, localMedian, localMode, stddev, zmin.get, zmax.get))
@@ -376,7 +376,7 @@ class StreamingHistogram(
    */
   def mutable(): StreamingHistogram = {
     val sh = StreamingHistogram(this.size, this._min, this._max)
-    sh.countItems(this.buckets)
+    sh.countItems(this.buckets())
     sh
   }
 
@@ -386,8 +386,8 @@ class StreamingHistogram(
     */
   def +(other: StreamingHistogram): StreamingHistogram = {
     val sh = StreamingHistogram(this.size, this._min, this._max)
-    sh.countItems(this.buckets)
-    sh.countItems(other.buckets)
+    sh.countItems(this.buckets())
+    sh.countItems(other.buckets())
     sh
   }
 
@@ -408,7 +408,7 @@ class StreamingHistogram(
     */
   def merge(histogram: Histogram[Double]): StreamingHistogram = {
     val sh = StreamingHistogram(this.size, this._min, this._max)
-    sh.countItems(this.buckets)
+    sh.countItems(this.buckets())
     histogram.foreach({ (item: Double, count: Long) => sh.countItem((item, count)) })
     sh
   }
@@ -419,17 +419,17 @@ class StreamingHistogram(
     * answer could be really bad).
     */
   def mode(): Option[Double] = {
-    if (totalCount <= 0)
+    if (totalCount() <= 0)
       None
     else
-      Some(buckets.reduce({ (l,r) => if (l._2 > r._2) l; else r })._1)
+      Some(buckets().reduce({ (l,r) => if (l._2 > r._2) l; else r })._1)
   }
 
   /**
     * Return the approximate median of the histogram.
     */
   def median(): Option[Double] = {
-    if (totalCount <= 0)
+    if (totalCount() <= 0)
       None
     else
       Some(percentile(0.50))
@@ -439,12 +439,12 @@ class StreamingHistogram(
     *  Return the approximate mean of the histogram.
     */
   def mean(): Option[Double] = {
-    if (totalCount <= 0)
+    if (totalCount() <= 0)
       None
     else {
       val weightedSum =
-        buckets.foldLeft(0.0)({ (acc,bucket) => acc + (bucket.label * bucket.count) })
-      Some(weightedSum / totalCount)
+        buckets().foldLeft(0.0)({ (acc,bucket) => acc + (bucket.label * bucket.count) })
+      Some(weightedSum / totalCount())
     }
   }
 
@@ -464,7 +464,7 @@ class StreamingHistogram(
   /**
     * Total number of samples used to build this histogram.
     */
-  def totalCount(): Long = buckets.map(_._2).sum
+  def totalCount(): Long = buckets().map(_._2).sum
 
   /**
     * Get the minimum value this histogram has seen.
@@ -490,9 +490,9 @@ class StreamingHistogram(
     * Return an array of x, cdf(x) pairs
     */
   def cdf(): Array[(Double, Double)] = {
-    val bs = buckets
+    val bs = buckets()
     val labels = bs.map(_.label)
-    val pdf = bs.map(_.count.toDouble / totalCount)
+    val pdf = bs.map(_.count.toDouble / totalCount())
 
     labels.zip(pdf.scanLeft(0.0)(_ + _).drop(1)).toArray
   }
@@ -502,11 +502,11 @@ class StreamingHistogram(
     * bucket label and its percentile.
     */
   private def cdfIntervals(): Iterator[((Double, Double), (Double, Double))] = {
-    if(buckets.size < 2) {
+    if(buckets().size < 2) {
       Iterator.empty
     } else {
-      val bs = buckets
-      val n = totalCount
+      val bs = buckets()
+      val n = totalCount()
       // We have to prepend the minimum value here
       val ds = minValue().getOrElse(Double.NegativeInfinity) +: bs.map(_.label)
       val pdf = bs.map(_.count.toDouble / n)
@@ -521,11 +521,11 @@ class StreamingHistogram(
     * Get the (approximate) percentile of this item.
     */
   def percentileRanking(item: Double): Double =
-    if(buckets.size == 1) {
-      if(item < buckets.head.label) 0.0 else 1.0
+    if(buckets().size == 1) {
+      if(item < buckets().head.label) 0.0 else 1.0
     } else {
-      val data = cdfIntervals
-      val tt = data.dropWhile(_._2._1 <= item).next
+      val data = cdfIntervals()
+      val tt = data.dropWhile(_._2._1 <= item).next()
       val (d1, pct1) = tt._1
       val (d2, pct2) = tt._2
       if(item - d1 < 0.0) {
@@ -546,15 +546,15 @@ class StreamingHistogram(
     *              from minValue to maxValue, interpolating based on observed bins along the way
     */
   def percentileBreaks(qs: Seq[Double]): Seq[Double] = {
-    if(buckets.size == 1) {
-      qs.map(z => buckets.head.label)
+    if(buckets().size == 1) {
+      qs.map(z => buckets().head.label)
     } else {
-      val data = cdfIntervals
+      val data = cdfIntervals()
       if(!data.hasNext) {
         Seq()
       } else {
         val result = MutableListBuffer[Double]()
-        var curr = data.next
+        var curr = data.next()
 
         def getValue(q: Double): Double = {
           val (d1, pct1) = curr._1
@@ -574,7 +574,7 @@ class StreamingHistogram(
             // to clean house and remove the lowest bin.  Else, we
             // have to treat the lowest bin as the 0th pctile for
             // interpolation.
-            if (curr._1._1 == curr._2._1) { curr = (curr._1, data.next._2) }
+            if (curr._1._1 == curr._2._1) { curr = (curr._1, data.next()._2) }
             else { curr = ((curr._1._1, 0.0), curr._2) }
             qs.tail
           } else {
@@ -589,7 +589,7 @@ class StreamingHistogram(
             if(q < curr._2._2) {
               result += getValue(q)
             } else {
-              while(data.hasNext && curr._2._2 <= q) { curr = data.next }
+              while(data.hasNext && curr._2._2 <= q) { curr = data.next() }
               result += getValue(q)
             }
           }

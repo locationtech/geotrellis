@@ -30,7 +30,7 @@ class GeoTiffWriterTests extends AnyFunSuite
     with RasterMatchers
     with GeoTiffTestUtils {
 
-  override def afterAll = purge
+  override def afterAll() = purge
 
   test("Writing out an LZW raster from a streaming reader, and compressed (#2177)") {
     /** This issue arose from immediately writing a compressed GeoTiff, without ever uncompressing it.
@@ -51,7 +51,7 @@ class GeoTiffWriterTests extends AnyFunSuite
 
     val gt2 = MultibandGeoTiff.streaming(reader)
     val gt3 = MultibandGeoTiff(p)
-    val gt1 = gt3.tile.toArrayTile
+    val gt1 = gt3.tile.toArrayTile()
 
       withClue("Assumption failed: Reading GeoTiff two ways didn't match") {
       assertEqual(gt2.tile, gt1)

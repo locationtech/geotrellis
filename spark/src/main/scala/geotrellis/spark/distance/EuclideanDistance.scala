@@ -60,7 +60,7 @@ object EuclideanDistance {
       }
     }
 
-    result
+    result.toSeq
   }
 
   private[spark] def neighborEuclideanDistance(center: DelaunayTriangulation, neighbors: Map[Direction, (BoundaryDelaunay, Extent)], re: RasterExtent): Option[Tile] = {
@@ -74,7 +74,7 @@ object EuclideanDistance {
       var bestdist = 1.0/0.0
       var best = -1
       do {
-        while (getDest(e) == -1 && e < maxEdgeIndex)
+        while (getDest(e) == -1 && e < maxEdgeIndex())
           e += 1
         val dist = re.extent.distance(Point(stitched.indexToCoord(getDest(e))))
         if (dist < bestdist) {
@@ -82,7 +82,7 @@ object EuclideanDistance {
           bestdist = dist
         }
         e += 1
-      } while (bestdist > 0 && e < maxEdgeIndex)
+      } while (bestdist > 0 && e < maxEdgeIndex())
 
       best
     }
@@ -91,9 +91,9 @@ object EuclideanDistance {
       None
     } else {
       val baseEdge =
-        if (center.boundary != -1) {
+        if (center.boundary() != -1) {
           // center had edges
-          stitched.halfEdgeTable.edgeIncidentTo(center.halfEdgeTable.getDest(center.boundary))
+          stitched.halfEdgeTable.edgeIncidentTo(center.halfEdgeTable.getDest(center.boundary()))
         } else {
           // center either has 1 or no points
           findBaseEdge()
@@ -147,7 +147,7 @@ object EuclideanDistance {
         }, preservesPartitioning = true)
 
     borders
-      .collectNeighbors
+      .collectNeighbors()
       .mapPartitions({ partition =>
         partition.map { case (key, neighbors) =>
           val newNeighbors =
@@ -212,7 +212,7 @@ object SparseEuclideanDistance {
       val re = RasterExtent(ex, tileCols, tileRows)
       val tile = ArrayTile.empty(cellType, re.cols, re.rows)
 
-      vor.voronoiCellsWithPoints.foreach(EuclideanDistanceTile.rasterizeDistanceCell(re, tile))
+      vor.voronoiCellsWithPoints().foreach(EuclideanDistanceTile.rasterizeDistanceCell(re, tile))
 
       (key, tile)
     }, preservesPartitioning=true)

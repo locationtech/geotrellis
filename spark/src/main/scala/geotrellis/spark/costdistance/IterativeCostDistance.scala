@@ -88,7 +88,7 @@ object IterativeCostDistance {
     def isZero: Boolean = list.isEmpty
     def merge(other: AccumulatorV2[KeyCostPair, Changes]): Unit =
       this.synchronized { list ++= other.value }
-    def reset(): Unit = this.synchronized { list.clear }
+    def reset(): Unit = this.synchronized { list.clear() }
     def value: Changes = list
   }
 
@@ -182,7 +182,7 @@ object IterativeCostDistance {
       (k, v, SimpleCostDistance.generateEmptyCostTile(cols, rows))
     }).persist(StorageLevel.MEMORY_AND_DISK_SER)
 
-    costs.count
+    costs.count()
 
     // Repeatedly map over the RDD of cost tiles until no more changes
     // occur on the periphery of any tile.
@@ -190,11 +190,11 @@ object IterativeCostDistance {
       val _changes: Map[SpatialKey, Seq[SimpleCostDistance.Cost]] =
         accumulator.value
           .groupBy(_._1)
-          .map({ case (k, list) => (k, list.map({ case (_, v) => v })) })
+          .map({ case (k, list) => (k, list.map({ case (_, v) => v }).toSeq) })
       val changes = sparkContext.broadcast(_changes)
       logger.debug(s"At least ${changes.value.size} changed tiles")
 
-      accumulator.reset
+      accumulator.reset()
 
       val previous = costs
 
@@ -251,7 +251,7 @@ object IterativeCostDistance {
         }
       }).persist(StorageLevel.MEMORY_AND_DISK_SER)
 
-      costs.count
+      costs.count()
       previous.unpersist()
     } while (accumulator.value.nonEmpty)
 

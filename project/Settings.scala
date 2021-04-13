@@ -29,6 +29,7 @@ import java.io.File
 
 object Settings {
   object Repositories {
+    val apacheSnapshots = "apache-snapshots" at "https://repository.apache.org/content/repositories/snapshots/"
     val eclipseReleases = "eclipse-releases" at "https://repo.eclipse.org/content/groups/releases"
     val osgeoReleases   = "osgeo-releases" at "https://repo.osgeo.org/repository/release/"
     val geosolutions    = "geosolutions" at "https://maven.geo-solutions.it/"
@@ -36,7 +37,7 @@ object Settings {
     val mavenLocal      = Resolver.mavenLocal
     val maven           = DefaultMavenRepository
     val local           = Seq(ivy2Local, mavenLocal)
-    val external        = Seq(osgeoReleases, maven, eclipseReleases, geosolutions)
+    val external        = Seq(osgeoReleases, maven, eclipseReleases, geosolutions, apacheSnapshots)
     val all             = external ++ local
   }
 
@@ -56,7 +57,6 @@ object Settings {
     "-language:existentials",
     "-language:experimental.macros",
     "-feature",
-    "-Ypartial-unification", // required by Cats
     // "-Yrangepos",            // required by SemanticDB compiler plugin
     // "-Ywarn-unused-import",  // required by `RemoveUnused` rule
     "-target:jvm-1.8")
@@ -93,8 +93,23 @@ object Settings {
     ).filter(_.asFile.canRead).map(Credentials(_)),
 
     addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.11.3" cross CrossVersion.full),
-    addCompilerPlugin("org.scalamacros" %% "paradise" % "2.1.1" cross CrossVersion.full),
     addCompilerPlugin("org.scalameta" % "semanticdb-scalac" % "4.4.10" cross CrossVersion.full),
+
+    libraryDependencies ++= (CrossVersion.partialVersion(scalaVersion.value) match {
+      case Some((2, 13)) => Nil
+      case Some((2, 12)) => Seq(
+        compilerPlugin("org.scalamacros" % "paradise" % "2.1.1" cross CrossVersion.full),
+        "org.scala-lang.modules" %% "scala-collection-compat" % "2.4.2"
+      )
+        case x => sys.error(s"Encountered unsupported Scala version ${x.getOrElse("undefined")}")
+    }),
+    Compile / scalacOptions ++= (CrossVersion.partialVersion(scalaVersion.value) match {
+        case Some((2, 13)) => Seq("-Ymacro-annotations") // replaces paradise in 2.13
+        case Some((2, 12)) => Seq("-Ypartial-unification") // required by Cats
+        case x => sys.error(s"Encountered unsupported Scala version ${x.getOrElse("undefined")}")
+    }),
+
+    libraryDependencies += scalaReflect(scalaVersion.value),
 
     pomExtra := (
       <developers>
@@ -124,6 +139,12 @@ object Settings {
     )
   )
 
+  lazy val sparkCompatDependencies = Def.setting { CrossVersion.partialVersion(scalaVersion.value) match {
+    case Some((2, 13)) => Seq("org.scala-lang.modules" %% "scala-parallel-collections" % "0.2.0") // spark uses it as a par collections compat
+    case Some((2, 12)) => Nil
+    case x => sys.error(s"Encountered unsupported Scala version ${x.getOrElse("undefined")}")
+  } }
+
   lazy val accumulo = Seq(
     name := "geotrellis-accumulo",
     libraryDependencies ++= Seq(
@@ -149,8 +170,8 @@ object Settings {
         exclude("org.jboss.netty", "netty")
         exclude("org.apache.hadoop", "hadoop-client"),
       hadoopClient % Provided,
-      sparkCore % Provided,
-      sparkSql % Test,
+      apacheSpark("core").value % Provided,
+      apacheSpark("sql").value % Test,
       scalatest % Test
     ),
     console / initialCommands :=
@@ -203,8 +224,8 @@ object Settings {
           ExclusionRule("org.slf4j"), ExclusionRule("com.typesafe.akka")
         ) exclude("org.apache.hadoop", "hadoop-client"),
       hadoopClient % Provided,
-      sparkCore % Provided,
-      sparkSql % Test,
+      apacheSpark("core").value % Provided,
+      apacheSpark("sql").value % Test,
       scalatest % Test
     ),
     console / initialCommands :=
@@ -225,9 +246,9 @@ object Settings {
     name := "geotrellis-doc-examples",
     scalacOptions ++= commonScalacOptions,
     libraryDependencies ++= Seq(
-      sparkCore,
+      apacheSpark("core").value,
       scalatest % Test,
-      sparkSql % Test
+      apacheSpark("sql").value % Test
     )
   )
 
@@ -320,8 +341,8 @@ object Settings {
       scalaArm,
       kryoSerializers exclude("com.esotericsoftware", "kryo"),
       kryoShaded,
-      sparkCore % Provided,
-      sparkSql % Test,
+      apacheSpark("core").value % Provided,
+      apacheSpark("sql").value % Test,
       scalatest % Test
     ),
     assembly / assemblyMergeStrategy := {
@@ -378,8 +399,11 @@ object Settings {
     name := "geotrellis-hbase-spark",
     libraryDependencies ++= Seq(
       hadoopClient % Provided,
-      sparkCore % Provided,
-      sparkSql % Test,
+      woodstoxCore % Provided,
+      stax2Api % Provided,
+      commonsConfiguration2 % Provided,
+      apacheSpark("core").value % Provided,
+      apacheSpark("sql").value % Test,
       scalatest % Test
     ),
     console / initialCommands :=
@@ -398,10 +422,7 @@ object Settings {
   lazy val macros = Seq(
     name := "geotrellis-macros",
     Compile / sourceGenerators += (Compile / sourceManaged).map(Boilerplate.genMacro).taskValue,
-    libraryDependencies ++= Seq(
-      spireMacro,
-      scalaReflect(scalaVersion.value)
-    )
+    libraryDependencies += spireMacro
   ) ++ commonSettings
 
   lazy val mdoc = Seq(
@@ -499,8 +520,8 @@ object Settings {
     name := "geotrellis-s3-spark",
     libraryDependencies ++= Seq(
       hadoopClient % Provided,
-      sparkCore % Provided,
-      sparkSql % Test,
+      apacheSpark("core").value % Provided,
+      apacheSpark("sql").value % Test,
       scalatest % Test
     ),
     mimaPreviousArtifacts := Set(
@@ -534,11 +555,15 @@ object Settings {
   lazy val spark = Seq(
     name := "geotrellis-spark",
     libraryDependencies ++= Seq(
-      sparkCore % Provided,
+      woodstoxCore % Provided,
+      stax2Api % Provided,
+      commonsConfiguration2 % Provided,
+      re2j % Provided,
+      apacheSpark("core").value % Provided,
       hadoopClient % Provided,
-      sparkSql % Test,
+      apacheSpark("sql").value % Test,
       scalatest % Test
-    ),
+    ) ++ sparkCompatDependencies.value,
     mimaPreviousArtifacts := Set(
       "org.locationtech.geotrellis" %% "geotrellis-spark" % Version.previousVersion
     ),
@@ -559,8 +584,8 @@ object Settings {
     libraryDependencies ++= Seq(   
       circe("generic-extras").value,
       hadoopClient % Provided,
-      sparkCore % Provided,
-      sparkSql % Test,
+      apacheSpark("core").value % Provided,
+      apacheSpark("sql").value % Test,
       scalatest % Test
     ),
     assembly / test := {},
@@ -589,8 +614,8 @@ object Settings {
     name := "geotrellis-spark-testkit",
     libraryDependencies ++= Seq(
       hadoopClient % Provided,
-      sparkCore % Provided,
-      sparkSql % Provided,
+      apacheSpark("core").value % Provided,
+      apacheSpark("sql").value % Provided,
       scalatest
     )
   ) ++ commonSettings
@@ -694,8 +719,8 @@ object Settings {
     libraryDependencies ++= Seq(
       gdalWarp,
       hadoopClient % Provided,
-      sparkCore % Provided,
-      sparkSql % Test,
+      apacheSpark("core").value % Provided,
+      apacheSpark("sql").value % Test,
       scalatest % Test
     ),
     Test / fork := true,

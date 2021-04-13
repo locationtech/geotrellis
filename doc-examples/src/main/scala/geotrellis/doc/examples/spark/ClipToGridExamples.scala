@@ -105,8 +105,11 @@ object ClipToGridExamples {
               }
           }
         }
-        .reduceByKey { case (Feature(poly1, (accum1, count1)), Feature(poly2, (accum2, count2))) =>
-          Feature(poly1, (accum1 + accum2, count1 + count2))
+        .reduceByKey { (l, r) =>
+          (l, r) match {
+            case (Feature(poly1, (accum1, count1)), Feature(poly2, (accum2, count2))) =>
+              Feature(poly1, (accum1 + accum2, count1 + count2))
+          }
         }
         .map { case (_, feature) =>
           // We no longer need the UUID; also compute the mean

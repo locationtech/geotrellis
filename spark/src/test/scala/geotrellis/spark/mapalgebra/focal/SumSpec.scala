@@ -43,7 +43,7 @@ class SumSpec extends AnyFunSpec with TestEnvironment {
         TileLayout(3, 2, 3, 2)
       )
 
-      val res = rasterRDD.focalSum(Square(1)).stitch.tile.toArray
+      val res = rasterRDD.focalSum(Square(1)).stitch().tile.toArray()
 
       val expected = Array(
         3, 5, 7,    8, 9, 8,    7, 6, 4,
@@ -69,7 +69,7 @@ class SumSpec extends AnyFunSpec with TestEnvironment {
         TileLayout(3, 2, 3, 2)
       )
 
-      val res = rasterRDD.focalSum(Square(2)).stitch.tile.toArray
+      val res = rasterRDD.focalSum(Square(2)).stitch().tile.toArray()
 
       val expected = Array(
         8, 14, 20,   24,24,24,    21,15, 9,
@@ -95,7 +95,7 @@ class SumSpec extends AnyFunSpec with TestEnvironment {
         TileLayout(3, 2, 3, 2)
       )
 
-      val res = rasterRDD.focalSum(Square(2), TargetCell.NoData).stitch.tile.toArray
+      val res = rasterRDD.focalSum(Square(2), TargetCell.NoData).stitch().tile.toArray()
 
       val expected = Array(
         8,1, 1,   1, 1, 1,   1, 1, 1,
@@ -121,7 +121,7 @@ class SumSpec extends AnyFunSpec with TestEnvironment {
         TileLayout(3, 2, 3, 2)
       )
 
-      val res = rasterRDD.focalSum(Circle(1)).stitch.tile.toArray
+      val res = rasterRDD.focalSum(Circle(1)).stitch().tile.toArray()
 
       val expected = Array(
         2, 3, 4,    5, 5, 5,    4, 4, 3,
@@ -147,7 +147,7 @@ class SumSpec extends AnyFunSpec with TestEnvironment {
         TileLayout(3, 2, 3, 2)
       ).toCollection
 
-      val res = rasterCollection.focalSum(Square(1)).stitch.tile.toArray
+      val res = rasterCollection.focalSum(Square(1)).stitch().tile.toArray()
 
       val expected = Array(
         3, 5, 7,    8, 9, 8,    7, 6, 4,
@@ -173,7 +173,7 @@ class SumSpec extends AnyFunSpec with TestEnvironment {
         TileLayout(3, 2, 3, 2)
       ).toCollection
 
-      val res = rasterCollection.focalSum(Square(2)).stitch.tile.toArray
+      val res = rasterCollection.focalSum(Square(2)).stitch().tile.toArray()
 
       val expected = Array(
         8, 14, 20,   24,24,24,    21,15, 9,
@@ -199,7 +199,7 @@ class SumSpec extends AnyFunSpec with TestEnvironment {
         TileLayout(3, 2, 3, 2)
       ).toCollection
 
-      val res = rasterCollection.focalSum(Circle(1)).stitch.tile.toArray
+      val res = rasterCollection.focalSum(Circle(1)).stitch().tile.toArray()
 
       val expected = Array(
         2, 3, 4,    5, 5, 5,    4, 4, 3,
@@ -225,7 +225,7 @@ class SumSpec extends AnyFunSpec with TestEnvironment {
         TileLayout(3, 2, 3, 2)
       )
 
-      val res = rasterRDD.focalSum(Square(1), TargetCell.NoData).stitch.tile.toArray
+      val res = rasterRDD.focalSum(Square(1), TargetCell.NoData).stitch().tile.toArray()
 
       val expected = Array(
         11,12, 13,   21, 22, 23,   31, 32, 33,
@@ -251,7 +251,7 @@ class SumSpec extends AnyFunSpec with TestEnvironment {
         TileLayout(3, 2, 3, 2)
       )
 
-      val res = rasterRDD.focalSum(Square(1), TargetCell.NoData).stitch.tile.toArray
+      val res = rasterRDD.focalSum(Square(1), TargetCell.NoData).stitch().tile.toArray()
 
       val expected = Array(
         3,1, 1,   1, 1, 1,   1, 1, 1,
@@ -277,7 +277,7 @@ class SumSpec extends AnyFunSpec with TestEnvironment {
         TileLayout(3, 2, 3, 2)
       )
 
-      val res = rasterRDD.focalSum(Square(1), TargetCell.Data).stitch.tile.toArray
+      val res = rasterRDD.focalSum(Square(1), TargetCell.Data).stitch().tile.toArray()
 
       val expected = Array(
         nd, 5, 7,    8, 9, 8,    7, 6, 4,
@@ -303,7 +303,7 @@ class SumSpec extends AnyFunSpec with TestEnvironment {
         TileLayout(3, 2, 3, 2)
       )
 
-      val res = rasterRDD.focalSum(Circle(1), TargetCell.Data).stitch.tile.toArray
+      val res = rasterRDD.focalSum(Circle(1), TargetCell.Data).stitch().tile.toArray()
 
       val expected = Array(
         nd, 3, 4,    5, 5, 5,    4, 4, 3,

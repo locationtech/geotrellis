@@ -113,7 +113,7 @@ class GDALRasterSourceSpec extends AnyFunSpec with RasterMatchers with GivenWhen
 
     it("should read the same metadata as GeoTiffRasterSource") {
       lazy val tsource = GeoTiffRasterSource(uri)
-      source.metadata.attributes.mapValues(_.toUpperCase) shouldBe tsource.metadata.attributes.mapValues(_.toUpperCase)
+      source.metadata.attributes.map { case (k, v) => k -> v.toUpperCase } shouldBe tsource.metadata.attributes.map { case (k, v) => k -> v.toUpperCase }
     }
 
     it("should perform a chained reprojection") {
@@ -226,7 +226,7 @@ class GDALRasterSourceSpec extends AnyFunSpec with RasterMatchers with GivenWhen
         moisac
           .reprojectToRegion(
             targetCRS,
-            targetGridExtent.toRasterExtent,
+            targetGridExtent.toRasterExtent(),
             NearestNeighbor,
             AutoHigherResolution
           )

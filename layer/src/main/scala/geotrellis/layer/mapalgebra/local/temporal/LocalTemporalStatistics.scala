@@ -116,12 +116,12 @@ object LocalTemporalStatistics {
   // If the raster local operations doesn't have the operation you need as
   // a operation on tile sequences, just create it through a reduce.
 
-  private[geotrellis] def minReduceOp(tiles: Traversable[Tile]): Tile = tiles.localMin
+  private[geotrellis] def minReduceOp(tiles: Traversable[Tile]): Tile = tiles.localMin()
 
-  private[geotrellis] def maxReduceOp(tiles: Traversable[Tile]): Tile = tiles.localMax
+  private[geotrellis] def maxReduceOp(tiles: Traversable[Tile]): Tile = tiles.localMax()
 
-  private[geotrellis] def meanReduceOp(tiles: Traversable[Tile]): Tile = tiles.localMean
+  private[geotrellis] def meanReduceOp(tiles: Traversable[Tile]): Tile = tiles.localMean()
 
-  private[geotrellis] def varianceReduceOp(tiles: Traversable[Tile]): Tile = tiles.localVariance
+  private[geotrellis] def varianceReduceOp(tiles: Traversable[Tile]): Tile = tiles.localVariance()
 
 }

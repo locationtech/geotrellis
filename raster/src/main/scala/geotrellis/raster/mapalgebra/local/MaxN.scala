@@ -87,7 +87,7 @@ object MaxN extends Serializable {
     apply(n, rs)
 
   def apply(n: Int, rs: Traversable[Tile])(implicit d: DI): Tile = {
-    rs.assertEqualDimensions
+    rs.assertEqualDimensions()
 
     val layerCount = rs.toSeq.length
     if(layerCount < n) {

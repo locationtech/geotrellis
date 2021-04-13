@@ -42,7 +42,7 @@ trait SinglebandTileCropMethods extends TileCropMethods[Tile] {
         case _ => CroppedTile(self, cropBounds)
       }
 
-    if(options.force) res.toArrayTile else res
+    if(options.force) res.toArrayTile() else res
   }
 
   /**

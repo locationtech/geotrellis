@@ -30,7 +30,7 @@ abstract class ByteArrayTile(val array: Array[Byte], cols: Int, rows: Int)
     *
     * @return  An array of bytes
     */
-  def toBytes: Array[Byte] = array.clone
+  def toBytes(): Array[Byte] = array.clone
 
   /**
     * Return a copy of the present [[ByteArrayTile]].

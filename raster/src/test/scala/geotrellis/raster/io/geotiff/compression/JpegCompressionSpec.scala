@@ -20,12 +20,13 @@ import geotrellis.raster._
 import geotrellis.raster.io.geotiff._
 import geotrellis.raster.testkit._
 import geotrellis.vector.Extent
+
+import scala.concurrent.duration.Duration
+import scala.concurrent.{Await, ExecutionContext, ExecutionContextExecutor, Future}
 import java.net.URL
 import java.io.File
-import scala.collection.parallel._
 import scala.util.Random
 import sys.process._
-
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.funspec.AnyFunSpec
 
@@ -34,7 +35,7 @@ class JpegCompressionSpec extends AnyFunSpec
     with BeforeAndAfterAll
     with GeoTiffTestUtils {
 
-  override def afterAll = purge
+  override def afterAll() = purge
 
   describe("Reading GeoTiffs with JPEG compression") {
     it("Does not cause Too many open files exception") {
@@ -58,16 +59,15 @@ class JpegCompressionSpec extends AnyFunSpec
 
       val extent = RasterSource(jpegRasterPath).metadata.gridExtent.extent
 
-      val parList = (1 to 10000).toList.par
-      // TODO: Replace with java.util.concurrent.ForkJoinPool once we drop 2.11 support.
-      val forkJoinPool = new scala.concurrent.forkjoin.ForkJoinPool(50)
-      parList.tasksupport = new ForkJoinTaskSupport(forkJoinPool)
+      val pool = new java.util.concurrent.ForkJoinPool(50)
+      implicit val executionContextExecutor: ExecutionContextExecutor = ExecutionContext.fromExecutor(pool)
+      val parList: List[Future[Int]] = (1 to 10000).toList.map(Future(_))
 
       try {
-        parList.foreach { _ =>
+        val result = Future.sequence(parList.map { _.map { _ =>
           val (xmin, ymin) = (
-            (Random.nextDouble * (extent.width - 1)) + extent.xmin,
-            (Random.nextDouble * (extent.height - 1)) + extent.ymin
+            (Random.nextDouble() * (extent.width - 1)) + extent.xmin,
+            (Random.nextDouble() * (extent.height - 1)) + extent.ymin
           )
 
           val windowExtent = Extent(
@@ -82,11 +82,13 @@ class JpegCompressionSpec extends AnyFunSpec
             val m = r._1.band(1).mutable
             m.set(0, 0, 1)
           }
+        } })
 
-          info("READ")
-        }
+        Await.ready(result, Duration.Inf)
+
+        info("READ")
       } finally {
-        forkJoinPool.shutdown()
+        pool.shutdown()
       }
 
       println("DONE")

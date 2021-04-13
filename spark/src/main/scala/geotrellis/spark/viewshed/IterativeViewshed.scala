@@ -112,11 +112,11 @@ object IterativeViewshed {
             key -> lists.map({ case (_, m) => m }).reduce(_ ++ _)
           })
 
-        messages.clear
+        messages.clear()
         messages ++= newMessages
      }
 
-    def reset(): Unit = this.synchronized { messages.clear }
+    def reset(): Unit = this.synchronized { messages.clear() }
 
     def value: Messages = messages.toMap
   }
@@ -276,7 +276,7 @@ object IterativeViewshed {
             case None => Seq.empty[(Int, Double)]
           }
         })
-        .collect
+        .collect()
         .toMap
     val heightsByIndex = sparkContext.broadcast(_heightsByIndex)
 
@@ -314,7 +314,7 @@ object IterativeViewshed {
 
       (k, v, shed)
     }).persist(StorageLevel.MEMORY_AND_DISK_SER)
-    sheds.count // make sheds materialize
+    sheds.count() // make sheds materialize
 
     // Repeatedly map over the RDD of viewshed tiles until all rays
     // have reached the periphery of the layer.
@@ -327,7 +327,7 @@ object IterativeViewshed {
           .toMap
       val changes = sparkContext.broadcast(_changes)
 
-      rays.reset
+      rays.reset()
       logger.debug(s"≥ ${changes.value.size} tiles in motion")
 
       val oldSheds = sheds
@@ -392,7 +392,7 @@ object IterativeViewshed {
         }
         (k, v, shed)
       }).persist(StorageLevel.MEMORY_AND_DISK_SER)
-      sheds.count
+      sheds.count()
       oldSheds.unpersist()
 
     } while (rays.value.nonEmpty)

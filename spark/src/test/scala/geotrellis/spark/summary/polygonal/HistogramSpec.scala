@@ -38,7 +38,7 @@ class HistogramSpec extends AnyFunSpec with TestEnvironment with TestFiles {
     val multi = ones.withContext { _.mapValues { tile => MultibandTile(tile, tile, tile) }}
 
     val tileLayout = modHundred.metadata.tileLayout
-    val count = (modHundred.count * tileLayout.tileCols * tileLayout.tileRows).toInt
+    val count = (modHundred.count() * tileLayout.tileCols * tileLayout.tileRows).toInt
     val totalExtent = modHundred.metadata.extent
 
     val xd = totalExtent.xmax - totalExtent.xmin
@@ -75,10 +75,10 @@ class HistogramSpec extends AnyFunSpec with TestEnvironment with TestFiles {
       // We use FastMapHistogram for this test because StreamingHistogram can shuffle bucket
       //  bounds and counts based on the order in which dissimilar elements are added. This addition is
       //  non-deterministic for our RDD polygonal summaries.
-      val histogram = modHundred.polygonalSummaryValue(totalExtent.toPolygon, FastMapHistogramVisitor).toOption.get
-      val expected = modHundred.stitch.polygonalSummary(totalExtent.toPolygon, FastMapHistogramVisitor).toOption.get
+      val histogram = modHundred.polygonalSummaryValue(totalExtent.toPolygon(), FastMapHistogramVisitor).toOption.get
+      val expected = modHundred.stitch().polygonalSummary(totalExtent.toPolygon(), FastMapHistogramVisitor).toOption.get
 
-      histogram.totalCount should be (expected.totalCount)
+      histogram.totalCount() should be (expected.totalCount())
       histogram.foreachValue(v => histogram.itemCount(v) should be (expected.itemCount(v)))
 
       var map = HashMap[Int, Int]()
@@ -95,15 +95,15 @@ class HistogramSpec extends AnyFunSpec with TestEnvironment with TestFiles {
     //  non-deterministic for our RDD polygonal summaries.
     it("should get correct histogram over whole raster extent for a MultibandTileRDD") {
       val histogram = multiModHundred.polygonalSummaryValue(
-        totalExtent.toPolygon,
+        totalExtent.toPolygon(),
         FastMapHistogramVisitor
       ).toOption.get.head
-      val expected = multiModHundred.stitch.polygonalSummary(
-        totalExtent.toPolygon,
+      val expected = multiModHundred.stitch().polygonalSummary(
+        totalExtent.toPolygon(),
         FastMapHistogramVisitor
       ).toOption.get.head
 
-      histogram.totalCount should be (expected.totalCount)
+      histogram.totalCount() should be (expected.totalCount())
       histogram.foreachValue(v => histogram.itemCount(v) should be (expected.itemCount(v)))
 
       var map = HashMap[Int, Int]()
@@ -117,62 +117,62 @@ class HistogramSpec extends AnyFunSpec with TestEnvironment with TestFiles {
 
     it("should get correct histogram over a quarter of the extent") {
       val histogram = inc.polygonalSummaryValue(
-        quarterExtent.toPolygon,
+        quarterExtent.toPolygon(),
         StreamingHistogramVisitor).toOption.get
-      val expected = inc.stitch.polygonalSummary(quarterExtent.toPolygon, StreamingHistogramVisitor).toOption.get
+      val expected = inc.stitch().polygonalSummary(quarterExtent.toPolygon(), StreamingHistogramVisitor).toOption.get
 
-      histogram.minMaxValues should be (expected.minMaxValues)
+      histogram.minMaxValues() should be (expected.minMaxValues())
       histogram.itemCount(1) should be (expected.itemCount(1))
     }
 
     it("should get correct histogram over a quarter of the extent for a MultibandTileRDD") {
-      val histogram = multi.polygonalSummaryValue(quarterExtent.toPolygon, StreamingHistogramVisitor).toOption.get
-      val expected = multi.stitch.polygonalSummary(quarterExtent.toPolygon, StreamingHistogramVisitor).toOption.get
+      val histogram = multi.polygonalSummaryValue(quarterExtent.toPolygon(), StreamingHistogramVisitor).toOption.get
+      val expected = multi.stitch().polygonalSummary(quarterExtent.toPolygon(), StreamingHistogramVisitor).toOption.get
 
       histogram.size should be (expected.size)
 
       histogram zip expected map { case (result, exp) =>
-        result.minMaxValues should be (exp.minMaxValues)
+        result.minMaxValues() should be (exp.minMaxValues())
         result.itemCount(1) should be (exp.itemCount(1))
       }
     }
 
     it("should get correct histogram over half of the extent in diamond shape") {
       val histogram = ones.polygonalSummaryValue(diamondPoly, StreamingHistogramVisitor).toOption.get
-      val expected = ones.stitch.polygonalSummary(diamondPoly, StreamingHistogramVisitor).toOption.get
+      val expected = ones.stitch().polygonalSummary(diamondPoly, StreamingHistogramVisitor).toOption.get
 
-      histogram.minMaxValues should be (expected.minMaxValues)
+      histogram.minMaxValues() should be (expected.minMaxValues())
       histogram.itemCount(1) should be (expected.itemCount(1))
     }
 
     it("should get correct histogram over half of the extent in diamond shape for a MultibandTileRDD") {
       val histogram = multi.polygonalSummaryValue(diamondPoly, StreamingHistogramVisitor).toOption.get
-      val expected = multi.stitch.polygonalSummary(diamondPoly, StreamingHistogramVisitor).toOption.get
+      val expected = multi.stitch().polygonalSummary(diamondPoly, StreamingHistogramVisitor).toOption.get
 
       histogram.size should be (expected.size)
 
       histogram zip expected map { case (result, exp) =>
-        result.minMaxValues should be (exp.minMaxValues)
+        result.minMaxValues() should be (exp.minMaxValues())
         result.itemCount(1) should be (exp.itemCount(1))
       }
     }
 
     it("should get correct histogram over polygon with hole") {
       val histogram = ones.polygonalSummaryValue(polyWithHole, StreamingHistogramVisitor).toOption.get
-      val expected = ones.stitch.polygonalSummary(polyWithHole, StreamingHistogramVisitor).toOption.get
+      val expected = ones.stitch().polygonalSummary(polyWithHole, StreamingHistogramVisitor).toOption.get
 
-      histogram.minMaxValues should be (expected.minMaxValues)
+      histogram.minMaxValues() should be (expected.minMaxValues())
       histogram.itemCount(1) should be (expected.itemCount(1))
     }
 
     it("should get correct histogram over polygon with hole for a MultibandTileRDD") {
       val histogram = multi.polygonalSummaryValue(polyWithHole, StreamingHistogramVisitor).toOption.get
-      val expected = multi.stitch.polygonalSummary(polyWithHole, StreamingHistogramVisitor).toOption.get
+      val expected = multi.stitch().polygonalSummary(polyWithHole, StreamingHistogramVisitor).toOption.get
 
       histogram.size should be (expected.size)
 
       histogram zip expected map { case (result, exp) =>
-        result.minMaxValues should be (exp.minMaxValues)
+        result.minMaxValues() should be (exp.minMaxValues())
         result.itemCount(1) should be (exp.itemCount(1))
       }
     }
@@ -189,7 +189,7 @@ class HistogramSpec extends AnyFunSpec with TestEnvironment with TestFiles {
     val totalExtent = modHundred.metadata.extent
 
     it("should get correct histogram over whole raster extent") {
-      val histogram = modHundred.polygonalSummaryValue(totalExtent.toPolygon, FastMapHistogramVisitor).toOption.get
+      val histogram = modHundred.polygonalSummaryValue(totalExtent.toPolygon(), FastMapHistogramVisitor).toOption.get
 
       var map = HashMap[Int, Int]()
 
@@ -203,7 +203,7 @@ class HistogramSpec extends AnyFunSpec with TestEnvironment with TestFiles {
     }
 
     it("should get correct histogram over whole raster extent for MultibandTiles") {
-      val histogram = multiModHundred.polygonalSummaryValue(totalExtent.toPolygon, FastMapHistogramVisitor).toOption.get.head
+      val histogram = multiModHundred.polygonalSummaryValue(totalExtent.toPolygon(), FastMapHistogramVisitor).toOption.get.head
 
       var map = HashMap[Int, Int]()
 
@@ -227,10 +227,10 @@ class HistogramSpec extends AnyFunSpec with TestEnvironment with TestFiles {
         totalExtent.ymin + yd / 2
       )
 
-      val histogram = ones.polygonalSummaryValue(quarterExtent.toPolygon, StreamingHistogramVisitor).toOption.get
-      val expected = ones.stitch.polygonalSummary(quarterExtent.toPolygon, StreamingHistogramVisitor).toOption.get
+      val histogram = ones.polygonalSummaryValue(quarterExtent.toPolygon(), StreamingHistogramVisitor).toOption.get
+      val expected = ones.stitch().polygonalSummary(quarterExtent.toPolygon(), StreamingHistogramVisitor).toOption.get
 
-      histogram.minMaxValues should be (expected.minMaxValues)
+      histogram.minMaxValues() should be (expected.minMaxValues())
       histogram.itemCount(1) should be (expected.itemCount(1))
     }
 
@@ -245,13 +245,13 @@ class HistogramSpec extends AnyFunSpec with TestEnvironment with TestFiles {
         totalExtent.ymin + yd / 2
       )
 
-      val histogram = multi.polygonalSummaryValue(quarterExtent.toPolygon, StreamingHistogramVisitor).toOption.get
-      val expected = multi.stitch.polygonalSummary(quarterExtent.toPolygon, StreamingHistogramVisitor).toOption.get
+      val histogram = multi.polygonalSummaryValue(quarterExtent.toPolygon(), StreamingHistogramVisitor).toOption.get
+      val expected = multi.stitch().polygonalSummary(quarterExtent.toPolygon(), StreamingHistogramVisitor).toOption.get
 
       histogram.size should be (expected.size)
 
       histogram zip expected map { case (result, exp) =>
-        result.minMaxValues should be (exp.minMaxValues)
+        result.minMaxValues() should be (exp.minMaxValues())
         result.itemCount(1) should be (exp.itemCount(1))
       }
     }
@@ -269,9 +269,9 @@ class HistogramSpec extends AnyFunSpec with TestEnvironment with TestFiles {
       val poly = Polygon(LineString(Array(p1, p2, p3, p4, p1)))
 
       val histogram = ones.polygonalSummaryValue(poly, StreamingHistogramVisitor).toOption.get
-      val expected = ones.stitch.polygonalSummary(poly, StreamingHistogramVisitor).toOption.get
+      val expected = ones.stitch().polygonalSummary(poly, StreamingHistogramVisitor).toOption.get
 
-      histogram.minMaxValues should be (expected.minMaxValues)
+      histogram.minMaxValues() should be (expected.minMaxValues())
       histogram.itemCount(1) should be (expected.itemCount(1))
     }
 
@@ -287,12 +287,12 @@ class HistogramSpec extends AnyFunSpec with TestEnvironment with TestFiles {
       val poly = Polygon(LineString(Array(p1, p2, p3, p4, p1)))
 
       val histogram = multi.polygonalSummaryValue(poly, StreamingHistogramVisitor).toOption.get
-      val expected = multi.stitch.polygonalSummary(poly, StreamingHistogramVisitor).toOption.get
+      val expected = multi.stitch().polygonalSummary(poly, StreamingHistogramVisitor).toOption.get
 
       histogram.size should be (expected.size)
 
       histogram zip expected map { case (result, exp) =>
-        result.minMaxValues should be (exp.minMaxValues)
+        result.minMaxValues() should be (exp.minMaxValues())
         result.itemCount(1) should be (exp.itemCount(1))
       }
     }
@@ -320,9 +320,9 @@ class HistogramSpec extends AnyFunSpec with TestEnvironment with TestFiles {
       val poly = Polygon(exterior, interior)
 
       val histogram = ones.polygonalSummaryValue(poly, StreamingHistogramVisitor).toOption.get
-      val expected = ones.stitch.polygonalSummary(poly, StreamingHistogramVisitor).toOption.get
+      val expected = ones.stitch().polygonalSummary(poly, StreamingHistogramVisitor).toOption.get
 
-      histogram.minMaxValues should be (expected.minMaxValues)
+      histogram.minMaxValues() should be (expected.minMaxValues())
       histogram.itemCount(1) should be (expected.itemCount(1))
     }
 
@@ -349,12 +349,12 @@ class HistogramSpec extends AnyFunSpec with TestEnvironment with TestFiles {
       val poly = Polygon(exterior, interior)
 
       val histogram = multi.polygonalSummaryValue(poly, StreamingHistogramVisitor).toOption.get
-      val expected = multi.stitch.polygonalSummary(poly, StreamingHistogramVisitor).toOption.get
+      val expected = multi.stitch().polygonalSummary(poly, StreamingHistogramVisitor).toOption.get
 
       histogram.size should be (expected.size)
 
       histogram zip expected map { case (result, exp) =>
-        result.minMaxValues should be (exp.minMaxValues)
+        result.minMaxValues() should be (exp.minMaxValues())
         result.itemCount(1) should be (exp.itemCount(1))
       }
     }

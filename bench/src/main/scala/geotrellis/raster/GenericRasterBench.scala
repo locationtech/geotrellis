@@ -43,9 +43,9 @@ class GenericRasterBench  {
     // that are injected on-demand by the framework.
     params.getBenchmark.split('.').last match {
       case "genericRasterMap" =>
-        genericRaster = new GRaster(init(len)(Random.nextInt))
+        genericRaster = new GRaster(init(len)(Random.nextInt()))
       case "rasterMap" =>
-        tile = ArrayTile(init(len)(Random.nextInt), size, size)
+        tile = ArrayTile(init(len)(Random.nextInt()), size, size)
       case _ => throw new MatchError("Have a new benchmark without initialization?")
     }
   }

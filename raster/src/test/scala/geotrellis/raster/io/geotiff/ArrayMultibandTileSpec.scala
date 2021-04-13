@@ -38,8 +38,8 @@ class ArrayMultibandTileSpec extends AnyFunSpec with Matchers {
   describe("ArrayMultibandTile subset combine methods") {
 
     it("should work correctly on integer-valued tiles") {
-      val actual = mbt1.combine(List(0,1))({ seq: Seq[Int] => seq.sum }).toArray
-      val expected = mbt1.band(2).toArray
+      val actual = mbt1.combine(List(0,1))({ seq: Seq[Int] => seq.sum }).toArray()
+      val expected = mbt1.band(2).toArray()
 
       (actual.zip(expected)).foreach({ pair =>
         assert(pair._1 == pair._2, "actual should equal expected")
@@ -47,8 +47,8 @@ class ArrayMultibandTileSpec extends AnyFunSpec with Matchers {
     }
 
     it("should work correctly on double-valued tiles") {
-      val actual = mbt2.combineDouble(List(0,1))({ seq: Seq[Double] => seq.sum + 1.0 }).toArray
-      val expected = mbt2.band(2).toArray
+      val actual = mbt2.combineDouble(List(0,1))({ seq: Seq[Double] => seq.sum + 1.0 }).toArray()
+      val expected = mbt2.band(2).toArray()
 
       (actual.zip(expected)).foreach({ pair =>
         assert(pair._1 == pair._2, "actual should equal expected")
@@ -66,8 +66,8 @@ class ArrayMultibandTileSpec extends AnyFunSpec with Matchers {
         ArrayTile(Array.ofDim[Int](15*10).fill(5), 15, 10))
 
       (0 until 3).foreach({ b =>
-        val actualArray = actual.band(b).toArray
-        val expectedArray = expected.band(b).toArray
+        val actualArray = actual.band(b).toArray()
+        val expectedArray = expected.band(b).toArray()
 
         actualArray.zip(expectedArray).foreach({ pair =>
           assert(pair._1 == pair._2, s"actual should equal expected in band $b")
@@ -83,8 +83,8 @@ class ArrayMultibandTileSpec extends AnyFunSpec with Matchers {
         ArrayTile(Array.ofDim[Double](15*10).fill(12.0), 15, 10))
 
       (0 until 3).foreach({ b =>
-        val actualArray = actual.band(b).toArray
-        val expectedArray = expected.band(b).toArray
+        val actualArray = actual.band(b).toArray()
+        val expectedArray = expected.band(b).toArray()
 
         actualArray.zip(expectedArray).foreach({ pair =>
           assert(pair._1 == pair._2, s"actual should equal expected in band $b")

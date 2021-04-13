@@ -97,7 +97,7 @@ class LayerQuerySpec extends AnyFunSpec with TestEnvironment with TestFiles with
       val query = new LayerQuery[SpatialKey, TileLayerMetadata[SpatialKey]].where(Intersects(polygon))
       val actual = query(md).flatMap(spatialKeyBoundsKeys)
       val expected = naiveKeys(polygon)
-      (expected diff actual) should be ('empty)
+      (expected diff actual) should be (Symbol("empty"))
     }
 
     it("should find all keys that intersect appreciably with a horizontal rectangle that is in the same projection") {
@@ -105,7 +105,7 @@ class LayerQuerySpec extends AnyFunSpec with TestEnvironment with TestFiles with
       val query = new LayerQuery[SpatialKey, TileLayerMetadata[SpatialKey]].where(Intersects(polygon -> md.crs))
       val actual = query(md).flatMap(spatialKeyBoundsKeys)
       val expected = naiveKeys(polygon)
-      (expected diff actual) should be ('empty)
+      (expected diff actual) should be (Symbol("empty"))
     }
 
     it("should find all keys that intersect appreciably with a vertical rectangle") {
@@ -113,7 +113,7 @@ class LayerQuerySpec extends AnyFunSpec with TestEnvironment with TestFiles with
       val query = new LayerQuery[SpatialKey, TileLayerMetadata[SpatialKey]].where(Intersects(polygon))
       val actual = query(md).flatMap(spatialKeyBoundsKeys)
       val expected = naiveKeys(polygon)
-      (expected diff actual) should be ('empty)
+      (expected diff actual) should be (Symbol("empty"))
     }
 
     it("should find all keys that intersect appreciably with a vertical rectangle that is in a different projection") {
@@ -122,7 +122,7 @@ class LayerQuerySpec extends AnyFunSpec with TestEnvironment with TestFiles with
       val query = new LayerQuery[SpatialKey, TileLayerMetadata[SpatialKey]].where(Intersects(polygon -> polyCRS))
       val actual = query(md).flatMap(spatialKeyBoundsKeys)
       val expected = naiveKeys(polygon)
-      (expected diff actual) should be ('empty)
+      (expected diff actual) should be (Symbol("empty"))
     }
 
     it("should find all keys that intersect appreciably with an L-shaped polygon") {
@@ -130,7 +130,7 @@ class LayerQuerySpec extends AnyFunSpec with TestEnvironment with TestFiles with
       val query = new LayerQuery[SpatialKey, TileLayerMetadata[SpatialKey]].where(Intersects(polygon))
       val actual = query(md).flatMap(spatialKeyBoundsKeys)
       val expected = naiveKeys(polygon)
-      (expected diff actual) should be ('empty)
+      (expected diff actual) should be (Symbol("empty"))
     }
 
     it("should find all keys that intersect appreciably with an L-shaped polygon that is in a differet projection") {
@@ -139,7 +139,7 @@ class LayerQuerySpec extends AnyFunSpec with TestEnvironment with TestFiles with
       val query = new LayerQuery[SpatialKey, TileLayerMetadata[SpatialKey]].where(Intersects(polygon -> polyCRS))
       val actual = query(md).flatMap(spatialKeyBoundsKeys)
       val expected = naiveKeys(polygon)
-      (expected diff actual) should be ('empty)
+      (expected diff actual) should be (Symbol("empty"))
     }
 
     it("should find all keys that intersect appreciably with a diagonal rectangle") {
@@ -147,11 +147,11 @@ class LayerQuerySpec extends AnyFunSpec with TestEnvironment with TestFiles with
       val query = new LayerQuery[SpatialKey, TileLayerMetadata[SpatialKey]].where(Intersects(polygon))
       val actual = query(md).flatMap(spatialKeyBoundsKeys)
       val expected = naiveKeys(polygon)
-      (expected diff actual) should be ('empty)
+      (expected diff actual) should be (Symbol("empty"))
     }
 
     it("should cover huc10 polygon fully") {
-      val wkt = scala.io.Source.fromInputStream(getClass.getResourceAsStream("/wkt/huc10-conestoga.wkt")).getLines.mkString
+      val wkt = scala.io.Source.fromInputStream(getClass.getResourceAsStream("/wkt/huc10-conestoga.wkt")).getLines().mkString
       val huc10 = WKT.read(wkt).asInstanceOf[MultiPolygon]
       val huc10LayerMetadata = TileLayerMetadata(
         crs = ConusAlbers,
@@ -165,20 +165,20 @@ class LayerQuerySpec extends AnyFunSpec with TestEnvironment with TestFiles with
         .where(Intersects(huc10))
       val actual: Seq[SpatialKey] = query(huc10LayerMetadata).flatMap(spatialKeyBoundsKeys)
       val expected =  {
-        val bounds = huc10LayerMetadata.bounds.get.toGridBounds
+        val bounds = huc10LayerMetadata.bounds.get.toGridBounds()
         for {
           (x, y) <- bounds.coordsIter.toSeq
           if huc10.intersects(mapTransform(SpatialKey(x, y)))
         } yield SpatialKey(x, y)
       }
-      (expected.toList diff actual) should be ('empty)
+      (expected.toList diff actual) should be (Symbol("empty"))
 
       // test specifically for previously missing key
       actual should contain (SpatialKey(272, 79))
     }
 
     it("should query perimeter of huc10 polygon") {
-      val wkt = scala.io.Source.fromInputStream(getClass.getResourceAsStream("/wkt/huc10-conestoga.wkt")).getLines.mkString
+      val wkt = scala.io.Source.fromInputStream(getClass.getResourceAsStream("/wkt/huc10-conestoga.wkt")).getLines().mkString
       val huc10 = WKT.read(wkt).asInstanceOf[MultiPolygon]
       val ml = MultiLineString(huc10.polygons.flatMap { p =>
         p.exterior +: p.holes.toList
@@ -195,7 +195,7 @@ class LayerQuerySpec extends AnyFunSpec with TestEnvironment with TestFiles with
         .where(Intersects(ml))
       val actual: Seq[SpatialKey] = query(huc10LayerMetadata).flatMap(spatialKeyBoundsKeys)
       val expected =  {
-        val bounds = huc10LayerMetadata.bounds.get.toGridBounds
+        val bounds = huc10LayerMetadata.bounds.get.toGridBounds()
         for {
           (x, y) <- bounds.coordsIter.toSeq
           //
@@ -203,7 +203,7 @@ class LayerQuerySpec extends AnyFunSpec with TestEnvironment with TestFiles with
         } yield SpatialKey(x, y)
       }
 
-      (expected.toList diff actual) should be ('empty)
+      (expected.toList diff actual) should be (Symbol("empty"))
     }
   }
 

@@ -305,8 +305,8 @@ trait TileBuilders {
         val pad = " " * math.max(6 - s.length, 0)
         print(s"${pad + s}")
       }
-      println
+      println()
     }
-    println
+    println()
   }
 }

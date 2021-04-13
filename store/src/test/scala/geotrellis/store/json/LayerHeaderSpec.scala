@@ -40,7 +40,7 @@ class LayerHeaderSpec extends AnyFunSpec with Matchers {
     out should be equals (thing)
   }
 
-  def readAsLayerHeader[T: Encoder: Decoder](thing: T, format: String, key: String, value: String) {
+  def readAsLayerHeader[T: Encoder: Decoder](thing: T, format: String, key: String, value: String) = {
     val json = thing.asJson
     val layerHeader = json.as[LayerHeader].valueOr(throw _)
     layerHeader.format should be (format)

@@ -32,7 +32,7 @@ class MultibandCropIteratorSpec extends AnyFunSpec
     val path = geoTiffPath("3bands/3bands-striped-band.tif")
     val geoTiff = {
       val tiff = MultibandGeoTiff(path)
-      tiff.copy(tile = tiff.tile.toArrayTile)
+      tiff.copy(tile = tiff.tile.toArrayTile())
     }
     val cols = geoTiff.imageData.cols
     val rows = geoTiff.imageData.rows
@@ -74,14 +74,14 @@ class MultibandCropIteratorSpec extends AnyFunSpec
           geoTiff.raster.tile.crop(10, 30, 20, 40))
 
       val actual: Array[MultibandTile] =
-        Array(multibandIterator.next.tile,
-          multibandIterator.next.tile,
-          multibandIterator.next.tile,
-          multibandIterator.next.tile,
-          multibandIterator.next.tile,
-          multibandIterator.next.tile,
-          multibandIterator.next.tile,
-          multibandIterator.next.tile)
+        Array(multibandIterator.next().tile,
+          multibandIterator.next().tile,
+          multibandIterator.next().tile,
+          multibandIterator.next().tile,
+          multibandIterator.next().tile,
+          multibandIterator.next().tile,
+          multibandIterator.next().tile,
+          multibandIterator.next().tile)
 
       cfor(0)(_ < actual.length, _ + 1) { i =>
         assertEqual(expected(i), actual(i))
@@ -94,7 +94,7 @@ class MultibandCropIteratorSpec extends AnyFunSpec
       val multibandIterator = MultibandCropIterator(geoTiff, windowedCols, windowedRows)
 
       val expected = geoTiff.tile
-      val actual = multibandIterator.next.tile
+      val actual = multibandIterator.next().tile
 
       assertEqual(expected, actual)
     }
@@ -112,10 +112,10 @@ class MultibandCropIteratorSpec extends AnyFunSpec
           geoTiff.raster.tile.crop(15, 25, 20, 40))
 
       val actual: Array[MultibandTile] =
-        Array(multibandIterator.next.tile,
-          multibandIterator.next.tile,
-          multibandIterator.next.tile,
-          multibandIterator.next.tile)
+        Array(multibandIterator.next().tile,
+          multibandIterator.next().tile,
+          multibandIterator.next().tile,
+          multibandIterator.next().tile)
 
       cfor(0)(_ < actual.length, _ + 1) { i =>
         assertEqual(expected(i), actual(i))
@@ -129,10 +129,10 @@ class MultibandCropIteratorSpec extends AnyFunSpec
         new MultibandCropIterator(geoTiff, windowedCols, windowedRows)
 
       cfor(0)(_ < 3, _ + 1) { i =>
-        multibandIterator.next.tile
+        multibandIterator.next().tile
         multibandIterator.hasNext should be (true)
       }
-      multibandIterator.next.tile
+      multibandIterator.next().tile
       multibandIterator.hasNext should be (false)
     }
   }

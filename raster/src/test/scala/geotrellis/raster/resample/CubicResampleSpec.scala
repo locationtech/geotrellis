@@ -123,7 +123,7 @@ class CubicResampleSpec extends AnyFunSpec with Matchers {
             p: Tile,
             x: Double,
             y: Double): Double = {
-            p.toArray should be(t.toArray)
+            p.toArray() should be(t.toArray())
             B
           }
         }

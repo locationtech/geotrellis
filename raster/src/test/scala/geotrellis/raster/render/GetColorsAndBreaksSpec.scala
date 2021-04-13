@@ -57,7 +57,7 @@ class GetColorsAndBreaksSpec extends AnyFunSpec with RasterMatchers with Matcher
           5, 4)
       }
 
-      val h = testTile.histogramDouble
+      val h = testTile.histogramDouble()
       val (g, y, o, r) = (0x00ff00ff, 0xffff00ff, 0xff7f00ff, 0xff0000ff)
       val colors: Array[Int] = Array(g, y, o, r)
       val colorMap = ColorMap.fromQuantileBreaks(h, colors)

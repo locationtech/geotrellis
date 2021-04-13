@@ -41,7 +41,7 @@ class HadoopValueReader(
       .recordStats()
       .maximumSize(maxOpenFiles.toLong)
       .removalListener[(LayerId, Path), MapFile.Reader] { case (_, v, _) => v.close() }
-      .build[(LayerId, Path), MapFile.Reader]
+      .build[(LayerId, Path), MapFile.Reader]()
 
   private def predicate(row: (Path, BigInt, BigInt), index: BigInt): Boolean =
     (index >= row._2) && ((index <= row._3) || (row._3 == -1))

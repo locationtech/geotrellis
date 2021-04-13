@@ -40,7 +40,7 @@ class SerializationTests extends AnyFunSuite with Matchers with RasterMatchers w
     }
 
     {
-      val (crs1, crs2) = (crs.serializeAndDeserialize, LatLng.serializeAndDeserialize)
+      val (crs1, crs2) = (crs.serializeAndDeserialize(), LatLng.serializeAndDeserialize())
       assert(crs1 == crs2)
       val t = Transform(crs1, crs2)
       val expected = (141.7066666666667, -17.946666666666676)
@@ -56,7 +56,7 @@ class SerializationTests extends AnyFunSuite with Matchers with RasterMatchers w
     }
 
     {
-      val t = Transform(LatLng, crs.serializeAndDeserialize)
+      val t = Transform(LatLng, crs.serializeAndDeserialize())
       val expected = (141.7154166666667, -17.52875000000001)
       val actual = t(expected._1, expected._2)
       assert(actual == expected)
@@ -90,7 +90,7 @@ class SerializationTests extends AnyFunSuite with Matchers with RasterMatchers w
     val before = r.convert(IntCellType).convert(DoubleCellType)
     val after = deserialize(serialize(before)).convert(IntCellType).convert(DoubleCellType)
 
-    assert(before.toArray sameElements after.toArray)
+    assert(before.toArray() sameElements after.toArray())
   }
 
   test("Test Tile logger calls on kryo serialization") {
@@ -98,6 +98,6 @@ class SerializationTests extends AnyFunSuite with Matchers with RasterMatchers w
     val before = r.convert(IntCellType).convert(DoubleCellType)
     val after = KryoSerializer.deserialize[Tile](KryoSerializer.serialize(before)).convert(IntCellType).convert(DoubleCellType)
 
-    assert(before.toArray sameElements after.toArray)
+    assert(before.toArray() sameElements after.toArray())
   }
 }

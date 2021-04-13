@@ -39,7 +39,7 @@ import org.scalatest.funspec.AnyFunSpec
 
 class GeoTiffReaderSpec extends AnyFunSpec with Matchers with BeforeAndAfterAll with RasterMatchers with GeoTiffTestUtils {
 
-  override def afterAll = purge
+  override def afterAll() = purge
 
   describe("reading an ESRI generated Float32 geotiff with 0 NoData value") {
     it("matches an arg produced from geotrellis.gdal reader of that tif") {
@@ -59,7 +59,7 @@ class GeoTiffReaderSpec extends AnyFunSpec with Matchers with BeforeAndAfterAll 
       val path = "slope.tif"
       val argPath = s"$baseDataPath/data/slope.json"
 
-      val tile = SinglebandGeoTiff(s"$baseDataPath/$path").tile.toArrayTile.convert(FloatConstantNoDataCellType)
+      val tile = SinglebandGeoTiff(s"$baseDataPath/$path").tile.toArrayTile().convert(FloatConstantNoDataCellType)
 
       val expectedTile =
         ArgReader.read(argPath).tile
@@ -138,7 +138,7 @@ class GeoTiffReaderSpec extends AnyFunSpec with Matchers with BeforeAndAfterAll 
   describe("reading bit rasters") {
     it("should match bit tile the ArrayTile pulled out of the resulting GeoTiffTile") {
       val expected = SinglebandGeoTiff(geoTiffPath("uncompressed/tiled/bit.tif")).tile
-      val actual = SinglebandGeoTiff(geoTiffPath("uncompressed/tiled/bit.tif")).tile.toArrayTile
+      val actual = SinglebandGeoTiff(geoTiffPath("uncompressed/tiled/bit.tif")).tile.toArrayTile()
 
       assertEqual(actual, expected)
       assertEqual(expected, actual)
@@ -153,7 +153,7 @@ class GeoTiffReaderSpec extends AnyFunSpec with Matchers with BeforeAndAfterAll 
 
     it("should match bit and byte-converted rasters") {
       val actual = SinglebandGeoTiff(geoTiffPath("bilevel.tif")).tile
-      val expected = SinglebandGeoTiff(geoTiffPath("bilevel.tif")).tile.toArrayTile.convert(BitCellType)
+      val expected = SinglebandGeoTiff(geoTiffPath("bilevel.tif")).tile.toArrayTile().convert(BitCellType)
 
       assertEqual(actual, expected)
     }
@@ -178,7 +178,7 @@ class GeoTiffReaderSpec extends AnyFunSpec with Matchers with BeforeAndAfterAll 
       (tiffTags &|-> TiffTags._basicTags ^|->
         BasicTags._stripOffsets get) match {
         case Some(stripOffsets) => stripOffsets.size should equal (1350)
-        case None => fail
+        case None => fail()
       }
 
       (tiffTags &|-> TiffTags._basicTags ^|->
@@ -190,13 +190,13 @@ class GeoTiffReaderSpec extends AnyFunSpec with Matchers with BeforeAndAfterAll 
       (tiffTags &|-> TiffTags._basicTags ^|->
         BasicTags._stripByteCounts get) match {
         case Some(stripByteCounts) => stripByteCounts.size should equal (1350)
-        case None => fail
+        case None => fail()
       }
 
       (tiffTags &|-> TiffTags._nonBasicTags ^|->
         NonBasicTags._planarConfiguration get) match {
         case Some(planarConfiguration) => planarConfiguration should equal (1)
-        case None => fail
+        case None => fail()
       }
 
       val sampleFormat =
@@ -212,7 +212,7 @@ class GeoTiffReaderSpec extends AnyFunSpec with Matchers with BeforeAndAfterAll 
           modelPixelScales._2 should equal (10.0)
           modelPixelScales._3 should equal (0.0)
         }
-        case None => fail
+        case None => fail()
       }
 
       (tiffTags &|-> TiffTags._geoTiffTags
@@ -226,13 +226,13 @@ class GeoTiffReaderSpec extends AnyFunSpec with Matchers with BeforeAndAfterAll 
           p2.y should equal (228500.0)
           p2.z should equal (0.0)
         }
-        case None => fail
+        case None => fail()
       }
 
       (tiffTags &|-> TiffTags._geoTiffTags
         ^|-> GeoTiffTags._gdalInternalNoData get) match {
         case Some(gdalInternalNoData) => gdalInternalNoData should equal (-9999.0)
-        case None => fail
+        case None => fail()
       }
     }
 
@@ -351,14 +351,14 @@ class GeoTiffReaderSpec extends AnyFunSpec with Matchers with BeforeAndAfterAll 
 
     val MeanEpsilon = 1e-8
 
-    def testMinMaxAndMean(min: Double, max: Double, mean: Double, file: String) {
+    def testMinMaxAndMean(min: Double, max: Double, mean: Double, file: String) = {
 
       val geotiff = SinglebandGeoTiff(file)
       val extent = geotiff.extent
 
-      geotiff.raster.polygonalSummary(extent.toPolygon, MaxVisitor) should be (Summary(MaxValue(max)))
-      geotiff.raster.polygonalSummary(extent.toPolygon, MinVisitor) should be (Summary(MinValue(min)))
-      geotiff.raster.polygonalSummary(extent.toPolygon, MeanVisitor) match {
+      geotiff.raster.polygonalSummary(extent.toPolygon(), MaxVisitor) should be (Summary(MaxValue(max)))
+      geotiff.raster.polygonalSummary(extent.toPolygon(), MinVisitor) should be (Summary(MinValue(min)))
+      geotiff.raster.polygonalSummary(extent.toPolygon(), MeanVisitor) match {
         case Summary(result) => result.mean should be (mean +- MeanEpsilon)
         case _ => fail("failed to compute PolygonalSummaryResult")
       }
@@ -466,7 +466,7 @@ class GeoTiffReaderSpec extends AnyFunSpec with Matchers with BeforeAndAfterAll 
       // Conversions carried out for both of these; first for byte -> float, second for user defined no data to constant
       val geoTiff = SinglebandGeoTiff(geoTiffPath("nodata-tag-byte.tif")).tile.convert(FloatConstantNoDataCellType)
       val geoTiff2 = SinglebandGeoTiff(geoTiffPath("nodata-tag-float.tif")).tile.convert(FloatConstantNoDataCellType)
-      assertEqual(geoTiff.toArrayTile, geoTiff2)
+      assertEqual(geoTiff.toArrayTile(), geoTiff2)
     }
 
     it("should read NODATA string with length = 4") {
@@ -491,7 +491,7 @@ class GeoTiffReaderSpec extends AnyFunSpec with Matchers with BeforeAndAfterAll 
     it("should read and convert color table") {
       val geoTiff = SinglebandGeoTiff(geoTiffPath("colormap.tif"))
 
-      geoTiff.options.colorMap should be ('defined)
+      geoTiff.options.colorMap should be (Symbol("defined"))
 
       val cmap = geoTiff.options.colorMap.get
       cmap.colors.size should be (256)
@@ -558,8 +558,8 @@ class GeoTiffReaderSpec extends AnyFunSpec with Matchers with BeforeAndAfterAll 
     it("should read a tile without preset RowsPerStrip tag as a single strip") {
       val geotiff = GeoTiffReader.readMultiband(geoTiffPath("single-strip.tif"))
       assert(geotiff.bandCount == 2)
-      val actual = geotiff.tile.toArrayTile
-      val expected = MultibandTile(geotiff.tile.band(0).toArrayTile :: geotiff.tile.band(1).toArrayTile :: Nil)
+      val actual = geotiff.tile.toArrayTile()
+      val expected = MultibandTile(geotiff.tile.band(0).toArrayTile() :: geotiff.tile.band(1).toArrayTile() :: Nil)
       assertEqual(actual, expected)
     }
   }

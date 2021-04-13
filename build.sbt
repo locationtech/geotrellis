@@ -2,7 +2,7 @@ import sbt.Keys._
 
 ThisBuild / scalaVersion := "2.12.13"
 ThisBuild / organization := "org.locationtech.geotrellis"
-ThisBuild / crossScalaVersions := List("2.12.13")
+ThisBuild / crossScalaVersions := List("2.12.13", "2.13.5")
 
 lazy val root = Project("geotrellis", file("."))
   .aggregate(

@@ -37,7 +37,7 @@ class ShardingKeyIndexSpec extends AnyFunSpec with Matchers {
     ))
 
   val zspaceTime: KeyIndex[SpaceTimeKey] =
-    ZCurveKeyIndexMethod.byDay.createIndex(KeyBounds(
+    ZCurveKeyIndexMethod.byDay().createIndex(KeyBounds(
       SpaceTimeKey(0, 0, 1),
       SpaceTimeKey(9, 9, 10)
     ))

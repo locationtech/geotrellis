@@ -304,7 +304,7 @@ object GeoTiffSegment {
     val bandCount = tile.bandCount
     val byteCount = tile.cellType.bytes
     val bytes = Array.ofDim[Byte](byteCount * bandCount * tile.cols * tile.rows)
-    val bandBytes: Vector[Array[Byte]] = tile.bands.map(_.toBytes)
+    val bandBytes: Vector[Array[Byte]] = tile.bands.map(_.toBytes())
 
     var segIndex = 0
     cfor(0)(_ < tile.cols * tile.rows, _ + 1) { cellIndex =>

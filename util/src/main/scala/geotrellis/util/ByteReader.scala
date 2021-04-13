@@ -24,7 +24,7 @@ import scala.language.implicitConversions
  * source.
  */
 trait ByteReader {
-  def position: Long
+  def position(): Long
   def position(i: Long): ByteReader
 
   def getBytes(length: Int): Array[Byte]
@@ -69,7 +69,7 @@ object ByteReader {
       def getDouble = byteBuffer.getDouble
       def getLong = byteBuffer.getLong
 
-      def order = byteBuffer.order()
+      def order() = byteBuffer.order()
       def order(byteOrder: ByteOrder): Unit =
         byteBuffer.order(byteOrder)
     }

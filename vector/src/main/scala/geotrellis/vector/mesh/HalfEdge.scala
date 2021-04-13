@@ -25,8 +25,8 @@ class HalfEdge[V,F](val vert: V, var flip: HalfEdge[V,F], var next: HalfEdge[V,F
       throw new IllegalArgumentException(s"Cannot join facets by edges (${flip.vert},${vert}) and (${that.vert},${that.flip.vert})")
     }
 
-    flip.prev.next = that.flip.next
-    that.flip.prev.next = flip.next
+    flip.prev().next = that.flip.next
+    that.flip.prev().next = flip.next
     flip = that
     that.flip = this
   }
@@ -54,13 +54,13 @@ class HalfEdge[V,F](val vert: V, var flip: HalfEdge[V,F], var next: HalfEdge[V,F
 
   def rotCWSrc() = flip.next
 
-  def rotCCWSrc() = prev.flip
+  def rotCCWSrc() = prev().flip
 
   def rotCWDest() = next.flip
 
-  def rotCCWDest() = flip.prev
+  def rotCCWDest() = flip.prev()
 
-  override def toString() = { s"[${src} -> ${vert}]" }
+  override def toString() = { s"[${src()} -> ${vert}]" }
 }
 
 object HalfEdge {
@@ -122,6 +122,6 @@ object HalfEdge {
       e = e.next
     } while (e != base)
 
-    Polygon(LineString(pts).closed)
+    Polygon(LineString(pts).closed())
   }
 }

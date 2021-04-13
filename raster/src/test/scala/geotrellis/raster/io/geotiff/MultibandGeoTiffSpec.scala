@@ -27,7 +27,7 @@ class MultibandGeoTiffSpec extends AnyFunSpec with Matchers with RasterMatchers 
   describe("Building Overviews") {
     val tiff = {
       val t = MultibandGeoTiff(geoTiffPath("overviews/multiband.tif"))
-      t.copy(tile = t.tile.toArrayTile)
+      t.copy(tile = t.tile.toArrayTile())
     }
     val ovr = tiff.buildOverview(NearestNeighbor, 3, 128)
 

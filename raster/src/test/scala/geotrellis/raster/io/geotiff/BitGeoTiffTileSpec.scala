@@ -83,14 +83,14 @@ class BitGeoTiffTileSpec extends AnyFunSpec
       val tile = tiff.tile.toArrayTile()
 
       // check that it is possible to convert bit cellType to bit cellType
-      val tiffTile = tile.toGeoTiffTile.convert(BitCellType)
-      assertEqual(tiffTile.toArrayTile(), tile.toArrayTile)
+      val tiffTile = tile.toGeoTiffTile().convert(BitCellType)
+      assertEqual(tiffTile.toArrayTile(), tile.toArrayTile())
 
       // check that it is possible to convert int cellType to bit cellType
       // and that bitCellType conversion is idempotent
-      (0 to 5).foldLeft(tile.toGeoTiffTile.convert(IntCellType)) { case (acc, _) =>
+      (0 to 5).foldLeft(tile.toGeoTiffTile().convert(IntCellType)) { case (acc, _) =>
         val tiffTileLocal = acc.convert(BitCellType)
-        assertEqual(tiffTileLocal.toArrayTile(), tile.toArrayTile)
+        assertEqual(tiffTileLocal.toArrayTile(), tile.toArrayTile())
         tiffTileLocal
       }
     }
@@ -101,14 +101,14 @@ class BitGeoTiffTileSpec extends AnyFunSpec
       val tile = tiff.tile.toArrayTile()
 
       // check that it is possible to convert bit cellType to bit cellType
-      val tiffTile = tile.toGeoTiffTile.convert(BitCellType)
-      assertEqual(tiffTile.toArrayTile(), tile.toArrayTile)
+      val tiffTile = tile.toGeoTiffTile().convert(BitCellType)
+      assertEqual(tiffTile.toArrayTile(), tile.toArrayTile())
 
       // check that it is possible to convert int cellType to bit cellType
       // and that bitCellType conversion is idempotent
-      (0 to 5).foldLeft(tile.toGeoTiffTile.convert(IntCellType)) { case (acc, _) =>
+      (0 to 5).foldLeft(tile.toGeoTiffTile().convert(IntCellType)) { case (acc, _) =>
         val tiffTileLocal = acc.convert(BitCellType)
-        assertEqual(tiffTileLocal.toArrayTile(), tile.toArrayTile)
+        assertEqual(tiffTileLocal.toArrayTile(), tile.toArrayTile())
         tiffTileLocal
       }
     }

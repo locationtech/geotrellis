@@ -111,7 +111,7 @@ case class PngEncoder(settings: Settings) {
 
   def createByteBuffer(raster: Tile) = {
     val size = raster.size
-    val data = raster.toArray
+    val data = raster.toArray()
     val bb = ByteBuffer.allocate(size * DEPTH)
 
     if (DEPTH == 4) initByteBuffer32(bb, data, size)
@@ -176,7 +176,7 @@ case class PngEncoder(settings: Settings) {
     // dereference some useful information from the raster
     val cols = raster.cols
     val size = cols * raster.rows
-//    val data = raster.toArray
+//    val data = raster.toArray()
 
     // allocate a data chunk for our pixel data
     val cIDAT = new Chunk(IDAT)

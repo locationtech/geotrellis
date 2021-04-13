@@ -231,7 +231,7 @@ object HadoopRDDWriter {
         writer.close()
         // TODO: collect statistics on written records and return those
         Iterator.empty
-      }.count
+      }.count()
 
     fs.createNewFile(new Path(layerPath, "_SUCCESS"))
     logger.info(s"Finished saving tiles to ${path}")

@@ -41,12 +41,12 @@ class SlopeSpec extends AnyFunSpec with TestEnvironment {
     }
 
     it("should update RDD cellType of DoubleConstantNoDataCellType") {
-      val tile = SinglebandGeoTiff(new File(inputHomeLocalPath, "aspect.tif").getPath).tile.toArrayTile
+      val tile = SinglebandGeoTiff(new File(inputHomeLocalPath, "aspect.tif").getPath).tile.toArrayTile()
 
       val (_, rasterRDD) = createTileLayerRDD(tile, 4, 3)
       val slopeRDD = rasterRDD.slope(calculator)
       slopeRDD.metadata.cellType should be (DoubleConstantNoDataCellType)
-      slopeRDD.collect.head._2.cellType should be (DoubleConstantNoDataCellType)
+      slopeRDD.collect().head._2.cellType should be (DoubleConstantNoDataCellType)
     }
 
     it("should match gdal computed slope raster (collections api)") {

@@ -64,7 +64,7 @@ abstract class AttributeStoreSpec extends AnyFunSpec with Matchers with TestEnvi
     attributeStore.write(layerId, "histogram", histo)
 
     val loaded = attributeStore.read[Histogram[Int]](layerId, "histogram")
-    loaded.mean should be (histo.mean)
+    loaded.mean() should be (histo.mean())
   }
 
   it("should save and load a random RootJsonReadable object") {

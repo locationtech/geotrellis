@@ -125,7 +125,7 @@ class RasterSummarySpec extends AnyFunSpec with TestEnvironment with RasterMatch
     contextRDD.count() shouldBe rasterRefRdd.count()
     contextRDD.count() shouldBe 72
 
-    contextRDD.stitch.tile.band(0).renderPng().write("/tmp/raster-source-contextrdd.png")
+    contextRDD.stitch().tile.band(0).renderPng().write("/tmp/raster-source-contextrdd.png")
   }
 
   it("should collect temporal contextRDD") {
@@ -175,7 +175,7 @@ class RasterSummarySpec extends AnyFunSpec with TestEnvironment with RasterMatch
 
     contextRDD
       .toSpatial(minDate)
-      .stitch
+      .stitch()
       .tile
       .band(0)
       .renderPng()

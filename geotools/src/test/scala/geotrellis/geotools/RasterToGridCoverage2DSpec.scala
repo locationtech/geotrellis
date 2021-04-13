@@ -36,8 +36,8 @@ abstract class RasterToGridCoverage2DSpec[T <: CellGrid[Int]](implicit ev1: Rast
 
   lazy val gridCoverage =
     crs match {
-      case Some(c) => ProjectedRaster(Raster(tile, extent), c).toGridCoverage2D
-      case None => Raster(tile, extent).toGridCoverage2D
+      case Some(c) => ProjectedRaster(Raster(tile, extent), c).toGridCoverage2D()
+      case None => Raster(tile, extent).toGridCoverage2D()
     }
 
   lazy val raster = Raster(tile, extent)

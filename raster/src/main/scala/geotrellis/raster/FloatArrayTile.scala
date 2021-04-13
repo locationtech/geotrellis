@@ -31,7 +31,7 @@ abstract class FloatArrayTile(val array: Array[Float], cols: Int, rows: Int)
     *
     * @return  An array of bytes
     */
-  def toBytes: Array[Byte] = {
+  def toBytes(): Array[Byte] = {
     val pixels = new Array[Byte](array.size * cellType.bytes)
     val bytebuff = ByteBuffer.wrap(pixels)
     bytebuff.asFloatBuffer.put(array)

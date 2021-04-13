@@ -58,8 +58,8 @@ class GeoTiffS3InputFormatSpec extends AnyFunSpec with TestEnvironment with Matc
         classOf[GeoTiffS3InputFormat],
         classOf[ProjectedExtent],
         classOf[Tile])
-      source.map(x => x).cache
-      val sourceCount = source.count
+      source.map(x => x).cache()
+      val sourceCount = source.count()
       sourceCount should not be (0)
       info(s"Source RDD count: ${sourceCount}")
     }
@@ -74,8 +74,8 @@ class GeoTiffS3InputFormatSpec extends AnyFunSpec with TestEnvironment with Matc
         classOf[GeoTiffS3InputFormat],
         classOf[ProjectedExtent],
         classOf[Tile])
-      source.map(x=>x).cache
-      val sourceCount = source.count
+      source.map(x=>x).cache()
+      val sourceCount = source.count()
       sourceCount should not be (0)
       info(s"Source RDD count: ${sourceCount}")
     }

@@ -43,7 +43,7 @@ class Z2Iterator(min: Z2, max: Z2) extends Iterator[Z2] {
 
   def hasNext: Boolean = cur.z <= max.z
 
-  def next: Z2 = {
+  def next(): Z2 = {
     val ret = cur
     cur += 1
     ret
@@ -72,7 +72,7 @@ case class ZdivideIterator(min: Z2, max: Z2) extends Z2Iterator(min, max)  {
 
   override def hasNext: Boolean = haveNext
 
-  override def next: Z2 = {
+  override def next(): Z2 = {
     // it's safe to report cur, because we've advanced to it and hasNext has been called.
     val ret = _next
     advance
@@ -87,7 +87,7 @@ case class ZdivideIterator(min: Z2, max: Z2) extends Z2Iterator(min, max)  {
   def advance: Unit = {
     var misses = 0
     while (misses < MAX_MISSES && super.hasNext) {
-      _next = super.next
+      _next = super.next()
       if (range.contains(_next)) {
         haveNext = true
         return

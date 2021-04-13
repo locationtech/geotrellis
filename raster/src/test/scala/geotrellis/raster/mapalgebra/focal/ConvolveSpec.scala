@@ -40,7 +40,7 @@ class ConvolveSpec extends AnyFunSuite with RasterMatchers {
 
     val tile3 = tile1.convolve(tile2)
 
-    assert(tile3.toArray === out)
+    assert(tile3.toArray() === out)
   }
   
   test("gaussian") {

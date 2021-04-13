@@ -84,7 +84,7 @@ object PipelineSparkExamples {
         // the result type of evaluation in this case would ben Stream[(Int, TileLayerRDD[SpatialKey])]
         node.eval.foreach { case (zoom, rdd) =>
           println(s"ZOOM: ${zoom}")
-          println(s"COUNT: ${rdd.count}")
+          println(s"COUNT: ${rdd.count()}")
         }
       }
     }

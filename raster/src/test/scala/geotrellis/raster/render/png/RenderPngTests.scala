@@ -59,15 +59,15 @@ class RenderPngTests extends AnyFunSuite with Matchers with TileBuilders with Ra
       createValueTile(50, 4)
 
     val tile =
-      CompositeTile(Seq(tileNW, tileNE, tileSW, tileSE), TileLayout(2, 2, 50, 50)).toArrayTile
+      CompositeTile(Seq(tileNW, tileNE, tileSW, tileSE), TileLayout(2, 2, 50, 50)).toArrayTile()
 
     val colorMap =
       ColorMap(
         Map(
-          1 -> RGBA(255, 0, 0, 255),
-          2 -> RGBA(0, 255, 0, 255),
-          3 -> RGBA(0, 0, 255, 255),
-          4 -> RGBA(0, 255, 255, 0xBB)
+          1 -> RGBA.fromRGBA(255, 0, 0, 255).int,
+          2 -> RGBA.fromRGBA(0, 255, 0, 255).int,
+          3 -> RGBA.fromRGBA(0, 0, 255, 255).int,
+          4 -> RGBA.fromRGBA(0, 255, 255, 0xBB).int
         )
       )
 
@@ -87,15 +87,15 @@ class RenderPngTests extends AnyFunSuite with Matchers with TileBuilders with Ra
       createValueTile(50, NODATA)
 
     val tile =
-      CompositeTile(Seq(tileNW, tileNE, tileSW, tileSE), TileLayout(2, 2, 50, 50)).toArrayTile
+      CompositeTile(Seq(tileNW, tileNE, tileSW, tileSE), TileLayout(2, 2, 50, 50)).toArrayTile()
 
     val colorMap =
       ColorMap(
         Map(
-          1 -> RGBA(255, 0, 0, 255),
-          2 -> RGBA(0, 255, 0, 255),
-          3 -> RGBA(0, 0, 255, 255),
-          4 -> RGBA(0, 255, 255, 0xBB)
+          1 -> RGBA.fromRGBA(255, 0, 0, 255).int,
+          2 -> RGBA.fromRGBA(0, 255, 0, 255).int,
+          3 -> RGBA.fromRGBA(0, 0, 255, 255).int,
+          4 -> RGBA.fromRGBA(0, 255, 255, 0xBB).int
         )
       ).withNoDataColor(0xFFFFFFAA)
 
@@ -117,15 +117,15 @@ class RenderPngTests extends AnyFunSuite with Matchers with TileBuilders with Ra
     val tile =
       CompositeTile(Seq(tileNW, tileNE, tileSW, tileSE), TileLayout(2, 2, 50, 50))
         .convert(DoubleConstantNoDataCellType)
-        .toArrayTile
+        .toArrayTile()
 
     val colorMap =
       ColorMap(
         Map(
-          1.0 -> RGBA(255, 0, 0, 255),
-          2.0 -> RGBA(0, 255, 0, 255),
-          3.0 -> RGBA(0, 0, 255, 255),
-          4.0 -> RGBA(0, 255, 255, 0xBB)
+          1.0 -> RGBA.fromRGBA(255, 0, 0, 255).int,
+          2.0 -> RGBA.fromRGBA(0, 255, 0, 255).int,
+          3.0 -> RGBA.fromRGBA(0, 0, 255, 255).int,
+          4.0 -> RGBA.fromRGBA(0, 255, 255, 0xBB).int
         )
       ).withNoDataColor(0xFFFFFFAA)
 
@@ -145,12 +145,12 @@ class RenderPngTests extends AnyFunSuite with Matchers with TileBuilders with Ra
       createValueTile(50, 4)
 
     val intTile =
-      CompositeTile(Seq(tileNW, tileNE, tileSW, tileSE), TileLayout(2, 2, 50, 50)).toArrayTile
+      CompositeTile(Seq(tileNW, tileNE, tileSW, tileSE), TileLayout(2, 2, 50, 50)).toArrayTile()
 
     val doubleTile =
       CompositeTile(Seq(tileNW, tileNE, tileSW, tileSE), TileLayout(2, 2, 50, 50))
         .convert(DoubleConstantNoDataCellType)
-        .toArrayTile
+        .toArrayTile()
 
 
     val intColorMap =
@@ -197,7 +197,7 @@ class RenderPngTests extends AnyFunSuite with Matchers with TileBuilders with Ra
       createConsecutiveTile(50, 50, 7501)
 
     val tile =
-      CompositeTile(Seq(tileNW, tileNE, tileSW, tileSE), TileLayout(2, 2, 50, 50)).toArrayTile
+      CompositeTile(Seq(tileNW, tileNE, tileSW, tileSE), TileLayout(2, 2, 50, 50)).toArrayTile()
 
     val colorMap =
       ColorRamp(0xFF0000FF, 0x0000FFFF)
@@ -221,7 +221,7 @@ class RenderPngTests extends AnyFunSuite with Matchers with TileBuilders with Ra
       createConsecutiveTile(50, 50, 7501).convert(FloatConstantNoDataCellType)
 
     val tile =
-      CompositeTile(Seq(tileNW, tileNE, tileSW, tileSE), TileLayout(2, 2, 50, 50)).toArrayTile
+      CompositeTile(Seq(tileNW, tileNE, tileSW, tileSE), TileLayout(2, 2, 50, 50)).toArrayTile()
 
     val colorMap =
       ColorRamp(0xFF0000FF, 0x0000FFFF)
@@ -250,7 +250,7 @@ class RenderPngTests extends AnyFunSuite with Matchers with TileBuilders with Ra
       createValueTile(50, NODATA)
 
     val tile =
-      CompositeTile(Seq(tileNW, tileNE, tileSW, tileSE), TileLayout(2, 2, 50, 50)).toArrayTile
+      CompositeTile(Seq(tileNW, tileNE, tileSW, tileSE), TileLayout(2, 2, 50, 50)).toArrayTile()
 
     val colorMap =
       ColorRamp(0xFF0000FF, 0x0000FFFF)
@@ -400,10 +400,10 @@ class RenderPngTests extends AnyFunSuite with Matchers with TileBuilders with Ra
 
     val renderedTile = cmap.render(singleBandTile)
 
-    val r = renderedTile.map(_.red).interpretAs(UByteCellType)
-    val g = renderedTile.map(_.green).interpretAs(UByteCellType)
-    val b = renderedTile.map(_.blue).interpretAs(UByteCellType)
-    val a = renderedTile.map(_.alpha).interpretAs(UByteCellType)
+    val r = renderedTile.map(RGBA(_).red).interpretAs(UByteCellType)
+    val g = renderedTile.map(RGBA(_).green).interpretAs(UByteCellType)
+    val b = renderedTile.map(RGBA(_).blue).interpretAs(UByteCellType)
+    val a = renderedTile.map(RGBA(_).alpha).interpretAs(UByteCellType)
 
     val rmm = r.findMinMax
     val gmm = g.findMinMax
@@ -415,7 +415,7 @@ class RenderPngTests extends AnyFunSuite with Matchers with TileBuilders with Ra
     bmm shouldBe (0, 36)
     amm shouldBe (0, 255)
 
-    val color = MultibandTile(r, g, b, a).color
+    val color = MultibandTile(r, g, b, a).color()
 
     color.findMinMax shouldBe (0, rmm._2 << 24 | gmm._2 << 16 | bmm._2 << 8 | amm._2)
 
@@ -454,9 +454,9 @@ class RenderPngTests extends AnyFunSuite with Matchers with TileBuilders with Ra
 
     val renderedTile = cmap.render(singleBandTile)
 
-    val r = renderedTile.map(_.red).interpretAs(IntUserDefinedNoDataCellType(36))
-    val g = renderedTile.map(_.green).interpretAs(IntUserDefinedNoDataCellType(36))
-    val b = renderedTile.map(_.blue).interpretAs(IntUserDefinedNoDataCellType(36))
+    val r = renderedTile.map(RGBA(_).red).interpretAs(IntUserDefinedNoDataCellType(36))
+    val g = renderedTile.map(RGBA(_).green).interpretAs(IntUserDefinedNoDataCellType(36))
+    val b = renderedTile.map(RGBA(_).blue).interpretAs(IntUserDefinedNoDataCellType(36))
 
     val rmm = r.findMinMax
     val gmm = g.findMinMax
@@ -466,14 +466,14 @@ class RenderPngTests extends AnyFunSuite with Matchers with TileBuilders with Ra
     gmm shouldBe (0, 35)
     bmm shouldBe (0, 35)
 
-    val color = MultibandTile(r, g, b).color
+    val color = MultibandTile(r, g, b).color()
 
     color.findMinMax shouldBe (0, rmm._2 << 24 | gmm._2 << 16 | bmm._2 << 8 | 0xFF)
 
     // original tiles not with the reinterpreted cellType
-    val rr = renderedTile.map(_.red)
-    val gg = renderedTile.map(_.green)
-    val bb = renderedTile.map(_.blue)
+    val rr = renderedTile.map(RGBA(_).red)
+    val gg = renderedTile.map(RGBA(_).green)
+    val bb = renderedTile.map(RGBA(_).blue)
 
     var expectedTransparentCounter = 0
     var expectedNonTransparentZerosCounter = 0

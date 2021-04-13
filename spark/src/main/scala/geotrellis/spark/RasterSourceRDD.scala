@@ -87,13 +87,13 @@ object RasterSourceRDD {
           rs.sourceToTargetBand.map { case (sourceBand, targetBand) =>
             (key, (targetBand, layoutSource.read(key, Seq(sourceBand))))
           }
-        } }
+        }.toTraversable }
       }
 
     sourcesRDD.persist()
 
     val repartitioned = {
-      val count = sourcesRDD.count.toInt
+      val count = sourcesRDD.count().toInt
       if (count > sourcesRDD.partitions.size) sourcesRDD.repartition(count)
       else sourcesRDD
     }
@@ -270,7 +270,7 @@ object RasterSourceRDD {
   def temporal(source: RasterSource, layout: LayoutDefinition, keyExtractor: KeyExtractor.Aux[SpaceTimeKey, ZonedDateTime])(implicit sc: SparkContext): MultibandTileLayerRDD[SpaceTimeKey] =
     temporal(Seq(source), layout, keyExtractor)
 
-  def apply[K: SpatialComponent: Boundable, M: Boundable](
+  def apply[K: SpatialComponent: Boundable: ClassTag, M: Boundable](
     sources: Seq[RasterSource],
     layout: LayoutDefinition,
     keyExtractor: KeyExtractor.Aux[K, M],
@@ -287,7 +287,7 @@ object RasterSourceRDD {
       sc.parallelize(sources).flatMap { source =>
         val keys: Traversable[SpatialKey] =
           extent.intersection(source.extent) match {
-            case Some(intersection) => layout.mapTransform.keysForGeometry(intersection.toPolygon)
+            case Some(intersection) => layout.mapTransform.keysForGeometry(intersection.toPolygon())
             case None => Seq.empty[SpatialKey]
           }
         partition(keys, partitionBytes)( _ => tileSize).map { res => (source, res) }
@@ -296,7 +296,7 @@ object RasterSourceRDD {
     sourcesRDD.persist()
 
     val repartitioned = {
-      val count = sourcesRDD.count.toInt
+      val count = sourcesRDD.count().toInt
       if (count > sourcesRDD.partitions.size) sourcesRDD.repartition(count)
       else sourcesRDD
     }
@@ -329,7 +329,7 @@ object RasterSourceRDD {
       val partitions = ArrayBuilder.make[Array[T]]
 
       def finalizePartition(): Unit = {
-        val res = partition.result
+        val res = partition.result()
         if (res.nonEmpty) partitions += res
         partition.clear()
         partitionSize = 0L
@@ -352,7 +352,7 @@ object RasterSourceRDD {
       }
 
       finalizePartition()
-      partitions.result
+      partitions.result()
     }
   }
 }

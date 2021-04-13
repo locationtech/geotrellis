@@ -86,5 +86,5 @@ abstract class CropIterator[T <: CellGrid[Int]](geoTiff: GeoTiff[T],
       false
     }
 
-  def next: GeoTiff[T]
+  def next(): GeoTiff[T]
 }

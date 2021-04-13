@@ -293,7 +293,7 @@ object GridCoverage2DConverters {
               case ct: UByteCells =>
                 PixelInterleaveBandArrayTile(UByteArrayTile(data, innerCols, rows, ct), numBands, bandIndex)
               case _ =>
-                PixelInterleaveBandArrayTile(UByteArrayTile(data, innerCols, rows, UByteCellType).convert(cellType).toArrayTile, numBands, bandIndex)
+                PixelInterleaveBandArrayTile(UByteArrayTile(data, innerCols, rows, UByteCellType).convert(cellType).toArrayTile(), numBands, bandIndex)
             }
 
           case _: BandedSampleModel =>
@@ -304,7 +304,7 @@ object GridCoverage2DConverters {
               case ct: UByteCells =>
                 UByteArrayTile(data, cols, rows, ct)
               case _ =>
-                UByteArrayTile(data, cols, rows, UByteCellType).convert(cellType).toArrayTile
+                UByteArrayTile(data, cols, rows, UByteCellType).convert(cellType).toArrayTile()
             }
           case mp: MultiPixelPackedSampleModel =>
             // Tricky sample model, just do the slow direct thing.
@@ -330,7 +330,7 @@ object GridCoverage2DConverters {
               case ct: UShortCells =>
                 PixelInterleaveBandArrayTile(UShortArrayTile(data, innerCols, rows, ct), numBands, bandIndex)
               case _ =>
-                PixelInterleaveBandArrayTile(UShortArrayTile(data, innerCols, rows, UShortCellType).convert(cellType).toArrayTile, numBands, bandIndex)
+                PixelInterleaveBandArrayTile(UShortArrayTile(data, innerCols, rows, UShortCellType).convert(cellType).toArrayTile(), numBands, bandIndex)
             }
 
           case _: BandedSampleModel =>
@@ -339,7 +339,7 @@ object GridCoverage2DConverters {
               case ct: UShortCells =>
                 UShortArrayTile(data, cols, rows, ct)
               case _ =>
-                UShortArrayTile(data, cols, rows, UShortCellType).convert(cellType).toArrayTile
+                UShortArrayTile(data, cols, rows, UShortCellType).convert(cellType).toArrayTile()
             }
 
           case _ =>
@@ -355,7 +355,7 @@ object GridCoverage2DConverters {
               case ct: ShortCells =>
                 PixelInterleaveBandArrayTile(ShortArrayTile(data, innerCols, rows, ct), numBands, bandIndex)
               case _ =>
-                PixelInterleaveBandArrayTile(ShortArrayTile(data, innerCols, rows, ShortCellType).convert(cellType).toArrayTile, numBands, bandIndex)
+                PixelInterleaveBandArrayTile(ShortArrayTile(data, innerCols, rows, ShortCellType).convert(cellType).toArrayTile(), numBands, bandIndex)
             }
 
           case _: BandedSampleModel =>
@@ -364,7 +364,7 @@ object GridCoverage2DConverters {
               case ct: ShortCells =>
                 ShortArrayTile(data, cols, rows, ct)
               case _ =>
-                ShortArrayTile(data, cols, rows, ShortCellType).convert(cellType).toArrayTile
+                ShortArrayTile(data, cols, rows, ShortCellType).convert(cellType).toArrayTile()
             }
 
           case _ =>
@@ -384,7 +384,7 @@ object GridCoverage2DConverters {
                 val floatData = data.map { z => (z & 0xFFFFFFFFL).toFloat }
                 PixelInterleaveBandArrayTile(FloatArrayTile(floatData, innerCols, rows, ct), numBands, bandIndex)
               case _ =>
-                PixelInterleaveBandArrayTile(IntArrayTile(data, innerCols, rows, IntCellType).convert(cellType).toArrayTile, numBands, bandIndex)
+                PixelInterleaveBandArrayTile(IntArrayTile(data, innerCols, rows, IntCellType).convert(cellType).toArrayTile(), numBands, bandIndex)
             }
 
           case _: BandedSampleModel =>
@@ -397,7 +397,7 @@ object GridCoverage2DConverters {
                 val floatData = data.map { z => (z & 0xFFFFFFFFL).toFloat }
                 FloatArrayTile(floatData, cols, rows, ct)
               case _ =>
-                IntArrayTile(data, cols, rows, IntCellType).convert(cellType).toArrayTile
+                IntArrayTile(data, cols, rows, IntCellType).convert(cellType).toArrayTile()
             }
 
           case _ =>
@@ -413,7 +413,7 @@ object GridCoverage2DConverters {
               case ct: FloatCells =>
                 PixelInterleaveBandArrayTile(FloatArrayTile(data, innerCols, rows, ct), numBands, bandIndex)
               case _ =>
-                PixelInterleaveBandArrayTile(FloatArrayTile(data, innerCols, rows, FloatCellType).convert(cellType).toArrayTile, numBands, bandIndex)
+                PixelInterleaveBandArrayTile(FloatArrayTile(data, innerCols, rows, FloatCellType).convert(cellType).toArrayTile(), numBands, bandIndex)
             }
 
           case _: BandedSampleModel =>
@@ -422,7 +422,7 @@ object GridCoverage2DConverters {
               case ct: FloatCells =>
                 FloatArrayTile(data, cols, rows, ct)
               case _ =>
-                FloatArrayTile(data, cols, rows, FloatCellType).convert(cellType).toArrayTile
+                FloatArrayTile(data, cols, rows, FloatCellType).convert(cellType).toArrayTile()
             }
 
           case _ =>
@@ -438,7 +438,7 @@ object GridCoverage2DConverters {
               case ct: DoubleCells =>
                 PixelInterleaveBandArrayTile(DoubleArrayTile(data, innerCols, rows, ct), numBands, bandIndex)
               case _ =>
-                PixelInterleaveBandArrayTile(DoubleArrayTile(data, innerCols, rows, DoubleCellType).convert(cellType).toArrayTile, numBands, bandIndex)
+                PixelInterleaveBandArrayTile(DoubleArrayTile(data, innerCols, rows, DoubleCellType).convert(cellType).toArrayTile(), numBands, bandIndex)
             }
 
           case _: BandedSampleModel =>
@@ -447,7 +447,7 @@ object GridCoverage2DConverters {
               case ct: DoubleCells =>
                 DoubleArrayTile(data, cols, rows, ct)
               case _ =>
-                DoubleArrayTile(data, cols, rows, DoubleCellType).convert(cellType).toArrayTile
+                DoubleArrayTile(data, cols, rows, DoubleCellType).convert(cellType).toArrayTile()
             }
 
           case _ =>
@@ -749,7 +749,7 @@ object GridCoverage2DConverters {
 
                     banks(b) = bandValues
                   case _ =>
-                    banks(b) = band.toArray
+                    banks(b) = band.toArray()
                 }
             }
           }
@@ -840,7 +840,7 @@ object GridCoverage2DConverters {
 
                     banks(b) = bandValues
                   case _ =>
-                    banks(b) = band.toArrayDouble
+                    banks(b) = band.toArrayDouble()
                 }
             }
           }

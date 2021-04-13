@@ -41,7 +41,7 @@ class HadoopCollectionReader(
       .recordStats()
       .maximumSize(maxOpenFiles.toLong)
       .removalListener[Path, MapFile.Reader] { case (_, v, _) => v.close() }
-      .build[Path, MapFile.Reader]
+      .build[Path, MapFile.Reader]()
 
   implicit val ec: ExecutionContext = executionContext
 

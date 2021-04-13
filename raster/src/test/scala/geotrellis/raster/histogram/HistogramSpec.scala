@@ -42,8 +42,8 @@ class HistogramSpec extends AnyFunSpec with Matchers with Inspectors {
           h.countItem(13)
           h.countItem(84)
 
-          h.minValue.get should be (4)
-          h.maxValue.get should be (84)
+          h.minValue().get should be (4)
+          h.maxValue().get should be (84)
         }
 
         it("should behave predictably when empty") {
@@ -51,8 +51,8 @@ class HistogramSpec extends AnyFunSpec with Matchers with Inspectors {
           // min value should be largest possible int
           // max value should be smallest possible int
           // this way it signals that the values don't really make sense
-          h.minValue should be (None)
-          h.maxValue should be (None)
+          h.minValue() should be (None)
+          h.maxValue() should be (None)
         }
 
         it("should store values and retrieve them later") {
@@ -82,7 +82,7 @@ class HistogramSpec extends AnyFunSpec with Matchers with Inspectors {
 
           forAll(expected.filter(_._2 > 0)) { case (char, count) =>
             val label = charToInt(char)
-            bins.find(_._1 == label) should be ('nonEmpty)
+            bins.find(_._1 == label) should be (Symbol("nonEmpty"))
           }
         }
 
@@ -93,9 +93,9 @@ class HistogramSpec extends AnyFunSpec with Matchers with Inspectors {
           h.countItem(16, 20)
           h.uncountItem(16)
 
-          h.totalCount should be (42)
-          h.minValue.get should be (6)
-          h.maxValue.get should be (8)
+          h.totalCount() should be (42)
+          h.minValue().get should be (6)
+          h.maxValue().get should be (8)
         }
 
         it("should generate quantile breaks") {
@@ -197,7 +197,7 @@ class HistogramSpec extends AnyFunSpec with Matchers with Inspectors {
       h.countItem(8, 0)
       h.countItem(9, 0)
 
-      val stats = h.statistics.get
+      val stats = h.statistics().get
       stats should not be (None)
 
       //println(stats)

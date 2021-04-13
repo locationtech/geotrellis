@@ -37,7 +37,7 @@ class MinoritySpec extends AnyFunSpec
       val r6 = createTile(Array.fill(7*8)(7), 7, 8)
       val r7 = createTile(Array.fill(7*8)(NODATA), 7, 8)
 
-      assertEqual(Seq(r1,r2,r3,r4,r5,r6,r7).localMinority, Array.fill(7*8)(5))
+      assertEqual(Seq(r1,r2,r3,r4,r5,r6,r7).localMinority(), Array.fill(7*8)(5))
       assertEqual(Seq(r1,r2,r3,r4,r5,r6).localMinority(1), Array.fill(7*8)(7))
       assertEqual(Seq(r1,r2,r3,r4,r5,r6).localMinority(2), Array.fill(7*8)(1))
       assertEqual(Seq(r1,r1,r2).localMinority(0), Array.fill(7*8)(5))

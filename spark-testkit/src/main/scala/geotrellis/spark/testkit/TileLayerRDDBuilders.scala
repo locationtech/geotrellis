@@ -275,6 +275,6 @@ trait TileLayerRDDBuilders {
         }
     }
 
-    new ContextRDD(sc.parallelize(tmsTiles), metadata)
+    new ContextRDD(sc.parallelize(tmsTiles.toSeq), metadata)
   }
 }

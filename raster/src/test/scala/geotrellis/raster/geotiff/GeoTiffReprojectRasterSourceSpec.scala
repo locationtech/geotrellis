@@ -53,7 +53,12 @@ class GeoTiffReprojectRasterSourceSpec extends AnyFunSpec with RasterMatchers wi
 
       warpRasterSource.resolutions.size shouldBe rasterSource.resolutions.size
 
-      val testBounds = GridBounds(0, 0, expectedRasterExtent.cols, expectedRasterExtent.rows).toGridType[Long].split(64, 64).toSeq
+      val testBounds =
+        GridBounds(0, 0, expectedRasterExtent.cols, expectedRasterExtent.rows)
+          .toGridType[Long]
+          .split(64, 64)
+          .take(5) // speedup tests
+          .toList
 
       for (bound <- testBounds) yield {
         withClue(s"Read window ${bound}: ") {
@@ -68,7 +73,7 @@ class GeoTiffReprojectRasterSourceSpec extends AnyFunSpec with RasterMatchers wi
 
           val expected: Raster[MultibandTile] = {
             val rr = implicitly[RasterRegionReproject[MultibandTile]]
-            rr.regionReproject(sourceTiff.raster, sourceTiff.crs, LatLng, testRasterExtent, testRasterExtent.extent.toPolygon, method)
+            rr.regionReproject(sourceTiff.raster, sourceTiff.crs, LatLng, testRasterExtent, testRasterExtent.extent.toPolygon(), method)
           }
 
           val actual = warpRasterSource.read(bound).get

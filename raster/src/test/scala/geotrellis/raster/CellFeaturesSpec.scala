@@ -32,10 +32,10 @@ class CellFeaturesSpec extends AnyFunSpec with Matchers {
       )
       val raster = Raster(ArrayTile(data, 3, 3), ext)
 
-      val features = raster.cellFeaturesAsPoint[Int](ext.toPolygon)
+      val features = raster.cellFeaturesAsPoint[Int](ext.toPolygon())
 
       features.map(_.data).toList should contain theSameElementsAs data
-      features.foreach { case feature @ Feature(point, _) => raster.cellFeaturesAsPoint[Int](point).next shouldBe feature }
+      features.foreach { case feature @ Feature(point, _) => raster.cellFeaturesAsPoint[Int](point).next() shouldBe feature }
     }
 
     it("should extract all double point features") {
@@ -47,10 +47,10 @@ class CellFeaturesSpec extends AnyFunSpec with Matchers {
       )
       val raster = Raster(ArrayTile(data, 3, 3), ext)
 
-      val features = raster.cellFeaturesAsPoint[Double](ext.toPolygon)
+      val features = raster.cellFeaturesAsPoint[Double](ext.toPolygon())
 
       features.map(_.data).toList should contain theSameElementsAs data
-      features.foreach { case feature @ Feature(point, _) => raster.cellFeaturesAsPoint[Double](point).next shouldBe feature }
+      features.foreach { case feature @ Feature(point, _) => raster.cellFeaturesAsPoint[Double](point).next() shouldBe feature }
     }
   }
 
@@ -67,11 +67,11 @@ class CellFeaturesSpec extends AnyFunSpec with Matchers {
       val data = Array(b1, b2, b3)
       val raster = Raster(MultibandTile(data.map(ArrayTile(_, 3, 3))), ext)
 
-      val features = raster.cellFeaturesAsPoint[Array[Int]](ext.toPolygon).toArray
+      val features = raster.cellFeaturesAsPoint[Array[Int]](ext.toPolygon()).toArray
 
       (0 until 3).map { b => features.map(_.data(b)) } should contain theSameElementsAs data
       features.foreach { { case feature @ Feature(point, _) =>
-        raster.cellFeaturesAsPoint[Array[Int]](point).next.mapData(_.toList) shouldBe feature.mapData(_.toList) }
+        raster.cellFeaturesAsPoint[Array[Int]](point).next().mapData(_.toList) shouldBe feature.mapData(_.toList) }
       }
     }
 
@@ -87,11 +87,11 @@ class CellFeaturesSpec extends AnyFunSpec with Matchers {
       val data = Array(b1, b2, b3)
       val raster = Raster(MultibandTile(data.map(ArrayTile(_, 3, 3))), ext)
 
-      val features = raster.cellFeaturesAsPoint[Array[Double]](ext.toPolygon).toArray
+      val features = raster.cellFeaturesAsPoint[Array[Double]](ext.toPolygon()).toArray
 
       (0 until 3).map { b => features.map(_.data(b)) }.toArray shouldBe data
       features.foreach { { case feature @ Feature(point, _) =>
-        raster.cellFeaturesAsPoint[Array[Double]](point).next.mapData(_.toList) shouldBe feature.mapData(_.toList) }
+        raster.cellFeaturesAsPoint[Array[Double]](point).next().mapData(_.toList) shouldBe feature.mapData(_.toList) }
       }
     }
   }

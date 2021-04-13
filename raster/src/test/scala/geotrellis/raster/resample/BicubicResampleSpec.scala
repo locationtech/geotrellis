@@ -86,9 +86,9 @@ class BicubicResampleSpec extends AnyFunSpec with Matchers {
           override def uniCubicResample(
             p: Array[Double],
             x: Double): Double = {
-            if (q.isEmpty && c != 1) fail
-            else if (!q.isEmpty) {
-              val arr = q.dequeue
+            if (q.isEmpty && c != 1) fail()
+            else if (q.nonEmpty) {
+              val arr = q.dequeue()
               p should be (arr)
             } else {
               p should be (lastResampArr)

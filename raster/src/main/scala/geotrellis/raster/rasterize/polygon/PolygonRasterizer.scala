@@ -85,8 +85,8 @@ object PolygonRasterizer {
           stack.push(interval._1)
         }
         else {
-          stack.pop
-          stack.pop
+          stack.pop()
+          stack.pop()
           stack.push(max(r1,r2))
           stack.push(l1)
         }

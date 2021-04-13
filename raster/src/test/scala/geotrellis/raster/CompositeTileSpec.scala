@@ -45,7 +45,7 @@ class CompositeTileSpec extends AnyFunSpec with TileBuilders with RasterMatchers
       for(tile <- tiles) {
         tile.cols should be (3)
         tile.rows should be (2)
-        val arr = tile.toArray
+        val arr = tile.toArray()
         arr.toSet.size should be (1)
         values += arr(0)
       }
@@ -100,7 +100,7 @@ class CompositeTileSpec extends AnyFunSpec with TileBuilders with RasterMatchers
           256
         )
       val tiled = CompositeTile.wrap(r.tile, tileLayout, cropped = false)
-      val backToArray = tiled.toArrayTile
+      val backToArray = tiled.toArrayTile()
 
       cfor(0)(_ < backToArray.rows, _ + 1) { row =>
         cfor(0)(_ < backToArray.cols, _ + 1) { col =>

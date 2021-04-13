@@ -45,8 +45,8 @@ class TransformMethodsSpec extends AnyFunSpec with Matchers with TileBuilders {
       val actual = tile.rotate90()
       val actualOverload = tile.rotate90(n = 5)
 
-      actual.toArray should be (expected.toArray)
-      actualOverload.toArray should be (expected.toArray)
+      actual.toArray() should be (expected.toArray())
+      actualOverload.toArray() should be (expected.toArray())
     }
 
     it("rotate 180 degrees") {
@@ -61,8 +61,8 @@ class TransformMethodsSpec extends AnyFunSpec with Matchers with TileBuilders {
       val actual = tile.rotate180
       val actualOverload = tile.rotate90(n = 6)
 
-      actual.toArray should be (expected.toArray)
-      actualOverload.toArray should be (expected.toArray)
+      actual.toArray() should be (expected.toArray())
+      actualOverload.toArray() should be (expected.toArray())
     }
 
     it("rotate 270 degrees") {
@@ -78,16 +78,16 @@ class TransformMethodsSpec extends AnyFunSpec with Matchers with TileBuilders {
       val actual = tile.rotate270
       val actualOverload = tile.rotate90(n = 7)
 
-      actual.toArray should be (expected.toArray)
-      actualOverload.toArray should be (expected.toArray)
+      actual.toArray() should be (expected.toArray())
+      actualOverload.toArray() should be (expected.toArray())
     }
 
     it("rotate 360 degrees") {
       val actual = tile.rotate360
       val actualOverload = tile.rotate90(n = 8)
 
-      actual.toArray should be (tile.toArray)
-      actualOverload.toArray should be (tile.toArray)
+      actual.toArray() should be (tile.toArray())
+      actualOverload.toArray() should be (tile.toArray())
     }
 
     it("flip vertical") {
@@ -101,7 +101,7 @@ class TransformMethodsSpec extends AnyFunSpec with Matchers with TileBuilders {
 
       val actual = tile.flipVertical
 
-      actual.toArray should be (expected.toArray)
+      actual.toArray() should be (expected.toArray())
     }
 
     it("flip horizontal") {
@@ -115,7 +115,7 @@ class TransformMethodsSpec extends AnyFunSpec with Matchers with TileBuilders {
 
       val actual = tile.flipHorizontal
 
-      actual.toArray should be (expected.toArray)
+      actual.toArray() should be (expected.toArray())
     }
   }
 }

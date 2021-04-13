@@ -32,12 +32,11 @@ import org.apache.hadoop.hbase.io.ImmutableBytesWritable
 import org.apache.hadoop.hbase.mapreduce.{IdentityTableMapper, TableInputFormat, TableMapReduceUtil}
 import org.apache.hadoop.mapred.JobConf
 import org.apache.hadoop.mapreduce.Job
+import org.apache.hadoop.security.UserGroupInformation
 import org.apache.spark.SparkContext
-import org.apache.spark.deploy.SparkHadoopUtil
 import org.apache.spark.rdd.RDD
 
 import scala.reflect.ClassTag
-
 
 object HBaseRDDReader {
   def read[K: Boundable : AvroRecordCodec : ClassTag, V: AvroRecordCodec : ClassTag](
@@ -82,10 +81,11 @@ object HBaseRDDReader {
 
     val job = Job.getInstance(conf)
     TableMapReduceUtil.initCredentials(job)
-    TableMapReduceUtil.initTableMapperJob(table, scan, classOf[IdentityTableMapper], null, null, job)
+    TableMapReduceUtil.initTableMapperJob(table, scan, classOf[IdentityTableMapper], classOf[ImmutableBytesWritable], classOf[Result], job)
 
     val jconf = new JobConf(job.getConfiguration)
-    SparkHadoopUtil.get.addCredentials(jconf)
+    // SparkHadoopUtil.addCredentials
+    jconf.getCredentials.mergeAll(UserGroupInformation.getCurrentUser.getCredentials)
 
     sc.newAPIHadoopRDD(
       jconf,

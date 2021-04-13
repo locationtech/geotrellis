@@ -168,8 +168,8 @@ class ExtentSpec extends AnyFunSpec with Matchers {
       val env4 = Seq(p1, p2).extent
       assert(env4 === Extent(0.0,0.0,6.0,6.0))
 
-      val json = Seq(p1, p2).toGeoJson
-      val polygonsBack = json.parseGeoJson[GeometryCollection].getAll[Polygon]
+      val json = Seq(p1, p2).toGeoJson()
+      val polygonsBack = json.parseGeoJson[GeometryCollection]().getAll[Polygon]
       val env5 = polygonsBack.extent
       assert(env5 === env4)
 
@@ -203,7 +203,7 @@ class ExtentSpec extends AnyFunSpec with Matchers {
                      |    {"type":"Feature","geometry":{"type":"Point","coordinates":[14.13,11.21]},"properties":{"data": 142},"id":"zorp"}
                      |  ]
                      |}""".stripMargin
-      val env8 = jsonFc.parseGeoJson[JsonFeatureCollection].getAllPoints().extent
+      val env8 = jsonFc.parseGeoJson[JsonFeatureCollection]().getAllPoints().extent
       assert(env8.contains(env7))
     }
   }

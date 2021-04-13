@@ -18,14 +18,13 @@ import sbt._
 
 object Version {
   val geotools    = "24.2"
-  val spire       = "0.13.0"
+  val spire       = "0.17.0"
   val accumulo    = "1.9.3"
   val cassandra   = "3.7.2"
-  val hbase       = "2.2.5"
+  val hbase       = "2.4.2"
   val geomesa     = "2.3.1"
   val geowave     = "0.9.3"
-  val hadoop      = "2.8.5"
-  val spark       = "2.4.7"
+  val hadoop      = "3.2.1"
   val gdal        = "3.1.0"
   val gdalWarp    = "1.1.1"
 
@@ -34,10 +33,10 @@ object Version {
 import sbt.Keys._
 
 object Dependencies {
-  private def ver(for212: String, for213: Option[String] = None) = Def.setting {
+  private def ver(for212: String, for213: String) = Def.setting {
     CrossVersion.partialVersion(scalaVersion.value) match {
       case Some((2, 12)) => for212
-      case Some((2, 13)) if for213.nonEmpty => for213.get
+      case Some((2, 13)) => for213
       case _ => sys.error("not good")
     }
   }
@@ -61,20 +60,22 @@ object Dependencies {
     "co.fs2" %% s"fs2-$module" % "2.5.3"
   }
 
+  def apacheSpark(module: String) = Def.setting {
+    "org.apache.spark"  %% s"spark-$module" % ver("3.0.1", "3.2.0-SNAPSHOT").value
+  }
+
   def scalaReflect(version: String) = "org.scala-lang" % "scala-reflect" % version
 
-  val sparkCore           = "org.apache.spark"           %% "spark-core"               % Version.spark
-  val sparkSql            = "org.apache.spark"           %% "spark-sql"                % Version.spark
   val pureconfig          = "com.github.pureconfig"      %% "pureconfig"               % "0.14.0"
   val log4s               = "org.log4s"                  %% "log4s"                    % "1.9.0"
   val scalatest           = "org.scalatest"              %% "scalatest"                % "3.2.5"
   val scalacheck          = "org.scalacheck"             %% "scalacheck"               % "1.15.2"
   val scalaXml            = "org.scala-lang.modules"     %% "scala-xml"                % "1.3.0"
   val jts                 = "org.locationtech.jts"        % "jts-core"                 % "1.17.1"
-  val proj4j              = "org.locationtech.proj4j"     % "proj4j"                   % "1.1.1"
+  val proj4j              = "org.locationtech.proj4j"     % "proj4j"                   % "1.1.2"
   val openCSV             = "com.opencsv"                 % "opencsv"                  % "5.3"
-  val spire               = "org.spire-math"             %% "spire"                    % Version.spire
-  val spireMacro          = "org.spire-math"             %% "spire-macros"             % Version.spire
+  val spire               = "org.typelevel"              %% "spire"                    % Version.spire
+  val spireMacro          = "org.typelevel"              %% "spire-macros"             % Version.spire
   val apacheIO            = "commons-io"                  % "commons-io"               % "2.8.0"
   val apacheLang3         = "org.apache.commons"          % "commons-lang3"            % "3.12.0"
   val apacheMath          = "org.apache.commons"          % "commons-math3"            % "3.6.1"
@@ -132,6 +133,11 @@ object Dependencies {
   val hbaseMetrics        = "org.apache.hbase" % "hbase-metrics"        % Version.hbase
   val hbaseMetricsApi     = "org.apache.hbase" % "hbase-metrics-api"    % Version.hbase
   val hbaseZooKeeper      = "org.apache.hbase" % "hbase-zookeeper"      % Version.hbase
+
+  val woodstoxCore          = "com.fasterxml.woodstox" % "woodstox-core"          % "6.2.5"
+  val stax2Api              = "org.codehaus.woodstox"  % "stax2-api"              % "4.2.1"
+  val commonsConfiguration2 = "org.apache.commons"     % "commons-configuration2" % "2.7"
+  val re2j                  = "com.google.re2j"        % "re2j"                   % "1.6"
 
   val jacksonCoreAsl      = "org.codehaus.jackson"         % "jackson-core-asl"        % "1.9.13"
 

@@ -42,7 +42,7 @@ class IngestSpec extends AnyFunSpec with Matchers with TestEnvironment {
       val source = sc.hadoopGeoTiffRDD(new Path(inputHome, "all-ones.tif"))
       Ingest[ProjectedExtent, SpatialKey](source, LatLng, ZoomedLayoutScheme(LatLng, 512)) { (rdd, zoom) =>
         zoom should be (10)
-        rdd.filter(!_._2.isNoDataTile).count should be (8)
+        rdd.filter(!_._2.isNoDataTile).count() should be (8)
       }
     }
 
@@ -52,11 +52,11 @@ class IngestSpec extends AnyFunSpec with Matchers with TestEnvironment {
 
       // force to use zoomed layout scheme
       Ingest[ProjectedExtent, SpatialKey](source, LatLng, ZoomedLayoutScheme(LatLng, 512), pyramid = true, maxZoom = Some(10)) { (rdd, zoom) =>
-        zlist += (zoom -> rdd.filter(!_._2.isNoDataTile).count)
+        zlist += (zoom -> rdd.filter(!_._2.isNoDataTile).count())
       }
 
       Ingest[ProjectedExtent, SpatialKey](source, LatLng, ZoomedLayoutScheme(LatLng, 512), pyramid = true) { (rdd, zoom) =>
-        flist += (zoom -> rdd.filter(!_._2.isNoDataTile).count)
+        flist += (zoom -> rdd.filter(!_._2.isNoDataTile).count())
       }
 
       zlist should contain theSameElementsAs flist
@@ -66,7 +66,7 @@ class IngestSpec extends AnyFunSpec with Matchers with TestEnvironment {
       val source = sc.hadoopGeoTiffRDD(new Path(inputHome, "all-ones.tif"))
       Ingest[ProjectedExtent, SpatialKey](source, LatLng, ZoomedLayoutScheme(LatLng, 512), maxZoom = Some(11)) { (rdd, zoom) =>
         zoom should be (11)
-        rdd.filter(!_._2.isNoDataTile).count should be (18)
+        rdd.filter(!_._2.isNoDataTile).count() should be (18)
       }
     }
   }

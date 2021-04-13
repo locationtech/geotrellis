@@ -170,7 +170,7 @@ object StitchedDelaunay {
         if (dt.liveVertices.size == 1)
           scala.Right(reindex(dt.liveVertices.toSeq(0)))
         else
-          scala.Left((dt.boundary + edgeoffset, dt.isLinear))
+          scala.Left((dt.boundary() + edgeoffset, dt.isLinear()))
       (dir, handle)
     }}
 
@@ -231,7 +231,7 @@ object StitchedDelaunay {
               if (center.liveVertices.size == 1)
                 scala.Right(reindex(center.liveVertices.head))
               else {
-                scala.Left((center.boundary + edgeoffset, center.isLinear))
+                scala.Left((center.boundary() + edgeoffset, center.isLinear()))
               }
             (dir, handle)
           } else {
@@ -347,11 +347,11 @@ case class StitchedDelaunay(
   pointSet: IndexedPointSet,
   fillTriangles: TriangleMap
 ) extends Serializable {
-  def triangles(): Seq[(Int, Int, Int)] = fillTriangles.getTriangles.keys.toSeq
+  def triangles(): Seq[(Int, Int, Int)] = fillTriangles.getTriangles().keys.toSeq
 
   def writeWKT(wktFile: String) = {
-    val mp = MultiPolygon(triangles.map { case (i, j, k) => Polygon(indexToCoord(i), indexToCoord(j), indexToCoord(k), indexToCoord(i)) })
+    val mp = MultiPolygon(triangles().map { case (i, j, k) => Polygon(indexToCoord(i), indexToCoord(j), indexToCoord(k), indexToCoord(i)) })
     val wktString = WKT.write(mp)
-    new java.io.PrintWriter(wktFile) { write(wktString); close }
+    new java.io.PrintWriter(wktFile) { write(wktString); close() }
   }
 }

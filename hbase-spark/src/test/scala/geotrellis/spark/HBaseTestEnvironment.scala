@@ -31,15 +31,15 @@ trait HBaseTestEnvironment extends TestEnvironment { self: Suite =>
     conf.set("spark.kryo.registrator", classOf[KryoRegistrator].getName)
       .set("spark.kryo.registrationRequired", "false")
 
-  override def beforeAll = {
-    super.beforeAll
+  override def beforeAll() = {
+    super.beforeAll()
     try {
       // check zookeeper availability
       FourLetterWordMain.send4LetterWord("localhost", 2181, "srvr")
     } catch {
       case e: java.net.ConnectException => {
         println("\u001b[0;33mA script for setting up the HBase environment necessary to run these tests can be found at scripts/hbaseTestDB.sh - requires a working docker setup\u001b[m")
-        cancel
+        cancel()
       }
     }
 

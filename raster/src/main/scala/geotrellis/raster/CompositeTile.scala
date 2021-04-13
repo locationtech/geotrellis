@@ -152,7 +152,7 @@ case class CompositeTile(tiles: Seq[Tile],
     *
     * @return  The MutableArrayTile
     */
-  def mutable(): MutableArrayTile =
+  def mutable: MutableArrayTile =
     mutable(cellType)
 
   /**
@@ -274,7 +274,7 @@ case class CompositeTile(tiles: Seq[Tile],
     *
     * @return  An array of bytes
     */
-  def toBytes(): Array[Byte] = toArrayTile.toBytes
+  def toBytes(): Array[Byte] = toArrayTile().toBytes()
 
   /**
     * Fetch the datum at the given column and row of the
@@ -536,7 +536,7 @@ case class CompositeTile(tiles: Seq[Tile],
     * @return         The result, an Tile
     */
   def combine(other: Tile)(f: (Int, Int) => Int): Tile = {
-    (this, other).assertEqualDimensions
+    (this, other).assertEqualDimensions()
 
     val result = ArrayTile.alloc(cellType.union(other.cellType), cols, rows)
     val layoutCols = tileLayout.layoutCols
@@ -571,7 +571,7 @@ case class CompositeTile(tiles: Seq[Tile],
     * @return         The result, an Tile
     */
   def combineDouble(other: Tile)(f: (Double, Double) => Double): Tile = {
-    (this, other).assertEqualDimensions
+    (this, other).assertEqualDimensions()
 
     val result = ArrayTile.alloc(cellType, cols, rows)
     val layoutCols = tileLayout.layoutCols

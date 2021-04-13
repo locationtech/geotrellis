@@ -30,7 +30,7 @@ class HistogramSpec extends AnyFunSpec with Matchers with RasterMatchers with Ti
     val arr = Array.fill(40 * 40)(1.0)
     val rs = createRaster(arr, 40, 40)
     val tile = rs.tile
-    val zone = Extent(10, -10, 50, 10).toPolygon
+    val zone = Extent(10, -10, 50, 10).toPolygon()
 
     val multibandTile = MultibandTile(tile, tile, tile)
     val multibandRaster = Raster(multibandTile, rs.extent)

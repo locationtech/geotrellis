@@ -119,8 +119,8 @@ class GDALWarpOptionsSpec extends AnyFunSpec with RasterMatchers with GivenWhenT
       val originalReproject = org.gdal.gdal.gdal.Warp("/dev/null", Array(underlying), reprojectWarpAppOptions)
       val originalResample = org.gdal.gdal.gdal.Warp("/dev/null", Array(originalReproject), resampleWarpAppOptions)
 
-      datasetToRasterExtent(originalReproject) shouldBe optimizedReproject.gridExtent.toRasterExtent
-      datasetToRasterExtent(originalResample) shouldBe optimizedResample.gridExtent.toRasterExtent
+      datasetToRasterExtent(originalReproject) shouldBe optimizedReproject.gridExtent.toRasterExtent()
+      datasetToRasterExtent(originalResample) shouldBe optimizedResample.gridExtent.toRasterExtent()
 
       // cleanup JNI objects
       originalResample.delete()
@@ -154,7 +154,7 @@ class GDALWarpOptionsSpec extends AnyFunSpec with RasterMatchers with GivenWhenT
         )
 
       optimizedRawResample.gridExtent shouldBe rs.gridExtent
-      datasetToRasterExtent(originalRawResample) shouldBe rs.gridExtent.toRasterExtent
+      datasetToRasterExtent(originalRawResample) shouldBe rs.gridExtent.toRasterExtent()
 
       // cleanup JNI objects
       originalRawResample.delete()

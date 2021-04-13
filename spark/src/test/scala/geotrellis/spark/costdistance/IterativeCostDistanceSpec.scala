@@ -72,14 +72,14 @@ class IterativeCostDistanceSpec extends AnyFunSpec with Matchers with TestEnviro
 
     it("Should correctly project input points") {
       val costs = IterativeCostDistance(rdd1, List(Point(2.5, 2.5)))
-      val cost = costs.first._2
+      val cost = costs.first()._2
       cost.getDouble(2,2) should be (0.0)
     }
 
     it("Should propogate left") {
       val costs = IterativeCostDistance(rdd2, List(Point(2.5+5.0, 2.5)))
-      val right = costs.filter({ case (k, _) => k == SpatialKey(1, 0) }).first._2
-      val left = costs.filter({ case (k, _) => k == SpatialKey(0, 0) }).first._2
+      val right = costs.filter({ case (k, _) => k == SpatialKey(1, 0) }).first()._2
+      val left = costs.filter({ case (k, _) => k == SpatialKey(0, 0) }).first()._2
       val resolution = IterativeCostDistance.computeResolution(rdd2)
       val hops = (right.getDouble(3,2) - left.getDouble(3,2)) / resolution
 
@@ -88,8 +88,8 @@ class IterativeCostDistanceSpec extends AnyFunSpec with Matchers with TestEnviro
 
     it("Should propogate right") {
       val costs = IterativeCostDistance(rdd2, List(Point(2.5, 2.5)))
-      val right = costs.filter({ case (k, _) => k == SpatialKey(1, 0) }).first._2
-      val left = costs.filter({ case (k, _) => k == SpatialKey(0, 0) }).first._2
+      val right = costs.filter({ case (k, _) => k == SpatialKey(1, 0) }).first()._2
+      val left = costs.filter({ case (k, _) => k == SpatialKey(0, 0) }).first()._2
       val resolution = IterativeCostDistance.computeResolution(rdd2)
       val hops = (right.getDouble(1,2) - left.getDouble(1,2)) / resolution
 
@@ -98,8 +98,8 @@ class IterativeCostDistanceSpec extends AnyFunSpec with Matchers with TestEnviro
 
     it("Should propogate up") {
       val costs = IterativeCostDistance(rdd3, List(Point(2.5, 2.5)))
-      val up = costs.filter({ case (k, _) => k == SpatialKey(0, 1) }).first._2
-      val down = costs.filter({ case (k, _) => k == SpatialKey(0, 0) }).first._2
+      val up = costs.filter({ case (k, _) => k == SpatialKey(0, 1) }).first()._2
+      val down = costs.filter({ case (k, _) => k == SpatialKey(0, 0) }).first()._2
       val resolution = IterativeCostDistance.computeResolution(rdd3)
       val hops = (up.getDouble(2,3) - down.getDouble(2,3)) / resolution
 
@@ -108,8 +108,8 @@ class IterativeCostDistanceSpec extends AnyFunSpec with Matchers with TestEnviro
 
     it("Should propogate down") {
       val costs = IterativeCostDistance(rdd3, List(Point(2.5, 2.5+5.0)))
-      val up = costs.filter({ case (k, _) => k == SpatialKey(0, 1) }).first._2
-      val down = costs.filter({ case (k, _) => k == SpatialKey(0, 0) }).first._2
+      val up = costs.filter({ case (k, _) => k == SpatialKey(0, 1) }).first()._2
+      val down = costs.filter({ case (k, _) => k == SpatialKey(0, 0) }).first()._2
       val resolution = IterativeCostDistance.computeResolution(rdd3)
       val hops = (up.getDouble(2,1) - down.getDouble(2,1)) / resolution
 

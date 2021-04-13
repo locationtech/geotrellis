@@ -37,7 +37,7 @@ class TileRDDReprojectSpec extends AnyFunSpec with TestEnvironment {
   describe("TileRDDReproject") {
     val path = "raster/data/aspect.tif"
     val gt = SinglebandGeoTiff(path)
-    val originalRaster = gt.raster.mapTile(_.toArrayTile).resample(500, 500)
+    val originalRaster = gt.raster.mapTile(_.toArrayTile()).resample(500, 500)
 
     // import geotrellis.raster.render._
     // val rainbow = ColorMap((0.0 to 360.0 by 1.0).map{ deg => (deg, HSV.toRGB(deg, 1.0, 1.0)) }.toMap)
@@ -60,27 +60,21 @@ class TileRDDReprojectSpec extends AnyFunSpec with TestEnvironment {
       val (_, actualRdd) =
         if(constantBuffer) {
           rdd.reproject(
-            LatLng,
-            FloatingLayoutScheme(25),
+            destCrs = LatLng,
+            layoutScheme = FloatingLayoutScheme(25),
             bufferSize = 2,
-            Options(
-              rasterReprojectOptions = RasterReprojectOptions(method = method, errorThreshold = 0),
-              matchLayerExtent = true
-            )
+            options = RasterReprojectOptions(method = method, errorThreshold = 0)
           )
         } else {
           rdd.reproject(
             LatLng,
             FloatingLayoutScheme(25),
-            Options(
-              rasterReprojectOptions = RasterReprojectOptions(method = method, errorThreshold = 0),
-              matchLayerExtent = true
-            )
+            RasterReprojectOptions(method = method, errorThreshold = 0)
           )
         }
 
       val actual =
-        actualRdd.stitch
+        actualRdd.stitch()
 
       actualRdd.map { case (_, tile) => tile.dimensions == Dimensions(25, 25) }.reduce(_ && _) should be (true)
 
@@ -170,14 +164,11 @@ class TileRDDReprojectSpec extends AnyFunSpec with TestEnvironment {
         mbrdd.reproject(
           LatLng,
           FloatingLayoutScheme(25),
-          Options(
-            rasterReprojectOptions = RasterReprojectOptions(NearestNeighbor, errorThreshold = 0),
-            matchLayerExtent = true
-          )
+          RasterReprojectOptions(NearestNeighbor, errorThreshold = 0)
         )
 
       val actual: Raster[MultibandTile] =
-        actualRdd.stitch
+        actualRdd.stitch()
 
       // actual.tile.renderPng(rainbow).write("actual.png")
 
@@ -253,14 +244,11 @@ class TileRDDReprojectSpec extends AnyFunSpec with TestEnvironment {
         mbrdd.reproject(
           LatLng,
           FloatingLayoutScheme(25),
-          Options(
-            rasterReprojectOptions = RasterReprojectOptions(NearestNeighbor, errorThreshold = 0),
-            matchLayerExtent = true
-          )
+          RasterReprojectOptions(NearestNeighbor, errorThreshold = 0)
         )
 
       val actual: Raster[TileFeature[Tile, Int]] =
-        actualRdd.stitch
+        actualRdd.stitch()
 
       // Account for tiles being a bit bigger then the actual result
       actual.extent.covers(expected.extent) should be (true)
@@ -324,7 +312,7 @@ class TileRDDReprojectSpec extends AnyFunSpec with TestEnvironment {
   describe("Reprojected with the same scheme and CRS") {
     it("should tile with minimum number of tiles") {
       val tiff = SinglebandGeoTiff(new java.io.File(inputHomeLocalPath, "aspect.tif").getAbsolutePath)
-      val rdd = sc.parallelize(Seq( (tiff.projectedExtent, tiff.tile.toArrayTile: Tile) ))
+      val rdd = sc.parallelize(Seq( (tiff.projectedExtent, tiff.tile.toArrayTile(): Tile) ))
       val scheme = FloatingLayoutScheme(256)
       val extent = Extent(-31.4569758,  27.6350020, 40.2053192,  80.7984255)
       val cellSize = CellSize(0.083328250000000, 0.083328250000000)

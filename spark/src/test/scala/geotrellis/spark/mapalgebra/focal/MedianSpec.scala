@@ -43,7 +43,7 @@ class MedianSpec extends AnyFunSpec with TestEnvironment {
         TileLayout(3, 2, 3, 2)
       )
 
-      val res = rasterRDD.focalMedian(Square(1)).stitch.tile.toArray
+      val res = rasterRDD.focalMedian(Square(1)).stitch().tile.toArray()
 
       val expected = Array(
         7, 1, 1,    1, 2, 3,    4, 4, 4,
@@ -69,7 +69,7 @@ class MedianSpec extends AnyFunSpec with TestEnvironment {
         TileLayout(3, 2, 3, 2)
       ).toCollection
 
-      val res = rasterCollection.focalMedian(Square(1)).stitch.tile.toArray
+      val res = rasterCollection.focalMedian(Square(1)).stitch().tile.toArray()
 
       val expected = Array(
         7, 1, 1,    1, 2, 3,    4, 4, 4,
@@ -95,7 +95,7 @@ class MedianSpec extends AnyFunSpec with TestEnvironment {
         TileLayout(3, 2, 3, 2)
       )
 
-      val res = rasterRDD.focalMedian(Square(1), TargetCell.Data).stitch.tile.toArray
+      val res = rasterRDD.focalMedian(Square(1), TargetCell.Data).stitch().tile.toArray()
 
       val expected = Array(
         nd, 1, 1,    1, 2, 3,    4, 4, 4,

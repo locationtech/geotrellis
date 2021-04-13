@@ -378,7 +378,7 @@ object GenMacroSegmentCombiner extends Template {
         -            set(segmentCombiner)(j, segment, i, segment, ${diffsArgs})
         -            j += 1
         -          }
-        -          arr(segmentIndex) = compressor.compress(segmentCombiner.getBytes, segmentIndex)
+        -          arr(segmentIndex) = compressor.compress(segmentCombiner.getBytes(), segmentIndex)
         -        }
         -        (arr, compressor)
         -    } else {
@@ -393,7 +393,7 @@ object GenMacroSegmentCombiner extends Template {
         -        cfor(0)(_ < segmentSize, _ + 1) { i =>
         -          set(segmentCombiner)(${segmentArgs}, i)
         -        }
-        -        arr(segmentIndex) = compressor.compress(segmentCombiner.getBytes, segmentIndex)
+        -        arr(segmentIndex) = compressor.compress(segmentCombiner.getBytes(), segmentIndex)
         -      }
         -      (arr, compressor)
         -    }

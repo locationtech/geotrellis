@@ -34,15 +34,15 @@ class MinSpec extends AnyFunSpec with TestEnvironment with TestFiles {
     val multi = inc.withContext { _.mapValues { tile => MultibandTile(tile, tile) } }
 
     val tileLayout = inc.metadata.tileLayout
-    val count = (inc.count * tileLayout.tileCols * tileLayout.tileRows).toInt
+    val count = (inc.count() * tileLayout.tileCols * tileLayout.tileRows).toInt
     val totalExtent = inc.metadata.extent
 
     it("should get correct double min over whole raster extent") {
-      inc.polygonalSummaryValue(totalExtent.toPolygon, MinVisitor).toOption.get should be(MinValue(0))
+      inc.polygonalSummaryValue(totalExtent.toPolygon(), MinVisitor).toOption.get should be(MinValue(0))
     }
 
     it("should get the correct min over the whole raster extent for a MultibandTileRDD") {
-      multi.polygonalSummaryValue(totalExtent.toPolygon, MinVisitor).toOption.get map { _ should be(MinValue(0)) }
+      multi.polygonalSummaryValue(totalExtent.toPolygon(), MinVisitor).toOption.get map { _ should be(MinValue(0)) }
     }
 
     it("should get correct double min over a quarter of the extent") {
@@ -56,8 +56,8 @@ class MinSpec extends AnyFunSpec with TestEnvironment with TestFiles {
         totalExtent.ymin + yd / 2
       )
 
-      val result = inc.polygonalSummaryValue(quarterExtent.toPolygon, MinVisitor).toOption.get
-      val expected = inc.stitch.polygonalSummary(quarterExtent.toPolygon, MinVisitor).toOption.get
+      val result = inc.polygonalSummaryValue(quarterExtent.toPolygon(), MinVisitor).toOption.get
+      val expected = inc.stitch().polygonalSummary(quarterExtent.toPolygon(), MinVisitor).toOption.get
 
       result should be (expected)
     }
@@ -73,8 +73,8 @@ class MinSpec extends AnyFunSpec with TestEnvironment with TestFiles {
         totalExtent.ymin + yd / 2
       )
 
-      val result = multi.polygonalSummaryValue(quarterExtent.toPolygon, MinVisitor).toOption.get
-      val expected = multi.stitch.polygonalSummary(quarterExtent.toPolygon, MinVisitor).toOption.get
+      val result = multi.polygonalSummaryValue(quarterExtent.toPolygon(), MinVisitor).toOption.get
+      val expected = multi.stitch().polygonalSummary(quarterExtent.toPolygon(), MinVisitor).toOption.get
 
       result.size should be (expected.size)
 
@@ -93,11 +93,11 @@ class MinSpec extends AnyFunSpec with TestEnvironment with TestFiles {
     val totalExtent = inc.metadata.extent
 
     it("should get correct double min over whole raster extent") {
-      inc.polygonalSummaryValue(totalExtent.toPolygon, MinVisitor).toOption.get should be(MinValue(0))
+      inc.polygonalSummaryValue(totalExtent.toPolygon(), MinVisitor).toOption.get should be(MinValue(0))
     }
 
     it("should get the correct min over the whole raster extent for MultibandTiles") {
-      multi.polygonalSummaryValue(totalExtent.toPolygon, MinVisitor).toOption.get map { _ should be(MinValue(0)) }
+      multi.polygonalSummaryValue(totalExtent.toPolygon(), MinVisitor).toOption.get map { _ should be(MinValue(0)) }
     }
 
     it("should get correct double min over a quarter of the extent") {
@@ -111,8 +111,8 @@ class MinSpec extends AnyFunSpec with TestEnvironment with TestFiles {
         totalExtent.ymin + yd / 2
       )
 
-      val result = inc.polygonalSummaryValue(quarterExtent.toPolygon, MinVisitor).toOption.get
-      val expected = inc.stitch.polygonalSummary(quarterExtent.toPolygon, MinVisitor).toOption.get
+      val result = inc.polygonalSummaryValue(quarterExtent.toPolygon(), MinVisitor).toOption.get
+      val expected = inc.stitch().polygonalSummary(quarterExtent.toPolygon(), MinVisitor).toOption.get
 
       result should be (expected)
     }
@@ -128,8 +128,8 @@ class MinSpec extends AnyFunSpec with TestEnvironment with TestFiles {
         totalExtent.ymin + yd / 2
       )
 
-      val result = multi.polygonalSummaryValue(quarterExtent.toPolygon, MinVisitor).toOption.get
-      val expected = multi.stitch.polygonalSummary(quarterExtent.toPolygon, MinVisitor).toOption.get
+      val result = multi.polygonalSummaryValue(quarterExtent.toPolygon(), MinVisitor).toOption.get
+      val expected = multi.stitch().polygonalSummary(quarterExtent.toPolygon(), MinVisitor).toOption.get
 
       result.size should be (expected.size)
 

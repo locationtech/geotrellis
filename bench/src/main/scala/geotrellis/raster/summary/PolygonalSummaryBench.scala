@@ -37,12 +37,12 @@ class PolygonalSummaryBench {
   @Setup(Level.Trial)
   def setup(): Unit = {
     val geotiff = SinglebandGeoTiff(s"${geotiffPath}/singleband.tif")
-    raster = Raster(geotiff.tile.toArrayTile, geotiff.extent)
-    geom  = geotiff.extent.toPolygon
+    raster = Raster(geotiff.tile.toArrayTile(), geotiff.extent)
+    geom  = geotiff.extent.toPolygon()
 
     val multibandGeoTiff = MultibandGeoTiff(s"${geotiffPath}/multiband.tif")
-    multibandRaster = Raster(multibandGeoTiff.tile.toArrayTile, multibandGeoTiff.extent)
-    multibandGeom  = multibandGeoTiff.extent.toPolygon
+    multibandRaster = Raster(multibandGeoTiff.tile.toArrayTile(), multibandGeoTiff.extent)
+    multibandGeom  = multibandGeoTiff.extent.toPolygon()
   }
 
   // Bench the MeanVisitor because it uses a class instead of an AnyVal

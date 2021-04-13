@@ -31,7 +31,7 @@ object Majority extends Serializable {
   def apply(level: Int, r: Tile*): Tile = apply(level, r)
 
   def apply(level: Int, rs: Traversable[Tile])(implicit d: DI): Tile = {
-    rs.assertEqualDimensions
+    rs.assertEqualDimensions()
 
     val layerCount = rs.toSeq.length
     if(layerCount == 0) {
@@ -46,7 +46,7 @@ object Majority extends Serializable {
 
         cfor(0)(_ < rows, _ + 1) { row =>
           cfor(0)(_ < cols, _ + 1) { col =>
-            counts.clear
+            counts.clear()
             for(r <- rs) {
               val v = r.getDouble(col, row)
               if(isData(v)) {
@@ -75,7 +75,7 @@ object Majority extends Serializable {
 
         cfor(0)(_ < rows, _ + 1) { row =>
           cfor(0)(_ < cols, _ + 1) { col =>
-            counts.clear
+            counts.clear()
             for(r <- rs) {
               val v = r.get(col, row)
               if(isData(v)) {

@@ -27,8 +27,8 @@ class UInt16GeoTiffTileSpec extends AnyFunSpec with Matchers with BeforeAndAfter
 
   describe("UInt16GeoTiffTile") {
    it("should read landsat 8 data correctly") {
-     val actualImage = SinglebandGeoTiff(geoTiffPath(s"ls8_uint16.tif")).tile.toArrayTile.convert(IntCellType)
-     val expectedImage = SinglebandGeoTiff(geoTiffPath(s"ls8_int32.tif")).tile.toArrayTile
+     val actualImage = SinglebandGeoTiff(geoTiffPath(s"ls8_uint16.tif")).tile.toArrayTile().convert(IntCellType)
+     val expectedImage = SinglebandGeoTiff(geoTiffPath(s"ls8_int32.tif")).tile.toArrayTile()
 
      assertEqual(actualImage, expectedImage)
    }

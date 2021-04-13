@@ -33,7 +33,7 @@ class DelaunayTriangulationSpec extends AnyFunSpec with Matchers {
   val numpts = 2000
 
   def randInRange(low: Double, high: Double): Double = {
-    val x = Random.nextDouble
+    val x = Random.nextDouble()
     low * (1-x) + high * x
   }
 
@@ -63,11 +63,11 @@ class DelaunayTriangulationSpec extends AnyFunSpec with Matchers {
         dt.predicates.isRightOf(e, getDest(getNext(e)))
       }
       var isConvex = true
-      var e = dt.boundary
+      var e = dt.boundary()
       do {
         isConvex = isConvex && boundingEdgeIsConvex(e)
         e = getNext(e)
-      } while (e != dt.boundary)
+      } while (e != dt.boundary())
 
       isConvex should be (true)
     }
@@ -80,7 +80,7 @@ class DelaunayTriangulationSpec extends AnyFunSpec with Matchers {
       val dt = DelaunayTriangulation(pts)
       implicit val trans = { i: Int => pts(i) }
 
-      (dt.triangleMap.getTriangles.forall{ case ((ai,bi,ci),_) =>
+      (dt.triangleMap.getTriangles().forall{ case ((ai,bi,ci),_) =>
         val otherPts = (0 until numpts).filter{ i: Int => i != ai && i != bi && i != ci }
         otherPts.forall{ i => ! dt.predicates.inCircle(ai, bi, ci, i) }
       }) should be (true)
@@ -94,22 +94,22 @@ class DelaunayTriangulationSpec extends AnyFunSpec with Matchers {
       val dt = DelaunayTriangulation(pts)
       import dt.halfEdgeTable._
 
-      var e = dt.boundary
+      var e = dt.boundary()
       var valid = true
       do {
         val diff = getDest(e) - getSrc(e)
         valid = valid && (diff * diff == 1)
         e = getNext(e)
-      } while (valid && e != dt.boundary)
+      } while (valid && e != dt.boundary())
 
-      (dt.triangleMap.getTriangles.isEmpty && valid) should be (true)
+      (dt.triangleMap.getTriangles().isEmpty && valid) should be (true)
     }
 
     it("should have no overlapping triangles") {
       val pts = randomizedGrid(13, Extent(0,0,1,1)).toArray
       val dt = DelaunayTriangulation(pts, debug=false) // to kick travis
       implicit val trans = { i: Int => pts(i) }
-      val tris = dt.triangleMap.getTriangles.keys.toArray
+      val tris = dt.triangleMap.getTriangles().keys.toArray
       val ntris = tris.size
 
       var overlapping = false
@@ -124,7 +124,7 @@ class DelaunayTriangulationSpec extends AnyFunSpec with Matchers {
         }}
       }}
 
-      // val dtPolys = MultiPolygon(dt.triangles.getTriangles.keys.map {
+      // val dtPolys = MultiPolygon(dt.triangles.getTriangles().keys.map {
       //   case (ai, bi, ci) => Polygon(Seq(ai,bi,ci,ai).map{ i => Point.jtsCoord2Point(dt.verts.getCoordinate(i)) })
       // })
       // new java.io.PrintWriter("/data/overlap.wkt") { write(dtPolys.toString); close }
@@ -140,7 +140,7 @@ class DelaunayTriangulationSpec extends AnyFunSpec with Matchers {
       import dt.predicates._
 
       var valid = true
-      var e = dt.boundary
+      var e = dt.boundary()
       do {
         var f = e
         do {
@@ -151,7 +151,7 @@ class DelaunayTriangulationSpec extends AnyFunSpec with Matchers {
         } while (valid && f != e)
 
         e = getNext(e)
-      } while (valid && e != dt.boundary)
+      } while (valid && e != dt.boundary())
 
       valid should be (true)
     }
@@ -213,11 +213,11 @@ class DelaunayTriangulationSpec extends AnyFunSpec with Matchers {
         new Coordinate(0, 1, 0),
         new Coordinate(1, 0, 0),
         new Coordinate(1, 1, 0)) ++
-        (for (i <- (0 until 5).toArray) yield new Coordinate(0, Random.nextDouble, 0)) ++
-        (for (i <- (0 until 5).toArray) yield new Coordinate(1, Random.nextDouble, 0)) ++
-        (for (i <- (0 until 5).toArray) yield new Coordinate(Random.nextDouble, 0, 0)) ++
-        (for (i <- (0 until 5).toArray) yield new Coordinate(Random.nextDouble, 1, 0)) ++
-        (for (i <- (0 until 25).toArray) yield new Coordinate(Random.nextDouble, Random.nextDouble, 0))
+        (for (i <- (0 until 5).toArray) yield new Coordinate(0, Random.nextDouble(), 0)) ++
+        (for (i <- (0 until 5).toArray) yield new Coordinate(1, Random.nextDouble(), 0)) ++
+        (for (i <- (0 until 5).toArray) yield new Coordinate(Random.nextDouble(), 0, 0)) ++
+        (for (i <- (0 until 5).toArray) yield new Coordinate(Random.nextDouble(), 1, 0)) ++
+        (for (i <- (0 until 25).toArray) yield new Coordinate(Random.nextDouble(), Random.nextDouble(), 0))
 
       val dt = DelaunayTriangulation(pts)
       // dt.writeWKT("original.wkt")
@@ -252,14 +252,14 @@ class DelaunayTriangulationSpec extends AnyFunSpec with Matchers {
         surfacePoint(0, 1),
         surfacePoint(1, 0),
         surfacePoint(1, 1)) ++
-        (for (i <- (0 until grid by 1).toArray) yield surfacePoint(0, (i.toDouble + Random.nextDouble)/ grid)) ++
-        (for (i <- (0 until grid by 1).toArray) yield surfacePoint(1, (i.toDouble + Random.nextDouble)/ grid)) ++
-        (for (i <- (0 until grid by 1).toArray) yield surfacePoint((i.toDouble + Random.nextDouble)/ grid, 0)) ++
-        (for (i <- (0 until grid by 1).toArray) yield surfacePoint((i.toDouble + Random.nextDouble)/ grid, 1)) ++
+        (for (i <- (0 until grid by 1).toArray) yield surfacePoint(0, (i.toDouble + Random.nextDouble())/ grid)) ++
+        (for (i <- (0 until grid by 1).toArray) yield surfacePoint(1, (i.toDouble + Random.nextDouble())/ grid)) ++
+        (for (i <- (0 until grid by 1).toArray) yield surfacePoint((i.toDouble + Random.nextDouble())/ grid, 0)) ++
+        (for (i <- (0 until grid by 1).toArray) yield surfacePoint((i.toDouble + Random.nextDouble())/ grid, 1)) ++
         ((0 until grid by 1).toArray).flatMap { i =>
            (0 until grid by 1).toArray.map { j =>
-             val x = (i.toDouble + Random.nextDouble) / grid
-             val y = (j.toDouble + Random.nextDouble) / grid
+             val x = (i.toDouble + Random.nextDouble()) / grid
+             val y = (j.toDouble + Random.nextDouble()) / grid
              surfacePoint(x, y)
            }
         }

@@ -38,14 +38,14 @@ class ColorRamp(val colors: Vector[Int]) extends Serializable {
     *              gradient (default 255)
     */
   def setAlphaGradient(start: Int = 0, stop: Int = 0xFF): ColorRamp = {
-    val alphas = ColorRamp.chooseColors(Vector(start, stop), colors.length).map(_.alpha)
+    val alphas = ColorRamp.chooseColors(Vector(start, stop), colors.length).map(RGBA(_).alpha)
 
     val newColors =
       colors
         .zip(alphas)
         .map { case (color, a) =>
-          val (r, g, b) = color.unzipRGB
-          RGBA(r, g, b, a).int
+          val (r, g, b) = RGBA(color).unzipRGB
+          RGBA.fromRGBA(r, g, b, a).int
         }
 
     ColorRamp(newColors)
@@ -56,8 +56,8 @@ class ColorRamp(val colors: Vector[Int]) extends Serializable {
     val newColors =
       colors
         .map { color =>
-          val (r, g, b) = color.unzipRGB
-          RGBA(r, g, b, a).int
+          val (r, g, b) = RGBA(color).unzipRGB
+          RGBA.fromRGBA(r, g, b, a).int
         }
 
     ColorRamp(newColors)
@@ -68,8 +68,8 @@ class ColorRamp(val colors: Vector[Int]) extends Serializable {
     val newColors =
       colors
         .map { color =>
-          val (r, g, b) = color.unzipRGB
-          RGBA(r, g, b, alphaPct).int
+          val (r, g, b) = RGBA(color).unzipRGB
+          RGBA.fromRGBAPct(r, g, b, alphaPct).int
         }
 
     ColorRamp(newColors)
@@ -206,10 +206,10 @@ object ColorRamp {
   private def getColorSequence(n: Int)(getRanges: (Int => Int) => Array[Int]): Vector[Int] = n match {
     case n if n < 1 => Vector.empty[Int]
     case _ => {
-      val unzipR = { color: Int => color.red }
-      val unzipG = { color: Int => color.green }
-      val unzipB = { color: Int => color.blue }
-      val unzipA = { color: Int => color.alpha }
+      val unzipR = { color: Int => RGBA(color).red }
+      val unzipG = { color: Int => RGBA(color).green }
+      val unzipB = { color: Int => RGBA(color).blue }
+      val unzipA = { color: Int => RGBA(color).alpha }
       val rs = getRanges(unzipR)
       val gs = getRanges(unzipG)
       val bs = getRanges(unzipB)
@@ -218,7 +218,7 @@ object ColorRamp {
       val theColors = new Array[Int](n)
       var i = 0
       while (i < n) {
-        theColors(i) = RGBA(rs(i), gs(i), bs(i), as(i))
+        theColors(i) = RGBA.fromRGBA(rs(i), gs(i), bs(i), as(i)).int
         i += 1
       }
       theColors.toVector

@@ -117,7 +117,7 @@ class FileCOGLayerWriter(
         .fromAccumulator(samplesAccumulator)
         .write(s"${catalogPathFile}/${layerName}/${zoomRange.slug}/vrt.xml")
 
-      samplesAccumulator.reset
+      samplesAccumulator.reset()
     }
   }
 }

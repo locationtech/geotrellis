@@ -34,7 +34,7 @@ class CroppedTileSpec extends AnyFunSpec with TileBuilders with RasterMatchers w
 
       val sourceExtent = Extent(0, 0, 5, 5)
       val targetExtent = Extent(1, 1, 4, 4)
-      val tile = CroppedTile(r, sourceExtent, targetExtent).toArrayTile
+      val tile = CroppedTile(r, sourceExtent, targetExtent).toArrayTile()
 
       assertEqual(tile.combine(tile)(_ + _), Array[Int](
         4, 4, 4,
@@ -56,7 +56,7 @@ class CroppedTileSpec extends AnyFunSpec with TileBuilders with RasterMatchers w
 
         val sourceExtent = Extent(0, 0, 5, 5)
         val targetExtent = Extent(1, 1, 4, 4)
-        CroppedTile(r, sourceExtent, targetExtent).toArrayTile
+        CroppedTile(r, sourceExtent, targetExtent).toArrayTile()
       }
       val dt = int.convert(DoubleCellType)
 

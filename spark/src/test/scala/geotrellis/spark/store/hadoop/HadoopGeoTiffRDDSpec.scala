@@ -51,7 +51,7 @@ class HadoopGeoTiffRDDSpec extends AnyFunSpec with Matchers with RasterMatchers 
           .apply[ProjectedExtent, ProjectedExtent, Tile](testGeoTiffPath, fn, options, None)
           .map(_._1)
 
-      source1.collect.toSet.size should be < source2.collect.toSet.size
+      source1.collect().toSet.size should be < source2.collect().toSet.size
     }
 
     it("should read the same rasters when reading small windows or with no windows, Spatial, SinglebandGeoTiff") {
@@ -61,8 +61,8 @@ class HadoopGeoTiffRDDSpec extends AnyFunSpec with Matchers with RasterMatchers 
 
       val (_, md) = source1.collectMetadata[SpatialKey](FloatingLayoutScheme(256))
 
-      val stitched1 = source1.tileToLayout(md).stitch
-      val stitched2 = source2.tileToLayout(md).stitch
+      val stitched1 = source1.tileToLayout(md).stitch()
+      val stitched2 = source2.tileToLayout(md).stitch()
 
       assertEqual(stitched1, stitched2)
     }
@@ -75,8 +75,8 @@ class HadoopGeoTiffRDDSpec extends AnyFunSpec with Matchers with RasterMatchers 
 
       val (_, md) = source1.collectMetadata[SpatialKey](FloatingLayoutScheme(256))
 
-      val stitched1 = source1.tileToLayout(md).stitch
-      val stitched2 = source2.tileToLayout(md).stitch
+      val stitched1 = source1.tileToLayout(md).stitch()
+      val stitched2 = source2.tileToLayout(md).stitch()
 
       assertEqual(stitched1, stitched2)
     }
@@ -97,7 +97,7 @@ class HadoopGeoTiffRDDSpec extends AnyFunSpec with Matchers with RasterMatchers 
       val (wholeInfo, _) = source1.first()
       val dateTime = wholeInfo.time
 
-      val collection = source2.map({ case (info, _) => info.time }).collect
+      val collection = source2.map({ case (info, _) => info.time }).collect()
 
       collection.forall({ t => t == dateTime }) should be (true)
     }
@@ -118,7 +118,7 @@ class HadoopGeoTiffRDDSpec extends AnyFunSpec with Matchers with RasterMatchers 
       val (wholeInfo, _) = source1.first()
       val dateTime = wholeInfo.time
 
-      val collection = source2.map({ case (info, _) => info.time }).collect
+      val collection = source2.map({ case (info, _) => info.time }).collect()
 
       collection.forall({ t => t == dateTime }) should be (true)
     }

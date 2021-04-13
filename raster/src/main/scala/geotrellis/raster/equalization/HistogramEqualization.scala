@@ -129,7 +129,7 @@ object HistogramEqualization {
     * @return            A singleband tile with improved contrast
     */
   def apply[T <: AnyVal](tile: Tile, histogram: Histogram[T]): Tile = {
-    val localIntensityToCdf = intensityToCdf(tile.cellType, histogram.cdf)_
+    val localIntensityToCdf = intensityToCdf(tile.cellType, histogram.cdf())_
     val localTransform = transform(tile.cellType, localIntensityToCdf)_
     tile.mapDouble(localTransform)
   }

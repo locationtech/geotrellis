@@ -32,7 +32,7 @@ class MeanSpec extends AnyFunSpec
       val r2 = createTile(Array.fill(7*8)(5), 7, 8)
       val r3 = createTile(Array.fill(7*8)(10), 7, 8)
 
-      assertEqual(Seq(r1,r2,r3).localMean, Array.fill(7*8)((1+5+10)/3))
+      assertEqual(Seq(r1,r2,r3).localMean(), Array.fill(7*8)((1+5+10)/3))
     }
 
     it("takes mean on rasters of varying values") {
@@ -65,7 +65,7 @@ class MeanSpec extends AnyFunSpec
         (4+1)/2,       8, 4,       3, (4+4)/2,          7,
               1, (8+5)/2, n, (5+1)/2,       n,    (6+5)/2)
 
-      assertEqual(Seq(r1,r2,r3).localMean,expected)
+      assertEqual(Seq(r1,r2,r3).localMean(),expected)
     }
 
     it("takes mean on rasters of varying values using local method") {
@@ -98,7 +98,7 @@ class MeanSpec extends AnyFunSpec
         (4+1)/2,       8, 4,       3, (4+4)/2,          7
       )
 
-      val result = Seq(rs1, rs2, rs3).localMean
+      val result = Seq(rs1, rs2, rs3).localMean()
       for(row <- 0 until 4) {
         for(col <- 0 until 6) {
           result.get(col,row) should be (expected(row*6 + col))
@@ -136,7 +136,7 @@ class MeanSpec extends AnyFunSpec
         (4.1+1.0)/2,       8.3, 4.1,       3.1, (4.2+4.1)/2,          7.3
       )
 
-      val result = Seq(rs1, rs2, rs3).localMean
+      val result = Seq(rs1, rs2, rs3).localMean()
       for(row <- 0 until 4) {
         for(col <- 0 until 6) {
           if(isNoData(expected(row*6+col))) {

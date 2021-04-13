@@ -241,7 +241,7 @@ class LayoutTileSourceSpec extends AnyFunSpec with RasterMatchers {
 
       neighborhood.map { key =>
         val t = trs.read(key).get.band(0)
-        val arr = trs.read(key).get.band(0).toArray
+        val arr = trs.read(key).get.band(0).toArray()
         // info(s"Debug info for: ($key)")
         arr.sum shouldBe arr.size
         t.dimensions shouldBe Dimensions(256, 256)
@@ -270,7 +270,7 @@ class LayoutTileSourceSpec extends AnyFunSpec with RasterMatchers {
           .read(SpatialKey(col, row), List(0))
           .get
           .band(0)
-        val arr = tile.toArray
+        val arr = tile.toArray()
         val ones = tile.mapIfSet(_ => 1).toArray()
         ones.sum shouldBe arr.size
       }
@@ -307,8 +307,8 @@ class LayoutTileSourceSpec extends AnyFunSpec with RasterMatchers {
 
       layout.keys.foreach { key =>
         val extent = ld.mapTransform.keyToExtent(key)
-        val ltile = layout.read(key).map(_.band(0).toArrayTile)
-        val mtile = mosaicReprojected.read(extent.buffer(mosaicReprojected.cellSize.resolution / 2)).map(_.mapTile(_.band(0).toArrayTile))
+        val ltile = layout.read(key).map(_.band(0).toArrayTile())
+        val mtile = mosaicReprojected.read(extent.buffer(mosaicReprojected.cellSize.resolution / 2)).map(_.mapTile(_.band(0).toArrayTile()))
 
         (ltile, mtile) match {
           case (Some(ltile), Some(mtile)) =>

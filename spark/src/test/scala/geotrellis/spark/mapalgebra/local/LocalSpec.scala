@@ -33,7 +33,7 @@ class LocalSpec extends AnyFunSpec with TestEnvironment with TestFiles {
     val evo1Minus1 = EveryOther1ElseMinus1TestFile
 
     val (cols: Int, rows: Int) = {
-      val tile = ones.stitch
+      val tile = ones.stitch()
       (tile.cols, tile.rows)
     }
 
@@ -60,7 +60,7 @@ class LocalSpec extends AnyFunSpec with TestEnvironment with TestFiles {
     }
 
     it("should set all undefined values to 0 and the rest to one") {
-      val res = evo.localDefined
+      val res = evo.localDefined()
 
       rasterShouldBe(
         res,
@@ -71,7 +71,7 @@ class LocalSpec extends AnyFunSpec with TestEnvironment with TestFiles {
     }
 
     it("should set all defined values to 0 and the rest to one") {
-      val res = evo.localUndefined
+      val res = evo.localUndefined()
 
       rasterShouldBe(
         res,
@@ -82,7 +82,7 @@ class LocalSpec extends AnyFunSpec with TestEnvironment with TestFiles {
     }
 
     it("should square root all values in raster") {
-      val res = inc.localSqrt
+      val res = inc.localSqrt()
 
       rasterShouldBeAbout(
         res,
@@ -94,7 +94,7 @@ class LocalSpec extends AnyFunSpec with TestEnvironment with TestFiles {
     }
 
     it("should round all values in raster") {
-      val res = evo1Point01Else0Point99.localRound
+      val res = evo1Point01Else0Point99.localRound()
 
       rasterShouldBe(
         res,
@@ -105,7 +105,7 @@ class LocalSpec extends AnyFunSpec with TestEnvironment with TestFiles {
     }
 
     it("should log all values in raster") {
-      val res = inc.localLog
+      val res = inc.localLog()
 
       rasterShouldBeAbout(
         res,
@@ -117,7 +117,7 @@ class LocalSpec extends AnyFunSpec with TestEnvironment with TestFiles {
     }
 
     it("should log base 10 all values in raster") {
-      val res = inc.localLog10
+      val res = inc.localLog10()
 
       rasterShouldBeAbout(
         res,
@@ -129,7 +129,7 @@ class LocalSpec extends AnyFunSpec with TestEnvironment with TestFiles {
     }
 
     it("should floor all values in raster") {
-      val res = evo1Point01Else0Point99.localFloor
+      val res = evo1Point01Else0Point99.localFloor()
 
       rasterShouldBe(
         res,
@@ -140,7 +140,7 @@ class LocalSpec extends AnyFunSpec with TestEnvironment with TestFiles {
     }
 
     it("should ceil all values in raster") {
-      val res = evo1Point01Else0Point99.localCeil
+      val res = evo1Point01Else0Point99.localCeil()
 
       rasterShouldBe(
         res,
@@ -151,7 +151,7 @@ class LocalSpec extends AnyFunSpec with TestEnvironment with TestFiles {
     }
 
     it("should negate all values in raster") {
-      val res = inc.localNegate
+      val res = inc.localNegate()
 
       rasterShouldBe(
         res,
@@ -173,7 +173,7 @@ class LocalSpec extends AnyFunSpec with TestEnvironment with TestFiles {
     }
 
     it("should not all values in raster") {
-      val res = inc.localNot
+      val res = inc.localNot()
 
       rasterShouldBe(
         res,
@@ -184,7 +184,7 @@ class LocalSpec extends AnyFunSpec with TestEnvironment with TestFiles {
     }
 
     it("should abs all values in raster") {
-      val res = evo1Minus1.localAbs
+      val res = evo1Minus1.localAbs()
 
       rasterShouldBe(
         res,
@@ -195,7 +195,7 @@ class LocalSpec extends AnyFunSpec with TestEnvironment with TestFiles {
     }
 
     it("should arc cos all values in raster") {
-      val res = evo1Point01Else0Point99.localAcos
+      val res = evo1Point01Else0Point99.localAcos()
 
       rasterShouldBeAbout(
         res,
@@ -207,7 +207,7 @@ class LocalSpec extends AnyFunSpec with TestEnvironment with TestFiles {
     }
 
     it("should arc sin all values in raster") {
-      val res = evo1Point01Else0Point99.localAsin
+      val res = evo1Point01Else0Point99.localAsin()
 
       rasterShouldBeAbout(
         res,
@@ -238,7 +238,7 @@ class LocalSpec extends AnyFunSpec with TestEnvironment with TestFiles {
     }
 
     it("should arc tan all values in raster") {
-      val res = evo1Point01Else0Point99.localAtan
+      val res = evo1Point01Else0Point99.localAtan()
 
       rasterShouldBeAbout(
         res,
@@ -250,7 +250,7 @@ class LocalSpec extends AnyFunSpec with TestEnvironment with TestFiles {
     }
 
     it("should cos all values in raster") {
-      val res = inc.localCos
+      val res = inc.localCos()
 
       rasterShouldBeAbout(
         res,
@@ -262,7 +262,7 @@ class LocalSpec extends AnyFunSpec with TestEnvironment with TestFiles {
     }
 
     it("should hyperbolic cos all values in raster") {
-      val res = evo1Point01Else0Point99.localCosh
+      val res = evo1Point01Else0Point99.localCosh()
 
       rasterShouldBeAbout(
         res,
@@ -274,7 +274,7 @@ class LocalSpec extends AnyFunSpec with TestEnvironment with TestFiles {
     }
 
     it("should sin all values in raster") {
-      val res = inc.localSin
+      val res = inc.localSin()
 
       rasterShouldBeAbout(
         res,
@@ -286,7 +286,7 @@ class LocalSpec extends AnyFunSpec with TestEnvironment with TestFiles {
     }
 
     it("should hyperbolic sin all values in raster") {
-      val res = evo1Point01Else0Point99.localSinh
+      val res = evo1Point01Else0Point99.localSinh()
 
       rasterShouldBeAbout(
         res,
@@ -298,7 +298,7 @@ class LocalSpec extends AnyFunSpec with TestEnvironment with TestFiles {
     }
 
     it("should tan all values in raster") {
-      val res = evo1Point01Else0Point99.localTan
+      val res = evo1Point01Else0Point99.localTan()
 
       rasterShouldBeAbout(
         res,
@@ -310,7 +310,7 @@ class LocalSpec extends AnyFunSpec with TestEnvironment with TestFiles {
     }
 
     it("should hyperbolic tan all values in raster") {
-      val res = evo1Point01Else0Point99.localTanh
+      val res = evo1Point01Else0Point99.localTanh()
 
       rasterShouldBeAbout(
         res,

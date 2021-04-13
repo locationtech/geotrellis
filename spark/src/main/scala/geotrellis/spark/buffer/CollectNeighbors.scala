@@ -55,7 +55,7 @@ object CollectNeighbors {
     val grouped: RDD[(K, Iterable[(raster.buffer.Direction, (K, V))])] =
       rdd.partitioner match {
         case Some(partitioner) => neighbored.groupByKey(partitioner)
-        case None => neighbored.groupByKey
+        case None => neighbored.groupByKey()
       }
 
     grouped

@@ -31,7 +31,7 @@ trait AttributeCaching { self: AttributeStore =>
       .recordStats()
       .expireAfterWrite(AttributeConfig.caching.expirationMinutes.minutes)
       .maximumSize(AttributeConfig.caching.maxSize)
-      .build[(LayerId, String), Json]
+      .build[(LayerId, String), Json]()
 
   def cacheRead[T: Decoder](layerId: LayerId, attributeName: String): T =
     if(AttributeConfig.caching.enabled)
@@ -56,7 +56,7 @@ trait AttributeCaching { self: AttributeStore =>
 
   def clearCache(id: LayerId): Unit = {
     if(AttributeConfig.caching.enabled) {
-      val toInvalidate = cache.asMap.keys.filter(_._1 == id)
+      val toInvalidate = cache.asMap().keys.filter(_._1 == id)
       cache.invalidateAll(toInvalidate)
     }
   }
