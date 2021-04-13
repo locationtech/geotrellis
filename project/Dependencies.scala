@@ -124,15 +124,7 @@ object Dependencies {
   val kryoSerializers     = "de.javakaffee"                % "kryo-serializers"        % "0.38"
   val kryoShaded          = "com.esotericsoftware"         % "kryo-shaded"             % "3.0.3"
 
-  val hbaseCommon         = "org.apache.hbase" % "hbase-common"         % Version.hbase
-  val hbaseClient         = "org.apache.hbase" % "hbase-client"         % Version.hbase
-  val hbaseMapReduce      = "org.apache.hbase" % "hbase-mapreduce"      % Version.hbase
-  val hbaseServer         = "org.apache.hbase" % "hbase-server"         % Version.hbase
-  val hbaseHadoopCompact  = "org.apache.hbase" % "hbase-hadoop-compat"  % Version.hbase
-  val hbaseHadoop2Compact = "org.apache.hbase" % "hbase-hadoop2-compat" % Version.hbase
-  val hbaseMetrics        = "org.apache.hbase" % "hbase-metrics"        % Version.hbase
-  val hbaseMetricsApi     = "org.apache.hbase" % "hbase-metrics-api"    % Version.hbase
-  val hbaseZooKeeper      = "org.apache.hbase" % "hbase-zookeeper"      % Version.hbase
+  val hbaseMapReduce      = "org.apache.hbase" % "hbase-mapreduce" % Version.hbase
 
   val woodstoxCore          = "com.fasterxml.woodstox" % "woodstox-core"          % "6.2.5"
   val stax2Api              = "org.codehaus.woodstox"  % "stax2-api"              % "4.2.1"
