@@ -106,9 +106,6 @@ object Dependencies {
   val geotoolsShapefile   = "org.geotools"                 % "gt-shapefile"            % Version.geotools
   val geotoolsMetadata    = "org.geotools"                 % "gt-metadata"             % Version.geotools
   val geotoolsOpengis     = "org.geotools"                 % "gt-opengis"              % Version.geotools
-
-  val imageioExtUtilities = "it.geosolutions.imageio-ext"      % "imageio-ext-utilities" % "1.3.5"
-  val jtUtilities         = "it.geosolutions.jaiext.utilities" % "jt-utilities"          % "1.1.20"
   
   // located in the OSGeo repo: https://repo.osgeo.org/repository/release/
   val jaiCore             = "javax.media" % "jai_core"     % "1.1.3"
