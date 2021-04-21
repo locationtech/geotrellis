@@ -283,8 +283,6 @@ object Settings {
       geotoolsReferencing,
       geotoolsMetadata,
       geotoolsOpengis,
-      imageioExtUtilities,
-      jtUtilities,
       geotoolsGeoTiff % Test,
       geotoolsShapefile % Test,
       scalatest % Test
