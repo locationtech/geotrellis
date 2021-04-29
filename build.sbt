@@ -146,7 +146,7 @@ lazy val `hbase-spark` = project
   .settings(projectDependencies := { Seq((hbase / projectID).value, (spark / projectID).value.exclude("com.google.protobuf", "protobuf-java")) })
   .settings(Settings.`hbase-spark`)
 
-lazy val `spark-pipeline` = Project(id = "spark-pipeline", base = file("spark-pipeline")).
+lazy val `spark-pipeline` = project.
   dependsOn(spark, `s3-spark`, `spark-testkit` % "test").
   settings(Settings.`spark-pipeline`)
 
@@ -156,11 +156,11 @@ lazy val geotools = project
   )
   .settings(Settings.geotools)
 
-lazy val geowave = ( project in file("geowave") )
+lazy val geowave = project
   .dependsOn(raster, store, `raster-testkit` % Test)
   .settings(Settings.geowave)
 
-lazy val `geowave-benchmark` = ( project in file("geowave/benchmark") )
+lazy val `geowave-benchmark` = (project in file("geowave/benchmark"))
   .dependsOn(geowave)
   .enablePlugins(JmhPlugin)
   .settings(Settings.geowaveBenchmark)
