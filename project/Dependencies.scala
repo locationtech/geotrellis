@@ -158,7 +158,8 @@ object Dependencies {
   val shapeless           = "com.chuusai"  %% "shapeless" % "2.3.3"
   val newtype             = "io.estatico"  %% "newtype"   % "0.4.3"
 
-  val unitApi             = "javax.measure" % "unit-api"  % "2.1.2"
+  // aligned with the GeoTools version, should be 2.1.2 for the GeoTools 24.2
+  val unitApi             = "javax.measure" % "unit-api"  % "1.0"
 
   val scalaURI            = "io.lemonlabs" %% "scala-uri" % "1.5.1"
   val java8Compat         = "org.scala-lang.modules" %% "scala-java8-compat" % "0.9.0"
