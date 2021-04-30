@@ -53,10 +53,10 @@ object Dependencies {
   }
 
   def circe(module: String) = Def.setting {
-    if (module == "json-schema")
-      "io.circe" %% "circe-json-schema" % "0.1.0"
-    else
-      "io.circe" %% s"circe-$module" % "0.13.0"
+    module match {
+      case "json-schema" => "io.circe" %% s"circe-$module" % "0.1.0"
+      case _             => "io.circe" %% s"circe-$module" % "0.13.0"
+    }
   }
 
   def fs2(module: String) = Def.setting {
@@ -122,6 +122,8 @@ object Dependencies {
   val geowaveAccumulo     = "org.locationtech.geowave"     % "geowave-datastore-accumulo" % Version.geowave
   val geowaveCassandra    = "org.locationtech.geowave"     % "geowave-datastore-cassandra" % Version.geowave
 
+  val geowaveGuava        = "com.google.guava"             % "guava"                   % "25.1-jre"
+
   val scalaArm            = "com.jsuereth"                %% "scala-arm"               % "2.0"
 
   val kryoSerializers     = "de.javakaffee"                % "kryo-serializers"        % "0.38"
@@ -156,11 +158,11 @@ object Dependencies {
   val jacksonModuleScala  = "com.fasterxml.jackson.module" %% "jackson-module-scala"     % "2.6.7"
 
   val shapeless           = "com.chuusai"  %% "shapeless" % "2.3.3"
-  val newtype             = "io.estatico"  %% "newtype"   % "0.4.3"
+  val newtype             = "io.estatico"  %% "newtype"   % "0.4.4"
 
-  // aligned with the GeoTools version, should be 2.1.2 for the GeoTools 24.2
+  // aligned with the GeoTools version, should be 2.1.2 for GeoTools 24.2
   val unitApi             = "javax.measure" % "unit-api"  % "1.0"
 
   val scalaURI            = "io.lemonlabs" %% "scala-uri" % "1.5.1"
-  val java8Compat         = "org.scala-lang.modules" %% "scala-java8-compat" % "0.9.0"
+  val java8Compat         = "org.scala-lang.modules" %% "scala-java8-compat" % "0.9.1"
 }

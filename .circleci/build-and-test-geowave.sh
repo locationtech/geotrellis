@@ -3,5 +3,4 @@
 .circleci/unzip-rasters.sh
 
 ./sbt -Dsbt.supershell=false "++$SCALA_VERSION" \
-  "project cassandra" test \
-  "project cassandra-spark" test || { exit 1; }
+  "project geowave" test || { exit 1; }

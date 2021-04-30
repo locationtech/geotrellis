@@ -18,8 +18,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - GDALWarpOptions incorrect rpc flag [#3370](https://github.com/locationtech/geotrellis/issues/3370)
 - S3LayerDeleter cannot handle over 1000 objects to delete [#3371](https://github.com/locationtech/geotrellis/issues/3371)
 - Drop Scala 2.11 cross compilation [#3259](https://github.com/locationtech/geotrellis/issues/3259)
-- Replace geowave subproject with GeoTrellis/GeoWave data adapter [#3364](https://github.com/locationtech/geotrellis/pull/3364)
 - Fix MosaicRasterSource.tileToLayout behavior [#3338](https://github.com/locationtech/geotrellis/pull/3338)
+- Replace geowave subproject with GeoTrellis/GeoWave data adapter [#3364](https://github.com/locationtech/geotrellis/pull/3364)
 
 ## [3.5.2] - 2021-02-01
 

@@ -26,7 +26,7 @@ import scala.util.{Failure, Success, Try}
 object BlockingThreadPool extends Serializable {
   case class Config(threads: Int = Runtime.getRuntime.availableProcessors)
 
-  implicit val configReader = ConfigReader.fromCursor[Config] { cur =>
+  implicit val configReader: ConfigReader[Config] = ConfigReader.fromCursor[Config] { cur =>
     cur.fluent.at("threads").asString match {
       case Right("default") => Right(Config())
       case Right(th) => Try(th.toInt) match {

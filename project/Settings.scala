@@ -312,7 +312,7 @@ object Settings {
       geowaveStore, 
       geowaveIndex, 
       geowaveGeotime exclude("javax.media", "jai_core"),
-      "com.google.guava" % "guava" % "25.1-jre" % Test, // tracking geowave guava requirement
+      geowaveGuava % Test, // tracking geowave guava requirement
       geowaveCassandra % Test, 
       scalatest % Test, 
       logbackClassic % Test
@@ -323,8 +323,7 @@ object Settings {
   lazy val geowaveBenchmark = Seq(
     name := "geotrellis-geowave-benchmark",
     libraryDependencies ++= Seq(
-      "com.github.pureconfig"  %% "pureconfig-cats-effect" % "0.12.1",
-      "com.google.guava" % "guava" % "25.1-jre", // tracking geowave guava requirement
+      geowaveGuava, // tracking geowave guava requirement
       geowaveCassandra, 
       logbackClassic
     ),
