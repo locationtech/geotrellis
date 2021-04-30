@@ -16,4 +16,8 @@
 
 package geotrellis.geowave
 
-package object utils extends utils.Implicits
+package object utils {
+  implicit class MapStringOps(val map: Map[String, String]) {
+    def prefixedList: List[String] = map.toList.flatMap { case (k, v) => List(s"--$k", v) }
+  }
+}

@@ -28,7 +28,7 @@ object Version {
   val gdal        = "3.1.0"
   val gdalWarp    = "1.1.1"
 
-  val previousVersion = "3.5.0"
+  val previousVersion = "3.5.2"
 }
 import sbt.Keys._
 
