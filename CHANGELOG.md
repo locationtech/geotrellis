@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.6.0] - 2021-04-30
+
 ### Added
 - Add method SpatialIndex#pointsInExtentAsIterable [#3349](https://github.com/locationtech/geotrellis/issues/3349)
 - Spark 3 & Hadoop 3 Support [#3218](https://github.com/locationtech/geotrellis/issues/3218)
@@ -1126,7 +1128,9 @@ efficiently using the layer query API.
   the slick scala database library.
 - Perform PostGIS `ST_` operations in PostGIS through scala.
 
-[Unreleased]: https://github.com/locationtech/geotrellis/compare/v3.5.1...HEAD
+[Unreleased]: https://github.com/locationtech/geotrellis/compare/v3.6.0...HEAD
+[3.6.0]: https://github.com/locationtech/geotrellis/compare/v3.6.0...v3.5.1
+[3.5.2]: https://github.com/locationtech/geotrellis/compare/v3.5.2...v3.5.1
 [3.5.1]: https://github.com/locationtech/geotrellis/compare/v3.5.1...v3.5.0
 [3.5.0]: https://github.com/locationtech/geotrellis/compare/v3.4.1...v3.5.0
 [3.4.1]: https://github.com/locationtech/geotrellis/compare/v3.4.0...v3.4.1
