@@ -387,7 +387,7 @@ abstract class COGLayerReader[ID] extends Serializable {
         val keyDecoder = kwDecoder.value
 
         partition flatMap { seq =>
-          IOUtils.parJoin[K, R](seq.toIterator) { index: BigInt =>
+          IOUtils.parJoin[K, R](seq.iterator) { index: BigInt =>
             if (!pathExists(keyPath(index))) Vector()
             else {
               val uri = fullPath(keyPath(index))

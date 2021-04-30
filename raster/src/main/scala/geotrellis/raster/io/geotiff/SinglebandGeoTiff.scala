@@ -114,7 +114,7 @@ case class SinglebandGeoTiff(
     val storageMethod = Tiled(blockSize, blockSize)
     val overviewOptions = options.copy(subfileType = Some(ReducedImage), storageMethod = storageMethod)
     val overviewTile = GeoTiffBuilder[Tile].makeTile(
-      segments.toIterator, segmentLayout, cellType, options.compression
+      segments.iterator, segmentLayout, cellType, options.compression
     )
 
     SinglebandGeoTiff(overviewTile, extent, crs, Tags.empty, overviewOptions)

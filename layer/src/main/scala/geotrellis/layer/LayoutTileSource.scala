@@ -144,7 +144,7 @@ class LayoutTileSource[K: SpatialComponent](
 
   /** Read all available tiles */
   def readAll(): Iterator[(K, MultibandTile)] =
-    readAll(keys.toIterator)
+    readAll(keys.iterator)
 
   /** Set of keys that can be read from this tile source */
   def keys: Set[K] = {
@@ -174,7 +174,7 @@ class LayoutTileSource[K: SpatialComponent](
   /** All intersecting RasterRegions with their respective keys */
   def keyedRasterRegions(): Iterator[(K, RasterRegion)] =
     keys
-      .toIterator
+      .iterator
       .flatMap { key =>
           val result = rasterRegionForKey(key)
           result.map { region => (key, region) }

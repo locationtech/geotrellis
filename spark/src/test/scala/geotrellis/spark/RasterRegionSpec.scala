@@ -69,7 +69,7 @@ class RasterRegionSpec extends AnyFunSpec with TestEnvironment with RasterMatche
       val refRdd = srcRdd.flatMap { src =>
         // too easy? whats missing
         val tileSource = LayoutTileSource.spatial(src, layout)
-        tileSource.keys.toIterator.map { key => (key, tileSource.rasterRegionForKey(key).get) }
+        tileSource.keys.iterator.map { key => (key, tileSource.rasterRegionForKey(key).get) }
       }
 
       // TADA! Jobs done.

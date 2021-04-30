@@ -52,7 +52,7 @@ class GeoTiffBuilderSpec extends AnyFunSpec with RasterMatchers with GeoTiffTest
         BandInterleave,
         BandType.forCellType(ct))
 
-      val tiff = GeoTiffBuilder[MultibandTile].makeTile(segments.toIterator, segmentLayout, ct, NoCompression)
+      val tiff = GeoTiffBuilder[MultibandTile].makeTile(segments.iterator, segmentLayout, ct, NoCompression)
       val actualTile = tiff.tile.toArrayTile()
 
       assertEqual(expectedTile, actualTile)
@@ -66,7 +66,7 @@ class GeoTiffBuilderSpec extends AnyFunSpec with RasterMatchers with GeoTiffTest
         PixelInterleave,
         BandType.forCellType(ct))
 
-      val tiff = GeoTiffBuilder[MultibandTile].makeTile(segments.toIterator, segmentLayout, ct, NoCompression)
+      val tiff = GeoTiffBuilder[MultibandTile].makeTile(segments.iterator, segmentLayout, ct, NoCompression)
       val actualTile = tiff.tile.toArrayTile()
 
       assertEqual(expectedTile, actualTile)

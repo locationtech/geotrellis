@@ -68,7 +68,7 @@ object CassandraCollectionReader {
     instance.withSessionDo { session =>
       val statement = session.prepare(query)
 
-      IOUtils.parJoin[K, V](ranges.toIterator){ index: BigInt =>
+      IOUtils.parJoin[K, V](ranges.iterator){ index: BigInt =>
         val row = session.execute(statement.bind(index: BigInteger))
         if (row.asScala.nonEmpty) {
           val bytes = row.one().getBytes("value").array()

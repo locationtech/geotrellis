@@ -60,7 +60,7 @@ object IOUtils {
     implicit val cs    = IO.contextShift(ec)
 
     val indices: Iterator[BigInt] = ranges.flatMap { case (start, end) =>
-      (start to end).toIterator
+      (start to end).iterator
     }
 
     val index: fs2.Stream[IO, BigInt] = fs2.Stream.fromIterator[IO](indices)

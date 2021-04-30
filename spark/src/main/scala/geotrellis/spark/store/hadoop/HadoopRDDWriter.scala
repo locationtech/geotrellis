@@ -192,7 +192,7 @@ object HadoopRDDWriter {
 
         // Write merged records
         val writer = new MultiMapWriter(layerPathStr, 33, blockSize, indexInterval)
-        for ( (index, pairs) <- GroupConsecutiveIterator(kvs.toIterator)(r => keyIndex.toIndex(r._1))) {
+        for ( (index, pairs) <- GroupConsecutiveIterator(kvs.iterator)(r => keyIndex.toIndex(r._1))) {
           writer.write(
             new BigIntWritable(index.toByteArray),
             new BytesWritable(AvroEncoder.toBinary(pairs.toVector)(codec)))

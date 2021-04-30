@@ -216,7 +216,7 @@ object COGCollectionLayerReader {
     else
       baseQueryKeyBounds.flatMap(decomposeBounds)
 
-    IOUtils.parJoin[K, V](ranges.toIterator) { index: BigInt =>
+    IOUtils.parJoin[K, V](ranges.iterator) { index: BigInt =>
       if (!pathExists(keyPath(index))) Vector()
       else {
         val uri = fullPath(keyPath(index))

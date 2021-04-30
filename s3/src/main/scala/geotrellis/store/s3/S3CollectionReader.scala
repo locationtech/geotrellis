@@ -55,7 +55,7 @@ class S3CollectionReader(
     val recordCodec = KeyValueRecordCodec[K, V]
     implicit val ec = executionContext
 
-    GTIOUtils.parJoin[K, V](ranges.toIterator){ index: BigInt =>
+    GTIOUtils.parJoin[K, V](ranges.iterator){ index: BigInt =>
       try {
         val getRequest = GetObjectRequest.builder()
           .bucket(bucket)
