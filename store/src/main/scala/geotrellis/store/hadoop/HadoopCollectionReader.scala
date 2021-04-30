@@ -61,7 +61,7 @@ class HadoopCollectionReader(
     if (queryKeyBounds.isEmpty) return Seq.empty[(K, V)]
 
     val includeKey = (key: K) => KeyBounds.includeKey(queryKeyBounds, key)
-    val indexRanges = queryKeyBounds.flatMap(decomposeBounds).toIterator
+    val indexRanges = queryKeyBounds.flatMap(decomposeBounds).iterator
 
     val codec = KeyValueRecordCodec[K, V]
 

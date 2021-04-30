@@ -47,7 +47,7 @@ object FileCollectionReader {
     val includeKey = (key: K) => KeyBounds.includeKey(queryKeyBounds, key)(boundable)
     val _recordCodec = KeyValueRecordCodec[K, V]
 
-    IOUtils.parJoin[K, V](ranges.toIterator) { index: BigInt =>
+    IOUtils.parJoin[K, V](ranges.iterator) { index: BigInt =>
       val path = keyPath(index)
       if (new File(path).exists) {
         val bytes: Array[Byte] = Filesystem.slurp(path)

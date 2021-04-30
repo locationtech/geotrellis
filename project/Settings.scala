@@ -33,11 +33,12 @@ object Settings {
     val eclipseReleases = "eclipse-releases" at "https://repo.eclipse.org/content/groups/releases"
     val osgeoReleases   = "osgeo-releases" at "https://repo.osgeo.org/repository/release/"
     val geosolutions    = "geosolutions" at "https://maven.geo-solutions.it/"
+    val jitpack         = "jitpack" at "https://jitpack.io" // for https://github.com/everit-org/json-schema
     val ivy2Local       = Resolver.file("local", file(Path.userHome.absolutePath + "/.ivy2/local"))(Resolver.ivyStylePatterns)
     val mavenLocal      = Resolver.mavenLocal
     val maven           = DefaultMavenRepository
     val local           = Seq(ivy2Local, mavenLocal)
-    val external        = Seq(osgeoReleases, maven, eclipseReleases, geosolutions, apacheSnapshots)
+    val external        = Seq(osgeoReleases, maven, eclipseReleases, geosolutions, jitpack, apacheSnapshots)
     val all             = external ++ local
   }
 
@@ -93,7 +94,7 @@ object Settings {
     ).filter(_.asFile.canRead).map(Credentials(_)),
 
     addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.11.3" cross CrossVersion.full),
-    addCompilerPlugin("org.scalameta" % "semanticdb-scalac" % "4.4.10" cross CrossVersion.full),
+    addCompilerPlugin("org.scalameta" % "semanticdb-scalac" % "4.4.14" cross CrossVersion.full),
 
     libraryDependencies ++= (CrossVersion.partialVersion(scalaVersion.value) match {
       case Some((2, 13)) => Nil
@@ -303,70 +304,31 @@ object Settings {
   lazy val geowave = Seq(
     name := "geotrellis-geowave",
     libraryDependencies ++= Seq(
-      accumuloCore
-        exclude("org.jboss.netty", "netty")
-        exclude("org.apache.hadoop", "hadoop-client"),
-      geowaveRaster
-        excludeAll(ExclusionRule(organization = "org.mortbay.jetty"),
-        ExclusionRule(organization = "javax.servlet")),
-      geowaveVector
-        excludeAll(ExclusionRule(organization = "org.mortbay.jetty"),
-        ExclusionRule(organization = "javax.servlet")),
-      geowaveStore
-        excludeAll(ExclusionRule(organization = "org.mortbay.jetty"),
-        ExclusionRule(organization = "javax.servlet")),
-      geowaveGeotime
-        excludeAll(ExclusionRule(organization = "org.mortbay.jetty"),
-        ExclusionRule(organization = "javax.servlet")),
-      geowaveAccumulo
-        excludeAll(ExclusionRule(organization = "org.mortbay.jetty"),
-        ExclusionRule(organization = "javax.servlet")),
-      hadoopClient % Provided
-        excludeAll(ExclusionRule(organization = "org.mortbay.jetty"),
-        ExclusionRule(organization = "javax.servlet")),
-      geotoolsCoverage % Provided
-        excludeAll(ExclusionRule(organization = "org.mortbay.jetty"),
-        ExclusionRule(organization = "javax.servlet")),
-      geotoolsHsql % Provided
-        excludeAll(ExclusionRule(organization = "org.mortbay.jetty"),
-        ExclusionRule(organization = "javax.servlet")),
-      geotoolsMain % Provided
-        excludeAll(ExclusionRule(organization = "org.mortbay.jetty"),
-        ExclusionRule(organization = "javax.servlet")),
-      geotoolsReferencing % Provided
-        excludeAll(ExclusionRule(organization = "org.mortbay.jetty"),
-        ExclusionRule(organization = "javax.servlet")),
-      scalaArm,
-      kryoSerializers exclude("com.esotericsoftware", "kryo"),
-      kryoShaded,
-      apacheSpark("core").value % Provided,
-      apacheSpark("sql").value % Test,
-      scalatest % Test
+      jaiCore, 
+      newtype, 
+      java8Compat,
+      circe("generic-extras").value, 
+      circe("json-schema").value,
+      geowaveStore, 
+      geowaveIndex, 
+      geowaveGeotime exclude("javax.media", "jai_core"),
+      geowaveGuava % Test, // tracking geowave guava requirement
+      geowaveCassandra % Test, 
+      scalatest % Test, 
+      logbackClassic % Test
     ),
-    assembly / assemblyMergeStrategy := {
-      case "reference.conf" => MergeStrategy.concat
-      case "application.conf" => MergeStrategy.concat
-      case PathList("META-INF", xs@_*) =>
-        xs match {
-          case ("MANIFEST.MF" :: Nil) => MergeStrategy.discard
-          // Concatenate everything in the services directory to keep GeoTools happy.
-          case ("services" :: _ :: Nil) =>
-            MergeStrategy.concat
-          // Concatenate these to keep JAI happy.
-          case ("javax.media.jai.registryFile.jai" :: Nil) | ("registryFile.jai" :: Nil) | ("registryFile.jaiext" :: Nil) =>
-            MergeStrategy.concat
-          case (name :: Nil) => {
-            // Must exclude META-INF/*.([RD]SA|SF) to avoid "Invalid signature file digest for Manifest main attributes" exception.
-            if (name.endsWith(".RSA") || name.endsWith(".DSA") || name.endsWith(".SF"))
-              MergeStrategy.discard
-            else
-              MergeStrategy.first
-          }
-          case _ => MergeStrategy.first
-        }
-      case _ => MergeStrategy.first
-    }
-  ) ++ commonSettings ++ noForkInTests
+    Test / fork := true
+  ) ++ commonSettings
+
+  lazy val geowaveBenchmark = Seq(
+    name := "geotrellis-geowave-benchmark",
+    libraryDependencies ++= Seq(
+      geowaveGuava, // tracking geowave guava requirement
+      geowaveCassandra, 
+      logbackClassic
+    ),
+    Test / fork := true
+  ) ++ commonSettings
 
   lazy val hbase = Seq(
     name := "geotrellis-hbase",
@@ -442,7 +404,7 @@ object Settings {
     name := "geotrellis-raster",
     libraryDependencies ++= Seq(
       squants,
-      monocle("core").value, 
+      monocle("core").value,
       monocle("macro").value,
       scalaXml,
       scalaURI,
@@ -572,7 +534,7 @@ object Settings {
 
   lazy val `spark-pipeline` = Seq(
     name := "geotrellis-spark-pipeline",
-    libraryDependencies ++= Seq(   
+    libraryDependencies ++= Seq(
       circe("generic-extras").value,
       hadoopClient % Provided,
       apacheSpark("core").value % Provided,
@@ -627,8 +589,8 @@ object Settings {
       jts,
       shapeless,
       pureconfig,
-      circe("core").value, 
-      circe("generic").value, 
+      circe("core").value,
+      circe("generic").value,
       circe("parser").value,
       cats("core").value,
       apacheMath,
@@ -678,14 +640,13 @@ object Settings {
     name := "geotrellis-store",
     libraryDependencies ++= Seq(
       hadoopClient % Provided,
-      guava,
       apacheIO,
       scaffeine,
       caffeine,
       uzaygezenCore,
       scalaXml,
       apacheLang3,
-      fs2("core").value, 
+      fs2("core").value,
       fs2("io").value,
       cats("effect").value,
       scalatest % Test

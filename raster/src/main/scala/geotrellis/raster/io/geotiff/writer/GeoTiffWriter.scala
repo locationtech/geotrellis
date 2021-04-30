@@ -82,7 +82,7 @@ class GeoTiffWriter(geoTiff: GeoTiffData, dos: DataOutputStream) {
   def writeDouble(value: Double): Unit = { writeBytes(toBytes(value)) }
 
   private def append(list: List[GeoTiffData]): Unit = {
-    val overviewsIter = (geoTiff +: geoTiff.overviews).toIterator
+    val overviewsIter = (geoTiff +: geoTiff.overviews).iterator
     overviewsIter.foreach(append(_, !overviewsIter.hasNext))
   }
 

@@ -306,7 +306,7 @@ object RasterSourceRDD {
         val m = keyExtractor.getMetadata(source)
         val tileKeyTransform: SpatialKey => K = { sk => keyExtractor.getKey(m, sk) }
         val tileSource = source.tileToLayout(layout, tileKeyTransform, NearestNeighbor, strategy)
-        tileSource.readAll(keys.map(tileKeyTransform).toIterator)
+        tileSource.readAll(keys.map(tileKeyTransform).iterator)
       }
 
     sourcesRDD.unpersist()

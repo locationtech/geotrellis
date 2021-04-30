@@ -14,6 +14,7 @@ lazy val root = Project("geotrellis", file("."))
     gdal,
     `gdal-spark`,
     geotools,
+    geowave,
     hbase,
     `hbase-spark`,
     layer,
@@ -145,7 +146,7 @@ lazy val `hbase-spark` = project
   .settings(projectDependencies := { Seq((hbase / projectID).value, (spark / projectID).value.exclude("com.google.protobuf", "protobuf-java")) })
   .settings(Settings.`hbase-spark`)
 
-lazy val `spark-pipeline` = Project(id = "spark-pipeline", base = file("spark-pipeline")).
+lazy val `spark-pipeline` = project.
   dependsOn(spark, `s3-spark`, `spark-testkit` % "test").
   settings(Settings.`spark-pipeline`)
 
@@ -155,24 +156,15 @@ lazy val geotools = project
   )
   .settings(Settings.geotools)
 
-/* lazy val geomesa = project
-  .dependsOn(`spark-testkit` % Test, spark, geotools, `accumulo-spark`)
-  .settings(Settings.geomesa)
-  .settings(
-    scalaVersion := "2.11.12",
-    crossScalaVersions := Seq("2.11.12")
-  )
-
 lazy val geowave = project
-  .dependsOn(
-    proj4, raster, layer, store, accumulo,
-    `spark-testkit` % Test, geotools
-  )
+  .dependsOn(raster, store, `raster-testkit` % Test)
   .settings(Settings.geowave)
-  .settings(
-    scalaVersion := "2.11.12",
-    crossScalaVersions := Seq("2.11.12")
-  ) */
+
+lazy val `geowave-benchmark` = (project in file("geowave/benchmark"))
+  .dependsOn(geowave)
+  .enablePlugins(JmhPlugin)
+  .settings(Settings.geowaveBenchmark)
+  .settings(publish / skip := true)
 
 lazy val shapefile = project
   .dependsOn(raster, `raster-testkit` % Test)

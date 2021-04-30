@@ -246,7 +246,7 @@ class GDALRasterSourceRDDSpec extends AnyFunSpec with TestEnvironment with Befor
               // println(Thread.currentThread().getName())
               // Thread.sleep((Math.random() * 100).toLong)
               val lts = reprojRS(i)
-              lts.readAll(lts.keys.take(10).toIterator)
+              lts.readAll(lts.keys.take(10).iterator)
               reprojRS(i).source.resolutions
 
               dirtyCalls(reprojRS(i).source)
@@ -254,7 +254,7 @@ class GDALRasterSourceRDDSpec extends AnyFunSpec with TestEnvironment with Befor
               // println(Thread.currentThread().getName())
               // Thread.sleep((Math.random() * 100).toLong)
               val lts = reprojRS(i)
-              lts.readAll(lts.keys.take(10).toIterator)
+              lts.readAll(lts.keys.take(10).iterator)
               reprojRS(i).source.resolutions
 
               dirtyCalls(reprojRS(i).source)
@@ -262,7 +262,7 @@ class GDALRasterSourceRDDSpec extends AnyFunSpec with TestEnvironment with Befor
               // println(Thread.currentThread().getName())
               // Thread.sleep((Math.random() * 100).toLong)
               val lts = reprojRS(i)
-              lts.readAll(lts.keys.take(10).toIterator)
+              lts.readAll(lts.keys.take(10).iterator)
               reprojRS(i).source.resolutions
 
               dirtyCalls(reprojRS(i).source)

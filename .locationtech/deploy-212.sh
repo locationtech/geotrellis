@@ -17,6 +17,7 @@
    && ./sbt "project hbase-spark" publish -no-colors -J-Drelease=locationtech \
    && ./sbt "project cassandra" publish -no-colors -J-Drelease=locationtech \
    && ./sbt "project cassandra-spark" publish -no-colors -J-Drelease=locationtech \
+   && ./sbt "project geowave" publish -no-colors -J-Drelease=locationtech
    && ./sbt "project geotools" publish -no-colors -J-Drelease=locationtech \
    && ./sbt "project shapefile" publish -no-colors -J-Drelease=locationtech \
    && ./sbt "project layer" publish -no-colors -J-Drelease=locationtech \

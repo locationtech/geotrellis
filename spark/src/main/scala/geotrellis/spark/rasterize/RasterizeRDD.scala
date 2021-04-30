@@ -95,7 +95,7 @@ object RasterizeRDD {
     // key the geometry to intersecting tiles so it can be rasterized in the map-side combine
     val keyed: RDD[(SpatialKey, (Feature[Geometry, Double], SpatialKey))] =
       features.flatMap { feature =>
-        layout.mapTransform.keysForGeometry(feature.geom).toIterator
+        layout.mapTransform.keysForGeometry(feature.geom).iterator
           .map(key => (key, (feature, key)) )
       }
 
@@ -192,7 +192,7 @@ object RasterizeRDD {
     // key the geometry to intersecting tiles so it can be rasterized in the map-side combine
     val keyed: RDD[(SpatialKey, (Feature[Geometry, CellValue], SpatialKey))] =
       features.flatMap { feature =>
-        layout.mapTransform.keysForGeometry(feature.geom).toIterator
+        layout.mapTransform.keysForGeometry(feature.geom).iterator
           .map(key => (key, (feature, key)) )
       }
 

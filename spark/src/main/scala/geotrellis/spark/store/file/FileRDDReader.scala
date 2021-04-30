@@ -60,7 +60,7 @@ object FileRDDReader {
         implicit val ec: ExecutionContext = executionContext
 
         partition flatMap { seq =>
-          IOUtils.parJoin[K, V](seq.toIterator) { index: BigInt =>
+          IOUtils.parJoin[K, V](seq.iterator) { index: BigInt =>
             val path = keyPath(index)
             if (new File(path).exists) {
               val bytes: Array[Byte] = Filesystem.slurp(path)

@@ -48,7 +48,7 @@ object AccumuloCollectionReader {
     val codec = KeyValueRecordCodec[K, V]
     val includeKey = (key: K) => queryKeyBounds.includeKey(key)
 
-    val ranges = queryKeyBounds.flatMap(decomposeBounds).toIterator
+    val ranges = queryKeyBounds.flatMap(decomposeBounds).iterator
 
     implicit val ec = executionContext
     implicit val cs = IO.contextShift(ec)

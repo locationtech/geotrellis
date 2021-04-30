@@ -70,7 +70,7 @@ class S3RDDReader(
         val s3Client = this.s3Client
         val writerSchema = kwWriterSchema.value.getOrElse(_recordCodec.schema)
         partition flatMap { seq =>
-          GTIOUtils.parJoinEBO[K, V](seq.toIterator)({ index: BigInt =>
+          GTIOUtils.parJoinEBO[K, V](seq.iterator)({ index: BigInt =>
             try {
               val request = GetObjectRequest.builder()
                 .bucket(bucket)

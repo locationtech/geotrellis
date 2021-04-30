@@ -143,24 +143,24 @@ abstract class RasterSource extends CellGrid[Long] with RasterMetadata {
     * @group read
     */
   def readExtents(extents: Traversable[Extent], bands: Seq[Int]): Iterator[Raster[MultibandTile]] =
-    extents.toIterator.flatMap(read(_, bands).toIterator)
+    extents.toIterator.flatMap(read(_, bands).iterator)
 
   /**
     * @group read
     */
   def readExtents(extents: Traversable[Extent]): Iterator[Raster[MultibandTile]] =
-    readExtents(extents, (0 until bandCount))
+    readExtents(extents, 0 until bandCount)
   /**
     * @group read
     */
   def readBounds(bounds: Traversable[GridBounds[Long]], bands: Seq[Int]): Iterator[Raster[MultibandTile]] =
-    bounds.toIterator.flatMap(read(_, bands).toIterator)
+    bounds.toIterator.flatMap(read(_, bands).iterator)
 
   /**
     * @group read
     */
   def readBounds(bounds: Traversable[GridBounds[Long]]): Iterator[Raster[MultibandTile]] =
-    bounds.toIterator.flatMap(read(_, (0 until bandCount)).toIterator)
+    bounds.toIterator.flatMap(read(_, 0 until bandCount).iterator)
 
   private[raster] def targetCellType: Option[TargetCellType]
 
