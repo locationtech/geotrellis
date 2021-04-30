@@ -19,6 +19,7 @@ package geotrellis.geowave.adapter.raster.avro
 import geotrellis.raster.{CellGrid, Raster}
 import geotrellis.store.avro._
 import geotrellis.vector.Extent
+
 import org.apache.avro.SchemaBuilder
 import org.apache.avro.generic.GenericRecord
 
@@ -27,18 +28,18 @@ trait RasterCodec {
     def schema = SchemaBuilder
       .record("Raster").namespace("geotrellis.raster")
       .fields()
-      .name("tile").`type`(implicitly[AvroRecordCodec[T]].schema).noDefault
-      .name("extent").`type`(implicitly[AvroRecordCodec[Extent]].schema).noDefault
+      .name("tile").`type`(AvroRecordCodec[T].schema).noDefault
+      .name("extent").`type`(AvroRecordCodec[Extent].schema).noDefault
       .endRecord()
 
     def encode(raster: Raster[T], rec: GenericRecord): Unit = {
-      rec.put("tile", implicitly[AvroRecordCodec[T]].encode(raster.tile))
-      rec.put("extent", implicitly[AvroRecordCodec[Extent]].encode(raster.extent))
+      rec.put("tile", AvroRecordCodec[T].encode(raster.tile))
+      rec.put("extent", AvroRecordCodec[Extent].encode(raster.extent))
     }
 
     def decode(rec: GenericRecord): Raster[T] = {
-      val tile = implicitly[AvroRecordCodec[T]].decode(rec[GenericRecord]("tile"))
-      val extent = implicitly[AvroRecordCodec[Extent]].decode(rec[GenericRecord]("extent"))
+      val tile = AvroRecordCodec[T].decode(rec[GenericRecord]("tile"))
+      val extent = AvroRecordCodec[Extent].decode(rec[GenericRecord]("extent"))
       Raster(tile, extent)
     }
   }

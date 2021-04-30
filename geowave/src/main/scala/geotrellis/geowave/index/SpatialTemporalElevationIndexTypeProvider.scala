@@ -30,7 +30,6 @@ import org.locationtech.geowave.core.index.sfc.xz.XZHierarchicalIndexFactory
 import org.locationtech.geowave.core.store.api.Index
 import org.locationtech.geowave.core.store.dimension.NumericDimensionField
 import org.locationtech.geowave.core.store.index.{BasicIndexModel, CustomNameIndex}
-import org.locationtech.geowave.core.store.index.BaseIndexBuilder
 import org.locationtech.geowave.core.store.spi.DimensionalityTypeProviderSpi
 import org.opengis.referencing.crs.CoordinateReferenceSystem
 import spire.syntax.cfor._
