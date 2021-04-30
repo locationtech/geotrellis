@@ -23,5 +23,5 @@ import org.locationtech.geowave.core.store.data.field.FieldWriter
 
 class MultibandRasterWriter extends FieldWriter[Raster[MultibandTile], Raster[MultibandTile]] {
   override def getVisibility(rowValue: Raster[MultibandTile], fieldName: String, fieldValue: Raster[MultibandTile]): Array[Byte] = Array()
-  def writeField(field: Raster[MultibandTile]): Array[Byte] = AvroEncoder.toBinary(field.mapTile(_.toArrayTile: MultibandTile))
+  def writeField(field: Raster[MultibandTile]): Array[Byte] = AvroEncoder.toBinary(field.mapTile(_.toArrayTile(): MultibandTile))
 }

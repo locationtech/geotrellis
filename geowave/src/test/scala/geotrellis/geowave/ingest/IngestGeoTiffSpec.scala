@@ -72,7 +72,7 @@ class IngestGeoTiffSpec extends TestEnvironment with Matchers {
     geometry  =
       """
         |{"type":"Polygon","coordinates":[[[141.7066666666667,-18.373333333333342],[141.7066666666667,-17.52000000000001],[142.56000000000003,-17.52000000000001],[142.56000000000003,-18.373333333333342],[141.7066666666667,-18.373333333333342]]]}
-        |""".stripMargin.parseGeoJson[Polygon].some,
+        |""".stripMargin.parseGeoJson[Polygon]().some,
     namespace = "IngestMultibandGeoTiffSpec".some,
     time      = new TimeRange(0, date.toEpochMilli).some,
     elevation     = new NumericRange(0d, 30000d).some,

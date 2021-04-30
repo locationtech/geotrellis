@@ -121,8 +121,9 @@ class QueryBenchmark extends BenchmarkEnvironment {
 
   private def temporalQuery(indexName: String) = {
     val timeRange = new NumericRange(
-      LocalDate.ofYearDay(1970, 1).atStartOfDay(ZoneOffset.UTC).toInstant.toEpochMilli,
-      LocalDate.ofYearDay(2010, 1).atStartOfDay(ZoneOffset.UTC).toInstant.toEpochMilli)
+      LocalDate.ofYearDay(1970, 1).atStartOfDay(ZoneOffset.UTC).toInstant.toEpochMilli.toDouble,
+      LocalDate.ofYearDay(2010, 1).atStartOfDay(ZoneOffset.UTC).toInstant.toEpochMilli.toDouble
+    )
     val tc = new BasicQueryByClass(new ConstraintsByClass(
       new ConstraintSet(
         new ConstraintData(timeRange, false),

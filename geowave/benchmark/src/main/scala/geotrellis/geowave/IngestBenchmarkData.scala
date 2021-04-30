@@ -47,7 +47,7 @@ object IngestBenchmarkData extends BenchmarkEnvironment {
     val result = (data >>= { tiles =>
       tiles.map { tile => IO {
         val indexWriter: Writer[GeoTiff[MultibandTile]] = geowaveDataStore.createWriter(dataTypeAdapter.getTypeName)
-        try indexWriter.write(tile) finally if (indexWriter != null) indexWriter.close
+        try indexWriter.write(tile) finally if (indexWriter != null) indexWriter.close()
         tile
       } }.parSequence }).unsafeRunSync()
 

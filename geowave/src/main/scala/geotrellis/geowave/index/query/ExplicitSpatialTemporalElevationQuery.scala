@@ -36,7 +36,7 @@ object ExplicitSpatialTemporalElevationQuery {
     val geoConstraints = GeometryUtils.basicConstraintsFromGeometry(queryGeometry)
     val temporalConstraints = new ConstraintsByClass(
       new ConstraintSet(
-        new ConstraintData(new NumericRange(minTime.getTime(), maxTime.getTime()), false),
+        new ConstraintData(new NumericRange(minTime.getTime.toDouble, maxTime.getTime.toDouble), false),
         classOf[TimeDefinition],
         classOf[SimpleTimeDefinition]
       )

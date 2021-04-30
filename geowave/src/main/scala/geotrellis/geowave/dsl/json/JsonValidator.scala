@@ -32,7 +32,7 @@ object JsonValidator {
   private def readJson(resource: String): Json = {
     val stream = getClass.getResourceAsStream(resource)
     try {
-      val lines = scala.io.Source.fromInputStream(stream).getLines
+      val lines = scala.io.Source.fromInputStream(stream).getLines()
       val json = lines.mkString(" ")
       io.circe.parser.parse(json).valueOr(throw _)
     } finally stream.close()

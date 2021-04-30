@@ -65,7 +65,7 @@ object IngestGeoTiff {
             .map { md => readVoxelBounds(uri, md.bounds) }
             .toList
             .sequence
-            .map(_.toIterator.flatten)
+            .map(_.iterator.flatten)
         }
 
       private
@@ -74,7 +74,7 @@ object IngestGeoTiff {
         rs
           .read(bounds.toGridBounds.toGridType[Long], bounds.depthMin to bounds.depthMax)
           .map(MultibandGeoTiff(_, rs.crs, rs.metadata.tags))
-          .toIterator
+          .iterator
       }
 
       private
