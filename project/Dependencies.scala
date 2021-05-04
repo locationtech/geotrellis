@@ -111,9 +111,6 @@ object Dependencies {
   val geotoolsMetadata    = "org.geotools"                 % "gt-metadata"             % Version.geotools
   val geotoolsOpengis     = "org.geotools"                 % "gt-opengis"              % Version.geotools
 
-  // located in the OSGeo repo: https://repo.osgeo.org/repository/release/
-  val jaiCore             = "javax.media" % "jai_core"     % "1.1.3"
-
   val geowaveRaster       = "org.locationtech.geowave"     % "geowave-adapter-raster"     % Version.geowave
   val geowaveVector       = "org.locationtech.geowave"     % "geowave-adapter-vector"     % Version.geowave
   val geowaveIndex        = "org.locationtech.geowave"     % "geowave-core-index"         % Version.geowave
@@ -165,4 +162,14 @@ object Dependencies {
 
   val scalaURI            = "io.lemonlabs" %% "scala-uri" % "1.5.1"
   val java8Compat         = "org.scala-lang.modules" %% "scala-java8-compat" % "0.9.1"
+
+  // located in the OSGeo repo: https://repo.osgeo.org/repository/release/
+  // 'works with' due to license issues
+  val jaiCore             = "javax.media" % "jai_core"     % "1.1.3"
+  val jaiCodec            = "javax.media" % "jai_codec"    % "1.1.3"
+  val imageIo             = "javax.media" % "jai_imageio"  % "1.1"
+
+  val imageioExtUtilities = "it.geosolutions.imageio-ext" % "imageio-ext-utilities" % "1.3.5"
+
+  val worksWithDependencies = Seq(jaiCore, jaiCodec, imageIo, imageioExtUtilities).map(_ % Provided)
 }
