@@ -60,7 +60,8 @@ object Settings {
     "-feature",
     // "-Yrangepos",            // required by SemanticDB compiler plugin
     // "-Ywarn-unused-import",  // required by `RemoveUnused` rule
-    "-target:jvm-1.8")
+    "-target:jvm-1.8"
+  )
 
   lazy val commonSettings = Seq(
     description := "geographic data processing library for high performance applications",
@@ -145,6 +146,19 @@ object Settings {
     case Some((2, 12)) => Nil
     case x => sys.error(s"Encountered unsupported Scala version ${x.getOrElse("undefined")}")
   } }
+
+  // excluded dependencies due to license issue
+  // exclusion list is inspired by https://github.com/locationtech/geomesa/blob/geomesa_2.11-3.1.2/pom.xml#L1031
+  lazy val excludedDependencies = List(
+    ExclusionRule("javax.media", "jai_core"),
+    ExclusionRule("javax.media", "jai_codec"),
+    ExclusionRule("javax.media", "jai_imageio"),
+    ExclusionRule("it.geosolutions.imageio-ext"),
+    ExclusionRule("jgridshift", "jgridshift"),
+    ExclusionRule("jgridshift", "jgridshift-core"),
+    ExclusionRule("org.jaitools", "jt-zonalstats"),
+    ExclusionRule("org.jaitools", "jt-utils")
+  )
 
   lazy val accumulo = Seq(
     name := "geotrellis-accumulo",
@@ -276,18 +290,19 @@ object Settings {
   lazy val geotools = Seq(
     name := "geotrellis-geotools",
     libraryDependencies ++= Seq(
-      jaiCore,
-      unitApi,
       geotoolsCoverage,
       geotoolsHsql,
       geotoolsMain,
       geotoolsReferencing,
       geotoolsMetadata,
-      geotoolsOpengis,
+      geotoolsOpengis
+    ).map(_ excludeAll(excludedDependencies: _*)),
+    libraryDependencies ++= Seq(
+      unitApi,
       geotoolsGeoTiff % Test,
       geotoolsShapefile % Test,
       scalatest % Test
-    ),
+    ) ++ worksWithDependencies,
     console / initialCommands :=
       """
       import geotrellis.geotools._
@@ -304,14 +319,13 @@ object Settings {
   lazy val geowave = Seq(
     name := "geotrellis-geowave",
     libraryDependencies ++= Seq(
-      jaiCore, 
       newtype, 
       java8Compat,
       circe("generic-extras").value, 
       circe("json-schema").value,
       geowaveStore, 
       geowaveIndex, 
-      geowaveGeotime exclude("javax.media", "jai_core"),
+      geowaveGeotime,
       geowaveGuava % Test, // tracking geowave guava requirement
       geowaveCassandra % Test, 
       scalatest % Test, 
@@ -496,12 +510,11 @@ object Settings {
   lazy val shapefile = Seq(
     name := "geotrellis-shapefile",
     libraryDependencies ++= Seq(
-      jaiCore,
       geotoolsMain,
       geotoolsOpengis,
-      geotoolsShapefile,
-      scalatest % Test
-    ),
+      geotoolsShapefile
+    ).map(_ excludeAll(excludedDependencies: _*)),
+    libraryDependencies ++= Seq(scalatest % Test) ++ worksWithDependencies,
     Test / fork := false
   ) ++ commonSettings
 
