@@ -49,7 +49,7 @@ trait COGValueReader[ID] {
     layerId: ID,
     keyPath: (K, Int, KeyIndex[K], ZoomRange) => String, // Key, maxWidth, toIndex, zoomRange
     fullPath: String => URI,
-    exceptionHandler: K => PartialFunction[Throwable, Nothing] = { key: K => { case e: Throwable => throw e }: PartialFunction[Throwable, Nothing] }
+    exceptionHandler: K => PartialFunction[Throwable, Nothing] = { key: K => ({ case e: Throwable => throw e }): PartialFunction[Throwable, Nothing] }
    ): COGReader[K, V] = new COGReader[K, V] {
     val COGLayerStorageMetadata(cogLayerMetadata, keyIndexes) =
       attributeStore.readMetadata[COGLayerStorageMetadata[K]](LayerId(layerId.name, 0))
