@@ -564,7 +564,8 @@ object Settings {
           .inLibrary("com.azavea.geotrellis" %% "geotrellis-hbase" % version.value).inAll,
         ShadeRule.rename("com.fasterxml.jackson.**" -> s"$shadePackage.com.fasterxml.jackson.@1")
           .inLibrary(jsonSchemaValidator).inAll,
-        ShadeRule.rename("shapeless.**" -> s"$shadePackage.shapeless.@1").inAll
+        ShadeRule.rename("shapeless.**" -> s"$shadePackage.shapeless.@1").inAll,
+        ShadeRule.rename("cats.kernel.**" -> s"$shadePackage.cats.kernel.@1").inAll
       )
     },
     assembly / assemblyMergeStrategy := {
