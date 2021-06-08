@@ -190,7 +190,7 @@ workflows:
       - common:
           matrix:
             parameters:
-              scala-version: ["2.12.13", "2.13.6"]
+              scala-version: ["2.12.14", "2.13.6"]
               test-set: ["1", "2"]
           filters:
             branches:
@@ -201,7 +201,7 @@ workflows:
       - cassandra:
           matrix:
             parameters:
-              scala-version: ["2.12.13", "2.13.6"]
+              scala-version: ["2.12.14", "2.13.6"]
           filters:
             branches:
               only: /.*/
@@ -211,7 +211,7 @@ workflows:
       - s3:
           matrix:
             parameters:
-              scala-version: ["2.12.13", "2.13.6"]
+              scala-version: ["2.12.14", "2.13.6"]
           filters:
             branches:
               only: /.*/
@@ -221,7 +221,7 @@ workflows:
       - hbase:
           matrix:
             parameters:
-              scala-version: ["2.12.13", "2.13.6"]
+              scala-version: ["2.12.14", "2.13.6"]
           filters:
             branches:
               only: /.*/
@@ -231,7 +231,7 @@ workflows:
       - accumulo:
           matrix:
             parameters:
-              scala-version: [ "2.12.13", "2.13.6" ]
+              scala-version: [ "2.12.14", "2.13.6" ]
           filters:
             branches:
               only: /.*/
@@ -241,7 +241,7 @@ workflows:
       - geowave:
           matrix:
             parameters:
-              scala-version: [ "2.12.13", "2.13.6" ]
+              scala-version: [ "2.12.14", "2.13.6" ]
           filters:
             branches:
               only: /.*/
@@ -251,7 +251,7 @@ workflows:
       - scaladocs:
           matrix:
             parameters:
-              scala-version: ["2.12.13"]
+              scala-version: ["2.12.14"]
           filters:
             branches:
               only: master
@@ -264,7 +264,7 @@ workflows:
             - hbase
           matrix:
             parameters:
-              scala-version: ["2.12.13", "2.13.6"]
+              scala-version: ["2.12.14", "2.13.6"]
           filters:
             branches:
               only: master
