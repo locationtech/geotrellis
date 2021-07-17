@@ -116,6 +116,9 @@ trait TestEnvironment extends BeforeAndAfterAll
   val inputHome = TestEnvironment.inputHome
   val inputHomeLocalPath = inputHome.toUri.getPath
 
+  // root directory name on both local file system and hdfs for all tests
+  private final val outputHome = "testFiles"
+
   // test directory paths on local and hdfs
   // outputHomeLocal - root directory of all tests on the local file system (e.g., file:///tmp/testFiles)
   // outputHomeHdfs - root directory of all tests on hdfs (e.g., hdfs:///tmp)
@@ -160,9 +163,6 @@ trait TestEnvironment extends BeforeAndAfterAll
       for(f <- afterAlls) { f() }
     }
   }
-
-  // root directory name on both local file system and hdfs for all tests
-  private final val outputHome = "testFiles"
 
   private def getLocalFS: FileSystem = new Path(System.getProperty("java.io.tmpdir")).getFileSystem(conf)
 }
