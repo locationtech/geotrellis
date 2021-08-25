@@ -276,7 +276,7 @@ size of the file.
 Reading in Small Files
 ''''''''''''''''''''''
 
-Smaller files are GeoTiffs that are less than or equal to 4GB in isze.
+Smaller files are GeoTiffs that are less than or equal to 4GB in size.
 The way to best utilize the reader for these kinds of files differs from
 larger ones.
 
