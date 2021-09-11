@@ -238,15 +238,15 @@ workflows:
             tags:
               only: /^v.*/
 
-      - geowave:
-          matrix:
-            parameters:
-              scala-version: [ "2.12.14", "2.13.6" ]
-          filters:
-            branches:
-              only: /.*/
-            tags:
-              only: /^v.*/
+      # - geowave:
+          # matrix:
+            # parameters:
+              # scala-version: [ "2.12.14", "2.13.6" ]
+          # filters:
+            # branches:
+              # only: /.*/
+            # tags:
+              # only: /^v.*/
 
       - scaladocs:
           matrix:
