@@ -14,7 +14,7 @@ lazy val root = Project("geotrellis", file("."))
     gdal,
     `gdal-spark`,
     geotools,
-    geowave,
+    // geowave,
     hbase,
     `hbase-spark`,
     layer,
