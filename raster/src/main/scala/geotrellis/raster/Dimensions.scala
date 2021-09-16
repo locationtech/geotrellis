@@ -27,4 +27,8 @@ case class Dimensions[@specialized(Byte, Short, Int, Long) N: Integral](cols: N,
 
 object Dimensions {
   implicit def apply[N: Integral](tup: (N, N)) = new Dimensions(tup._1, tup._2)
+
+  def apply(cols: Int, rows: Int): Dimensions[Int] = new Dimensions(cols, rows)
+
+  def apply(cols: Long, rows: Long): Dimensions[Long] = new Dimensions(cols, rows)
 }
