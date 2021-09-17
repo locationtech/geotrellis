@@ -33,12 +33,11 @@ object Settings {
     val eclipseReleases = "eclipse-releases" at "https://repo.eclipse.org/content/groups/releases"
     val osgeoReleases   = "osgeo-releases" at "https://repo.osgeo.org/repository/release/"
     val geosolutions    = "geosolutions" at "https://maven.geo-solutions.it/"
-    val jitpack         = "jitpack" at "https://jitpack.io" // for https://github.com/everit-org/json-schema
     val ivy2Local       = Resolver.file("local", file(Path.userHome.absolutePath + "/.ivy2/local"))(Resolver.ivyStylePatterns)
     val mavenLocal      = Resolver.mavenLocal
     val maven           = DefaultMavenRepository
     val local           = Seq(ivy2Local, mavenLocal)
-    val external        = Seq(osgeoReleases, maven, eclipseReleases, geosolutions, jitpack, apacheSnapshots)
+    val external        = Seq(osgeoReleases, maven, eclipseReleases, geosolutions, apacheSnapshots)
     val all             = external ++ local
   }
 

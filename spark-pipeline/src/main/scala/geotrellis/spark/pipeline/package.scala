@@ -35,8 +35,8 @@ package object pipeline extends json.Implicits with ast.untyped.Implicits {
     def map[B](f: PipelineExpr => B): List[B] = list.map(f)
   }
 
-  implicit class withPipelinePrettyPrint(that: Node[_]) {
-    def prettyPrint: String = that.asJson.asJson.pretty(pipelineJsonPrinter)
+  implicit class withPipelinePrint(that: Node[_]) {
+    def print: String = that.asJson.asJson.printWith(pipelineJsonPrinter)
   }
 
   implicit class withGetCRS[T <: { def crs: String }](o: T) {

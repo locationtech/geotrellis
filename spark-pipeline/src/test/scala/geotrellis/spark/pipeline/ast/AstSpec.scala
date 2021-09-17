@@ -185,8 +185,8 @@ class AstSpec extends AnyFunSpec
       val write1 = Write(pyramid, json.write.JsonWrite("write1", "/tmp", PipelineKeyIndexMethod("zorder"), scheme, `type` = WriteTypes.SpatialType))
       val write2 = Write(write1, json.write.JsonWrite("write2", "/tmp", PipelineKeyIndexMethod("zorder"), scheme, `type` = WriteTypes.SpatialType))
 
-      // println(write1.prettyPrint)
-      // println(write2.prettyPrint)
+      // println(write1.print)
+      // println(write2.print)
 
       write1.asJson.asJson shouldBe expectedWrite1Json
       write2.asJson.asJson shouldBe expectedWrite2Json
@@ -215,8 +215,8 @@ class AstSpec extends AnyFunSpec
       val typedAst2 =
         untypedAst.node[Stream[(Int, TileLayerRDD[SpatialKey])]]
 
-      // println(typedAst.prettyPrint)
-      // println(typedAst2.prettyPrint)
+      // println(typedAst.print)
+      // println(typedAst2.print)
 
       typedAst shouldBe typedAst2
     }
@@ -282,8 +282,8 @@ class AstSpec extends AnyFunSpec
     val typedAst2 =
       untypedAst.node[Stream[(Int, TileLayerRDD[SpatialKey])]]
 
-    // println(typedAst.prettyPrint)
-    // println(typedAst2.prettyPrint)
+    // println(typedAst.print)
+    // println(typedAst2.print)
 
     typedAst shouldBe typedAst2
   }

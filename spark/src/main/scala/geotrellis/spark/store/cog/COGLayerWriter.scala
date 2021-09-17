@@ -90,7 +90,7 @@ trait COGLayerWriter extends Serializable {
     tiles.metadata.bounds match {
       case keyBounds: KeyBounds[K] =>
         val cogLayer = COGLayer.fromLayerRDD(tiles, tileZoom, options = options)
-        // println(cogLayer.metadata.toJson.prettyPrint)
+        // println(cogLayer.metadata.toJson.print)
         val keyIndexes: Map[ZoomRange, KeyIndex[K]] =
           cogLayer.metadata.zoomRangeInfos.
             map { case (zr, bounds) => zr -> keyIndexMethod.createIndex(bounds) }.

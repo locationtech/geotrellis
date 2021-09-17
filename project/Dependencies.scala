@@ -54,8 +54,8 @@ object Dependencies {
 
   def circe(module: String) = Def.setting {
     module match {
-      case "json-schema" => "io.circe" %% s"circe-$module" % "0.1.0"
-      case _             => "io.circe" %% s"circe-$module" % "0.13.0"
+      case "json-schema" => "io.circe" %% s"circe-$module" % "0.2.0"
+      case _             => "io.circe" %% s"circe-$module" % "0.14.1"
     }
   }
 
@@ -111,12 +111,12 @@ object Dependencies {
   val geotoolsMetadata    = "org.geotools"                 % "gt-metadata"             % Version.geotools
   val geotoolsOpengis     = "org.geotools"                 % "gt-opengis"              % Version.geotools
 
-  val geowaveRaster       = "org.locationtech.geowave"     % "geowave-adapter-raster"     % Version.geowave
-  val geowaveVector       = "org.locationtech.geowave"     % "geowave-adapter-vector"     % Version.geowave
-  val geowaveIndex        = "org.locationtech.geowave"     % "geowave-core-index"         % Version.geowave
-  val geowaveStore        = "org.locationtech.geowave"     % "geowave-core-store"         % Version.geowave
-  val geowaveGeotime      = "org.locationtech.geowave"     % "geowave-core-geotime"       % Version.geowave
-  val geowaveAccumulo     = "org.locationtech.geowave"     % "geowave-datastore-accumulo" % Version.geowave
+  val geowaveRaster       = "org.locationtech.geowave"     % "geowave-adapter-raster"      % Version.geowave
+  val geowaveVector       = "org.locationtech.geowave"     % "geowave-adapter-vector"      % Version.geowave
+  val geowaveIndex        = "org.locationtech.geowave"     % "geowave-core-index"          % Version.geowave
+  val geowaveStore        = "org.locationtech.geowave"     % "geowave-core-store"          % Version.geowave
+  val geowaveGeotime      = "org.locationtech.geowave"     % "geowave-core-geotime"        % Version.geowave
+  val geowaveAccumulo     = "org.locationtech.geowave"     % "geowave-datastore-accumulo"  % Version.geowave
   val geowaveCassandra    = "org.locationtech.geowave"     % "geowave-datastore-cassandra" % Version.geowave
 
   val geowaveGuava        = "com.google.guava"             % "guava"                   % "25.1-jre"
@@ -154,7 +154,7 @@ object Dependencies {
   val jacksonAnnotations  = "com.fasterxml.jackson.core"    % "jackson-annotations"      % "2.6.7"
   val jacksonModuleScala  = "com.fasterxml.jackson.module" %% "jackson-module-scala"     % "2.6.7"
 
-  val shapeless           = "com.chuusai"  %% "shapeless" % "2.3.3"
+  val shapeless           = "com.chuusai"  %% "shapeless" % "2.3.7"
   val newtype             = "io.estatico"  %% "newtype"   % "0.4.4"
 
   // aligned with the GeoTools version, should be 2.1.2 for GeoTools 24.2

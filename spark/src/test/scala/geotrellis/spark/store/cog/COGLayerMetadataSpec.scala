@@ -44,7 +44,7 @@ class COGLayerMetadataSpec extends AnyFunSpec with Matchers {
       val expectedZoomRanges = Vector(store.cog.ZoomRange(0,0), store.cog.ZoomRange(1, 1), store.cog.ZoomRange(2,2), store.cog.ZoomRange(3,3), store.cog.ZoomRange(4,4), store.cog.ZoomRange(5,5), store.cog.ZoomRange(6,6), store.cog.ZoomRange(7,8), store.cog.ZoomRange(9,13))
 
       val md = generateLCMetadata()
-      // println(md.toJson.prettyPrint)
+      // println(md.toJson.print)
       md.zoomRanges should contain theSameElementsAs (expectedZoomRanges)
     }
 
@@ -52,7 +52,7 @@ class COGLayerMetadataSpec extends AnyFunSpec with Matchers {
       val expectedZoomRanges = Vector(store.cog.ZoomRange(7,8), store.cog.ZoomRange(9,13))
 
       val md = generateLCMetadata(minZoom = 8)
-      // println(md.toJson.prettyPrint)
+      // println(md.toJson.print)
       md.zoomRanges should contain theSameElementsAs (expectedZoomRanges)
     }
 
@@ -60,7 +60,7 @@ class COGLayerMetadataSpec extends AnyFunSpec with Matchers {
       val expectedZoomRanges = Vector(store.cog.ZoomRange(6,6), store.cog.ZoomRange(7,8), store.cog.ZoomRange(9,13))
 
       val md = generateLCMetadata(minZoom = 6)
-      // println(md.toJson.prettyPrint)
+      // println(md.toJson.print)
       md.zoomRanges should contain theSameElementsAs (expectedZoomRanges)
     }
   }
