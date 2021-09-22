@@ -16,12 +16,11 @@
 
 package geotrellis.raster.mapalgebra.focal
 
-import geotrellis.raster.Tile
-
+import geotrellis.raster.{BufferTile, Tile}
 
 object Implicits extends Implicits
 
-
 trait Implicits {
   implicit class withTileFocalMethods(val self: Tile) extends FocalMethods
+  implicit class withBufferTileFocalMethods(val self: BufferTile) extends BufferTileFocalMethods
 }

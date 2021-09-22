@@ -438,4 +438,6 @@ case class BufferTile(
   }
 
   def mapTile(f: Tile => Tile): BufferTile = BufferTile(f(sourceTile), gridBounds)
+
+  override def toString(): String = s"BufferTile(${sourceTile.dimensions}, $gridBounds, $cellType)"
 }
