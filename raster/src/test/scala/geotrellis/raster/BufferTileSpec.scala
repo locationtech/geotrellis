@@ -16,25 +16,21 @@
 
 package geotrellis.raster
 
-import geotrellis.vector.Extent
 import geotrellis.raster.testkit._
-
-import scala.collection.mutable
-import spire.syntax.cfor._
 
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.funspec.AnyFunSpec
 
 class BufferTileSpec extends AnyFunSpec with Matchers with RasterMatchers with TileBuilders {
 
-  val tile = IntArrayTile(Array(2,2,2,2), 2, 2)
+  val tile = IntArrayTile(Array(2, 2, 2, 2), 2, 2)
   // center is all 1s, buffer is all 0
   val padded: BufferTile = new BufferTile(
     ArrayTile(Array(
-      1,2,3,4,
-      1,1,1,4,
-      1,1,1,4,
-      1,2,3,4), 4, 4),
+      1, 2, 3, 4,
+      1, 1, 1, 4,
+      1, 1, 1, 4,
+      1, 2, 3, 4), 4, 4),
     GridBounds(1, 1, 2, 2)
   )
 
@@ -46,7 +42,7 @@ class BufferTileSpec extends AnyFunSpec with Matchers with RasterMatchers with T
   }
 
   it("padded + padded => padded") {
-    val ans = (padded.combine(padded)(_ + _)).asInstanceOf[BufferTile]
+    val ans = padded.combine(padded)(_ + _).asInstanceOf[BufferTile]
 
     ans.bufferTop shouldBe 1
     ans.bufferLeft shouldBe 1
@@ -55,7 +51,7 @@ class BufferTileSpec extends AnyFunSpec with Matchers with RasterMatchers with T
     ans.dimensions shouldBe Dimensions(2, 2)
 
     // info("\n" + ans.sourceTile.asciiDraw())
-    val ansDouble = (padded.combineDouble(padded)(_ + _)).asInstanceOf[BufferTile]
+    val ansDouble = padded.combineDouble(padded)(_ + _).asInstanceOf[BufferTile]
 
     ansDouble.bufferTop shouldBe 1
     ansDouble.bufferLeft shouldBe 1
@@ -66,7 +62,7 @@ class BufferTileSpec extends AnyFunSpec with Matchers with RasterMatchers with T
 
   it("padded + padded => padded (as Tile)") {
     val tile: Tile = padded
-    val ans = (tile.combine(tile)(_ + _)).asInstanceOf[BufferTile]
+    val ans = tile.combine(tile)(_ + _).asInstanceOf[BufferTile]
 
     ans.bufferTop shouldBe 1
     ans.bufferLeft shouldBe 1
@@ -75,7 +71,7 @@ class BufferTileSpec extends AnyFunSpec with Matchers with RasterMatchers with T
     ans.dimensions shouldBe Dimensions(2, 2)
     // info("\n" + ans.sourceTile.asciiDraw())
 
-    val ansDouble = (tile.combineDouble(tile)(_ + _)).asInstanceOf[BufferTile]
+    val ansDouble = tile.combineDouble(tile)(_ + _).asInstanceOf[BufferTile]
 
     ansDouble.bufferTop shouldBe 1
     ansDouble.bufferLeft shouldBe 1

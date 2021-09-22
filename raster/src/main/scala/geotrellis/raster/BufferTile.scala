@@ -16,11 +16,7 @@
 
 package geotrellis.raster
 
-import geotrellis.vector.Extent
-
 import spire.syntax.cfor._
-import geotrellis.util.Direction
-import geotrellis.util.Direction._
 
 /**
  * When combined with another BufferTile the two tiles will be aligned on (0, 0) pixel of tile center.
@@ -44,18 +40,19 @@ case class BufferTile(
     gridBounds.colMin >=0 &&
     gridBounds.rowMin >= 0 &&
     gridBounds.colMax < sourceTile.cols &&
-    gridBounds.rowMax <= sourceTile.rows,
-    s"Tile center bounds $gridBounds exceed underlying tile dimensions ${sourceTile.dimensions}")
+    gridBounds.rowMax < sourceTile.rows,
+    s"Tile center bounds $gridBounds exceed underlying tile dimensions ${sourceTile.dimensions}"
+  )
 
-  val cols = gridBounds.width
-  val rows = gridBounds.height
+  val cols: Int = gridBounds.width
+  val rows: Int = gridBounds.height
 
-  val cellType = sourceTile.cellType
+  val cellType: CellType = sourceTile.cellType
 
-  private def colMin = gridBounds.colMin
-  private def rowMin = gridBounds.rowMin
-  private def sourceCols = sourceTile.cols
-  private def sourceRows = sourceTile.rows
+  private def colMin: Int = gridBounds.colMin
+  private def rowMin: Int = gridBounds.rowMin
+  private def sourceCols: Int = sourceTile.cols
+  private def sourceRows: Int = sourceTile.rows
 
   def bufferTop: Int = gridBounds.rowMin
   def bufferLeft: Int = gridBounds.colMin
@@ -86,8 +83,8 @@ case class BufferTile(
     * @return       The Int datum found at the given location
     */
   def get(col: Int, row: Int): Int = {
-    val c = col + gridBounds.colMin
-    val r = row + gridBounds.rowMin
+    val c = col + colMin
+    val r = row + rowMin
     if(c < 0 || r < 0 || c >= sourceCols || r >= sourceRows) {
       throw new IndexOutOfBoundsException(s"(col=$col, row=$row) is out of tile bounds")
     } else {
@@ -103,8 +100,8 @@ case class BufferTile(
     * @return       The Double datum found at the given location
     */
   def getDouble(col: Int, row: Int): Double = {
-    val c = col + gridBounds.colMin
-    val r = row + gridBounds.rowMin
+    val c = col + colMin
+    val r = row + rowMin
 
     if(c < 0 || r < 0 || c >= sourceCols || r >= sourceRows) {
       throw new IndexOutOfBoundsException(s"(col=$col, row=$row) is out of tile bounds")
@@ -118,7 +115,7 @@ case class BufferTile(
     *
     * @return  An [[ArrayTile]]
     */
-  def toArrayTile: ArrayTile = mutable
+  def toArrayTile: ArrayTile = mutable()
 
   /**
     * Return the [[MutableArrayTile]] equivalent of this tile.
@@ -196,7 +193,7 @@ case class BufferTile(
     *
     * @return  An array of bytes
     */
-  def toBytes(): Array[Byte] = toArrayTile.toBytes
+  def toBytes(): Array[Byte] = toArrayTile.toBytes()
 
   /**
     * Execute a function on each cell of the tile.  The function
@@ -323,10 +320,9 @@ case class BufferTile(
   }
 
   def combine(other: BufferTile)(f: (Int, Int) => Int): Tile = {
-    if((this.gridBounds.width != other.gridBounds.width) || (this.gridBounds.height != other.gridBounds.height)) {
-      throw new GeoAttrsError("Cannot combine rasters with different dimensions: " +
+    if ((this.gridBounds.width != other.gridBounds.width) || (this.gridBounds.height != other.gridBounds.height))
+      throw GeoAttrsError("Cannot combine rasters with different dimensions: " +
         s"${this.gridBounds.width}x${this.gridBounds.height} != ${other.gridBounds.width}x${other.gridBounds.height}")
-    }
 
     val bufferTop = math.min(this.bufferTop, other.bufferTop)
     val bufferLeft = math.min(this.bufferLeft, other.bufferLeft)
@@ -346,21 +342,19 @@ case class BufferTile(
       }
     }
 
-    if (bufferTop + bufferLeft + bufferRight + bufferBottom == 0)
-      tile
-    else
-      BufferTile(tile, GridBounds[Int](
-        colMin = bufferLeft,
-        rowMin = bufferTop,
-        colMax = bufferLeft + gridBounds.width - 1,
-        rowMax = bufferTop + gridBounds.height - 1))
+    if (bufferTop + bufferLeft + bufferRight + bufferBottom == 0) tile
+    else BufferTile(tile, GridBounds[Int](
+      colMin = bufferLeft,
+      rowMin = bufferTop,
+      colMax = bufferLeft + gridBounds.width - 1,
+      rowMax = bufferTop + gridBounds.height - 1)
+    )
   }
 
   def combineDouble(other: BufferTile)(f: (Double, Double) => Double): Tile = {
-    if((this.gridBounds.width != other.gridBounds.width) || (this.gridBounds.height != other.gridBounds.height)) {
-      throw new GeoAttrsError("Cannot combine rasters with different dimensions: " +
+    if ((this.gridBounds.width != other.gridBounds.width) || (this.gridBounds.height != other.gridBounds.height))
+      throw GeoAttrsError("Cannot combine rasters with different dimensions: " +
         s"${this.gridBounds.width}x${this.gridBounds.height} != ${other.gridBounds.width}x${other.gridBounds.height}")
-    }
 
     val bufferTop = math.min(this.bufferTop, other.bufferTop)
     val bufferLeft = math.min(this.bufferLeft, other.bufferLeft)
@@ -380,14 +374,13 @@ case class BufferTile(
       }
     }
 
-    if (bufferTop + bufferLeft + bufferRight + bufferBottom == 0)
-      tile
-    else
-      BufferTile(tile, GridBounds[Int](
-        colMin = bufferLeft,
-        rowMin = bufferTop,
-        colMax = bufferLeft + gridBounds.width - 1,
-        rowMax = bufferTop + gridBounds.height - 1))
+    if (bufferTop + bufferLeft + bufferRight + bufferBottom == 0) tile
+    else BufferTile(tile, GridBounds[Int](
+      colMin = bufferLeft,
+      rowMin = bufferTop,
+      colMax = bufferLeft + gridBounds.width - 1,
+      rowMax = bufferTop + gridBounds.height - 1)
+    )
   }
 
   /**
@@ -401,7 +394,7 @@ case class BufferTile(
     * @return         The result, an Tile
     */
   def combine(other: Tile)(f: (Int, Int) => Int): Tile = {
-    (this, other).assertEqualDimensions
+    (this, other).assertEqualDimensions()
 
     other match {
       case bt: BufferTile =>
@@ -428,7 +421,7 @@ case class BufferTile(
     * @return         The result, an Tile
     */
   def combineDouble(other: Tile)(f: (Double, Double) => Double): Tile = {
-    (this, other).assertEqualDimensions
+    (this, other).assertEqualDimensions()
 
     other match {
       case bt: BufferTile =>
@@ -443,4 +436,6 @@ case class BufferTile(
         tile
     }
   }
+
+  def mapTile(f: Tile => Tile): BufferTile = BufferTile(f(sourceTile), gridBounds)
 }
