@@ -26,11 +26,8 @@ import spire.syntax.cfor._
  *
  * When combined with another BufferTile the operation will be executed over the maximum shared in
  *
- * TODO:
- * - What should .map do? Map the buffer pixels or not?
- * - toString method is friendly
- * - mutable version makes sense
- * - toBytes needs to encode padding size?
+ * Behaves like a regular tile within the gridBounds. The access to the buffer is achieved through the direct
+ * access to the sourceTile or via the mapTile function that maps over the sourceTile.
  */
 case class BufferTile(
   sourceTile: Tile,
@@ -115,14 +112,14 @@ case class BufferTile(
     *
     * @return  An [[ArrayTile]]
     */
-  def toArrayTile: ArrayTile = mutable()
+  def toArrayTile(): ArrayTile = mutable
 
   /**
     * Return the [[MutableArrayTile]] equivalent of this tile.
     *
     * @return  An MutableArrayTile
     */
-  def mutable(): MutableArrayTile =
+  def mutable: MutableArrayTile =
     mutable(cellType)
 
   /**
@@ -155,7 +152,7 @@ case class BufferTile(
     *
     * @return  The copy as an Array[Int]
     */
-  def toArray: Array[Int] = {
+  def toArray(): Array[Int] = {
     val arr = Array.ofDim[Int](cols * rows)
 
     var i = 0
@@ -174,7 +171,7 @@ case class BufferTile(
     *
     * @return  The copy as an Array[Int]
     */
-  def toArrayDouble: Array[Double] = {
+  def toArrayDouble(): Array[Double] = {
     val arr = Array.ofDim[Double](cols * rows)
 
     var i = 0
@@ -439,5 +436,5 @@ case class BufferTile(
 
   def mapTile(f: Tile => Tile): BufferTile = BufferTile(f(sourceTile), gridBounds)
 
-  override def toString(): String = s"BufferTile(${sourceTile.dimensions}, $gridBounds, $cellType)"
+  override def toString: String = s"BufferTile(${sourceTile.dimensions}, $gridBounds, $cellType)"
 }
