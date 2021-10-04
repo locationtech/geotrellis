@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Add new shading rules to make GT work with Spark 3.x [#3397](https://github.com/locationtech/geotrellis/pull/3397)
+- Add Buffer Tile [#3419](https://github.com/locationtech/geotrellis/pull/3419)
 
 ## [3.6.0] - 2021-04-30
 
