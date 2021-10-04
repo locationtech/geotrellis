@@ -25,7 +25,7 @@ trait Implicits {
   /**
    * TODO: think of a better way of organizing implicits with regards to possible Tile successors
    *
-   * Apply withTileFocalMethods to all successor of a [[Tile]] type but [[BufferTile]].
+   * Apply withTileFocalMethods to all successors of the [[Tile]] type excluding the [[BufferTile]].
    * It is required to disambiguate withBufferTileFocalMethods implicit.
    */
   implicit class withTileFocalMethods[T](tile: T)(implicit t: T <:< Tile, nbt: T =:!= BufferTile) extends FocalMethods {
