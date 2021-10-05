@@ -16,6 +16,7 @@
 
 package geotrellis.raster
 
+import geotrellis.raster.mapalgebra.focal.BufferTileFocalMethods
 import spire.syntax.cfor._
 
 /**
@@ -437,4 +438,12 @@ case class BufferTile(
   def mapTile(f: Tile => Tile): BufferTile = BufferTile(f(sourceTile), gridBounds)
 
   override def toString: String = s"BufferTile(${sourceTile.dimensions}, $gridBounds, $cellType)"
+}
+
+object BufferTile {
+  /**
+   * This implicit class is not a part of the [[geotrellis.raster.mapalgebra.focal.Implicits]]
+   * to disambiguate implicit classes application.
+   */
+  implicit class withBufferTileFocalMethods(val self: BufferTile) extends BufferTileFocalMethods
 }

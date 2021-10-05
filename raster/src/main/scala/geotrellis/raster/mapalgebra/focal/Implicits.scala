@@ -16,27 +16,10 @@
 
 package geotrellis.raster.mapalgebra.focal
 
-import geotrellis.raster.{BufferTile, Tile}
-import shapeless.=:!=
+import geotrellis.raster.Tile
 
 object Implicits extends Implicits
 
 trait Implicits {
-  /**
-   * TODO: think of a better way of organizing implicits with regards to possible Tile successors
-   *
-   * Apply withTileFocalMethods to all successors of the [[Tile]] type excluding the [[BufferTile]].
-   * It is required to disambiguate withBufferTileFocalMethods implicit.
-   */
-  implicit class withTileFocalMethods[T](tile: T)(implicit t: T <:< Tile, nbt: T =:!= BufferTile) extends FocalMethods {
-    val self: Tile = t(tile)
-  }
-
-  /**
-   * [[BufferTile]] can't have successors (it is a case class).
-   * Limit this implicit to be applied to the [[BufferTile]] type only.
-   */
-  implicit class withBufferTileFocalMethods[T](tile: T)(implicit bt: T =:= BufferTile) extends BufferTileFocalMethods {
-    val self: BufferTile = bt(tile)
-  }
+  implicit class withTileFocalMethods(val self: Tile) extends FocalMethods
 }
