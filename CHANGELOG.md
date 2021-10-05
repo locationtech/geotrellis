@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add Buffer Tile [#3419](https://github.com/locationtech/geotrellis/pull/3419)
 
 ### Changed
-- Disambiguate withBufferTileFocalMethods implicit [#3421](https://github.com/locationtech/geotrellis/pull/3421)
+- Disambiguate withBufferTileFocalMethods implicit preserving bin compatibility [#3422](https://github.com/locationtech/geotrellis/pull/3422)
 
 ## [3.6.0] - 2021-04-30
 
