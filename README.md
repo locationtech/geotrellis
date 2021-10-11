@@ -128,7 +128,7 @@ res1: Double = 5.666666666666667
 Documentation is available at [geotrellis.io/documentation](https://geotrellis.io/documentation).
 
 _Scaladocs_ for the the `master` branch are
-[available here](https://geotrellis.github.io/scaladocs/2.0/#geotrellis.package).
+[available here](geotrellis.github.io/scaladocs/latest/geotrellis/index.html?search=geotrellis).
 
 Further examples and documentation of GeoTrellis use-cases can be found in the [docs/](./docs) folder.
 
