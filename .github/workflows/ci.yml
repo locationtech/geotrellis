@@ -12,7 +12,6 @@ on:
 jobs:
   build:
     name: Build and Test
-    timeout-minutes: 120
     strategy:
       matrix:
         scala: ["2.12.14"]

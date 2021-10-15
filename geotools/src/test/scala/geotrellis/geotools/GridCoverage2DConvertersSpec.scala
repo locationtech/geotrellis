@@ -21,13 +21,18 @@ import geotrellis.raster.io.geotiff._
 import geotrellis.vector.testkit._
 
 import javax.media.jai.iterator.RectIterFactory
+import javax.imageio.spi.IIORegistry
 import org.geotools.coverage.grid._
 import org.geotools.gce.geotiff._
-
+import org.scalatest.BeforeAndAfterAll
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.funspec.AnyFunSpec
 
-class GridCoverage2DConvertersSpec extends AnyFunSpec with Matchers with GeoTiffTestUtils {
+class GridCoverage2DConvertersSpec extends AnyFunSpec with Matchers with GeoTiffTestUtils with BeforeAndAfterAll {
+
+  // GeoTiff reader fails to read valid geotiff sometimes
+  // https://osgeo-org.atlassian.net/browse/GEOT-5608
+  override def beforeAll(): Unit = IIORegistry.getDefaultInstance.registerApplicationClasspathSpis()
 
   case class TestFile(description: String, path: String, isMultiband: Boolean) {
     def gridCoverage2D: GridCoverage2D =
