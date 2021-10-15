@@ -59,7 +59,7 @@ workflows:
       - scaladocs:
           matrix:
             parameters:
-              scala-version: ["2.12.14"]
+              scala-version: ["2.12.15"]
           filters:
             branches:
               only: master
@@ -67,7 +67,7 @@ workflows:
       - publish:
           matrix:
             parameters:
-              scala-version: ["2.12.14", "2.13.6"]
+              scala-version: ["2.12.15", "2.13.6"]
           filters:
             branches:
               only: master

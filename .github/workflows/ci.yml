@@ -5,7 +5,7 @@ on:
     branches: ['**']
   push:
     branches: ['master']
-    # tags: [v*]
+    tags: [v*]
   # release:
     # types: [published]
 
@@ -14,7 +14,7 @@ jobs:
     name: Build and Test
     strategy:
       matrix:
-        scala: ["2.12.14"]
+        scala: ["2.12.15", "2.13.6"]
     runs-on: ubuntu-latest
   
     env:

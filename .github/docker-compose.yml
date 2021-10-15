@@ -9,7 +9,6 @@ services:
   minio:
     image: minio/minio:RELEASE.2019-05-02T19-07-09Z
     environment:
-      - _JAVA_OPTIONS=-Xms1m -Xmx512m
       - MINIO_ACCESS_KEY=minio
       - MINIO_SECRET_KEY=password
     command: server --address :9091 /data
@@ -30,14 +29,6 @@ services:
       - _JAVA_OPTIONS=-Xms1m -Xmx512m
       - HBASE_DOCKER_HOSTNAME=localhost
     network_mode: host
-
-  compile:
-    image: quay.io/azavea/openjdk-gdal:3.1-jdk8-slim
-    command: /bin/bash -c "cd /usr/local/src && ./sbt compile"
-    environment:
-      - CI
-    volumes:
-      - ./:/usr/local/src
 
   test:
     image: quay.io/azavea/openjdk-gdal:3.1-jdk8-slim
