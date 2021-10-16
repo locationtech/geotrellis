@@ -23,15 +23,13 @@ import geotrellis.vector.testkit._
 import javax.media.jai.iterator.RectIterFactory
 import org.geotools.coverage.grid._
 import org.geotools.gce.geotiff._
-
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.funspec.AnyFunSpec
 
 class GridCoverage2DConvertersSpec extends AnyFunSpec with Matchers with GeoTiffTestUtils {
 
   case class TestFile(description: String, path: String, isMultiband: Boolean) {
-    def gridCoverage2D: GridCoverage2D =
-      new GeoTiffReader(new java.io.File(path)).read(null)
+    def gridCoverage2D: GridCoverage2D = new GeoTiffReader(new java.io.File(path)).read(null)
 
     def singlebandRaster: ProjectedRaster[Tile] = {
       val tiff = SinglebandGeoTiff(path)
@@ -78,7 +76,6 @@ class GridCoverage2DConvertersSpec extends AnyFunSpec with Matchers with GeoTiff
       // TODO: Uncomment when it's clear how to make it pass.
       // TestFile("Byte contstant nd raster", s"$baseDataPath/sbn/SBN_inc_percap-nodata-clip.tif", false)
     )
-
 
   def assertEqual(actual: ProjectedRaster[Tile], expected: ProjectedRaster[Tile]): Unit = {
     actual.crs should be (expected.crs)

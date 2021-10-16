@@ -43,8 +43,7 @@ object Settings {
   }
 
   lazy val noForkInTests = Seq(
-    Test / fork := false,
-    Test / parallelExecution := false
+    Test / fork := false
   )
 
   val commonScalacOptions = Seq(
@@ -74,6 +73,7 @@ object Settings {
     pomIncludeRepository := { _ => false },
     autoAPIMappings := true,
     Global / cancelable := true,
+    Test / parallelExecution := false,
 
     publishTo := {
       val sonatype = "https://oss.sonatype.org/"
@@ -94,8 +94,8 @@ object Settings {
       Path.userHome / ".sbt" / ".credentials"
     ).filter(_.asFile.canRead).map(Credentials(_)),
 
-    addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.13.0" cross CrossVersion.full),
-    addCompilerPlugin("org.scalameta" % "semanticdb-scalac" % "4.4.21" cross CrossVersion.full),
+    addCompilerPlugin("org.typelevel" % "kind-projector" % "0.13.2" cross CrossVersion.full),
+    addCompilerPlugin("org.scalameta" % "semanticdb-scalac" % "4.4.28" cross CrossVersion.full),
 
     libraryDependencies ++= (CrossVersion.partialVersion(scalaVersion.value) match {
       case Some((2, 13)) => Nil
@@ -142,7 +142,7 @@ object Settings {
   )
 
   lazy val sparkCompatDependencies = Def.setting { CrossVersion.partialVersion(scalaVersion.value) match {
-    case Some((2, 13)) => Seq("org.scala-lang.modules" %% "scala-parallel-collections" % "0.2.0") // spark uses it as a par collections compat
+    case Some((2, 13)) => Seq("org.scala-lang.modules" %% "scala-parallel-collections" % "1.0.3") // spark uses it as a par collections compat
     case Some((2, 12)) => Nil
     case x => sys.error(s"Encountered unsupported Scala version ${x.getOrElse("undefined")}")
   } }

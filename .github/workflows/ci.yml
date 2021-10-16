@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  pull_request:
+    branches: ['**']
+  push:
+    branches: ['master']
+    tags: [v*]
+  # release:
+    # types: [published]
+
+jobs:
+  build:
+    name: Build and Test
+    strategy:
+      matrix:
+        scala: ["2.12.15", "2.13.6"]
+    runs-on: ubuntu-latest
+  
+    env:
+      SCALA_VERSION:  ${{ matrix.scala }}
+    
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - uses: coursier/cache-action@v6
+      # - uses: olafurpg/setup-scala@v13
+        # with:
+          # java-version: adopt@1.8
+
+      - run: .github/unzip-rasters.sh
+
+      - name: Run Tests
+        run: docker compose -f .github/docker-compose.yml up test --abort-on-container-exit --exit-code-from test

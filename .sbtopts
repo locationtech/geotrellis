@@ -1,8 +1,9 @@
--J-Xmx1536m
+-J-Xmx2g
 -J-Xms64m
 -J-Xss2M
--J-XX:+UseConcMarkSweepGC
--J-XX:+CMSClassUnloadingEnabled
+-J-XX:+UseG1GC
+-J-XX:+UseStringDeduplication
+-J-XX:+UseCompressedOops
 -Dfile.encoding=UTF8
 -Djava.awt.headless=true
 -Dsun.io.serialization.extendedDebugInfo=true
