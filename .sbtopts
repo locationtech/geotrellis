@@ -2,7 +2,7 @@
 -J-Xms64m
 -J-Xss2M
 -J-XX:+UseG1GC
--J-XX:+UseStringDeduplication 
+-J-XX:+UseStringDeduplication
 -J-XX:+UseCompressedOops
 -Dfile.encoding=UTF8
 -Djava.awt.headless=true
