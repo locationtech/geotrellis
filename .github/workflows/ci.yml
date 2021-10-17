@@ -30,7 +30,8 @@ jobs:
         # with:
           # java-version: adopt@1.8
 
-      - run: .github/unzip-rasters.sh
+      - name: unzip rasters
+        run: cd raster/data; unzip geotiff-test-files.zip
 
-      - name: Run Tests
+      - name: run tests
         run: docker compose -f .github/docker-compose.yml up test --abort-on-container-exit --exit-code-from test
