@@ -19,7 +19,7 @@ package geotrellis.raster
 import spire.math.Integral
 import spire.implicits._
 
-abstract class Grid[N: Integral] extends Serializable {
+abstract class Grid[@specialized(Int, Long) N: Integral] extends Serializable {
   def cols: N
   def rows: N
   def size: N = cols * rows
