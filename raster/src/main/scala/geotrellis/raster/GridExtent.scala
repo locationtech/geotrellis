@@ -33,7 +33,7 @@ import spire.implicits._
   * The constructor will throw [[java.lang.IllegalArgumentException]] if the provided extent and cell size do not match the
   * provided cols and rows (dimensions).
   */
-class GridExtent[N: Integral](
+class GridExtent[@specialized(Int, Long) N: Integral](
   val extent: Extent,
   val cellwidth: Double,
   val cellheight: Double,
