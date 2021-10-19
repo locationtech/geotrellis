@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - Disambiguate withBufferTileFocalMethods implicit preserving bin compatibility [#3422](https://github.com/locationtech/geotrellis/pull/3422)
+- Specialize Grid for Int and Long [#3428](https://github.com/locationtech/geotrellis/pull/3428)
 
 ## [3.6.0] - 2021-04-30
 

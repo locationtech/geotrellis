@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Azavea
+ * Copyright 2021 Azavea
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,9 @@
 package geotrellis.raster
 
 import spire.math.Integral
+import spire.implicits._
 
-/**
-  * A grid composed of cells with specific value types
-  */
-abstract class CellGrid[N: Integral] extends GridIntegral[N] {
-  def cellType: CellType
+abstract class GridIntegral[N: Integral] extends Grid[N] {
+  def size: N = cols * rows
+  def dimensions: Dimensions[N] = Dimensions(cols, rows)
 }
