@@ -33,13 +33,13 @@ import spire.implicits._
   * The constructor will throw [[java.lang.IllegalArgumentException]] if the provided extent and cell size do not match the
   * provided cols and rows (dimensions).
   */
-class GridExtent[@specialized(Int, Long) N: Integral](
+class GridExtent[N: Integral](
   val extent: Extent,
   val cellwidth: Double,
   val cellheight: Double,
   val cols: N,
   val rows: N
-) extends Grid[N] with Serializable {
+) extends GridIntegral[N] {
   import GridExtent._
 
   if (cols <= 0) throw GeoAttrsError(s"invalid cols: $cols")
