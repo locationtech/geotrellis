@@ -91,3 +91,4 @@ nohup.out
 derby.log
 metastore_db/
 *.log
+.sdkmanrc

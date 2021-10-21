@@ -38,15 +38,15 @@ object GTBenchmarkPlugin extends AutoPlugin {
   override def requires: Plugins = JmhPlugin
 
   object Keys {
-    val jmhOutputFormat = settingKey[String]("Output format: {text|csv|scsv|json|latex}")
-    val jmhOutputDir = settingKey[File]("Directory for writing JMH results")
+    val jmhOutputFormat = settingKey[String]("Output format: {text|csv|scsv|json|latex}").withRank(KeyRanks.Invisible)
+    val jmhOutputDir = settingKey[File]("Directory for writing JMH results").withRank(KeyRanks.Invisible)
     val jmhFileRegex = settingKey[Regex]("Filename regular expression for selecting files to benchmark")
-    val jmhThreads = settingKey[Option[Int]]("Number of JMH worker threads")
-    val jmhFork = settingKey[Option[Int]]("How many times to fork a single JMH benchmark")
+    val jmhThreads = settingKey[Option[Int]]("Number of JMH worker threads").withRank(KeyRanks.Invisible)
+    val jmhFork = settingKey[Option[Int]]("How many times to fork a single JMH benchmark").withRank(KeyRanks.Invisible)
     val jmhIterations = settingKey[Option[Int]]("Number of measurement iterations to do")
-    val jmhWarmupIterations = settingKey[Option[Int]]("Number of warmup iterations to do")
-    val jmhTimeUnit = settingKey[Option[String]]("Benchmark results time unit: {m|s|ms|us|ns}")
-    val jmhExtraOptions = settingKey[Option[String]]("Additional arguments to jmh:run before the filename regex")
+    val jmhWarmupIterations = settingKey[Option[Int]]("Number of warmup iterations to do").withRank(KeyRanks.Invisible)
+    val jmhTimeUnit = settingKey[Option[String]]("Benchmark results time unit: {m|s|ms|us|ns}").withRank(KeyRanks.Invisible)
+    val jmhExtraOptions = settingKey[Option[String]]("Additional arguments to jmh:run before the filename regex").withRank(KeyRanks.Invisible)
     val bench = taskKey[Unit]("Execute JMH benchmarks")
     val benchOnly = inputKey[Unit]("Execute JMH benchmarks on a single class")
   }
