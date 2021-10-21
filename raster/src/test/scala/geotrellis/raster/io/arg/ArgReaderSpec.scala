@@ -24,7 +24,7 @@ import org.scalatest.funspec.AnyFunSpec
 
 class ArgReaderSpec extends AnyFunSpec
                             with RasterMatchers
-                            with TestFiles
+                            with RasterTestFiles
                             with Matchers {
   describe("ArgReader") {
     it("should read a constant tile") {

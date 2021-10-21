@@ -25,7 +25,7 @@ import org.scalatest.funspec.AnyFunSpec
 /**
  * Created by jchien on 4/24/14.
  */
-class ViewshedSpec extends AnyFunSpec with Matchers with RasterMatchers with TestFiles with TileBuilders {
+class ViewshedSpec extends AnyFunSpec with Matchers with RasterMatchers with RasterTestFiles with TileBuilders {
   describe("Viewshed") {
     it("computes the viewshed of a flat int plane") {
       val r = createTile(Array.fill(7 * 8)(1), 7, 8)

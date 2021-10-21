@@ -25,7 +25,7 @@ import org.scalatest.funspec.AnyFunSpec
 /**
  * Created by jchien on 5/1/14.
  */
-class ApproxViewshedSpec extends AnyFunSpec with Matchers with RasterMatchers with TestFiles with TileBuilders {
+class ApproxViewshedSpec extends AnyFunSpec with Matchers with RasterMatchers with RasterTestFiles with TileBuilders {
 
   describe("Viewshed") {
     it("computes the viewshed of a flat int plane") {

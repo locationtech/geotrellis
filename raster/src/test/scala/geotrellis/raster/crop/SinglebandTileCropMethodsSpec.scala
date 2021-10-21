@@ -23,7 +23,7 @@ import geotrellis.raster.testkit._
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.funspec.AnyFunSpec
 
-class SinglebandTileCropMethodsSpec extends AnyFunSpec with Matchers with TileBuilders with RasterMatchers with TestFiles {
+class SinglebandTileCropMethodsSpec extends AnyFunSpec with Matchers with TileBuilders with RasterMatchers with RasterTestFiles {
 
   describe("cropping by extent") {
     val (cols, rows) = (5, 5)

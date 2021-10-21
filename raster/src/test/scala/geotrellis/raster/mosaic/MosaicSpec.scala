@@ -25,7 +25,7 @@ import org.scalatest.funspec.AnyFunSpec
 class MosaicSpec extends AnyFunSpec
                          with TileBuilders
                          with RasterMatchers
-                         with TestFiles {
+                         with RasterTestFiles {
 
   describe("Merge functions") {
     it("should merge values from overlapping extents") {

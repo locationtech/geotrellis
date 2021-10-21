@@ -18,7 +18,7 @@ package geotrellis.raster
 
 import geotrellis.raster.io.arg.ArgReader
 
-trait TestFiles {
+trait RasterTestFiles {
 
   def loadTestArg(name: String) = {
     ArgReader.read(s"raster/data/$name.json")

@@ -24,7 +24,7 @@ import geotrellis.raster.testkit._
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.funspec.AnyFunSpec
 
-class InverseDistanceWeightedSpec extends AnyFunSpec with Matchers with RasterMatchers with TestFiles with TileBuilders {
+class InverseDistanceWeightedSpec extends AnyFunSpec with Matchers with RasterMatchers with RasterTestFiles with TileBuilders {
 
   describe("interpolates integer values") {
     it("matches a QGIS generated IDW raster") {

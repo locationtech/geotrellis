@@ -25,7 +25,7 @@ import scala.math._
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.funspec.AnyFunSpec
 
-class AspectSpec extends AnyFunSpec with Matchers with RasterMatchers with TileBuilders with TestFiles {
+class AspectSpec extends AnyFunSpec with Matchers with RasterMatchers with TileBuilders with RasterTestFiles {
   describe("Aspect") {
     it("should match gdal computed aspect raster") {
       val elevation = loadTestArg("data/elevation")

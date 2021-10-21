@@ -22,7 +22,7 @@ import geotrellis.vector._
 
 import org.scalatest.funspec.AnyFunSpec
 
-class VectorizeSpec extends AnyFunSpec with RasterMatchers with TestFiles with TileBuilders {
+class VectorizeSpec extends AnyFunSpec with RasterMatchers with RasterTestFiles with TileBuilders {
   val cw = 1
   val ch = 10
   val xmin = 0
