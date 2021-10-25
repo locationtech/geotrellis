@@ -103,11 +103,11 @@ lazy val spark = project
   .settings(Settings.spark)
 
 lazy val `spark-testkit` = project
-  .dependsOn(`raster-testkit`, spark)
+  .dependsOn(spark, `raster-testkit`, `vector-testkit`)
   .settings(Settings.`spark-testkit`)
 
 lazy val `spark-tests` = project
-  .dependsOn(spark, `spark-testkit`)
+  .dependsOn(spark, `spark-testkit`, `vector-testkit`)
   .settings(Settings.testModuleSettings)
   .settings(
     Test / testOptions += Tests.Argument("-oD"),
@@ -119,9 +119,10 @@ lazy val s3 = project
 
 lazy val `s3-spark` = project
   .dependsOn(
-    spark % "compile->compile;test->test",  // <-- spark-testkit update should simplify this
+    spark,
     s3,
-    `spark-testkit` % Test
+    `spark-testkit` % Test,
+    `spark-tests` % "test->test"
   )
   .settings(Settings.`s3-spark`)
 
@@ -132,8 +133,9 @@ lazy val accumulo = project
 lazy val `accumulo-spark` = project
   .dependsOn(
     `accumulo`,
-    spark % "compile->compile;test->test", // <-- spark-testkit update should simplify this
-    `spark-testkit` % Test
+    spark,
+    `spark-testkit` % Test,
+    `spark-tests` % "test->test"
   )
   .settings(Settings.`accumulo-spark`)
 
@@ -144,8 +146,9 @@ lazy val cassandra = project
 lazy val `cassandra-spark` = project
   .dependsOn(
     cassandra,
-    spark % "compile->compile;test->test", // <-- spark-testkit update should simplify this
-    `spark-testkit` % Test
+    spark,
+    `spark-testkit` % Test,
+    `spark-tests` % "test->test"
   )
   .settings(Settings.`cassandra-spark`)
 
@@ -158,7 +161,8 @@ lazy val `hbase-spark` = project
   .dependsOn(
     hbase,
     spark,
-    `spark-testkit` % Test
+    `spark-testkit` % Test,
+    `spark-tests` % "test->test"
   )
   .settings(projectDependencies := { Seq((hbase / projectID).value, (spark / projectID).value.exclude("com.google.protobuf", "protobuf-java")) })
   .settings(Settings.`hbase-spark`)
@@ -169,7 +173,7 @@ lazy val `spark-pipeline` = project.
 
 lazy val geotools = project
   .dependsOn(raster, vector, proj4, `vector-testkit` % Test, `raster-testkit` % Test,
-    raster % "test->test" // <-- to get rid  of this, move `GeoTiffTestUtils` to the testkit.
+    raster
   )
   .settings(Settings.geotools)
 

@@ -581,9 +581,9 @@ object Settings {
   lazy val `spark-testkit` = Seq(
     name := "geotrellis-spark-testkit",
     libraryDependencies ++= Seq(
-      hadoopClient % Provided,
-      apacheSpark("core").value % Provided,
-      apacheSpark("sql").value % Provided,
+      hadoopClient,
+      apacheSpark("core").value,
+      apacheSpark("sql").value,
       scalatest
     )
   ) ++ commonSettings
@@ -692,7 +692,7 @@ object Settings {
 
   lazy val testModuleSettings = Seq(
     publish / skip := true,
-    Test / classLoaderLayeringStrategy := ClassLoaderLayeringStrategy.Flat,
+    //Test / classLoaderLayeringStrategy := ClassLoaderLayeringStrategy.Flat,
     libraryDependencies ++= Seq(
       sl4jnop,
       scalatest % Test,
