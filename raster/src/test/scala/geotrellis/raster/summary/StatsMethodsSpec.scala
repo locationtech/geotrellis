@@ -22,7 +22,7 @@ import geotrellis.raster.testkit._
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.funspec.AnyFunSpec
 
-class StatsMethodsSpec extends AnyFunSpec with RasterMatchers with TestFiles with Matchers {
+class StatsMethodsSpec extends AnyFunSpec with RasterMatchers with RasterTestFiles with Matchers {
 
   describe("StatsMethods") {
     it("gets expected class breaks from test raster.") {

@@ -21,7 +21,7 @@ import geotrellis.vector.Extent
 
 import org.scalatest.funspec.AnyFunSpec
 
-class CroppedTileSpec extends AnyFunSpec with TileBuilders with RasterMatchers with TestFiles {
+class CroppedTileSpec extends AnyFunSpec with TileBuilders with RasterMatchers with RasterTestFiles {
   describe("CroppedTileSpec") {
     it("should combine cropped tile") {
       val r = createTile(

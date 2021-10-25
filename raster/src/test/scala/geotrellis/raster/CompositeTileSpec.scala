@@ -23,7 +23,7 @@ import org.scalatest.funspec.AnyFunSpec
 
 import spire.syntax.cfor._
 
-class CompositeTileSpec extends AnyFunSpec with TileBuilders with RasterMatchers with TestFiles {
+class CompositeTileSpec extends AnyFunSpec with TileBuilders with RasterMatchers with RasterTestFiles {
   describe("CompositeTileSpec wrap") {
     it("wraps a literal raster") {
       val r =

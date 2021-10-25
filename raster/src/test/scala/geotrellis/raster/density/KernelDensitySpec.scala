@@ -23,7 +23,7 @@ import geotrellis.vector._
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.funspec.AnyFunSpec
 
-class KernelDensitySpec extends AnyFunSpec with Matchers with RasterMatchers with TestFiles with TileBuilders
+class KernelDensitySpec extends AnyFunSpec with Matchers with RasterMatchers with RasterTestFiles with TileBuilders
 {
   describe("kernelDensity") {
     it("matches expected values") {
