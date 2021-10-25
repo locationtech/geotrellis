@@ -46,6 +46,19 @@ object Settings {
     Test / fork := false
   )
 
+  lazy val geoTiffTestFiles = Seq(
+    Test / testOptions += Tests.Setup { () =>
+      val root = (ThisBuild / baseDirectory).value
+      val data = root / "raster" / "data"
+      val testArchive = data / "geotiff-test-files.zip"
+      val testDirPath = data / "geotiff-test-files"
+      if(! testDirPath.exists()) {
+        assert(testArchive.exists())
+        Unzip(testArchive.absolutePath, data.absolutePath)
+      }
+    }
+  )
+
   val commonScalacOptions = Seq(
     "-deprecation",
     "-unchecked",
@@ -69,11 +82,11 @@ object Settings {
     scmInfo := Some(ScmInfo(url("https://github.com/locationtech/geotrellis"), "scm:git:git@github.com:locationtech/geotrellis.git")),
     scalacOptions ++= commonScalacOptions,
     publishMavenStyle := true,
-    Test / publishArtifact := false,
     pomIncludeRepository := { _ => false },
     autoAPIMappings := true,
     Global / cancelable := true,
     Test / parallelExecution := false,
+    Test / publishArtifact := false,
 
     publishTo := {
       val sonatype = "https://oss.sonatype.org/"
@@ -313,8 +326,7 @@ object Settings {
       import org.geotools.coverage.grid.io._
       import org.geotools.gce.geotiff._
       """,
-    Test / testOptions += Tests.Setup { () => Unzip.geoTiffTestFiles() }
-  ) ++ commonSettings ++ noForkInTests
+  ) ++ commonSettings ++ noForkInTests ++ geoTiffTestFiles
 
   lazy val geowave = Seq(
     name := "geotrellis-geowave",
@@ -422,8 +434,6 @@ object Settings {
       monocle("macro").value,
       scalaXml,
       scalaURI,
-      scalatest % Test,
-      scalacheck % Test
     ),
     mimaPreviousArtifacts := Set(
       "org.locationtech.geotrellis" %% "geotrellis-raster" % Version.previousVersion
@@ -437,13 +447,6 @@ object Settings {
       import geotrellis.raster.io.geotiff._
       import geotrellis.raster.render._
       """,
-    Test / testOptions += Tests.Setup { () =>
-      val testArchive = "raster/data/geotiff-test-files.zip"
-      val testDirPath = "raster/data/geotiff-test-files"
-      if (!(new File(testDirPath)).exists) {
-        Unzip(testArchive, "raster/data")
-      }
-    }
   ) ++ commonSettings
 
   lazy val `raster-testkit` = Seq(
@@ -515,8 +518,7 @@ object Settings {
       geotoolsShapefile
     ).map(_ excludeAll(excludedDependencies: _*)),
     libraryDependencies ++= Seq(scalatest % Test) ++ worksWithDependencies,
-    Test / fork := false
-  ) ++ commonSettings
+  ) ++ noForkInTests ++ commonSettings
 
   lazy val spark = Seq(
     name := "geotrellis-spark",
@@ -533,7 +535,6 @@ object Settings {
     mimaPreviousArtifacts := Set(
       "org.locationtech.geotrellis" %% "geotrellis-spark" % Version.previousVersion
     ),
-    Test / testOptions += Tests.Argument("-oD"),
     console / initialCommands :=
       """
       import geotrellis.raster._
@@ -608,8 +609,6 @@ object Settings {
       circe("parser").value,
       cats("core").value,
       apacheMath,
-      scalatest % Test,
-      scalacheck % Test
     )
   ) ++ commonSettings
 
@@ -674,11 +673,9 @@ object Settings {
       scalatest % Test,
       gdalBindings % Test
     ),
-    Test / fork := true,
-    Test / parallelExecution := false,
     Test / testOptions += Tests.Argument("-oDF"),
     javaOptions ++= Seq("-Djava.library.path=/usr/local/lib")
-  ) ++ commonSettings
+  ) ++ noForkInTests ++ commonSettings
 
   lazy val `gdal-spark` = Seq(
     name := "geotrellis-gdal-spark",
@@ -689,9 +686,17 @@ object Settings {
       apacheSpark("sql").value % Test,
       scalatest % Test
     ),
-    Test / fork := true,
-    Test / parallelExecution := false,
     Test / testOptions += Tests.Argument("-oDF"),
     javaOptions ++= Seq("-Djava.library.path=/usr/local/lib")
+  ) ++ noForkInTests ++ commonSettings
+
+  lazy val testModuleSettings = Seq(
+    publish / skip := true,
+    Test / classLoaderLayeringStrategy := ClassLoaderLayeringStrategy.Flat,
+    libraryDependencies ++= Seq(
+      sl4jnop,
+      scalatest % Test,
+      scalacheck % Test,
+    )
   ) ++ commonSettings
 }

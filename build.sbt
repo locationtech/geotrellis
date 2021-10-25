@@ -1,5 +1,7 @@
 import sbt.Keys._
 
+import java.io.File
+
 ThisBuild / scalaVersion := "2.12.15"
 ThisBuild / organization := "org.locationtech.geotrellis"
 ThisBuild / crossScalaVersions := List("2.12.15", "2.13.6")
@@ -23,16 +25,19 @@ lazy val root = Project("geotrellis", file("."))
     proj4,
     raster,
     `raster-testkit`,
+    `raster-tests`,
     s3,
     `s3-spark`,
     shapefile,
     spark,
     `spark-pipeline`,
     `spark-testkit`,
+    `spark-tests`,
     store,
     util,
     vector,
     `vector-testkit`,
+    `vector-tests`,
     vectortile
   )
   .enablePlugins(ScalaUnidocPlugin)
@@ -67,13 +72,14 @@ lazy val vectortile = project
 lazy val vector = project
   .dependsOn(proj4, util)
   .settings(Settings.vector)
-  .settings(
-    Test / unmanagedClasspath ++= (LocalProject("vector-testkit") / Compile / fullClasspath).value
-  )
 
 lazy val `vector-testkit` = project
-  .dependsOn(vector % Provided)
+  .dependsOn(vector)
   .settings(Settings.`vector-testkit`)
+
+lazy val `vector-tests` = project
+  .dependsOn(vector, `vector-testkit`)
+  .settings(Settings.testModuleSettings)
 
 lazy val proj4 = project
   .settings(Settings.proj4)
@@ -82,30 +88,30 @@ lazy val proj4 = project
 lazy val raster = project
   .dependsOn(util, macros, vector)
   .settings(Settings.raster)
-  .settings(
-    Test / unmanagedClasspath ++= (LocalProject("raster-testkit") / Compile / fullClasspath).value
-  )
-  .settings(
-    Test / unmanagedClasspath ++= (LocalProject("vector-testkit") / Compile / fullClasspath).value
-  )
 
 lazy val `raster-testkit` = project
-  .dependsOn(raster % Provided, vector % Provided)
+  .dependsOn(raster, vector)
   .settings(Settings.`raster-testkit`)
+
+lazy val `raster-tests` = project
+  .dependsOn(raster, `raster-testkit`, `vector-testkit`)
+  .settings(Settings.testModuleSettings)
+  .settings(Settings.geoTiffTestFiles)
 
 lazy val spark = project
   .dependsOn(util, raster, `raster-testkit` % Test, `vector-testkit` % Test, layer, store)
   .settings(Settings.spark)
-  .settings(
-    // This takes care of a pseudo-cyclic dependency between the `spark` test scope, `spark-testkit`,
-    // and `spark` main (compile) scope. sbt is happy with this. IntelliJ requires that `spark-testkit`
-    // be added to the `spark` module dependencies manually (via "Open Module Settings" context menu for "spark" module).
-    Test / unmanagedClasspath ++= (LocalProject("spark-testkit") / Compile / fullClasspath).value
-  )
 
 lazy val `spark-testkit` = project
   .dependsOn(`raster-testkit`, spark)
   .settings(Settings.`spark-testkit`)
+
+lazy val `spark-tests` = project
+  .dependsOn(spark, `spark-testkit`)
+  .settings(Settings.testModuleSettings)
+  .settings(
+    Test / testOptions += Tests.Argument("-oD"),
+  )
 
 lazy val s3 = project
   .dependsOn(store)
@@ -151,7 +157,7 @@ lazy val hbase = project
 lazy val `hbase-spark` = project
   .dependsOn(
     hbase,
-    spark % "compile->compile;test->test", // <-- spark-testkit update should simplify this
+    spark,
     `spark-testkit` % Test
   )
   .settings(projectDependencies := { Seq((hbase / projectID).value, (spark / projectID).value.exclude("com.google.protobuf", "protobuf-java")) })
