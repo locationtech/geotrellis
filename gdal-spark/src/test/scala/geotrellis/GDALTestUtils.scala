@@ -16,20 +16,16 @@
 
 package geotrellis
 
-import java.io.File
+import java.nio.file.{Files, Paths}
 
 object GDALTestUtils {
-  def gdalGeoTiffPath(name: String): String = {
-    def baseDataPath = "../gdal/src/test/resources"
-    val path = s"$baseDataPath/$name"
-    require(new File(path).exists, s"$path does not exist, unzip the archive?")
-    path
-  }
+  def gdalGeoTiffPath(name: String): String =
+    Option(getClass.getResource(if (name.startsWith("/")) name else s"/$name"))
+      .map(_.toURI)
+      .map(Paths.get)
+      .filter(Files.exists(_))
+      .map(_.toString)
+      .getOrElse(throw new IllegalArgumentException(s"could not find $name in the classpath. Unzip the archive?"))
 
-  def sparkGeoTiffPath(name: String): String = {
-    def baseDataPath = "../spark-test/src/test/resources"
-    val path = s"$baseDataPath/$name"
-    require(new File(path).exists, s"$path does not exist, unzip the archive?")
-    path
-  }
+  def sparkGeoTiffPath(name: String): String =  gdalGeoTiffPath(name)
 }
