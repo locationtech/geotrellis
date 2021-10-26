@@ -46,6 +46,10 @@ object Settings {
     Test / fork := false
   )
 
+  lazy val forkInTests = Seq(
+    Test / fork := true
+  )
+
   val commonScalacOptions = Seq(
     "-deprecation",
     "-unchecked",
@@ -176,7 +180,7 @@ object Settings {
       import geotrellis.layer._
       import geotrellis.store.accumulo._
       """
-  ) ++ commonSettings ++ noForkInTests
+  ) ++ commonSettings ++ forkInTests
 
   lazy val `accumulo-spark` = Seq(
     name := "geotrellis-accumulo-spark",
