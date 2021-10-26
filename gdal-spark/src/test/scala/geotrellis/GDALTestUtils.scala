@@ -27,7 +27,7 @@ object GDALTestUtils {
   }
 
   def sparkGeoTiffPath(name: String): String = {
-    def baseDataPath = "../spark/src/test/resources"
+    def baseDataPath = "../spark-test/src/test/resources"
     val path = s"$baseDataPath/$name"
     require(new File(path).exists, s"$path does not exist, unzip the archive?")
     path

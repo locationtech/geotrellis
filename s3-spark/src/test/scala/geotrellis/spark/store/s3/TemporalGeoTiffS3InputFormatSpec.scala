@@ -62,7 +62,7 @@ class TemporalGeoTiffS3InputFormatSpec extends AnyFunSpec with Matchers with Tes
       DateTimeFormatter.ofPattern("yyyy:MM:dd HH:mm:ss").withZone(ZoneOffset.UTC).format(key.time) should be ("2015:03:25 18:01:04")
     }
 
-    val testGeoTiffPath = "spark/src/test/resources/nex-geotiff/tasmax_amon_BCSD_rcp26_r1i1p1_CONUS_CCSM4_200601-201012-200601120000_0_0.tif"
+    val testGeoTiffPath = "spark-tests/src/test/resources/nex-geotiff/tasmax_amon_BCSD_rcp26_r1i1p1_CONUS_CCSM4_200601-201012-200601120000_0_0.tif"
     val geoTiffBytes = Files.readAllBytes(Paths.get(testGeoTiffPath))
     val putReq = PutObjectRequest.builder()
       .bucket(bucket)

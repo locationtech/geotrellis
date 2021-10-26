@@ -69,7 +69,7 @@ scripts/emr/terraform/terraform.tfstate*
 
 # Test files
 
-spark/src/test/resources/vlm/*catalog*
+spark-tests/src/test/resources/vlm/*catalog*
 
 # Other
 

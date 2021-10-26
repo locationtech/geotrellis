@@ -34,7 +34,7 @@ class HdfsUtilsSpec extends AnyFunSpec with Matchers with TestEnvironment {
       zipped.filter(x => x._1 != x._2)
     }
 
-    val path = "spark/src/test/resources/all-ones.tif"
+    val path = "spark-tests/src/test/resources/all-ones.tif"
     val hdfsFile = new Path(path)
     val array = Filesystem.slurp(path)
 

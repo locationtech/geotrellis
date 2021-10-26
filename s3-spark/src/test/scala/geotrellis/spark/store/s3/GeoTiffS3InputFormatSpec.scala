@@ -36,7 +36,7 @@ class GeoTiffS3InputFormatSpec extends AnyFunSpec with TestEnvironment with Matc
   val bucket = this.getClass.getSimpleName.toLowerCase
   S3TestUtils.cleanBucket(mockClient, bucket)
 
-  val testGeoTiffPath = "spark/src/test/resources/all-ones.tif"
+  val testGeoTiffPath = "spark-tests/src/test/resources/all-ones.tif"
   val geoTiffBytes = Files.readAllBytes(Paths.get(testGeoTiffPath))
   val putReq = PutObjectRequest.builder()
     .bucket(bucket)

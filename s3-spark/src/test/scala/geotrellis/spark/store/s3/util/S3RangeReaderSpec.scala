@@ -34,7 +34,7 @@ class S3RangeReaderSpec extends AnyFunSpec with Matchers {
   S3TestUtils.cleanBucket(mockClient, bucket)
 
   describe("S3RangeReader") {
-    val testGeoTiffPath = "spark/src/test/resources/all-ones.tif"
+    val testGeoTiffPath = "spark-tests/src/test/resources/all-ones.tif"
     val geoTiffBytes = Files.readAllBytes(Paths.get(testGeoTiffPath))
 
     val putReq = PutObjectRequest.builder()

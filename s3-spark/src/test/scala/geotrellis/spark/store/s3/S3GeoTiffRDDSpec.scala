@@ -52,7 +52,7 @@ class S3GeoTiffRDDSpec
 
     it("should filter by geometry") {
       val key = "geoTiff/all-ones.tif"
-      val testGeoTiffPath = "spark/src/test/resources/all-ones.tif"
+      val testGeoTiffPath = "spark-tests/src/test/resources/all-ones.tif"
       val geoTiffBytes = Files.readAllBytes(Paths.get(testGeoTiffPath))
       val putRequest = PutObjectRequest.builder()
         .bucket(bucket)
@@ -78,7 +78,7 @@ class S3GeoTiffRDDSpec
 
     it("should read the same rasters when reading small windows or with no windows, Spatial, SinglebandGeoTiff") {
       val key = "geoTiff/all-ones.tif"
-      val testGeoTiffPath = "spark/src/test/resources/all-ones.tif"
+      val testGeoTiffPath = "spark-tests/src/test/resources/all-ones.tif"
       val geoTiffBytes = Files.readAllBytes(Paths.get(testGeoTiffPath))
       val putReq = PutObjectRequest.builder()
         .bucket(bucket)
@@ -217,7 +217,7 @@ class S3GeoTiffRDDSpec
 
     it("should read with num partitions and window size options set") {
       val key = "geoTiff/all-ones.tif"
-      val testGeoTiffPath = "spark/src/test/resources/all-ones.tif"
+      val testGeoTiffPath = "spark-tests/src/test/resources/all-ones.tif"
       val geoTiffBytes = Files.readAllBytes(Paths.get(testGeoTiffPath))
       val putReq = PutObjectRequest.builder()
         .bucket(bucket)

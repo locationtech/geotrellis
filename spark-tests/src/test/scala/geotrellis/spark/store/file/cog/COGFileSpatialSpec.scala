@@ -62,11 +62,11 @@ class COGFileSpatialSpec
 
   describe("COGLayerReader and stitch") {
     it("should properly read and stitch tiles") {
-      val reader = FileCOGLayerReader("spark/src/test/resources/cog-layer")
+      val reader = FileCOGLayerReader("spark-tests/src/test/resources/cog-layer")
       val layer = reader.read[SpatialKey, MultibandTile](LayerId("stitch-layer", 11))
       val ext = Extent(14990677.113, 6143014.652, 15068031.386, 6198584.372)
       val actual = layer.stitch().crop(ext).tile
-      val expected = GeoTiff.readMultiband("spark/src/test/resources/cog-layer/stitched.tiff").crop(ext).tile.toArrayTile()
+      val expected = GeoTiff.readMultiband("spark-tests/src/test/resources/cog-layer/stitched.tiff").crop(ext).tile.toArrayTile()
       assertEqual(actual.tile, expected)
     }
   }
@@ -74,7 +74,7 @@ class COGFileSpatialSpec
   describe("COGLayerReader and readSubsetBands") {
     it("should read only the needed bands") {
       val id = LayerId("multiband-cog-layer", 9)
-      val path = "spark/src/test/resources/cog-layer"
+      val path = "spark-tests/src/test/resources/cog-layer"
 
       val layerReader = FileCOGLayerReader(path)
 
@@ -103,7 +103,7 @@ class COGFileSpatialSpec
   describe("COGValueReader and readSubsetBands") {
     it("should read in only the needed bands") {
       val id = LayerId("multiband-cog-layer", 11)
-      val path = "spark/src/test/resources/cog-layer"
+      val path = "spark-tests/src/test/resources/cog-layer"
 
       val valueReader = FileCOGValueReader(path).reader[SpatialKey, MultibandTile](id)
       val layerReader = FileCOGLayerReader(path)

@@ -29,7 +29,7 @@ import org.apache.spark.SparkContext
 import java.io.File
 
 object TestCatalog {
-  def resourcesPath(path: String): String = s"${new File("").getAbsolutePath}/spark/src/test/resources/$path"
+  def resourcesPath(path: String): String = s"${new File("").getAbsolutePath}/spark-tests/src/test/resources/$path"
 
   val filePath = resourcesPath("vlm/aspect-tiled.tif")
   val multibandOutputPath = resourcesPath("vlm/catalog")

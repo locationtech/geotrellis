@@ -29,7 +29,7 @@ import org.scalatest.funspec.AnyFunSpec
 class HttpRangeReaderSpec extends AnyFunSpec with Matchers {
 
   describe("HttpRangeReader") {
-    val testGeoTiffPath = "spark/src/test/resources/all-ones.tif"
+    val testGeoTiffPath = "spark-tests/src/test/resources/all-ones.tif"
     val testGeoTiffHttpPath = "http://localhost:8081/all-ones.tif"
     val geoTiffBytes = Files.readAllBytes(Paths.get(testGeoTiffPath))
 

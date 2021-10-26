@@ -37,7 +37,7 @@ object EuclideanDistanceExamples {
 
     val sc: SparkContext = ???
 
-    val geomWKT = scala.io.Source.fromFile("geotrellis/spark/src/test/resources/wkt/schools.wkt").getLines().mkString
+    val geomWKT = scala.io.Source.fromFile("geotrellis/spark-tests/src/test/resources/wkt/schools.wkt").getLines().mkString
     val LayoutLevel(z, ld) = ZoomedLayoutScheme(WebMercator).levelForZoom(12)
     val maptrans = ld.mapTransform
 
