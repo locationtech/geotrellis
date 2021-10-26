@@ -7,7 +7,7 @@
       "header": {
          "keyClass": "geotrellis.spark.SpatialKey",
          "valueClass": "geotrellis.raster.MultibandTile",
-         "path": "spark/src/test/resources/cog-layer",
+         "path": "spark-tests/src/test/resources/cog-layer",
          "layerType": "COGLayerType",
          "format": "file"
       },
