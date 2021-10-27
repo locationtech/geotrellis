@@ -217,11 +217,6 @@ lazy val gdal = project
   .settings(Settings.gdal)
 
 lazy val `gdal-spark` = project
-  .dependsOn(
-    gdal % "compile->compile,test->test",
-    spark,
-    `spark-testkit` % Test,
-    `spark-tests` % "test->test"
-  )
+  .dependsOn(gdal, spark, `spark-testkit` % Test, `spark-tests` % "test->test")
   .settings(publish / skip := true) // at this point we need this project only for tests
   .settings(Settings.`gdal-spark`)
