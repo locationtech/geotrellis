@@ -45,10 +45,6 @@ object Settings {
   lazy val noForkInTests = Seq(
     Test / fork := false
   )
-    
-  lazy val forkInTests = Seq(
-    Test / fork := true
-  )
 
   lazy val geoTiffTestFiles = Seq(
     Test / testOptions += Tests.Setup { () =>
@@ -192,7 +188,7 @@ object Settings {
       import geotrellis.layer._
       import geotrellis.store.accumulo._
       """
-  ) ++ commonSettings ++ forkInTests
+  ) ++ commonSettings ++ noForkInTests
 
   lazy val `accumulo-spark` = Seq(
     name := "geotrellis-accumulo-spark",
@@ -270,7 +266,7 @@ object Settings {
       import geotrellis.spark.util._
       import geotrellis.spark.store.cassandra._
       """
-  ) ++ noForkInTests ++ commonSettings
+  ) ++ commonSettings ++ noForkInTests
 
 
   lazy val `doc-examples` = Seq(
@@ -346,8 +342,7 @@ object Settings {
       scalatest % Test, 
       logbackClassic % Test
     ),
-    Test / fork := true
-  ) ++ commonSettings
+  ) ++ commonSettings ++ noForkInTests
 
   lazy val geowaveBenchmark = Seq(
     name := "geotrellis-geowave-benchmark",
@@ -356,8 +351,7 @@ object Settings {
       geowaveCassandra, 
       logbackClassic
     ),
-    Test / fork := true
-  ) ++ commonSettings
+  ) ++ commonSettings ++ noForkInTests
 
   lazy val hbase = Seq(
     name := "geotrellis-hbase",
@@ -425,9 +419,7 @@ object Settings {
       scalatest % Test,
       scalacheck % Test
     ),
-    // https://github.com/sbt/sbt/issues/4609
-    Test / fork := true
-  ) ++ commonSettings
+  ) ++ commonSettings ++ noForkInTests
 
   lazy val raster = Seq(
     name := "geotrellis-raster",
@@ -487,7 +479,7 @@ object Settings {
       import geotrellis.layer._
       import geotrellis.store.s3._
       """
-  ) ++ noForkInTests ++ commonSettings
+  ) ++ commonSettings ++ noForkInTests
 
   lazy val `s3-spark` = Seq(
     name := "geotrellis-s3-spark",
@@ -511,7 +503,7 @@ object Settings {
       import geotrellis.spark._
       import geotrellis.spark.store.s3._
       """
-  ) ++ noForkInTests ++ commonSettings
+  ) ++ commonSettings ++ noForkInTests
 
   lazy val shapefile = Seq(
     name := "geotrellis-shapefile",
@@ -521,7 +513,7 @@ object Settings {
       geotoolsShapefile
     ).map(_ excludeAll(excludedDependencies: _*)),
     libraryDependencies ++= Seq(scalatest % Test) ++ worksWithDependencies,
-  ) ++ noForkInTests ++ commonSettings
+  ) ++ commonSettings ++ noForkInTests
 
   lazy val spark = Seq(
     name := "geotrellis-spark",
@@ -547,7 +539,7 @@ object Settings {
       import geotrellis.spark._
       import geotrellis.spark.util._
       """
-  ) ++ noForkInTests ++ commonSettings
+  ) ++ commonSettings ++ noForkInTests
 
   lazy val `spark-pipeline` = Seq(
     name := "geotrellis-spark-pipeline",
@@ -579,7 +571,7 @@ object Settings {
       case "META-INF/ECLIPSEF.RSA" | "META-INF/ECLIPSEF.SF" => MergeStrategy.discard
       case _ => MergeStrategy.first
     }
-  ) ++ commonSettings
+  ) ++ commonSettings ++ noForkInTests
 
   lazy val `spark-testkit` = Seq(
     name := "geotrellis-spark-testkit",
@@ -589,7 +581,7 @@ object Settings {
       apacheSpark("sql").value,
       scalatest
     )
-  ) ++ commonSettings
+  ) ++ commonSettings ++ noForkInTests
 
   lazy val util = Seq(
     name := "geotrellis-util",
@@ -599,7 +591,7 @@ object Settings {
       spire,
       scalatest % Test
     )
-  ) ++ commonSettings
+  ) ++ commonSettings ++ noForkInTests
 
   lazy val vector = Seq(
     name := "geotrellis-vector",
@@ -613,12 +605,12 @@ object Settings {
       cats("core").value,
       apacheMath,
     )
-  ) ++ commonSettings
+  ) ++ commonSettings ++ noForkInTests
 
   lazy val `vector-testkit` = Seq(
     name := "geotrellis-vector-testkit",
     libraryDependencies += scalatest
-  ) ++ commonSettings
+  ) ++ commonSettings ++ noForkInTests
 
   lazy val vectortile = Seq(
     name := "geotrellis-vectortile",
@@ -632,7 +624,7 @@ object Settings {
     Compile / PB.targets := Seq(
       scalapb.gen(flatPackage = true, grpc = false) -> (Compile / sourceManaged).value
     )
-  ) ++ commonSettings
+  ) ++ commonSettings ++ noForkInTests
 
   lazy val layer = Seq(
     name := "geotrellis-layer",
@@ -650,7 +642,7 @@ object Settings {
       import geotrellis.proj4._
       import geotrellis.layer._
       """
-  ) ++ commonSettings
+  ) ++ commonSettings ++ noForkInTests
 
   lazy val store = Seq(
     name := "geotrellis-store",
@@ -667,7 +659,7 @@ object Settings {
       cats("effect").value,
       scalatest % Test
     )
-  ) ++ commonSettings
+  ) ++ commonSettings ++ noForkInTests
 
   lazy val gdal = Seq(
     name := "geotrellis-gdal",
@@ -678,7 +670,7 @@ object Settings {
     ),
     Test / testOptions += Tests.Argument("-oDF"),
     javaOptions ++= Seq("-Djava.library.path=/usr/local/lib")
-  ) ++ noForkInTests ++ commonSettings
+  ) ++ commonSettings ++ noForkInTests
 
   lazy val `gdal-spark` = Seq(
     name := "geotrellis-gdal-spark",
@@ -691,7 +683,7 @@ object Settings {
     ),
     Test / testOptions += Tests.Argument("-oDF"),
     javaOptions ++= Seq("-Djava.library.path=/usr/local/lib")
-  ) ++ noForkInTests ++ commonSettings
+  ) ++ commonSettings ++ noForkInTests
 
   lazy val testModuleSettings = Seq(
     publish / skip := true,
@@ -701,5 +693,5 @@ object Settings {
       scalatest % Test,
       scalacheck % Test,
     )
-  ) ++ commonSettings
+  ) ++ commonSettings ++ noForkInTests
 }
