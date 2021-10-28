@@ -6,8 +6,6 @@ on:
   push:
     branches: ['master']
     tags: [v*]
-  # release:
-    # types: [published]
 
 jobs:
   build:
@@ -15,10 +13,12 @@ jobs:
     strategy:
       matrix:
         scala: ["2.12.15", "2.13.6"]
+        java: ["8", "11"]
     runs-on: ubuntu-latest
   
     env:
       SCALA_VERSION:  ${{ matrix.scala }}
+      JAVA_VERSION:  ${{ matrix.java }}
     
     steps:
       - uses: actions/checkout@v2
@@ -26,12 +26,14 @@ jobs:
           fetch-depth: 0
 
       - uses: coursier/cache-action@v6
-      # - uses: olafurpg/setup-scala@v13
-        # with:
-          # java-version: adopt@1.8
 
       - name: unzip rasters
         run: cd raster/data; unzip geotiff-test-files.zip
 
       - name: run tests
-        run: docker compose -f .github/docker-compose.yml up test --abort-on-container-exit --exit-code-from test
+        run: |
+          if [[ "$JAVA_VERSION" == "8" ]]; then 
+            docker compose -f .github/docker-compose.yml up test-jdk8 --abort-on-container-exit --exit-code-from test-jdk8
+          elif [[ "$JAVA_VERSION" == "11" ]]; then 
+            docker compose -f .github/docker-compose.yml up test-jdk11 --abort-on-container-exit --exit-code-from test-jdk11
+          fi
