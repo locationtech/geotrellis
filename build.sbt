@@ -172,8 +172,13 @@ lazy val `spark-pipeline` = project.
   settings(Settings.`spark-pipeline`)
 
 lazy val geotools = project
-  .dependsOn(raster, vector, proj4, `vector-testkit` % Test, `raster-testkit` % Test,
-    raster
+  .dependsOn(
+    raster,
+    vector,
+    proj4,
+    `vector-testkit` % Test,
+    `raster-testkit` % Test,
+    `raster-tests` % "test->test"
   )
   .settings(Settings.geotools)
 
