@@ -33,7 +33,14 @@ services:
   test:
     image: quay.io/azavea/openjdk-gdal:3.1-jdk8-slim
     working_dir: /usr/local/src
-    command: ./sbt ++$SCALA_VERSION test
+    command:
+      - /bin/bash
+      - -c
+      - |
+        ulimit -c unlimited
+        ./sbt ++$SCALA_VERSION test || true
+        ls -la
+        find / -name '*core*' -type f
     environment:
       - CI
       - SCALA_VERSION
