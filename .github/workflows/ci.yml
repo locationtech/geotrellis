@@ -14,9 +14,7 @@ jobs:
     name: Build and Test
     strategy:
       matrix:
-        scala:
-          - "2.12.15"
-          #- "2.13.6"
+        scala: ["2.12.15", "2.13.6"]
     runs-on: ubuntu-latest
   
     env:
@@ -36,25 +34,4 @@ jobs:
         run: cd raster/data; unzip geotiff-test-files.zip
 
       - name: run tests
-        run: |
-          ulimit -c unlimited
-          docker compose -f .github/docker-compose.yml up test # --abort-on-container-exit --exit-code-from test
-
-
-#      - name: Upterm session on failure
-#        uses: lhotari/action-upterm@v1
-#        if: ${{ failure() }}
-#
-#      - name: haz core?
-#        if: ${{ failure() }}
-#        run: |
-#          sudo mkdir /cores || true
-#          sudo find . -name '*core*' -type f
-#          # sudo find . -name '*core*' -type f -print0 | sudo xargs -0 -J % cp -v % /cores
-#          sudo chmod -R +rwx /cores
-#          ls -Rla /cores/*
-
-#      - uses: actions/upload-artifact@master
-#        with:
-#          name: cores
-#          path: /cores
+        run: docker compose -f .github/docker-compose.yml up test --abort-on-container-exit --exit-code-from test
