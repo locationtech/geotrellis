@@ -39,7 +39,7 @@ class GridExtent[@specialized(Int, Long) N: Integral](
   val cellheight: Double,
   val cols: N,
   val rows: N
-) extends GridIntegral[N] {
+) extends Grid[N] {
   import GridExtent._
 
   if (cols <= 0) throw GeoAttrsError(s"invalid cols: $cols")
@@ -60,6 +60,16 @@ class GridExtent[@specialized(Int, Long) N: Integral](
       rows = Integral[N].fromDouble(math.round(extent.height / cellSize.height).toDouble))
 
   def cellSize = CellSize(cellwidth, cellheight)
+
+  /**
+    * The shape (width and height) of the CellGrid[Long] as a `Dimensions[Long]`.
+    */
+  val dimensions: Dimensions[N] = Dimensions(cols, rows)
+
+  /**
+    * Number of cells in the CellGrid[Long]
+    */
+  val size: N = cols * rows
 
   /**
   * Combine two different GridExtents (which must have the

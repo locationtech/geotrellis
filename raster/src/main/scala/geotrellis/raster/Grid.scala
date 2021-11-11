@@ -16,7 +16,7 @@
 
 package geotrellis.raster
 
-trait Grid[@specialized(Int, Long) N] extends Serializable {
+trait Grid[N] extends Serializable {
   def cols: N
   def rows: N
   def size: N

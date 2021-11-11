@@ -26,7 +26,7 @@ import spire.syntax.cfor._
 /**
   * The trait underlying constant tile types.
   */
-abstract class ConstantTile extends Tile {
+abstract class ConstantTile(cols: Int, rows: Int) extends Tile(cols, rows) {
 
   /** Precomputed view of tile cells as seen by [[get]] method */
   protected val iVal: Int
@@ -270,7 +270,7 @@ object BitConstantTile {
 /**
   * The [[BitConstantTile]] type.
   */
-case class BitConstantTile(v: Boolean, cols: Int, rows: Int) extends ConstantTile {
+case class BitConstantTile(v: Boolean, override val cols: Int, override val rows: Int) extends ConstantTile(cols, rows) {
   protected val iVal = if(v) 1 else 0
   protected val dVal = if(v) 1.0 else 0.0
 
@@ -307,9 +307,9 @@ case class BitConstantTile(v: Boolean, cols: Int, rows: Int) extends ConstantTil
 /**
   * The [[ByteConstantTile]] type.
   */
-case class ByteConstantTile(v: Byte, cols: Int, rows: Int,
+case class ByteConstantTile(v: Byte, override val cols: Int, override val rows: Int,
   cellType: ByteCells with NoDataHandling = ByteConstantNoDataCellType
-) extends ConstantTile {
+) extends ConstantTile(cols, rows) {
   protected val (iVal: Int, dVal: Double) =
     cellType match {
       case _: ConstantNoData[_] =>
@@ -370,9 +370,9 @@ object ByteConstantTile {
 /**
   * The [[UByteConstantTile]] type.
   */
-case class UByteConstantTile(v: Byte, cols: Int, rows: Int,
+case class UByteConstantTile(v: Byte, override val cols: Int, override val rows: Int,
   cellType: UByteCells with NoDataHandling = UByteConstantNoDataCellType
-) extends ConstantTile {
+) extends ConstantTile(cols, rows) {
 
   protected val (iVal: Int, dVal: Double) =
     cellType match {
@@ -445,9 +445,9 @@ object UByteConstantTile {
 /**
   * The [[ShortConstantTile]] type.
   */
-case class ShortConstantTile(v: Short, cols: Int, rows: Int,
+case class ShortConstantTile(v: Short, override val cols: Int, override val rows: Int,
   cellType: ShortCells with NoDataHandling = ShortConstantNoDataCellType
-) extends ConstantTile {
+) extends ConstantTile(cols, rows) {
 
   protected val (iVal: Int, dVal: Double) =
     cellType match {
@@ -513,9 +513,9 @@ object ShortConstantTile {
 /**
   * The [[UShortConstantTile]] type.
   */
-case class UShortConstantTile(v: Short, cols: Int, rows: Int,
+case class UShortConstantTile(v: Short, override val cols: Int, override val rows: Int,
   cellType: UShortCells with NoDataHandling = UShortConstantNoDataCellType
-) extends ConstantTile {
+) extends ConstantTile(cols, rows) {
 
   protected val (iVal: Int, dVal: Double) =
     cellType match {
@@ -591,9 +591,9 @@ object UShortConstantTile {
 /**
   * The [[IntConstantTile]] type.
   */
-case class IntConstantTile(v: Int, cols: Int, rows: Int,
+case class IntConstantTile(v: Int, override val cols: Int, override val rows: Int,
   cellType: IntCells with NoDataHandling = IntConstantNoDataCellType
-) extends ConstantTile {
+) extends ConstantTile(cols, rows) {
 
   protected val (iVal: Int, dVal: Double) =
     cellType match {
@@ -658,9 +658,9 @@ object IntConstantTile {
 /**
   * The [[FloatConstantTile]] type.
   */
-case class FloatConstantTile(v: Float, cols: Int, rows: Int,
+case class FloatConstantTile(v: Float, override val cols: Int, override val rows: Int,
   cellType: FloatCells with NoDataHandling = FloatConstantNoDataCellType
-) extends ConstantTile {
+) extends ConstantTile(cols, rows) {
 
   protected val (iVal: Int, dVal: Double) =
     cellType match {
@@ -726,9 +726,9 @@ object FloatConstantTile {
 /**
   * The [[DoubleConstantTile]] type.
   */
-case class DoubleConstantTile(v: Double, cols: Int, rows: Int,
+case class DoubleConstantTile(v: Double, override val cols: Int, override val rows: Int,
   cellType: DoubleCells with NoDataHandling = DoubleConstantNoDataCellType
-) extends ConstantTile {
+) extends ConstantTile(cols, rows) {
 
   protected val (iVal: Int, dVal: Double) =
     cellType match {

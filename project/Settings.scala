@@ -208,10 +208,9 @@ object Settings {
   lazy val bench = Seq(
     libraryDependencies += sl4jnop,
     jmhIterations := Some(5),
-    jmhTimeUnit := None, // Each benchmark should determing the appropriate time unit.
-    jmhExtraOptions := Some("-jvmArgsAppend -Xmx8G")
-    //jmhExtraOptions := Some("-jvmArgsAppend -Xmx8G -prof jmh.extras.JFR")
-    //jmhExtraOptions := Some("-jvmArgsAppend -prof geotrellis.bench.GeotrellisFlightRecordingProfiler")
+    jmhTimeUnit := None, // Each benchmark should determine the appropriate time unit.
+    //jmhExtraOptions := Some("-jvmArgsAppend -Xmx8G")
+    jmhExtraOptions := Some("-jvmArgsAppend -Xmx8G -prof jfr")
   ) ++ commonSettings
 
   lazy val cassandra = Seq(

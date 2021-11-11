@@ -54,10 +54,7 @@ object CroppedTile {
 case class CroppedTile(
   sourceTile: Tile,
   gridBounds: GridBounds[Int]
-) extends Tile {
-
-  val cols = gridBounds.width
-  val rows = gridBounds.height
+) extends Tile(gridBounds.width, gridBounds.height) {
 
   val cellType = sourceTile.cellType
 

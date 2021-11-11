@@ -23,7 +23,7 @@ import spire.syntax.cfor._
   * [[MutableArrayTile]] is an [[ArrayTile]] whose cells can be
   * written to (mutated).
   */
-abstract class MutableArrayTile extends ArrayTile {
+abstract class MutableArrayTile(cols: Int, rows: Int) extends ArrayTile(cols, rows) {
   def mutable = this
 
   /**
@@ -51,7 +51,8 @@ abstract class MutableArrayTile extends ArrayTile {
     * @param  value  The value
     */
   def set(col:Int, row:Int, value:Int): Unit = {
-    update(row * cols + col, value)
+    val c = this.cols
+    update(row * c + col, value)
   }
 
   /**

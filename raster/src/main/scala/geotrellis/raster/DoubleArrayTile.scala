@@ -22,7 +22,7 @@ import java.nio.ByteBuffer
  * [[ArrayTile]] based on Array[Double] (each cell as a Double).
  */
 abstract class DoubleArrayTile(val array: Array[Double], cols: Int, rows: Int)
-    extends MutableArrayTile {
+    extends MutableArrayTile(cols, rows) {
   val cellType: DoubleCells with NoDataHandling
 
   override def toArrayDouble(): Array[Double] = array.clone
@@ -63,7 +63,7 @@ abstract class DoubleArrayTile(val array: Array[Double], cols: Int, rows: Int)
 /**
   * The [[DoubleRawArrayTile]], derived from [[DoubleArrayTile]].
   */
-final case class DoubleRawArrayTile(arr: Array[Double], val cols: Int, val rows: Int)
+final case class DoubleRawArrayTile(arr: Array[Double], override val cols: Int, override val rows: Int)
     extends DoubleArrayTile(arr, cols, rows) {
   val cellType = DoubleCellType
 
@@ -104,7 +104,7 @@ final case class DoubleRawArrayTile(arr: Array[Double], val cols: Int, val rows:
   * The [[DoubleConstantNoDataArrayTile]], derived from
   * [[DoubleArrayTile]].
   */
-final case class DoubleConstantNoDataArrayTile(arr: Array[Double], val cols: Int, val rows: Int)
+final case class DoubleConstantNoDataArrayTile(arr: Array[Double], override val cols: Int, override val rows: Int)
     extends DoubleArrayTile(arr, cols, rows) {
   val cellType = DoubleConstantNoDataCellType
 
@@ -145,7 +145,7 @@ final case class DoubleConstantNoDataArrayTile(arr: Array[Double], val cols: Int
   * The [[DoubleUserDefinedNoDataArrayTile]], derived from
   * [[DoubleArrayTile]].
   */
-final case class DoubleUserDefinedNoDataArrayTile(arr: Array[Double], val cols: Int, val rows: Int, val cellType: DoubleUserDefinedNoDataCellType)
+final case class DoubleUserDefinedNoDataArrayTile(arr: Array[Double], override val cols: Int, override val rows: Int, val cellType: DoubleUserDefinedNoDataCellType)
     extends DoubleArrayTile(arr, cols, rows)
        with UserDefinedDoubleNoDataConversions {
   val userDefinedDoubleNoDataValue = cellType.noDataValue

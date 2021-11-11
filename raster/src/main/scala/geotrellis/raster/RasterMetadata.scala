@@ -52,10 +52,10 @@ trait RasterMetadata extends Serializable {
   def extent: Extent = gridExtent.extent
 
   /** Raster pixel column count */
-  def cols: Long = gridExtent.cols
+  val cols: Long = gridExtent.cols
 
   /** Raster pixel row count */
-  def rows: Long = gridExtent.rows
+  val rows: Long = gridExtent.rows
 
   /**
     * Return the "base" metadata, usually it is a zero band metadata,

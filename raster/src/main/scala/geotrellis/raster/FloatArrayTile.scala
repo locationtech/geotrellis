@@ -22,7 +22,7 @@ import java.nio.ByteBuffer
   * [[ArrayTile]] based on Array[Float] (each cell as a Float).
   */
 abstract class FloatArrayTile(val array: Array[Float], cols: Int, rows: Int)
-    extends MutableArrayTile {
+    extends MutableArrayTile(cols, rows) {
   val cellType: FloatCells with NoDataHandling
 
   /**
@@ -61,7 +61,7 @@ abstract class FloatArrayTile(val array: Array[Float], cols: Int, rows: Int)
 /**
   * The [[FloatRawArrayTile]] derived from [[FloatArrayTile]].
   */
-final case class FloatRawArrayTile(arr: Array[Float], val cols: Int, val rows: Int)
+final case class FloatRawArrayTile(arr: Array[Float], override val cols: Int, override val rows: Int)
     extends FloatArrayTile(arr, cols, rows) {
   val cellType = FloatCellType
   /**
@@ -101,7 +101,7 @@ final case class FloatRawArrayTile(arr: Array[Float], val cols: Int, val rows: I
   * The [[FloatConstantNoDataArrayTile]] derived from
   * [[FloatArrayTile]].
   */
-final case class FloatConstantNoDataArrayTile(arr: Array[Float], val cols: Int, val rows: Int)
+final case class FloatConstantNoDataArrayTile(arr: Array[Float], override val cols: Int, override val rows: Int)
     extends FloatArrayTile(arr, cols, rows) {
   val cellType = FloatConstantNoDataCellType
 
@@ -142,7 +142,7 @@ final case class FloatConstantNoDataArrayTile(arr: Array[Float], val cols: Int, 
   * The [[FloatUserDefinedNoDataArrayTile]] derived from
   * [[FloatArrayTile]].
   */
-final case class FloatUserDefinedNoDataArrayTile(arr: Array[Float], val cols: Int, val rows: Int, val cellType: FloatUserDefinedNoDataCellType)
+final case class FloatUserDefinedNoDataArrayTile(arr: Array[Float], override val cols: Int, override val rows: Int, val cellType: FloatUserDefinedNoDataCellType)
     extends FloatArrayTile(arr, cols, rows)
        with UserDefinedFloatNoDataConversions {
   val userDefinedFloatNoDataValue = cellType.noDataValue

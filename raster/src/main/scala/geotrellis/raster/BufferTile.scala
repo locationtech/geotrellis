@@ -33,7 +33,7 @@ import spire.syntax.cfor._
 case class BufferTile(
   sourceTile: Tile,
   gridBounds: GridBounds[Int]
-) extends Tile {
+) extends Tile(gridBounds.width, gridBounds.height) {
   require(
     gridBounds.colMin >=0 &&
     gridBounds.rowMin >= 0 &&
@@ -41,9 +41,6 @@ case class BufferTile(
     gridBounds.rowMax < sourceTile.rows,
     s"Tile center bounds $gridBounds exceed underlying tile dimensions ${sourceTile.dimensions}"
   )
-
-  val cols: Int = gridBounds.width
-  val rows: Int = gridBounds.height
 
   val cellType: CellType = sourceTile.cellType
 

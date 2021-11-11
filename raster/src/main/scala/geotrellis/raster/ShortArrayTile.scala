@@ -23,7 +23,7 @@ import java.nio.ByteBuffer
  * [[ArrayTile]] based on Array[Short] (each cell as a Short).
  */
 abstract class ShortArrayTile(val array: Array[Short], cols: Int, rows: Int)
-    extends MutableArrayTile {
+    extends MutableArrayTile(cols, rows) {
   val cellType: ShortCells with NoDataHandling
 
   /**
@@ -62,7 +62,7 @@ abstract class ShortArrayTile(val array: Array[Short], cols: Int, rows: Int)
 /**
   * [[ShortRawArrayTile]] derived from [[ShortArrayTile]].
   */
-final case class ShortRawArrayTile(arr: Array[Short], val cols: Int, val rows: Int)
+final case class ShortRawArrayTile(arr: Array[Short], override val cols: Int, override val rows: Int)
     extends ShortArrayTile(arr, cols, rows) {
   val cellType = ShortCellType
 
@@ -102,7 +102,7 @@ final case class ShortRawArrayTile(arr: Array[Short], val cols: Int, val rows: I
 /**
   * [[ShortConstantNoDataArrayTile]] derived from [[ShortArrayTile]].
   */
-final case class ShortConstantNoDataArrayTile(arr: Array[Short], val cols: Int, val rows: Int)
+final case class ShortConstantNoDataArrayTile(arr: Array[Short], override val cols: Int, override val rows: Int)
     extends ShortArrayTile(arr, cols, rows) {
   val cellType = ShortConstantNoDataCellType
 
@@ -143,7 +143,7 @@ final case class ShortConstantNoDataArrayTile(arr: Array[Short], val cols: Int, 
   * [[ShortUserDefinedNoDataArrayTile]] derived from
   * [[ShortArrayTile]].
   */
-final case class ShortUserDefinedNoDataArrayTile(arr: Array[Short], val cols: Int, val rows: Int, val cellType: ShortUserDefinedNoDataCellType)
+final case class ShortUserDefinedNoDataArrayTile(arr: Array[Short], override val cols: Int, override val rows: Int, val cellType: ShortUserDefinedNoDataCellType)
     extends ShortArrayTile(arr, cols, rows)
        with UserDefinedShortNoDataConversions {
   val userDefinedShortNoDataValue = cellType.noDataValue

@@ -43,7 +43,7 @@ object MultibandTile {
     ArrayMultibandTile(bands)
 }
 
-abstract class MultibandTile extends CellGrid[Int] with MacroCombinableMultibandTile[Tile] with MacroCombineFunctions[Tile, MultibandTile] {
+abstract class MultibandTile(val cols: Int, val rows: Int) extends CellGrid[Int] with MacroCombinableMultibandTile[Tile] with MacroCombineFunctions[Tile, MultibandTile] {
   def bandCount: Int
 
   /**

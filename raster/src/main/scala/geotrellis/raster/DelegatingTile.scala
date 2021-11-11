@@ -26,17 +26,9 @@ package geotrellis.raster
  *
  * @since 8/22/18
  */
-abstract class DelegatingTile extends Tile {
-  protected def delegate: Tile
-
+abstract class DelegatingTile(protected val delegate: Tile) extends Tile(delegate.cols, delegate.rows) {
   def cellType: CellType =
     delegate.cellType
-
-  def cols: Int =
-    delegate.cols
-
-  def rows: Int =
-    delegate.rows
 
   def mutable: MutableArrayTile =
     delegate.mutable

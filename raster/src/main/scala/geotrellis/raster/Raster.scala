@@ -60,7 +60,7 @@ object Raster {
 /**
   * The [[Raster]] type.
   */
-case class Raster[+T <: CellGrid[Int]](tile: T, extent: Extent) extends CellGrid[Int] with Product2[T, Extent] {
+case class Raster[+T <: CellGrid[Int]](tile: T, extent: Extent) extends CellGrid[Int] {
 
   /**
     * Return the [[RasterExtent]] that is correspondent to this

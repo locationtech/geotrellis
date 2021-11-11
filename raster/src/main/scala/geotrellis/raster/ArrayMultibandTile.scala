@@ -85,15 +85,13 @@ object ArrayMultibandTile {
 /**
   * The [[ArrayMultibandTile]] type.
   */
-class ArrayMultibandTile(_bands: Array[Tile]) extends MultibandTile with MacroMultibandCombiners {
-  val bandCount = _bands.size
+class ArrayMultibandTile(_bands: Array[Tile]) extends MultibandTile(_bands(0).cols, _bands(0).rows) with MacroMultibandCombiners {
+  val bandCount = _bands.length
 
   assert(bandCount > 0, "Band count must be greater than 0")
   private def validateBand(i: Int) = assert(i < bandCount, s"Band index out of bounds. Band Count: $bandCount Requested Band Index: $i")
 
   val cellType = _bands(0).cellType
-  val cols: Int = _bands(0).cols
-  val rows: Int = _bands(0).rows
 
   // Check all bands for consistency.
   cfor(0)(_ < bandCount, _ + 1) { i =>

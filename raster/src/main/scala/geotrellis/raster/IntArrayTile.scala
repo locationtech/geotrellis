@@ -22,7 +22,7 @@ import java.nio.ByteBuffer
   * [[ArrayTile]] based on Array[Int] (each cell as an Int).
   */
 abstract class IntArrayTile(val array: Array[Int], cols: Int, rows: Int)
-    extends MutableArrayTile {
+    extends MutableArrayTile(cols, rows) {
   val cellType: IntCells with NoDataHandling
 
   /**
@@ -64,7 +64,7 @@ abstract class IntArrayTile(val array: Array[Int], cols: Int, rows: Int)
 /**
   * The [[IntRawArrayTile]] derived from [[IntArrayTile]].
   */
-final case class IntRawArrayTile(arr: Array[Int], val cols: Int, val rows: Int)
+final case class IntRawArrayTile(arr: Array[Int], override val cols: Int, override val rows: Int)
     extends IntArrayTile(arr, cols, rows) {
   val cellType = IntCellType
 
@@ -104,7 +104,7 @@ final case class IntRawArrayTile(arr: Array[Int], val cols: Int, val rows: Int)
 /**
   * The [[IntConstantNoDataArrayTile]] derived from [[IntArrayTile]].
   */
-final case class IntConstantNoDataArrayTile(arr: Array[Int], val cols: Int, val rows: Int)
+final case class IntConstantNoDataArrayTile(arr: Array[Int], override val cols: Int, override val rows: Int)
     extends IntArrayTile(arr, cols, rows) {
   val cellType = IntConstantNoDataCellType
 
@@ -145,7 +145,7 @@ final case class IntConstantNoDataArrayTile(arr: Array[Int], val cols: Int, val 
   * The [[IntUserDefinedNoDataArrayTile]] derived from
   * [[IntArrayTile]].
   */
-final case class IntUserDefinedNoDataArrayTile(arr: Array[Int], val cols: Int, val rows: Int, val cellType: IntUserDefinedNoDataCellType)
+final case class IntUserDefinedNoDataArrayTile(arr: Array[Int], override val cols: Int, override val rows: Int, val cellType: IntUserDefinedNoDataCellType)
     extends IntArrayTile(arr, cols, rows)
        with UserDefinedIntNoDataConversions {
   val userDefinedIntNoDataValue = cellType.noDataValue

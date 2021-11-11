@@ -25,12 +25,9 @@ import spire.syntax.cfor._
   * a cell type of the target cell type.
   */
 class DelayedConversionMultibandTile(inner: MultibandTile, override val targetCellType: CellType)
-  extends MultibandTile with MacroMultibandCombiners {
+  extends MultibandTile(inner.cols, inner.rows) with MacroMultibandCombiners {
 
   private def validateBand(i: Int) = assert(i < bandCount, s"Band index out of bounds. Band Count: $bandCount Requested Band Index: $i")
-
-  val cols = inner.cols
-  val rows = inner.rows
 
   def cellType: CellType =
     inner.cellType

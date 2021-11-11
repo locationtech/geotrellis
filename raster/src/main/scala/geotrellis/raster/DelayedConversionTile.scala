@@ -26,10 +26,7 @@ package geotrellis.raster
   * @note          get and getDouble don't do what you think you do.
   */
 class DelayedConversionTile(inner: Tile, targetCellType: CellType)
-  extends Tile {
-
-  val cols: Int = inner.cols
-  val rows: Int = inner.rows
+  extends Tile(inner.cols, inner.rows) {
 
   def cellType: CellType =
     inner.cellType

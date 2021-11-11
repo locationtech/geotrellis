@@ -32,11 +32,8 @@ object PixelInterleaveBandArrayTile {
   * @param   bandCount     The number of bands represented in the inner tile. inner.cols / bandCount must be a natural number.
   * @param   bandIndex     The index of the band this tile should represent.
   */
-class PixelInterleaveBandArrayTile(inner: ArrayTile, bandCount: Int, bandIndex: Int) extends ArrayTile {
+class PixelInterleaveBandArrayTile(inner: ArrayTile, bandCount: Int, bandIndex: Int) extends ArrayTile(inner.cols / bandCount, inner.rows) {
   def cellType: CellType = inner.cellType
-  def cols: Int = inner.cols / bandCount
-  def rows: Int = inner.rows
-
   def apply(i: Int): Int = inner.apply(i * bandCount + bandIndex)
   def applyDouble(i: Int): Double = inner.applyDouble(i * bandCount + bandIndex)
   def copy: ArrayTile = mutable

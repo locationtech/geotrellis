@@ -293,13 +293,10 @@ abstract class GeoTiffTile(
   val segmentLayout: GeoTiffSegmentLayout,
   compression: Compression, // Compression to use moving forward
   val overviews: List[GeoTiffTile] = Nil
-) extends Tile with GeoTiffImageData with GeoTiffSegmentLayoutTransform {
+) extends Tile(segmentLayout.totalCols, segmentLayout.totalRows) with GeoTiffImageData with GeoTiffSegmentLayoutTransform {
   val cellType: CellType
 
   val bandCount = 1
-
-  val cols: Int = segmentLayout.totalCols
-  val rows: Int = segmentLayout.totalRows
 
   private val isTiled = segmentLayout.isTiled
 

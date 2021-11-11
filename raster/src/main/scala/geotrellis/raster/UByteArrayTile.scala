@@ -23,7 +23,7 @@ package geotrellis.raster
   * [[ArrayTile]] based on Array[Byte] (each cell as a Byte).
   */
 abstract class UByteArrayTile(val array: Array[Byte], cols: Int, rows: Int)
-    extends MutableArrayTile {
+    extends MutableArrayTile(cols, rows) {
   val cellType: UByteCells with NoDataHandling
 
   /**
@@ -57,7 +57,7 @@ abstract class UByteArrayTile(val array: Array[Byte], cols: Int, rows: Int)
 /**
   * [[UByteRawArrayTile]] derived from [[UByteArrayTile]].
   */
-final case class UByteRawArrayTile(arr: Array[Byte], val cols: Int, val rows: Int)
+final case class UByteRawArrayTile(arr: Array[Byte], override val cols: Int, override val rows: Int)
     extends UByteArrayTile(arr, cols, rows) {
   val cellType = UByteCellType
   def apply(i: Int): Int = arr(i) & 0xFF
@@ -69,7 +69,7 @@ final case class UByteRawArrayTile(arr: Array[Byte], val cols: Int, val rows: In
 /**
   * [[UByteConstantNoDataArrayTile]] derived from [[UByteArrayTile]].
   */
-final case class UByteConstantNoDataArrayTile(arr: Array[Byte], val cols: Int, val rows: Int)
+final case class UByteConstantNoDataArrayTile(arr: Array[Byte], override val cols: Int, override val rows: Int)
     extends UByteArrayTile(arr, cols, rows) {
   val cellType = UByteConstantNoDataCellType
 
@@ -110,7 +110,7 @@ final case class UByteConstantNoDataArrayTile(arr: Array[Byte], val cols: Int, v
   * [[UByteUserDefinedNoDataArrayTile]] derived from
   * [[UByteArrayTile]].
   */
-final case class UByteUserDefinedNoDataArrayTile(arr: Array[Byte], val cols: Int, val rows: Int, val cellType: UByteUserDefinedNoDataCellType)
+final case class UByteUserDefinedNoDataArrayTile(arr: Array[Byte], override val cols: Int, override val rows: Int, val cellType: UByteUserDefinedNoDataCellType)
     extends UByteArrayTile(arr, cols, rows)
        with UserDefinedByteNoDataConversions {
   val userDefinedByteNoDataValue = cellType.noDataValue

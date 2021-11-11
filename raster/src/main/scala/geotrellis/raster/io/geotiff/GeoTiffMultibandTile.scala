@@ -305,10 +305,9 @@ abstract class GeoTiffMultibandTile(
   val compression: Compression,
   val bandCount: Int,
   val overviews: List[GeoTiffMultibandTile] = Nil
-) extends MultibandTile with GeoTiffImageData with GeoTiffSegmentLayoutTransform with MacroGeotiffMultibandCombiners {
+) extends MultibandTile(segmentLayout.totalCols, segmentLayout.totalRows)
+  with GeoTiffImageData with GeoTiffSegmentLayoutTransform with MacroGeotiffMultibandCombiners {
   val cellType: CellType
-  val cols: Int = segmentLayout.totalCols
-  val rows: Int = segmentLayout.totalRows
 
   def hasPixelInterleave = segmentLayout.hasPixelInterleave
 

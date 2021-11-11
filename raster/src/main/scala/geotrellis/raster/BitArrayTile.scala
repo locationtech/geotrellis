@@ -28,8 +28,8 @@ package geotrellis.raster
   * to be explicitly told our size, since length=7 and length=8 will
   * both need to allocate an Array[Byte] with length=1.
   */
-final case class BitArrayTile(val array: Array[Byte], cols: Int, rows: Int)
-  extends MutableArrayTile {
+final case class BitArrayTile(val array: Array[Byte], override val cols: Int, override val rows: Int)
+  extends MutableArrayTile(cols, rows) {
   // i >> 3 is the same as i / 8 but faster
   // i & 7 is the same as i % 8 but faster
   // i & 1 is the same as i % 2 but faster

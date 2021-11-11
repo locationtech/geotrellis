@@ -170,18 +170,14 @@ class ArrayTileSpec extends AnyFunSpec with Matchers with RasterMatchers with Ti
     it("should combine with non-standard tiles") {
       withClue("constant IntArrayTile") {
         val at = IntArrayTile(Array.ofDim[Int](100*100).fill(50), 100, 100)
-        val fauxTile = new DelegatingTile {
-          override protected def delegate: Tile = IntConstantTile(0, 100, 100)
-        }
+        val fauxTile = new DelegatingTile(IntConstantTile(0, 100, 100)) {}
 
         assertEqual(at.combine(fauxTile)((z1, z2) => z1 + z2), at)
       }
 
       withClue("constant DoubleArrayTile") {
         val at = DoubleArrayTile(Array.ofDim[Double](100*100).fill(50), 100, 100)
-        val fauxTile = new DelegatingTile {
-          override protected def delegate: Tile = DoubleConstantTile(0.0, 100, 100)
-        }
+        val fauxTile = new DelegatingTile(DoubleConstantTile(0.0, 100, 100)) { }
 
         assertEqual(at.combineDouble(fauxTile)((z1, z2) => z1 + z2), at)
       }
@@ -190,9 +186,7 @@ class ArrayTileSpec extends AnyFunSpec with Matchers with RasterMatchers with Ti
         val at = injectNoData(4)(createConsecutiveTile(10))
           .convert(IntUserDefinedNoDataCellType(98))
         val twice = at * 2
-        val fauxTile = new DelegatingTile {
-          override protected def delegate: Tile = at
-        }
+        val fauxTile = new DelegatingTile(at) {}
 
         def add(l: Int, r: Int) = if(isNoData(l) || isNoData(r)) NODATA else l + r
         assertEqual(at.combine(fauxTile)(add), twice)
@@ -204,9 +198,7 @@ class ArrayTileSpec extends AnyFunSpec with Matchers with RasterMatchers with Ti
           .convert(DoubleUserDefinedNoDataCellType(33.2))
 
         val twice = at * 2
-        val fauxTile = new DelegatingTile {
-          override protected def delegate: Tile = at
-        }
+        val fauxTile = new DelegatingTile(at) { }
 
         def add(l: Double, r: Double) = if(isNoData(l) || isNoData(r)) doubleNODATA else l + r
         assertEqual(at.combineDouble(fauxTile)(add), twice)
@@ -216,13 +208,9 @@ class ArrayTileSpec extends AnyFunSpec with Matchers with RasterMatchers with Ti
       withClue("delegation of NoData semantics") {
         val t1 = injectNoData(1)(createConsecutiveTile(2))
         val t2 = createConsecutiveTile(2)
-        val d1 = new DelegatingTile {
-          override protected def delegate: Tile = t1
-        }
+        val d1 = new DelegatingTile(t1) {}
 
-        val d2 = new DelegatingTile {
-          override protected def delegate: Tile = t2
-        }
+        val d2 = new DelegatingTile(t2) {}
 
         // Standard Add evaluates `x + NoData` as `NoData`
         CountData(Add(d1, d2)) should be (3L)
