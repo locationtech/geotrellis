@@ -234,6 +234,7 @@ object MultiPointMultiLineStringUnionResult {
     geom match {
       case g: Geometry if g.isEmpty => NoResult
       case l: LineString => LineStringResult(l)
+      case pt: Point => PointResult(pt)
       case mp: MultiPoint => MultiPointResult(mp)
       case ml: MultiLineString => MultiLineStringResult(ml)
       case gc: GeometryCollection => GeometryCollectionResult(gc)
@@ -331,6 +332,7 @@ object MultiPointMultiPolygonUnionResult {
     geom match {
       case g: Geometry if g.isEmpty => NoResult
       case p: Polygon => PolygonResult(p)
+      case pt: Point => PointResult(pt)
       case mpt: MultiPoint => MultiPointResult(mpt)
       case mp: MultiPolygon => MultiPolygonResult(mp)
       case gc: GeometryCollection => GeometryCollectionResult(gc)
@@ -780,6 +782,8 @@ case class PointResult(geom: Point) extends GeometryResult
     with MultiLineStringMultiLineStringDifferenceResult
     with MultiPointMultiPointDifferenceResult
     with MultiPolygonMultiPolygonDifferenceResult
+    with MultiPointMultiPolygonUnionResult
+    with MultiPointMultiLineStringUnionResult
     with PointOrNoResult {
   def toGeometry(): Option[Geometry] = Some(geom)
 }
