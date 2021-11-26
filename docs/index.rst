@@ -129,7 +129,6 @@ Ready? `Setup a GeoTrellis development environment. <tutorials/setup.html>`__
    Extending GeoTrellis Types <guide/extending-geotrellis>
    GeoTrellis Module Hierarchy <guide/module-hierarchy>
    Tile Layer Backends <guide/tile-backends>
-   Vector Data Backends <guide/vector-backends>
    Frequently Asked Questions <guide/faq>
    Example Archive <guide/examples>
 

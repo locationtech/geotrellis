@@ -5,7 +5,6 @@
       "project cassandra" createHeaders test:createHeaders \
       "project cassandra-spark" createHeaders test:createHeaders \
       "project doc-examples" createHeaders test:createHeaders \
-      "project geomesa" createHeaders test:createHeaders \
       "project geotools" createHeaders test:createHeaders \
       "project hbase" createHeaders  test:createHeaders  \
       "project hbase-spark" createHeaders  test:createHeaders  \

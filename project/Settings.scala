@@ -271,26 +271,6 @@ object Settings {
     )
   )
 
-  lazy val geomesa = Seq(
-    name := "geotrellis-geomesa",
-    libraryDependencies ++= Seq(
-      geomesaAccumuloJobs,
-      geomesaAccumuloDatastore,
-      geomesaUtils,
-      scalatest % Test
-    ),
-    console / initialCommands :=
-      """
-      import geotrellis.raster._
-      import geotrellis.vector._
-      import geotrellis.proj4._
-      import geotrellis.layer._
-      import geotrellis.spark._
-      import geotrellis.spark.util._
-      import geotrellis.spark.io.geomesa._
-      """
-  ) ++ commonSettings ++ noForkInTests
-
   lazy val geotools = Seq(
     name := "geotrellis-geotools",
     libraryDependencies ++= Seq(
@@ -320,39 +300,11 @@ object Settings {
     Test / testOptions += Tests.Setup { () => Unzip.geoTiffTestFiles() }
   ) ++ commonSettings ++ noForkInTests
 
-  lazy val geowave = Seq(
-    name := "geotrellis-geowave",
-    libraryDependencies ++= Seq(
-      newtype, 
-      java8Compat,
-      circe("generic-extras").value, 
-      circe("json-schema").value,
-      geowaveStore, 
-      geowaveIndex, 
-      geowaveGeotime,
-      geowaveGuava % Test, // tracking geowave guava requirement
-      geowaveCassandra % Test, 
-      scalatest % Test, 
-      logbackClassic % Test
-    ),
-    Test / fork := true
-  ) ++ commonSettings
-
-  lazy val geowaveBenchmark = Seq(
-    name := "geotrellis-geowave-benchmark",
-    libraryDependencies ++= Seq(
-      geowaveGuava, // tracking geowave guava requirement
-      geowaveCassandra, 
-      logbackClassic
-    ),
-    Test / fork := true
-  ) ++ commonSettings
-
   lazy val hbase = Seq(
     name := "geotrellis-hbase",
-    libraryDependencies += 
-      hbaseMapReduce 
-        exclude("javax.servlet", "servlet-api") 
+    libraryDependencies +=
+      hbaseMapReduce
+        exclude("javax.servlet", "servlet-api")
         exclude("org.mortbay.jetty", "servlet-api-2.5"),
     libraryDependencies += jacksonCoreAsl,
     console / initialCommands :=
