@@ -22,8 +22,6 @@ object Version {
   val accumulo    = "1.9.3"
   val cassandra   = "3.7.2"
   val hbase       = "2.4.2"
-  val geomesa     = "2.3.1"
-  val geowave     = "1.2.0"
   val hadoop      = "3.2.1"
   val gdal        = "3.1.0"
   val gdalWarp    = "1.1.1"
@@ -94,11 +92,6 @@ object Dependencies {
   val cassandraDriverCore = "com.datastax.cassandra"      % "cassandra-driver-core"    % Version.cassandra
   val guava               = "com.google.guava"            % "guava"                    % "16.0.1"
 
-  val geomesaJobs              = "org.locationtech.geomesa" %% "geomesa-jobs"               % Version.geomesa
-  val geomesaAccumuloJobs      = "org.locationtech.geomesa" %% "geomesa-accumulo-jobs"      % Version.geomesa
-  val geomesaAccumuloDatastore = "org.locationtech.geomesa" %% "geomesa-accumulo-datastore" % Version.geomesa
-  val geomesaUtils             = "org.locationtech.geomesa" %% "geomesa-utils"              % Version.geomesa
-
   val scaffeine = "com.github.blemale"           %% "scaffeine" % "4.0.2"
   val caffeine  = "com.github.ben-manes.caffeine" % "caffeine"  % "2.8.5"
 
@@ -110,16 +103,6 @@ object Dependencies {
   val geotoolsShapefile   = "org.geotools"                 % "gt-shapefile"            % Version.geotools
   val geotoolsMetadata    = "org.geotools"                 % "gt-metadata"             % Version.geotools
   val geotoolsOpengis     = "org.geotools"                 % "gt-opengis"              % Version.geotools
-
-  val geowaveRaster       = "org.locationtech.geowave"     % "geowave-adapter-raster"     % Version.geowave
-  val geowaveVector       = "org.locationtech.geowave"     % "geowave-adapter-vector"     % Version.geowave
-  val geowaveIndex        = "org.locationtech.geowave"     % "geowave-core-index"         % Version.geowave
-  val geowaveStore        = "org.locationtech.geowave"     % "geowave-core-store"         % Version.geowave
-  val geowaveGeotime      = "org.locationtech.geowave"     % "geowave-core-geotime"       % Version.geowave
-  val geowaveAccumulo     = "org.locationtech.geowave"     % "geowave-datastore-accumulo" % Version.geowave
-  val geowaveCassandra    = "org.locationtech.geowave"     % "geowave-datastore-cassandra" % Version.geowave
-
-  val geowaveGuava        = "com.google.guava"             % "guava"                   % "25.1-jre"
 
   val scalaArm            = "com.jsuereth"                %% "scala-arm"               % "2.0"
 

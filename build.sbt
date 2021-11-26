@@ -14,7 +14,6 @@ lazy val root = Project("geotrellis", file("."))
     gdal,
     `gdal-spark`,
     geotools,
-    // geowave,
     hbase,
     `hbase-spark`,
     layer,
@@ -166,16 +165,6 @@ lazy val geotools = project
     raster % "test->test" // <-- to get rid  of this, move `GeoTiffTestUtils` to the testkit.
   )
   .settings(Settings.geotools)
-
-lazy val geowave = project
-  .dependsOn(raster, store, `raster-testkit` % Test)
-  .settings(Settings.geowave)
-
-lazy val `geowave-benchmark` = (project in file("geowave/benchmark"))
-  .dependsOn(geowave)
-  .enablePlugins(JmhPlugin)
-  .settings(Settings.geowaveBenchmark)
-  .settings(publish / skip := true)
 
 lazy val shapefile = project
   .dependsOn(raster, `raster-testkit` % Test)

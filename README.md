@@ -47,9 +47,7 @@ of published GeoTrellis packages includes:
 - `geotrellis-cassandra`: Cassandra store integration for GeoTrellis
 - `geotrellis-cassandra-spark`: Cassandra store integration for GeoTrellis + Spark
 - `geotrellis-gdal`: GDAL bindings for GeoTrellis
-- `geotrellis-geomesa`: Experimental GeoMesa integration for GeoTrellis + Spark
 - `geotrellis-geotools`: Conversions to and from GeoTools Vector and Raster data
-- `geotrellis-geowave`: Experimental GeoWave integration for GeoTrellis + Spark
 - `geotrellis-hbase`: HBase store integration for GeoTrellis
 - `geotrellis-hbase-spark`: HBase store integration for GeoTrellis + Spark
 - `geotrellis-layer`: Datatypes to describe sets of rasters
