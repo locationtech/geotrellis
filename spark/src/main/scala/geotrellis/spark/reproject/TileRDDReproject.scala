@@ -23,11 +23,10 @@ import geotrellis.raster.buffer.{BufferSizes, BufferedTile}
 import geotrellis.raster.crop._
 import geotrellis.raster.merge._
 import geotrellis.raster.prototype._
-import geotrellis.raster.reproject._
+import geotrellis.raster.reproject.{ReprojectRasterExtent, RasterRegionReproject}
 import geotrellis.raster.stitch._
 import geotrellis.spark._
 import geotrellis.spark.buffer.BufferTilesRDD
-import geotrellis.spark.reproject.Reproject
 import geotrellis.vector._
 import geotrellis.util._
 
