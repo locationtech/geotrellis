@@ -39,18 +39,16 @@ jobs:
       - save_cache: *save_build_cache
 
   publish:
-    parameters:
-      scala-version:
-        type: string
     executor: executor-gdal
-    environment:
-      SCALA_VERSION: << parameters.scala-version >>
     steps:
       - checkout
       - restore_cache: *restore_build_cache
       - run:
           name: Artifacts publish
-          command: ./sbt -Dsbt.supershell=false "++$SCALA_VERSION" publishLocal
+          command: |
+            if [[ ! -z "$SONATYPE_PASSWORD" && ! -z "$SONATYPE_USERNAME" ]]; then
+              ./sbt -Dsbt.supershell=false ci-release
+            fi
       - save_cache: *save_build_cache
 
 workflows:
@@ -65,11 +63,8 @@ workflows:
               only: master
 
       - publish:
-          matrix:
-            parameters:
-              scala-version: ["2.12.15", "2.13.6"]
           filters:
             branches:
-              only: master
+              only: /.*/
             tags:
               only: /^v.*/

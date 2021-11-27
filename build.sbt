@@ -2,7 +2,7 @@ import sbt.Keys._
 
 ThisBuild / scalaVersion := "2.12.15"
 ThisBuild / organization := "org.locationtech.geotrellis"
-ThisBuild / crossScalaVersions := List("2.12.15", "2.13.6")
+ThisBuild / crossScalaVersions := List("2.12.15", "2.13.7")
 
 lazy val root = Project("geotrellis", file("."))
   .aggregate(
@@ -38,17 +38,6 @@ lazy val root = Project("geotrellis", file("."))
   .settings(Settings.commonSettings)
   .settings(publish / skip := true)
   .settings(ScalaUnidoc / unidoc / unidocProjectFilter := inAnyProject -- inProjects(mdoc))
-  .settings(
-    initialize := {
-      val curr = VersionNumber(sys.props("java.specification.version"))
-      val req = SemanticSelector("=1.8")
-      if (!curr.matchesSemVer(req)) {
-        val log = Keys.sLog.value
-        log.warn(s"Java $req required for GeoTools compatibility. Found Java $curr.\n" +
-          "Please change the version of Java running sbt.")
-      }
-    }
-  )
 
 lazy val mdoc = project
   .dependsOn(raster)
