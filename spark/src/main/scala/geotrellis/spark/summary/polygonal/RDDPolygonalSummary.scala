@@ -79,7 +79,7 @@ object RDDPolygonalSummary {
         val extent: Extent = layout.mapTransform.keyToExtent(spatialKey)
         val raster: Raster[T] = Raster(tile, extent)
         val result: PolygonalSummaryResult[R] =
-          raster.polygonalSummary(feature.geom, visitor.getClass.newInstance, options)
+          raster.polygonalSummary(feature.geom, visitor.getClass.getDeclaredConstructor().newInstance(), options)
         (feature.data, Feature(feature.geom, result))
       }
     }

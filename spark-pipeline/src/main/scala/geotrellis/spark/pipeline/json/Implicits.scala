@@ -62,8 +62,8 @@ trait Implicits {
       Either.catchNonFatal(Try(CRS.fromName(str)) getOrElse CRS.fromString(str)).leftMap(_ => "CRS")
     }
 
-  implicit val layoutDefinitionEncoder: Encoder[LayoutDefinition] = deriveEncoder
-  implicit val layoutDefinitionDecoder: Decoder[LayoutDefinition] = deriveDecoder
+  implicit val layoutDefinitionEncoder: Encoder[LayoutDefinition] = deriveConfiguredEncoder
+  implicit val layoutDefinitionDecoder: Decoder[LayoutDefinition] = deriveConfiguredDecoder
 
   implicit val layoutSchemeEncoder: Encoder[LayoutScheme] =
     Encoder.instance {
