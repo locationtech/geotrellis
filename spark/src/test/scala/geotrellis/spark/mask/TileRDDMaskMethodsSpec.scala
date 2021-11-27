@@ -191,17 +191,18 @@ class TileRDDMaskMethodsSpec extends AnyFunSpec with Matchers with TestEnvironme
     it ("should be masked by complex multipolygons") {
       val cases = Seq(
         MultiPolygon(
-          Polygon(LineString(Seq[(Double,Double)]((29, 15), (110, 15), (110, 96), (29, 15))),
+          Polygon(LineString(Seq[(Double,Double)]((50, 30), (110, 15), (110, 96), (50, 30))),
                   LineString(Seq[(Double,Double)]((69, 42), (96, 42), (96, 69), (69, 42)))),
           Polygon(LineString(Seq[(Double,Double)]((-77, -78), (46, -78), (46, 45), (-77, -78))),
                   LineString(Seq[(Double,Double)]((-16, -37), (25, -37), (25, 4), (-16, -37))))),
         MultiPolygon(
           Polygon(LineString(Seq[(Double,Double)]((-41, -17), (0, -17), (0, 24), (-41, -17))),
                   LineString(Seq[(Double,Double)]((-21, -4), (-8, -4), (-8, 9), (-21, -4)))),
-          Polygon(LineString(Seq[(Double,Double)]((-83, -76), (-13, -76), (-13, -6), (-83, -76))),
+          Polygon(LineString(Seq[(Double,Double)]((-83, -76), (-13, -76), (-13, -20), (-83, -76))),
                   LineString(Seq[(Double,Double)]((-48, -53), (-25, -53), (-25, -30), (-48, -53)))))
       )
       cases foreach { multipoly =>
+        require(multipoly.isValid(), s"Invalid Geom: ${multipoly.toWKT()}")
         val masked = rdd.mask(multipoly, options = opts).stitch()
         val expected = tile.mask(worldExt, multipoly)
         masked.tile.toArray() shouldEqual expected.toArray()
