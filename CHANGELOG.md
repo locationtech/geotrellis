@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Specialize Grid for Int and Long [#3428](https://github.com/locationtech/geotrellis/pull/3428)
 - Move GeoWave and GeoMesa subproject to their own repositories [#3439](https://github.com/locationtech/geotrellis/pull/3439)
 - Use JTS 1.18, GeoTools 25.0 [#3437](https://github.com/locationtech/geotrellis/pull/3437)
+- ArrayTile.{cols | rows} calls boxing fix [#3441](https://github.com/locationtech/geotrellis/pull/3441)
 
 ## [3.6.0] - 2021-04-30
 
