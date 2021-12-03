@@ -28,6 +28,14 @@ import spire.syntax.cfor._
   */
 abstract class ConstantTile extends Tile {
 
+  /**
+   * cols and rows are explicitly defined to help with the Grid[N].{cols | rows} specialized functions dispatch.
+   * See https://github.com/locationtech/geotrellis/issues/3427
+   */
+  def cols: Int
+
+  def rows: Int
+
   /** Precomputed view of tile cells as seen by [[get]] method */
   protected val iVal: Int
 

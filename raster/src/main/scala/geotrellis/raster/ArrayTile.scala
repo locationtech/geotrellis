@@ -24,6 +24,13 @@ import spire.syntax.cfor._
   * cases.
   */
 abstract class ArrayTile extends Tile with Serializable {
+  /**
+   * cols and rows are explicitly defined to help with the Grid[N].{cols | rows} specialized functions dispatch.
+   * See https://github.com/locationtech/geotrellis/issues/3427
+   */
+  def cols: Int
+
+  def rows: Int
 
   /**
     * Return the [[ArrayTile]] equivalent of this ArrayTile.
