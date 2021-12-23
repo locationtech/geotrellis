@@ -25,7 +25,7 @@ import geotrellis.spark.costdistance.IterativeCostDistance._
 import geotrellis.vector._
 
 import org.locationtech.jts.{geom => jts}
-import org.apache.log4j.Logger
+import org.log4s._
 import org.apache.spark.rdd.RDD
 import org.apache.spark.storage.StorageLevel
 import org.apache.spark.util.AccumulatorV2
@@ -65,7 +65,7 @@ object IterativeViewshed {
   implicit def coordinatesToPoints(points: Seq[jts.Coordinate]): Seq[Viewpoint] =
     points.map({ p => Viewpoint(p.getX, p.getY, p.getZ, 0, -1.0, Double.NegativeInfinity) })
 
-  private val logger = Logger.getLogger(IterativeViewshed.getClass)
+  @transient private[this] lazy val logger = getLogger
 
   private case class Message(
     target: SpatialKey,

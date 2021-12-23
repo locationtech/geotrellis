@@ -25,14 +25,11 @@ import geotrellis.raster.buffer.{BufferedTile, BufferSizes}
 import geotrellis.raster.buffer.Direction._
 import geotrellis.util._
 
-import org.apache.log4j.Logger
-
 import scala.collection.mutable.ArrayBuffer
 
 object BufferTiles extends BufferTiles
 
 trait BufferTiles {
-  val logger = Logger.getLogger(BufferTiles.getClass)
 
   /** Collects tile neighbors by slicing the neighboring tiles to the given
     * buffer size

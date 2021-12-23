@@ -26,7 +26,7 @@ import geotrellis.raster.stitch._
 import geotrellis.layer.buffer.BufferTiles
 import geotrellis.util._
 
-import org.apache.log4j.Logger
+import org.log4s._
 import org.apache.spark.rdd.RDD
 import org.apache.spark.Partitioner
 
@@ -34,7 +34,7 @@ import scala.reflect.ClassTag
 
 
 object BufferTilesRDD extends BufferTiles {
-  override val logger = Logger.getLogger(BufferTilesRDD.getClass)
+  @transient private[this] lazy val logger = getLogger
 
   def bufferWithNeighbors[
     K: SpatialComponent: ClassTag,
