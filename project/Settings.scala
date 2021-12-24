@@ -547,6 +547,7 @@ object Settings {
     name := "geotrellis-util",
     libraryDependencies ++= Seq(
       log4s,
+      log4jbridge, // CVE-2021-4104, CVE-2020-8908
       scalaj,
       spire,
       scalatest % Test
