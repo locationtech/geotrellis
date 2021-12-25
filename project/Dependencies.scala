@@ -62,13 +62,14 @@ object Dependencies {
   }
 
   def apacheSpark(module: String) = Def.setting {
-    "org.apache.spark"  %% s"spark-$module" % ver("3.1.1", "3.2.0").value
+    "org.apache.spark"  %% s"spark-$module" % ver("3.1.2", "3.2.0").value
   }
 
   def scalaReflect(version: String) = "org.scala-lang" % "scala-reflect" % version
 
   val pureconfig          = "com.github.pureconfig"      %% "pureconfig"               % "0.14.0"
-  val log4s               = "org.log4s"                  %% "log4s"                    % "1.9.0"
+  val log4s               = "org.log4s"                  %% "log4s"                    % "1.10.0"
+  val log4jbridge         = "org.apache.logging.log4j"    % "log4j-1.2-api"            % "2.17.0"
   val scalatest           = "org.scalatest"              %% "scalatest"                % "3.2.5"
   val scalacheck          = "org.scalacheck"             %% "scalacheck"               % "1.15.2"
   val scalaXml            = "org.scala-lang.modules"     %% "scala-xml"                % "1.3.0"

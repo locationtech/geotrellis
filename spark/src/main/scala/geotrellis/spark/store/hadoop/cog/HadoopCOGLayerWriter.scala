@@ -88,16 +88,6 @@ class HadoopCOGLayerWriter(
         val path = new Path(s"${keyPath(key)}.${Extension}")
 
         mergeFunc match {
-          case None =>
-            HdfsUtils.write(path, config.value) { new GeoTiffWriter(cog, _).write(true) }
-            // collect VRT metadata
-            (0 until cog.bandCount)
-              .map { b =>
-                val idx = Index.encode(keyIndex.toIndex(key), maxWidth)
-                (idx.toLong, vrt.simpleSource(s"$idx.$Extension", b + 1, cog.cols, cog.rows, cog.extent))
-              }
-              .foreach(samplesAccumulator.add)
-
           case Some(_) if !HdfsUtils.pathExists(path, config.value) =>
             HdfsUtils.write(path, config.value) { new GeoTiffWriter(cog, _).write(true) }
             // collect VRT metadata
@@ -118,6 +108,16 @@ class HadoopCOGLayerWriter(
               .map { b =>
                 val idx = Index.encode(keyIndex.toIndex(key), maxWidth)
                 (idx.toLong, vrt.simpleSource(s"$idx.$Extension", b + 1, merged.cols, merged.rows, merged.extent))
+              }
+              .foreach(samplesAccumulator.add)
+
+          case _ =>
+            HdfsUtils.write(path, config.value) { new GeoTiffWriter(cog, _).write(true) }
+            // collect VRT metadata
+            (0 until cog.bandCount)
+              .map { b =>
+                val idx = Index.encode(keyIndex.toIndex(key), maxWidth)
+                (idx.toLong, vrt.simpleSource(s"$idx.$Extension", b + 1, cog.cols, cog.rows, cog.extent))
               }
               .foreach(samplesAccumulator.add)
         }

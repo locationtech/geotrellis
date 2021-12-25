@@ -99,7 +99,7 @@ object Settings {
     ).filter(_.asFile.canRead).map(Credentials(_)),
 
     addCompilerPlugin("org.typelevel" % "kind-projector" % "0.13.2" cross CrossVersion.full),
-    addCompilerPlugin("org.scalameta" % "semanticdb-scalac" % "4.4.28" cross CrossVersion.full),
+    addCompilerPlugin("org.scalameta" % "semanticdb-scalac" % "4.4.31" cross CrossVersion.full),
 
     libraryDependencies ++= (CrossVersion.partialVersion(scalaVersion.value) match {
       case Some((2, 13)) => Nil
@@ -547,6 +547,7 @@ object Settings {
     name := "geotrellis-util",
     libraryDependencies ++= Seq(
       log4s,
+      log4jbridge, // CVE-2021-4104, CVE-2020-8908
       scalaj,
       spire,
       scalatest % Test
