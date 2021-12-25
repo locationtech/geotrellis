@@ -88,8 +88,9 @@ object Settings {
           Some("LocationTech Snapshot Repository" at s"${locationtech}/geotrellis-snapshots")
         case "locationtech" =>
           Some("LocationTech Release Repository" at s"${locationtech}/geotrellis-releases")
-        case _ =>
+        case "sonatype" =>
           Some("Sonatype Release Repository" at s"${sonatype}service/local/staging/deploy/maven2")
+        case _ => publishTo.value
       }
     },
 
