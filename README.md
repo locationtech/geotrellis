@@ -1,10 +1,11 @@
 # GeoTrellis
 
-[![CI](https://github.com/locationtech/geotrellis/workflows/CI/badge.svg)](https://github.com/locationtech/geotrellis/actions) [![Join the chat at https://gitter.im/geotrellis/geotrellis](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/geotrellis/geotrellis?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-[![Maven Central](https://img.shields.io/maven-central/v/org.locationtech.geotrellis/geotrellis-spark_2.12)](http://search.maven.org/#search%7Cga%7C1%7Corg.locationtech.geotrellis)
+[![CI](https://github.com/locationtech/geotrellis/workflows/CI/badge.svg)](https://github.com/locationtech/geotrellis/actions) [![CircleCI](https://circleci.com/gh/locationtech/geotrellis/tree/master.svg?style=svg)](https://circleci.com/gh/locationtech/geotrellis/tree/master) [![Join the chat at https://gitter.im/geotrellis/geotrellis](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/geotrellis/geotrellis?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![ReadTheDocs](https://readthedocs.org/projects/geotrellis/badge/?version=latest)](http://geotrellis.readthedocs.io/en/latest/)
 [![Changelog](https://img.shields.io/badge/changelog-v1.2.0-brightgreen.svg)](https://github.com/locationtech/geotrellis/blob/master/CHANGELOG.md)
 [![Contributing](https://img.shields.io/badge/contributing-see%20conditions-brightgreen.svg)](https://github.com/locationtech/geotrellis/blob/master/docs/CONTRIBUTING.rst)
+
+[![Maven Central](https://img.shields.io/maven-central/v/org.locationtech.geotrellis/geotrellis-spark_2.12)](http://search.maven.org/#search%7Cga%7C1%7Corg.locationtech.geotrellis) [![Snapshots](https://img.shields.io/nexus/s/https/oss.sonatype.org/org.locationtech.geotrellis/geotrellis-spark_2.12.svg)](https://oss.sonatype.org/content/repositories/snapshots/org/locationtech/geotrellis/geotrellis-spark_2.12/)
 
 _GeoTrellis_ is a Scala library and framework that provides
 APIs for reading, writing and operating on geospatial
@@ -32,6 +33,12 @@ libraryDependencies += "org.locationtech.geotrellis" %% "geotrellis-raster" % "<
 To grab the latest `SNAPSHOT`, `RC` or milestone build, add these resolvers:
 
 ```scala
+// maven central snapshots
+resolvers ++= Seq(
+  "sonatype-snapshot" at "https://oss.sonatype.org/content/repositories/snapshots/"
+)
+
+// or eclipse snapshots
 resolvers ++= Seq(
   "eclipse-releases" at "https://repo.eclipse.org/content/groups/releases",
   "eclipse-snapshots" at "https://repo.eclipse.org/content/groups/snapshots"
