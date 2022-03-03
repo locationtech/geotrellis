@@ -208,13 +208,25 @@ object RasterSourceRDD {
   )(implicit sc: SparkContext): MultibandTileLayerRDD[SpatialKey] =
     tiledLayerRDD(sources, layout, KeyExtractor.spatialKeyExtractor, resampleMethod, None, None)
 
+  /**
+   * On tiling more than a single MultibandTile may get into a group that correspond to the same key.
+   * By default the tiledLayerRDD function flattens all bands and converts every group into a single MultibandTile.
+   * To override this behavior it is possible to set the partitionTransform function, i.e.:
+   * {{{
+   * partitionTransform = {
+   *   case iter if iter.nonEmpty => iter.map(_.tile).reduce(_ merge _)
+   *   case _                     => MultibandTile(Nil)
+   * }
+   * }}}
+   * */
   def tiledLayerRDD[K: SpatialComponent: Boundable: ClassTag, M: Boundable](
     sources: RDD[RasterSource],
     layout: LayoutDefinition,
     keyExtractor: KeyExtractor.Aux[K, M],
     resampleMethod: ResampleMethod = NearestNeighbor,
     rasterSummary: Option[RasterSummary[M]] = None,
-    partitioner: Option[Partitioner] = None
+    partitioner: Option[Partitioner] = None,
+    partitionTransform: Iterable[Raster[MultibandTile]] => MultibandTile = { iter => MultibandTile(iter.flatMap(_.tile.bands)) }
   )(implicit sc: SparkContext): MultibandTileLayerRDD[K] = {
     val summary = rasterSummary.getOrElse(RasterSummary.fromRDD(sources, keyExtractor.getMetadata))
     val layerMetadata = summary.toTileLayerMetadata(layout, keyExtractor.getKey)
@@ -223,7 +235,7 @@ object RasterSourceRDD {
       sources.map { rs =>
         val m = keyExtractor.getMetadata(rs)
         val tileKeyTransform: SpatialKey => K = { sk => keyExtractor.getKey(m, sk) }
-        rs.tileToLayout(layout, tileKeyTransform)
+        rs.tileToLayout(layout, tileKeyTransform, resampleMethod)
       }
 
     val rasterRegionRDD: RDD[(K, RasterRegion)] =
@@ -238,11 +250,7 @@ object RasterSourceRDD {
     val tiledRDD: RDD[(K, MultibandTile)] =
       rasterRegionRDD
         .groupByKey(partitioner.getOrElse(SpatialPartitioner[K](partitionCount)))
-        .mapValues { iter =>
-          MultibandTile(
-            iter.flatMap { _.raster.toSeq.flatMap { _.tile.bands } }
-          )
-        }
+        .mapValues { iter => partitionTransform(iter.flatMap(_.raster.toSeq)) }
 
     ContextRDD(tiledRDD, layerMetadata)
   }
