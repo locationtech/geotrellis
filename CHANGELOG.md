@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.6.1] - 2022-03-12
+
 ### Added
 - Add new shading rules to make GT work with Spark 3.x [#3397](https://github.com/locationtech/geotrellis/pull/3397)
 - Add Buffer Tile [#3419](https://github.com/locationtech/geotrellis/pull/3419)
@@ -1140,7 +1142,8 @@ efficiently using the layer query API.
   the slick scala database library.
 - Perform PostGIS `ST_` operations in PostGIS through scala.
 
-[Unreleased]: https://github.com/locationtech/geotrellis/compare/v3.6.0...HEAD
+[Unreleased]: https://github.com/locationtech/geotrellis/compare/v3.6.1...HEAD
+[3.6.0]: https://github.com/locationtech/geotrellis/compare/v3.6.0...v3.6.1
 [3.6.0]: https://github.com/locationtech/geotrellis/compare/v3.5.2...v3.6.0
 [3.5.2]: https://github.com/locationtech/geotrellis/compare/v3.5.1...v3.5.2
 [3.5.1]: https://github.com/locationtech/geotrellis/compare/v3.5.0...v3.5.1
