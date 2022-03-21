@@ -45,8 +45,8 @@ object Dependencies {
 
   def cats(module: String) = Def.setting {
     module match {
-      case "effect" => "org.typelevel" %% s"cats-$module" % "2.3.3"
-      case _        => "org.typelevel" %% s"cats-$module" % "2.4.2"
+      case "effect" => "org.typelevel" %% s"cats-$module" % "2.5.4"
+      case _        => "org.typelevel" %% s"cats-$module" % "2.6.1"
     }
   }
 
@@ -58,11 +58,11 @@ object Dependencies {
   }
 
   def fs2(module: String) = Def.setting {
-    "co.fs2" %% s"fs2-$module" % "2.5.3"
+    "co.fs2" %% s"fs2-$module" % "2.5.10"
   }
 
   def apacheSpark(module: String) = Def.setting {
-    "org.apache.spark"  %% s"spark-$module" % ver("3.1.2", "3.2.0").value
+    "org.apache.spark"  %% s"spark-$module" % ver("3.1.3", "3.2.0").value
   }
 
   def scalaReflect(version: String) = "org.scala-lang" % "scala-reflect" % version
