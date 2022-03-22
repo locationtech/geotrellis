@@ -52,8 +52,8 @@ object Dependencies {
 
   def circe(module: String) = Def.setting {
     module match {
-      case "json-schema" => "io.circe" %% s"circe-$module" % "0.1.0"
-      case _             => "io.circe" %% s"circe-$module" % "0.13.0"
+      case "json-schema" => "io.circe" %% s"circe-$module" % "0.2.0"
+      case _             => "io.circe" %% s"circe-$module" % "0.14.1"
     }
   }
 
@@ -138,7 +138,7 @@ object Dependencies {
   val jacksonAnnotations  = "com.fasterxml.jackson.core"    % "jackson-annotations"      % "2.6.7"
   val jacksonModuleScala  = "com.fasterxml.jackson.module" %% "jackson-module-scala"     % "2.6.7"
 
-  val shapeless           = "com.chuusai"  %% "shapeless" % "2.3.3"
+  val shapeless           = "com.chuusai"  %% "shapeless" % "2.3.7"
   val newtype             = "io.estatico"  %% "newtype"   % "0.4.4"
 
   // aligned with the GeoTools version, should be 2.1.2 for GeoTools 24.2
