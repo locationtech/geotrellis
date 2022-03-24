@@ -93,7 +93,7 @@ object Settings {
         case _ => publishTo.value
       }
     },
-
+    excludeDependencies += "log4j" % "log4j",
     credentials ++= List(
       Path.userHome / ".ivy2" / ".credentials",
       Path.userHome / ".sbt" / ".credentials"
