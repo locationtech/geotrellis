@@ -152,7 +152,7 @@ class GDALRasterSummarySpec extends AnyFunSpec with TestEnvironment with GivenWh
     val targetCRS = WebMercator
     val method = Bilinear
     val layout = LayoutDefinition(GridExtent[Int](Extent(-2.0037508342789244E7, -2.0037508342789244E7, 2.0037508342789244E7, 2.0037508342789244E7), CellSize(9.554628535647032, 9.554628535647032)), 256)
-    val RasterExtent(Extent(exmin, eymin, exmax, eymax), ecw, ech, ecols, erows) = RasterExtent(Extent(-8769161.632988561, 4257685.794912352, -8750625.653629405, 4274482.8318780195), CellSize(9.554628535647412, 9.554628535646911))
+    val RasterExtent(Extent(exmin, eymin, exmax, eymax), ecw, ech, ecols, erows) = RasterExtent(Extent(-8769161.632988561, 4257685.794912352, -8750616.09900087, 4274482.8318780195), CellSize(9.554628535647412, 9.554628535646911))
 
     cfor(0)(_ < 11, _ + 1) { _ =>
       val reference = GDALRasterSource(inputPath).reproject(targetCRS, method = method).tileToLayout(layout, method)
