@@ -270,6 +270,7 @@ object Settings {
     scalacOptions ++= commonScalacOptions,
     libraryDependencies ++= Seq(
       apacheSpark("core").value,
+      log4jbridge, // CVE-2021-4104, CVE-2020-8908
       scalatest % Test,
       apacheSpark("sql").value % Test
     )
