@@ -100,13 +100,13 @@ object Settings {
     ).filter(_.asFile.canRead).map(Credentials(_)),
 
     addCompilerPlugin("org.typelevel" % "kind-projector" % "0.13.2" cross CrossVersion.full),
-    addCompilerPlugin("org.scalameta" % "semanticdb-scalac" % "4.4.31" cross CrossVersion.full),
+    addCompilerPlugin("org.scalameta" % "semanticdb-scalac" % "4.5.1" cross CrossVersion.full),
 
     libraryDependencies ++= (CrossVersion.partialVersion(scalaVersion.value) match {
       case Some((2, 13)) => Nil
       case Some((2, 12)) => Seq(
         compilerPlugin("org.scalamacros" % "paradise" % "2.1.1" cross CrossVersion.full),
-        "org.scala-lang.modules" %% "scala-collection-compat" % "2.4.2"
+        "org.scala-lang.modules" %% "scala-collection-compat" % "2.7.0"
       )
         case x => sys.error(s"Encountered unsupported Scala version ${x.getOrElse("undefined")}")
     }),
@@ -220,9 +220,9 @@ object Settings {
     libraryDependencies ++= Seq(
       cassandraDriverCore
         excludeAll(
-        ExclusionRule("org.jboss.netty"), ExclusionRule("io.netty"),
-        ExclusionRule("org.slf4j"), ExclusionRule("com.typesafe.akka")
-      ) exclude("org.apache.hadoop", "hadoop-client")
+          ExclusionRule("org.jboss.netty"), ExclusionRule("io.netty"),
+          ExclusionRule("org.slf4j"), ExclusionRule("com.typesafe.akka")
+        ) exclude("org.apache.hadoop", "hadoop-client")
     ),
     console / initialCommands :=
       """
