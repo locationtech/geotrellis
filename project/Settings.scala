@@ -116,7 +116,10 @@ object Settings {
         case x => sys.error(s"Encountered unsupported Scala version ${x.getOrElse("undefined")}")
     }),
 
-    libraryDependencies += scalaReflect(scalaVersion.value),
+    libraryDependencies ++= Seq(
+      scalaReflect(scalaVersion.value),
+      log4jbridge % Test // CVE-2021-4104, CVE-2020-8908
+    ),
 
     pomExtra := (
       <developers>
@@ -548,7 +551,6 @@ object Settings {
     name := "geotrellis-util",
     libraryDependencies ++= Seq(
       log4s,
-      log4jbridge, // CVE-2021-4104, CVE-2020-8908
       scalaj,
       spire,
       scalatest % Test
