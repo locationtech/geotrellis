@@ -100,13 +100,13 @@ object Settings {
     ).filter(_.asFile.canRead).map(Credentials(_)),
 
     addCompilerPlugin("org.typelevel" % "kind-projector" % "0.13.2" cross CrossVersion.full),
-    addCompilerPlugin("org.scalameta" % "semanticdb-scalac" % "4.4.31" cross CrossVersion.full),
+    addCompilerPlugin("org.scalameta" % "semanticdb-scalac" % "4.5.1" cross CrossVersion.full),
 
     libraryDependencies ++= (CrossVersion.partialVersion(scalaVersion.value) match {
       case Some((2, 13)) => Nil
       case Some((2, 12)) => Seq(
         compilerPlugin("org.scalamacros" % "paradise" % "2.1.1" cross CrossVersion.full),
-        "org.scala-lang.modules" %% "scala-collection-compat" % "2.4.2"
+        "org.scala-lang.modules" %% "scala-collection-compat" % "2.7.0"
       )
         case x => sys.error(s"Encountered unsupported Scala version ${x.getOrElse("undefined")}")
     }),
@@ -116,7 +116,10 @@ object Settings {
         case x => sys.error(s"Encountered unsupported Scala version ${x.getOrElse("undefined")}")
     }),
 
-    libraryDependencies += scalaReflect(scalaVersion.value),
+    libraryDependencies ++= Seq(
+      scalaReflect(scalaVersion.value),
+      log4jbridge % Test // CVE-2021-4104, CVE-2020-8908
+    ),
 
     pomExtra := (
       <developers>
@@ -220,9 +223,9 @@ object Settings {
     libraryDependencies ++= Seq(
       cassandraDriverCore
         excludeAll(
-        ExclusionRule("org.jboss.netty"), ExclusionRule("io.netty"),
-        ExclusionRule("org.slf4j"), ExclusionRule("com.typesafe.akka")
-      ) exclude("org.apache.hadoop", "hadoop-client")
+          ExclusionRule("org.jboss.netty"), ExclusionRule("io.netty"),
+          ExclusionRule("org.slf4j"), ExclusionRule("com.typesafe.akka")
+        ) exclude("org.apache.hadoop", "hadoop-client")
     ),
     console / initialCommands :=
       """
@@ -267,6 +270,7 @@ object Settings {
     scalacOptions ++= commonScalacOptions,
     libraryDependencies ++= Seq(
       apacheSpark("core").value,
+      log4jbridge, // CVE-2021-4104, CVE-2020-8908
       scalatest % Test,
       apacheSpark("sql").value % Test
     )
@@ -548,7 +552,6 @@ object Settings {
     name := "geotrellis-util",
     libraryDependencies ++= Seq(
       log4s,
-      log4jbridge, // CVE-2021-4104, CVE-2020-8908
       scalaj,
       spire,
       scalatest % Test
