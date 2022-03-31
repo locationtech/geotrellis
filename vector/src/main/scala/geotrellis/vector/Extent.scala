@@ -27,10 +27,10 @@ import _root_.io.circe.generic.JsonCodec
 case class ExtentRangeError(msg:String) extends Exception(msg)
 
 object Extent {
-  val listEncoder: Encoder[Extent] =
+  lazy val listEncoder: Encoder[Extent] =
     Encoder.instance { extent => List(extent.xmin, extent.ymin, extent.xmax, extent.ymax).asJson }
 
-  val listDecoder: Decoder[Extent] =
+  lazy val listDecoder: Decoder[Extent] =
     Decoder.decodeJson.emap { value =>
       value.as[List[Double]]
         .map { case List(xmin, ymin, xmax, ymax) => Extent(xmin, ymin, xmax, ymax) }
