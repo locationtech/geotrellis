@@ -9,7 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Dependencies update [#3452](https://github.com/locationtech/geotrellis/pull/3452)
 - Lazy init Circe codecs in the vector module [#3457](https://github.com/locationtech/geotrellis/pull/3457)
-- Lazy init Extent and ProjectedExtent Circe codecs [#3458](https://github.com/locationtech/geotrellis/pull/3457)
+- Lazy init Extent and ProjectedExtent Circe codecs [#3458](https://github.com/locationtech/geotrellis/pull/3458)
+- Add a graceful JtsConfig fallback in case of a shapeless versions mismatch [#3459](https://github.com/locationtech/geotrellis/pull/3459)
 
 ## [3.6.1] - 2022-03-12
 
