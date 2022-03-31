@@ -45,7 +45,7 @@ object Style {
       if (!java.lang.Double.isNaN(fillOpacity)) Some(fillOpacity) else None
     )
 
-  implicit val styleDecoder: Decoder[Style] =
+  implicit lazy val styleDecoder: Decoder[Style] =
     Decoder.decodeHCursor.emap { c: HCursor =>
       val strokeColor =
         c.downField("stroke").as[String] match {
@@ -80,7 +80,7 @@ object Style {
       Right(Style(strokeColor, strokeWidth, strokeOpacity, fillColor, fillOpacity))
     }
 
-  implicit val styleEncoder: Encoder[Style] =
+  implicit lazy val styleEncoder: Encoder[Style] =
     Encoder.encodeJson.contramap[Style] { style =>
       val l = mutable.ListBuffer[(String, Json)]()
       if (style.strokeColor.isDefined) l += (("stroke", style.strokeColor.get.asJson))

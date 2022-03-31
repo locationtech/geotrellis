@@ -87,10 +87,10 @@ trait FeatureFormats {
   implicit def featureEncoder[G <: Geometry: Encoder, D: Encoder]: Encoder[Feature[G, D]] =
     Encoder.encodeJson.contramap[Feature[G, D]] { writeFeatureJson }
 
-  implicit val featureCollectionEncoder: Encoder[JsonFeatureCollection] =
+  implicit lazy val featureCollectionEncoder: Encoder[JsonFeatureCollection] =
     Encoder.encodeJson.contramap[JsonFeatureCollection] { _.asJson }
 
-  implicit val featureCollectionDecoder: Decoder[JsonFeatureCollection] =
+  implicit lazy val featureCollectionDecoder: Decoder[JsonFeatureCollection] =
     Decoder.decodeHCursor.emap { c: HCursor =>
       (c.downField("type").as[String], c.downField("features").focus) match {
         case (Right("FeatureCollection"), Some(features)) => Right(JsonFeatureCollection(features.asArray.toVector.flatten))
@@ -98,10 +98,10 @@ trait FeatureFormats {
       }
     }
 
-  implicit val featureCollectionMapEncoder: Encoder[JsonFeatureCollectionMap] =
+  implicit lazy val featureCollectionMapEncoder: Encoder[JsonFeatureCollectionMap] =
     Encoder.encodeJson.contramap[JsonFeatureCollectionMap] { _.asJson }
 
-  implicit val featureCollectionMapDecoder: Decoder[JsonFeatureCollectionMap] =
+  implicit lazy val featureCollectionMapDecoder: Decoder[JsonFeatureCollectionMap] =
     Decoder.decodeHCursor.emap { c: HCursor =>
       (c.downField("type").as[String], c.downField("features").focus) match {
         case (Right("FeatureCollection"), Some(features)) => Right(JsonFeatureCollectionMap(features.asArray.toVector.flatten))
