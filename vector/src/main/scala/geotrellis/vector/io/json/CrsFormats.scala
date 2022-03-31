@@ -25,6 +25,7 @@ import geotrellis.proj4.CRS
 
 /** A trait specifying CRS/JSON conversion */
 trait CrsFormats {
+  // TODO: revert back to the @JsonCodec once we don't need Shapeless 2.3.3 compatibility
   implicit lazy val crsEncoder: Encoder[CRS] =
     Encoder.encodeString.contramap[CRS] { _.toProj4String }
 

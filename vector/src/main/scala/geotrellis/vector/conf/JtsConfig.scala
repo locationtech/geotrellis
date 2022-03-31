@@ -45,7 +45,7 @@ object JtsConfig {
   lazy val conf: JtsConfig = try {
     ConfigSource.default.at("geotrellis.jts").loadOrThrow[JtsConfig]
   } catch {
-    // Shapeless 2.3.3 compatibility
+    // TODO: remove once we don't need Shapeless 2.3.3 compatibility
     case e: NoSuchMethodError =>
       logger.warn(e)("NoSuchMethodError happened, probably due to the Shapeless versions mismatch, using the default configuration.")
       JtsConfig()
