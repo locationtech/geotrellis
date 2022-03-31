@@ -18,10 +18,10 @@ package geotrellis.layer
 
 import geotrellis.vector.Extent
 
-import _root_.io.circe.generic.JsonCodec
+import _root_.io.circe.{Encoder, Decoder}
+import _root_.io.circe.generic.semiauto.{deriveEncoder, deriveDecoder}
 
 /** A SpatialKey designates the spatial positioning of a layer's tile. */
-@JsonCodec
 case class SpatialKey(col: Int, row: Int) extends Product2[Int, Int] {
   def _1 = col
   def _2 = row
@@ -31,6 +31,9 @@ case class SpatialKey(col: Int, row: Int) extends Product2[Int, Int] {
 }
 
 object SpatialKey {
+  implicit lazy val spatialKeyEncoder: Encoder[Extent] = deriveEncoder
+  implicit lazy val spatialKeyDecoder: Decoder[Extent] = deriveDecoder
+
   implicit def tupToKey(tup: (Int, Int)): SpatialKey =
     SpatialKey(tup._1, tup._2)
 
