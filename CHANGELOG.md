@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Dependencies update [#3452](https://github.com/locationtech/geotrellis/pull/3452)
+- Lazy init circe codecs in the vector module [#3457](https://github.com/locationtech/geotrellis/pull/3457)
+
 ## [3.6.1] - 2022-03-12
 
 ### Added
