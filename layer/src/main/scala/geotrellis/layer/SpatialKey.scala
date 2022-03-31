@@ -32,8 +32,8 @@ case class SpatialKey(col: Int, row: Int) extends Product2[Int, Int] {
 
 object SpatialKey {
   // TODO: revert back to the @JsonCodec once we don't need Shapeless 2.3.3 compatibility
-  implicit lazy val spatialKeyEncoder: Encoder[Extent] = deriveEncoder
-  implicit lazy val spatialKeyDecoder: Decoder[Extent] = deriveDecoder
+  implicit lazy val spatialKeyEncoder: Encoder[SpatialKey] = deriveEncoder
+  implicit lazy val spatialKeyDecoder: Decoder[SpatialKey] = deriveDecoder
 
   implicit def tupToKey(tup: (Int, Int)): SpatialKey =
     SpatialKey(tup._1, tup._2)
