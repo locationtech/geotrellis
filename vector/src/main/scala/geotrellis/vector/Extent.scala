@@ -22,11 +22,14 @@ import org.locationtech.jts.{geom => jts}
 import cats.syntax.either._
 import _root_.io.circe._
 import _root_.io.circe.syntax._
-import _root_.io.circe.generic.JsonCodec
+import _root_.io.circe.generic.semiauto.{deriveEncoder, deriveDecoder}
 
-case class ExtentRangeError(msg:String) extends Exception(msg)
+case class ExtentRangeError(msg: String) extends Exception(msg)
 
 object Extent {
+  implicit lazy val extentEncoder: Encoder[Extent] = deriveEncoder
+  implicit lazy val extentDecoder: Decoder[Extent] = deriveDecoder
+
   lazy val listEncoder: Encoder[Extent] =
     Encoder.instance { extent => List(extent.xmin, extent.ymin, extent.xmax, extent.ymax).asJson }
 
@@ -44,7 +47,7 @@ object Extent {
     *
     * @param s   A string of the form "xmin,ymin,xmax,ymax"
     */
-  def fromString(s:String) = {
+  def fromString(s: String): Extent = {
     val Array(xmin,ymin,xmax,ymax) = s.split(",").map(_.toDouble)
     Extent(xmin,ymin,xmax,ymax)
   }
@@ -62,7 +65,6 @@ object Extent {
   * @param extent The Extent which is projected
   * @param crs    The CRS projection of this extent
   */
-@JsonCodec
 case class ProjectedExtent(extent: Extent, crs: CRS) {
   def reproject(dest: CRS): Extent =
     extent.reproject(crs, dest)
@@ -73,8 +75,11 @@ case class ProjectedExtent(extent: Extent, crs: CRS) {
 
 /** ProjectedExtent companion object */
 object ProjectedExtent {
-  implicit def fromTupleA(tup: (Extent, CRS)):ProjectedExtent = ProjectedExtent(tup._1, tup._2)
-  implicit def fromTupleB(tup: (CRS, Extent)):ProjectedExtent = ProjectedExtent(tup._2, tup._1)
+  implicit def fromTupleA(tup: (Extent, CRS)): ProjectedExtent = ProjectedExtent(tup._1, tup._2)
+  implicit def fromTupleB(tup: (CRS, Extent)): ProjectedExtent = ProjectedExtent(tup._2, tup._1)
+
+  implicit lazy val projectedExtentEncoder: Encoder[ProjectedExtent] = deriveEncoder
+  implicit lazy val projectedExtentDecoder: Decoder[ProjectedExtent] = deriveDecoder
 }
 
 /** A rectangular region of geographic space
@@ -84,7 +89,6 @@ object ProjectedExtent {
   * @param xmax The maximum x coordinate
   * @param ymax The maximum y coordinate
   */
-@JsonCodec
 case class Extent(
   xmin: Double, ymin: Double,
   xmax: Double, ymax: Double
@@ -326,8 +330,7 @@ case class Extent(
     *
     * @note only returns true given another extent
     */
-  override
-  def equals(o: Any): Boolean =
+  override def equals(o: Any): Boolean =
     o match {
       case other: Extent =>
         xmin == other.xmin && ymin == other.ymin &&
@@ -335,8 +338,7 @@ case class Extent(
       case _ => false
     }
 
-  override
-  def hashCode(): Int = (xmin, ymin, xmax, ymax).hashCode
+  override def hashCode(): Int = (xmin, ymin, xmax, ymax).hashCode
 
   override def toString = s"Extent($xmin, $ymin, $xmax, $ymax)"
 }
