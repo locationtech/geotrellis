@@ -138,7 +138,7 @@ object Dependencies {
   val jacksonAnnotations  = "com.fasterxml.jackson.core"    % "jackson-annotations"      % "2.6.7"
   val jacksonModuleScala  = "com.fasterxml.jackson.module" %% "jackson-module-scala"     % "2.6.7"
 
-  val shapeless           = "com.chuusai"  %% "shapeless" % "2.3.7"
+  val shapeless           = "com.chuusai"  %% "shapeless" % "2.3.3" // Spark 3.1.x & DataBricks 9.1 compat
   val newtype             = "io.estatico"  %% "newtype"   % "0.4.4"
 
   // aligned with the GeoTools version, should be 2.1.2 for GeoTools 24.2
