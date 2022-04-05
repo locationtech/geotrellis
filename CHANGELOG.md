@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.6.2] - 2022-04-05
+
 ### Changed
 - Dependencies update [#3452](https://github.com/locationtech/geotrellis/pull/3452)
 - Lazy init Circe codecs in the vector module [#3457](https://github.com/locationtech/geotrellis/pull/3457)
@@ -1148,7 +1150,8 @@ efficiently using the layer query API.
   the slick scala database library.
 - Perform PostGIS `ST_` operations in PostGIS through scala.
 
-[Unreleased]: https://github.com/locationtech/geotrellis/compare/v3.6.1...HEAD
+[Unreleased]: https://github.com/locationtech/geotrellis/compare/v3.6.2...HEAD
+[3.6.2]: https://github.com/locationtech/geotrellis/compare/v3.6.1...v3.6.2
 [3.6.1]: https://github.com/locationtech/geotrellis/compare/v3.6.0...v3.6.1
 [3.6.0]: https://github.com/locationtech/geotrellis/compare/v3.5.2...v3.6.0
 [3.5.2]: https://github.com/locationtech/geotrellis/compare/v3.5.1...v3.5.2
