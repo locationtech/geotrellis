@@ -26,7 +26,7 @@ that conveniently expresses the ways that a program might interact with some
 source of imagery.
 
 To this end, we've introduced the `RasterSource` which lazily represents some
-source of imagery. The format might be TIFFs or PNGs, images could be backed by
+source of imagery. The format might be TIFFs or PNGs. For TIFFs, it is advised to use COGs or the TIFF is converted to tiled format using ``gdal_translate in.tif out.tif -co TILED=YES`` for faster processing.  Images could be backed by
 S3 or your local hard drive - the `RasterSource` interface is abstract with respect
 to such details.
 
