@@ -614,6 +614,8 @@ object Settings {
   lazy val store = Seq(
     name := "geotrellis-store",
     libraryDependencies ++= Seq(
+      guava,
+      uzaygezenCore,
       hadoopClient % Provided,
       apacheIO,
       scaffeine,
