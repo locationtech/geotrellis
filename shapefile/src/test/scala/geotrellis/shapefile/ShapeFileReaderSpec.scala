@@ -16,6 +16,9 @@
 
 package geotrellis.shapefile
 
+import java.net.URL
+import java.nio.charset.Charset
+
 import geotrellis.vector._
 
 import org.scalatest.matchers.should.Matchers
@@ -30,6 +33,18 @@ class ShapeFileReaderSpec extends AnyFunSpec with Matchers {
       for(MultiPolygonFeature(polygon: MultiPolygon, data: Map[String, Object]) <- features) {
         data.keys.toSeq should be (Seq("LowIncome", "gbcode", "ename", "WorkingAge", "TotalPop", "Employment"))
       }
+    }
+
+  }
+
+  describe("Issue 3445") {
+    it("should read SimpleFeatures with different charSet") {
+      val url = new URL("https://github.com/locationtech/geotrellis/raw/master/shapefile/data/shapefiles/demographics/demographics.shp")
+      val features = ShapefileReader.readSimpleFeatures(url)
+      features.size should be (160)
+
+      val features1 = ShapefileReader.readSimpleFeatures(url, Charset.forName("UTF-8"))
+      features1.size should be (160)
     }
   }
 }

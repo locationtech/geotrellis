@@ -24,6 +24,7 @@ import org.geotools.data.shapefile._
 
 import java.net.URL
 import java.io.File
+import java.nio.charset.Charset
 
 import scala.collection.mutable
 import scala.collection.JavaConverters._
@@ -47,9 +48,11 @@ object ShapeFileReader {
 
   def readSimpleFeatures(path: String): Seq[SimpleFeature] = readSimpleFeatures(new URL(s"file://${new File(path).getAbsolutePath}"))
 
-  def readSimpleFeatures(url: URL): Seq[SimpleFeature] = {
+  def readSimpleFeatures(url: URL): Seq[SimpleFeature] = readSimpleFeatures(url, Charset.forName("ISO-8859-1"))
+  def readSimpleFeatures(url: URL, charSet: Charset = Charset.forName("ISO-8859-1")): Seq[SimpleFeature] = {
     // Extract the features as GeoTools 'SimpleFeatures'
     val ds = new ShapefileDataStore(url)
+    ds.setCharset(charSet)
     val ftItr: SimpleFeatureIterator = ds.getFeatureSource.getFeatures.features
 
     try {
