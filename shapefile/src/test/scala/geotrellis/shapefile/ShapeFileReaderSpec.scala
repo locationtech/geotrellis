@@ -35,16 +35,17 @@ class ShapeFileReaderSpec extends AnyFunSpec with Matchers {
       }
     }
 
-  }
-
-  describe("Issue 3445") {
-    it("should read SimpleFeatures with different charSet") {
-      val url = new URL("https://github.com/locationtech/geotrellis/raw/master/shapefile/data/shapefiles/demographics/demographics.shp")
-      val features = ShapefileReader.readSimpleFeatures(url)
+    // https://github.com/locationtech/geotrellis/issues/3445
+    it("should read UTF-8 MultiPolygons feature attributes") {
+      val path = "shapefile/data/shapefiles/demographics-utf8/demographics.shp"
+      val features = ShapeFileReader.readMultiPolygonFeatures(path, Charset.forName("UTF-8"))
       features.size should be (160)
 
-      val features1 = ShapefileReader.readSimpleFeatures(url, Charset.forName("UTF-8"))
-      features1.size should be (160)
+      features.take(4).map(_.data("ename").asInstanceOf[String]) shouldBe Seq("南关街道", "七里烟香", "谢庄镇", "Cheng Guan Zhen")
+
+      val featuresInvalid = ShapeFileReader.readMultiPolygonFeatures(path)
+      val enames = featuresInvalid.take(4).map(_.data("ename").asInstanceOf[String])
+      enames should not be Seq("南关街道", "七里烟香", "谢庄镇", "Cheng Guan Zhen")
     }
   }
 }
