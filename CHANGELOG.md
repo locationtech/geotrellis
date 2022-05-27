@@ -6,13 +6,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Expose Charset in a ShapeFileReader API [#3464](https://github.com/locationtech/geotrellis/pull/3464)
+
+## [3.6.2] - 2022-04-05
+
+### Changed
+- Dependencies update [#3452](https://github.com/locationtech/geotrellis/pull/3452)
+- Lazy init Circe codecs in the vector module [#3457](https://github.com/locationtech/geotrellis/pull/3457)
+- Lazy init Extent and ProjectedExtent Circe codecs [#3458](https://github.com/locationtech/geotrellis/pull/3458)
+- Add a graceful JtsConfig fallback in case of a shapeless versions mismatch [#3459](https://github.com/locationtech/geotrellis/pull/3459)
+
+## [3.6.1] - 2022-03-12
+
 ### Added
 - Add new shading rules to make GT work with Spark 3.x [#3397](https://github.com/locationtech/geotrellis/pull/3397)
 - Add Buffer Tile [#3419](https://github.com/locationtech/geotrellis/pull/3419)
+- RasterSourceRDD.tiledLayerRDD should have a configurable partition transform function [#3450](https://github.com/locationtech/geotrellis/pull/3450)
 
 ### Changed
 - Disambiguate withBufferTileFocalMethods implicit preserving bin compatibility [#3422](https://github.com/locationtech/geotrellis/pull/3422)
 - Specialize Grid for Int and Long [#3428](https://github.com/locationtech/geotrellis/pull/3428)
+- Move GeoWave and GeoMesa subproject to their own repositories [#3439](https://github.com/locationtech/geotrellis/pull/3439)
+- Use JTS 1.18, GeoTools 25.0 [#3437](https://github.com/locationtech/geotrellis/pull/3437)
+- ArrayTile.{cols | rows} calls boxing fix [#3441](https://github.com/locationtech/geotrellis/pull/3441)
 
 ## [3.6.0] - 2021-04-30
 
@@ -1136,7 +1153,9 @@ efficiently using the layer query API.
   the slick scala database library.
 - Perform PostGIS `ST_` operations in PostGIS through scala.
 
-[Unreleased]: https://github.com/locationtech/geotrellis/compare/v3.6.0...HEAD
+[Unreleased]: https://github.com/locationtech/geotrellis/compare/v3.6.2...HEAD
+[3.6.2]: https://github.com/locationtech/geotrellis/compare/v3.6.1...v3.6.2
+[3.6.1]: https://github.com/locationtech/geotrellis/compare/v3.6.0...v3.6.1
 [3.6.0]: https://github.com/locationtech/geotrellis/compare/v3.5.2...v3.6.0
 [3.5.2]: https://github.com/locationtech/geotrellis/compare/v3.5.1...v3.5.2
 [3.5.1]: https://github.com/locationtech/geotrellis/compare/v3.5.0...v3.5.1

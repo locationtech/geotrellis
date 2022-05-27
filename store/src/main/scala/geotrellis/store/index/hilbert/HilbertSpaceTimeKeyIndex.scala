@@ -58,7 +58,7 @@ class HilbertSpaceTimeKeyIndex(
   val minKey = keyBounds.minKey.spatialKey
 
   @transient lazy val chc = {
-    val dimensionSpec = new MultiDimensionalSpec(List(xResolution, yResolution, temporalResolution).map(new java.lang.Integer(_)).asJava)
+    val dimensionSpec = new MultiDimensionalSpec(List(xResolution, yResolution, temporalResolution).map(java.lang.Integer.valueOf(_)).asJava)
     new CompactHilbertCurve(dimensionSpec)
   }
 

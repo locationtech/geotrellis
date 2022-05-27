@@ -21,6 +21,14 @@ package geotrellis.raster
   */
 abstract class Tile extends CellGrid[Int] with IterableTile with MappableTile[Tile] {
   /**
+   * cols and rows are explicitly defined to help with the Grid[N].{cols | rows} specialized functions dispatch.
+   * See https://github.com/locationtech/geotrellis/issues/3427
+   */
+  def cols: Int
+
+  def rows: Int
+
+  /**
     * Execute a function at each pixel of a [[Tile]].  Two functions
     * are given: an integer version which is used if the tile is an
     * integer-tile, and the other in the case of a floating-tile.

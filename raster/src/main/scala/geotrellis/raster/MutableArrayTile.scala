@@ -27,6 +27,14 @@ abstract class MutableArrayTile extends ArrayTile {
   def mutable = this
 
   /**
+   * cols and rows are explicitly defined to help with the Grid[N].{cols | rows} specialized functions dispatch.
+   * See https://github.com/locationtech/geotrellis/issues/3427
+   */
+  def cols: Int
+
+  def rows: Int
+
+  /**
     * Update the datum at the specified index.
     *
     * @param   i  The index of the datum

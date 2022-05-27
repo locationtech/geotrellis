@@ -21,6 +21,7 @@ import org.locationtech.jts.precision.GeometryPrecisionReducer
 
 import pureconfig.ConfigSource
 import pureconfig.generic.auto._
+import org.log4s._
 
 case class Simplification(scale: Double = 1e12) {
   // 12 digits is maximum to avoid [[TopologyException]], see https://web.archive.org/web/20160226031453/http://tsusiatsoftware.net/jts/jts-faq/jts-faq.html#D9
@@ -39,6 +40,15 @@ case class JtsConfig(precision: Precision = Precision(), simplification: Simplif
 }
 
 object JtsConfig {
-  lazy val conf: JtsConfig = ConfigSource.default.at("geotrellis.jts").loadOrThrow[JtsConfig]
+  @transient private[this] lazy val logger = getLogger
+
+  lazy val conf: JtsConfig = try {
+    ConfigSource.default.at("geotrellis.jts").loadOrThrow[JtsConfig]
+  } catch {
+    // TODO: remove once we don't need Shapeless 2.3.3 compatibility
+    case e: NoSuchMethodError =>
+      logger.warn(e)("NoSuchMethodError happened, probably due to the Shapeless versions mismatch, using the default configuration.")
+      JtsConfig()
+  }
   implicit def jtsConfigToClass(obj: JtsConfig.type): JtsConfig = conf
 }

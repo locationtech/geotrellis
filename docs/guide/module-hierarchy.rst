@@ -62,17 +62,6 @@ geotrellis-gdal-spark
 
 Contains geotrellis.raster.gdal.* integration tests for Spark.
 
-geotrellis-geomesa
-------------------
-
-*Experimental.* GeoTrellis compatibility for the distributed feature
-store `GeoMesa <http://www.geomesa.org/>`__.
-
-*Provides:* ``geotrellis.geomesa.geotools.*``
-*Provides:* ``geotrellis.spark.store.geomesa.*``
-
--  Save and load ``RDD``\ s of features to and from GeoMesa.
-
 geotrellis-geotools
 -------------------
 
@@ -81,16 +70,6 @@ geotrellis-geotools
 -  Conversion functions between GeoTrellis, OpenGIS and GeoTools ``Features``.
 
 *Provides:* ``geotrellis.geotools.*``
-
-geotrellis-geowave
-------------------
-
-*Experimental.* GeoTrellis compatibility for the distributed feature
-store `GeoWave <https://github.com/ngageoint/geowave>`__.
-
-*Provides:* ``geotrellis.spark.io.geowave.*``
-
--  Provides `GeoTrellisDataAdapter` to store GeoTrellis raster tiles and other Avro encoded records through GeoWave `DataTypeAdapter` interface.
 
 geotrellis-hbase
 ----------------

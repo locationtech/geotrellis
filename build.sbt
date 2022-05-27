@@ -1,8 +1,9 @@
 import sbt.Keys._
 
+ThisBuild / versionScheme := Some("semver-spec")
 ThisBuild / scalaVersion := "2.12.15"
 ThisBuild / organization := "org.locationtech.geotrellis"
-ThisBuild / crossScalaVersions := List("2.12.15", "2.13.6")
+ThisBuild / crossScalaVersions := List("2.12.15", "2.13.8")
 
 lazy val root = Project("geotrellis", file("."))
   .aggregate(
@@ -14,7 +15,6 @@ lazy val root = Project("geotrellis", file("."))
     gdal,
     `gdal-spark`,
     geotools,
-    // geowave,
     hbase,
     `hbase-spark`,
     layer,
@@ -155,16 +155,6 @@ lazy val geotools = project
     raster % "test->test" // <-- to get rid  of this, move `GeoTiffTestUtils` to the testkit.
   )
   .settings(Settings.geotools)
-
-lazy val geowave = project
-  .dependsOn(raster, store, `raster-testkit` % Test)
-  .settings(Settings.geowave)
-
-lazy val `geowave-benchmark` = (project in file("geowave/benchmark"))
-  .dependsOn(geowave)
-  .enablePlugins(JmhPlugin)
-  .settings(Settings.geowaveBenchmark)
-  .settings(publish / skip := true)
 
 lazy val shapefile = project
   .dependsOn(raster, `raster-testkit` % Test)

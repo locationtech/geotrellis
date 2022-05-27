@@ -12,7 +12,7 @@ jobs:
     name: Build and Test
     strategy:
       matrix:
-        scala: ["2.12.15", "2.13.6"]
+        scala: ["2.12.15", "2.13.7"]
         java: ["8", "11"]
     runs-on: ubuntu-latest
   

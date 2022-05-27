@@ -61,7 +61,7 @@ object HdfsUtils {
     if(!fs.exists(path))
       fs.mkdirs(path)
     else
-      if(!fs.isDirectory(path)) sys.error(s"Directory $path does not exist on ${fs.getUri}")
+      if(!fs.getFileStatus(path).isDirectory()) sys.error(s"Directory $path does not exist on ${fs.getUri}")
   }
 
   def deletePath(path: Path, conf: Configuration): Unit = {

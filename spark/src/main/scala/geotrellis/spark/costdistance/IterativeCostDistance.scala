@@ -24,7 +24,7 @@ import geotrellis.layer._
 import geotrellis.spark._
 import geotrellis.vector._
 
-import org.apache.log4j.Logger
+import org.log4s._
 import org.apache.spark.rdd.RDD
 import org.apache.spark.storage.StorageLevel
 import org.apache.spark.util.AccumulatorV2
@@ -48,7 +48,7 @@ object IterativeCostDistance {
   type KeyCostPair = (SpatialKey, SimpleCostDistance.Cost)
   type Changes = mutable.ArrayBuffer[KeyCostPair]
 
-  val logger = Logger.getLogger(IterativeCostDistance.getClass)
+  @transient private[this] lazy val logger = getLogger
 
   /**
     * Compute the resolution (in meters per pixel) of a layer.

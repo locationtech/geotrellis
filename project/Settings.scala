@@ -88,8 +88,9 @@ object Settings {
           Some("LocationTech Snapshot Repository" at s"${locationtech}/geotrellis-snapshots")
         case "locationtech" =>
           Some("LocationTech Release Repository" at s"${locationtech}/geotrellis-releases")
-        case _ =>
+        case "sonatype" =>
           Some("Sonatype Release Repository" at s"${sonatype}service/local/staging/deploy/maven2")
+        case _ => publishTo.value
       }
     },
 
@@ -99,13 +100,13 @@ object Settings {
     ).filter(_.asFile.canRead).map(Credentials(_)),
 
     addCompilerPlugin("org.typelevel" % "kind-projector" % "0.13.2" cross CrossVersion.full),
-    addCompilerPlugin("org.scalameta" % "semanticdb-scalac" % "4.4.28" cross CrossVersion.full),
+    addCompilerPlugin("org.scalameta" % "semanticdb-scalac" % "4.5.1" cross CrossVersion.full),
 
     libraryDependencies ++= (CrossVersion.partialVersion(scalaVersion.value) match {
       case Some((2, 13)) => Nil
       case Some((2, 12)) => Seq(
         compilerPlugin("org.scalamacros" % "paradise" % "2.1.1" cross CrossVersion.full),
-        "org.scala-lang.modules" %% "scala-collection-compat" % "2.4.2"
+        "org.scala-lang.modules" %% "scala-collection-compat" % "2.7.0"
       )
         case x => sys.error(s"Encountered unsupported Scala version ${x.getOrElse("undefined")}")
     }),
@@ -115,7 +116,10 @@ object Settings {
         case x => sys.error(s"Encountered unsupported Scala version ${x.getOrElse("undefined")}")
     }),
 
-    libraryDependencies += scalaReflect(scalaVersion.value),
+    libraryDependencies ++= Seq(
+      scalaReflect(scalaVersion.value),
+      log4jbridge % Test // CVE-2021-4104, CVE-2020-8908
+    ),
 
     pomExtra := (
       <developers>
@@ -219,9 +223,9 @@ object Settings {
     libraryDependencies ++= Seq(
       cassandraDriverCore
         excludeAll(
-        ExclusionRule("org.jboss.netty"), ExclusionRule("io.netty"),
-        ExclusionRule("org.slf4j"), ExclusionRule("com.typesafe.akka")
-      ) exclude("org.apache.hadoop", "hadoop-client")
+          ExclusionRule("org.jboss.netty"), ExclusionRule("io.netty"),
+          ExclusionRule("org.slf4j"), ExclusionRule("com.typesafe.akka")
+        ) exclude("org.apache.hadoop", "hadoop-client")
     ),
     console / initialCommands :=
       """
@@ -266,30 +270,11 @@ object Settings {
     scalacOptions ++= commonScalacOptions,
     libraryDependencies ++= Seq(
       apacheSpark("core").value,
+      log4jbridge, // CVE-2021-4104, CVE-2020-8908
       scalatest % Test,
       apacheSpark("sql").value % Test
     )
   )
-
-  lazy val geomesa = Seq(
-    name := "geotrellis-geomesa",
-    libraryDependencies ++= Seq(
-      geomesaAccumuloJobs,
-      geomesaAccumuloDatastore,
-      geomesaUtils,
-      scalatest % Test
-    ),
-    console / initialCommands :=
-      """
-      import geotrellis.raster._
-      import geotrellis.vector._
-      import geotrellis.proj4._
-      import geotrellis.layer._
-      import geotrellis.spark._
-      import geotrellis.spark.util._
-      import geotrellis.spark.io.geomesa._
-      """
-  ) ++ commonSettings ++ noForkInTests
 
   lazy val geotools = Seq(
     name := "geotrellis-geotools",
@@ -320,39 +305,11 @@ object Settings {
     Test / testOptions += Tests.Setup { () => Unzip.geoTiffTestFiles() }
   ) ++ commonSettings ++ noForkInTests
 
-  lazy val geowave = Seq(
-    name := "geotrellis-geowave",
-    libraryDependencies ++= Seq(
-      newtype, 
-      java8Compat,
-      circe("generic-extras").value, 
-      circe("json-schema").value,
-      geowaveStore, 
-      geowaveIndex, 
-      geowaveGeotime,
-      geowaveGuava % Test, // tracking geowave guava requirement
-      geowaveCassandra % Test, 
-      scalatest % Test, 
-      logbackClassic % Test
-    ),
-    Test / fork := true
-  ) ++ commonSettings
-
-  lazy val geowaveBenchmark = Seq(
-    name := "geotrellis-geowave-benchmark",
-    libraryDependencies ++= Seq(
-      geowaveGuava, // tracking geowave guava requirement
-      geowaveCassandra, 
-      logbackClassic
-    ),
-    Test / fork := true
-  ) ++ commonSettings
-
   lazy val hbase = Seq(
     name := "geotrellis-hbase",
-    libraryDependencies += 
-      hbaseMapReduce 
-        exclude("javax.servlet", "servlet-api") 
+    libraryDependencies +=
+      hbaseMapReduce
+        exclude("javax.servlet", "servlet-api")
         exclude("org.mortbay.jetty", "servlet-api-2.5"),
     libraryDependencies += jacksonCoreAsl,
     console / initialCommands :=
