@@ -30,11 +30,9 @@ import geotrellis.util.RangeReader
 import geotrellis.util.annotations.experimental
 import geotrellis.store.LayerId
 
-import cats.effect.IO
-import cats.syntax.apply._
+import cats.effect._
 import cats.syntax.either._
 
-import scala.concurrent.ExecutionContext
 import scala.reflect.ClassTag
 
 /**
@@ -46,10 +44,7 @@ import scala.reflect.ClassTag
   val resampleMethod: ResampleMethod
   val strategy: OverviewStrategy
 
-  implicit val ec: ExecutionContext
-
-  // TODO: runime should be configured
-  import cats.effect.unsafe.implicits.global
+  implicit val ioRuntime: unsafe.IORuntime
 
   @experimental def read[V <: CellGrid[Int]: GeoTiffReader: ClassTag]
     (layerId: LayerId)
@@ -66,10 +61,10 @@ import scala.reflect.ClassTag
     val keyExtent: Extent = mapTransform(SpatialKey(x, y))
 
     val index: fs2.Stream[IO, GeoTiffMetadata] =
-      fs2.Stream.fromIterator[IO](attributeStore.query(layerId.name, ProjectedExtent(keyExtent, layoutScheme.crs)).toIterator, 1)
+      fs2.Stream.fromBlockingIterator[IO](attributeStore.query(layerId.name, ProjectedExtent(keyExtent, layoutScheme.crs)).toIterator, chunkSize = 1)
 
     val readRecord: GeoTiffMetadata => fs2.Stream[IO, Option[Raster[V]]] = { md =>
-      fs2.Stream eval IO {
+      fs2.Stream eval IO.blocking {
         val tiff = GeoTiffReader[V].read(RangeReader(md.uri), streaming = true)
         val reprojectedKeyExtent = keyExtent.reproject(layoutScheme.crs, tiff.crs)
 

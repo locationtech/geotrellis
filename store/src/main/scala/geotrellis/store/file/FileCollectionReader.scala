@@ -23,10 +23,9 @@ import geotrellis.store.index.MergeQueue
 import geotrellis.store.util.IOUtils
 import geotrellis.util.Filesystem
 
+import cats.effect._
 import org.apache.avro.Schema
 import java.io.File
-
-import scala.concurrent.ExecutionContext
 
 object FileCollectionReader {
   def read[K: AvroRecordCodec : Boundable, V: AvroRecordCodec](
@@ -35,7 +34,7 @@ object FileCollectionReader {
     decomposeBounds: KeyBounds[K] => Seq[(BigInt, BigInt)],
     filterIndexOnly: Boolean,
     writerSchema: Option[Schema] = None
-  )(implicit ec: ExecutionContext): Seq[(K, V)] = {
+  )(implicit runtime: unsafe.IORuntime): Seq[(K, V)] = {
     if (queryKeyBounds.isEmpty) return Seq.empty[(K, V)]
 
     val ranges = if (queryKeyBounds.length > 1)

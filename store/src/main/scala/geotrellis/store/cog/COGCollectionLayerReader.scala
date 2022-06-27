@@ -28,14 +28,14 @@ import geotrellis.util._
 import io.circe._
 import io.circe.parser._
 import cats.syntax.either._
+import cats.effect._
 
-import scala.concurrent.ExecutionContext
 import scala.reflect._
 import java.net.URI
 import java.util.ServiceLoader
 
 abstract class COGCollectionLayerReader[ID] { self =>
-  implicit val ec: ExecutionContext
+  implicit val ioRuntime: unsafe.IORuntime
   val attributeStore: AttributeStore
 
   def read[
@@ -208,7 +208,7 @@ object COGCollectionLayerReader {
      decomposeBounds: KeyBounds[K] => Seq[(BigInt, BigInt)],
      readDefinitions: Map[SpatialKey, Seq[(SpatialKey, Int, TileBounds, Seq[(TileBounds, SpatialKey)])]],
      numPartitions: Option[Int] = None
-   )(implicit ec: ExecutionContext): Seq[(K, V)] = {
+   )(implicit runtime: unsafe.IORuntime): Seq[(K, V)] = {
     if (baseQueryKeyBounds.isEmpty) return Seq.empty[(K, V)]
 
     val ranges = if (baseQueryKeyBounds.length > 1)

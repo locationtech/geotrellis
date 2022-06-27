@@ -22,8 +22,9 @@ import geotrellis.store.avro.codecs.KeyValueRecordCodec
 import geotrellis.store.avro.{AvroEncoder, AvroRecordCodec}
 import geotrellis.store.index.MergeQueue
 import geotrellis.store.LayerId
-import geotrellis.store.util.BlockingThreadPool
+import geotrellis.store.util.IORuntimeTransient
 
+import cats.effect._
 import org.apache.avro.Schema
 import com.datastax.driver.core.querybuilder.QueryBuilder
 import com.datastax.driver.core.querybuilder.QueryBuilder.{eq => eqs}
@@ -31,8 +32,6 @@ import com.datastax.driver.core.querybuilder.QueryBuilder.{eq => eqs}
 import scala.collection.JavaConverters._
 import scala.reflect.ClassTag
 import java.math.BigInteger
-
-import scala.concurrent.ExecutionContext
 
 object CassandraCollectionReader {
   def read[K: Boundable : AvroRecordCodec : ClassTag, V: AvroRecordCodec : ClassTag](
@@ -44,7 +43,7 @@ object CassandraCollectionReader {
     decomposeBounds: KeyBounds[K] => Seq[(BigInt, BigInt)],
     filterIndexOnly: Boolean,
     writerSchema: Option[Schema] = None,
-    executionContext: ExecutionContext = BlockingThreadPool.executionContext
+    runtime: => unsafe.IORuntime = IORuntimeTransient.IORuntime
   ): Seq[(K, V)] = {
     if (queryKeyBounds.isEmpty) return Seq.empty[(K, V)]
 
@@ -56,7 +55,7 @@ object CassandraCollectionReader {
     else
       queryKeyBounds.flatMap(decomposeBounds)
 
-    implicit val ec = executionContext
+    implicit val ioRuntime: unsafe.IORuntime = runtime
 
     val query = QueryBuilder.select("value")
       .from(keyspace, table)
@@ -68,7 +67,7 @@ object CassandraCollectionReader {
     instance.withSessionDo { session =>
       val statement = session.prepare(query)
 
-      IOUtils.parJoin[K, V](ranges.iterator){ index: BigInt =>
+      IOUtils.parJoin[K, V](ranges.iterator) { index: BigInt =>
         val row = session.execute(statement.bind(index: BigInteger))
         if (row.asScala.nonEmpty) {
           val bytes = row.one().getBytes("value").array()

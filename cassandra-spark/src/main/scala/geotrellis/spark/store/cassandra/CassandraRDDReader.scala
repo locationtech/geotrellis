@@ -22,9 +22,10 @@ import geotrellis.store.cassandra._
 import geotrellis.store.avro.codecs.KeyValueRecordCodec
 import geotrellis.store.avro.{AvroEncoder, AvroRecordCodec}
 import geotrellis.store.index.{IndexRanges, MergeQueue}
-import geotrellis.store.util.{BlockingThreadPool, IOUtils}
+import geotrellis.store.util.{IORuntimeTransient, IOUtils}
 import geotrellis.spark.util.KryoWrapper
 
+import cats.effect._
 import com.datastax.driver.core.querybuilder.QueryBuilder
 import com.datastax.driver.core.querybuilder.QueryBuilder.{eq => eqs}
 import org.apache.avro.Schema
@@ -34,8 +35,6 @@ import org.apache.spark.rdd.RDD
 import scala.collection.JavaConverters._
 import scala.reflect.ClassTag
 import java.math.BigInteger
-
-import scala.concurrent.ExecutionContext
 
 object CassandraRDDReader {
   def read[K: Boundable : AvroRecordCodec : ClassTag, V: AvroRecordCodec : ClassTag](
@@ -48,7 +47,7 @@ object CassandraRDDReader {
     filterIndexOnly: Boolean,
     writerSchema: Option[Schema] = None,
     numPartitions: Option[Int] = None,
-    executionContext: => ExecutionContext = BlockingThreadPool.executionContext
+    runtime: => unsafe.IORuntime = IORuntimeTransient.IORuntime
   )(implicit sc: SparkContext): RDD[(K, V)] = {
     if (queryKeyBounds.isEmpty) return sc.emptyRDD[(K, V)]
 
@@ -73,7 +72,7 @@ object CassandraRDDReader {
     sc.parallelize(bins, bins.size)
       .mapPartitions { partition: Iterator[Seq[(BigInt, BigInt)]] =>
         instance.withSession { session =>
-          implicit val ec = executionContext
+          implicit val ioRuntime: unsafe.IORuntime = runtime
           val statement = session.prepare(query)
 
           val result = partition map { seq =>

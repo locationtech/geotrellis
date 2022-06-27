@@ -30,8 +30,8 @@ import org.apache.spark.SparkContext
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.model._
 import io.circe._
+import cats.effect._
 
-import scala.concurrent.ExecutionContext
 import scala.reflect.ClassTag
 
 /**
@@ -45,13 +45,13 @@ import scala.reflect.ClassTag
 class S3LayerReader(
   val attributeStore: AttributeStore,
   s3Client: => S3Client = S3ClientProducer.get(),
-  executionContext: => ExecutionContext = BlockingThreadPool.executionContext
+  runtime: => unsafe.IORuntime = IORuntimeTransient.IORuntime
 )(implicit sc: SparkContext)
   extends FilteringLayerReader[LayerId] {
 
   val defaultNumPartitions = sc.defaultParallelism
 
-  def rddReader: S3RDDReader = new S3RDDReader(s3Client, executionContext)
+  def rddReader: S3RDDReader = new S3RDDReader(s3Client, runtime)
 
   def read[
     K: AvroRecordCodec: Boundable: Decoder: ClassTag,

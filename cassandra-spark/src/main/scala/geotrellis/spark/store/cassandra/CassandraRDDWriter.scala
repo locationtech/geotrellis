@@ -22,15 +22,14 @@ import geotrellis.store.avro.codecs._
 import geotrellis.store.cassandra._
 import geotrellis.spark.store._
 import geotrellis.spark.util.KryoWrapper
-import geotrellis.store.util.BlockingThreadPool
+import geotrellis.store.util.IORuntimeTransient
 
 import com.datastax.driver.core.DataType._
 import com.datastax.driver.core.querybuilder.QueryBuilder
 import com.datastax.driver.core.querybuilder.QueryBuilder.{eq => eqs}
 import com.datastax.driver.core.ResultSet
 import com.datastax.driver.core.schemabuilder.SchemaBuilder
-import cats.effect.IO
-import cats.syntax.apply._
+import cats.effect._
 import cats.syntax.either._
 import org.apache.avro.Schema
 import org.apache.spark.rdd.RDD
@@ -39,7 +38,6 @@ import java.nio.ByteBuffer
 import java.math.BigInteger
 
 import scala.collection.JavaConverters._
-import scala.concurrent.ExecutionContext
 
 object CassandraRDDWriter {
   def write[K: AvroRecordCodec, V: AvroRecordCodec](
@@ -49,8 +47,8 @@ object CassandraRDDWriter {
     decomposeKey: K => BigInt,
     keyspace: String,
     table: String,
-    executionContext: => ExecutionContext = BlockingThreadPool.executionContext
-  ): Unit = update(rdd, instance, layerId, decomposeKey, keyspace, table, None, None, executionContext)
+    runtime: => unsafe.IORuntime = IORuntimeTransient.IORuntime
+  ): Unit = update(rdd, instance, layerId, decomposeKey, keyspace, table, None, None, runtime)
 
   private[cassandra] def update[K: AvroRecordCodec, V: AvroRecordCodec](
     raster: RDD[(K, V)],
@@ -61,7 +59,7 @@ object CassandraRDDWriter {
     table: String,
     writerSchema: Option[Schema],
     mergeFunc: Option[(V,V) => V],
-    executionContext: => ExecutionContext = BlockingThreadPool.executionContext
+    runtime: => unsafe.IORuntime = IORuntimeTransient.IORuntime
   ): Unit = {
     implicit val sc = raster.sparkContext
 
@@ -110,15 +108,13 @@ object CassandraRDDWriter {
 
               val rows: fs2.Stream[IO, (BigInt, Vector[(K,V)])] =
                 fs2.Stream.fromIterator[IO](
-                  partition.map { case (key, value) => (key, value.toVector) }, 1
+                  partition.map { case (key, value) => (key, value.toVector) }, chunkSize = 1
                 )
 
-              implicit val ec = executionContext
-              // TODO: runime should be configured
-              import cats.effect.unsafe.implicits.global
+              implicit val ioRuntime: unsafe.IORuntime = runtime
 
               def elaborateRow(row: (BigInt, Vector[(K,V)])): fs2.Stream[IO, (BigInt, Vector[(K,V)])] = {
-                fs2.Stream eval IO {
+                fs2.Stream eval IO.blocking {
                   val (key, current) = row
                   val updated = LayerWriter.updateRecords(mergeFunc, current, existing = {
                     val oldRow = session.execute(readStatement.bind(key: BigInteger))
@@ -143,7 +139,7 @@ object CassandraRDDWriter {
 
               def retire(row: (BigInt, ByteBuffer)): fs2.Stream[IO, ResultSet] = {
                 val (id, value) = row
-                fs2.Stream eval IO {
+                fs2.Stream eval IO.blocking {
                   session.execute(writeStatement.bind(id: BigInteger, value))
                 }
               }
@@ -154,7 +150,7 @@ object CassandraRDDWriter {
                 .map(retire)
                 .parJoinUnbounded
                 .onComplete {
-                  fs2.Stream eval IO {
+                  fs2.Stream eval IO.blocking {
                     session.closeAsync()
                     session.getCluster.closeAsync()
                   }

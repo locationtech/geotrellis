@@ -17,12 +17,11 @@
 package geotrellis.store.util
 
 import cats.effect._
-import cats.syntax.apply._
+import cats.effect.syntax.temporal._
 import cats.syntax.either._
 import cats.syntax.applicativeError._
-import cats.{ApplicativeError}
+import cats.ApplicativeError
 
-import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
 import scala.util.Random
 
@@ -30,7 +29,7 @@ object IOUtils {
   /**
     * Implement non-blocking Exponential Backoff on a Task.
     */
-  implicit class IOBackoff[A, F[_]: ApplicativeError[*[_], Throwable]: Temporal: Async](ioa: F[A]) {
+  implicit class IOBackoff[A, F[_]: ApplicativeError[*[_], Throwable]: Temporal](ioa: F[A]) {
     /**
       * @param  p  returns true for exceptions that trigger a backoff and retry
       * @return
@@ -42,8 +41,8 @@ object IOUtils {
         val actualDelay = FiniteDuration(timeout.toMillis, MILLISECONDS)
 
         ioa.handleErrorWith { error: Throwable =>
-          if(p(error)) Temporal[F].sleep(actualDelay) *> help(count + 1)
-          else Async[F].raiseError(error)
+          if(p(error)) help(count + 1).andWait(actualDelay)
+          else error.raiseError
         }
       }
       help(0)
@@ -52,25 +51,23 @@ object IOUtils {
 
   def parJoin[K, V](ranges: Iterator[(BigInt, BigInt)])
                    (readFunc: BigInt => Vector[(K, V)])
-                   (implicit ec: ExecutionContext): Vector[(K, V)] =
+                   (implicit runtime: unsafe.IORuntime): Vector[(K, V)] =
     parJoinEBO[K, V](ranges)(readFunc)(_ => false)
 
   private[geotrellis] def parJoinEBO[K, V](ranges: Iterator[(BigInt, BigInt)])
                                           (readFunc: BigInt => Vector[(K, V)])
                                           (backOffPredicate: Throwable => Boolean)
-                                          (implicit ec: ExecutionContext): Vector[(K, V)] = {
+                                          (implicit runtime: unsafe.IORuntime): Vector[(K, V)] = {
     val indices: Iterator[BigInt] = ranges.flatMap { case (start, end) =>
       (start to end).iterator
     }
 
-    val index: fs2.Stream[IO, BigInt] = fs2.Stream.fromIterator[IO](indices, 1)
+    val index: fs2.Stream[IO, BigInt] = fs2.Stream.fromIterator[IO](indices, chunkSize = 1)
 
     val readRecord: BigInt => fs2.Stream[IO, Vector[(K, V)]] = { index =>
-      fs2.Stream eval IO { readFunc(index) }.retryEBO { backOffPredicate }
+      fs2.Stream eval IO.blocking { readFunc(index) }.retryEBO { backOffPredicate }
     }
 
-    // TODO: runime should be configured
-    import cats.effect.unsafe.implicits.global
     index
       .map(readRecord)
       .parJoinUnbounded

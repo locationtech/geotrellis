@@ -32,8 +32,8 @@ import org.apache.spark.rdd.RDD
 import org.log4s._
 import io.circe._
 import cats.Semigroup
+import cats.effect._
 
-import scala.concurrent.ExecutionContext
 import scala.reflect._
 
 /**
@@ -43,8 +43,8 @@ import scala.reflect._
   * @param keyPrefix           S3 prefix to write the raster to
   * @param attributeStore      AttributeStore to be used for storing raster metadata
   * @param putObjectModifier   Function that will be applied ot S3 PutObjectRequests, so that they can be modified (e.g. to change the ACL settings)
-  * @param s3Client           A function which returns an S3 Client (real or mock) into-which to save the data
-  * @param executionContext A function to get execution context
+  * @param s3Client            A function which returns an S3 Client (real or mock) into-which to save the data
+  * @param runtime             A function to get IORuntime
  */
 class S3LayerWriter(
   val attributeStore: AttributeStore,
@@ -52,11 +52,11 @@ class S3LayerWriter(
   keyPrefix: String,
   putObjectModifier: PutObjectRequest => PutObjectRequest = identity,
   s3Client: => S3Client = S3ClientProducer.get(),
-  executionContext: => ExecutionContext = BlockingThreadPool.executionContext
+  runtime: => unsafe.IORuntime = IORuntimeTransient.IORuntime
 ) extends LayerWriter[LayerId] {
   @transient private[this] lazy val logger = getLogger
 
-  def rddWriter: S3RDDWriter = new S3RDDWriter(s3Client, executionContext)
+  def rddWriter: S3RDDWriter = new S3RDDWriter(s3Client, runtime)
 
   // Layer Updating
   def overwrite[
@@ -142,7 +142,7 @@ object S3LayerWriter {
     putObjectModifier: PutObjectRequest => PutObjectRequest,
     getClient: => S3Client = S3ClientProducer.get()
   ): S3LayerWriter =
-    new S3LayerWriter(attributeStore, bucket, prefix, putObjectModifier)
+    new S3LayerWriter(attributeStore, bucket, prefix, putObjectModifier, getClient)
 
   def apply(attributeStore: AttributeStore, bucket: String, prefix: String, s3Client: => S3Client): S3LayerWriter =
     new S3LayerWriter(attributeStore, bucket, prefix, identity, s3Client)
@@ -153,19 +153,15 @@ object S3LayerWriter {
   def apply(attributeStore: S3AttributeStore, putObjectModifier: PutObjectRequest => PutObjectRequest): S3LayerWriter =
     apply(attributeStore, attributeStore.bucket, attributeStore.prefix, putObjectModifier, attributeStore.client)
 
-  def apply(bucket: String, prefix: String, s3Client: => S3Client): S3LayerWriter = {
-    val attStore = S3AttributeStore(bucket, prefix, s3Client)
-    apply(attStore)
-  }
+  def apply(bucket: String, prefix: String, s3Client: => S3Client): S3LayerWriter =
+    apply(S3AttributeStore(bucket, prefix, s3Client))
 
   def apply(
     bucket: String,
     prefix: String,
     putObjectModifier: PutObjectRequest => PutObjectRequest,
     s3Client: => S3Client
-  ): S3LayerWriter = {
-    val attStore = S3AttributeStore(bucket, prefix, s3Client)
-    apply(attStore, putObjectModifier)
-  }
+  ): S3LayerWriter =
+    apply(S3AttributeStore(bucket, prefix, s3Client), bucket, prefix, putObjectModifier, s3Client)
 
 }

@@ -26,14 +26,13 @@ import geotrellis.store.hadoop.{HadoopAttributeStore, SerializableConfiguration}
 import geotrellis.store.hadoop.util._
 import geotrellis.store.index.Index
 
+import cats.effect._
 import _root_.io.circe._
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 
 import scala.reflect.ClassTag
 import java.net.URI
-
-import scala.concurrent.ExecutionContext
 
 /**
  * Handles reading raster RDDs and their metadata from HDFS.
@@ -44,12 +43,12 @@ class HadoopCOGCollectionLayerReader(
   val attributeStore: AttributeStore,
   val catalogPath: String,
   val conf: Configuration = new Configuration,
-  executionContext: => ExecutionContext = BlockingThreadPool.executionContext
+  runtime: => unsafe.IORuntime = IORuntimeTransient.IORuntime
 ) extends COGCollectionLayerReader[LayerId] {
 
   val serConf: SerializableConfiguration = SerializableConfiguration(conf)
 
-  @transient implicit lazy val ec: ExecutionContext = executionContext
+  @transient implicit lazy val ioRuntime: unsafe.IORuntime = runtime
 
   def read[
     K: SpatialComponent: Boundable: Decoder: ClassTag,
@@ -57,7 +56,7 @@ class HadoopCOGCollectionLayerReader(
   ](id: LayerId, tileQuery: LayerQuery[K, TileLayerMetadata[K]]) = {
     def getKeyPath(zoomRange: ZoomRange, maxWidth: Int): BigInt => String =
       (index: BigInt) =>
-        s"${catalogPath.toString}/${id.name}/" +
+        s"${catalogPath}/${id.name}/" +
         s"${zoomRange.minZoom}_${zoomRange.maxZoom}/" +
         s"${Index.encode(index, maxWidth)}.$Extension"
 
