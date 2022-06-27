@@ -31,7 +31,7 @@ object Regrid {
 
   private case class Interval[N : Ordering](start: N, end: N) {
     val ord = implicitly[Ordering[N]]
-    assert(ord.compare(start, end) < 1, "Row/col intervals must begin before they end")
+    assert(ord.compare(start, end) < 1, "row / col intervals must begin before they end")
 
     // let the interval be start to end, inclusive
     def intersect(that: Interval[N]) = {
