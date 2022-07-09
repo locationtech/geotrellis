@@ -26,8 +26,8 @@ import geotrellis.store.util.{IORuntimeTransient, IOUtils}
 import geotrellis.spark.util.KryoWrapper
 
 import cats.effect._
-import com.datastax.driver.core.querybuilder.QueryBuilder
-import com.datastax.driver.core.querybuilder.QueryBuilder.{eq => eqs}
+import com.datastax.oss.driver.api.querybuilder.QueryBuilder
+import com.datastax.oss.driver.api.querybuilder.QueryBuilder.literal
 import org.apache.avro.Schema
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
@@ -62,11 +62,12 @@ object CassandraRDDReader {
 
     val bins = IndexRanges.bin(ranges, numPartitions.getOrElse(sc.defaultParallelism))
 
-    val query = QueryBuilder.select("value")
-      .from(keyspace, table)
-      .where(eqs("key", QueryBuilder.bindMarker()))
-      .and(eqs("name", layerId.name))
-      .and(eqs("zoom", layerId.zoom))
+    val query = QueryBuilder
+      .selectFrom(keyspace, table)
+      .column("value")
+      .whereColumn("key").isEqualTo(QueryBuilder.bindMarker())
+      .whereColumn("name").isEqualTo(literal(layerId.name))
+      .whereColumn("zoom").isEqualTo(literal(layerId.zoom))
       .toString
 
     sc.parallelize(bins, bins.size)
@@ -79,7 +80,7 @@ object CassandraRDDReader {
             IOUtils.parJoin[K, V](seq.iterator) { index: BigInt =>
               val row = session.execute(statement.bind(index: BigInteger))
               if (row.asScala.nonEmpty) {
-                val bytes = row.one().getBytes("value").array()
+                val bytes = row.one().getByteBuffer("value").array()
                 val recs = AvroEncoder.fromBinary(kwWriterSchema.value.getOrElse(_recordCodec.schema), bytes)(_recordCodec)
                 if (filterIndexOnly) recs
                 else recs.filter { row => includeKey(row._1) }
@@ -88,9 +89,7 @@ object CassandraRDDReader {
           }
 
           /** Close partition session */
-          (result ++ Iterator({
-            session.closeAsync(); session.getCluster.closeAsync(); Seq.empty[(K, V)]
-          })).flatten
+          (result ++ Iterator({ session.close(); Seq.empty[(K, V)] })).flatten
         }
       }
   }

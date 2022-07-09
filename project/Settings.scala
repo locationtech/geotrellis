@@ -173,6 +173,14 @@ object Settings {
     ExclusionRule("org.jaitools", "jt-utils")
   )
 
+  lazy val excludedJackson = List(
+    ExclusionRule("com.fasterxml.jackson.core"),
+    ExclusionRule("com.fasterxml.jackson.datatype"),
+    ExclusionRule("com.fasterxml.jackson.dataformat"),
+    ExclusionRule("com.fasterxml.jackson.jaxrs"),
+    ExclusionRule("com.fasterxml.jackson.module")
+  )
+
   lazy val accumulo = Seq(
     name := "geotrellis-accumulo",
     libraryDependencies ++= Seq(
@@ -226,12 +234,14 @@ object Settings {
   lazy val cassandra = Seq(
     name := "geotrellis-cassandra",
     libraryDependencies ++= Seq(
-      cassandraDriverCore
-        excludeAll(
-          ExclusionRule("org.jboss.netty"), ExclusionRule("io.netty"),
-          ExclusionRule("org.slf4j"), ExclusionRule("com.typesafe.akka")
-        ) exclude("org.apache.hadoop", "hadoop-client")
-    ),
+      cassandraDriverCore,
+      cassandraDriverQueryBuilder
+    ) map (_ excludeAll(
+      ExclusionRule("org.jboss.netty"),
+      ExclusionRule("io.netty"),
+      ExclusionRule("org.slf4j"),
+      ExclusionRule("com.typesafe.akka")
+    )) map (_ excludeAll(excludedJackson: _*)),
     console / initialCommands :=
       """
       import geotrellis.proj4._
@@ -246,11 +256,15 @@ object Settings {
   lazy val `cassandra-spark` = Seq(
     name := "geotrellis-cassandra-spark",
     libraryDependencies ++= Seq(
-      cassandraDriverCore
-        excludeAll(
-          ExclusionRule("org.jboss.netty"), ExclusionRule("io.netty"),
-          ExclusionRule("org.slf4j"), ExclusionRule("com.typesafe.akka")
-        ) exclude("org.apache.hadoop", "hadoop-client"),
+      cassandraDriverCore,
+      cassandraDriverQueryBuilder
+    ) map (_ excludeAll(
+      ExclusionRule("org.jboss.netty"),
+      ExclusionRule("io.netty"),
+      ExclusionRule("org.slf4j"),
+      ExclusionRule("com.typesafe.akka")
+    )) map (_ excludeAll(excludedJackson: _*)),
+    libraryDependencies ++= Seq(
       hadoopClient % Provided,
       apacheSpark("core").value % Provided,
       apacheSpark("sql").value % Test,

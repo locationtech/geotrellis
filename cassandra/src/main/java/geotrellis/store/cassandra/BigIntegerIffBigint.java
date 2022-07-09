@@ -1,8 +1,14 @@
 package geotrellis.store.cassandra;
 
-import com.datastax.driver.core.DataType;
-import com.datastax.driver.core.ProtocolVersion;
-import com.datastax.driver.core.TypeCodec;
+import com.datastax.oss.driver.api.core.ProtocolVersion;
+import com.datastax.oss.driver.api.core.type.DataType;
+import com.datastax.oss.driver.api.core.type.DataTypes;
+import com.datastax.oss.driver.api.core.type.codec.PrimitiveLongCodec;
+import com.datastax.oss.driver.api.core.type.codec.TypeCodec;
+import com.datastax.oss.driver.api.core.type.codec.TypeCodecs;
+import com.datastax.oss.driver.api.core.type.reflect.GenericType;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 
 import java.nio.ByteBuffer;
 import java.math.BigInteger;
@@ -12,23 +18,33 @@ import java.math.BigInteger;
  *
  * @author James McClain
  */
-public class BigIntegerIffBigint extends TypeCodec<BigInteger> {
+public class BigIntegerIffBigint implements TypeCodec<BigInteger> {
 
     public static final BigIntegerIffBigint instance = new BigIntegerIffBigint();
-    private static final PrimitiveLongCodec _instance = TypeCodec.bigint();
+    private static final PrimitiveLongCodec _instance = TypeCodecs.BIGINT;
 
-    private BigIntegerIffBigint() {
-        super(DataType.bigint(), BigInteger.class);
+    @NonNull
+    @Override
+    public GenericType<BigInteger> getJavaType() {
+        return GenericType.BIG_INTEGER;
     }
 
+    @NonNull
     @Override
-    public ByteBuffer serialize(BigInteger value, ProtocolVersion protocolVersion) {
-	return _instance.serialize(value.longValue(), protocolVersion);
+    public DataType getCqlType() {
+        return DataTypes.BIGINT;
     }
 
+    @Nullable
     @Override
-    public BigInteger deserialize(ByteBuffer bytes, ProtocolVersion protocolVersion) {
-	return BigInteger.valueOf(_instance.deserialize(bytes, protocolVersion));
+    public ByteBuffer encode(@Nullable BigInteger value, @NonNull ProtocolVersion protocolVersion) {
+        return _instance.encode(value.longValue(), protocolVersion);
+    }
+
+    @Nullable
+    @Override
+    public BigInteger decode(@Nullable ByteBuffer bytes, @NonNull ProtocolVersion protocolVersion) {
+        return BigInteger.valueOf(_instance.decode(bytes, protocolVersion));
     }
 
     @Override

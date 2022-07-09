@@ -15,7 +15,7 @@ services:
     network_mode: host
 
   cassandra:
-    image: cassandra:3.11.6
+    image: cassandra:4.0.4
     environment:
       - _JAVA_OPTIONS=-Xms1m -Xmx512m
       - MAX_HEAP_SIZE=512m

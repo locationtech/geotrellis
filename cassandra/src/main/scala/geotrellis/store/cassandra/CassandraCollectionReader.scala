@@ -26,8 +26,8 @@ import geotrellis.store.util.IORuntimeTransient
 
 import cats.effect._
 import org.apache.avro.Schema
-import com.datastax.driver.core.querybuilder.QueryBuilder
-import com.datastax.driver.core.querybuilder.QueryBuilder.{eq => eqs}
+import com.datastax.oss.driver.api.querybuilder.QueryBuilder
+import com.datastax.oss.driver.api.querybuilder.QueryBuilder.literal
 
 import scala.collection.JavaConverters._
 import scala.reflect.ClassTag
@@ -57,12 +57,13 @@ object CassandraCollectionReader {
 
     implicit val ioRuntime: unsafe.IORuntime = runtime
 
-    val query = QueryBuilder.select("value")
-      .from(keyspace, table)
-      .where(eqs("key", QueryBuilder.bindMarker()))
-      .and(eqs("name", layerId.name))
-      .and(eqs("zoom", layerId.zoom))
-      .toString
+    val query = QueryBuilder
+      .selectFrom(keyspace, table)
+      .column("value")
+      .whereColumn("key").isEqualTo(QueryBuilder.bindMarker())
+      .whereColumn("name").isEqualTo(literal(layerId.name))
+      .whereColumn("zoom").isEqualTo(literal(layerId.zoom))
+      .build()
 
     instance.withSessionDo { session =>
       val statement = session.prepare(query)
@@ -70,7 +71,7 @@ object CassandraCollectionReader {
       IOUtils.parJoin[K, V](ranges.iterator) { index: BigInt =>
         val row = session.execute(statement.bind(index: BigInteger))
         if (row.asScala.nonEmpty) {
-          val bytes = row.one().getBytes("value").array()
+          val bytes = row.one().getByteBuffer("value").array()
           val recs = AvroEncoder.fromBinary(writerSchema.getOrElse(_recordCodec.schema), bytes)(_recordCodec)
           if (filterIndexOnly) recs
           else recs.filter { row => includeKey(row._1) }

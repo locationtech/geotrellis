@@ -24,11 +24,11 @@ import geotrellis.spark.store._
 import geotrellis.spark.util.KryoWrapper
 import geotrellis.store.util.IORuntimeTransient
 
-import com.datastax.driver.core.DataType._
-import com.datastax.driver.core.querybuilder.QueryBuilder
-import com.datastax.driver.core.querybuilder.QueryBuilder.{eq => eqs}
-import com.datastax.driver.core.ResultSet
-import com.datastax.driver.core.schemabuilder.SchemaBuilder
+import com.datastax.oss.driver.api.core.cql.ResultSet
+import com.datastax.oss.driver.api.querybuilder.QueryBuilder
+import com.datastax.oss.driver.api.querybuilder.QueryBuilder.literal
+import com.datastax.oss.driver.api.querybuilder.SchemaBuilder
+import com.datastax.oss.driver.api.core.`type`.DataTypes
 import cats.effect._
 import cats.syntax.either._
 import org.apache.avro.Schema
@@ -69,29 +69,30 @@ object CassandraRDDWriter {
       instance.ensureKeyspaceExists(keyspace, session)
       session.execute(
         SchemaBuilder.createTable(keyspace, table).ifNotExists()
-          .addPartitionKey("key", varint)
-          .addClusteringColumn("name", text)
-          .addClusteringColumn("zoom", cint)
-          .addColumn("value", blob)
+          .withPartitionKey("key", DataTypes.VARINT)
+          .withClusteringColumn("name", DataTypes.TEXT)
+          .withClusteringColumn("zoom", DataTypes.INT)
+          .withColumn("value", DataTypes.BLOB)
+          .build()
       )
     }
 
     val readQuery =
-      QueryBuilder.select("value")
-        .from(keyspace, table)
-        .where(eqs("key", QueryBuilder.bindMarker()))
-        .and(eqs("name", layerId.name))
-        .and(eqs("zoom", layerId.zoom))
-        .toString
+      QueryBuilder.selectFrom(keyspace, table)
+        .column("value")
+        .whereColumn("key").isEqualTo(QueryBuilder.bindMarker())
+        .whereColumn("name").isEqualTo(literal(layerId.name))
+        .whereColumn("zoom").isEqualTo(literal(layerId.zoom))
+        .build()
 
     val writeQuery =
       QueryBuilder
         .insertInto(keyspace, table)
-        .value("name", layerId.name)
-        .value("zoom", layerId.zoom)
+        .value("name", literal(layerId.name))
+        .value("zoom", literal(layerId.zoom))
         .value("key", QueryBuilder.bindMarker())
         .value("value", QueryBuilder.bindMarker())
-        .toString
+        .build()
 
     val _recordCodec = KeyValueRecordCodec[K, V]
     val kwWriterSchema = KryoWrapper(writerSchema)
@@ -119,7 +120,7 @@ object CassandraRDDWriter {
                   val updated = LayerWriter.updateRecords(mergeFunc, current, existing = {
                     val oldRow = session.execute(readStatement.bind(key: BigInteger))
                     if (oldRow.asScala.nonEmpty) {
-                      val bytes = oldRow.one().getBytes("value").array()
+                      val bytes = oldRow.one().getByteBuffer("value").array()
                       val schema = kwWriterSchema.value.getOrElse(_recordCodec.schema)
                       AvroEncoder.fromBinary(schema, bytes)(_recordCodec)
                     } else Vector.empty
@@ -150,10 +151,7 @@ object CassandraRDDWriter {
                 .map(retire)
                 .parJoinUnbounded
                 .onComplete {
-                  fs2.Stream eval IO.blocking {
-                    session.closeAsync()
-                    session.getCluster.closeAsync()
-                  }
+                  fs2.Stream eval instance.closeAsync[IO]
                 }
 
               results

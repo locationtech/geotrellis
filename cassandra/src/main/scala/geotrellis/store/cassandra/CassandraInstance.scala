@@ -16,12 +16,15 @@
 
 package geotrellis.store.cassandra
 
+import cats.effect.Async
+import cats.syntax.functor._
+
+import com.datastax.oss.driver.api.core.`type`.codec.registry.MutableCodecRegistry
 import geotrellis.store.cassandra.conf.CassandraConfig
+import com.datastax.oss.driver.api.core.CqlSession
 
-import com.datastax.driver.core.policies.{DCAwareRoundRobinPolicy, TokenAwarePolicy}
-import com.datastax.driver.core.{Cluster, Session}
-
-import java.net.URI
+import scala.collection.JavaConverters._
+import java.net.{InetSocketAddress, URI}
 
 object CassandraInstance {
   @volatile private var bigIntegerRegistered: Boolean = false
@@ -43,58 +46,53 @@ object CassandraInstance {
 trait CassandraInstance extends Serializable {
   val cassandraConfig: CassandraConfig
 
-  /** Functions to get cluster / session for custom logic, where function wrapping can have an impact on speed */
-  def getCluster: () => Cluster
-  def getSession: Session = getCluster().connect()
+  /** Functions to get session for custom logic, where function wrapping can have an impact on speed */
+  def getSession: () => CqlSession
 
-  @transient lazy val cluster: Cluster = getCluster()
-  @transient lazy val session: Session = cluster.connect()
+  @transient lazy val session: CqlSession = getSession()
 
   def registerBigInteger(): Unit = {
     if (!CassandraInstance.bigIntegerRegistered) {
-      cluster
-        .getConfiguration()
-        .getCodecRegistry()
+      session
+        .getContext
+        .getCodecRegistry
+        .asInstanceOf[MutableCodecRegistry]
         .register(BigIntegerIffBigint.instance)
       CassandraInstance.bigIntegerRegistered = true
     }
   }
 
-  def ensureKeyspaceExists(keyspace: String, session: Session): Unit =
+  def ensureKeyspaceExists(keyspace: String, session: CqlSession): Unit =
     session.execute(
       s"create keyspace if not exists ${keyspace} with replication = {'class': '${cassandraConfig.replicationStrategy}', " +
       s"'replication_factor': ${cassandraConfig.replicationFactor} }"
     )
 
-  def dropKeyspace(keyspace: String, session: Session): Unit =
+  def dropKeyspace(keyspace: String, session: CqlSession): Unit =
     session.execute(s"drop keyspace if exists $keyspace;")
 
   /** Without session close, for a custom session close */
-  def withSession[T](block: Session => T): T = block(session)
+  def withSession[T](block: CqlSession => T): T = block(session)
 
   /** With session close */
-  def withSessionDo[T](block: Session => T): T = {
-    val session = getSession
-    try block(session) finally {
-      session.closeAsync()
-      session.getCluster.closeAsync()
-    }
+  def withSessionDo[T](block: CqlSession => T): T = {
+    val session = getSession()
+    try block(session) finally session.close()
   }
 
-  def closeAsync = {
-    session.closeAsync()
-    session.getCluster.closeAsync()
-  }
+  def closeAsync[F[_]: Async]: F[Unit] = Async[F].fromCompletableFuture(Async[F].delay(session.closeAsync().toCompletableFuture)).void
+
+  def close: Unit = session.close()
 }
 
 case class BaseCassandraInstance(
-  getCluster: () => Cluster,
+  getSession: () => CqlSession,
   cassandraConfig: CassandraConfig
 ) extends CassandraInstance
 
 object BaseCassandraInstance {
-  def apply(getCluster: () => Cluster): BaseCassandraInstance =
-    BaseCassandraInstance(getCluster, CassandraConfig)
+  def apply(getSession: () => CqlSession): BaseCassandraInstance =
+    BaseCassandraInstance(getSession, CassandraConfig)
 
   def apply(
     hosts: Seq[String],
@@ -102,35 +100,20 @@ object BaseCassandraInstance {
     password: String,
     cassandraConfig: CassandraConfig
   ): BaseCassandraInstance = {
-    def getLoadBalancingPolicy = {
-      val builder = DCAwareRoundRobinPolicy.builder()
-      if(cassandraConfig.localDc.nonEmpty) builder.withLocalDc(cassandraConfig.localDc)
-
-      new TokenAwarePolicy(builder.build())
-    }
-
-    def getCluster: () => Cluster = () => {
+    def getSession: () => CqlSession = () => {
       val builder =
-        Cluster
+        CqlSession
           .builder()
-          // Spark 3 brings dropwizard 4.1.1
-          // https://docs.datastax.com/en/developer/java-driver/3.5/manual/metrics/#metrics-4-compatibility
-          // TODO: Upd cassandra driver up to 4.9
-          .withoutJMXReporting()
-          .withLoadBalancingPolicy(getLoadBalancingPolicy)
-          .addContactPoints(hosts: _*)
-          .withPort(cassandraConfig.port)
-          .withCredentials(username, password)
+          .addContactPoints(hosts.map(InetSocketAddress.createUnresolved(_, cassandraConfig.port)).asJava)
 
       val authedBuilder =
-        if(username.nonEmpty && password.nonEmpty) builder.withCredentials(username, password)
+        if(username.nonEmpty && password.nonEmpty) builder.withAuthCredentials(username, password)
         else builder
 
       authedBuilder.build()
     }
 
-
-    BaseCassandraInstance(getCluster, cassandraConfig)
+    BaseCassandraInstance(getSession, cassandraConfig)
   }
 
   def apply(
@@ -148,10 +131,10 @@ object BaseCassandraInstance {
 }
 
 object Cassandra {
-  implicit def instanceToSession[T <: CassandraInstance](instance: T): Session = instance.session
+  implicit def instanceToSession[T <: CassandraInstance](instance: T): CqlSession = instance.session
 
   def withCassandraInstance[T <: CassandraInstance, K](instance: T)(block: T => K): K = block(instance)
-  def withCassandraInstanceDo[T <: CassandraInstance, K](instance: T)(block: T => K): K = try block(instance) finally instance.closeAsync
+  def withCassandraInstanceDo[T <: CassandraInstance, K](instance: T)(block: T => K): K = try block(instance) finally instance.close
 
   def withBaseCassandraInstance[K](hosts: Seq[String],
                                    username: String,
@@ -172,7 +155,7 @@ object Cassandra {
                                      password: String,
                                      cassandraConfig: CassandraConfig)(block: CassandraInstance => K): K = {
     val instance = BaseCassandraInstance(hosts, username, password, cassandraConfig)
-    try block(instance) finally instance.closeAsync
+    try block(instance) finally instance.close
   }
   def withBaseCassandraInstanceDo[K](hosts: Seq[String],
                                      username: String,

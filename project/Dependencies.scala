@@ -20,9 +20,9 @@ object Version {
   val geotools    = "25.4"
   val spire       = "0.17.0"
   val accumulo    = "1.9.3"
-  val cassandra   = "3.11.2"
+  val cassandra   = "4.14.1"
   val hbase       = "2.4.13"
-  val hadoop      = "3.3.3"
+  val hadoop      = "3.3.1"
   val gdal        = "3.1.0"
   val gdalWarp    = "1.1.1"
 
@@ -62,7 +62,7 @@ object Dependencies {
   }
 
   def apacheSpark(module: String) = Def.setting {
-    "org.apache.spark"  %% s"spark-$module" % "3.2.0"
+    "org.apache.spark"  %% s"spark-$module" % "3.2.1"
   }
 
   def scalaReflect(version: String) = "org.scala-lang" % "scala-reflect" % version
@@ -90,8 +90,10 @@ object Dependencies {
   val accumuloCore        = "org.apache.accumulo"         % "accumulo-core"            % Version.accumulo
   val sl4jnop             = "org.slf4j"                   % "slf4j-nop"                % "1.7.25"
   val logbackClassic      = "ch.qos.logback"              % "logback-classic"          % "1.2.3"
-  val cassandraDriverCore = "com.datastax.cassandra"      % "cassandra-driver-core"    % Version.cassandra
   val guava               = "com.google.guava"            % "guava"                    % "16.0.1"
+
+  val cassandraDriverCore         = "com.datastax.oss" % "java-driver-core"          % Version.cassandra
+  val cassandraDriverQueryBuilder = "com.datastax.oss" % "java-driver-query-builder" % Version.cassandra
 
   val scaffeine = "com.github.blemale"           %% "scaffeine" % "4.1.0"
   val caffeine  = "com.github.ben-manes.caffeine" % "caffeine"  % "2.9.3"
@@ -138,10 +140,14 @@ object Dependencies {
   val jacksonAnnotations  = "com.fasterxml.jackson.core"    % "jackson-annotations"      % "2.6.7"
   val jacksonModuleScala  = "com.fasterxml.jackson.module" %% "jackson-module-scala"     % "2.6.7"
 
-  val shapeless           = "com.chuusai"  %% "shapeless" % "2.3.9"
-  val newtype             = "io.estatico"  %% "newtype"   % "0.4.4"
+  val jacksonCore212        = "com.fasterxml.jackson.core"    % "jackson-core"         % "2.10.0"
+  val jacksonDatabind212    = "com.fasterxml.jackson.core"    % "jackson-databind"     % "2.10.0"
+  val jacksonAnnotations212 = "com.fasterxml.jackson.core"    % "jackson-annotations"  % "2.10.0"
+  val jacksonModuleScala212 = "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.10.0"
 
-  // aligned with the GeoTools version, should be 2.1.2 for GeoTools 24.2
+  val shapeless           = "com.chuusai"  %% "shapeless" % "2.3.9"
+
+  // aligned with the GeoTools version
   val unitApi             = "javax.measure" % "unit-api"  % "2.1.3"
 
   val scalaURI            = "io.lemonlabs" %% "scala-uri" % "4.0.2"
