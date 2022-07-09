@@ -105,13 +105,11 @@ object BaseCassandraInstance {
     def getLoadBalancingPolicy = {
       val builder = DCAwareRoundRobinPolicy.builder()
       if(cassandraConfig.localDc.nonEmpty) builder.withLocalDc(cassandraConfig.localDc)
-      if(cassandraConfig.usedHostsPerRemoteDc > 0) builder.withUsedHostsPerRemoteDc(cassandraConfig.usedHostsPerRemoteDc)
-      if(cassandraConfig.allowRemoteDcsForLocalConsistencyLevel) builder.allowRemoteDCsForLocalConsistencyLevel()
 
       new TokenAwarePolicy(builder.build())
     }
 
-    def getCluster = () => {
+    def getCluster: () => Cluster = () => {
       val builder =
         Cluster
           .builder()

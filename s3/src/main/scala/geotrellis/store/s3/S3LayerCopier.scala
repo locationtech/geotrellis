@@ -41,7 +41,8 @@ class S3LayerCopier(
     listing.foreach { s3obj =>
       val request =
         CopyObjectRequest.builder()
-          .copySource(bucket + "/" + s3obj.key)
+          .sourceBucket(bucket)
+          .sourceKey(s3obj.key)
           .destinationBucket(bucket)
           .destinationKey(s3obj.key.replace(s"${from.name}/${from.zoom}", s"${to.name}/${to.zoom}"))
           .build()

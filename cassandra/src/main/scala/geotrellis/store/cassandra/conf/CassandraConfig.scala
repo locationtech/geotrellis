@@ -25,9 +25,7 @@ case class CassandraConfig(
   keyspace: String = "geotrellis",
   replicationStrategy: String = "SimpleStrategy",
   replicationFactor: Int = 1,
-  localDc: String = "datacenter1",
-  usedHostsPerRemoteDc: Int = 0,
-  allowRemoteDcsForLocalConsistencyLevel: Boolean = false
+  localDc: String = "datacenter1"
 )
 
 object CassandraConfig {

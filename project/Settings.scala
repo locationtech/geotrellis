@@ -106,7 +106,7 @@ object Settings {
       case Some((2, 13)) => Nil
       case Some((2, 12)) => Seq(
         compilerPlugin("org.scalamacros" % "paradise" % "2.1.1" cross CrossVersion.full),
-        "org.scala-lang.modules" %% "scala-collection-compat" % "2.7.0"
+        "org.scala-lang.modules" %% "scala-collection-compat" % "2.8.0"
       )
         case x => sys.error(s"Encountered unsupported Scala version ${x.getOrElse("undefined")}")
     }),
@@ -132,6 +132,11 @@ object Settings {
           <id>lossyrob</id>
           <name>Rob Emanuele</name>
           <url>https://github.com/lossyrob/</url>
+        </developer>
+        <developer>
+          <id>pomadchin</id>
+          <name>Grigory Pomadchin</name>
+          <url>https://github.com/pomadchin/</url>
         </developer>
       </developers>
     ),
@@ -273,7 +278,8 @@ object Settings {
       log4jbridge, // CVE-2021-4104, CVE-2020-8908
       scalatest % Test,
       apacheSpark("sql").value % Test
-    )
+    ),
+    libraryDependencySchemes += "org.scala-lang.modules" %% "scala-xml" % "always"
   )
 
   lazy val geotools = Seq(
@@ -357,9 +363,8 @@ object Settings {
     name := "geotrellis-mdoc",
     mdocIn := new File("docs-mdoc"),
     mdocOut := new File("website/docs"),
-    mdocVariables := Map(
-      "VERSION" -> (ThisBuild / version).value
-    )
+    mdocVariables := Map("VERSION" -> (ThisBuild / version).value),
+    libraryDependencySchemes += "org.scala-lang.modules" %% "scala-xml" % "always"
   )
 
   lazy val proj4 = Seq(
