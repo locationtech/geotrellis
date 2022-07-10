@@ -83,7 +83,8 @@ object CassandraRDDWriter {
         .whereColumn("key").isEqualTo(QueryBuilder.bindMarker())
         .whereColumn("name").isEqualTo(literal(layerId.name))
         .whereColumn("zoom").isEqualTo(literal(layerId.zoom))
-        .build()
+        .asCql()
+
 
     val writeQuery =
       QueryBuilder
@@ -92,7 +93,7 @@ object CassandraRDDWriter {
         .value("zoom", literal(layerId.zoom))
         .value("key", QueryBuilder.bindMarker())
         .value("value", QueryBuilder.bindMarker())
-        .build()
+        .asCql()
 
     val _recordCodec = KeyValueRecordCodec[K, V]
     val kwWriterSchema = KryoWrapper(writerSchema)
@@ -150,9 +151,7 @@ object CassandraRDDWriter {
                 .flatMap(rowToBytes)
                 .map(retire)
                 .parJoinUnbounded
-                .onComplete {
-                  fs2.Stream eval instance.closeAsync[IO]
-                }
+                .onComplete { fs2.Stream eval session.closeF[IO] }
 
               results
                 .compile

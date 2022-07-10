@@ -16,10 +16,23 @@
 
 package geotrellis.store
 
+import cats.effect.Async
+import cats.syntax.functor._
+import com.datastax.oss.driver.api.core.CqlSession
+import com.datastax.oss.driver.api.core.cql.{AsyncResultSet, Statement}
+
 import java.math.BigInteger
+import java.util.concurrent.CompletableFuture
 
 package object cassandra {
-  implicit def bigToBig(i: BigInt): BigInteger = {
-    new BigInteger(i.toByteArray)
+  implicit def bigToBig(i: BigInt): BigInteger = new BigInteger(i.toByteArray)
+
+  implicit class CompletableFutureOps[T](val self: CompletableFuture[T]) extends AnyVal {
+    def liftTo[F[_]: Async]: F[T] = Async[F].fromCompletableFuture(Async[F].delay(self))
+  }
+
+  implicit class CqlSessionOps(val self: CqlSession) extends AnyVal {
+    def closeF[F[_]: Async]: F[Unit] = self.closeAsync().toCompletableFuture.liftTo.void
+    def executeF[F[_]: Async](statement: Statement[_]): F[AsyncResultSet] = self.executeAsync(statement).toCompletableFuture.liftTo
   }
 }

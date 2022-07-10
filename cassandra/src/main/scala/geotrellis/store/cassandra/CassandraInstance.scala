@@ -80,9 +80,9 @@ trait CassandraInstance extends Serializable {
     try block(session) finally session.close()
   }
 
-  def closeAsync[F[_]: Async]: F[Unit] = Async[F].fromCompletableFuture(Async[F].delay(session.closeAsync().toCompletableFuture)).void
+  def closeAsync[F[_]: Async]: F[Unit] = session.closeF
 
-  def close: Unit = session.close()
+  def close(): Unit = session.close()
 }
 
 case class BaseCassandraInstance(
@@ -134,7 +134,7 @@ object Cassandra {
   implicit def instanceToSession[T <: CassandraInstance](instance: T): CqlSession = instance.session
 
   def withCassandraInstance[T <: CassandraInstance, K](instance: T)(block: T => K): K = block(instance)
-  def withCassandraInstanceDo[T <: CassandraInstance, K](instance: T)(block: T => K): K = try block(instance) finally instance.close
+  def withCassandraInstanceDo[T <: CassandraInstance, K](instance: T)(block: T => K): K = try block(instance) finally instance.close()
 
   def withBaseCassandraInstance[K](hosts: Seq[String],
                                    username: String,
@@ -155,7 +155,7 @@ object Cassandra {
                                      password: String,
                                      cassandraConfig: CassandraConfig)(block: CassandraInstance => K): K = {
     val instance = BaseCassandraInstance(hosts, username, password, cassandraConfig)
-    try block(instance) finally instance.close
+    try block(instance) finally instance.close()
   }
   def withBaseCassandraInstanceDo[K](hosts: Seq[String],
                                      username: String,

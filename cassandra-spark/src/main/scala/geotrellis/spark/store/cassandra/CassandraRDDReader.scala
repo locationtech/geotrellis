@@ -68,7 +68,7 @@ object CassandraRDDReader {
       .whereColumn("key").isEqualTo(QueryBuilder.bindMarker())
       .whereColumn("name").isEqualTo(literal(layerId.name))
       .whereColumn("zoom").isEqualTo(literal(layerId.zoom))
-      .toString
+      .asCql()
 
     sc.parallelize(bins, bins.size)
       .mapPartitions { partition: Iterator[Seq[(BigInt, BigInt)]] =>
