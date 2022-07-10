@@ -89,7 +89,7 @@ object CassandraRDDReader {
           }
 
           /** Close partition session */
-          (result ++ Iterator({ session.close(); Seq.empty[(K, V)] })).flatten
+          (result ++ Iterator({ session.closeAsync(); Seq.empty[(K, V)] })).flatten
         }
       }
   }

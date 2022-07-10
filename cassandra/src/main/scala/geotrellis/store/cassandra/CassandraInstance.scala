@@ -16,9 +16,6 @@
 
 package geotrellis.store.cassandra
 
-import cats.effect.Async
-import cats.syntax.functor._
-
 import com.datastax.oss.driver.api.core.`type`.codec.registry.MutableCodecRegistry
 import geotrellis.store.cassandra.conf.CassandraConfig
 import com.datastax.oss.driver.api.core.CqlSession
@@ -77,12 +74,10 @@ trait CassandraInstance extends Serializable {
   /** With session close */
   def withSessionDo[T](block: CqlSession => T): T = {
     val session = getSession()
-    try block(session) finally session.close()
+    try block(session) finally session.closeAsync()
   }
 
-  def closeAsync[F[_]: Async]: F[Unit] = session.closeF
-
-  def close(): Unit = session.close()
+  def closeAsync = session.closeAsync()
 }
 
 case class BaseCassandraInstance(
@@ -134,7 +129,7 @@ object Cassandra {
   implicit def instanceToSession[T <: CassandraInstance](instance: T): CqlSession = instance.session
 
   def withCassandraInstance[T <: CassandraInstance, K](instance: T)(block: T => K): K = block(instance)
-  def withCassandraInstanceDo[T <: CassandraInstance, K](instance: T)(block: T => K): K = try block(instance) finally instance.close()
+  def withCassandraInstanceDo[T <: CassandraInstance, K](instance: T)(block: T => K): K = try block(instance) finally instance.closeAsync()
 
   def withBaseCassandraInstance[K](hosts: Seq[String],
                                    username: String,
@@ -155,7 +150,7 @@ object Cassandra {
                                      password: String,
                                      cassandraConfig: CassandraConfig)(block: CassandraInstance => K): K = {
     val instance = BaseCassandraInstance(hosts, username, password, cassandraConfig)
-    try block(instance) finally instance.close()
+    try block(instance) finally instance.closeAsync()
   }
   def withBaseCassandraInstanceDo[K](hosts: Seq[String],
                                      username: String,

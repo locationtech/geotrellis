@@ -151,7 +151,7 @@ object CassandraRDDWriter {
                 .flatMap(rowToBytes)
                 .map(retire)
                 .parJoinUnbounded
-                .onComplete { fs2.Stream eval session.closeF[IO] }
+                .onComplete { fs2.Stream eval IO(session.closeAsync) }
 
               results
                 .compile
