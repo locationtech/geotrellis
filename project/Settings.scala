@@ -283,7 +283,7 @@ object Settings {
       scalatest % Test,
       apacheSpark("sql").value % Test
     ),
-    libraryDependencySchemes += "org.scala-lang.modules" %% "scala-xml" % "always"
+    libraryDependencySchemes += "org.scala-lang.modules" %% "scala-xml" % VersionScheme.Always
   )
 
   lazy val geotools = Seq(
@@ -368,7 +368,7 @@ object Settings {
     mdocIn := new File("docs-mdoc"),
     mdocOut := new File("website/docs"),
     mdocVariables := Map("VERSION" -> (ThisBuild / version).value),
-    libraryDependencySchemes += "org.scala-lang.modules" %% "scala-xml" % "always"
+    libraryDependencySchemes += "org.scala-lang.modules" %% "scala-xml" % VersionScheme.Always
   )
 
   lazy val proj4 = Seq(
