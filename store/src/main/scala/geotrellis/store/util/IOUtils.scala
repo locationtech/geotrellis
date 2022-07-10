@@ -54,8 +54,19 @@ object IOUtils {
                    (implicit runtime: unsafe.IORuntime): Vector[(K, V)] =
     parJoinEBO[K, V](ranges)(readFunc)(_ => false)
 
+  def parJoinIO[K, V](ranges: Iterator[(BigInt, BigInt)])
+                   (readFunc: BigInt => IO[Vector[(K, V)]])
+                   (implicit runtime: unsafe.IORuntime): Vector[(K, V)] =
+    parJoinIoEBO[K, V](ranges)(readFunc)(_ => false)
+
   private[geotrellis] def parJoinEBO[K, V](ranges: Iterator[(BigInt, BigInt)])
                                           (readFunc: BigInt => Vector[(K, V)])
+                                          (backOffPredicate: Throwable => Boolean)
+                                          (implicit runtime: unsafe.IORuntime): Vector[(K, V)] =
+    parJoinIoEBO(ranges)(i => IO.blocking(readFunc(i)))(backOffPredicate)
+
+  private[geotrellis] def parJoinIoEBO[K, V](ranges: Iterator[(BigInt, BigInt)])
+                                          (readFunc: BigInt => IO[Vector[(K, V)]])
                                           (backOffPredicate: Throwable => Boolean)
                                           (implicit runtime: unsafe.IORuntime): Vector[(K, V)] = {
     val indices: Iterator[BigInt] = ranges.flatMap { case (start, end) =>
@@ -65,7 +76,7 @@ object IOUtils {
     val index: fs2.Stream[IO, BigInt] = fs2.Stream.fromIterator[IO](indices, chunkSize = 1)
 
     val readRecord: BigInt => fs2.Stream[IO, Vector[(K, V)]] = { index =>
-      fs2.Stream eval IO.blocking { readFunc(index) }.retryEBO { backOffPredicate }
+      fs2.Stream eval readFunc(index).retryEBO { backOffPredicate }
     }
 
     index

@@ -198,6 +198,6 @@ class CassandraAttributeStore(val instance: CassandraInstance, val attributeKeys
         .whereColumn("layerName").isEqualTo(literal(layerName))
         .build()
 
-    session.execute(query).asScala.map { _.getInt("layerZoom") }.toList.distinct
+    session.execute(query).asScala.map(_.getInt("layerZoom")).toList.distinct
   }
 }

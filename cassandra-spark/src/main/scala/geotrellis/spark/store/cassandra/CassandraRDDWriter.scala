@@ -24,7 +24,7 @@ import geotrellis.spark.store._
 import geotrellis.spark.util.KryoWrapper
 import geotrellis.store.util.IORuntimeTransient
 
-import com.datastax.oss.driver.api.core.cql.ResultSet
+import com.datastax.oss.driver.api.core.cql.AsyncResultSet
 import com.datastax.oss.driver.api.querybuilder.QueryBuilder
 import com.datastax.oss.driver.api.querybuilder.QueryBuilder.literal
 import com.datastax.oss.driver.api.querybuilder.SchemaBuilder
@@ -36,8 +36,6 @@ import org.apache.spark.rdd.RDD
 
 import java.nio.ByteBuffer
 import java.math.BigInteger
-
-import scala.collection.JavaConverters._
 
 object CassandraRDDWriter {
   def write[K: AvroRecordCodec, V: AvroRecordCodec](
@@ -116,18 +114,19 @@ object CassandraRDDWriter {
               implicit val ioRuntime: unsafe.IORuntime = runtime
 
               def elaborateRow(row: (BigInt, Vector[(K,V)])): fs2.Stream[IO, (BigInt, Vector[(K,V)])] = {
-                fs2.Stream eval IO.blocking {
+                fs2.Stream eval {
                   val (key, current) = row
-                  val updated = LayerWriter.updateRecords(mergeFunc, current, existing = {
-                    val oldRow = session.execute(readStatement.bind(key: BigInteger))
-                    if (oldRow.asScala.nonEmpty) {
-                      val bytes = oldRow.one().getByteBuffer("value").array()
-                      val schema = kwWriterSchema.value.getOrElse(_recordCodec.schema)
-                      AvroEncoder.fromBinary(schema, bytes)(_recordCodec)
-                    } else Vector.empty
+                  val updated = LayerWriter.updateRecordsM(mergeFunc, current, existing = {
+                    session.executeF[IO](readStatement.bind(key: BigInteger)).map { oldRow =>
+                      if (oldRow.nonEmpty) {
+                        val bytes = oldRow.one().getByteBuffer("value").array()
+                        val schema = kwWriterSchema.value.getOrElse(_recordCodec.schema)
+                        AvroEncoder.fromBinary(schema, bytes)(_recordCodec)
+                      } else Vector.empty
+                    }
                   })
 
-                  (key, updated)
+                  updated.map(key -> _)
                 }
               }
 
@@ -139,11 +138,9 @@ object CassandraRDDWriter {
                 }
               }
 
-              def retire(row: (BigInt, ByteBuffer)): fs2.Stream[IO, ResultSet] = {
+              def retire(row: (BigInt, ByteBuffer)): fs2.Stream[IO, AsyncResultSet] = {
                 val (id, value) = row
-                fs2.Stream eval IO.blocking {
-                  session.execute(writeStatement.bind(id: BigInteger, value))
-                }
+                fs2.Stream eval session.executeF[IO](writeStatement.bind(id: BigInteger, value))
               }
 
               val results = rows

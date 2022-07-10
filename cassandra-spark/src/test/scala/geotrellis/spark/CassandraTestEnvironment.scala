@@ -33,7 +33,7 @@ trait CassandraTestEnvironment extends TestEnvironment { self: Suite =>
     super.beforeAll()
     try {
       val session = BaseCassandraInstance(Seq("127.0.0.1")).getSession()
-      session.close()
+      session.closeAsync()
     } catch {
       case e: Exception =>
         println("\u001b[0;33mA script for setting up the Cassandra environment necessary to run these tests can be found at scripts/cassandraTestDB.sh - requires a working docker setup\u001b[m")

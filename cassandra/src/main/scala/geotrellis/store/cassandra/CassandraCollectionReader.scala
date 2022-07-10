@@ -29,7 +29,6 @@ import org.apache.avro.Schema
 import com.datastax.oss.driver.api.querybuilder.QueryBuilder
 import com.datastax.oss.driver.api.querybuilder.QueryBuilder.literal
 
-import scala.collection.JavaConverters._
 import scala.reflect.ClassTag
 import java.math.BigInteger
 
@@ -68,14 +67,15 @@ object CassandraCollectionReader {
     instance.withSessionDo { session =>
       val statement = session.prepare(query)
 
-      IOUtils.parJoin[K, V](ranges.iterator) { index: BigInt =>
-        val row = session.execute(statement.bind(index: BigInteger))
-        if (row.asScala.nonEmpty) {
-          val bytes = row.one().getByteBuffer("value").array()
-          val recs = AvroEncoder.fromBinary(writerSchema.getOrElse(_recordCodec.schema), bytes)(_recordCodec)
-          if (filterIndexOnly) recs
-          else recs.filter { row => includeKey(row._1) }
-        } else Vector.empty
+      IOUtils.parJoinIO[K, V](ranges.iterator) { index: BigInt =>
+        session.executeF[IO](statement.bind(index: BigInteger)).map { row =>
+          if (row.nonEmpty) {
+            val bytes = row.one().getByteBuffer("value").array()
+            val recs = AvroEncoder.fromBinary(writerSchema.getOrElse(_recordCodec.schema), bytes)(_recordCodec)
+            if (filterIndexOnly) recs
+            else recs.filter { row => includeKey(row._1) }
+          } else Vector.empty
+        }
       }
     }: Seq[(K, V)]
   }

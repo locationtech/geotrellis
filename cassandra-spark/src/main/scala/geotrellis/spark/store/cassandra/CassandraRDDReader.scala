@@ -32,7 +32,6 @@ import org.apache.avro.Schema
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
-import scala.collection.JavaConverters._
 import scala.reflect.ClassTag
 import java.math.BigInteger
 
@@ -77,14 +76,15 @@ object CassandraRDDReader {
           val statement = session.prepare(query)
 
           val result = partition map { seq =>
-            IOUtils.parJoin[K, V](seq.iterator) { index: BigInt =>
-              val row = session.execute(statement.bind(index: BigInteger))
-              if (row.asScala.nonEmpty) {
-                val bytes = row.one().getByteBuffer("value").array()
-                val recs = AvroEncoder.fromBinary(kwWriterSchema.value.getOrElse(_recordCodec.schema), bytes)(_recordCodec)
-                if (filterIndexOnly) recs
-                else recs.filter { row => includeKey(row._1) }
-              } else Vector.empty
+            IOUtils.parJoinIO[K, V](seq.iterator) { index: BigInt =>
+              session.executeF[IO](statement.bind(index: BigInteger)).map { row =>
+                if (row.nonEmpty) {
+                  val bytes = row.one().getByteBuffer("value").array()
+                  val recs = AvroEncoder.fromBinary(kwWriterSchema.value.getOrElse(_recordCodec.schema), bytes)(_recordCodec)
+                  if (filterIndexOnly) recs
+                  else recs.filter { row => includeKey(row._1) }
+                } else Vector.empty
+              }
             }
           }
 
