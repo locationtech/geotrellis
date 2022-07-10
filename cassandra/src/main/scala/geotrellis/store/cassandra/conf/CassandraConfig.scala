@@ -24,8 +24,7 @@ case class CassandraConfig(
   catalog: String = "metadata",
   keyspace: String = "geotrellis",
   replicationStrategy: String = "SimpleStrategy",
-  replicationFactor: Int = 1,
-  localDc: String = "datacenter1"
+  replicationFactor: Int = 1
 )
 
 object CassandraConfig {

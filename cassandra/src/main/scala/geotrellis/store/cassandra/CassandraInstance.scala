@@ -16,7 +16,6 @@
 
 package geotrellis.store.cassandra
 
-import com.datastax.oss.driver.api.core.`type`.codec.registry.MutableCodecRegistry
 import geotrellis.store.cassandra.conf.CassandraConfig
 import com.datastax.oss.driver.api.core.CqlSession
 
@@ -24,8 +23,6 @@ import scala.collection.JavaConverters._
 import java.net.{InetSocketAddress, URI}
 
 object CassandraInstance {
-  @volatile private var bigIntegerRegistered: Boolean = false
-
   def apply(uri: URI): CassandraInstance = {
     import geotrellis.util.UriUtils._
 
@@ -47,17 +44,6 @@ trait CassandraInstance extends Serializable {
   def getSession: () => CqlSession
 
   @transient lazy val session: CqlSession = getSession()
-
-  def registerBigInteger(): Unit = {
-    if (!CassandraInstance.bigIntegerRegistered) {
-      session
-        .getContext
-        .getCodecRegistry
-        .asInstanceOf[MutableCodecRegistry]
-        .register(BigIntegerIffBigint.instance)
-      CassandraInstance.bigIntegerRegistered = true
-    }
-  }
 
   def ensureKeyspaceExists(keyspace: String, session: CqlSession): Unit =
     session.execute(
