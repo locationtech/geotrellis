@@ -19,14 +19,14 @@ package geotrellis.layer
 import geotrellis.raster._
 import geotrellis.vector._
 import spire.math.Integral
-import _root_.io.circe.{Encoder, Decoder}
-import _root_.io.circe.generic.semiauto.{deriveEncoder, deriveDecoder}
+import _root_.io.circe.generic.JsonCodec
 
 /**
  * Defines tiled raster layout
  * @param extent      extent covered by the layout tiles, could be greater than extent of data in the layer
  * @param tileLayout  tile layout (tile cols, tile rows, tile pixel size)
  */
+@JsonCodec
 case class LayoutDefinition(override val extent: Extent, tileLayout: TileLayout) extends GridExtent[Long](extent, tileLayout.cellSize(extent)) {
 
   /** Transformation between tile addressing and map coordinate addressing for for this layout */
@@ -70,10 +70,6 @@ case class LayoutDefinition(override val extent: Extent, tileLayout: TileLayout)
 }
 
 object LayoutDefinition {
-  // TODO: revert back to the @JsonCodec once we don't need Shapeless 2.3.3 compatibility
-  implicit lazy val layoutDefinitionEncoder: Encoder[LayoutDefinition] = deriveEncoder
-  implicit lazy val layoutDefinitionDecoder: Decoder[LayoutDefinition] = deriveDecoder
-
   /**
    * Divides given RasterExtent into a TileLayout given a required tileSize.
    * Since padding may be required on the lower/right tiles to preserve the original resolution of the
