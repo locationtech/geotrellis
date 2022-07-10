@@ -128,7 +128,7 @@ class MultiPointSpec extends AnyFunSpec with Matchers {
     it ("should union with an empty MultiPoint and return a MultiPointResult") {
       val mp1 = MultiPoint(Point(1,1))
       val mp2 = MultiPoint.EMPTY
-      mp1 | mp2 shouldBe PointResult(Point(1,1))
+      mp1 | mp2 shouldBe MultiPointResult(MultiPoint(Point(1,1)))
     }
 
     it ("should union with a MultiPoint and return a PointResult") {
@@ -158,7 +158,7 @@ class MultiPointSpec extends AnyFunSpec with Matchers {
     it ("should union with an empty MultiLineString and return a MultiPointResult") {
       val mp = MultiPoint(Seq(Point(1,1)))
       val ml = MultiLineString(Seq())
-      mp | ml shouldBe PointResult(Point(1,1))
+      mp | ml shouldBe MultiPointResult(MultiPoint(Seq(Point(1,1))))
     }
 
     it ("should union with a MultiLineString and return a MultiPoint") {
@@ -188,7 +188,7 @@ class MultiPointSpec extends AnyFunSpec with Matchers {
    it ("should union with an empty MultiPolygon and return a MultiPointResult") {
       val mpt = MultiPoint(Seq(Point(1,1)))
       val mp = MultiPolygon(Seq())
-      mpt | mp shouldBe PointResult(Point(1,1))
+      mpt | mp shouldBe MultiPointResult(MultiPoint(Seq(Point(1,1))))
     }
 
     it ("should union with a MultiPolygon and return a PolygonResult") {
