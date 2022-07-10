@@ -173,14 +173,6 @@ object Settings {
     ExclusionRule("org.jaitools", "jt-utils")
   )
 
-  lazy val excludedJackson = List(
-    ExclusionRule("com.fasterxml.jackson.core"),
-    ExclusionRule("com.fasterxml.jackson.datatype"),
-    ExclusionRule("com.fasterxml.jackson.dataformat"),
-    ExclusionRule("com.fasterxml.jackson.jaxrs"),
-    ExclusionRule("com.fasterxml.jackson.module")
-  )
-
   lazy val accumulo = Seq(
     name := "geotrellis-accumulo",
     libraryDependencies ++= Seq(
@@ -237,11 +229,10 @@ object Settings {
       cassandraDriverCore,
       cassandraDriverQueryBuilder
     ) map (_ excludeAll(
-      ExclusionRule("org.jboss.netty"),
       ExclusionRule("io.netty"),
       ExclusionRule("org.slf4j"),
-      ExclusionRule("com.typesafe.akka")
-    )) map (_ excludeAll(excludedJackson: _*)),
+      ExclusionRule("com.fasterxml.jackson.core")
+    )),
     console / initialCommands :=
       """
       import geotrellis.proj4._
@@ -259,11 +250,10 @@ object Settings {
       cassandraDriverCore,
       cassandraDriverQueryBuilder
     ) map (_ excludeAll(
-      ExclusionRule("org.jboss.netty"),
       ExclusionRule("io.netty"),
       ExclusionRule("org.slf4j"),
-      ExclusionRule("com.typesafe.akka")
-    )) map (_ excludeAll(excludedJackson: _*)),
+      ExclusionRule("com.fasterxml.jackson.core")
+    )),
     libraryDependencies ++= Seq(
       hadoopClient % Provided,
       apacheSpark("core").value % Provided,

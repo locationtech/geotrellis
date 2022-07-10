@@ -140,11 +140,6 @@ object Dependencies {
   val jacksonAnnotations  = "com.fasterxml.jackson.core"    % "jackson-annotations"      % "2.6.7"
   val jacksonModuleScala  = "com.fasterxml.jackson.module" %% "jackson-module-scala"     % "2.6.7"
 
-  val jacksonCore212        = "com.fasterxml.jackson.core"    % "jackson-core"         % "2.10.0"
-  val jacksonDatabind212    = "com.fasterxml.jackson.core"    % "jackson-databind"     % "2.10.0"
-  val jacksonAnnotations212 = "com.fasterxml.jackson.core"    % "jackson-annotations"  % "2.10.0"
-  val jacksonModuleScala212 = "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.10.0"
-
   val shapeless           = "com.chuusai"  %% "shapeless" % "2.3.9"
 
   // aligned with the GeoTools version
