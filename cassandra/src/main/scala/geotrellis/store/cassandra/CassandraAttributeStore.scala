@@ -18,7 +18,6 @@ package geotrellis.store.cassandra
 
 import geotrellis.store._
 import geotrellis.store.cassandra.conf.CassandraConfig
-import com.datastax.oss.driver.api.core.cql.ResultSet
 import com.datastax.oss.driver.api.querybuilder.QueryBuilder
 import com.datastax.oss.driver.api.querybuilder.QueryBuilder.literal
 import com.datastax.oss.driver.api.querybuilder.SchemaBuilder
@@ -51,24 +50,6 @@ class CassandraAttributeStore(val instance: CassandraInstance, val attributeKeys
         .withColumn("value", DataTypes.TEXT)
         .build()
     )
-  }
-
-  private def fetch(layerId: Option[LayerId], attributeName: String): ResultSet = instance.withSessionDo { session =>
-    val query =
-      layerId match {
-        case Some(id) =>
-          QueryBuilder.selectFrom(attributeKeyspace, attributeTable)
-            .column("value")
-            .whereColumn("layerName").isEqualTo(literal(id.name))
-            .whereColumn("layerZoom").isEqualTo(literal(id.zoom))
-            .whereColumn("name").isEqualTo(literal(attributeName))
-        case None =>
-          QueryBuilder.selectFrom(attributeKeyspace, attributeTable)
-            .column("value")
-            .whereColumn("name").isEqualTo(literal(attributeName))
-      }
-
-    session.execute(query.build())
   }
 
   private def delete(layerId: LayerId, attributeName: Option[String]): Unit = instance.withSessionDo { session =>
