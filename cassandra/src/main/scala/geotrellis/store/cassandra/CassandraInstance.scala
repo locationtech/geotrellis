@@ -40,7 +40,7 @@ object CassandraInstance {
 trait CassandraInstance extends Serializable {
   val cassandraConfig: CassandraConfig
 
-  /** Functions to get session for custom logic, where function wrapping can have an impact on speed */
+  /** Session constructor */
   def getSession: () => CqlSession
 
   @transient lazy val session: CqlSession = getSession()
