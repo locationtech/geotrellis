@@ -55,7 +55,7 @@ class CassandraValueReader(
     }
 
     def read(key: K): V = instance.withSession { session =>
-      val row = session.execute(statement.bind(keyIndex.toIndex(key): BigInteger)).all()
+      val row = session.execute(statement.bind(keyIndex.toIndex(key).asJava)).all()
       val tiles = row.asScala.map { entry =>
           AvroEncoder.fromBinary(writerSchema, entry.getByteBuffer("value").array())(codec)
         }

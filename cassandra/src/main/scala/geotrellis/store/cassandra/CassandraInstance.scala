@@ -54,7 +54,7 @@ trait CassandraInstance extends Serializable {
   def dropKeyspace(keyspace: String, session: CqlSession): Unit =
     session.execute(s"drop keyspace if exists $keyspace;")
 
-  /** Without session close, for a custom session close */
+  /** Without session close, for a manual session control */
   def withSession[T](block: CqlSession => T): T = block(session)
 
   /** With session close */

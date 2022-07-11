@@ -77,7 +77,7 @@ object CassandraRDDReader {
 
           val result = partition map { seq =>
             IOUtils.parJoinIO[K, V](seq.iterator) { index: BigInt =>
-              session.executeF[IO](statement.bind(index: BigInteger)).map { row =>
+              session.executeF[IO](statement.bind(index.asJava)).map { row =>
                 if (row.nonEmpty) {
                   val bytes = row.one().getByteBuffer("value").array()
                   val recs = AvroEncoder.fromBinary(kwWriterSchema.value.getOrElse(_recordCodec.schema), bytes)(_recordCodec)

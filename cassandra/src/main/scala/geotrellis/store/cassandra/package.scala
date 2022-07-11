@@ -22,18 +22,24 @@ import com.datastax.oss.driver.api.core.CqlSession
 import com.datastax.oss.driver.api.core.cql.{AsyncResultSet, Statement}
 
 import java.math.BigInteger
-import java.util.concurrent.CompletableFuture
+import java.util.concurrent.{CompletableFuture, CompletionStage}
 
 package object cassandra extends Serializable {
-  implicit def bigToBig(i: BigInt): BigInteger = new BigInteger(i.toByteArray)
+  implicit class BigIntOps(val self: BigInt) extends AnyVal {
+    def asJava: BigInteger = new BigInteger(self.toByteArray)
+  }
 
   implicit class CompletableFutureOps[T](val self: CompletableFuture[T]) extends AnyVal {
     def liftTo[F[_]: Async]: F[T] = Async[F].fromCompletableFuture(Async[F].delay(self))
   }
 
+  implicit class CompletionStageOps[T](val self: CompletionStage[T]) extends AnyVal {
+    def liftTo[F[_]: Async]: F[T] = self.toCompletableFuture.liftTo
+  }
+
   implicit class CqlSessionOps(val self: CqlSession) extends AnyVal {
-    def closeF[F[_]: Async]: F[Unit] = self.closeAsync().toCompletableFuture.liftTo.void
-    def executeF[F[_]: Async](statement: Statement[_]): F[AsyncResultSet] = self.executeAsync(statement).toCompletableFuture.liftTo
+    def closeF[F[_]: Async]: F[Unit] = self.closeAsync().liftTo.void
+    def executeF[F[_]: Async](statement: Statement[_]): F[AsyncResultSet] = self.executeAsync(statement).liftTo
   }
 
   implicit class AsyncResultSetOps(val self: AsyncResultSet) extends AnyVal {

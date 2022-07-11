@@ -68,7 +68,7 @@ object CassandraCollectionReader {
       val statement = session.prepare(query)
 
       IOUtils.parJoinIO[K, V](ranges.iterator) { index: BigInt =>
-        session.executeF[IO](statement.bind(index: BigInteger)).map { row =>
+        session.executeF[IO](statement.bind(index.asJava)).map { row =>
           if (row.nonEmpty) {
             val bytes = row.one().getByteBuffer("value").array()
             val recs = AvroEncoder.fromBinary(writerSchema.getOrElse(_recordCodec.schema), bytes)(_recordCodec)

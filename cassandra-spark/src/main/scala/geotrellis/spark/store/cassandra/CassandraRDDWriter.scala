@@ -117,7 +117,7 @@ object CassandraRDDWriter {
                 fs2.Stream eval {
                   val (key, current) = row
                   val updated = LayerWriter.updateRecordsM(mergeFunc, current, existing = {
-                    session.executeF[IO](readStatement.bind(key: BigInteger)).map { oldRow =>
+                    session.executeF[IO](readStatement.bind(key.asJava)).map { oldRow =>
                       if (oldRow.nonEmpty) {
                         val bytes = oldRow.one().getByteBuffer("value").array()
                         val schema = kwWriterSchema.value.getOrElse(_recordCodec.schema)
@@ -140,7 +140,7 @@ object CassandraRDDWriter {
 
               def retire(row: (BigInt, ByteBuffer)): fs2.Stream[IO, AsyncResultSet] = {
                 val (id, value) = row
-                fs2.Stream eval session.executeF[IO](writeStatement.bind(id: BigInteger, value))
+                fs2.Stream eval session.executeF[IO](writeStatement.bind(id.asJava, value))
               }
 
               val results = rows
