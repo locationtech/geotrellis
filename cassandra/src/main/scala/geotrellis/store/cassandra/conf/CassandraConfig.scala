@@ -25,7 +25,12 @@ case class CassandraConfig(
   keyspace: String = "geotrellis",
   replicationStrategy: String = "SimpleStrategy",
   replicationFactor: Int = 1
-)
+) {
+  def replicationOptions: Map[String, AnyRef] = Map(
+    "class" -> replicationStrategy,
+    "replication_factor" -> Int.box(replicationFactor)
+  )
+}
 
 object CassandraConfig {
   lazy val conf: CassandraConfig = ConfigSource.default.at("geotrellis.cassandra").loadOrThrow[CassandraConfig]

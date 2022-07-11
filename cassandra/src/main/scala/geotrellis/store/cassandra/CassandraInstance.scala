@@ -18,6 +18,7 @@ package geotrellis.store.cassandra
 
 import geotrellis.store.cassandra.conf.CassandraConfig
 import com.datastax.oss.driver.api.core.CqlSession
+import com.datastax.oss.driver.api.querybuilder.SchemaBuilder
 
 import scala.collection.JavaConverters._
 import java.net.{InetSocketAddress, URI}
@@ -47,8 +48,11 @@ trait CassandraInstance extends Serializable {
 
   def ensureKeyspaceExists(keyspace: String, session: CqlSession): Unit =
     session.execute(
-      s"create keyspace if not exists ${keyspace} with replication = {'class': '${cassandraConfig.replicationStrategy}', " +
-      s"'replication_factor': ${cassandraConfig.replicationFactor} }"
+      SchemaBuilder
+        .createKeyspace(keyspace)
+        .ifNotExists()
+        .withReplicationOptions(cassandraConfig.replicationOptions.asJava)
+        .build()
     )
 
   def dropKeyspace(keyspace: String, session: CqlSession): Unit =
