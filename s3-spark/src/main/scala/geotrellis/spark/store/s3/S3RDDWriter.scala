@@ -77,7 +77,7 @@ class S3RDDWriter(
         val s3Client  = this.s3Client
         val schema = kwWriterSchema.value.getOrElse(_recordCodec.schema)
 
-        implicit val r = runtime
+        implicit val ioRuntime: unsafe.IORuntime = runtime
 
         val rows: fs2.Stream[IO, (String, Vector[(K, V)])] =
           fs2.Stream.fromIterator[IO](partition.map { case (key, value) => (key, value.toVector) }, chunkSize = 1)

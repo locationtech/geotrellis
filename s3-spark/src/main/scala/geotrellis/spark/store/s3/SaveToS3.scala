@@ -87,7 +87,7 @@ object SaveToS3 {
           }, chunkSize = 1
         )
 
-      implicit val r = runtime
+      implicit val ioRuntime: unsafe.IORuntime = runtime
 
       import geotrellis.store.util.IOUtils._
       val write: (PutObjectRequest, RequestBody) => fs2.Stream[IO, PutObjectResponse] =

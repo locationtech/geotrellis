@@ -52,7 +52,7 @@ class S3CollectionReader(
       queryKeyBounds.flatMap(decomposeBounds)
 
     val recordCodec = KeyValueRecordCodec[K, V]
-    implicit val r = runtime
+    implicit val ioRuntime: unsafe.IORuntime = runtime
 
     GTIOUtils.parJoin[K, V](ranges.iterator) { index: BigInt =>
       try {

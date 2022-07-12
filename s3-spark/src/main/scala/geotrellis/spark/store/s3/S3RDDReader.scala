@@ -65,7 +65,7 @@ class S3RDDReader(
 
     sc.parallelize(bins, bins.size)
       .mapPartitions { partition: Iterator[Seq[(BigInt, BigInt)]] =>
-        implicit val r = runtime
+        implicit val ioRuntime: unsafe.IORuntime = runtime
         val s3Client = this.s3Client
         val writerSchema = kwWriterSchema.value.getOrElse(_recordCodec.schema)
         partition flatMap { seq =>
