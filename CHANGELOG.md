@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - Expose Charset in a ShapeFileReader API [#3464](https://github.com/locationtech/geotrellis/pull/3464)
+- Bump Spark version up to 3.2.0 [#3471](https://github.com/locationtech/geotrellis/pull/3471)
 
 ## [3.6.2] - 2022-04-05
 
