@@ -62,7 +62,7 @@ object Dependencies {
   }
 
   def apacheSpark(module: String) = Def.setting {
-    "org.apache.spark"  %% s"spark-$module" % ver("3.1.3", "3.2.1").value
+    "org.apache.spark"  %% s"spark-$module" % "3.2.0"
   }
 
   def scalaReflect(version: String) = "org.scala-lang" % "scala-reflect" % version
