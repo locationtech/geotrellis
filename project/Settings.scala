@@ -427,19 +427,6 @@ object Settings {
       awsSdkS3 excludeAll ExclusionRule("com.fasterxml.jackson.core"),
       scalatest % Test
     ),
-    /** https://github.com/lucidworks/spark-solr/issues/179 */
-    libraryDependencies ++= {
-      val deps = Seq(
-        jacksonCore,
-        jacksonDatabind,
-        jacksonAnnotations
-      )
-      CrossVersion.partialVersion(scalaVersion.value) match {
-        // if Scala 2.12+ is used
-        case Some((2, scalaMajor)) if scalaMajor >= 12 => deps
-        case _ => deps :+ jacksonModuleScala
-      }
-    },
     mimaPreviousArtifacts := Set(
       "org.locationtech.geotrellis" %% "geotrellis-s3" % Version.previousVersion
     ),

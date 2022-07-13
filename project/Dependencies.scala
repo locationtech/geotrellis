@@ -82,7 +82,7 @@ object Dependencies {
   val apacheLang3         = "org.apache.commons"          % "commons-lang3"            % "3.12.0"
   val apacheMath          = "org.apache.commons"          % "commons-math3"            % "3.6.1"
   val chronoscala         = "jp.ne.opt"                  %% "chronoscala"              % "1.0.0"
-  val awsSdkS3            = "software.amazon.awssdk"      % "s3"                       % "2.17.228"
+  val awsSdkS3            = "software.amazon.awssdk"      % "s3"                       % "2.17.230"
   val hadoopClient        = "org.apache.hadoop"           % "hadoop-client"            % Version.hadoop
   val avro                = "org.apache.avro"             % "avro"                     % "1.10.2" // aligned with the Spark version
   val parserCombinators   = "org.scala-lang.modules"     %% "scala-parser-combinators" % "2.1.1"
@@ -134,11 +134,6 @@ object Dependencies {
 
   val gdalBindings        = "org.gdal"                     % "gdal"                    % Version.gdal
   val gdalWarp            = "com.azavea.geotrellis"        % "gdal-warp-bindings"      % Version.gdalWarp
-
-  val jacksonCore         = "com.fasterxml.jackson.core"    % "jackson-core"             % "2.6.7"
-  val jacksonDatabind     = "com.fasterxml.jackson.core"    % "jackson-databind"         % "2.6.7"
-  val jacksonAnnotations  = "com.fasterxml.jackson.core"    % "jackson-annotations"      % "2.6.7"
-  val jacksonModuleScala  = "com.fasterxml.jackson.module" %% "jackson-module-scala"     % "2.6.7"
 
   val shapeless           = "com.chuusai"  %% "shapeless" % "2.3.9"
 
