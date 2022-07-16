@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Migration to CE3 and other major dependencies upgrade [#3389](https://github.com/locationtech/geotrellis/pull/3389)
 - Revert graceful JTS fall back and lazy Circe encoders [#3463](https://github.com/locationtech/geotrellis/issues/3463)
 - Update Cassandra up to 4.x [#3382](https://github.com/locationtech/geotrellis/issues/3382)
+- Accumulo update up to 1.10.x [#3476](https://github.com/locationtech/geotrellis/pull/3476)
 
 ## [3.6.3] - 2022-07-12
 
