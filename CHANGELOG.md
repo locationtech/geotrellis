@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Add RasterSourceRDD.tiledLayerRDD within the geometry [#3474](https://github.com/locationtech/geotrellis/pull/3474)
+
 ## [3.6.3] - 2022-07-12
 
 ### Changed
