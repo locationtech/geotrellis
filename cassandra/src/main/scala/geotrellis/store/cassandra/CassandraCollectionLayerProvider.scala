@@ -22,7 +22,6 @@ import geotrellis.util.UriUtils
 
 import java.net.URI
 
-
 /**
  * Provides [[CassandraAttributeStore]] instance for URI with `cassandra` scheme.
  *  ex: `cassandra://[user:password@]zookeeper[:port][/keyspace][?attributes=table1[&layers=table2]]`

@@ -28,15 +28,15 @@ import geotrellis.store.cog.vrt.VRT.IndexedSimpleSource
 import geotrellis.store.index.{Index, KeyIndex}
 import geotrellis.store.s3._
 import geotrellis.spark.store.cog._
-import geotrellis.store.util.BlockingThreadPool
+import geotrellis.store.util.IORuntimeTransient
 
 import software.amazon.awssdk.services.s3.model.{GetObjectRequest, PutObjectRequest, S3Exception}
 import software.amazon.awssdk.services.s3._
 import software.amazon.awssdk.core.sync.RequestBody
 import org.apache.commons.io.IOUtils
 import _root_.io.circe._
+import cats.effect._
 
-import scala.concurrent.ExecutionContext
 import scala.util.Try
 import scala.reflect.{ClassTag, classTag}
 
@@ -45,7 +45,7 @@ class S3COGLayerWriter(
   bucket: String,
   keyPrefix: String,
   s3Client: => S3Client = S3ClientProducer.get(),
-  executionContext: => ExecutionContext = BlockingThreadPool.executionContext
+  runtime: => unsafe.IORuntime = IORuntimeTransient.IORuntime
 ) extends COGLayerWriter {
 
   def writeCOGLayer[
@@ -74,7 +74,7 @@ class S3COGLayerWriter(
     attributeStore.writeCOGLayerAttributes(layerId0, header, storageMetadata)
 
     // Make S3COGAsyncWriter
-    val asyncWriter = new S3COGAsyncWriter[V](bucket, p => p, executionContext)
+    val asyncWriter = new S3COGAsyncWriter[V](bucket, p => p, runtime)
 
     val retryCheck: Throwable => Boolean = {
       case e: S3Exception if e.statusCode == 503 => true
@@ -135,8 +135,8 @@ object S3COGLayerWriter {
 class S3COGAsyncWriter[V <: CellGrid[Int]: GeoTiffReader](
   bucket: String,
   putObjectModifier: PutObjectRequest => PutObjectRequest,
-  executionContext: => ExecutionContext = BlockingThreadPool.executionContext
-) extends  AsyncWriter[S3Client, GeoTiff[V], (PutObjectRequest, RequestBody)](executionContext) {
+  runtime: => unsafe.IORuntime = IORuntimeTransient.IORuntime
+) extends AsyncWriter[S3Client, GeoTiff[V], (PutObjectRequest, RequestBody)](runtime) {
 
   def readRecord(
     client: S3Client,

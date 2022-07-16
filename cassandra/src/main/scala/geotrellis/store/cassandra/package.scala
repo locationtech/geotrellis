@@ -16,10 +16,34 @@
 
 package geotrellis.store
 
-import java.math.BigInteger
+import cats.effect.Async
+import cats.syntax.functor._
+import com.datastax.oss.driver.api.core.CqlSession
+import com.datastax.oss.driver.api.core.cql.{AsyncResultSet, Statement}
 
-package object cassandra {
-  implicit def bigToBig(i: BigInt): BigInteger = {
-    new BigInteger(i.toByteArray)
+import java.math.BigInteger
+import java.util.concurrent.{CompletableFuture, CompletionStage}
+
+package object cassandra extends Serializable {
+  implicit class BigIntOps(val self: BigInt) extends AnyVal {
+    def asJava: BigInteger = new BigInteger(self.toByteArray)
+  }
+
+  implicit class CompletableFutureOps[T](val self: CompletableFuture[T]) extends AnyVal {
+    def liftTo[F[_]: Async]: F[T] = Async[F].fromCompletableFuture(Async[F].delay(self))
+  }
+
+  implicit class CompletionStageOps[T](val self: CompletionStage[T]) extends AnyVal {
+    def liftTo[F[_]: Async]: F[T] = self.toCompletableFuture.liftTo
+  }
+
+  implicit class CqlSessionOps(val self: CqlSession) extends AnyVal {
+    def closeF[F[_]: Async]: F[Unit] = self.closeAsync().liftTo.void
+    def executeF[F[_]: Async](statement: Statement[_]): F[AsyncResultSet] = self.executeAsync(statement).liftTo
+  }
+
+  implicit class AsyncResultSetOps(val self: AsyncResultSet) extends AnyVal {
+    def nonEmpty: Boolean = self.remaining() > 0 || self.hasMorePages
+    def isEmpty: Boolean = !nonEmpty
   }
 }

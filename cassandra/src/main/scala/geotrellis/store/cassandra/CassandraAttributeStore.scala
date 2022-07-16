@@ -18,12 +18,10 @@ package geotrellis.store.cassandra
 
 import geotrellis.store._
 import geotrellis.store.cassandra.conf.CassandraConfig
-
-import com.datastax.driver.core.ResultSet
-import com.datastax.driver.core.querybuilder.QueryBuilder
-import com.datastax.driver.core.querybuilder.QueryBuilder.{set, eq => eqs}
-import com.datastax.driver.core.schemabuilder.SchemaBuilder
-import com.datastax.driver.core.DataType._
+import com.datastax.oss.driver.api.querybuilder.QueryBuilder
+import com.datastax.oss.driver.api.querybuilder.QueryBuilder.literal
+import com.datastax.oss.driver.api.querybuilder.SchemaBuilder
+import com.datastax.oss.driver.api.core.`type`.DataTypes
 import io.circe._
 import io.circe.syntax._
 import io.circe.parser._
@@ -46,48 +44,29 @@ class CassandraAttributeStore(val instance: CassandraInstance, val attributeKeys
     instance.ensureKeyspaceExists(attributeKeyspace, session)
     session.execute(
       SchemaBuilder.createTable(attributeKeyspace, attributeTable).ifNotExists()
-        .addPartitionKey("layerName", text)
-        .addClusteringColumn("layerZoom", cint)
-        .addClusteringColumn("name", text)
-        .addColumn("value", text)
+        .withPartitionKey("layerName", DataTypes.TEXT)
+        .withClusteringColumn("layerZoom", DataTypes.INT)
+        .withClusteringColumn("name", DataTypes.TEXT)
+        .withColumn("value", DataTypes.TEXT)
+        .build()
     )
-  }
-
-  private def fetch(layerId: Option[LayerId], attributeName: String): ResultSet = instance.withSessionDo { session =>
-    val query =
-      layerId match {
-        case Some(id) =>
-          QueryBuilder.select.column("value")
-            .from(attributeKeyspace, attributeTable)
-            .where(eqs("layerName", id.name))
-            .and(eqs("layerZoom", id.zoom))
-            .and(eqs("name", attributeName))
-        case None =>
-          QueryBuilder.select.column("value")
-            .from(attributeKeyspace, attributeTable)
-            .where(eqs("name", attributeName))
-      }
-
-    session.execute(query)
   }
 
   private def delete(layerId: LayerId, attributeName: Option[String]): Unit = instance.withSessionDo { session =>
     val query =
       attributeName match {
         case Some(name) =>
-          QueryBuilder.delete()
-            .from(attributeKeyspace, attributeTable)
-            .where(eqs("layerName", layerId.name))
-            .and(eqs("layerZoom", layerId.zoom))
-            .and(eqs("name", name))
+          QueryBuilder.deleteFrom(attributeKeyspace, attributeTable)
+            .whereColumn("layerName").isEqualTo(literal(layerId.name))
+            .whereColumn("layerZoom").isEqualTo(literal(layerId.zoom))
+            .whereColumn("name").isEqualTo(literal(name))
         case None =>
-          QueryBuilder.delete()
-            .from(attributeKeyspace, attributeTable)
-            .where(eqs("layerName", layerId.name))
-            .and(eqs("layerZoom", layerId.zoom))
+          QueryBuilder.deleteFrom(attributeKeyspace, attributeTable)
+            .whereColumn("layerName").isEqualTo(literal(layerId.name))
+            .whereColumn("layerZoom").isEqualTo(literal(layerId.zoom))
       }
 
-    session.execute(query)
+    session.execute(query.build())
 
     attributeName match {
       case Some(attribute) => clearCache(layerId, attribute)
@@ -97,11 +76,12 @@ class CassandraAttributeStore(val instance: CassandraInstance, val attributeKeys
 
   def read[T: Decoder](layerId: LayerId, attributeName: String): T = instance.withSessionDo { session =>
     val query =
-      QueryBuilder.select.column("value")
-        .from(attributeKeyspace, attributeTable)
-        .where(eqs("layerName", layerId.name))
-        .and(eqs("layerZoom", layerId.zoom))
-        .and(eqs("name", attributeName))
+      QueryBuilder.selectFrom(attributeKeyspace, attributeTable)
+        .column("value")
+        .whereColumn("layerName").isEqualTo(literal(layerId.name))
+        .whereColumn("layerZoom").isEqualTo(literal(layerId.zoom))
+        .whereColumn("name").isEqualTo(literal(attributeName))
+        .build()
 
     val values = session.execute(query)
 
@@ -117,9 +97,12 @@ class CassandraAttributeStore(val instance: CassandraInstance, val attributeKeys
   }
 
   def readAll[T: Decoder](attributeName: String): Map[LayerId, T] = instance.withSessionDo { session =>
-    val query = QueryBuilder.select.column("value")
-      .from(attributeKeyspace, attributeTable).allowFiltering()
-      .where(eqs("name", QueryBuilder.bindMarker()))
+    val query =
+      QueryBuilder.selectFrom(attributeKeyspace, attributeTable)
+        .column("value")
+        .allowFiltering()
+        .whereColumn("name").isEqualTo(QueryBuilder.bindMarker())
+        .build()
 
     val preparedStatement = session.prepare(query)
     session.execute(preparedStatement.bind(attributeName))
@@ -134,21 +117,23 @@ class CassandraAttributeStore(val instance: CassandraInstance, val attributeKeys
   def write[T: Encoder](layerId: LayerId, attributeName: String, value: T): Unit = instance.withSessionDo { session =>
     val update =
       QueryBuilder.update(attributeKeyspace, attributeTable)
-        .`with`(set("value", (layerId, value).asJson.noSpaces))
-        .where(eqs("layerName", layerId.name))
-        .and(eqs("layerZoom", layerId.zoom))
-        .and(eqs("name", attributeName))
+        .setColumn("value", literal((layerId, value).asJson.noSpaces))
+        .whereColumn("layerName").isEqualTo(literal(layerId.name))
+        .whereColumn("layerZoom").isEqualTo(literal(layerId.zoom))
+        .whereColumn("name").isEqualTo(literal(attributeName))
+        .build()
 
     session.execute(update)
   }
 
   def layerExists(layerId: LayerId): Boolean = instance.withSessionDo { session =>
     val query =
-      QueryBuilder.select("layerName", "layerZoom")
-        .from(attributeKeyspace, attributeTable)
-        .where(eqs("layerName", layerId.name))
-        .and(eqs("layerZoom", layerId.zoom))
-        .and(eqs("name", AttributeStore.Fields.metadata))
+      QueryBuilder.selectFrom(attributeKeyspace, attributeTable)
+        .columns("layerName", "layerZoom")
+        .whereColumn("layerName").isEqualTo(literal(layerId.name))
+        .whereColumn("layerZoom").isEqualTo(literal(layerId.zoom))
+        .whereColumn("name").isEqualTo(literal(AttributeStore.Fields.metadata))
+        .build()
 
     session.execute(query).asScala.exists { key =>
       val (name, zoom) = key.getString("layerName") -> key.getInt("layerZoom")
@@ -161,7 +146,10 @@ class CassandraAttributeStore(val instance: CassandraInstance, val attributeKeys
   def delete(layerId: LayerId, attributeName: String): Unit = delete(layerId, Some(attributeName))
 
   def layerIds: Seq[LayerId] = instance.withSessionDo { session =>
-    val query = QueryBuilder.select("layerName", "layerZoom").from(attributeKeyspace, attributeTable)
+    val query = QueryBuilder
+      .selectFrom(attributeKeyspace, attributeTable)
+      .columns("layerName", "layerZoom")
+      .build()
 
     session.execute(query).asScala.map { key =>
       val (name, zoom) = key.getString("layerName") -> key.getInt("layerZoom")
@@ -173,20 +161,24 @@ class CassandraAttributeStore(val instance: CassandraInstance, val attributeKeys
 
   def availableAttributes(layerId: LayerId): Seq[String] = instance.withSessionDo { session =>
     val query =
-      QueryBuilder.select.column("name")
-        .from(attributeKeyspace, attributeTable)
-        .where(eqs("layerName", layerId.name))
-        .and(eqs("layerZoom", layerId.zoom))
+      QueryBuilder
+        .selectFrom(attributeKeyspace, attributeTable)
+        .column("name")
+        .whereColumn("layerName").isEqualTo(literal(layerId.name))
+        .whereColumn("layerZoom").isEqualTo(literal(layerId.zoom))
+        .build()
 
     session.execute(query).asScala.map(_.getString("name")).toVector
   }
 
   override def availableZoomLevels(layerName: String): Seq[Int] = instance.withSessionDo { session =>
     val query =
-      QueryBuilder.select.column("layerZoom")
-        .from(attributeKeyspace, attributeTable)
-        .where(eqs("layerName", layerName))
+      QueryBuilder
+        .selectFrom(attributeKeyspace, attributeTable)
+        .column("layerZoom")
+        .whereColumn("layerName").isEqualTo(literal(layerName))
+        .build()
 
-    session.execute(query).asScala.map { _.getInt("layerZoom") }.toList.distinct
+    session.execute(query).asScala.map(_.getInt("layerZoom")).toList.distinct
   }
 }

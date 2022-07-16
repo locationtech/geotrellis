@@ -25,19 +25,19 @@ import org.apache.spark.SparkConf
 import org.scalatest.Suite
 
 trait CassandraTestEnvironment extends TestEnvironment { self: Suite =>
-  override def setKryoRegistrator(conf: SparkConf) =
+  override def setKryoRegistrator(conf: SparkConf): Unit =
     conf.set("spark.kryo.registrator", classOf[KryoRegistrator].getName)
         .set("spark.kryo.registrationRequired", "false")
 
-  override def beforeAll() = {
+  override def beforeAll(): Unit = {
     super.beforeAll()
     try {
-      val session = BaseCassandraInstance(Seq("127.0.0.1")).getSession
+      val session = BaseCassandraInstance(Seq("127.0.0.1")).getSession()
       session.closeAsync()
-      session.getCluster.closeAsync()
     } catch {
       case e: Exception =>
         println("\u001b[0;33mA script for setting up the Cassandra environment necessary to run these tests can be found at scripts/cassandraTestDB.sh - requires a working docker setup\u001b[m")
+        e.printStackTrace()
         cancel()
     }
   }

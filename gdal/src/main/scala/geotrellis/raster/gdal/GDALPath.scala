@@ -118,7 +118,7 @@ object GDALPath {
             // authority is an optional thing and required only for Azure
             val authority =
               url match {
-                case url: UrlWithAuthority => url.authority.userInfo.user.getOrElse(EMPTY)
+                case url: UrlWithAuthority => url.authority.user.getOrElse(EMPTY)
                 case _ => EMPTY
               }
 
@@ -162,7 +162,7 @@ object GDALPath {
   def parse(
     path: String,
     compressedFileDelimiter: Option[String] = "!".some,
-    percentEncoder: PercentEncoder = PercentEncoder(PATH_CHARS_TO_ENCODE ++ Set('%', '?', '#'))
+    percentEncoder: PercentEncoder = PercentEncoder((PATH_CHARS_TO_ENCODE - '/') ++ Set('%', '?', '#'))
   ): GDALPath =
     parseOption(path, compressedFileDelimiter, percentEncoder)
       .getOrElse(throw new MalformedURLException(s"Unable to parse GDALDataPath: $path"))

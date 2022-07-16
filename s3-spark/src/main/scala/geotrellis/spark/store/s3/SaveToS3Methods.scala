@@ -16,13 +16,12 @@
 
 package geotrellis.spark.store.s3
 
-import geotrellis.store.util.BlockingThreadPool
+import geotrellis.store.util.IORuntimeTransient
 import geotrellis.util.MethodExtensions
 
+import cats.effect._
 import software.amazon.awssdk.services.s3.model.PutObjectRequest
 import org.apache.spark.rdd.RDD
-
-import scala.concurrent.ExecutionContext
 
 class SaveToS3Methods[K, V](val self: RDD[(K, V)]) extends MethodExtensions[RDD[(K, V)]] {
 
@@ -31,9 +30,9 @@ class SaveToS3Methods[K, V](val self: RDD[(K, V)]) extends MethodExtensions[RDD[
     *
     * @param keyToUri A function from K (a key) to an S3 URI
     * @param putObjectModifier  Function that will be applied ot S3 PutObjectRequests, so that they can be modified (e.g. to change the ACL settings)
-    * @param executionContext   A function to get execution context
+    * @param runtime   A function to get IORuntime
     */
-  def saveToS3(keyToUri: K => String, putObjectModifier: PutObjectRequest => PutObjectRequest = { p => p }, executionContext: => ExecutionContext = BlockingThreadPool.executionContext)
+  def saveToS3(keyToUri: K => String, putObjectModifier: PutObjectRequest => PutObjectRequest = { p => p }, runtime: => unsafe.IORuntime = IORuntimeTransient.IORuntime)
               (implicit ev: V => Array[Byte]): Unit =
-    SaveToS3(self, keyToUri, putObjectModifier, executionContext = executionContext)
+    SaveToS3(self, keyToUri, putObjectModifier, runtime = runtime)
 }

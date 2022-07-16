@@ -21,20 +21,15 @@ import geotrellis.store.avro._
 import geotrellis.store.avro.codecs._
 import geotrellis.store.hadoop.formats.FilterMapFileInputFormat
 import geotrellis.store.util.IOUtils
-import geotrellis.store.util.BlockingThreadPool
 
+import cats.effect._
 import com.github.blemale.scaffeine.{Cache, Scaffeine}
 import org.apache.avro.Schema
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.io._
 
-import scala.concurrent.ExecutionContext
-
-class HadoopCollectionReader(
-  maxOpenFiles: Int,
-  executionContext: => ExecutionContext = BlockingThreadPool.executionContext
-) extends Serializable {
+class HadoopCollectionReader(maxOpenFiles: Int) extends Serializable {
 
   val readers: Cache[Path, MapFile.Reader] =
     Scaffeine()
@@ -42,8 +37,6 @@ class HadoopCollectionReader(
       .maximumSize(maxOpenFiles.toLong)
       .removalListener[Path, MapFile.Reader] { case (_, v, _) => v.close() }
       .build[Path, MapFile.Reader]()
-
-  implicit val ec: ExecutionContext = executionContext
 
   private def predicate(row: (Path, BigInt, BigInt), index: BigInt): Boolean =
     (index >= row._2) && ((index <= row._3) || (row._3 == -1))
@@ -57,7 +50,7 @@ class HadoopCollectionReader(
     decomposeBounds: KeyBounds[K] => Seq[(BigInt, BigInt)],
     indexFilterOnly: Boolean,
     writerSchema: Option[Schema] = None
-  )(implicit ec: ExecutionContext): Seq[(K, V)] = {
+  )(implicit runtime: unsafe.IORuntime): Seq[(K, V)] = {
     if (queryKeyBounds.isEmpty) return Seq.empty[(K, V)]
 
     val includeKey = (key: K) => KeyBounds.includeKey(queryKeyBounds, key)

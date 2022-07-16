@@ -25,16 +25,15 @@ import geotrellis.proj4.CRS
 
 /** A trait specifying CRS/JSON conversion */
 trait CrsFormats {
-  // TODO: revert back to the @JsonCodec once we don't need Shapeless 2.3.3 compatibility
-  implicit lazy val crsEncoder: Encoder[CRS] =
+  implicit val crsEncoder: Encoder[CRS] =
     Encoder.encodeString.contramap[CRS] { _.toProj4String }
 
-  implicit lazy val crsDecoder: Decoder[CRS] =
+  implicit val crsDecoder: Decoder[CRS] =
     Decoder.decodeString.emap { str =>
       Either.catchNonFatal(CRS.fromString(str)).leftMap(_ => "CRS must be a proj4 string.")
     }
 
-  implicit lazy val linkedCRSEncoder: Encoder[LinkedCRS] =
+  implicit val linkedCRSEncoder: Encoder[LinkedCRS] =
     Encoder.encodeJson.contramap[LinkedCRS] { obj =>
       Json.obj(
         "type" -> "link".asJson,
@@ -45,7 +44,7 @@ trait CrsFormats {
       )
     }
 
-  implicit lazy val linkedCRSDecoder: Decoder[LinkedCRS] =
+  implicit val linkedCRSDecoder: Decoder[LinkedCRS] =
     Decoder.decodeHCursor.emap { c: HCursor =>
       c.downField("type").as[String].flatMap {
         case "link" =>
@@ -60,7 +59,7 @@ trait CrsFormats {
       }.leftMap(_ => "Unable to parse LinkedCRS")
     }
 
-  implicit lazy val namedCRSEncoder: Encoder[NamedCRS] =
+  implicit val namedCRSEncoder: Encoder[NamedCRS] =
     Encoder.encodeJson.contramap[NamedCRS] { obj =>
       Json.obj(
         "type" -> "name".asJson,
@@ -68,7 +67,7 @@ trait CrsFormats {
       )
     }
 
-  implicit lazy val namedCRSDecoder: Decoder[NamedCRS] =
+  implicit val namedCRSDecoder: Decoder[NamedCRS] =
     Decoder.decodeHCursor.emap { c: HCursor =>
       c.downField("type").as[String].flatMap {
         case "name" =>
@@ -83,13 +82,13 @@ trait CrsFormats {
       }.leftMap(_ => "Unable to parse NamedCRS")
     }
 
-  implicit lazy val jsonCrsEncoder: Encoder[JsonCRS] =
+  implicit val jsonCrsEncoder: Encoder[JsonCRS] =
     Encoder.encodeJson.contramap[JsonCRS] {
       case crs: NamedCRS => crs.asJson
       case crs: LinkedCRS => crs.asJson
     }
 
-  implicit lazy val jsonCrsDecoder: Decoder[JsonCRS] = {
+  implicit val jsonCrsDecoder: Decoder[JsonCRS] = {
     Decoder.decodeHCursor.emap { c: HCursor =>
       c.downField("type").as[String].flatMap {
         case "name" => c.as[NamedCRS]

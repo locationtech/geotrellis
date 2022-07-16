@@ -19,18 +19,16 @@ package geotrellis.spark.store.s3
 import geotrellis.layer.SpatialKey
 import geotrellis.store.LayerId
 import geotrellis.store.s3._
-import geotrellis.store.util.BlockingThreadPool
+import geotrellis.store.util.IORuntimeTransient
 
 import software.amazon.awssdk.services.s3.model.{PutObjectRequest, PutObjectResponse, S3Exception}
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.core.sync.RequestBody
 import org.apache.spark.rdd.RDD
-import cats.effect.IO
-import cats.syntax.apply._
+import cats.effect._
 import cats.syntax.either._
 
 import java.net.URI
-import scala.concurrent.ExecutionContext
 
 object SaveToS3 {
   /**
@@ -54,14 +52,14 @@ object SaveToS3 {
     * @param rdd       An RDD of K, Byte-Array pairs (where the byte-arrays contains image data) to send to S3
     * @param putObjectModifier  Function that will be applied ot S3 PutObjectRequests, so that they can be modified (e.g. to change the ACL settings)
     * @param s3Client   A function which returns an S3 Client (real or mock) into-which to save the data
-    * @param executionContext   A function to get execution context
+    * @param runtime   A function to get IORuntime
     */
   def apply[K, V](
     rdd: RDD[(K, V)],
     keyToUri: K => String,
     putObjectModifier: PutObjectRequest => PutObjectRequest = { p => p },
     s3Client: => S3Client = S3ClientProducer.get(),
-    executionContext: => ExecutionContext = BlockingThreadPool.executionContext
+    runtime: => unsafe.IORuntime = IORuntimeTransient.IORuntime
   )(implicit ev: V => Array[Byte]): Unit = {
     val keyToPrefix: K => (String, String) = key => {
       val uri = new URI(keyToUri(key))
@@ -74,7 +72,7 @@ object SaveToS3 {
     rdd.foreachPartition { partition =>
       val s3client = s3Client
       val requests: fs2.Stream[IO, (PutObjectRequest, RequestBody)] =
-        fs2.Stream.fromIterator[IO](
+        fs2.Stream.fromBlockingIterator[IO](
           partition.map { case (key, data) =>
             val bytes = ev(data)
             val (bucket, path) = keyToPrefix(key)
@@ -86,17 +84,15 @@ object SaveToS3 {
             val requestBody = RequestBody.fromBytes(bytes)
 
             (putObjectModifier(request), requestBody)
-          }
+          }, chunkSize = 1
         )
 
-      implicit val ec    = executionContext
-      implicit val timer = IO.timer(ec)
-      implicit val cs    = IO.contextShift(ec)
+      implicit val ioRuntime: unsafe.IORuntime = runtime
 
       import geotrellis.store.util.IOUtils._
       val write: (PutObjectRequest, RequestBody) => fs2.Stream[IO, PutObjectResponse] =
         (request, requestBody) => {
-          fs2.Stream eval IO.shift(ec) *> IO {
+          fs2.Stream eval IO.blocking {
             //request.getInputStream.reset() // reset in case of retransmission to avoid 400 error
             s3client.putObject(request, requestBody)
           }.retryEBO {

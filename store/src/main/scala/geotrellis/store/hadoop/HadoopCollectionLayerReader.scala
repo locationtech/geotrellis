@@ -19,15 +19,15 @@ package geotrellis.store.hadoop
 import geotrellis.layer._
 import geotrellis.layer.{ContextCollection, Metadata}
 import geotrellis.store._
-import geotrellis.store.util.BlockingThreadPool
+import geotrellis.store.util.IORuntimeTransient
 import geotrellis.store.avro._
 import geotrellis.util._
 
+import cats.effect._
 import io.circe._
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 
-import scala.concurrent.ExecutionContext
 import scala.reflect.ClassTag
 
 /**
@@ -39,10 +39,10 @@ class HadoopCollectionLayerReader(
   val attributeStore: AttributeStore,
   conf: Configuration,
   maxOpenFiles: Int = 16,
-  executionContext: => ExecutionContext = BlockingThreadPool.executionContext
+  runtime: => unsafe.IORuntime = IORuntimeTransient.IORuntime
 ) extends CollectionLayerReader[LayerId] {
 
-  @transient implicit lazy val ec: ExecutionContext = executionContext
+  @transient implicit lazy val ioRuntime: unsafe.IORuntime = runtime
 
   def read[
     K: AvroRecordCodec: Boundable: Decoder: ClassTag,

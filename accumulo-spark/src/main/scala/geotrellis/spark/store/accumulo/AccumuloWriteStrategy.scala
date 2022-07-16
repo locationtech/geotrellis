@@ -19,7 +19,7 @@ package geotrellis.spark.store.accumulo
 import geotrellis.store.accumulo._
 import geotrellis.store.hadoop.util._
 import geotrellis.spark.util._
-import geotrellis.store.util.BlockingThreadPool
+import geotrellis.store.util.IORuntimeTransient
 
 import org.apache.hadoop.mapreduce.Job
 import org.apache.hadoop.fs.Path
@@ -28,13 +28,10 @@ import org.apache.accumulo.core.data.{Key, Mutation, Value}
 import org.apache.accumulo.core.client.mapreduce.AccumuloFileOutputFormat
 import org.apache.accumulo.core.client.BatchWriterConfig
 
-import cats.effect.IO
-import cats.syntax.apply._
+import cats.effect._
 import cats.syntax.either._
 
 import java.util.UUID
-
-import scala.concurrent.ExecutionContext
 
 object AccumuloWriteStrategy {
   def DEFAULT = HdfsWriteStrategy("/geotrellis-ingest")
@@ -110,29 +107,28 @@ object HdfsWriteStrategy {
  * @param config Configuration for the BatchWriters
  */
 class SocketWriteStrategy(
-  @transient config: BatchWriterConfig = new BatchWriterConfig().setMaxMemory(128*1024*1024).setMaxWriteThreads(BlockingThreadPool.threads),
-  executionContext: => ExecutionContext = BlockingThreadPool.executionContext
+  @transient config: BatchWriterConfig = new BatchWriterConfig().setMaxMemory(128*1024*1024).setMaxWriteThreads(IORuntimeTransient.ThreadsNumber),
+  runtime: => unsafe.IORuntime = IORuntimeTransient.IORuntime
 ) extends AccumuloWriteStrategy {
   val kwConfig = KryoWrapper(config) // BatchWriterConfig is not java serializable
 
   def write(kvPairs: RDD[(Key, Value)], instance: AccumuloInstance, table: String): Unit = {
     kvPairs.foreachPartition { partition =>
       if(partition.nonEmpty) {
-        implicit val ec = executionContext
-        implicit val cs = IO.contextShift(ec)
+        implicit val ioRuntime: unsafe.IORuntime = runtime
 
         val writer = instance.connector.createBatchWriter(table, kwConfig.value)
 
         try {
-          val mutations: fs2.Stream[IO, Mutation] = fs2.Stream.fromIterator[IO](
+          val mutations: fs2.Stream[IO, Mutation] = fs2.Stream.fromBlockingIterator[IO](
             partition.map { case (key, value) =>
               val mutation = new Mutation(key.getRow)
               mutation.put(key.getColumnFamily, key.getColumnQualifier, System.currentTimeMillis(), value)
              mutation
-            }
+            }, chunkSize = 1
           )
 
-          val write = { mutation: Mutation => fs2.Stream eval IO.shift(ec) *> IO { writer.addMutation(mutation) } }
+          val write = { mutation: Mutation => fs2.Stream eval IO.blocking { writer.addMutation(mutation) } }
 
           (mutations map write)
             .parJoinUnbounded
@@ -149,7 +145,7 @@ class SocketWriteStrategy(
 
 object SocketWriteStrategy {
   def apply(
-    config: BatchWriterConfig = new BatchWriterConfig().setMaxMemory(128*1024*1024).setMaxWriteThreads(BlockingThreadPool.threads),
-    executionContext: => ExecutionContext = BlockingThreadPool.executionContext
-  ): SocketWriteStrategy = new SocketWriteStrategy(config, executionContext)
+    config: BatchWriterConfig = new BatchWriterConfig().setMaxMemory(128*1024*1024).setMaxWriteThreads(IORuntimeTransient.ThreadsNumber),
+    runtime: => unsafe.IORuntime = IORuntimeTransient.IORuntime
+  ): SocketWriteStrategy = new SocketWriteStrategy(config, runtime)
 }

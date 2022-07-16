@@ -25,13 +25,13 @@ import geotrellis.store.cog.{Extension, ZoomRange}
 import geotrellis.store.file.{FileAttributeStore, FileLayerHeader, KeyPathGenerator}
 import geotrellis.spark.store.cog._
 
+import cats.effect._
 import org.apache.spark.SparkContext
 import _root_.io.circe._
 
 import java.net.URI
 import java.io.File
 
-import scala.concurrent.ExecutionContext
 import scala.reflect.ClassTag
 
 /**
@@ -42,10 +42,10 @@ import scala.reflect.ClassTag
 class FileCOGLayerReader(
   val attributeStore: AttributeStore,
   val catalogPath: String,
-  executionContext: => ExecutionContext = BlockingThreadPool.executionContext
+  runtime: => unsafe.IORuntime = IORuntimeTransient.IORuntime
 )(@transient implicit val sc: SparkContext) extends COGLayerReader[LayerId] {
 
-  @transient implicit lazy val ec: ExecutionContext = executionContext
+  @transient implicit lazy val ioRuntime: unsafe.IORuntime = runtime
 
   val defaultNumPartitions: Int = sc.defaultParallelism
 

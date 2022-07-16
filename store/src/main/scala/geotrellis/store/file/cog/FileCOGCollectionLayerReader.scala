@@ -23,10 +23,9 @@ import geotrellis.store._
 import geotrellis.store.util._
 import geotrellis.store.cog.{COGCollectionLayerReader, Extension, ZoomRange}
 import geotrellis.store.file.{FileAttributeStore, KeyPathGenerator}
-
+import cats.effect._
 import _root_.io.circe._
 
-import scala.concurrent.ExecutionContext
 import scala.reflect.ClassTag
 import java.net.URI
 import java.io.File
@@ -39,10 +38,10 @@ import java.io.File
 class FileCOGCollectionLayerReader(
   val attributeStore: AttributeStore,
   val catalogPath: String,
-  executionContext: => ExecutionContext = BlockingThreadPool.executionContext
+  runtime: => unsafe.IORuntime = IORuntimeTransient.IORuntime
 ) extends COGCollectionLayerReader[LayerId] {
 
-  @transient implicit lazy val ec: ExecutionContext = executionContext
+  @transient implicit lazy val ioRuntime: unsafe.IORuntime = runtime
 
   def read[
     K: SpatialComponent: Boundable: Decoder: ClassTag,

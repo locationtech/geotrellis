@@ -34,16 +34,16 @@ import org.apache.spark.SparkContext
 import io.circe._
 import io.circe.parser._
 import cats.syntax.either._
+import cats.effect._
 
 import java.net.URI
 import java.util.ServiceLoader
 
-import scala.concurrent.ExecutionContext
 import scala.reflect._
 
 abstract class COGLayerReader[ID] extends Serializable {
 
-  implicit val ec: ExecutionContext
+  implicit val ioRuntime: unsafe.IORuntime
 
   val attributeStore: AttributeStore
 
