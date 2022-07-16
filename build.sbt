@@ -38,7 +38,8 @@ lazy val root = Project("geotrellis", file("."))
   .enablePlugins(ScalaUnidocPlugin)
   .settings(Settings.commonSettings)
   .settings(publish / skip := true)
-  .settings(ScalaUnidoc / unidoc / unidocProjectFilter := inAnyProject -- inProjects(mdoc))
+  // https://github.com/scalapb/ScalaPB/issues/1350
+  .settings(ScalaUnidoc / unidoc / unidocProjectFilter := inAnyProject -- inProjects(mdoc, vectortile))
 
 lazy val mdoc = project
   .dependsOn(raster)
