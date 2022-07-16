@@ -21,9 +21,11 @@ import geotrellis.raster._
 import geotrellis.raster.io.geotiff.OverviewStrategy
 import geotrellis.raster.resample.NearestNeighbor
 import geotrellis.layer._
+import geotrellis.vector.Geometry
 import geotrellis.util._
 import org.apache.spark.rdd._
 import org.apache.spark.{Partitioner, SparkContext}
+import cats.syntax.option._
 
 import scala.collection.mutable.ArrayBuilder
 import scala.reflect.ClassTag
@@ -199,14 +201,29 @@ object RasterSourceRDD {
     sources: RDD[RasterSource],
     layout: LayoutDefinition
   )(implicit sc: SparkContext): MultibandTileLayerRDD[SpatialKey] =
-    tiledLayerRDD(sources, layout, KeyExtractor.spatialKeyExtractor, NearestNeighbor, None, None)
+    tiledLayerRDD(sources, layout, KeyExtractor.spatialKeyExtractor, None, NearestNeighbor, None, None)
+
+  def tiledLayerRDD(
+    sources: RDD[RasterSource],
+    layout: LayoutDefinition,
+    geometry: Geometry
+  )(implicit sc: SparkContext): MultibandTileLayerRDD[SpatialKey] =
+    tiledLayerRDD(sources, layout, KeyExtractor.spatialKeyExtractor, geometry.some, NearestNeighbor, None, None)
 
   def tiledLayerRDD(
     sources: RDD[RasterSource],
     layout: LayoutDefinition,
     resampleMethod: ResampleMethod
   )(implicit sc: SparkContext): MultibandTileLayerRDD[SpatialKey] =
-    tiledLayerRDD(sources, layout, KeyExtractor.spatialKeyExtractor, resampleMethod, None, None)
+    tiledLayerRDD(sources, layout, KeyExtractor.spatialKeyExtractor, None, resampleMethod, None, None)
+
+  def tiledLayerRDD(
+    sources: RDD[RasterSource],
+    layout: LayoutDefinition,
+    resampleMethod: ResampleMethod,
+    geometry: Geometry
+  )(implicit sc: SparkContext): MultibandTileLayerRDD[SpatialKey] =
+    tiledLayerRDD(sources, layout, KeyExtractor.spatialKeyExtractor, geometry.some, resampleMethod, None, None)
 
   /**
    * On tiling more than a single MultibandTile may get into a group that correspond to the same key.
@@ -223,6 +240,7 @@ object RasterSourceRDD {
     sources: RDD[RasterSource],
     layout: LayoutDefinition,
     keyExtractor: KeyExtractor.Aux[K, M],
+    geometry: Option[Geometry] = None,
     resampleMethod: ResampleMethod = NearestNeighbor,
     rasterSummary: Option[RasterSummary[M]] = None,
     partitioner: Option[Partitioner] = None,
@@ -239,7 +257,12 @@ object RasterSourceRDD {
       }
 
     val rasterRegionRDD: RDD[(K, RasterRegion)] =
-      tiledLayoutSourceRDD.flatMap { _.keyedRasterRegions() }
+      tiledLayoutSourceRDD.flatMap { source =>
+        val keyedRasterRegions = source.keyedRasterRegions()
+        geometry.fold(keyedRasterRegions) { geom => keyedRasterRegions.filter {
+          case (key, _) => layerMetadata.keyToExtent(key).intersects(geom)
+        } }
+      }
 
     // The number of partitions estimated by RasterSummary can sometimes be much
     // lower than what the user set. Therefore, we assume that the larger value
