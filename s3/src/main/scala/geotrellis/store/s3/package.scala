@@ -26,6 +26,7 @@ import software.amazon.awssdk.services.s3.model.{HeadObjectRequest, NoSuchKeyExc
 import scala.util.{Failure, Success, Try}
 
 package object s3 {
+  // https://github.com/aws/aws-sdk-java/blob/1.12.267/aws-java-sdk-s3/src/main/java/com/amazonaws/services/s3/Headers.java#L201
   val REQUESTER_PAYS_HEADER: String = "x-amz-request-payer"
 
   private[geotrellis] def makePath(chunks: String*): String =
@@ -59,7 +60,7 @@ package object s3 {
 
   implicit class ClientOverrideConfigurationBuilderOps(val self: ClientOverrideConfiguration.Builder) extends AnyVal {
     def requestPayer(requestPayer: Option[RequestPayer]): ClientOverrideConfiguration.Builder =
-      requestPayer.fold(self)(rp => self.putHeader(REQUESTER_PAYS_HEADER, rp.toString))
+      requestPayer.map(_.toString).fold(self)(self.putHeader(REQUESTER_PAYS_HEADER, _))
   }
 
   implicit class withJpgS3WriteMethods(val self: Jpg) extends JpgS3WriteMethods(self)
