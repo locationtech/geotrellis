@@ -19,12 +19,15 @@ package geotrellis.store
 import geotrellis.raster.CellGrid
 import geotrellis.raster.io.geotiff.GeoTiff
 import geotrellis.raster.render.{Jpg, Png}
+import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration
 import software.amazon.awssdk.services.s3.S3Client
-import software.amazon.awssdk.services.s3.model.{NoSuchKeyException, HeadObjectRequest}
+import software.amazon.awssdk.services.s3.model.{HeadObjectRequest, NoSuchKeyException, RequestPayer}
 
-import scala.util.{Try, Success, Failure}
+import scala.util.{Failure, Success, Try}
 
 package object s3 {
+  val REQUESTER_PAYS_HEADER: String = "x-amz-request-payer"
+
   private[geotrellis] def makePath(chunks: String*): String =
     chunks
       .collect { case str if str.nonEmpty => if(str.endsWith("/")) str.dropRight(1) else str }
@@ -39,7 +42,7 @@ package object s3 {
       val objectExists =
         Try(client.headObject(request))
           .map(_ => true)
-          .recoverWith({ case nske: NoSuchKeyException => Success(false) })
+          .recoverWith { case _: NoSuchKeyException => Success(false) }
       objectExists match {
         case Success(bool) => bool
         case Failure(throwable) => throw throwable
@@ -52,6 +55,11 @@ package object s3 {
       val key = arr.tail.mkString("/")
       client.objectExists(bucket, key)
     }
+  }
+
+  implicit class ClientOverrideConfigurationBuilderOps(val self: ClientOverrideConfiguration.Builder) extends AnyVal {
+    def requestPayer(requestPayer: Option[RequestPayer]): ClientOverrideConfiguration.Builder =
+      requestPayer.fold(self)(rp => self.putHeader(REQUESTER_PAYS_HEADER, rp.toString))
   }
 
   implicit class withJpgS3WriteMethods(val self: Jpg) extends JpgS3WriteMethods(self)

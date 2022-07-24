@@ -16,7 +16,11 @@
 
 package geotrellis.spark.store.s3
 
+import geotrellis.store.s3._
+import geotrellis.store.s3.conf.S3Config
+
 import software.amazon.awssdk.auth.credentials.{AwsBasicCredentials, StaticCredentialsProvider}
+import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.regions.Region
 
@@ -26,7 +30,10 @@ object MockS3Client {
   def apply(): S3Client = {
     val cred = AwsBasicCredentials.create("minio", "password")
     val credProvider = StaticCredentialsProvider.create(cred)
+    val overrideConfig = ClientOverrideConfiguration.builder().requestPayer(S3Config.conf.requestPayer).build()
+
     S3Client.builder()
+      .overrideConfiguration(overrideConfig)
       .endpointOverride(new URI("http://localhost:9091"))
       .credentialsProvider(credProvider)
       .region(Region.US_EAST_1)
