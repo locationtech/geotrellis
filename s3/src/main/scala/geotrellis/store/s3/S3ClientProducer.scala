@@ -55,7 +55,7 @@ object S3ClientProducer {
     val overrideConfig =
       ClientOverrideConfiguration.builder()
         .retryPolicy(retryPolicy)
-        .requestPayer(S3Config.conf.requestPayer)
+        .requestPayer(S3Config.requestPayer)
         .build()
 
     S3Client.builder()

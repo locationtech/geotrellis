@@ -30,7 +30,7 @@ object MockS3Client {
   def apply(): S3Client = {
     val cred = AwsBasicCredentials.create("minio", "password")
     val credProvider = StaticCredentialsProvider.create(cred)
-    val overrideConfig = ClientOverrideConfiguration.builder().requestPayer(S3Config.conf.requestPayer).build()
+    val overrideConfig = ClientOverrideConfiguration.builder().requestPayer(S3Config.requestPayer).build()
 
     S3Client.builder()
       .overrideConfiguration(overrideConfig)

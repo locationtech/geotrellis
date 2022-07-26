@@ -19,11 +19,13 @@ package geotrellis.store
 import geotrellis.raster.CellGrid
 import geotrellis.raster.io.geotiff.GeoTiff
 import geotrellis.raster.render.{Jpg, Png}
+
+import cats.syntax.either._
 import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.model.{HeadObjectRequest, NoSuchKeyException, RequestPayer}
 
-import scala.util.{Failure, Success, Try}
+import scala.util.Try
 
 package object s3 {
   // https://github.com/aws/aws-sdk-java/blob/1.12.267/aws-java-sdk-s3/src/main/java/com/amazonaws/services/s3/Headers.java#L201
@@ -40,14 +42,12 @@ package object s3 {
         .bucket(bucket)
         .key(key)
         .build()
-      val objectExists =
-        Try(client.headObject(request))
-          .map(_ => true)
-          .recoverWith { case _: NoSuchKeyException => Success(false) }
-      objectExists match {
-        case Success(bool) => bool
-        case Failure(throwable) => throw throwable
-      }
+
+      Try(client.headObject(request))
+        .map(_ => true)
+        .recover { case _: NoSuchKeyException => false }
+        .toEither
+        .valueOr(throw _)
     }
 
     def objectExists(path: String): Boolean = {
