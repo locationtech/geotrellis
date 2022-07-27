@@ -29,6 +29,10 @@ class ExtentSpec extends AnyFunSpec with Matchers {
       intercept[ExtentRangeError] { Extent(10.0, 0.0, 0.0, 10.0) }
       intercept[ExtentRangeError] { Extent(0.0, 10.0, 10.0, 0.0) }
     }
+    it("should return correct results for translate") {
+      assert(Extent(0,0,1,1).translate(1.1, 2.2) == Extent(1.1, 2.2, 2.1, 3.2))
+      assert(Extent(0,0,1,1).translate(1.1, 2.2) != Extent(1.1, 2.2, 2.1, 2.2))
+    }
 
     it("should compare extents") {
       val e1 = Extent(0.0, 0.0, 10.0, 10.0)
