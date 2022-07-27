@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Add RasterSourceRDD.tiledLayerRDD within the geometry intersection [#3474](https://github.com/locationtech/geotrellis/pull/3474)
+- Expose AWS_REQUEST_PAYER environment variable [#3479](https://github.com/locationtech/geotrellis/pull/3479)
 
 ### Changed
 - Migration to CE3 and other major dependencies upgrade [#3389](https://github.com/locationtech/geotrellis/pull/3389)

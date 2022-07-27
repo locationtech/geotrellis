@@ -19,12 +19,18 @@ package geotrellis.store
 import geotrellis.raster.CellGrid
 import geotrellis.raster.io.geotiff.GeoTiff
 import geotrellis.raster.render.{Jpg, Png}
-import software.amazon.awssdk.services.s3.S3Client
-import software.amazon.awssdk.services.s3.model.{NoSuchKeyException, HeadObjectRequest}
 
-import scala.util.{Try, Success, Failure}
+import cats.syntax.either._
+import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration
+import software.amazon.awssdk.services.s3.S3Client
+import software.amazon.awssdk.services.s3.model.{HeadObjectRequest, NoSuchKeyException, RequestPayer}
+
+import scala.util.Try
 
 package object s3 {
+  // https://github.com/aws/aws-sdk-java/blob/1.12.267/aws-java-sdk-s3/src/main/java/com/amazonaws/services/s3/Headers.java#L201
+  val REQUESTER_PAYS_HEADER: String = "x-amz-request-payer"
+
   private[geotrellis] def makePath(chunks: String*): String =
     chunks
       .collect { case str if str.nonEmpty => if(str.endsWith("/")) str.dropRight(1) else str }
@@ -36,14 +42,12 @@ package object s3 {
         .bucket(bucket)
         .key(key)
         .build()
-      val objectExists =
-        Try(client.headObject(request))
-          .map(_ => true)
-          .recoverWith({ case nske: NoSuchKeyException => Success(false) })
-      objectExists match {
-        case Success(bool) => bool
-        case Failure(throwable) => throw throwable
-      }
+
+      Try(client.headObject(request))
+        .map(_ => true)
+        .recover { case _: NoSuchKeyException => false }
+        .toEither
+        .valueOr(throw _)
     }
 
     def objectExists(path: String): Boolean = {
@@ -52,6 +56,11 @@ package object s3 {
       val key = arr.tail.mkString("/")
       client.objectExists(bucket, key)
     }
+  }
+
+  implicit class ClientOverrideConfigurationBuilderOps(val self: ClientOverrideConfiguration.Builder) extends AnyVal {
+    def requestPayer(requestPayer: Option[RequestPayer]): ClientOverrideConfiguration.Builder =
+      requestPayer.map(_.toString).fold(self)(self.putHeader(REQUESTER_PAYS_HEADER, _))
   }
 
   implicit class withJpgS3WriteMethods(val self: Jpg) extends JpgS3WriteMethods(self)
