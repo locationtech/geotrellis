@@ -315,7 +315,7 @@ case class Extent(
       xmin + deltaX,
       ymin + deltaY,
       xmax + deltaX,
-      ymin + deltaY
+      ymax + deltaY
     )
 
   /** Return this extent as a polygon */
