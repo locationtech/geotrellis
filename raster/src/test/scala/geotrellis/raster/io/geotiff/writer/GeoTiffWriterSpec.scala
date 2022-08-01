@@ -54,6 +54,52 @@ class GeoTiffWriterSpec extends AnyFunSpec with Matchers with BeforeAndAfterAll 
       actual should be (expected)
     }
 
+    it("should write GeoTiff with correct layout (tiled vs striped)") {
+      // We need to make the tiff large enough for tiling to make sense
+      val tile = IntArrayTile.fill(7, 1000, 1000)
+      val mbtile = ArrayMultibandTile(tile)
+
+      val mbGeoTiffTiled = MultibandGeoTiff(
+        mbtile, Extent(0, 0, 1, 1), LatLng, Tags.empty,
+        GeoTiffOptions.DEFAULT.copy(storageMethod=Tiled(256, 256))
+      )
+      val mbtempTiled = File.createTempFile("geotiff-writer-tiled-mb", ".tif")
+      addToPurge(mbtempTiled.getPath)
+      GeoTiffWriter.write(mbGeoTiffTiled, mbtempTiled.getPath)
+      val mbactualTiled = MultibandGeoTiff(mbtempTiled.getPath)
+      mbactualTiled.options.storageMethod should be (Tiled(256, 256))
+
+      val mbGeoTiffStriped = MultibandGeoTiff(
+        mbtile, Extent(0, 0, 1, 1), LatLng, Tags.empty,
+        GeoTiffOptions.DEFAULT.copy(storageMethod=Striped())
+      )
+      val mbtempStriped = File.createTempFile("geotiff-writer-striped-mb", ".tif")
+      addToPurge(mbtempStriped.getPath)
+      GeoTiffWriter.write(mbGeoTiffStriped, mbtempStriped.getPath)
+      val mbactualStriped = MultibandGeoTiff(mbtempStriped.getPath)
+      assert(mbactualStriped.options.storageMethod.isInstanceOf[Striped])
+
+      val sbGeoTiffTiled = MultibandGeoTiff(
+        mbtile, Extent(0, 0, 1, 1), LatLng, Tags.empty,
+        GeoTiffOptions.DEFAULT.copy(storageMethod=Tiled(256, 256))
+      )
+      val sbtempTiled = File.createTempFile("geotiff-writer-tiled-sb", ".tif")
+      addToPurge(sbtempTiled.getPath)
+      GeoTiffWriter.write(sbGeoTiffTiled, sbtempTiled.getPath)
+      val sbactualTiled = SinglebandGeoTiff(sbtempTiled.getPath)
+      assert(sbactualTiled.options.storageMethod.isInstanceOf[Tiled])
+
+      val sbGeoTiffStriped = MultibandGeoTiff(
+        mbtile, Extent(0, 0, 1, 1), LatLng, Tags.empty,
+        GeoTiffOptions.DEFAULT.copy(storageMethod=Striped())
+      )
+      val sbtempStriped = File.createTempFile("geotiff-writer-striped-sb", ".tif")
+      println(sbtempStriped.getPath)
+      GeoTiffWriter.write(sbGeoTiffStriped, sbtempStriped.getPath)
+      val sbactualStriped = SinglebandGeoTiff(sbtempStriped.getPath)
+      assert(sbactualStriped.options.storageMethod.isInstanceOf[Striped])
+    }
+
     it("should write GeoTiff with oversized custom tags") {
       val geoTiff = MultibandGeoTiff(geoTiffPath("multi-tag.tif"))
 
