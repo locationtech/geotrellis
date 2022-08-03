@@ -50,4 +50,16 @@ abstract class RasterMergeMethods[
     */
   def merge(other: Raster[T]): Raster[T] =
     merge(other, NearestNeighbor)
+
+  /**
+    * Union this [[Raster]] with the other one.  All places in the
+    * present raster that contain NODATA are filled-in with data from
+    * the other raster.  A new Raster is returned.
+    *
+    * @param   other         The other Raster
+    * @param   method        The resampling method
+    * @return                A new Raster, the result of the merge
+    */
+  def union(other: Raster[T], method: ResampleMethod, unionF: (Option[Double], Option[Double]) => Double): Raster[T] =
+    Raster(self.tile.union(self.extent, other.extent, other.tile, method, unionF), self.extent.combine(other.extent))
 }

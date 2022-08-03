@@ -31,4 +31,13 @@ abstract class TileFeatureMergeMethods[
 
   def merge(extent: Extent, otherExtent: Extent, other: TileFeature[T, D], method: ResampleMethod): TileFeature[T, D] =
     TileFeature(self.tile.merge(extent, otherExtent, other.tile, method), Semigroup[D].combine(self.data, other.data))
+
+  def union(
+    extent: Extent,
+    otherExtent: Extent,
+    other: TileFeature[T, D],
+    method: ResampleMethod,
+    unionF: (Option[Double], Option[Double]) => Double
+  ): TileFeature[T, D] =
+    TileFeature(self.tile.union(extent, otherExtent, other.tile, method, unionF), Semigroup[D].combine(self.data, other.data))
 }
