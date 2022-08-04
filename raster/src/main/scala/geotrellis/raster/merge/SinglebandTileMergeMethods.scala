@@ -155,8 +155,8 @@ trait SinglebandTileMergeMethods extends TileMergeMethods[Tile] {
         self
     }
 
-  def union(extent: Extent, otherExtent: Extent, other: Tile, method: ResampleMethod, unionF: (Option[Double], Option[Double]) => Double): Tile = {
-    val unionInt = (l: Option[Double], r: Option[Double]) => unionF(l, r).toInt
+  def union(extent: Extent, otherExtent: Extent, other: Tile, method: ResampleMethod, unionFunc: (Option[Double], Option[Double]) => Double): Tile = {
+    val unionInt = (l: Option[Double], r: Option[Double]) => unionFunc(l, r).toInt
 
     val combinedExtent = otherExtent combine extent
     val re = RasterExtent(extent, self.cols, self.rows)
@@ -186,7 +186,7 @@ trait SinglebandTileMergeMethods extends TileMergeMethods[Tile] {
           cfor(0)(_ < targetRE.cols, _ + 1) { col =>
             val (x,y) = targetRE.gridToMap(col, row)
             val (l,r) = (interpolateLeft(x, y), interpolateRight(x, y))
-            mutableTile.setDouble(col, row, unionF(Some(l), Some(r)))
+            mutableTile.setDouble(col, row, unionFunc(Some(l), Some(r)))
           }
         }
       case x if x.isFloatingPoint =>
@@ -199,7 +199,7 @@ trait SinglebandTileMergeMethods extends TileMergeMethods[Tile] {
             val r = interpolateRight(x, y)
             val maybeL = if (isNoData(l)) None else Some(l)
             val maybeR = if (isNoData(r)) None else Some(r)
-            mutableTile.setDouble(col, row, unionF(maybeL, maybeR))
+            mutableTile.setDouble(col, row, unionFunc(maybeL, maybeR))
           }
         }
       case _ =>

@@ -33,6 +33,6 @@ abstract class RasterTileFeatureMergeMethods[
   def merge(other: TileFeature[Raster[T], D], method: ResampleMethod): TileFeature[Raster[T], D] =
     TileFeature(self.tile.merge(other.tile, method), Semigroup[D].combine(self.data, other.data))
 
-  def union(other: TileFeature[Raster[T], D], method: ResampleMethod, unionF: (Option[Double], Option[Double]) => Double): TileFeature[Raster[T], D] =
-    TileFeature(self.tile.union(other.tile, method, unionF), Semigroup[D].combine(self.data, other.data))
+  def union(other: TileFeature[Raster[T], D], method: ResampleMethod, unionFunc: (Option[Double], Option[Double]) => Double): TileFeature[Raster[T], D] =
+    TileFeature(self.tile.union(other.tile, method, unionFunc), Semigroup[D].combine(self.data, other.data))
 }

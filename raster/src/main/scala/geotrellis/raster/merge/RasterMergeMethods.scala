@@ -60,6 +60,6 @@ abstract class RasterMergeMethods[
     * @param   method        The resampling method
     * @return                A new Raster, the result of the merge
     */
-  def union(other: Raster[T], method: ResampleMethod, unionF: (Option[Double], Option[Double]) => Double): Raster[T] =
-    Raster(self.tile.union(self.extent, other.extent, other.tile, method, unionF), self.extent.combine(other.extent))
+  def union(other: Raster[T], method: ResampleMethod, unionFunc: (Option[Double], Option[Double]) => Double): Raster[T] =
+    Raster(self.tile.union(self.extent, other.extent, other.tile, method, unionFunc), self.extent.combine(other.extent))
 }

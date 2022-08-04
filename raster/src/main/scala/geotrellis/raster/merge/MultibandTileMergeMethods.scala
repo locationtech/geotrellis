@@ -73,7 +73,7 @@ trait MultibandTileMergeMethods extends TileMergeMethods[MultibandTile] {
     * @param   otherExtent   The extent of the other MultiBandTile
     * @param   other         The other MultiBandTile
     * @param   method        The resampling method
-    * @param   unionF      The function which decides how values from rasters being combined will be transformed
+    * @param   unionFunc     The function which decides how values from rasters being combined will be transformed
     * @return                A new MultiBandTile, the result of the merge
     */
   def union(
@@ -81,7 +81,7 @@ trait MultibandTileMergeMethods extends TileMergeMethods[MultibandTile] {
     otherExtent: Extent,
     other: MultibandTile,
     method: ResampleMethod,
-    unionF: (Option[Double], Option[Double]) => Double
+    unionFunc: (Option[Double], Option[Double]) => Double
   ): MultibandTile = {
     val bands: Seq[Tile] =
       for {
@@ -89,7 +89,7 @@ trait MultibandTileMergeMethods extends TileMergeMethods[MultibandTile] {
       } yield {
         val thisBand = self.band(bandIndex)
         val thatBand = other.band(bandIndex)
-        thisBand.union(extent, otherExtent, thatBand, method, unionF)
+        thisBand.union(extent, otherExtent, thatBand, method, unionFunc)
       }
 
     ArrayMultibandTile(bands)

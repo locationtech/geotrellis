@@ -79,8 +79,8 @@ trait TileMergeMethods[T] extends MethodExtensions[T] {
     merge(extent, otherExtent, other, NearestNeighbor)
 
 
-  def union(extent: Extent, otherExtent: Extent, other: T, method: ResampleMethod, unionF: (Option[Double], Option[Double]) => Double): T
+  def union(extent: Extent, otherExtent: Extent, other: T, method: ResampleMethod, unionFunc: (Option[Double], Option[Double]) => Double): T
 
-  def union(extent: Extent, otherExtent: Extent, other: T, unionF: (Option[Double], Option[Double]) => Double): T =
-    union(extent, otherExtent, other, NearestNeighbor, unionF)
+  def union(extent: Extent, otherExtent: Extent, other: T, unionFunc: (Option[Double], Option[Double]) => Double): T =
+    union(extent, otherExtent, other, NearestNeighbor, unionFunc)
 }
