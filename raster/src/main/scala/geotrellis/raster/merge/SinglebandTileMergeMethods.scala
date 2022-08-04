@@ -99,15 +99,15 @@ trait SinglebandTileMergeMethods extends TileMergeMethods[Tile] {
         val gridBounds = re.gridBoundsFor(sharedExtent)
         val targetCS = CellSize(sharedExtent, gridBounds.width, gridBounds.height)
 
+        val interpolate = Resample(method, other, otherExtent, targetCS)
+
         self.cellType match {
           case BitCellType | ByteCellType | UByteCellType | ShortCellType | UShortCellType | IntCellType  =>
-            val interpolate: (Double, Double) => Int = Resample(method, other, otherExtent, targetCS).resample _
-            // Assume 0 as the transparent value
             cfor(0)(_ < self.rows, _ + 1) { row =>
               cfor(0)(_ < self.cols, _ + 1) { col =>
                 if (self.get(col, row) == 0) {
                   val (x, y) = re.gridToMap(col, row)
-                  val v = interpolate(x, y)
+                  val v = interpolate.resample(x, y)
                   if(isData(v)) {
                     mutableTile.set(col, row, v)
                   }
@@ -115,13 +115,11 @@ trait SinglebandTileMergeMethods extends TileMergeMethods[Tile] {
               }
             }
           case FloatCellType | DoubleCellType =>
-            val interpolate: (Double, Double) => Double = Resample(method, other, otherExtent, targetCS).resampleDouble _
-            // Assume 0.0 as the transparent value
             cfor(0)(_ < self.rows, _ + 1) { row =>
               cfor(0)(_ < self.cols, _ + 1) { col =>
                 if (self.getDouble(col, row) == 0.0) {
                   val (x, y) = re.gridToMap(col, row)
-                  val v = interpolate(x, y)
+                  val v = interpolate.resampleDouble(x, y)
                   if(isData(v)) {
                     mutableTile.setDouble(col, row, v)
                   }
@@ -129,22 +127,20 @@ trait SinglebandTileMergeMethods extends TileMergeMethods[Tile] {
               }
             }
           case x if x.isFloatingPoint =>
-            val interpolate: (Double, Double) => Double = Resample(method, other, otherExtent, targetCS).resampleDouble _
             cfor(0)(_ < self.rows, _ + 1) { row =>
               cfor(0)(_ < self.cols, _ + 1) { col =>
                 if (isNoData(self.getDouble(col, row))) {
                   val (x, y) = re.gridToMap(col, row)
-                  mutableTile.setDouble(col, row, interpolate(x, y))
+                  mutableTile.setDouble(col, row, interpolate.resampleDouble(x, y))
                 }
               }
             }
           case _ =>
-            val interpolate: (Double, Double) => Int = Resample(method, other, otherExtent, targetCS).resample _
             cfor(0)(_ < self.rows, _ + 1) { row =>
               cfor(0)(_ < self.cols, _ + 1) { col =>
                 if (isNoData(self.get(col, row))) {
                   val (x, y) = re.gridToMap(col, row)
-                  mutableTile.set(col, row, interpolate(x, y))
+                  mutableTile.set(col, row, interpolate.resample(x, y))
                 }
               }
             }
@@ -156,7 +152,10 @@ trait SinglebandTileMergeMethods extends TileMergeMethods[Tile] {
     }
 
   def union(extent: Extent, otherExtent: Extent, other: Tile, method: ResampleMethod, unionFunc: (Option[Double], Option[Double]) => Double): Tile = {
-    val unionInt = (l: Option[Double], r: Option[Double]) => unionFunc(l, r).toInt
+    val unionInt: (Option[Int], Option[Int]) => Int =
+      (l: Option[Int], r: Option[Int]) => {
+        unionFunc(l.map(_.toDouble), r.map(_.toDouble)).toInt
+      }
 
     val combinedExtent = otherExtent combine extent
     val re = RasterExtent(extent, self.cols, self.rows)
@@ -165,53 +164,53 @@ trait SinglebandTileMergeMethods extends TileMergeMethods[Tile] {
     val targetRE = RasterExtent(combinedExtent, targetCS)
     val mutableTile = ArrayTile.empty(self.cellType, targetRE.cols, targetRE.rows)
 
+    val interpolateLeft = Resample(method, self, extent, targetCS)
+    val interpolateRight = Resample(method, other, otherExtent, targetCS)
+
     self.cellType match {
       case BitCellType | ByteCellType | UByteCellType | ShortCellType | UShortCellType | IntCellType  =>
-        val interpolateLeft: (Double, Double) => Int = Resample(method, self, extent, targetCS).resample _
-        val interpolateRight: (Double, Double) => Int = Resample(method, other, otherExtent, targetCS).resample _
-        // Assume 0 as the transparent value
         cfor(0)(_ < targetRE.rows, _ + 1) { row =>
           cfor(0)(_ < targetRE.cols, _ + 1) { col =>
             val (x,y) = targetRE.gridToMap(col, row)
-            val (l,r) = (interpolateLeft(x, y), interpolateRight(x, y))
-            mutableTile.set(col, row, unionInt(Some(l.toDouble), Some(r.toDouble)))
+            val l = interpolateLeft.resample(x, y)
+            val r = interpolateRight.resample(x, y)
+            val maybeL = Some(l)
+            val maybeR = Some(r)
+            val v = unionInt(maybeL, maybeR)
+            mutableTile.set(col, row, v)
           }
         }
       case FloatCellType | DoubleCellType =>
-        val interpolateLeft: (Double, Double) => Double = Resample(method, self, extent, targetCS).resampleDouble _
-        val interpolateRight: (Double, Double) => Double = Resample(method, other, otherExtent, targetCS).resampleDouble _
-
-        // Assume 0.0 as the transparent value
         cfor(0)(_ < targetRE.rows, _ + 1) { row =>
           cfor(0)(_ < targetRE.cols, _ + 1) { col =>
             val (x,y) = targetRE.gridToMap(col, row)
-            val (l,r) = (interpolateLeft(x, y), interpolateRight(x, y))
-            mutableTile.setDouble(col, row, unionFunc(Some(l), Some(r)))
+            val l = interpolateLeft.resampleDouble(x, y)
+            val r = interpolateRight.resampleDouble(x, y)
+            val maybeL = Some(l)
+            val maybeR = Some(r)
+            val v = unionFunc(maybeL, maybeR)
+            mutableTile.setDouble(col, row, v)
           }
         }
       case x if x.isFloatingPoint =>
-        val interpolateLeft: (Double, Double) => Double = Resample(method, self, extent, targetCS).resampleDouble _
-        val interpolateRight: (Double, Double) => Double = Resample(method, other, otherExtent, targetCS).resampleDouble _
         cfor(0)(_ < targetRE.rows, _ + 1) { row =>
           cfor(0)(_ < targetRE.cols, _ + 1) { col =>
             val (x,y) = targetRE.gridToMap(col, row)
-            val l = interpolateLeft(x, y)
-            val r = interpolateRight(x, y)
+            val l = interpolateLeft.resampleDouble(x, y)
+            val r = interpolateRight.resampleDouble(x, y)
             val maybeL = if (isNoData(l)) None else Some(l)
             val maybeR = if (isNoData(r)) None else Some(r)
             mutableTile.setDouble(col, row, unionFunc(maybeL, maybeR))
           }
         }
       case _ =>
-        val interpolateLeft: (Double, Double) => Int = Resample(method, self, extent, targetCS).resample _
-        val interpolateRight: (Double, Double) => Int = Resample(method, other, otherExtent, targetCS).resample _
         cfor(0)(_ < targetRE.rows, _ + 1) { row =>
           cfor(0)(_ < targetRE.cols, _ + 1) { col =>
             val (x,y) = targetRE.gridToMap(col, row)
-            val l = interpolateLeft(x, y)
-            val r = interpolateRight(x, y)
-            val maybeL = if (isNoData(l)) None else Some(l.toDouble)
-            val maybeR = if (isNoData(r)) None else Some(r.toDouble)
+            val l = interpolateLeft.resample(x, y)
+            val r = interpolateRight.resample(x, y)
+            val maybeL = if (isNoData(l)) None else Some(l)
+            val maybeR = if (isNoData(r)) None else Some(r)
             mutableTile.set(col, row, unionInt(maybeL, maybeR))
             //if (l!=r) println(s"x => ${x}, y => ${y}, col => ${col}, row => ${row} | l,r => ${l}, ${r}")
           }
