@@ -19,7 +19,9 @@ package geotrellis.raster.merge
 import geotrellis.raster._
 import geotrellis.raster.resample._
 import geotrellis.vector._
+
 import cats.Semigroup
+import cats.syntax.semigroup._ 
 
 
 abstract class TileFeatureMergeMethods[
@@ -27,10 +29,10 @@ abstract class TileFeatureMergeMethods[
   D: Semigroup
 ](val self: TileFeature[T, D]) extends TileMergeMethods[TileFeature[T, D]] {
   def merge(other: TileFeature[T, D], baseCol: Int, baseRow: Int): TileFeature[T, D] =
-    TileFeature(self.tile.merge(other.tile, baseCol, baseRow), Semigroup[D].combine(self.data, other.data))
+    TileFeature(self.tile.merge(other.tile, baseCol, baseRow), self.data combine other.data)
 
   def merge(extent: Extent, otherExtent: Extent, other: TileFeature[T, D], method: ResampleMethod): TileFeature[T, D] =
-    TileFeature(self.tile.merge(extent, otherExtent, other.tile, method), Semigroup[D].combine(self.data, other.data))
+    TileFeature(self.tile.merge(extent, otherExtent, other.tile, method), self.data combine other.data)
 
   def union(
     extent: Extent,
@@ -39,5 +41,5 @@ abstract class TileFeatureMergeMethods[
     method: ResampleMethod,
     unionFunc: (Option[Double], Option[Double]) => Double
   ): TileFeature[T, D] =
-    TileFeature(self.tile.union(extent, otherExtent, other.tile, method, unionFunc), Semigroup[D].combine(self.data, other.data))
+    TileFeature(self.tile.union(extent, otherExtent, other.tile, method, unionFunc), self.data combine other.data)
 }

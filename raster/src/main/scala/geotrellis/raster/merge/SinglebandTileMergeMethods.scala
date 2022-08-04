@@ -212,7 +212,6 @@ trait SinglebandTileMergeMethods extends TileMergeMethods[Tile] {
             val maybeL = if (isNoData(l)) None else Some(l)
             val maybeR = if (isNoData(r)) None else Some(r)
             mutableTile.set(col, row, unionInt(maybeL, maybeR))
-            //if (l!=r) println(s"x => ${x}, y => ${y}, col => ${col}, row => ${row} | l,r => ${l}, ${r}")
           }
         }
     }
