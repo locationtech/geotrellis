@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Update Cassandra up to 4.x [#3382](https://github.com/locationtech/geotrellis/issues/3382)
 - Accumulo update up to 1.10.x [#3476](https://github.com/locationtech/geotrellis/pull/3476)
 - Fixed Extent.translate [#3480](https://github.com/locationtech/geotrellis/pull/3480)
+- liftCompletableFuture function fix [#3483](https://github.com/locationtech/geotrellis/pull/3483)
 
 ## [3.6.3] - 2022-07-12
 
