@@ -151,6 +151,15 @@ trait SinglebandTileMergeMethods extends TileMergeMethods[Tile] {
         self
     }
 
+  /** Unions this tile with another tile, preserving the non-overlapping
+    * portions of each tile extent.
+    *
+    * This method requires a union function to be provided which decides
+    * how values will be added to the output raster. A `None` represents
+    * one of the two input rasters not having a value at the resampled location.
+    * Two `None` values mean that both tiles are missing values at the
+    * cell in question.
+    */
   def union(extent: Extent, otherExtent: Extent, other: Tile, method: ResampleMethod, unionFunc: (Option[Double], Option[Double]) => Double): Tile = {
     val unionInt: (Option[Int], Option[Int]) => Int =
       (l: Option[Int], r: Option[Int]) => {
