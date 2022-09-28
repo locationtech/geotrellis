@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Accumulo update up to 1.10.x [#3476](https://github.com/locationtech/geotrellis/pull/3476)
 - Fixed Extent.translate [#3480](https://github.com/locationtech/geotrellis/pull/3480)
 - liftCompletableFuture function fix [#3483](https://github.com/locationtech/geotrellis/pull/3483)
+- Pass baseTiff to new RasterSource on GeoTiffResampleRasterSource.reproject/convert [#3485](https://github.com/locationtech/geotrellis/pull/3485)
 
 ## [3.6.3] - 2022-07-12
 

@@ -22,6 +22,7 @@ import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.raster.resample._
 import geotrellis.raster.testkit._
 import geotrellis.vector._
+import geotrellis.proj4.WebMercator
 
 import org.scalatest.GivenWhenThen
 import org.scalatest.funspec.AnyFunSpec
@@ -83,6 +84,14 @@ class GeoTiffRasterSourceSpec extends AnyFunSpec with RasterMatchers with GivenW
     withGeoTiffClue(actual, expected, resampledSource.crs)  {
       assertRastersEqual(actual, expected)
     }
+  }
+
+  it("should preserve baseTiff on resample/reproject") {
+    val resampled = source.resample((source.cols * 0.95).toInt , (source.rows * 0.95).toInt, NearestNeighbor)
+    val reprojected = resampled.reproject(WebMercator)
+    source.tiff shouldBe theSameInstanceAs (reprojected.asInstanceOf[GeoTiffReprojectRasterSource].tiff)
+    val converted = reprojected.convert(UShortCellType)
+    source.tiff shouldBe theSameInstanceAs (converted.asInstanceOf[GeoTiffReprojectRasterSource].tiff)
   }
 
   it("resampleToRegion should produce an expected raster") {
