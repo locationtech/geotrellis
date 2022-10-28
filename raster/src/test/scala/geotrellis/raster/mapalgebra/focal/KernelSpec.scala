@@ -23,7 +23,7 @@ import org.scalatest.funsuite.AnyFunSuite
 
 class KernelSpec extends AnyFunSuite {
   test("chebyshev") {
-    val chebyshevKernel = chebyshev(3)
+    val chebyshevKernel = chebyshev(5)
     val tile = chebyshevKernel.tile
     var r = 0
     while (r < tile.rows) {
