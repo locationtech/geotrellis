@@ -24,7 +24,7 @@ object DependencyListPlugin extends AutoPlugin {
   def renderingTaskSettingsAppend(key: InputKey[Unit]) =
     Seq(
       dependencyListGTAppend := true,
-      dependencyListGTIgnore := Seq("locationtech", "scala-lang"),
+      dependencyListGTIgnore := Seq("locationtech"),
       key := {
         val s = streams.value
         val str = (Compile / dependencyList / asString).value
