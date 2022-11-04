@@ -24,7 +24,7 @@ object DependencyListPlugin extends AutoPlugin {
   def renderingTaskSettingsAppend(key: InputKey[Unit]) =
     Seq(
       dependencyListGTAppend := true,
-      dependencyListGTIgnore := Seq("locationtech"),
+      dependencyListGTIgnore := Seq("locationtech", "scala-lang"),
       key := {
         val s = streams.value
         val str = (Compile / dependencyList / asString).value
@@ -37,7 +37,7 @@ object DependencyListPlugin extends AutoPlugin {
             .value
             .split('\n')
             .filterNot(str => dependencyListGTIgnore.value.exists(str.contains))
-            .mkString("\n")
+            .mkString("\n") ++ "\n"
 
         writeToFileAppend(key.key.label, list, targetFile, force, streams.value, dependencyListGTAppend.value)
       },
