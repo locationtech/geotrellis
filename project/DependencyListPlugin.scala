@@ -11,7 +11,7 @@ object DependencyListPlugin extends AutoPlugin {
   override def trigger = allRequirements
 
   object Keys {
-    val dependencyListGT       = inputKey[Unit]("Execute dependencyList GeoTrellis command")
+    val dependencyListGT       = inputKey[Unit]("Execute dependencyList GeoTrellis command; usage example: dependencyListGT/toFile target/dependencies-list.txt")
     val dependencyListGTAppend = settingKey[Boolean]("dependencyList GeoTrellis command append mode: true by default").withRank(KeyRanks.Invisible)
     val dependencyListGTIgnore = settingKey[Seq[String]]("dependencyList GeoTrellis command ignored dependencies: skips dependencies containing ignored strings in the output file").withRank(KeyRanks.Invisible)
   }
@@ -32,12 +32,16 @@ object DependencyListPlugin extends AutoPlugin {
       },
       key / toFile := {
         val (targetFile, force) = targetFileAndForceParser.parsed
-        val list =
-          (Compile / dependencyList / asString)
-            .value
-            .split('\n')
-            .filterNot(str => dependencyListGTIgnore.value.exists(str.contains))
-            .mkString("\n") ++ "\n"
+        val list = {
+          val string =
+            (Compile / dependencyList / asString)
+              .value
+              .split('\n')
+              .filterNot(str => dependencyListGTIgnore.value.exists(str.contains))
+              .mkString("\n")
+
+          if(string.nonEmpty) string ++ "\n" else string
+        }
 
         writeToFileAppend(key.key.label, list, targetFile, force, streams.value, dependencyListGTAppend.value)
       },
