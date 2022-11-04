@@ -19,9 +19,9 @@ object DependencyListPlugin extends AutoPlugin {
   val autoImport = Keys
   import autoImport._
 
-  override def projectSettings = renderingTaskSettingsAppend(dependencyListGT)
+  override def projectSettings = renderingTaskSettings(dependencyListGT)
 
-  def renderingTaskSettingsAppend(key: InputKey[Unit]) =
+  private def renderingTaskSettings(key: InputKey[Unit]) =
     Seq(
       dependencyListGTAppend := true,
       dependencyListGTIgnore := Seq("locationtech"),
@@ -43,11 +43,11 @@ object DependencyListPlugin extends AutoPlugin {
           if(string.nonEmpty) string ++ "\n" else string
         }
 
-        writeToFileAppend(key.key.label, list, targetFile, force, streams.value, dependencyListGTAppend.value)
+        writeToFile(key.key.label, list, targetFile, force, streams.value, dependencyListGTAppend.value)
       },
     )
 
-  def writeToFileAppend(
+  private def writeToFile(
     what: String,
     data: String,
     targetFile: File,
