@@ -6,7 +6,11 @@ import sbt.plugins.DependencyTreeSettings.targetFileAndForceParser
 import sbt.plugins.MiniDependencyTreeKeys.{asString, toFile}
 import java.io.File
 
-/** Usage example: dependencyListGT/toFile target/dependencies-list.txt */
+/**
+  * dependencyList command generates a file with a list of published artifacts dependencies only.
+  * 
+  * Usage example: dependencyListGT/toFile target/dependencies-list.txt
+  */
 object DependencyListPlugin extends AutoPlugin {
   override def trigger = allRequirements
 
@@ -32,7 +36,7 @@ object DependencyListPlugin extends AutoPlugin {
       },
       key / toFile := {
         val (targetFile, force) = targetFileAndForceParser.parsed
-        val list = {
+        val list = if(!(publish / skip).value) { // generate a list of published artifacts dependencies only
           val string =
             (Compile / dependencyList / asString)
               .value
@@ -40,8 +44,8 @@ object DependencyListPlugin extends AutoPlugin {
               .filterNot(str => dependencyListGTIgnore.value.exists(str.contains))
               .mkString("\n")
 
-          if(string.nonEmpty) string ++ "\n" else string
-        }
+          if (string.nonEmpty) string ++ "\n" else string
+        } else ""
 
         writeToFile(key.key.label, list, targetFile, force, streams.value, dependencyListGTAppend.value)
       },
