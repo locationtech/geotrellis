@@ -8,7 +8,7 @@ import java.io.File
 
 /**
   * dependencyList command generates a file with a list of published artifacts dependencies only.
-  * 
+  *
   * Usage example: dependencyListGT/toFile target/dependencies-list.txt
   */
 object DependencyListPlugin extends AutoPlugin {
