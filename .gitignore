@@ -71,6 +71,10 @@ scripts/emr/terraform/terraform.tfstate*
 
 spark/src/test/resources/vlm/*catalog*
 
+# Dependencies list file
+
+target/dependencies-list.txt
+
 # Other
 
 .#*
