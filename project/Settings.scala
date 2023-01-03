@@ -613,7 +613,6 @@ object Settings {
       hadoopClient % Provided,
       apacheIO,
       scaffeine,
-      caffeine,
       uzaygezenCore,
       scalaXml,
       apacheLang3,

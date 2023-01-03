@@ -95,8 +95,7 @@ object Dependencies {
   val cassandraDriverCore         = "com.datastax.oss" % "java-driver-core"          % Version.cassandra
   val cassandraDriverQueryBuilder = "com.datastax.oss" % "java-driver-query-builder" % Version.cassandra
 
-  val scaffeine = "com.github.blemale"           %% "scaffeine" % "4.1.0"
-  val caffeine  = "com.github.ben-manes.caffeine" % "caffeine"  % "2.9.3"
+  val scaffeine = "com.github.blemale"           %% "scaffeine" % "3.1.0"
 
   val geotoolsCoverage    = "org.geotools"                 % "gt-coverage"             % Version.geotools
   val geotoolsHsql        = "org.geotools"                 % "gt-epsg-hsql"            % Version.geotools
