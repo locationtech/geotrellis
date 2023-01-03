@@ -29,6 +29,14 @@ import org.scalatest.funspec.AnyFunSpec
 class SinglebandTileMaskMethodsSpec extends AnyFunSpec with Matchers with RasterMatchers with TileBuilders {
 
   describe("singleband tile mask") {
+    it("should preserve cellType") {
+      val r1 = createTile(Array(1,2,3,4)).convert(ByteCellType)
+      val r2 = createTile(Array(1,2,3,4)).convert(IntCellType)
+
+      val result = r1.localMask(r2, 2, NODATA)
+      result.cellType shouldBe ByteCellType
+    }
+
     it("should work with integers") {
       val r1 = createTile(
         Array( NODATA,1,1, 1,1,1, 1,1,1,

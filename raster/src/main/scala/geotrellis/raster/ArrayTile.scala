@@ -535,6 +535,40 @@ object ArrayTile {
     * @return        The newly-created tile
     */
   def apply(arr: Array[Double], cols: Int, rows: Int): DoubleConstantNoDataArrayTile = new DoubleConstantNoDataArrayTile(arr, cols, rows)
+
+  /** Pixel-wise combine two of tiles given a function over Ints.
+    *
+    * @param left input tile
+    * @param right input tile
+    * @param out mutable result tile
+    * @param f combine function
+    */
+  def combine(left: Tile, right: Tile, out: MutableArrayTile, f: (Int, Int) => Int): Unit = {
+    cfor(0)(_ < left.rows, _ + 1) { row =>
+      cfor(0)(_ < left.cols, _ + 1) { col =>
+        val a = left.get(col, row)
+        val b = right.get(col, row)
+        out.set(col, row, f(a, b))
+      }
+    }
+  }
+
+  /** Pixel-wise combine two of tiles given a function over Doubles.
+    *
+    * @param left input tile
+    * @param right input tile
+    * @param out mutable result tile
+    * @param f combine function
+    */
+  def combineDouble(left: Tile, right: Tile, out: MutableArrayTile, f: (Double, Double) => Double): Unit = {
+    cfor(0)(_ < left.rows, _ + 1) { row =>
+      cfor(0)(_ < left.cols, _ + 1) { col =>
+        val a = left.getDouble(col, row)
+        val b = right.getDouble(col, row)
+        out.setDouble(col, row, f(a, b))
+      }
+    }
+  }
 }
 
 /**
