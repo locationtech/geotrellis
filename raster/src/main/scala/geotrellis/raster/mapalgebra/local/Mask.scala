@@ -27,7 +27,13 @@ object Mask extends Serializable {
    * For example, if *all* cells in the second raster are set to the readMask value,
    * the output raster will be empty -- all values set to NODATA.
    */
-  def apply(r1: Tile, r2: Tile, readMask: Int, writeMask: Int): Tile =
-    r1.dualCombine(r2) { (z1,z2) => if (z2 == readMask) writeMask else z1 }
-                       { (z1,z2) => if (d2i(z2) == readMask) i2d(writeMask) else z1 }
+  def apply(r1: Tile, r2: Tile, readMask: Int, writeMask: Int): Tile = {
+    val out = ArrayTile.alloc(r1.cellType, r1.cols, r1.rows)
+    if (r1.cellType.isFloatingPoint) {
+      ArrayTile.combineDouble(r1, r2, out, { (v: Double, m: Double) => if (d2i(m) == readMask) i2d(writeMask) else v })
+    } else {
+      ArrayTile.combine(r1, r2, out, { (v: Int, m: Int) => if (m == readMask) writeMask else v })
+    }
+    out
+  }
 }

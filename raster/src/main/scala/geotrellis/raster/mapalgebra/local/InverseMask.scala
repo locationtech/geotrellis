@@ -27,7 +27,13 @@ object InverseMask extends Serializable {
     * For example, if *all* cells in the second raster are set to the readMask value,
     * the output raster will be identical to the first raster.
     */
-  def apply(r1: Tile, r2: Tile, readMask: Int, writeMask: Int): Tile =
-    r1.dualCombine(r2) { (z1: Int, z2: Int) => if (z2 == readMask) z1 else writeMask }
-  { (z1: Double, z2: Double) => if (d2i(z2) == readMask) z1 else i2d(writeMask) }
+  def apply(r1: Tile, r2: Tile, readMask: Int, writeMask: Int): Tile = {
+    val out = ArrayTile.alloc(r1.cellType, r1.cols, r1.rows)
+    if (r1.cellType.isFloatingPoint) {
+      ArrayTile.combineDouble(r1, r2, out, { (v: Double, m: Double) => if (d2i(m) == readMask.toDouble) v else i2d(writeMask) })
+    } else {
+      ArrayTile.combine(r1, r2, out, { (v: Int, m: Int) => if (m == readMask) v else writeMask })
+    }
+    out
+  }
 }
