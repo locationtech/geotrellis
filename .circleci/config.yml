@@ -62,9 +62,9 @@ workflows:
             branches:
               only: master
 
-      - publish:
-          filters:
-            branches:
-              only: /.*/
-            tags:
-              only: /^v.*/
+      # - publish:
+      #     filters:
+      #       branches:
+      #         only: /.*/
+      #       tags:
+      #         only: /^v.*/

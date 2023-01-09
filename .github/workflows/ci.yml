@@ -35,3 +35,32 @@ jobs:
 
       - name: run tests
         run: docker compose -f .github/docker-compose.yml up test --abort-on-container-exit --exit-code-from test
+
+  publish:
+    name: Publish Artifacts
+    needs: [build]
+    if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        java: [8]
+        distribution: [temurin]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - uses: coursier/cache-action@v6
+      - uses: actions/setup-java@v2
+        with:
+          distribution: ${{ matrix.distribution }}
+          java-version: ${{ matrix.java }}
+
+      - name: Release
+        run: sbt ci-release
+        env:
+          PGP_PASSPHRASE: ${{ secrets.PGP_PASSPHRASE }}
+          PGP_SECRET: ${{ secrets.PGP_SECRET }}
+          SONATYPE_PASSWORD: ${{ secrets.SO_PW }}
+          SONATYPE_USERNAME: ${{ secrets.SO_UN }}
+        if: ${{ env.SO_PW != '' && env.SO_UN != '' }}
