@@ -1,6 +1,6 @@
 # GeoTrellis
 
-[![CI](https://github.com/locationtech/geotrellis/workflows/CI/badge.svg)](https://github.com/locationtech/geotrellis/actions) [![CircleCI](https://circleci.com/gh/locationtech/geotrellis/tree/master.svg?style=svg)](https://circleci.com/gh/locationtech/geotrellis/tree/master) [![Join the chat at https://gitter.im/geotrellis/geotrellis](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/geotrellis/geotrellis?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![CI](https://github.com/locationtech/geotrellis/workflows/CI/badge.svg)](https://github.com/locationtech/geotrellis/actions) [![Join the chat at https://gitter.im/geotrellis/geotrellis](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/geotrellis/geotrellis?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![ReadTheDocs](https://readthedocs.org/projects/geotrellis/badge/?version=latest)](http://geotrellis.readthedocs.io/en/latest/)
 [![Changelog](https://img.shields.io/badge/changelog-v1.2.0-brightgreen.svg)](https://github.com/locationtech/geotrellis/blob/master/CHANGELOG.md)
 [![Contributing](https://img.shields.io/badge/contributing-see%20conditions-brightgreen.svg)](https://github.com/locationtech/geotrellis/blob/master/docs/CONTRIBUTING.rst)
