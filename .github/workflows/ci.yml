@@ -38,7 +38,7 @@ jobs:
 
   publish:
     name: Publish Artifacts
-    # needs: [build]
+    needs: [build]
     if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v'))
     strategy:
       matrix:
@@ -56,7 +56,6 @@ jobs:
           distribution: ${{ matrix.distribution }}
           java-version: ${{ matrix.java }}
 
-      - run: sbt doc
       - name: Release
         run: sbt ci-release
         env:
