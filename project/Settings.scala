@@ -63,7 +63,7 @@ object Settings {
     "-feature",
     // "-Yrangepos",            // required by SemanticDB compiler plugin
     // "-Ywarn-unused-import",  // required by `RemoveUnused` rule
-    "-release", "8"
+    // "-target:jvm-1.8"
   )
 
   lazy val commonSettings = Seq(
