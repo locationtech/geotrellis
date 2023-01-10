@@ -57,7 +57,7 @@ jobs:
           java-version: ${{ matrix.java }}
 
       - name: Release
-        run: sbt +s3-spark/doc && sbt ci-release
+        run: sbt ++2.12.17 s3-spark/doc && sbt ++2.13.10 s3-spark/doc && sbt ci-release
         env:
           PGP_PASSPHRASE: ${{ secrets.PGP_PASSPHRASE }}
           PGP_SECRET: ${{ secrets.PGP_SECRET }}
