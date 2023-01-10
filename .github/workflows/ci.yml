@@ -43,7 +43,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        java: [8]
+        java: [8.0.265]
         distribution: [temurin]
     runs-on: ${{ matrix.os }}
     steps:
@@ -56,7 +56,6 @@ jobs:
           distribution: ${{ matrix.distribution }}
           java-version: ${{ matrix.java }}
 
-      - run: sbt +compile +doc
       - name: Release
         run: sbt ci-release
         env:
