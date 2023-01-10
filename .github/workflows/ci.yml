@@ -44,7 +44,7 @@ jobs:
       matrix:
         os: [ubuntu-latest]
         java: [8]
-        distribution: [zulu]
+        distribution: [temurin]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v2
@@ -56,6 +56,7 @@ jobs:
           distribution: ${{ matrix.distribution }}
           java-version: ${{ matrix.java }}
 
+      - run: sbt +compile +doc
       - name: Release
         run: sbt ci-release
         env:
@@ -63,4 +64,5 @@ jobs:
           PGP_SECRET: ${{ secrets.PGP_SECRET }}
           SONATYPE_PASSWORD: ${{ secrets.SO_PW }}
           SONATYPE_USERNAME: ${{ secrets.SO_UN }}
+          CI_CLEAN: ""
         if: ${{ env.SONATYPE_PASSWORD != '' && env.SONATYPE_USERNAME != '' }}
