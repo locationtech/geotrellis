@@ -127,7 +127,7 @@ object Dependencies {
 
   val scalapbRuntime      = "com.thesamet.scalapb"        %% "scalapb-runtime"         % scalapb.compiler.Version.scalapbVersion
   val scalapbLenses       = "com.thesamet.scalapb"        %% "lenses"                  % scalapb.compiler.Version.scalapbVersion
-  val protobufJava        = "com.google.protobuf"          % "protobuf-java"           % "3.21.2"
+  val protobufJava        = "com.google.protobuf"          % "protobuf-java"           % "3.21.12"
 
   val squants             = "org.typelevel"               %% "squants"                 % "1.8.3"
   val scalactic           = "org.scalactic"               %% "scalactic"               % "3.2.12"
