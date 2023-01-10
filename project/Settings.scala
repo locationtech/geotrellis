@@ -42,6 +42,10 @@ object Settings {
     val all             = external ++ local
   }
 
+  lazy val skipDocPublish = Seq(
+    Compile / packageDoc / publishArtifact := false
+  )
+
   lazy val noForkInTests = Seq(
     Test / fork := false
   )
@@ -63,7 +67,7 @@ object Settings {
     "-feature",
     // "-Yrangepos",            // required by SemanticDB compiler plugin
     // "-Ywarn-unused-import",  // required by `RemoveUnused` rule
-    // "-target:jvm-1.8"
+    "-target:jvm-1.8"
   )
 
   lazy val commonSettings = Seq(
@@ -462,7 +466,7 @@ object Settings {
       import geotrellis.spark._
       import geotrellis.spark.store.s3._
       """
-  ) ++ noForkInTests ++ commonSettings
+  ) ++ noForkInTests ++ commonSettings ++ skipDocPublish
 
   lazy val shapefile = Seq(
     name := "geotrellis-shapefile",
