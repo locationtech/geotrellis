@@ -43,7 +43,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        java: [8.0.265]
+        java: [8.0.302]
         distribution: [temurin]
     runs-on: ${{ matrix.os }}
     steps:
