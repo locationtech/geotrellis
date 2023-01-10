@@ -43,18 +43,26 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        java: [8.0.302]
+        java: [8]
         distribution: [temurin]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
-      - uses: coursier/cache-action@v6
+      # - uses: coursier/cache-action@v6
       - uses: actions/setup-java@v3
         with:
           distribution: ${{ matrix.distribution }}
           java-version: ${{ matrix.java }}
+
+      # https://github.com/actions/virtual-environments/issues/2840
+      - name: Clear up some space on runner
+        run: |
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf "/usr/local/share/boost"
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
 
       - name: Release
         run: sbt ci-release
