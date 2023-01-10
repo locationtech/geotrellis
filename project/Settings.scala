@@ -580,7 +580,7 @@ object Settings {
     libraryDependencies ++= Seq(
       scalapbRuntime % "protobuf",
       scalapbLenses,
-      protobufJava force(),
+      protobufJava,
       scalatest % Test
     ),
     Compile / PB.protoSources:= Seq(file("vectortile/data")),
