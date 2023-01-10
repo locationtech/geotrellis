@@ -41,7 +41,7 @@ jobs:
     # needs: [build]
     if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v'))
     container:
-      image: node:14.16
+      image: quay.io/azavea/openjdk-gdal:3.1-jdk8-slim
       env:
         PGP_PASSPHRASE: ${{ secrets.PGP_PASSPHRASE }}
         PGP_SECRET: ${{ secrets.PGP_SECRET }}
@@ -65,4 +65,9 @@ jobs:
 
       - name: Release
         run: sbt ++2.13.10 s3-spark/doc # && sbt ci-release
+        env:
+          PGP_PASSPHRASE: ${{ secrets.PGP_PASSPHRASE }}
+          PGP_SECRET: ${{ secrets.PGP_SECRET }}
+          SONATYPE_PASSWORD: ${{ secrets.SO_PW }}
+          SONATYPE_USERNAME: ${{ secrets.SO_UN }}
         if: ${{ env.SONATYPE_PASSWORD != '' && env.SONATYPE_USERNAME != '' }}
