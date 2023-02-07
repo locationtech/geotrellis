@@ -88,7 +88,7 @@ pipeline:
                     image: quay.io/azavea/openjdk-gdal:3.1-jdk8-slim
                     language: Scala
                     buildTool: SBT
-                    args: ++<+matrix.scala> test
+                    args: ++<+matrix.scala>
                     runOnlySelectedTests: true
                     reports:
                       type: JUnit
