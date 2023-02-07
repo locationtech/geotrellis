@@ -1,5 +1,6 @@
 inputSet:
   name: master
+  tags: {}
   identifier: master
   orgIdentifier: default
   projectIdentifier: Geotrellis
@@ -11,4 +12,4 @@ inputSet:
           build:
             type: branch
             spec:
-              branch: <+trigger.branch>
+              branch: master
