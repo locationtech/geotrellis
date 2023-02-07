@@ -28,11 +28,11 @@ pipeline:
             steps:
               - step:
                   type: Run
-                  name: Echo
-                  identifier: Echo
+                  name: unzip rasters
+                  identifier: unzip_rasters
                   spec:
                     shell: Sh
-                    command: echo "Hello, World"
+                    command: cd raster/data; unzip geotiff-test-files.zip
         strategy:
           matrix:
             scala:
