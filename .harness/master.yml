@@ -1,0 +1,14 @@
+inputSet:
+  pipeline:
+    identifier: Geotrellis
+    properties:
+      ci:
+        codebase:
+          build:
+            type: branch
+            spec:
+              branch: master
+  name: master
+  identifier: master
+  orgIdentifier: default
+  projectIdentifier: Geotrellis
