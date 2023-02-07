@@ -33,3 +33,8 @@ pipeline:
                   spec:
                     shell: Sh
                     command: echo "Hello, World"
+        strategy:
+          matrix:
+            scala:
+              - 2.12.17
+              - 2.13.10
