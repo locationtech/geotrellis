@@ -80,6 +80,13 @@ pipeline:
                     shell: Sh
                     command: cd raster/data; unzip geotiff-test-files.zip
               - step:
+                  type: Run
+                  name: Run_2
+                  identifier: Run_2
+                  spec:
+                    shell: Sh
+                    command: sbt ++<+matrix.scala>
+              - step:
                   type: RunTests
                   name: Run Tests
                   identifier: Run_Tests
