@@ -80,19 +80,10 @@ pipeline:
                     shell: Sh
                     command: cd raster/data; unzip geotiff-test-files.zip
               - step:
-                  type: Run
-                  name: Run_2
-                  identifier: Run_2
-                  spec:
-                    shell: Sh
-                    command: sbt ++<+matrix.scala>
-              - step:
                   type: RunTests
                   name: Run Tests
                   identifier: Run_Tests
                   spec:
-                    connectorRef: org.Quayio
-                    image: quay.io/azavea/openjdk-gdal:3.1-jdk8-slim
                     language: Scala
                     buildTool: SBT
                     args: ++<+matrix.scala>
