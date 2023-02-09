@@ -90,13 +90,14 @@ pipeline:
                     buildTool: SBT
                     args: ++<+matrix.scala>
                     runOnlySelectedTests: true
+                    preCommand: ls
                     reports:
                       type: JUnit
                       spec:
                         paths:
                           - "**/*.xml"
-                    imagePullPolicy: IfNotPresent
-                    shell: Sh
+                    imagePullPolicy: Always
+                    shell: Bash
         strategy:
           matrix:
             scala:
