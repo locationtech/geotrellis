@@ -17,7 +17,7 @@
 import sbt._
 
 object Version {
-  val geotools    = "28.2"
+  val geotools    = "25.4"
   val spire       = "0.17.0"
   val accumulo    = "1.10.2"
   val cassandra   = "4.15.0"
