@@ -83,7 +83,7 @@ object Dependencies {
   val apacheLang3         = "org.apache.commons"          % "commons-lang3"            % "3.12.0"
   val apacheMath          = "org.apache.commons"          % "commons-math3"            % "3.6.1"
   val chronoscala         = "jp.ne.opt"                  %% "chronoscala"              % "1.0.0"
-  val awsSdkS3            = "software.amazon.awssdk"      % "s3"                       % "2.20.12"
+  val awsSdkS3            = "software.amazon.awssdk"      % "s3"                       % "2.17.295"
   val hadoopClient        = "org.apache.hadoop"           % "hadoop-client"            % Version.hadoop
   val avro                = "org.apache.avro"             % "avro"                     % "1.10.2" // aligned with the Spark version
   val parserCombinators   = "org.scala-lang.modules"     %% "scala-parser-combinators" % "2.2.0"
