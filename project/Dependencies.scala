@@ -17,7 +17,7 @@
 import sbt._
 
 object Version {
-  val geotools    = "25.4"
+  val geotools    = "28.2"
   val spire       = "0.17.0"
   val accumulo    = "1.10.2"
   val cassandra   = "4.15.0"
@@ -71,7 +71,7 @@ object Dependencies {
   val log4s               = "org.log4s"                  %% "log4s"                    % "1.10.0"
   val log4jbridge         = "org.apache.logging.log4j"    % "log4j-1.2-api"            % "2.17.0"
   val scalatest           = "org.scalatest"              %% "scalatest"                % "3.2.15"
-  val scalacheck          = "org.scalacheck"             %% "scalacheck"               % "1.16.0"
+  val scalacheck          = "org.scalacheck"             %% "scalacheck"               % "1.17.0"
   val scalaXml            = "org.scala-lang.modules"     %% "scala-xml"                % "2.1.0"
   val jts                 = "org.locationtech.jts"        % "jts-core"                 % "1.19.0"
   val proj4j              = "org.locationtech.proj4j"     % "proj4j"                   % "1.2.3"
@@ -83,7 +83,7 @@ object Dependencies {
   val apacheLang3         = "org.apache.commons"          % "commons-lang3"            % "3.12.0"
   val apacheMath          = "org.apache.commons"          % "commons-math3"            % "3.6.1"
   val chronoscala         = "jp.ne.opt"                  %% "chronoscala"              % "1.0.0"
-  val awsSdkS3            = "software.amazon.awssdk"      % "s3"                       % "2.17.230"
+  val awsSdkS3            = "software.amazon.awssdk"      % "s3"                       % "2.20.12"
   val hadoopClient        = "org.apache.hadoop"           % "hadoop-client"            % Version.hadoop
   val avro                = "org.apache.avro"             % "avro"                     % "1.10.2" // aligned with the Spark version
   val parserCombinators   = "org.scala-lang.modules"     %% "scala-parser-combinators" % "2.2.0"
