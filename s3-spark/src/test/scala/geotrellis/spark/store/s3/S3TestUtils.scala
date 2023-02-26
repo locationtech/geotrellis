@@ -33,21 +33,27 @@ object S3TestUtils {
         .asScala
         .map { s3obj => ObjectIdentifier.builder.key(s3obj.key).build() }
         .toList
-      val deleteDefinition = Delete.builder()
-        .objects(objIdentifiers:_*)
-        .build()
-      val deleteReq = DeleteObjectsRequest.builder()
-        .bucket(bucket)
-        .delete(deleteDefinition)
-        .build()
-      client.deleteObjects(deleteReq)
+
+      // group by 1000 to prevent too long requests
+      objIdentifiers.grouped(1000).foreach { group =>
+        val deleteDefinition = Delete.builder()
+          .objects(group: _*)
+          .quiet(true)
+          .build()
+        val deleteReq = DeleteObjectsRequest.builder()
+          .bucket(bucket)
+          .delete(deleteDefinition)
+          .build()
+        client.deleteObjects(deleteReq)
+      }
     } catch {
-      case nsb: NoSuchBucketException =>
+      case _: NoSuchBucketException =>
         val createBucketReq =
           CreateBucketRequest.builder()
             .bucket(bucket)
             .build()
         client.createBucket(createBucketReq)
+      case th: Throwable => println(s"\u001b[0;33mA ${th.getMessage}\u001b[m")
     }
   }
 }
