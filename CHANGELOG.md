@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.7.0] - 2023-02-26
+
 ### Added
 - Add RasterSourceRDD.tiledLayerRDD within the geometry intersection [#3474](https://github.com/locationtech/geotrellis/pull/3474)
 - Expose AWS_REQUEST_PAYER environment variable [#3479](https://github.com/locationtech/geotrellis/pull/3479)
@@ -1170,7 +1172,8 @@ efficiently using the layer query API.
   the slick scala database library.
 - Perform PostGIS `ST_` operations in PostGIS through scala.
 
-[Unreleased]: https://github.com/locationtech/geotrellis/compare/v3.6.3...HEAD
+[Unreleased]: https://github.com/locationtech/geotrellis/compare/v3.7.0...HEAD
+[3.7.0]: https://github.com/locationtech/geotrellis/compare/v3.6.3...v3.7.0
 [3.6.3]: https://github.com/locationtech/geotrellis/compare/v3.6.2...v3.6.3
 [3.6.2]: https://github.com/locationtech/geotrellis/compare/v3.6.1...v3.6.2
 [3.6.1]: https://github.com/locationtech/geotrellis/compare/v3.6.0...v3.6.1
