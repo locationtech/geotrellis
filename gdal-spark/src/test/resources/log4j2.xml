@@ -1,0 +1,18 @@
+<Configuration status="WARN">
+  <Appenders>
+    <Console name="ConsoleAppender" target="SYSTEM_OUT">
+      <PatternLayout pattern="%d{YYYY-MM-dd HH:mm:ss} [%t] %-5p %c:%L - %m%n" />
+    </Console>
+  </Appenders>
+
+  <Loggers>
+    <Root level="ERROR">
+     <AppenderRef ref="ConsoleAppender"/>
+    </Root>
+  </Loggers>
+  <Logger name="org.eclipse.jetty" level="WARN" />
+  <Logger name="org.apache.hadoop" level="WARN" />
+  <Logger name="org.apache.spark" level="WARN" />
+  <Logger name="geotrellis.spark" level="INFO" />
+  <Logger name="geotrellis.raster.gdal" level="ERROR" />
+</Configuration>
