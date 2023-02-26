@@ -34,7 +34,10 @@ object MockS3Client {
 
     S3Client.builder()
       .overrideConfiguration(overrideConfig)
-      .endpointOverride(new URI("http://localhost:9091"))
+      // To forcePathStyle we can use localhost ip address
+      // https://docs.aws.amazon.com/AmazonS3/latest/userguide/VirtualHosting.html#path-style-access
+      // https://docs.aws.amazon.com/sdk-for-java/latest/developer-guide/examples-s3.html
+      .endpointOverride(new URI("http://127.0.0.1:9091"))
       .credentialsProvider(credProvider)
       .region(Region.US_EAST_1)
       .build()
