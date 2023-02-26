@@ -24,7 +24,7 @@ import com.datastax.oss.driver.api.core.cql.{AsyncResultSet, Statement}
 
 import java.math.BigInteger
 
-package object cassandra extends Serializable {
+package object cassandra extends java.io.Serializable {
   implicit class BigIntOps(val self: BigInt) extends AnyVal {
     def asJava: BigInteger = new BigInteger(self.toByteArray)
   }

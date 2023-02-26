@@ -38,7 +38,7 @@ object CassandraInstance {
   }
 }
 
-trait CassandraInstance extends Serializable {
+trait CassandraInstance extends java.io.Serializable {
   val cassandraConfig: CassandraConfig
 
   /** Session constructor */

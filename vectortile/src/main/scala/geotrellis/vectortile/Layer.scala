@@ -32,7 +32,7 @@ import scala.collection.mutable.ListBuffer
   * Here, "Feature" and "Geometry" refer specifically to the GeoTrellis classes
   * of the same names.
   */
-@experimental trait Layer extends Serializable {
+@experimental trait Layer extends java.io.Serializable {
   /** The VectorTile spec version that this Layer obeys. */
   def version: Int
 
