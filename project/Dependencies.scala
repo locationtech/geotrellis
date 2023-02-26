@@ -69,7 +69,6 @@ object Dependencies {
 
   val pureconfig          = "com.github.pureconfig"      %% "pureconfig"               % "0.17.2"
   val log4s               = "org.log4s"                  %% "log4s"                    % "1.10.0"
-  val log4jbridge         = "org.apache.logging.log4j"    % "log4j-1.2-api"            % "2.17.0"
   val scalatest           = "org.scalatest"              %% "scalatest"                % "3.2.15"
   val scalacheck          = "org.scalacheck"             %% "scalacheck"               % "1.17.0"
   val scalaXml            = "org.scala-lang.modules"     %% "scala-xml"                % "2.1.0"
