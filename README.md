@@ -22,7 +22,7 @@ You're also welcome to ask questions and talk to developers
 
 ## Getting Started
 
-GeoTrellis is currently available for Scala 2.12 and 2.13, using Spark 2.3.x.
+GeoTrellis is currently available for Scala 2.12 and 2.13, using Spark 3.3.x.
 
 To get started with SBT, simply add the following to your build.sbt file:
 
