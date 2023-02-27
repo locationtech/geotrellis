@@ -42,10 +42,6 @@ object Settings {
     val all             = external ++ local
   }
 
-  lazy val skipDocPublish = Seq(
-    Compile / packageDoc / publishArtifact := false
-  )
-
   lazy val noForkInTests = Seq(
     Test / fork := false
   )
@@ -463,7 +459,7 @@ object Settings {
       import geotrellis.spark._
       import geotrellis.spark.store.s3._
       """
-  ) ++ noForkInTests ++ commonSettings ++ skipDocPublish
+  ) ++ noForkInTests ++ commonSettings
 
   lazy val shapefile = Seq(
     name := "geotrellis-shapefile",
