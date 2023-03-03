@@ -16,9 +16,10 @@
 
 package geotrellis.util
 
+import org.apache.hadoop.util.Shell
+
 import java.net.URI
 import java.nio.file.Paths
-
 
 class FileRangeReaderProvider extends RangeReaderProvider {
   def canProcess(uri: URI): Boolean = uri.getScheme match {
@@ -35,11 +36,13 @@ class FileRangeReaderProvider extends RangeReaderProvider {
     val targetPath: String = {
       val uriString = uri.toString
 
-      if (uriString.startsWith("file://"))
-        uriString.slice("file://".size, uriString.size + 1)
-      else if (uriString.startsWith("file:"))
-        uriString.slice("file:".size, uriString.size + 1)
-      else
+      if (uriString.startsWith("file://")) {
+        val from = if (Shell.WINDOWS) "file:///" else "file://"
+        uriString.slice(from.size, uriString.size + 1)
+      } else if (uriString.startsWith("file:")) {
+        val from = if (Shell.WINDOWS) "file:/" else "file:"
+        uriString.slice(from.size, uriString.size + 1)
+      } else
         uriString
     }
 
