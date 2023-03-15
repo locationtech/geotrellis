@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Fix FileRangeReaderProvider parsing URI in windows [#3507](https://github.com/locationtech/geotrellis/pull/3507)
+
 ## [3.7.0] - 2023-02-26
 
 ### Added
