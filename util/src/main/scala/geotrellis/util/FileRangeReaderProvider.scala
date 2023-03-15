@@ -19,7 +19,6 @@ package geotrellis.util
 import java.net.URI
 import java.nio.file.Paths
 
-
 class FileRangeReaderProvider extends RangeReaderProvider {
   def canProcess(uri: URI): Boolean = uri.getScheme match {
     case str: String => if (str.toLowerCase == "file") true else false
@@ -32,14 +31,17 @@ class FileRangeReaderProvider extends RangeReaderProvider {
     // URIs that are correctly formatted from being used. To
     // get around this, we will pass in the URI as a String
     // instead without its Scheme (if it had one).
+    val isWindows = System.getProperty("os.name").toLowerCase().startsWith("win")
     val targetPath: String = {
       val uriString = uri.toString
 
-      if (uriString.startsWith("file://"))
-        uriString.slice("file://".size, uriString.size + 1)
-      else if (uriString.startsWith("file:"))
-        uriString.slice("file:".size, uriString.size + 1)
-      else
+      if (uriString.startsWith("file://")) {
+        val from = if (isWindows) "file:///" else "file://"
+        uriString.slice(from.size, uriString.size + 1)
+      } else if (uriString.startsWith("file:")) {
+        val from = if (isWindows) "file:/" else "file:"
+        uriString.slice(from.size, uriString.size + 1)
+      } else
         uriString
     }
 
