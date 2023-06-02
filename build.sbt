@@ -1,7 +1,7 @@
 import sbt.Keys._
 
 ThisBuild / versionScheme := Some("semver-spec")
-ThisBuild / scalaVersion := "2.12.17"
+ThisBuild / scalaVersion := "2.13.10"
 ThisBuild / organization := "org.locationtech.geotrellis"
 ThisBuild / crossScalaVersions := List("2.12.17", "2.13.10")
 

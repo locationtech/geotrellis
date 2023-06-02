@@ -87,12 +87,12 @@ for more details.
 
   - More info and usage examples can be found here: `https://github.com/eclipse/dash-licenses <https://github.com/eclipse/dash-licenses>`__
 
-- Run the dependencies check ``cat target/dependencies-list.txt | java -jar ./org.eclipse.dash.licenses-0.0.1-20221208.065036-634.jar -``
+- Run the dependencies check ``cat target/dependencies-list.txt | java -jar ./org.eclipse.dash.licenses-1.0.3-20230602.055020-10.jar -``
 
 - It is possible to use the `IP Team Review request feature <https://github.com/eclipse/dash-licenses/blob/master/README.md#automatic-ip-team-review-requests>`__ to automatically set up a review
 
   - Get `GitLab authentication token <https://gitlab.eclipse.org/-/profile/personal_access_tokens>`__
-  - ``cat target/dependencies-list.txt | java -jar ./org.eclipse.dash.licenses-0.0.1-20221208.065036-634.jar - -review -project locationtech.geotrellis -token <token>``
+  - ``cat target/dependencies-list.txt | java -jar ./org.eclipse.dash.licenses-1.0.3-20230602.055020-10.jar - -review -project locationtech.geotrellis -token <token>``
 
 Editing these Docs
 ------------------
