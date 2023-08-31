@@ -118,12 +118,17 @@ object Regrid {
 
               val xSpan: Interval[Long] = oldXrange intersect newXrange
               val ySpan: Interval[Long] = oldYrange intersect newYrange
+              val forceCrop = newW < 0.6 * oldW || newH < 0.6 * oldH
               newKey ->
-                (oldTile.crop((xSpan.start - oldXstart).toInt,
-                              (ySpan.start - oldYstart).toInt,
-                              (xSpan.end - oldXstart).toInt,
-                              (ySpan.end - oldYstart).toInt),
-                 ((xSpan.start - newXrange.start).toInt, (ySpan.start - newYrange.start).toInt)
+                (
+                  oldTile.crop(
+                    (xSpan.start - oldXstart).toInt,
+                    (ySpan.start - oldYstart).toInt,
+                    (xSpan.end - oldXstart).toInt,
+                    (ySpan.end - oldYstart).toInt,
+                    Crop.Options(force = forceCrop)
+                  ),
+                  ((xSpan.start - newXrange.start).toInt, (ySpan.start - newYrange.start).toInt)
                 )
             }
           }}
