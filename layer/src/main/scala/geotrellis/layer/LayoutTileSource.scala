@@ -33,8 +33,8 @@ class LayoutTileSource[K: SpatialComponent](
 ) {
   LayoutTileSource.requireGridAligned(source.gridExtent, layout)
 
-  def sourceColOffset: Long = ((source.extent.xmin - layout.extent.xmin) / layout.cellwidth).toLong
-  def sourceRowOffset: Long = ((layout.extent.ymax - source.extent.ymax) / layout.cellheight).toLong
+  def sourceColOffset: Long = GridExtent.floorWithTolerance((source.extent.xmin - layout.extent.xmin) / layout.cellwidth).toLong
+  def sourceRowOffset: Long = GridExtent.floorWithTolerance((layout.extent.ymax - source.extent.ymax) / layout.cellheight).toLong
 
   def rasterRegionForKey(key: K): Option[RasterRegion] = {
     val spatialComponent = key.getComponent[SpatialKey]
