@@ -183,18 +183,18 @@ class GridExtent[@specialized(Int, Long) N: Integral](
       val colMaxDouble = mapXToGridDouble(subExtent.xmax)
 
       if (math.abs(colMaxDouble - floorWithTolerance(colMaxDouble)) < GridExtent.epsilon)
-        colMaxDouble.toLong - 1L
+        floorWithTolerance(colMaxDouble).toLong - 1L
       else
-        colMaxDouble.toLong
+        floorWithTolerance(colMaxDouble).toLong
     }
 
     val rowMax: N = Integral[N].fromLong {
       val rowMaxDouble = mapYToGridDouble(subExtent.ymin)
 
       if (math.abs(rowMaxDouble - floorWithTolerance(rowMaxDouble)) < GridExtent.epsilon)
-        rowMaxDouble.toLong - 1L
+        floorWithTolerance(rowMaxDouble).toLong - 1L
       else
-        rowMaxDouble.toLong
+        floorWithTolerance(rowMaxDouble).toLong
     }
 
     if (clamp)
