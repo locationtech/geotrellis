@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - Fix FileRangeReaderProvider parsing URI in windows [#3507](https://github.com/locationtech/geotrellis/pull/3507)
+- Fix rounding errors/numerical instability in GridExtent and LayoutTileSource [#3520](https://github.com/locationtech/geotrellis/pull/3520)
 
 ## [3.7.0] - 2023-02-26
 
