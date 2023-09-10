@@ -191,8 +191,8 @@ class GridExtentSpec extends AnyFunSpec with Matchers {
       //gridextents have to be aligned for test to be valid
       val resultingBounds = ge2.gridBoundsFor(targetExtent)
 
-      assertEquals(targetBounds.height, resultingBounds.height)
-      assertEquals(targetBounds.width, resultingBounds.width)
+      targetBounds.height should be resultingBounds.height
+      targetBounds.width should be resultingBounds.width
     }
   }
 }
