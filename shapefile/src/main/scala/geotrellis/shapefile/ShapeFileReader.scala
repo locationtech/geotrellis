@@ -17,9 +17,8 @@
 package geotrellis.shapefile
 
 import geotrellis.vector._
-
+import org.geotools.api.feature.simple.SimpleFeature
 import org.geotools.data.simple._
-import org.opengis.feature.simple._
 import org.geotools.data.shapefile._
 
 import java.net.URL
