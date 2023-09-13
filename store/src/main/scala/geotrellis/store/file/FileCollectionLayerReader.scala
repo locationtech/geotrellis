@@ -24,8 +24,8 @@ import geotrellis.store.index.Index
 import geotrellis.util._
 
 import io.circe.Decoder
+import cats.effect._
 
-import scala.concurrent.ExecutionContext
 import scala.reflect.ClassTag
 
 /**
@@ -39,10 +39,10 @@ import scala.reflect.ClassTag
 class FileCollectionLayerReader(
   val attributeStore: AttributeStore,
   catalogPath: String,
-  executionContext: => ExecutionContext = BlockingThreadPool.executionContext
+  runtime: => unsafe.IORuntime = IORuntimeTransient.IORuntime
 ) extends CollectionLayerReader[LayerId] {
 
-  @transient implicit lazy val ec = executionContext
+  @transient implicit lazy val ioRuntime: unsafe.IORuntime = runtime
 
   def read[
     K: AvroRecordCodec: Boundable: Decoder: ClassTag,

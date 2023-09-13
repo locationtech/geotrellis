@@ -23,8 +23,8 @@ import geotrellis.store._
 import geotrellis.store.avro.codecs.KeyValueRecordCodec
 import geotrellis.store.avro.{AvroEncoder, AvroRecordCodec}
 
-import com.datastax.driver.core.querybuilder.QueryBuilder
-import com.datastax.driver.core.querybuilder.QueryBuilder.{eq => eqs}
+import com.datastax.oss.driver.api.querybuilder.QueryBuilder
+import com.datastax.oss.driver.api.querybuilder.QueryBuilder.literal
 import _root_.io.circe._
 
 import scala.collection.JavaConverters._
@@ -45,18 +45,19 @@ class CassandraValueReader(
 
     private lazy val statement = instance.withSession{ session =>
       session.prepare(
-        QueryBuilder.select("value")
-          .from(header.keyspace, header.tileTable)
-          .where(eqs("key", QueryBuilder.bindMarker()))
-          .and(eqs("name", layerId.name))
-          .and(eqs("zoom", layerId.zoom))
+        QueryBuilder.selectFrom(header.keyspace, header.tileTable)
+          .column("value")
+          .whereColumn("key").isEqualTo(QueryBuilder.bindMarker())
+          .whereColumn("name").isEqualTo(literal(layerId.name))
+          .whereColumn("zoom").isEqualTo(literal(layerId.zoom))
+          .build()
       )
     }
 
     def read(key: K): V = instance.withSession { session =>
-      val row = session.execute(statement.bind(keyIndex.toIndex(key): BigInteger)).all()
+      val row = session.execute(statement.bind(keyIndex.toIndex(key).asJava)).all()
       val tiles = row.asScala.map { entry =>
-          AvroEncoder.fromBinary(writerSchema, entry.getBytes("value").array())(codec)
+          AvroEncoder.fromBinary(writerSchema, entry.getByteBuffer("value").array())(codec)
         }
         .flatMap { pairs: Vector[(K, V)] =>
           pairs.filter(pair => pair._1 == key)

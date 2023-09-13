@@ -20,11 +20,10 @@ import geotrellis.store._
 
 import org.log4s._
 
-import com.datastax.driver.core.querybuilder.QueryBuilder
-import com.datastax.driver.core.querybuilder.QueryBuilder.{eq => eqs}
+import com.datastax.oss.driver.api.querybuilder.QueryBuilder
+import com.datastax.oss.driver.api.querybuilder.QueryBuilder.literal
 
 import scala.collection.JavaConverters._
-
 
 class CassandraLayerDeleter(val attributeStore: AttributeStore, instance: CassandraInstance) extends LayerDeleter[LayerId] {
   @transient private[this] lazy val logger = getLogger
@@ -33,21 +32,24 @@ class CassandraLayerDeleter(val attributeStore: AttributeStore, instance: Cassan
     try {
       val header = attributeStore.readHeader[CassandraLayerHeader](id)
       instance.withSessionDo { session =>
-        val squery = QueryBuilder.select("key")
-          .from(header.keyspace, header.tileTable).allowFiltering()
-          .where(eqs("name", id.name))
-          .and(eqs("zoom", id.zoom))
+        val squery = QueryBuilder
+          .selectFrom(header.keyspace, header.tileTable)
+          .column("key").allowFiltering()
+          .whereColumn("name").isEqualTo(literal(id.name))
+          .whereColumn("zoom").isEqualTo(literal(id.zoom))
+          .build()
 
-        val dquery = QueryBuilder.delete()
-          .from(header.keyspace, header.tileTable)
-          .where(eqs("key", QueryBuilder.bindMarker()))
-          .and(eqs("name", id.name))
-          .and(eqs("zoom", id.zoom))
+        val dquery = QueryBuilder
+          .deleteFrom(header.keyspace, header.tileTable)
+          .whereColumn("key").isEqualTo(QueryBuilder.bindMarker())
+          .whereColumn("name").isEqualTo(literal(id.name))
+          .whereColumn("zoom").isEqualTo(literal(id.zoom))
+          .build()
 
         val statement = session.prepare(dquery)
 
         session.execute(squery).all().asScala.map { entry =>
-          session.execute(statement.bind(entry.getVarint("key")))
+          session.execute(statement.bind(entry.getBigInteger("key")))
         }
       }
     } catch {

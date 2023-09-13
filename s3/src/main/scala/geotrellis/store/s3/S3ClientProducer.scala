@@ -16,6 +16,7 @@
 
 package geotrellis.store.s3
 
+import geotrellis.store.s3.conf.S3Config
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.core.retry.backoff.FullJitterBackoffStrategy
 import software.amazon.awssdk.core.retry.conditions.{OrRetryCondition, RetryCondition}
@@ -47,13 +48,14 @@ object S3ClientProducer {
         .build()
     val retryPolicy =
       RetryPolicy.defaultRetryPolicy()
-        .toBuilder()
+        .toBuilder
         .retryCondition(retryCondition)
         .backoffStrategy(backoffStrategy)
         .build()
     val overrideConfig =
       ClientOverrideConfiguration.builder()
         .retryPolicy(retryPolicy)
+        .requestPayer(S3Config.requestPayer)
         .build()
 
     S3Client.builder()

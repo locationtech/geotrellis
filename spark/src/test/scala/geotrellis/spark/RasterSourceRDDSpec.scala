@@ -23,6 +23,8 @@ import geotrellis.raster.geotiff._
 import geotrellis.raster.io.geotiff._
 import geotrellis.spark.store.hadoop._
 import geotrellis.store.hadoop._
+import geotrellis.store.cog._
+import geotrellis.vector.Geometry
 
 import spire.syntax.cfor._
 import cats.implicits._
@@ -178,6 +180,36 @@ class RasterSourceRDDSpec extends AnyFunSpec with TestEnvironment with RasterMat
       val tiledSource: MultibandTileLayerRDD[SpatialKey] = RasterSourceRDD.tiledLayerRDD(reprojectedRasterSourceRDD, targetLayout)
 
       assertRDDLayersEqual(reprojectedExpectedRDD, tiledSource)
+    }
+
+    it("should reproduce tileToLayout when given an RDD[RasterSource] within the extent") {
+      val rasterSourceRDD: RDD[RasterSource] = sc.parallelize(Seq(rasterSource))
+
+      // Need to define these here or else a serialization error will occur
+      val targetLayout = layout
+      val crs = targetCRS
+      val mapTransform = targetLayout.mapTransform
+
+      // filter by a correct square to validate keys
+      val expectedKeys = List(SpatialKey(2303, 3223), SpatialKey(2303, 3224), SpatialKey(2304, 3223), SpatialKey(2304, 3224)).sorted
+      val geometry =
+        expectedKeys
+          .map(mapTransform.keyToExtent)
+          .reduce(_ combine _)
+          .bufferByLayout(targetLayout) // buffer to ensure the extent is within the given keys
+          .toPolygon()
+
+      val filteredExpectedRDD = reprojectedExpectedRDD.withContext { _.filter { case (key, _) => mapTransform.keyToExtent(key).intersects(geometry) } }
+
+      val reprojectedRasterSourceRDD: RDD[RasterSource] = rasterSourceRDD.map { _.reprojectToGrid(crs, targetLayout) }
+
+      val tiledSource: MultibandTileLayerRDD[SpatialKey] = RasterSourceRDD.tiledLayerRDD(reprojectedRasterSourceRDD, targetLayout, geometry)
+
+      val actualKeys = tiledSource.map(_._1).collect().toList.sorted
+
+      actualKeys shouldBe expectedKeys
+
+      assertRDDLayersEqual(filteredExpectedRDD, tiledSource)
     }
   }
 

@@ -49,7 +49,7 @@ import geotrellis.vectortile.internal.PBTile._
   * type safety in light of the situation described here.
   *
   */
-sealed trait Value extends Serializable {
+sealed trait Value extends java.io.Serializable {
   /** Encode this Value back into a mid-level Protobuf object. */
   private[vectortile] def toProtobuf: PBValue
 }

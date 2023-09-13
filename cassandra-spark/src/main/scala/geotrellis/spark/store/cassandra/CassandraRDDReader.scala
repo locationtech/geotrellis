@@ -22,20 +22,18 @@ import geotrellis.store.cassandra._
 import geotrellis.store.avro.codecs.KeyValueRecordCodec
 import geotrellis.store.avro.{AvroEncoder, AvroRecordCodec}
 import geotrellis.store.index.{IndexRanges, MergeQueue}
-import geotrellis.store.util.{BlockingThreadPool, IOUtils}
+import geotrellis.store.util.{IORuntimeTransient, IOUtils}
 import geotrellis.spark.util.KryoWrapper
 
-import com.datastax.driver.core.querybuilder.QueryBuilder
-import com.datastax.driver.core.querybuilder.QueryBuilder.{eq => eqs}
+import cats.effect._
+import com.datastax.oss.driver.api.querybuilder.QueryBuilder
+import com.datastax.oss.driver.api.querybuilder.QueryBuilder.literal
 import org.apache.avro.Schema
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
-import scala.collection.JavaConverters._
 import scala.reflect.ClassTag
 import java.math.BigInteger
-
-import scala.concurrent.ExecutionContext
 
 object CassandraRDDReader {
   def read[K: Boundable : AvroRecordCodec : ClassTag, V: AvroRecordCodec : ClassTag](
@@ -48,7 +46,7 @@ object CassandraRDDReader {
     filterIndexOnly: Boolean,
     writerSchema: Option[Schema] = None,
     numPartitions: Option[Int] = None,
-    executionContext: => ExecutionContext = BlockingThreadPool.executionContext
+    runtime: => unsafe.IORuntime = IORuntimeTransient.IORuntime
   )(implicit sc: SparkContext): RDD[(K, V)] = {
     if (queryKeyBounds.isEmpty) return sc.emptyRDD[(K, V)]
 
@@ -63,35 +61,35 @@ object CassandraRDDReader {
 
     val bins = IndexRanges.bin(ranges, numPartitions.getOrElse(sc.defaultParallelism))
 
-    val query = QueryBuilder.select("value")
-      .from(keyspace, table)
-      .where(eqs("key", QueryBuilder.bindMarker()))
-      .and(eqs("name", layerId.name))
-      .and(eqs("zoom", layerId.zoom))
-      .toString
+    val query = QueryBuilder
+      .selectFrom(keyspace, table)
+      .column("value")
+      .whereColumn("key").isEqualTo(QueryBuilder.bindMarker())
+      .whereColumn("name").isEqualTo(literal(layerId.name))
+      .whereColumn("zoom").isEqualTo(literal(layerId.zoom))
+      .asCql()
 
     sc.parallelize(bins, bins.size)
       .mapPartitions { partition: Iterator[Seq[(BigInt, BigInt)]] =>
         instance.withSession { session =>
-          implicit val ec = executionContext
+          implicit val ioRuntime: unsafe.IORuntime = runtime
           val statement = session.prepare(query)
 
           val result = partition map { seq =>
-            IOUtils.parJoin[K, V](seq.iterator) { index: BigInt =>
-              val row = session.execute(statement.bind(index: BigInteger))
-              if (row.asScala.nonEmpty) {
-                val bytes = row.one().getBytes("value").array()
-                val recs = AvroEncoder.fromBinary(kwWriterSchema.value.getOrElse(_recordCodec.schema), bytes)(_recordCodec)
-                if (filterIndexOnly) recs
-                else recs.filter { row => includeKey(row._1) }
-              } else Vector.empty
+            IOUtils.parJoinIO[K, V](seq.iterator) { index: BigInt =>
+              session.executeF[IO](statement.bind(index.asJava)).map { row =>
+                if (row.nonEmpty) {
+                  val bytes = row.one().getByteBuffer("value").array()
+                  val recs = AvroEncoder.fromBinary(kwWriterSchema.value.getOrElse(_recordCodec.schema), bytes)(_recordCodec)
+                  if (filterIndexOnly) recs
+                  else recs.filter { row => includeKey(row._1) }
+                } else Vector.empty
+              }
             }
           }
 
           /** Close partition session */
-          (result ++ Iterator({
-            session.closeAsync(); session.getCluster.closeAsync(); Seq.empty[(K, V)]
-          })).flatten
+          (result ++ Iterator({ session.closeAsync(); Seq.empty[(K, V)] })).flatten
         }
       }
   }

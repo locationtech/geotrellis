@@ -31,7 +31,7 @@ object Regrid {
 
   private case class Interval[N : Ordering](start: N, end: N) {
     val ord = implicitly[Ordering[N]]
-    assert(ord.compare(start, end) < 1, "Row/col intervals must begin before they end")
+    assert(ord.compare(start, end) < 1, "row / col intervals must begin before they end")
 
     // let the interval be start to end, inclusive
     def intersect(that: Interval[N]) = {
@@ -118,12 +118,17 @@ object Regrid {
 
               val xSpan: Interval[Long] = oldXrange intersect newXrange
               val ySpan: Interval[Long] = oldYrange intersect newYrange
+              val forceCrop = newW < 0.6 * oldW || newH < 0.6 * oldH
               newKey ->
-                (oldTile.crop((xSpan.start - oldXstart).toInt,
-                              (ySpan.start - oldYstart).toInt,
-                              (xSpan.end - oldXstart).toInt,
-                              (ySpan.end - oldYstart).toInt),
-                 ((xSpan.start - newXrange.start).toInt, (ySpan.start - newYrange.start).toInt)
+                (
+                  oldTile.crop(
+                    (xSpan.start - oldXstart).toInt,
+                    (ySpan.start - oldYstart).toInt,
+                    (xSpan.end - oldXstart).toInt,
+                    (ySpan.end - oldYstart).toInt,
+                    Crop.Options(force = forceCrop)
+                  ),
+                  ((xSpan.start - newXrange.start).toInt, (ySpan.start - newYrange.start).toInt)
                 )
             }
           }}

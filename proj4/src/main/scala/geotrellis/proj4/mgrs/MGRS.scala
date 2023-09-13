@@ -201,9 +201,8 @@ object MGRS {
   private def encode(utm: (Int, Int, Int, Char), accuracy: Int): String = {
     val (northing, easting, zoneNumber, zoneLetter) = utm
     val formatString = "%0" + accuracy.toString + "d"
-    val seasting = easting.formatted(formatString)
-    val snorthing = northing.formatted(formatString)
-
+    val seasting = formatString.format(easting)
+    val snorthing = formatString.format(northing)
     s"${zoneNumber}${zoneLetter}${get100kID(easting, northing, zoneNumber)}${seasting.drop(seasting.length - 5).take(accuracy)}${snorthing.drop(snorthing.length - 5).take(accuracy)}"
   }
 

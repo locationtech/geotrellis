@@ -22,18 +22,15 @@ import org.locationtech.jts.{geom => jts}
 import cats.syntax.either._
 import _root_.io.circe._
 import _root_.io.circe.syntax._
-import _root_.io.circe.generic.semiauto.{deriveEncoder, deriveDecoder}
+import _root_.io.circe.generic.JsonCodec
 
 case class ExtentRangeError(msg: String) extends Exception(msg)
 
 object Extent {
-  implicit lazy val extentEncoder: Encoder[Extent] = deriveEncoder
-  implicit lazy val extentDecoder: Decoder[Extent] = deriveDecoder
-
-  lazy val listEncoder: Encoder[Extent] =
+  val listEncoder: Encoder[Extent] =
     Encoder.instance { extent => List(extent.xmin, extent.ymin, extent.xmax, extent.ymax).asJson }
 
-  lazy val listDecoder: Decoder[Extent] =
+  val listDecoder: Decoder[Extent] =
     Decoder.decodeJson.emap { value =>
       value.as[List[Double]]
         .map { case List(xmin, ymin, xmax, ymax) => Extent(xmin, ymin, xmax, ymax) }
@@ -65,6 +62,7 @@ object Extent {
   * @param extent The Extent which is projected
   * @param crs    The CRS projection of this extent
   */
+@JsonCodec
 case class ProjectedExtent(extent: Extent, crs: CRS) {
   def reproject(dest: CRS): Extent =
     extent.reproject(crs, dest)
@@ -77,9 +75,6 @@ case class ProjectedExtent(extent: Extent, crs: CRS) {
 object ProjectedExtent {
   implicit def fromTupleA(tup: (Extent, CRS)): ProjectedExtent = ProjectedExtent(tup._1, tup._2)
   implicit def fromTupleB(tup: (CRS, Extent)): ProjectedExtent = ProjectedExtent(tup._2, tup._1)
-
-  implicit lazy val projectedExtentEncoder: Encoder[ProjectedExtent] = deriveEncoder
-  implicit lazy val projectedExtentDecoder: Decoder[ProjectedExtent] = deriveDecoder
 }
 
 /** A rectangular region of geographic space
@@ -89,6 +84,7 @@ object ProjectedExtent {
   * @param xmax The maximum x coordinate
   * @param ymax The maximum y coordinate
   */
+@JsonCodec
 case class Extent(
   xmin: Double, ymin: Double,
   xmax: Double, ymax: Double
@@ -319,7 +315,7 @@ case class Extent(
       xmin + deltaX,
       ymin + deltaY,
       xmax + deltaX,
-      ymin + deltaY
+      ymax + deltaY
     )
 
   /** Return this extent as a polygon */

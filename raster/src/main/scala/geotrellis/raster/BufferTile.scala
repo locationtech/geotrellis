@@ -191,7 +191,7 @@ case class BufferTile(
     *
     * @return  An array of bytes
     */
-  def toBytes(): Array[Byte] = toArrayTile.toBytes()
+  def toBytes(): Array[Byte] = toArrayTile().toBytes()
 
   /**
     * Execute a function on each cell of the tile.  The function

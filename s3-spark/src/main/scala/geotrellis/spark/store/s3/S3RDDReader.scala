@@ -23,7 +23,7 @@ import geotrellis.store.index.{IndexRanges, MergeQueue}
 import geotrellis.store.util.{IOUtils => GTIOUtils}
 import geotrellis.store.s3.S3ClientProducer
 import geotrellis.spark.util.KryoWrapper
-import geotrellis.store.util.BlockingThreadPool
+import geotrellis.store.util.IORuntimeTransient
 
 import software.amazon.awssdk.services.s3.model.{GetObjectRequest, S3Exception}
 import software.amazon.awssdk.services.s3.S3Client
@@ -31,12 +31,11 @@ import org.apache.avro.Schema
 import org.apache.commons.io.IOUtils
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
-
-import scala.concurrent.ExecutionContext
+import cats.effect._
 
 class S3RDDReader(
   s3Client: => S3Client = S3ClientProducer.get(),
-  executionContext: => ExecutionContext = BlockingThreadPool.executionContext
+  runtime: => unsafe.IORuntime = IORuntimeTransient.IORuntime
 ) extends Serializable {
 
   def read[
@@ -66,7 +65,7 @@ class S3RDDReader(
 
     sc.parallelize(bins, bins.size)
       .mapPartitions { partition: Iterator[Seq[(BigInt, BigInt)]] =>
-        implicit val ec = executionContext
+        implicit val ioRuntime: unsafe.IORuntime = runtime
         val s3Client = this.s3Client
         val writerSchema = kwWriterSchema.value.getOrElse(_recordCodec.schema)
         partition flatMap { seq =>

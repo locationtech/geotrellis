@@ -100,13 +100,13 @@ object Settings {
     ).filter(_.asFile.canRead).map(Credentials(_)),
 
     addCompilerPlugin("org.typelevel" % "kind-projector" % "0.13.2" cross CrossVersion.full),
-    addCompilerPlugin("org.scalameta" % "semanticdb-scalac" % "4.5.1" cross CrossVersion.full),
+    addCompilerPlugin("org.scalameta" % "semanticdb-scalac" % "4.7.8" cross CrossVersion.full),
 
     libraryDependencies ++= (CrossVersion.partialVersion(scalaVersion.value) match {
       case Some((2, 13)) => Nil
       case Some((2, 12)) => Seq(
         compilerPlugin("org.scalamacros" % "paradise" % "2.1.1" cross CrossVersion.full),
-        "org.scala-lang.modules" %% "scala-collection-compat" % "2.7.0"
+        "org.scala-lang.modules" %% "scala-collection-compat" % "2.9.0"
       )
         case x => sys.error(s"Encountered unsupported Scala version ${x.getOrElse("undefined")}")
     }),
@@ -116,10 +116,7 @@ object Settings {
         case x => sys.error(s"Encountered unsupported Scala version ${x.getOrElse("undefined")}")
     }),
 
-    libraryDependencies ++= Seq(
-      scalaReflect(scalaVersion.value),
-      log4jbridge % Test // CVE-2021-4104, CVE-2020-8908
-    ),
+    libraryDependencies += scalaReflect(scalaVersion.value),
 
     pomExtra := (
       <developers>
@@ -132,6 +129,11 @@ object Settings {
           <id>lossyrob</id>
           <name>Rob Emanuele</name>
           <url>https://github.com/lossyrob/</url>
+        </developer>
+        <developer>
+          <id>pomadchin</id>
+          <name>Grigory Pomadchin</name>
+          <url>https://github.com/pomadchin/</url>
         </developer>
       </developers>
     ),
@@ -221,12 +223,13 @@ object Settings {
   lazy val cassandra = Seq(
     name := "geotrellis-cassandra",
     libraryDependencies ++= Seq(
-      cassandraDriverCore
-        excludeAll(
-          ExclusionRule("org.jboss.netty"), ExclusionRule("io.netty"),
-          ExclusionRule("org.slf4j"), ExclusionRule("com.typesafe.akka")
-        ) exclude("org.apache.hadoop", "hadoop-client")
-    ),
+      cassandraDriverCore,
+      cassandraDriverQueryBuilder
+    ) map (_ excludeAll(
+      ExclusionRule("io.netty"),
+      ExclusionRule("org.slf4j"),
+      ExclusionRule("com.fasterxml.jackson.core")
+    )),
     console / initialCommands :=
       """
       import geotrellis.proj4._
@@ -241,11 +244,14 @@ object Settings {
   lazy val `cassandra-spark` = Seq(
     name := "geotrellis-cassandra-spark",
     libraryDependencies ++= Seq(
-      cassandraDriverCore
-        excludeAll(
-          ExclusionRule("org.jboss.netty"), ExclusionRule("io.netty"),
-          ExclusionRule("org.slf4j"), ExclusionRule("com.typesafe.akka")
-        ) exclude("org.apache.hadoop", "hadoop-client"),
+      cassandraDriverCore,
+      cassandraDriverQueryBuilder
+    ) map (_ excludeAll(
+      ExclusionRule("io.netty"),
+      ExclusionRule("org.slf4j"),
+      ExclusionRule("com.fasterxml.jackson.core")
+    )),
+    libraryDependencies ++= Seq(
       hadoopClient % Provided,
       apacheSpark("core").value % Provided,
       apacheSpark("sql").value % Test,
@@ -270,10 +276,10 @@ object Settings {
     scalacOptions ++= commonScalacOptions,
     libraryDependencies ++= Seq(
       apacheSpark("core").value,
-      log4jbridge, // CVE-2021-4104, CVE-2020-8908
       scalatest % Test,
       apacheSpark("sql").value % Test
-    )
+    ),
+    libraryDependencySchemes += "org.scala-lang.modules" %% "scala-xml" % VersionScheme.Always
   )
 
   lazy val geotools = Seq(
@@ -357,15 +363,15 @@ object Settings {
     name := "geotrellis-mdoc",
     mdocIn := new File("docs-mdoc"),
     mdocOut := new File("website/docs"),
-    mdocVariables := Map(
-      "VERSION" -> (ThisBuild / version).value
-    )
+    mdocVariables := Map("VERSION" -> (ThisBuild / version).value),
+    libraryDependencySchemes += "org.scala-lang.modules" %% "scala-xml" % VersionScheme.Always
   )
 
   lazy val proj4 = Seq(
     name := "geotrellis-proj4",
     libraryDependencies ++= Seq(
       proj4j,
+      proj4jEPSG,
       openCSV,
       parserCombinators,
       scalatest % Test,
@@ -418,19 +424,6 @@ object Settings {
       awsSdkS3 excludeAll ExclusionRule("com.fasterxml.jackson.core"),
       scalatest % Test
     ),
-    /** https://github.com/lucidworks/spark-solr/issues/179 */
-    libraryDependencies ++= {
-      val deps = Seq(
-        jacksonCore,
-        jacksonDatabind,
-        jacksonAnnotations
-      )
-      CrossVersion.partialVersion(scalaVersion.value) match {
-        // if Scala 2.12+ is used
-        case Some((2, scalaMajor)) if scalaMajor >= 12 => deps
-        case _ => deps :+ jacksonModuleScala
-      }
-    },
     mimaPreviousArtifacts := Set(
       "org.locationtech.geotrellis" %% "geotrellis-s3" % Version.previousVersion
     ),

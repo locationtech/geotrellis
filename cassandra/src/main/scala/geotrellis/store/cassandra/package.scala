@@ -16,10 +16,26 @@
 
 package geotrellis.store
 
+import geotrellis.store.util._
+import cats.effect.Async
+import cats.syntax.functor._
+import com.datastax.oss.driver.api.core.CqlSession
+import com.datastax.oss.driver.api.core.cql.{AsyncResultSet, Statement}
+
 import java.math.BigInteger
 
-package object cassandra {
-  implicit def bigToBig(i: BigInt): BigInteger = {
-    new BigInteger(i.toByteArray)
+package object cassandra extends java.io.Serializable {
+  implicit class BigIntOps(val self: BigInt) extends AnyVal {
+    def asJava: BigInteger = new BigInteger(self.toByteArray)
+  }
+
+  implicit class CqlSessionOps(val self: CqlSession) extends AnyVal {
+    def closeF[F[_]: Async]: F[Unit] = Async[F].liftCompletableFuture(self.closeAsync().toCompletableFuture).void
+    def executeF[F[_]: Async](statement: Statement[_]): F[AsyncResultSet] = Async[F].liftCompletableFuture(self.executeAsync(statement).toCompletableFuture)
+  }
+
+  implicit class AsyncResultSetOps(val self: AsyncResultSet) extends AnyVal {
+    def nonEmpty: Boolean = self.remaining() > 0 || self.hasMorePages
+    def isEmpty: Boolean = !nonEmpty
   }
 }

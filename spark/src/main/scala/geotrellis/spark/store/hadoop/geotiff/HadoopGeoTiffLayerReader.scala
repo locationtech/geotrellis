@@ -19,12 +19,11 @@ package geotrellis.spark.store.hadoop.geotiff
 import geotrellis.layer.ZoomedLayoutScheme
 import geotrellis.raster.resample.{NearestNeighbor, ResampleMethod}
 import geotrellis.raster.io.geotiff.OverviewStrategy
-import geotrellis.store.util.BlockingThreadPool
+import geotrellis.store.util.IORuntimeTransient
 import geotrellis.util.annotations.experimental
 
+import cats.effect._
 import org.apache.hadoop.conf.Configuration
-
-import scala.concurrent.ExecutionContext
 
 /**
   * @define experimental <span class="badge badge-red" style="float: right;">EXPERIMENTAL</span>@experimental
@@ -35,9 +34,9 @@ import scala.concurrent.ExecutionContext
   val resampleMethod: ResampleMethod = NearestNeighbor,
   val strategy: OverviewStrategy = OverviewStrategy.DEFAULT,
   val conf: Configuration = new Configuration,
-  executionContext: => ExecutionContext = BlockingThreadPool.executionContext
+  runtime: => unsafe.IORuntime = IORuntimeTransient.IORuntime
 ) extends GeoTiffLayerReader[M] {
-  implicit val ec: ExecutionContext = executionContext
+  implicit val ioRuntime: unsafe.IORuntime = runtime
 }
 
 @experimental object HadoopGeoTiffLayerReader {
@@ -47,7 +46,7 @@ import scala.concurrent.ExecutionContext
     resampleMethod: ResampleMethod = NearestNeighbor,
     strategy: OverviewStrategy = OverviewStrategy.DEFAULT,
     conf: Configuration = new Configuration,
-    executionContext: => ExecutionContext = BlockingThreadPool.executionContext
+    runtime: => unsafe.IORuntime = IORuntimeTransient.IORuntime
   ): HadoopGeoTiffLayerReader[M] =
-    new HadoopGeoTiffLayerReader(attributeStore, layoutScheme, resampleMethod, strategy, conf, executionContext)
+    new HadoopGeoTiffLayerReader(attributeStore, layoutScheme, resampleMethod, strategy, conf, runtime)
 }

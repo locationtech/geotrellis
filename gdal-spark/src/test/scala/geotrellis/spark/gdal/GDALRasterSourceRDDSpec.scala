@@ -27,21 +27,42 @@ import geotrellis.spark._
 import geotrellis.spark.store.hadoop._
 import geotrellis.spark.testkit._
 import geotrellis.store.hadoop._
-
-import cats.effect.{ContextShift, IO}
-import cats.implicits._
+import cats.effect._
+import cats.syntax.parallel._
 import spire.syntax.cfor._
 import org.apache.spark.rdd.RDD
-
 import org.scalatest.Inspectors._
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.funspec.AnyFunSpec
 
-import java.util.concurrent.Executors
+import java.util.concurrent.{Executors, ScheduledThreadPoolExecutor}
 import scala.concurrent.ExecutionContext
 
 class GDALRasterSourceRDDSpec extends AnyFunSpec with TestEnvironment with BeforeAndAfterAll {
   import geotrellis.GDALTestUtils._
+
+  def createRuntime(compute: ExecutionContext, blocking: ExecutionContext, shutdown: () => Unit): unsafe.IORuntime = {
+    val scheduler = new ScheduledThreadPoolExecutor(
+      1,
+      { r: Runnable =>
+        val t = new Thread(r)
+        t.setName("io-scheduler")
+        t.setDaemon(true)
+        t.setPriority(Thread.MAX_PRIORITY)
+        t
+      })
+    scheduler.setRemoveOnCancelPolicy(true)
+    val (s, sh) = (unsafe.Scheduler.fromScheduledExecutor(scheduler), { () => scheduler.shutdown() })
+
+    unsafe.IORuntime(compute, blocking, s, () => { sh(); shutdown(); }, unsafe.IORuntimeConfig())
+  }
+
+  implicit val runtime: unsafe.IORuntime = {
+    val n = 100
+    val pool = Executors.newFixedThreadPool(n)
+    val ec = ExecutionContext.fromExecutor(pool)
+    createRuntime(ExecutionContext.global, ec, () => pool.shutdown())
+  }
 
   val uri = gdalGeoTiffPath("vlm/aspect-tiled.tif")
   def filePathByIndex(i: Int): String = sparkGeoTiffPath(s"vlm/aspect-tiled-$i.tif")
@@ -209,8 +230,9 @@ class GDALRasterSourceRDDSpec extends AnyFunSpec with TestEnvironment with Befor
         assertRDDLayersEqual(reprojectedExpectedRDDGDAL, reprojectedSourceRDD, true)
       }
 
-      def parallelSpec(n: Int = 1000)(implicit cs: ContextShift[IO]): List[RasterSource] = {
+      def parallelSpec(blocking: Boolean = false, n: Int = 1000)(implicit runtime: unsafe.IORuntime): List[RasterSource] = {
         println(java.lang.Thread.activeCount())
+        def toIO[T](value: => T): IO[T] = if(blocking) IO.blocking(value) else IO(value)
 
         /** Functions to trigger Datasets computation */
         def ltsWithDatasetsTriggered(lts: LayoutTileSource[SpatialKey]): LayoutTileSource[SpatialKey] = { rsWithDatasetsTriggered(lts.source); lts }
@@ -242,7 +264,7 @@ class GDALRasterSourceRDDSpec extends AnyFunSpec with TestEnvironment with Befor
 
         val res = (1 to n).toList.flatMap { _ =>
           (0 to 4).flatMap { i =>
-            List(IO {
+            List(toIO {
               // println(Thread.currentThread().getName())
               // Thread.sleep((Math.random() * 100).toLong)
               val lts = reprojRS(i)
@@ -250,7 +272,7 @@ class GDALRasterSourceRDDSpec extends AnyFunSpec with TestEnvironment with Befor
               reprojRS(i).source.resolutions
 
               dirtyCalls(reprojRS(i).source)
-            }, IO {
+            }, toIO {
               // println(Thread.currentThread().getName())
               // Thread.sleep((Math.random() * 100).toLong)
               val lts = reprojRS(i)
@@ -258,7 +280,7 @@ class GDALRasterSourceRDDSpec extends AnyFunSpec with TestEnvironment with Befor
               reprojRS(i).source.resolutions
 
               dirtyCalls(reprojRS(i).source)
-            }, IO {
+            }, toIO {
               // println(Thread.currentThread().getName())
               // Thread.sleep((Math.random() * 100).toLong)
               val lts = reprojRS(i)
@@ -277,21 +299,14 @@ class GDALRasterSourceRDDSpec extends AnyFunSpec with TestEnvironment with Befor
 
       it("should not fail on parallelization with a fork join pool") {
         val i = 1000
-        implicit val cs = IO.contextShift(ExecutionContext.global)
 
-        parallelSpec(i)
+        parallelSpec(blocking = false, i)
       }
 
       it("should not fail on parallelization with a fixed thread pool") {
         val i = 1000
-        val n = 100
-        val pool = Executors.newFixedThreadPool(n)
-        val ec = ExecutionContext.fromExecutor(pool)
-        implicit val cs = IO.contextShift(ec)
 
-        parallelSpec(i)
-
-        pool.shutdown()
+        parallelSpec(blocking = true, i)
       }
     }
   }

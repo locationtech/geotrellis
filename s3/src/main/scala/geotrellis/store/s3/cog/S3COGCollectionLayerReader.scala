@@ -27,12 +27,12 @@ import geotrellis.store.cog._
 import geotrellis.store.index._
 import geotrellis.store.s3._
 
+import cats.effect._
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.model._
 
 import java.net.URI
 
-import scala.concurrent.ExecutionContext
 import scala.reflect.ClassTag
 
 /**
@@ -43,10 +43,10 @@ import scala.reflect.ClassTag
 class S3COGCollectionLayerReader(
   val attributeStore: AttributeStore,
   s3Client: => S3Client = S3ClientProducer.get(),
-  executionContext: => ExecutionContext = BlockingThreadPool.executionContext
+  runtime: => unsafe.IORuntime = IORuntimeTransient.IORuntime
 ) extends COGCollectionLayerReader[LayerId] {
 
-  @transient implicit lazy val ec = executionContext
+  @transient implicit lazy val ioRuntime: unsafe.IORuntime = runtime
 
   def read[
     K: SpatialComponent: Boundable: Decoder: ClassTag,

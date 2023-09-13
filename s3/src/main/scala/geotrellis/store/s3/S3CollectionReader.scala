@@ -20,18 +20,17 @@ import geotrellis.layer._
 import geotrellis.store.avro.codecs.KeyValueRecordCodec
 import geotrellis.store.index.MergeQueue
 import geotrellis.store.avro.{AvroEncoder, AvroRecordCodec}
-import geotrellis.store.util.{BlockingThreadPool, IOUtils => GTIOUtils}
+import geotrellis.store.util.{IORuntimeTransient, IOUtils => GTIOUtils}
 
+import cats.effect._
 import software.amazon.awssdk.services.s3.model._
 import software.amazon.awssdk.services.s3.S3Client
 import org.apache.avro.Schema
 import org.apache.commons.io.IOUtils
 
-import scala.concurrent.ExecutionContext
-
 class S3CollectionReader(
   s3Client: => S3Client = S3ClientProducer.get(),
-  executionContext: => ExecutionContext = BlockingThreadPool.executionContext
+  runtime: => unsafe.IORuntime = IORuntimeTransient.IORuntime
 ) extends Serializable {
 
   def read[
@@ -53,9 +52,9 @@ class S3CollectionReader(
       queryKeyBounds.flatMap(decomposeBounds)
 
     val recordCodec = KeyValueRecordCodec[K, V]
-    implicit val ec = executionContext
+    implicit val ioRuntime: unsafe.IORuntime = runtime
 
-    GTIOUtils.parJoin[K, V](ranges.iterator){ index: BigInt =>
+    GTIOUtils.parJoin[K, V](ranges.iterator) { index: BigInt =>
       try {
         val getRequest = GetObjectRequest.builder()
           .bucket(bucket)

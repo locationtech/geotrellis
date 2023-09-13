@@ -21,10 +21,9 @@ import geotrellis.store.avro._
 import geotrellis.store.avro.codecs.KeyValueRecordCodec
 import geotrellis.store.s3._
 import geotrellis.spark.util.KryoWrapper
-import geotrellis.store.util.BlockingThreadPool
+import geotrellis.store.util.IORuntimeTransient
 
-import cats.effect.IO
-import cats.syntax.apply._
+import cats.effect._
 import cats.syntax.either._
 import software.amazon.awssdk.services.s3.model.{S3Exception, PutObjectRequest, PutObjectResponse, GetObjectRequest}
 import software.amazon.awssdk.services.s3.S3Client
@@ -33,12 +32,11 @@ import org.apache.avro.Schema
 import org.apache.commons.io.IOUtils
 import org.apache.spark.rdd.RDD
 
-import scala.concurrent.ExecutionContext
 import scala.reflect._
 
 class S3RDDWriter(
   s3Client: => S3Client = S3ClientProducer.get(),
-  excutionContext: => ExecutionContext = BlockingThreadPool.executionContext
+  runtime: => unsafe.IORuntime = IORuntimeTransient.IORuntime
 ) extends Serializable {
 
   def write[K: AvroRecordCodec: ClassTag, V: AvroRecordCodec: ClassTag](
@@ -79,17 +77,13 @@ class S3RDDWriter(
         val s3Client  = this.s3Client
         val schema = kwWriterSchema.value.getOrElse(_recordCodec.schema)
 
-        implicit val ec    = excutionContext
-        implicit val timer = IO.timer(ec)
-        implicit val cs    = IO.contextShift(ec)
+        implicit val ioRuntime: unsafe.IORuntime = runtime
 
         val rows: fs2.Stream[IO, (String, Vector[(K, V)])] =
-          fs2.Stream.fromIterator[IO](
-            partition.map { case (key, value) => (key, value.toVector) }
-          )
+          fs2.Stream.fromIterator[IO](partition.map { case (key, value) => (key, value.toVector) }, chunkSize = 1)
 
         def elaborateRow(row: (String, Vector[(K,V)])): fs2.Stream[IO, (String, Vector[(K,V)])] = {
-          fs2.Stream eval IO.shift(ec) *> IO ({
+          fs2.Stream eval IO.blocking {
             val (key, current) = row
             val updated = LayerWriter.updateRecords(mergeFunc, current, existing = {
               try {
@@ -106,11 +100,11 @@ class S3RDDWriter(
               }
             })
             (key, updated)
-          })
+          }
         }
 
         def rowToRequest(row: (String, Vector[(K,V)])): fs2.Stream[IO, (PutObjectRequest, RequestBody)] = {
-          fs2.Stream eval IO.shift(ec) *> IO ({
+          fs2.Stream eval IO.blocking {
             val (key, kvs) = row
             val contentBytes = AvroEncoder.toBinary(kvs)(_codec)
             val request = PutObjectRequest.builder()
@@ -121,11 +115,11 @@ class S3RDDWriter(
             val requestBody = RequestBody.fromBytes(contentBytes)
 
             (putObjectModifier(request), requestBody)
-          })
+          }
         }
 
         def retire(request: PutObjectRequest, requestBody: RequestBody): fs2.Stream[IO, PutObjectResponse] =
-          fs2.Stream eval IO.shift(ec) *> IO { s3Client.putObject(request, requestBody) }
+          fs2.Stream eval IO.blocking { s3Client.putObject(request, requestBody) }
 
       rows
         .flatMap(elaborateRow)

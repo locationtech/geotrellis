@@ -24,9 +24,8 @@ import geotrellis.store.s3.S3ClientProducer
 import geotrellis.spark.store.hadoop.geotiff.{AttributeStore, GeoTiffLayerReader, GeoTiffMetadata}
 import geotrellis.util.annotations.experimental
 
+import cats.effect._
 import software.amazon.awssdk.services.s3.S3Client
-
-import scala.concurrent.ExecutionContext
 
 /**
   * @define experimental <span class="badge badge-red" style="float: right;">EXPERIMENTAL</span>@experimental
@@ -37,9 +36,9 @@ import scala.concurrent.ExecutionContext
   val resampleMethod: ResampleMethod = NearestNeighbor,
   val strategy: OverviewStrategy = OverviewStrategy.DEFAULT,
   s3Client: => S3Client = S3ClientProducer.get(),
-  executionContext: ExecutionContext = BlockingThreadPool.executionContext
+  runtime: => unsafe.IORuntime = IORuntimeTransient.IORuntime
 ) extends GeoTiffLayerReader[M] {
-  implicit lazy val ec: ExecutionContext = executionContext
+  implicit lazy val ioRuntime: unsafe.IORuntime = runtime
 }
 
 @experimental object S3GeoTiffLayerReader {
@@ -49,13 +48,13 @@ import scala.concurrent.ExecutionContext
     resampleMethod: ResampleMethod = NearestNeighbor,
     strategy: OverviewStrategy = OverviewStrategy.DEFAULT,
     s3Client: => S3Client = S3ClientProducer.get(),
-    executionContext: => ExecutionContext = BlockingThreadPool.executionContext
+    runtime: => unsafe.IORuntime = IORuntimeTransient.IORuntime
   ): S3GeoTiffLayerReader[M] = new S3GeoTiffLayerReader[M](
     attributeStore,
     layoutScheme,
     resampleMethod,
     strategy,
     s3Client,
-    executionContext
+    runtime
   )
 }

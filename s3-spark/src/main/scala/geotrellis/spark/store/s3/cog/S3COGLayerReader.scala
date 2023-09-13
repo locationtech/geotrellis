@@ -30,8 +30,8 @@ import org.apache.spark.SparkContext
 import software.amazon.awssdk.services.s3._
 import software.amazon.awssdk.services.s3.model._
 import io.circe._
+import cats.effect._
 
-import scala.concurrent.ExecutionContext
 import scala.reflect.ClassTag
 import java.net.URI
 
@@ -43,9 +43,9 @@ import java.net.URI
 class S3COGLayerReader(
   val attributeStore: AttributeStore,
   s3Client: => S3Client = S3ClientProducer.get(),
-  executionContext: => ExecutionContext = BlockingThreadPool.executionContext
+  runtime: => unsafe.IORuntime = IORuntimeTransient.IORuntime
 )(@transient implicit val sc: SparkContext) extends COGLayerReader[LayerId] {
-  @transient implicit lazy val ec: ExecutionContext = executionContext
+  @transient implicit lazy val ioRuntime: unsafe.IORuntime = runtime
 
   val defaultNumPartitions: Int = sc.defaultParallelism
 
@@ -98,6 +98,6 @@ object S3COGLayerReader {
     new S3COGLayerReader(
       attributeStore,
       attributeStore.client,
-      BlockingThreadPool.executionContext
+      IORuntimeTransient.IORuntime
     )
 }

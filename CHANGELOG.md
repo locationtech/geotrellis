@@ -7,7 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed
+- Fix FileRangeReaderProvider parsing URI in windows [#3507](https://github.com/locationtech/geotrellis/pull/3507)
+- Regrid: force crop to avoid going out of memory [#3518](https://github.com/locationtech/geotrellis/pull/3518)
+
+## [3.7.0] - 2023-02-26
+
+### Added
+- Add RasterSourceRDD.tiledLayerRDD within the geometry intersection [#3474](https://github.com/locationtech/geotrellis/pull/3474)
+- Expose AWS_REQUEST_PAYER environment variable [#3479](https://github.com/locationtech/geotrellis/pull/3479)
+
+### Changed
+- Migration to CE3 and other major dependencies upgrade [#3389](https://github.com/locationtech/geotrellis/pull/3389)
+- Revert graceful JTS fall back and lazy Circe encoders [#3463](https://github.com/locationtech/geotrellis/issues/3463)
+- Update Cassandra up to 4.x [#3382](https://github.com/locationtech/geotrellis/issues/3382)
+- Accumulo update up to 1.10.x [#3476](https://github.com/locationtech/geotrellis/pull/3476)
+- Fixed Extent.translate [#3480](https://github.com/locationtech/geotrellis/pull/3480)
+- liftCompletableFuture function fix [#3483](https://github.com/locationtech/geotrellis/pull/3483)
+- Pass baseTiff to new RasterSource on GeoTiffResampleRasterSource.reproject/convert [#3485](https://github.com/locationtech/geotrellis/pull/3485)
+- `Mask` and `InverseMask` operations preserve tile cell type [#3494](https://github.com/locationtech/geotrellis/pull/3494)
+
+## [3.6.3] - 2022-07-12
+
+### Changed
 - Expose Charset in a ShapeFileReader API [#3464](https://github.com/locationtech/geotrellis/pull/3464)
+- Bump Spark version up to 3.2.0 [#3471](https://github.com/locationtech/geotrellis/pull/3471)
 
 ## [3.6.2] - 2022-04-05
 
@@ -1153,7 +1176,9 @@ efficiently using the layer query API.
   the slick scala database library.
 - Perform PostGIS `ST_` operations in PostGIS through scala.
 
-[Unreleased]: https://github.com/locationtech/geotrellis/compare/v3.6.2...HEAD
+[Unreleased]: https://github.com/locationtech/geotrellis/compare/v3.7.0...HEAD
+[3.7.0]: https://github.com/locationtech/geotrellis/compare/v3.6.3...v3.7.0
+[3.6.3]: https://github.com/locationtech/geotrellis/compare/v3.6.2...v3.6.3
 [3.6.2]: https://github.com/locationtech/geotrellis/compare/v3.6.1...v3.6.2
 [3.6.1]: https://github.com/locationtech/geotrellis/compare/v3.6.0...v3.6.1
 [3.6.0]: https://github.com/locationtech/geotrellis/compare/v3.5.2...v3.6.0

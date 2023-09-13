@@ -27,7 +27,10 @@ import geotrellis.util._
 import org.apache.avro._
 import org.apache.spark.rdd.RDD
 import _root_.io.circe._
-import cats.Semigroup
+import cats.{Id, Monad, Semigroup}
+import cats.syntax.applicative._
+import cats.syntax.flatMap._
+import cats.syntax.functor._
 
 import scala.reflect.ClassTag
 import java.util.ServiceLoader
@@ -212,20 +215,27 @@ object LayerWriter {
     apply(new URI(uri))
 
   private[geotrellis]
-  def updateRecords[K, V](mergeFunc: Option[(V, V) => V], updating: Vector[(K, V)], existing: => Vector[(K, V)]): Vector[(K, V)] = {
+  def updateRecords[K, V](mergeFunc: Option[(V, V) => V], updating: Vector[(K, V)], existing: => Vector[(K, V)]): Vector[(K, V)] =
+    updateRecordsM[Id, K, V](mergeFunc, updating, existing)
+
+  private[geotrellis]
+  def updateRecordsM[M[_]: Monad, K, V](mergeFunc: Option[(V, V) => V], updating: Vector[(K, V)], existing: => M[Vector[(K, V)]]): M[Vector[(K, V)]] = {
     mergeFunc match {
       case None =>
-        updating
-      case Some(_) if existing.isEmpty =>
-        updating
+        updating.pure[M]
       case Some(fn) =>
-        (existing ++ updating)
-          .groupBy(_._1)
-          .mapValues { row =>
-            val vs = row.map(_._2)
-            vs.foldLeft(vs.head)(fn)
-          }
-          .toVector
+        existing.map(_.isEmpty).ifM(updating.pure[M], {
+          existing
+            .map(_ ++ updating)
+            .map {
+              _.groupBy(_._1)
+               .mapValues { row =>
+                 val vs = row.map(_._2)
+                 vs.foldLeft(vs.head)(fn)
+               }
+               .toVector
+            }
+        })
     }
   }
 }

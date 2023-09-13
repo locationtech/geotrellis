@@ -1,9 +1,9 @@
 import sbt.Keys._
 
 ThisBuild / versionScheme := Some("semver-spec")
-ThisBuild / scalaVersion := "2.12.15"
+ThisBuild / scalaVersion := "2.13.10"
 ThisBuild / organization := "org.locationtech.geotrellis"
-ThisBuild / crossScalaVersions := List("2.12.15", "2.13.8")
+ThisBuild / crossScalaVersions := List("2.12.17", "2.13.10")
 
 lazy val root = Project("geotrellis", file("."))
   .aggregate(
@@ -38,6 +38,7 @@ lazy val root = Project("geotrellis", file("."))
   .enablePlugins(ScalaUnidocPlugin)
   .settings(Settings.commonSettings)
   .settings(publish / skip := true)
+  // https://github.com/scalapb/ScalaPB/issues/1350
   .settings(ScalaUnidoc / unidoc / unidocProjectFilter := inAnyProject -- inProjects(mdoc))
 
 lazy val mdoc = project
