@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Add JDK11 cross compilation [#3435](https://github.com/locationtech/geotrellis/pull/3435)
+
 ### Changed
 - Fix FileRangeReaderProvider parsing URI in windows [#3507](https://github.com/locationtech/geotrellis/pull/3507)
 - Regrid: force crop to avoid going out of memory [#3518](https://github.com/locationtech/geotrellis/pull/3518)
