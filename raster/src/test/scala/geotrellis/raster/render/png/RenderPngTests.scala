@@ -339,7 +339,7 @@ class RenderPngTests extends AnyFunSuite with Matchers with TileBuilders with Ra
     val stops = Array(10000, 20000, 30000, 40000, 50000, 60000, 70000)
     val colorMap = ColorMap(stops, ramp)
 
-    val greyPng = colorMap.render(tile).map(z => z >> 8 & 0xFF).renderPng(GreyPngEncoding(0x00))
+    val greyPng = colorMap.render(tile).map(z => z >> 8 & 0xFF).renderPng(GreyPngEncoding)
     val greyaPng = colorMap.render(tile).map(z => (z & 0xFF00) | 0xFF).renderPng(GreyaPngEncoding)
 
     val greyImg = ImageIO.read(new ByteArrayInputStream(greyPng))
