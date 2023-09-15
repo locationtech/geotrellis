@@ -30,22 +30,6 @@ services:
       - HBASE_DOCKER_HOSTNAME=localhost
     network_mode: host
 
-  test-jdk8:
-    image: quay.io/azavea/openjdk-gdal:3.1-jdk8-slim
-    working_dir: /usr/local/src
-    command: ./sbt ++$SCALA_VERSION test
-    environment:
-      - CI
-      - SCALA_VERSION
-    depends_on: 
-      - nginx
-      - minio
-      - cassandra
-      - hbase
-    volumes:
-      - ./../:/usr/local/src
-    network_mode: host
-
   test-jdk11:
     image: quay.io/azavea/openjdk-gdal:3.1-jdk11-slim
     working_dir: /usr/local/src

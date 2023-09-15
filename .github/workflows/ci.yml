@@ -13,7 +13,7 @@ jobs:
     strategy:
       matrix:
         scala: ["2.12.18", "2.13.12"]
-        java: ["8", "11"]
+        java: ["11"]
     runs-on: ubuntu-latest
   
     env:
@@ -32,11 +32,7 @@ jobs:
 
       - name: run tests
         run: |
-          if [[ "$JAVA_VERSION" == "8" ]]; then 
-            docker compose -f .github/docker-compose.yml up test-jdk8 --abort-on-container-exit --exit-code-from test-jdk8
-          elif [[ "$JAVA_VERSION" == "11" ]]; then 
-            docker compose -f .github/docker-compose.yml up test-jdk11 --abort-on-container-exit --exit-code-from test-jdk11
-          fi
+          docker compose -f .github/docker-compose.yml up test-jdk11 --abort-on-container-exit --exit-code-from test-jdk11
 
   publish:
     name: Publish Artifacts
@@ -45,7 +41,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        java: [8]
+        java: [11]
         distribution: [temurin]
     runs-on: ${{ matrix.os }}
     steps:
