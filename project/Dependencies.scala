@@ -22,7 +22,7 @@ object Version {
   val accumulo    = "1.10.3"
   val cassandra   = "4.15.0"
   val hbase       = "2.5.4"
-  val hadoop      = "3.3.5"
+  val hadoop      = "3.3.6"
   val gdal        = "3.1.0"
   val gdalWarp    = "1.2.0"
 
