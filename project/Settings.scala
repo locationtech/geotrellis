@@ -314,11 +314,13 @@ object Settings {
 
   lazy val hbase = Seq(
     name := "geotrellis-hbase",
-    libraryDependencies +=
+    libraryDependencies ++= Seq(
       hbaseMapReduce
         exclude("javax.servlet", "servlet-api")
-        exclude("org.mortbay.jetty", "servlet-api-2.5"),
-    libraryDependencies += jacksonCoreAsl,
+        exclude("org.mortbay.jetty", "servlet-api-2.5")
+        exclude("log4j", "log4j"), // CVE-2021-4104, CVE-2020-8908
+      jacksonCoreAsl
+    ),
     console / initialCommands :=
       """
       import geotrellis.raster._
@@ -612,7 +614,7 @@ object Settings {
       apacheIO,
       scaffeine,
       caffeine,
-      uzaygezenCore exclude("log4j", "log4j"),
+      uzaygezenCore exclude("log4j", "log4j"), // CVE-2021-4104, CVE-2020-8908
       scalaXml,
       apacheLang3,
       fs2("core").value,
