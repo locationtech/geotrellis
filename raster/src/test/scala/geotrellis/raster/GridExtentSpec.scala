@@ -179,5 +179,20 @@ class GridExtentSpec extends AnyFunSpec with Matchers {
       val actualGridExtent = gridExtent.withResolution(CellSize(1.4, 1.4))
       expectedGridExtent should be (actualGridExtent)
     }
+
+    it("should support roundtrip from grid bounds to raster extent and back") {
+      val targetBounds = GridBounds(55L, 103, 55 + 73, 103 + 111)
+      val ge = GridExtent[Long](Extent(1.8973214288275528, 49.352678585684544, 6.299107143119465, 51.7276785856839), CellSize(0.008928571428584, 0.008928571428568996))
+      val targetExtent = ge.extentFor(targetBounds)
+
+      // second, aligned extent based on a LayoutDefinition
+      val ge2 = GridExtent[Long](Extent(2.3883928573996727, 49.66517858568254, 3.5312500002584244, 50.80803572854129), CellSize(0.008928571428583998, 0.008928571428583998))
+
+      // gridextents have to be aligned for test to be valid
+      val resultingBounds = ge2.gridBoundsFor(targetExtent)
+
+      targetBounds.height shouldBe resultingBounds.height
+      targetBounds.width shouldBe resultingBounds.width
+    }
   }
 }
