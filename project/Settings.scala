@@ -290,8 +290,7 @@ object Settings {
       geotoolsHsql,
       geotoolsMain,
       geotoolsReferencing,
-      geotoolsMetadata,
-      geotoolsOpengis
+      geotoolsMetadata
     ).map(_ excludeAll(excludedDependencies: _*)),
     libraryDependencies ++= Seq(
       unitApi,
@@ -468,7 +467,6 @@ object Settings {
     name := "geotrellis-shapefile",
     libraryDependencies ++= Seq(
       geotoolsMain,
-      geotoolsOpengis,
       geotoolsShapefile
     ).map(_ excludeAll(excludedDependencies: _*)),
     libraryDependencies ++= Seq(scalatest % Test) ++ worksWithDependencies,
