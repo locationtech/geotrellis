@@ -18,9 +18,8 @@ package geotrellis.geotools
 
 import geotrellis.vector._
 import geotrellis.proj4.CRS
-
-import org.geotools.feature.simple.{SimpleFeatureTypeBuilder, SimpleFeatureBuilder}
-import org.opengis.feature.simple.SimpleFeature
+import org.geotools.api.feature.simple.SimpleFeature
+import org.geotools.feature.simple.{SimpleFeatureBuilder, SimpleFeatureTypeBuilder}
 
 object GeometryToSimpleFeature {
   val geometryField = "the_geom"

@@ -20,7 +20,7 @@ import geotrellis.proj4._
 import geotrellis.util.MethodExtensions
 import geotrellis.vector._
 
-import org.opengis.feature.simple.SimpleFeature
+import org.geotools.api.feature.simple.SimpleFeature
 
 trait GeometryToSimpleFeatureMethods[G <: Geometry] extends MethodExtensions[G] {
 
