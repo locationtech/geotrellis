@@ -55,9 +55,9 @@ object GeoTrellisPath {
   implicit def toGeoTrellisDataPath(path: String): GeoTrellisPath = parse(path)
 
   def parseOption(path: String): Option[GeoTrellisPath] = {
-    val layerNameParam: String = "layer"
-    val zoomLevelParam: String = "zoom"
-    val bandCountParam: String = "band_count"
+    val layerNameParam = "layer"
+    val zoomLevelParam = "zoom"
+    val bandCountParam = "band_count"
 
     val uri = UrlWithAuthority.parseOption(path).fold(Url.parse(path))(identity)
     val queryString = uri.query
@@ -70,18 +70,18 @@ object GeoTrellisPath {
           case _ => ""
         }
 
-      val queryStringClean = {
+      val queryStringFiltered = {
         val filtered = queryString.removeAll(layerNameParam, zoomLevelParam, bandCountParam)
         if(filtered.isEmpty) "" else s"?${filtered.toString()}"
       }
 
-      s"${scheme.split("\\+").last}://$authority${uri.path}$queryStringClean".trim.some
+      s"${scheme.split("\\+").last}://$authority${uri.path}$queryStringFiltered".trim.some
     }
 
     catalogPath.fold(Option.empty[GeoTrellisPath]) { catalogPath =>
-      val maybeLayerName: Option[String] = queryString.param(layerNameParam)
-      val maybeZoomLevel: Option[Int] = queryString.param(zoomLevelParam).map(_.toInt)
-      val bandCount: Option[Int] = queryString.param(bandCountParam).map(_.toInt)
+      val maybeLayerName = queryString.param(layerNameParam)
+      val maybeZoomLevel = queryString.param(zoomLevelParam).map(_.toInt)
+      val bandCount = queryString.param(bandCountParam).map(_.toInt)
 
       (maybeLayerName, maybeZoomLevel) match {
         case (Some(layerName), Some(zoomLevel)) =>

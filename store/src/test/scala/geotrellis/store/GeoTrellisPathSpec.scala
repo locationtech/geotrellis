@@ -106,9 +106,9 @@ class GeoTrellisPathSpec extends AnyFunSpec {
       assert(path.layerName == "foo")
     }
 
-    it("should ignore invalid parameters") {
+    it("should not ignore invalid parameters") {
       val path = GeoTrellisPath.parse("file:///foo/bar?layer=baz&zoom=1&invalid=not&nope=1")
-      assert(path == GeoTrellisPath("file:///foo/bar", "baz", 1, None))
+      assert(path == GeoTrellisPath("file:///foo/bar?invalid=not&nope=1", "baz", 1, None))
     }
   }
 }
