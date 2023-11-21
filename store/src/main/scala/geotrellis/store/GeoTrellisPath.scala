@@ -70,7 +70,12 @@ object GeoTrellisPath {
           case _ => ""
         }
 
-      s"${scheme.split("\\+").last}://$authority${uri.path}".some
+      val queryStringClean = {
+        val filtered = queryString.removeAll(layerNameParam, zoomLevelParam, bandCountParam)
+        if(filtered.isEmpty) "" else s"?${filtered.toString()}"
+      }
+
+      s"${scheme.split("\\+").last}://$authority${uri.path}$queryStringClean".trim.some
     }
 
     catalogPath.fold(Option.empty[GeoTrellisPath]) { catalogPath =>
