@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix FileRangeReaderProvider parsing URI in windows [#3507](https://github.com/locationtech/geotrellis/pull/3507)
 - Regrid: force crop to avoid going out of memory [#3518](https://github.com/locationtech/geotrellis/pull/3518)
 - Fix rounding errors/numerical instability in GridExtent and LayoutTileSource [#3520](https://github.com/locationtech/geotrellis/pull/3520)
+- GeoTrellisPath.parse should preserve unrecognized uri parameters [#3529](https://github.com/locationtech/geotrellis/pull/3529)
 
 ## [3.7.0] - 2023-02-26
 

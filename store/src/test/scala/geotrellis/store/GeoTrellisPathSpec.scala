@@ -23,12 +23,12 @@ class GeoTrellisPathSpec extends AnyFunSpec {
 
     it("should fail to parse without a layer") {
       val path = GeoTrellisPath.parseOption("file:///foo/bar?zoom=1")
-      assert(path == None)
+      assert(path.isEmpty)
     }
 
     it("should fail to parse without a zoom") {
       val path = GeoTrellisPath.parseOption("file:///foo/bar?layer=baz")
-      assert(path == None)
+      assert(path.isEmpty)
     }
 
     it("should parse a local absolute file path without scheme") {
@@ -59,7 +59,7 @@ class GeoTrellisPathSpec extends AnyFunSpec {
       val path = GeoTrellisPath.parse("file:///foo/bar?layer=baz&band_count=1&zoom=10")
       assert(path.layerName == "baz")
       assert(path.zoomLevel == 10)
-      assert(path.bandCount == Some(1))
+      assert(path.bandCount.contains(1))
     }
 
     it("should parse hdfs scheme") {
@@ -72,6 +72,20 @@ class GeoTrellisPathSpec extends AnyFunSpec {
       val path = GeoTrellisPath.parse("s3://bucket/path?layer=foo&zoom=1")
       assert(path.value == "s3://bucket/path")
       assert(path.layerName == "foo")
+    }
+
+    it("should parse hbase scheme") {
+      val path = GeoTrellisPath.parse("hbase://zookeeper:2181?master=master_host&attributes=attributes_table&layers=layers_table&layer=foo&zoom=1")
+      assert(path.value == "hbase://zookeeper:2181?master=master_host&attributes=attributes_table&layers=layers_table")
+      assert(path.layerName == "foo")
+      assert(path.zoomLevel == 1)
+    }
+
+    it("should parse accumulo scheme") {
+      val path = GeoTrellisPath.parse("accumulo://root:@localhost/fake?attributes=attributes&layers=tiles&layer=foo&zoom=1")
+      assert(path.value == "accumulo://root:@localhost/fake?attributes=attributes&layers=tiles")
+      assert(path.layerName == "foo")
+      assert(path.zoomLevel == 1)
     }
 
     it("should parse absolute file scheme with gt+ prefix") {
@@ -92,9 +106,9 @@ class GeoTrellisPathSpec extends AnyFunSpec {
       assert(path.layerName == "foo")
     }
 
-    it("should ignore invalid parameters") {
+    it("should not ignore invalid parameters") {
       val path = GeoTrellisPath.parse("file:///foo/bar?layer=baz&zoom=1&invalid=not&nope=1")
-      assert(path == GeoTrellisPath("file:///foo/bar", "baz", 1, None))
+      assert(path == GeoTrellisPath("file:///foo/bar?invalid=not&nope=1", "baz", 1, None))
     }
   }
 }
