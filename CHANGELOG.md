@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.7.1] - 2024-01-08
+
 ### Added
 - Add JDK11 cross compilation [#3435](https://github.com/locationtech/geotrellis/pull/3435)
 
@@ -1181,7 +1183,8 @@ efficiently using the layer query API.
   the slick scala database library.
 - Perform PostGIS `ST_` operations in PostGIS through scala.
 
-[Unreleased]: https://github.com/locationtech/geotrellis/compare/v3.7.0...HEAD
+[Unreleased]: https://github.com/locationtech/geotrellis/compare/v3.7.1...HEAD
+[3.7.1]: https://github.com/locationtech/geotrellis/compare/v3.7.0...v3.7.1
 [3.7.0]: https://github.com/locationtech/geotrellis/compare/v3.6.3...v3.7.0
 [3.6.3]: https://github.com/locationtech/geotrellis/compare/v3.6.2...v3.6.3
 [3.6.2]: https://github.com/locationtech/geotrellis/compare/v3.6.1...v3.6.2
