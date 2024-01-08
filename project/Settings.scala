@@ -100,7 +100,7 @@ object Settings {
     ).filter(_.asFile.canRead).map(Credentials(_)),
 
     addCompilerPlugin("org.typelevel" % "kind-projector" % "0.13.2" cross CrossVersion.full),
-    addCompilerPlugin("org.scalameta" % "semanticdb-scalac" % "4.7.8" cross CrossVersion.full),
+    addCompilerPlugin("org.scalameta" % "semanticdb-scalac" % "4.8.15" cross CrossVersion.full),
 
     libraryDependencies ++= (CrossVersion.partialVersion(scalaVersion.value) match {
       case Some((2, 13)) => Nil
@@ -611,7 +611,7 @@ object Settings {
       apacheIO,
       scaffeine,
       caffeine,
-      uzaygezenCore,
+      uzaygezenCore exclude("log4j", "log4j"),
       scalaXml,
       apacheLang3,
       fs2("core").value,
