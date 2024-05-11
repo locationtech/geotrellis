@@ -6,7 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [3.7.1] - 2024-01-08
+### Changed
+- Bump GeoTools version up to 30.x [#3521](https://github.com/locationtech/geotrellis/pull/3521)
 
 ### Added
 - Add JDK11 cross compilation [#3435](https://github.com/locationtech/geotrellis/pull/3435)
@@ -16,7 +17,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Regrid: force crop to avoid going out of memory [#3518](https://github.com/locationtech/geotrellis/pull/3518)
 - Fix rounding errors/numerical instability in GridExtent and LayoutTileSource [#3520](https://github.com/locationtech/geotrellis/pull/3520)
 - GeoTrellisPath.parse should preserve unrecognized uri parameters [#3529](https://github.com/locationtech/geotrellis/pull/3529)
-- Bump GeoTools version up to 30.x [#3521](https://github.com/locationtech/geotrellis/pull/3521)
 
 ## [3.7.0] - 2023-02-26
 

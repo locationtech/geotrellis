@@ -16,20 +16,19 @@
 
 package geotrellis.vector.io.json
 
+import geotrellis.vector.{Extent, Feature, Geometry, GeometryCollection}
+import geotrellis.vector.methods.Implicits._
+
 import io.circe._
 import io.circe.syntax._
 import cats.syntax.either._
 import io.circe.parser.{parse => circeParse}
 
-import geotrellis.vector._
 import scala.reflect.ClassTag
 import scala.reflect.runtime.universe.TypeTag
-import scala.util.{Try, Success, Failure}
-
-object Implicits extends Implicits
+import scala.util.{Failure, Success, Try}
 
 trait Implicits extends GeoJsonSupport {
-
   implicit class GeometriesToGeoJson(val geoms: Traversable[Geometry]) {
     def toGeoJson(): String = {
       GeometryCollection(geoms).asJson.noSpaces
@@ -104,3 +103,5 @@ trait Implicits extends GeoJsonSupport {
       }
   }
 }
+
+object Implicits extends Implicits
