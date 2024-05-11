@@ -20,17 +20,16 @@ import geotrellis.proj4.CRS
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff.util._
 import geotrellis.vector.Extent
-
 import it.geosolutions.imageio.utilities.ImageIOUtilities
 import org.geotools.coverage.Category
 import org.geotools.coverage.GridSampleDimension
 import org.geotools.coverage.grid._
-import org.geotools.geometry.Envelope2D
 import org.geotools.referencing.{CRS => GeoToolsCRS}
 import org.geotools.coverage.util.CoverageUtilities
 import org.geotools.util.NumberRange
-import org.opengis.coverage.SampleDimensionType
-import org.opengis.referencing.crs.CoordinateReferenceSystem
+import org.geotools.geometry.jts.ReferencedEnvelope
+import org.geotools.api.coverage._
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem
 import spire.syntax.cfor._
 
 import java.awt.Color
@@ -198,18 +197,18 @@ object GridCoverage2DConverters {
   }
 
   /**
-    * A function to produce a GeoTools Envelope2D from a Geotrellis
+    * A function to produce a GeoTools ReferencedEnvelope from a Geotrellis
     * Extent and CRS.
     *
     * @param  extent  The Geotrellis Extent
     * @param  crs     The CRS of the raster
     *
-    * @return         A GeoTools Envelope2D
+    * @return         A GeoTools ReferencedEnvelope
     */
-  def getEnvelope2D(extent: Extent): Envelope2D = {
+  def getEnvelope2D(extent: Extent): ReferencedEnvelope = {
     val Extent(xmin, ymin, xmax, ymax) = extent
 
-    new Envelope2D(null, xmin, ymin, (xmax - xmin), (ymax - ymin))
+    ReferencedEnvelope.rect(xmin, ymin, xmax - xmin, ymax - ymin, null)
   }
 
   def getGeotoolsCRS(crs: CRS): CoordinateReferenceSystem = {
@@ -222,20 +221,20 @@ object GridCoverage2DConverters {
   }
 
   /**
-    * A function to produce a GeoTools Envelope2D from a Geotrellis
+    * A function to produce a GeoTools ReferencedEnvelope from a Geotrellis
     * Extent and CRS. If the CRS cannot be converted, a null GeoTools
     * CRS is used.
     *
     * @param  extent  The Geotrellis Extent
     * @param  crs     The CRS of the raster
     *
-    * @return         A GeoTools Envelope2D
+    * @return         A GeoTools ReferencedEnvelope
     */
-  def getEnvelope2D(extent: Extent, crs: CRS): Envelope2D = {
+  def getEnvelope2D(extent: Extent, crs: CRS): ReferencedEnvelope = {
     val Extent(xmin, ymin, xmax, ymax) = extent
     val geoToolsCRS = getGeotoolsCRS(crs)
 
-    new Envelope2D(geoToolsCRS, xmin, ymin, (xmax - xmin), (ymax - ymin))
+    ReferencedEnvelope.rect(xmin, ymin, xmax - xmin, ymax - ymin, geoToolsCRS)
   }
 
   def getValueRange(cellType: CellType): (Double, Double) =

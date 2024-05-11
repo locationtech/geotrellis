@@ -17,7 +17,7 @@
 import sbt._
 
 object Version {
-  val geotools    = "25.4"
+  val geotools    = "31.0"
   val spire       = "0.17.0"
   val accumulo    = "1.10.4"
   val cassandra   = "4.17.0"
@@ -106,7 +106,6 @@ object Dependencies {
   val geotoolsGeoTiff     = "org.geotools"                 % "gt-geotiff"              % Version.geotools
   val geotoolsShapefile   = "org.geotools"                 % "gt-shapefile"            % Version.geotools
   val geotoolsMetadata    = "org.geotools"                 % "gt-metadata"             % Version.geotools
-  val geotoolsOpengis     = "org.geotools"                 % "gt-opengis"              % Version.geotools
 
   val scalaArm            = "com.jsuereth"                %% "scala-arm"               % "2.0"
 

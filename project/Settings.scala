@@ -32,13 +32,14 @@ object Settings {
     val apacheSnapshots = "apache-snapshots" at "https://repository.apache.org/content/repositories/snapshots/"
     val eclipseReleases = "eclipse-releases" at "https://repo.eclipse.org/content/groups/releases"
     val osgeoReleases   = "osgeo-releases" at "https://repo.osgeo.org/repository/release/"
+    val osgeoSnapshots  = "osgeo-snapshots" at "https://repo.osgeo.org/repository/snapshot/"
     val geosolutions    = "geosolutions" at "https://maven.geo-solutions.it/"
     val jitpack         = "jitpack" at "https://jitpack.io" // for https://github.com/everit-org/json-schema
     val ivy2Local       = Resolver.file("local", file(Path.userHome.absolutePath + "/.ivy2/local"))(Resolver.ivyStylePatterns)
     val mavenLocal      = Resolver.mavenLocal
     val maven           = DefaultMavenRepository
     val local           = Seq(ivy2Local, mavenLocal)
-    val external        = Seq(osgeoReleases, maven, eclipseReleases, geosolutions, jitpack, apacheSnapshots)
+    val external        = Seq(osgeoReleases, maven, eclipseReleases, geosolutions, jitpack, apacheSnapshots, osgeoSnapshots)
     val all             = external ++ local
   }
 
@@ -289,8 +290,7 @@ object Settings {
       geotoolsHsql,
       geotoolsMain,
       geotoolsReferencing,
-      geotoolsMetadata,
-      geotoolsOpengis
+      geotoolsMetadata
     ).map(_ excludeAll(excludedDependencies: _*)),
     libraryDependencies ++= Seq(
       unitApi,
@@ -313,11 +313,13 @@ object Settings {
 
   lazy val hbase = Seq(
     name := "geotrellis-hbase",
-    libraryDependencies +=
+    libraryDependencies ++= Seq(
       hbaseMapReduce
         exclude("javax.servlet", "servlet-api")
-        exclude("org.mortbay.jetty", "servlet-api-2.5"),
-    libraryDependencies += jacksonCoreAsl,
+        exclude("org.mortbay.jetty", "servlet-api-2.5")
+        exclude("log4j", "log4j"), // CVE-2021-4104, CVE-2020-8908
+      jacksonCoreAsl
+    ),
     console / initialCommands :=
       """
       import geotrellis.raster._
@@ -465,7 +467,6 @@ object Settings {
     name := "geotrellis-shapefile",
     libraryDependencies ++= Seq(
       geotoolsMain,
-      geotoolsOpengis,
       geotoolsShapefile
     ).map(_ excludeAll(excludedDependencies: _*)),
     libraryDependencies ++= Seq(scalatest % Test) ++ worksWithDependencies,
@@ -611,7 +612,7 @@ object Settings {
       apacheIO,
       scaffeine,
       caffeine,
-      uzaygezenCore exclude("log4j", "log4j"),
+      uzaygezenCore exclude("log4j", "log4j"), // CVE-2021-4104, CVE-2020-8908
       scalaXml,
       apacheLang3,
       fs2("core").value,

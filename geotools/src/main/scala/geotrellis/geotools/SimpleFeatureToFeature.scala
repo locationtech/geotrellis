@@ -17,7 +17,7 @@
 package geotrellis.geotools
 
 import geotrellis.vector._
-import org.opengis.feature.simple.SimpleFeature
+import org.geotools.api.feature.simple.SimpleFeature
 
 import scala.collection._
 import scala.collection.JavaConverters._
