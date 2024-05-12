@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - Bump GeoTools version up to 30.x [#3521](https://github.com/locationtech/geotrellis/pull/3521)
+- Fix not found: type Serializable compiler bug [#3535](https://github.com/locationtech/geotrellis/pull/3535)
+
+## [3.7.1] - 2024-01-08
 
 ### Added
 - Add JDK11 cross compilation [#3435](https://github.com/locationtech/geotrellis/pull/3435)
