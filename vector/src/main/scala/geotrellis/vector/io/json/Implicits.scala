@@ -26,9 +26,12 @@ import io.circe.parser.{parse => circeParse}
 
 import scala.reflect.ClassTag
 import scala.reflect.runtime.universe.TypeTag
-import scala.util.{Failure, Success, Try}
+import scala.util.{Try, Success, Failure}
+
+object Implicits extends Implicits
 
 trait Implicits extends GeoJsonSupport {
+
   implicit class GeometriesToGeoJson(val geoms: Traversable[Geometry]) {
     def toGeoJson(): String = {
       GeometryCollection(geoms).asJson.noSpaces
@@ -103,5 +106,3 @@ trait Implicits extends GeoJsonSupport {
       }
   }
 }
-
-object Implicits extends Implicits
