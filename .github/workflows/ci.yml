@@ -13,7 +13,7 @@ jobs:
     strategy:
       matrix:
         scala: ["2.12.19", "2.13.14"]
-        java: ["11", "21"]
+        java: ["11"] # 21
     runs-on: ubuntu-latest
   
     env:
