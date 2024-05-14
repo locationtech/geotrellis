@@ -13,7 +13,7 @@ jobs:
     strategy:
       matrix:
         scala: ["2.12.19", "2.13.14"]
-        java: ["11"]
+        java: ["11", "21"]
     runs-on: ubuntu-latest
   
     env:
@@ -32,7 +32,7 @@ jobs:
 
       - name: run tests
         run: |
-          docker compose -f .github/docker-compose.yml up test-jdk11 --abort-on-container-exit --exit-code-from test-jdk11
+          docker compose -f .github/docker-compose.yml up "test-jdk${JAVA_VERSION}" --abort-on-container-exit --exit-code-from "test-jdk${JAVA_VERSION}"
 
   publish:
     name: Publish Artifacts

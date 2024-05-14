@@ -632,7 +632,7 @@ object Settings {
     Test / fork := true,
     Test / parallelExecution := false,
     Test / testOptions += Tests.Argument("-oDF"),
-    javaOptions ++= Seq("-Djava.library.path=/usr/local/lib")
+    javaOptions ++= Seq("-Djava.library.path=/usr/lib:/usr/local/lib")
   ) ++ commonSettings
 
   lazy val `gdal-spark` = Seq(
@@ -647,6 +647,6 @@ object Settings {
     Test / fork := true,
     Test / parallelExecution := false,
     Test / testOptions += Tests.Argument("-oDF"),
-    javaOptions ++= Seq("-Djava.library.path=/usr/local/lib")
+    javaOptions ++= Seq("-Djava.library.path=/usr/lib:/usr/local/lib")
   ) ++ commonSettings
 }
