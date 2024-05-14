@@ -1,6 +1,4 @@
 
-# /lib/aarch64-linux-gnu/
-# /lib/aarch64-linux-gnu/jni/
 # docker buildx build -f Dockerfile.gdal --build-arg="JAVA_VERSION=11" --build-arg="GDAL_VERSION=3.8.5" --build-arg="GDAL_VERSION=3.8.5" --platform linux/amd64 --push --tag daunnc/osgeo-gdal-jdk11:3.8.5 .
 # docker buildx build -f Dockerfile.gdal --build-arg="JAVA_VERSION=21" --build-arg="GDAL_VERSION=3.8.5" --build-arg="GDAL_VERSION=3.8.5" --platform linux/amd64 --push --tag daunnc/osgeo-gdal-jdk21:3.8.5 .
 
@@ -21,6 +19,8 @@ RUN set -ex && \
 ENV JAVA_HOME /usr/lib/jvm/java-${JAVA_VERSION}-openjdk-amd64
 RUN update-alternatives --set java `update-alternatives --list java | grep java-${JAVA_VERSION}`
 
+# /lib/aarch64-linux-gnu/
+# /lib/aarch64-linux-gnu/jni/
 ENV LD_LIBRARY_PATH "$JNI_DIR/:$JNI_DIR/jni/:$LD_LIBRARY_PATH"
 
 RUN apt-get update && apt-get -y install bash wget unzip gpg software-properties-common
