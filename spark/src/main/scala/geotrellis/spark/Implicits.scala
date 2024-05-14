@@ -68,7 +68,7 @@ trait Implicits
     with geotrellis.spark.tiling.Implicits
     with geotrellis.spark.timeseries.Implicits
     with geotrellis.spark.viewshed.Implicits
-    with java.io.Serializable {
+    with Serializable {
 
   /** Auto wrap a partitioner when something is requestion an Option[Partitioner];
     * useful for Options that take an Option[Partitioner]

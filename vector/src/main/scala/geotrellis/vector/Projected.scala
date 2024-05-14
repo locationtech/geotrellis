@@ -20,7 +20,7 @@ import geotrellis.proj4.CRS
 import geotrellis.vector.reproject.Reproject
 
 object Projected {
-  implicit def toGeometry[G <: Geometry](p: Projected[G]) = p.geom
+  implicit def toGeometry[G <: Geometry](p: Projected[G]): G = p.geom
 }
 
 /**

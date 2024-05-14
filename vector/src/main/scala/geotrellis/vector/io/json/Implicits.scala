@@ -16,12 +16,14 @@
 
 package geotrellis.vector.io.json
 
+import geotrellis.vector.{Extent, Feature, Geometry, GeometryCollection}
+import geotrellis.vector.methods.Implicits._
+
 import io.circe._
 import io.circe.syntax._
 import cats.syntax.either._
 import io.circe.parser.{parse => circeParse}
 
-import geotrellis.vector._
 import scala.reflect.ClassTag
 import scala.reflect.runtime.universe.TypeTag
 import scala.util.{Try, Success, Failure}

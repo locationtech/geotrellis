@@ -21,7 +21,7 @@ object Version {
   val spire       = "0.17.0"
   val accumulo    = "1.10.4"
   val cassandra   = "4.17.0"
-  val hbase       = "2.5.7"
+  val hbase       = "2.5.8"
   val hadoop      = "3.3.6"
   val gdal        = "3.1.0"
   val gdalWarp    = "1.2.0"
@@ -45,7 +45,7 @@ object Dependencies {
 
   def cats(module: String) = Def.setting {
     module match {
-      case "effect" => "org.typelevel" %% s"cats-$module" % "3.5.2"
+      case "effect" => "org.typelevel" %% s"cats-$module" % "3.5.4"
       case _        => "org.typelevel" %% s"cats-$module" % "2.10.0"
     }
   }
@@ -54,39 +54,39 @@ object Dependencies {
     module match {
       case "json-schema"    => "io.circe" %% s"circe-$module" % "0.2.0"
       case "generic-extras" => "io.circe" %% s"circe-$module" % "0.14.3"
-      case _                => "io.circe" %% s"circe-$module" % "0.14.6"
+      case _                => "io.circe" %% s"circe-$module" % "0.14.7"
     }
   }
 
   def fs2(module: String) = Def.setting {
-    "co.fs2" %% s"fs2-$module" % "3.9.3"
+    "co.fs2" %% s"fs2-$module" % "3.10.2"
   }
 
   def apacheSpark(module: String) = Def.setting {
-    "org.apache.spark"  %% s"spark-$module" % "3.5.0"
+    "org.apache.spark"  %% s"spark-$module" % "3.5.1"
   }
 
   def scalaReflect(version: String) = "org.scala-lang" % "scala-reflect" % version
 
-  val pureconfig          = "com.github.pureconfig"      %% "pureconfig"               % "0.17.4"
+  val pureconfig          = "com.github.pureconfig"      %% "pureconfig"               % "0.17.6"
   val log4s               = "org.log4s"                  %% "log4s"                    % "1.10.0"
-  val scalatest           = "org.scalatest"              %% "scalatest"                % "3.2.17"
-  val scalacheck          = "org.scalacheck"             %% "scalacheck"               % "1.17.0"
-  val scalaXml            = "org.scala-lang.modules"     %% "scala-xml"                % "2.2.0"
+  val scalatest           = "org.scalatest"              %% "scalatest"                % "3.2.18"
+  val scalacheck          = "org.scalacheck"             %% "scalacheck"               % "1.18.0"
+  val scalaXml            = "org.scala-lang.modules"     %% "scala-xml"                % "2.3.0"
   val jts                 = "org.locationtech.jts"        % "jts-core"                 % "1.19.0"
   val proj4j              = "org.locationtech.proj4j"     % "proj4j"                   % "1.3.0"
   val proj4jEPSG          = "org.locationtech.proj4j"     % "proj4j-epsg"              % "1.3.0"
   val openCSV             = "com.opencsv"                 % "opencsv"                  % "5.9"
   val spire               = "org.typelevel"              %% "spire"                    % Version.spire
   val spireMacro          = "org.typelevel"              %% "spire-macros"             % Version.spire
-  val apacheIO            = "commons-io"                  % "commons-io"               % "2.15.1"
+  val apacheIO            = "commons-io"                  % "commons-io"               % "2.16.1"
   val apacheLang3         = "org.apache.commons"          % "commons-lang3"            % "3.14.0"
   val apacheMath          = "org.apache.commons"          % "commons-math3"            % "3.6.1"
   val chronoscala         = "jp.ne.opt"                  %% "chronoscala"              % "1.0.0"
-  val awsSdkS3            = "software.amazon.awssdk"      % "s3"                       % "2.22.12"
+  val awsSdkS3            = "software.amazon.awssdk"      % "s3"                       % "2.25.50"
   val hadoopClient        = "org.apache.hadoop"           % "hadoop-client"            % Version.hadoop
-  val avro                = "org.apache.avro"             % "avro"                     % "1.11.2" // aligned with the Spark version
-  val parserCombinators   = "org.scala-lang.modules"     %% "scala-parser-combinators" % "2.3.0"
+  val avro                = "org.apache.avro"             % "avro"                     % "1.11.3" // aligned with the Spark version
+  val parserCombinators   = "org.scala-lang.modules"     %% "scala-parser-combinators" % "2.4.0"
   val jsonSchemaValidator = "com.networknt"               % "json-schema-validator"    % "0.1.23"
   val accumuloCore        = "org.apache.accumulo"         % "accumulo-core"            % Version.accumulo
   val sl4jnop             = "org.slf4j"                   % "slf4j-nop"                % "1.7.25"
@@ -96,8 +96,8 @@ object Dependencies {
   val cassandraDriverCore         = "com.datastax.oss" % "java-driver-core"          % Version.cassandra
   val cassandraDriverQueryBuilder = "com.datastax.oss" % "java-driver-query-builder" % Version.cassandra
 
-  val scaffeine = "com.github.blemale"           %% "scaffeine" % "4.1.0"
-  val caffeine  = "com.github.ben-manes.caffeine" % "caffeine"  % "2.9.3"
+  val scaffeine = "com.github.blemale"           %% "scaffeine" % "5.2.1"
+  val caffeine  = "com.github.ben-manes.caffeine" % "caffeine"  % "3.1.8"
 
   val geotoolsCoverage    = "org.geotools"                 % "gt-coverage"             % Version.geotools
   val geotoolsHsql        = "org.geotools"                 % "gt-epsg-hsql"            % Version.geotools
@@ -114,9 +114,9 @@ object Dependencies {
 
   val hbaseMapReduce      = "org.apache.hbase" % "hbase-mapreduce" % Version.hbase
 
-  val woodstoxCore          = "com.fasterxml.woodstox" % "woodstox-core"          % "6.5.1"
+  val woodstoxCore          = "com.fasterxml.woodstox" % "woodstox-core"          % "6.6.2"
   val stax2Api              = "org.codehaus.woodstox"  % "stax2-api"              % "4.2.2"
-  val commonsConfiguration2 = "org.apache.commons"     % "commons-configuration2" % "2.9.0"
+  val commonsConfiguration2 = "org.apache.commons"     % "commons-configuration2" % "2.10.1"
   val re2j                  = "com.google.re2j"        % "re2j"                   % "1.7"
 
   val jacksonCoreAsl      = "org.codehaus.jackson"         % "jackson-core-asl"        % "1.9.13"
@@ -130,7 +130,7 @@ object Dependencies {
   val protobufJava        = "com.google.protobuf"          % "protobuf-java"           % "3.25.1"
 
   val squants             = "org.typelevel"               %% "squants"                 % "1.8.3"
-  val scalactic           = "org.scalactic"               %% "scalactic"               % "3.2.17"
+  val scalactic           = "org.scalactic"               %% "scalactic"               % "3.2.18"
 
   val gdalBindings        = "org.gdal"                     % "gdal"                    % Version.gdal
   val gdalWarp            = "com.azavea.geotrellis"        % "gdal-warp-bindings"      % Version.gdalWarp
@@ -149,7 +149,7 @@ object Dependencies {
   val jaiCodec            = "javax.media" % "jai_codec"    % "1.1.3"
   val imageIo             = "javax.media" % "jai_imageio"  % "1.1"
 
-  val imageioExtUtilities = "it.geosolutions.imageio-ext" % "imageio-ext-utilities" % "1.4.7"
+  val imageioExtUtilities = "it.geosolutions.imageio-ext" % "imageio-ext-utilities" % "1.4.10"
 
   val worksWithDependencies = Seq(jaiCore, jaiCodec, imageIo, imageioExtUtilities).map(_ % Provided)
 }
