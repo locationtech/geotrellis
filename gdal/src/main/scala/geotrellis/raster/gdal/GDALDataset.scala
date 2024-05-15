@@ -370,8 +370,8 @@ case class GDALDataset(token: Long) extends AnyVal {
     /** To handle the [[BitCellType]] it is possible to fetch NBITS information from the RasterBand metadata, **/
     lazy val bitsPerSample = md.get("NBITS").map(_.toInt)
     /** To handle the [[ByteCellType]] it is possible to fetch information about the sampleFormat from the RasterBand metadata. **/
-    lazy val signedByte = md.get("PIXELTYPE").contains("SIGNEDBYTE")
-    GDALUtils.dataTypeToCellType(datatype = dt, noDataValue = nd, typeSizeInBits = bitsPerSample, signedByte = signedByte)
+    lazy val isSignedByte = md.get("PIXELTYPE").contains("SIGNEDBYTE")
+    GDALUtils.dataTypeToCellType(datatype = dt, noDataValue = nd, typeSizeInBits = bitsPerSample, isSignedByte = isSignedByte)
   }
 
   def readTile(gb: GridBounds[Int] = GridBounds(dimensions), band: Int, datasetType: DatasetType = GDALDataset.WARPED): Tile = {
