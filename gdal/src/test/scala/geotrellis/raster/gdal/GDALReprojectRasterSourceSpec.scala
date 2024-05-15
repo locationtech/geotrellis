@@ -45,9 +45,9 @@ class GDALReprojectRasterSourceSpec extends AnyFunSpec with RasterMatchers with 
     val uri = Resource.path("vlm/aspect-tiled.tif")
 
     /**
-      * For some reasons, the Pipeline described above is OS specific,
-      * and Bilinear interpolation behaves differently.
+      * For some reason, the Pipeline described above is OS specific, and Bilinear interpolation behaves differently.
       * To make tests pass there was generated one bilinear version under mac and anther inside a linux container.
+      * This test may require tiffs regeneration since resample method slightly changes with different the GDAL version change.
       *
       * TODO: investigate the nature of this bug later
       * */

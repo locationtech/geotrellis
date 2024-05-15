@@ -58,6 +58,16 @@ object GDALUtils {
               case _ => ByteCellType
             }
         }
+      case TypeInt8 =>
+        typeSizeInBits match {
+          case Some(bits) if bits == 1 => BitCellType
+          case _ =>
+            noDataValue match {
+              case Some(nd) if nd.toInt > Byte.MinValue.toInt && nd <= Byte.MaxValue.toInt => ByteUserDefinedNoDataCellType(nd.toByte)
+              case Some(nd) if nd.toInt == Byte.MinValue.toInt => ByteConstantNoDataCellType
+              case _ => ByteCellType
+            }
+        }
       case TypeUInt16 =>
         noDataValue match {
           case Some(nd) if nd.toInt > 0 && nd <= 65535 => UShortUserDefinedNoDataCellType(nd.toShort)
