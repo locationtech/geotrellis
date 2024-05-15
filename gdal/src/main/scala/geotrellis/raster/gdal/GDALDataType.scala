@@ -23,6 +23,7 @@ object GDALDataType {
     List(
       UnknownType,
       TypeByte,
+      TypeInt8,
       TypeUInt16,
       TypeInt16,
       TypeUInt32,
@@ -50,9 +51,11 @@ abstract sealed class GDALDataType(val code: Int) {
   def toString: String = code.toString
 }
 
-// https://github.com/geotrellis/gdal-warp-bindings/blob/9d75e7c65c4c8a0c2c39175a75656bba458a46f0/src/main/java/com/azavea/gdal/GDALWarp.java#L26-L38
+// https://github.com/geotrellis/gdal-warp-bindings/blob/v3.8.1/src/main/java/com/azavea/gdal/GDALWarp.java#L29-L42
+// https://github.com/OSGeo/gdal/blob/v3.8.5/swig/include/gdal.i#L148-L165
 case object UnknownType extends GDALDataType(GDALWarp.GDT_Unknown)
 case object TypeByte extends GDALDataType(GDALWarp.GDT_Byte)
+case object TypeInt8 extends GDALDataType(GDALWarp.GDT_Int8)
 case object TypeUInt16 extends GDALDataType(GDALWarp.GDT_UInt16)
 case object TypeInt16 extends GDALDataType(GDALWarp.GDT_Int16)
 case object TypeUInt32 extends GDALDataType(GDALWarp.GDT_UInt32)

@@ -41,23 +41,26 @@ object GDALUtils {
       case _                => throw new Exception(s"Could not find equivalent GDALResampleMethod for: $method")
     }
 
-  def dataTypeToCellType(datatype: GDALDataType, noDataValue: Option[Double] = None, typeSizeInBits: => Option[Int] = None, signedByte: => Boolean = false): CellType =
+  def dataTypeToCellType(datatype: GDALDataType, noDataValue: Option[Double] = None, typeSizeInBits: => Option[Int] = None, isSignedByte: => Boolean = false): CellType = {
+    def byteCellType: CellType = noDataValue match {
+      case Some(nd) if nd.toInt > Byte.MinValue.toInt && nd <= Byte.MaxValue.toInt => ByteUserDefinedNoDataCellType(nd.toByte)
+      case Some(nd) if nd.toInt == Byte.MinValue.toInt => ByteConstantNoDataCellType
+      case _ => ByteCellType
+    }
+
     datatype match {
       case TypeByte =>
         typeSizeInBits match {
           case Some(bits) if bits == 1 => BitCellType
           case _ =>
-            if(!signedByte) noDataValue match {
+            if(!isSignedByte) noDataValue match {
               case Some(nd) if nd.toInt > 0 && nd <= 255 => UByteUserDefinedNoDataCellType(nd.toByte)
               case Some(nd) if nd.toInt == 0 => UByteConstantNoDataCellType
               case _ => UByteCellType
             }
-            else noDataValue match {
-              case Some(nd) if nd.toInt > Byte.MinValue.toInt && nd <= Byte.MaxValue.toInt => ByteUserDefinedNoDataCellType(nd.toByte)
-              case Some(nd) if nd.toInt == Byte.MinValue.toInt => ByteConstantNoDataCellType
-              case _ => ByteCellType
-            }
+            else byteCellType
         }
+      case TypeInt8 => byteCellType
       case TypeUInt16 =>
         noDataValue match {
           case Some(nd) if nd.toInt > 0 && nd <= 65535 => UShortUserDefinedNoDataCellType(nd.toShort)
@@ -99,6 +102,7 @@ object GDALUtils {
       case TypeCInt16 | TypeCInt32 | TypeCFloat32 | TypeCFloat64 =>
         throw new UnsupportedOperationException("Complex datatypes are not supported.")
     }
+  }
 
   def deriveOverviewStrategyString(strategy: OverviewStrategy): String = strategy match {
     case Auto(n) if n == 0 => "AUTO"
