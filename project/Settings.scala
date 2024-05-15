@@ -28,6 +28,8 @@ import mdoc.MdocPlugin.autoImport._
 import java.io.File
 
 object Settings {
+  def javaMajorVersion: Int = System.getProperty("java.version").split("\\.").head.toInt
+
   object Repositories {
     val apacheSnapshots = "apache-snapshots" at "https://repository.apache.org/content/repositories/snapshots/"
     val eclipseReleases = "eclipse-releases" at "https://repo.eclipse.org/content/groups/releases"
@@ -152,6 +154,34 @@ object Settings {
     )
   )
 
+  lazy val java17SparkSettings = Seq(
+    // JDK17+ https://github.com/apache/spark/blob/v3.5.1/pom.xml#L299-L317
+    javaOptions ++= {
+      if (javaMajorVersion >= 17)
+        Seq(
+          "-XX:+IgnoreUnrecognizedVMOptions",
+          "--add-modules=jdk.incubator.vector",
+          "--add-opens=java.base/java.lang=ALL-UNNAMED",
+          "--add-opens=java.base/java.lang.invoke=ALL-UNNAMED",
+          "--add-opens=java.base/java.lang.reflect=ALL-UNNAMED",
+          "--add-opens=java.base/java.io=ALL-UNNAMED",
+          "--add-opens=java.base/java.net=ALL-UNNAMED",
+          "--add-opens=java.base/java.nio=ALL-UNNAMED",
+          "--add-opens=java.base/java.util=ALL-UNNAMED",
+          "--add-opens=java.base/java.util.concurrent=ALL-UNNAMED",
+          "--add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED",
+          "--add-opens=java.base/jdk.internal.ref=ALL-UNNAMED",
+          "--add-opens=java.base/sun.nio.ch=ALL-UNNAMED",
+          "--add-opens=java.base/sun.nio.cs=ALL-UNNAMED",
+          "--add-opens=java.base/sun.security.action=ALL-UNNAMED",
+          "--add-opens=java.base/sun.util.calendar=ALL-UNNAMED",
+          "-Djdk.reflect.useDirectMethodHandle=false",
+          "-Dio.netty.tryReflectionSetAccessible=true"
+        )
+      else Nil
+    }
+  )
+
   lazy val sparkCompatDependencies = Def.setting { CrossVersion.partialVersion(scalaVersion.value) match {
     case Some((2, 13)) => Seq("org.scala-lang.modules" %% "scala-parallel-collections" % "1.0.3") // spark uses it as a par collections compat
     case Some((2, 12)) => Nil
@@ -210,7 +240,7 @@ object Settings {
       import geotrellis.spark._
       import geotrellis.spark.store.accumulo._
       """
-  ) ++ commonSettings ++ noForkInTests
+  ) ++ commonSettings ++ java17SparkSettings ++ noForkInTests
 
   lazy val bench = Seq(
     libraryDependencies += sl4jnop,
@@ -269,7 +299,7 @@ object Settings {
       import geotrellis.spark.util._
       import geotrellis.spark.store.cassandra._
       """
-  ) ++ noForkInTests ++ commonSettings
+  ) ++ commonSettings ++ java17SparkSettings ++ noForkInTests
 
 
   lazy val `doc-examples` = Seq(
@@ -353,7 +383,7 @@ object Settings {
       import geotrellis.spark.store.hbase._
       import geotrellis.store.hbase._
       """
-  ) ++ commonSettings ++ noForkInTests
+  ) ++ commonSettings ++ java17SparkSettings ++ noForkInTests
 
   lazy val macros = Seq(
     name := "geotrellis-macros",
@@ -461,7 +491,7 @@ object Settings {
       import geotrellis.spark._
       import geotrellis.spark.store.s3._
       """
-  ) ++ noForkInTests ++ commonSettings
+  ) ++ commonSettings ++ java17SparkSettings ++ noForkInTests
 
   lazy val shapefile = Seq(
     name := "geotrellis-shapefile",
@@ -498,7 +528,7 @@ object Settings {
       import geotrellis.spark._
       import geotrellis.spark.util._
       """
-  ) ++ noForkInTests ++ commonSettings
+  ) ++ commonSettings ++ java17SparkSettings ++ noForkInTests
 
   lazy val `spark-pipeline` = Seq(
     name := "geotrellis-spark-pipeline",
@@ -530,7 +560,7 @@ object Settings {
       case "META-INF/ECLIPSEF.RSA" | "META-INF/ECLIPSEF.SF" => MergeStrategy.discard
       case _ => MergeStrategy.first
     }
-  ) ++ commonSettings
+  ) ++ commonSettings ++ java17SparkSettings
 
   lazy val `spark-testkit` = Seq(
     name := "geotrellis-spark-testkit",
@@ -540,7 +570,7 @@ object Settings {
       apacheSpark("sql").value % Provided,
       scalatest
     )
-  ) ++ commonSettings
+  ) ++ commonSettings ++ java17SparkSettings
 
   lazy val util = Seq(
     name := "geotrellis-util",
@@ -648,5 +678,5 @@ object Settings {
     Test / parallelExecution := false,
     Test / testOptions += Tests.Argument("-oDF"),
     // javaOptions ++= Seq("-Djava.library.path=/usr/lib:/usr/local/lib")
-  ) ++ commonSettings
+  ) ++ commonSettings ++ java17SparkSettings
 }

@@ -49,7 +49,7 @@ services:
   test-jdk21:
     image: daunnc/osgeo-gdal-jdk21:3.8.5
     working_dir: /usr/local/src
-    command: bash -c "export JVM_OPTS=`cat .jvmopts.211 | tr '\n' ' '`; sbt ++$SCALA_VERSION test"
+    command: bash -c "cp -f .jvmopts.211 .jvmopts; sbt ++$SCALA_VERSION test"
     environment:
       - CI
       - SCALA_VERSION
