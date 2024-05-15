@@ -51,13 +51,11 @@ abstract sealed class GDALDataType(val code: Int) {
   def toString: String = code.toString
 }
 
-// https://github.com/geotrellis/gdal-warp-bindings/blob/v3.8.0/src/main/java/com/azavea/gdal/GDALWarp.java#L29-L41
+// https://github.com/geotrellis/gdal-warp-bindings/blob/v3.8.1/src/main/java/com/azavea/gdal/GDALWarp.java#L29-L42
 // https://github.com/OSGeo/gdal/blob/v3.8.5/swig/include/gdal.i#L148-L165
-// https://github.com/OSGeo/gdal/blob/9b9d3e35deba4c41e5b07558817a0569c937490d/frmts/gtiff/gtiffrasterband.cpp#L59C30-L59C46
-// https://github.com/search?q=repo%3AOSGeo%2Fgdal%20SAMPLEFORMAT_INT&type=code
 case object UnknownType extends GDALDataType(GDALWarp.GDT_Unknown)
 case object TypeByte extends GDALDataType(GDALWarp.GDT_Byte)
-case object TypeInt8 extends GDALDataType(14)
+case object TypeInt8 extends GDALDataType(GDALWarp.GDT_Int8)
 case object TypeUInt16 extends GDALDataType(GDALWarp.GDT_UInt16)
 case object TypeInt16 extends GDALDataType(GDALWarp.GDT_Int16)
 case object TypeUInt32 extends GDALDataType(GDALWarp.GDT_UInt32)
