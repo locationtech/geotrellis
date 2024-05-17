@@ -31,18 +31,20 @@ object Settings {
   def javaMajorVersion: Int = System.getProperty("java.version").split("\\.").head.toInt
 
   object Repositories {
-    val apacheSnapshots = "apache-snapshots" at "https://repository.apache.org/content/repositories/snapshots/"
-    val eclipseReleases = "eclipse-releases" at "https://repo.eclipse.org/content/groups/releases"
-    val osgeoReleases   = "osgeo-releases" at "https://repo.osgeo.org/repository/release/"
-    val osgeoSnapshots  = "osgeo-snapshots" at "https://repo.osgeo.org/repository/snapshot/"
-    val geosolutions    = "geosolutions" at "https://maven.geo-solutions.it/"
-    val jitpack         = "jitpack" at "https://jitpack.io" // for https://github.com/everit-org/json-schema
-    val ivy2Local       = Resolver.file("local", file(Path.userHome.absolutePath + "/.ivy2/local"))(Resolver.ivyStylePatterns)
-    val mavenLocal      = Resolver.mavenLocal
-    val maven           = DefaultMavenRepository
-    val local           = Seq(ivy2Local, mavenLocal)
-    val external        = Seq(osgeoReleases, maven, eclipseReleases, geosolutions, jitpack, apacheSnapshots, osgeoSnapshots)
-    val all             = external ++ local
+    val apacheSnapshots   = "apache-snapshots" at "https://repository.apache.org/content/repositories/snapshots/"
+    val eclipseReleases   = "eclipse-releases" at "https://repo.eclipse.org/content/groups/releases"
+    val osgeoReleases     = "osgeo-releases" at "https://repo.osgeo.org/repository/release/"
+    val osgeoSnapshots    = "osgeo-snapshots" at "https://repo.osgeo.org/repository/snapshot/"
+    val geosolutions      = "geosolutions" at "https://maven.geo-solutions.it/"
+    val jitpack           = "jitpack" at "https://jitpack.io" // for https://github.com/everit-org/json-schema
+    val ivy2Local         = Resolver.file("local", file(Path.userHome.absolutePath + "/.ivy2/local"))(Resolver.ivyStylePatterns)
+    val mavenLocal        = Resolver.mavenLocal
+    val maven             = DefaultMavenRepository
+    val sonatypeReleases  = Resolver.sonatypeOssRepos("releases") 
+    val sonatypeSnapshots = Resolver.sonatypeOssRepos("snapshots")
+    val local             = Seq(ivy2Local, mavenLocal)
+    val external          = Seq(osgeoReleases, maven, eclipseReleases, geosolutions, jitpack, apacheSnapshots, osgeoSnapshots) ++ sonatypeReleases ++ sonatypeSnapshots
+    val all               = external ++ local
   }
 
   lazy val noForkInTests = Seq(
