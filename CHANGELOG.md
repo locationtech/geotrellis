@@ -8,7 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - Bump GeoTools version up to 30.x [#3521](https://github.com/locationtech/geotrellis/pull/3521)
-- Fix not found: type Serializable compiler bug [#3535](https://github.com/locationtech/geotrellis/pull/3535)
+- Dependecies update & fix "not found: type Serializable" compiler bug [#3535](https://github.com/locationtech/geotrellis/pull/3535)
+- Update GDAL up to 3.9.x [#3540](https://github.com/locationtech/geotrellis/pull/3540)
 
 ## [3.7.1] - 2024-01-08
 
