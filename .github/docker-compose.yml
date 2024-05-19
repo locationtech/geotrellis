@@ -31,7 +31,7 @@ services:
     network_mode: host
 
   test-jdk11:
-    image: daunnc/osgeo-gdal-jdk11:3.8.5
+    image: daunnc/osgeo-gdal-jdk11:3.9.0
     working_dir: /usr/local/src
     command: sbt ++$SCALA_VERSION test
     environment:
@@ -47,7 +47,7 @@ services:
     network_mode: host
 
   test-jdk21:
-    image: daunnc/osgeo-gdal-jdk21:3.8.5
+    image: daunnc/osgeo-gdal-jdk21:3.9.0
     working_dir: /usr/local/src
     command: bash -c "cp -f .jvmopts.211 .jvmopts; sbt ++$SCALA_VERSION test"
     environment:
