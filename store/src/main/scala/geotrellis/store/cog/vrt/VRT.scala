@@ -28,22 +28,22 @@ import scala.xml.{Elem, XML}
 
 
 case class VRT(
-  gridBounds: GridBounds[Int],
-  layout: LayoutDefinition,
-  extent: Extent,
-  cellType: CellType,
-  crs: CRS,
-  bands: List[Elem]
-) {
+                gridBounds: GridBounds[Int],
+                layout: LayoutDefinition,
+                extent: Extent,
+                cellType: CellType,
+                crs: CRS,
+                bands: List[Elem]
+              ) {
   lazy val (layoutCols, layoutRows) = gridBounds.width * layout.tileCols -> gridBounds.height * layout.tileRows
 
   lazy val re: RasterExtent = RasterExtent(extent, layoutCols, layoutRows)
 
   /**
-    * Calculates GeoTransform attributes
-    *
-    * TODO: refactor, code style kept to follow GDAL: https://github.com/OSGeo/gdal/blob/9a21e8dcaf36a7e046ee87cd57c8c03812dd20ed/gdal/frmts/sde/sdedataset.cpp
-    */
+   * Calculates GeoTransform attributes
+   *
+   * TODO: refactor, code style kept to follow GDAL: https://github.com/OSGeo/gdal/blob/9a21e8dcaf36a7e046ee87cd57c8c03812dd20ed/gdal/frmts/sde/sdedataset.cpp
+   */
   def geoTransform: (Double, Double, Double, Double, Double, Double) = {
     val origin = extent.center
 
@@ -172,6 +172,7 @@ object VRT {
       doctype = null
     )
 
+    writer.flush()
     baos
   }
 
