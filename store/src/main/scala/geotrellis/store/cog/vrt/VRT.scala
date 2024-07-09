@@ -172,6 +172,7 @@ object VRT {
       doctype = null
     )
 
+    writer.flush()
     baos
   }
 
