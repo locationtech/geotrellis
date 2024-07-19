@@ -59,6 +59,6 @@ jobs:
         env:
           PGP_PASSPHRASE: ${{ secrets.PGP_PASSPHRASE }}
           PGP_SECRET: ${{ secrets.PGP_SECRET }}
-          SONATYPE_PASSWORD: ${{ secrets.SO_PW }}
-          SONATYPE_USERNAME: ${{ secrets.SO_UN }}
+          SONATYPE_PASSWORD: ${{ secrets.TO_PW }}
+          SONATYPE_USERNAME: ${{ secrets.TO_UN }}
         if: ${{ env.SONATYPE_PASSWORD != '' && env.SONATYPE_USERNAME != '' }}
