@@ -193,12 +193,12 @@ object RasterRegionReproject {
       val trans = Proj4Transform(dest, src)
 
       val resampler = resampleMethod match {
-        case resampleMethod1: PointResampleMethod =>
-          Resample(resampleMethod1, raster.tile, raster.extent)
-        case _ =>
-          //throws GeoAttrsError when applied for invalid extent
+        case pointResampleMethod: PointResampleMethod =>
+          Resample(pointResampleMethod, raster.tile, raster.extent)
+        case aggregateResampleMethod: AggregateResampleMethod =>
+          // throws GeoAttrsError when applied for invalid extent
           val targetCellSizeInSrcCRS = rasterExtent.reproject(dest, src).cellSize
-          Resample(resampleMethod, raster.tile, raster.extent, targetCellSizeInSrcCRS)
+          Resample(aggregateResampleMethod, raster.tile, raster.extent, targetCellSizeInSrcCRS)
       }
       val rowcoords = rowCoords(region, rasterExtent, trans, errorThreshold)
 
