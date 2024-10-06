@@ -79,7 +79,7 @@ abstract class Resample(tile: Tile, extent: Extent) {
 object Resample {
   /** Create a resampler.
     *
-    * @param      method         The method [[ResampleMethod]] to use.
+    * @param      method         The method [[PointResampleMethod]] to use.
     * @param      tile           The tile that is the source of the resample
     * @param      extent         The extent of source tile.
     */
@@ -93,6 +93,23 @@ object Resample {
     }
 
   /** Create a resampler.
+   *
+   * @param      method         The method [[AggregateResampleMethod]] to use.
+   * @param      tile           The tile that is the source of the resample
+   * @param      extent         The extent of source tile.
+   * @param      cs             The cell size of the target, for usage with Aggregate resample methods.
+   */
+  def apply(method: AggregateResampleMethod, tile: Tile, extent: Extent, cs: CellSize): Resample =
+    method match {
+      case Average => new AverageResample(tile, extent, cs)
+      case Mode => new ModeResample(tile, extent, cs)
+      case Median => new MedianResample(tile, extent, cs)
+      case Max => new MaxResample(tile, extent, cs)
+      case Min => new MinResample(tile, extent, cs)
+      case Sum =>  new SumResample(tile, extent, cs)
+    }
+
+  /** Create a resampler.
     *
     * @param      method         The method [[ResampleMethod]] to use.
     * @param      tile           The tile that is the source of the resample
@@ -101,16 +118,7 @@ object Resample {
     */
   def apply(method: ResampleMethod, tile: Tile, extent: Extent, cs: CellSize): Resample =
     method match {
-      case NearestNeighbor => new NearestNeighborResample(tile, extent)
-      case Bilinear => new BilinearResample(tile, extent)
-      case CubicConvolution => new BicubicConvolutionResample(tile, extent)
-      case CubicSpline => new BicubicSplineResample(tile, extent)
-      case Lanczos => new LanczosResample(tile, extent)
-      case Average => new AverageResample(tile, extent, cs)
-      case Mode => new ModeResample(tile, extent, cs)
-      case Median => new MedianResample(tile, extent, cs)
-      case Max => new MaxResample(tile, extent, cs)
-      case Min => new MinResample(tile, extent, cs)
-      case Sum =>  new SumResample(tile, extent, cs)
+      case pointResampleMethod: PointResampleMethod => apply(pointResampleMethod, tile, extent)
+      case aggregateResampleMethod: AggregateResampleMethod => apply(aggregateResampleMethod, tile, extent, cs)
     }
 }
