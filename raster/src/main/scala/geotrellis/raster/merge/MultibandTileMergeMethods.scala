@@ -63,4 +63,35 @@ trait MultibandTileMergeMethods extends TileMergeMethods[MultibandTile] {
 
     ArrayMultibandTile(bands)
   }
+
+    /**
+    * Union this [[MultibandTile]] with the other one.  The output tile's
+    * extent will be the minimal extent which encompasses both input extents.
+    * A new MutlibandTile is returned.
+    *
+    * @param   extent        The extent of this MultiBandTile
+    * @param   otherExtent   The extent of the other MultiBandTile
+    * @param   other         The other MultiBandTile
+    * @param   method        The resampling method
+    * @param   unionFunc     The function which decides how values from rasters being combined will be transformed
+    * @return                A new MultiBandTile, the result of the merge
+    */
+  def union(
+    extent: Extent,
+    otherExtent: Extent,
+    other: MultibandTile,
+    method: ResampleMethod,
+    unionFunc: (Option[Double], Option[Double]) => Double
+  ): MultibandTile = {
+    val bands: Seq[Tile] =
+      for {
+        bandIndex <- 0 until self.bandCount
+      } yield {
+        val thisBand = self.band(bandIndex)
+        val thatBand = other.band(bandIndex)
+        thisBand.union(extent, otherExtent, thatBand, method, unionFunc)
+      }
+
+    ArrayMultibandTile(bands)
+  }
 }
