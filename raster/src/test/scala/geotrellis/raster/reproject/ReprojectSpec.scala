@@ -21,11 +21,12 @@ import geotrellis.raster.resample._
 import geotrellis.vector._
 import geotrellis.raster.testkit._
 import geotrellis.proj4._
+import geotrellis.raster.geotiff.GeoTiffRasterSource
 import geotrellis.raster.io.geotiff._
-
 import spire.syntax.cfor._
-
 import org.scalatest.funspec.AnyFunSpec
+
+import java.io.File
 
 class ReprojectSpec extends AnyFunSpec
     with TileBuilders
@@ -60,6 +61,21 @@ class ReprojectSpec extends AnyFunSpec
           }
         }
       }
+    }
+
+    it("should (approximately) match a GDAL average interpolation on nlcd tile") {
+
+      val raster = this.createRaster(Array(1,4,1,4,1,4,1,4),4,2,CellSize(10,10))
+      val tempTiff = File.createTempFile("toReproject",".tif")
+      GeoTiff(raster, CRS.fromEpsgCode(32631)).write(tempTiff.getPath)
+
+      val rs = GeoTiffRasterSource(tempTiff.getPath).reproject(CRS.fromEpsgCode(3035), TargetCellSize(CellSize(20.0,20.0)), Average)
+      val reprojected = raster.reproject(CRS.fromEpsgCode(32631),CRS.fromEpsgCode(3035), Options(method = Average, errorThreshold = 0.0,targetCellSize = Some(CellSize(20,20))))
+
+      val refTile = this.createTile(Array(2.5,2.5),2,1)
+
+      assertEqual(refTile,reprojected.tile,0.1)
+      assertEqual(rs.read().get.tile.band(0),reprojected.tile,0.1)
     }
 
     it("should (approximately) match a GDAL nearest neighbor interpolation on slope tif") {

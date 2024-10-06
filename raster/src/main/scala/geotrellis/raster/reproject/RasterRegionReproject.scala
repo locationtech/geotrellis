@@ -191,7 +191,15 @@ object RasterRegionReproject {
       errorThreshold: Double
     ): Unit = {
       val trans = Proj4Transform(dest, src)
-      val resampler = Resample(resampleMethod, raster.tile, raster.extent, CellSize(raster.rasterExtent.cellwidth, raster.rasterExtent.cellheight))
+
+      val resampler = resampleMethod match {
+        case resampleMethod1: PointResampleMethod =>
+          Resample(resampleMethod1, raster.tile, raster.extent)
+        case _ =>
+          //throws GeoAttrsError when applied for invalid extent
+          val targetCellSizeInSrcCRS = rasterExtent.reproject(dest, src).cellSize
+          Resample(resampleMethod, raster.tile, raster.extent, targetCellSizeInSrcCRS)
+      }
       val rowcoords = rowCoords(region, rasterExtent, trans, errorThreshold)
 
       if (raster.cellType.isFloatingPoint) {
@@ -263,9 +271,12 @@ object RasterRegionReproject {
       val rowcoords = rowCoords(region, rasterExtent, trans, errorThreshold)
       val resampler: Array[Resample] = Array.ofDim[Resample](raster.tile.bandCount)
 
+      val targetCellSizeInSrcCRS = rasterExtent.reproject(dest,src).cellSize
+
+
       for (b <- 0 until raster.tile.bandCount) {
         val band: Tile = raster.tile.bands(b)
-        resampler(b) = Resample(resampleMethod, band, raster.extent, raster.rasterExtent.cellSize)
+        resampler(b) = Resample(resampleMethod, band, raster.extent, targetCellSizeInSrcCRS)
       }
 
       if (raster.cellType.isFloatingPoint) {

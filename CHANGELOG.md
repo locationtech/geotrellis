@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Bump GeoTools version up to 30.x [#3521](https://github.com/locationtech/geotrellis/pull/3521)
 - Dependecies update & fix "not found: type Serializable" compiler bug [#3535](https://github.com/locationtech/geotrellis/pull/3535)
 - Update GDAL up to 3.9.x [#3540](https://github.com/locationtech/geotrellis/pull/3540)
+- Fix reprojection with downsampling for GeotiffRasterSource and tile RDDs. Reprojection outside the valid projection bounds may now throw a GeoAttrsError. [#3541](https://github.com/locationtech/geotrellis/issues/3541)
 
 ## [3.7.1] - 2024-01-08
 
