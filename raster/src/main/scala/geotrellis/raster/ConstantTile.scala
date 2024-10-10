@@ -17,6 +17,8 @@
 package geotrellis.raster
 
 import geotrellis.vector.Extent
+import geotrellis.raster.ByteConstantNoDataCellType
+import geotrellis.raster.UByteConstantNoDataCellType
 
 import java.nio.ByteBuffer
 import spire.syntax.cfor._
