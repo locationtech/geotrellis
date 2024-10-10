@@ -21,8 +21,6 @@ import geotrellis.vector.Extent
 import java.nio.ByteBuffer
 import spire.syntax.cfor._
 
-import java.lang
-
 
 /**
   * The trait underlying constant tile types.
@@ -83,21 +81,17 @@ abstract class ConstantTile extends Tile {
     * @return            The new Tile
     */
   def convert(newType: CellType): Tile = {
-    if(dVal.isNaN && !newType.isInstanceOf[NoNoData]) {
-      ConstantTile.emptyTile(newType, cols, rows)
-    }else {
-      newType match {
-        case BitCellType => new BitConstantTile(if (iVal == 0) false else true, cols, rows)
-        case ct: ByteCells => ByteConstantTile(iVal.toByte, cols, rows, ct)
-        case ct: UByteCells => UByteConstantTile(iVal.toByte, cols, rows, ct)
-        case ct: ShortCells => ShortConstantTile(iVal.toShort , cols, rows, ct)
-        case ct: UShortCells =>  UShortConstantTile(iVal.toShort , cols, rows, ct)
-        case ct: IntCells =>  IntConstantTile(iVal , cols, rows, ct)
-        case ct: FloatCells => FloatConstantTile(dVal.toFloat , cols, rows, ct)
-        case ct: DoubleCells => DoubleConstantTile(dVal, cols, rows, ct)
-      }
+    newType match {
+      case ct: CellType if !ct.isInstanceOf[NoNoData] &&  dVal.isNaN => ConstantTile.emptyTile(newType, cols, rows)
+      case BitCellType => new BitConstantTile(if (iVal == 0) false else true, cols, rows)
+      case ct: ByteCells => ByteConstantTile(iVal.toByte, cols, rows, ct)
+      case ct: UByteCells => UByteConstantTile(iVal.toByte, cols, rows, ct)
+      case ct: ShortCells => ShortConstantTile(iVal.toShort , cols, rows, ct)
+      case ct: UShortCells =>  UShortConstantTile(iVal.toShort , cols, rows, ct)
+      case ct: IntCells =>  IntConstantTile(iVal , cols, rows, ct)
+      case ct: FloatCells => FloatConstantTile(dVal.toFloat , cols, rows, ct)
+      case ct: DoubleCells => DoubleConstantTile(dVal, cols, rows, ct)
     }
-
   }
 
   def interpretAs(newCellType: CellType): Tile =
@@ -265,9 +259,9 @@ object ConstantTile {
       t match {
         case _: BitCells => BitConstantTile(false, cols, rows)
         case ct: ByteUserDefinedNoDataCellType => ByteConstantTile(ct.noDataValue ,cols, rows, ct)
-        case ct: ByteCells => ByteConstantTile(t.asInstanceOf[HasNoData[Byte]].noDataValue ,cols, rows, ct)
+        case ct: ByteConstantNoDataCellType => ByteConstantTile(ct.noDataValue ,cols, rows, ct)
+        case ct: UByteConstantNoDataCellType => UByteConstantTile(ct.noDataValue ,cols, rows, ct)
         case ct: UByteUserDefinedNoDataCellType => UByteConstantTile(ct.noDataValue ,cols, rows, ct)
-        case ct: UByteCells => UByteConstantTile(t.asInstanceOf[HasNoData[Byte]].noDataValue ,cols, rows, ct)
         case ct: ShortUserDefinedNoDataCellType => {
           val theNoData: Short = ct.noDataValue
           ShortConstantTile(theNoData ,cols, rows, ct)

@@ -95,10 +95,15 @@ class ConstantTileSpec extends AnyFunSpec with Matchers with RasterMatchers with
   }
 
   describe("celltype conversion") {
-    it("should convert ByteConstantTile") {
+    it("should convert ByteConstantTile with nodata") {
       val t = ByteConstantTile(byteNODATA, cols = 1, rows = 1)
       assert(t.isNoDataTile)
       assert(t.convert(t.cellType).isNoDataTile)
+    }
+
+    it("should convert ByteConstantTile") {
+      val t = ByteConstantTile(10, cols = 1, rows = 1)
+      assert(t.convert(FloatConstantNoDataCellType).getDouble(0,0) === 10.0)
     }
   }
 }
