@@ -17,8 +17,6 @@
 package geotrellis.raster
 
 import geotrellis.vector.Extent
-import geotrellis.raster.ByteConstantNoDataCellType
-import geotrellis.raster.UByteConstantNoDataCellType
 
 import java.nio.ByteBuffer
 import spire.syntax.cfor._
@@ -261,8 +259,8 @@ object ConstantTile {
       t match {
         case _: BitCells => BitConstantTile(false, cols, rows)
         case ct: ByteUserDefinedNoDataCellType => ByteConstantTile(ct.noDataValue ,cols, rows, ct)
-        case ct: ByteConstantNoDataCellType => ByteConstantTile(ct.noDataValue ,cols, rows, ct)
-        case ct: UByteConstantNoDataCellType => UByteConstantTile(ct.noDataValue ,cols, rows, ct)
+        case ct: ByteConstantNoDataCellType.type => ByteConstantTile(ct.noDataValue ,cols, rows, ct)
+        case ct:  UByteConstantNoDataCellType.type => UByteConstantTile(ct.noDataValue ,cols, rows, ct)
         case ct: UByteUserDefinedNoDataCellType => UByteConstantTile(ct.noDataValue ,cols, rows, ct)
         case ct: ShortUserDefinedNoDataCellType => {
           val theNoData: Short = ct.noDataValue
