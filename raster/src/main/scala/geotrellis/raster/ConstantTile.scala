@@ -250,6 +250,14 @@ object ConstantTile {
       case ct: DoubleCells => DoubleConstantTile.fromBytes(bytes, cols, rows, ct)
     }
 
+  /**
+   * Create a [[ConstantTile]] that is set to the nodata value of the given celltype.
+   *
+   * @param   t      The [[CellType]] of the new [[ConstantTile]], it should have a NoData value.
+   * @param   cols   The number of columns that the new [[ConstantTile]] should have
+   * @param   rows   The number of rows that the new [[ConstantTile]] should have
+   * @return         The new [[ConstantTile]]
+   */
   def emptyTile(t: CellType, cols: Int, rows: Int): Tile = {
     if(t.isInstanceOf[NoNoData]) {
       throw new IllegalArgumentException(s"Can not construct an empty constant tile for a celltype without nodata handling: $t")
