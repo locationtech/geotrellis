@@ -17,7 +17,6 @@
 package geotrellis.raster
 
 import geotrellis.raster.testkit.{RasterMatchers, TileBuilders}
-
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.funspec.AnyFunSpec
 
@@ -104,7 +103,7 @@ class ConstantTileSpec extends AnyFunSpec with Matchers with RasterMatchers with
       FloatConstantTile(Float.NaN, cols = 1, rows = 1),
       DoubleConstantTile(Double.NaN, cols = 1, rows = 1)
     ).foreach { tile =>
-      val className = tile.getClass.getName.split("\\.").last
+      val className = getClassName(tile)
       it(s"should convert empty $className to empty $className") {
         assert(tile.isNoDataTile)
         assert(tile.convert(tile.cellType).isNoDataTile)
@@ -150,4 +149,6 @@ class ConstantTileSpec extends AnyFunSpec with Matchers with RasterMatchers with
       }
     }
   }
+
+  private def getClassName[T](obj: T): String = obj.getClass.getName.split("\\.").last
 }
