@@ -36,10 +36,10 @@ abstract class ConstantTile extends Tile {
   def rows: Int
 
   /** Precomputed view of tile cells as seen by [[get]] method */
-  protected val iVal: Int
+  protected def iVal: Int
 
   /** Precomputed view of tile cells as seen by [[getDouble]] method */
-  protected val dVal: Double
+  protected def dVal: Double
 
   /**
     * Fetch the datum at the given column and row of the tile.
@@ -80,19 +80,17 @@ abstract class ConstantTile extends Tile {
     * @param   newType  The type of cells that the result should have
     * @return            The new Tile
     */
-  def convert(newType: CellType): Tile = {
+  def convert(newType: CellType): Tile =
     newType match {
-      case ct: CellType if  dVal.isNaN => ConstantTile.empty(newType, cols, rows)
       case BitCellType => new BitConstantTile(if (iVal == 0) false else true, cols, rows)
-      case ct: ByteCells => ByteConstantTile(iVal.toByte, cols, rows, ct)
+      case ct: ByteCells => ByteConstantTile(i2b(iVal), cols, rows, ct)
       case ct: UByteCells => UByteConstantTile(iVal.toByte, cols, rows, ct)
-      case ct: ShortCells => ShortConstantTile(iVal.toShort , cols, rows, ct)
-      case ct: UShortCells =>  UShortConstantTile(iVal.toShort , cols, rows, ct)
-      case ct: IntCells =>  IntConstantTile(iVal , cols, rows, ct)
-      case ct: FloatCells => FloatConstantTile(dVal.toFloat , cols, rows, ct)
+      case ct: ShortCells => ShortConstantTile(i2s(iVal), cols, rows, ct)
+      case ct: UShortCells => UShortConstantTile(i2us(iVal) , cols, rows, ct)
+      case ct: IntCells => IntConstantTile(iVal, cols, rows, ct)
+      case ct: FloatCells => FloatConstantTile(d2f(dVal), cols, rows, ct)
       case ct: DoubleCells => DoubleConstantTile(dVal, cols, rows, ct)
     }
-  }
 
   def interpretAs(newCellType: CellType): Tile =
     withNoData(None).convert(newCellType)
@@ -253,35 +251,31 @@ object ConstantTile {
    * @param   rows   The number of rows that the new [[ConstantTile]] should have
    * @return         The new [[ConstantTile]]
    */
-  def empty(t: CellType, cols: Int, rows: Int): Tile = {
+  def empty(t: CellType, cols: Int, rows: Int): Tile =
     t match {
-      case _: BitCells => BitConstantTile(false, cols, rows)
-      case ct: ByteUserDefinedNoDataCellType => ByteConstantTile(ct.noDataValue ,cols, rows, ct)
-      case ct: ByteConstantNoDataCellType.type => ByteConstantTile(ct.noDataValue ,cols, rows, ct)
-      case ct: ByteCellType.type => ByteConstantTile(byteNODATA ,cols, rows, ct)
-      case ct: UByteConstantNoDataCellType.type => UByteConstantTile(ct.noDataValue ,cols, rows, ct)
-      case ct: UByteUserDefinedNoDataCellType => UByteConstantTile(ct.noDataValue ,cols, rows, ct)
-      case ct: UByteCellType.type => UByteConstantTile(ubyteNODATA ,cols, rows, ct)
-      case ct: ShortUserDefinedNoDataCellType => ShortConstantTile(ct.noDataValue ,cols, rows, ct)
-      case ct: ShortConstantNoDataCellType.type => ShortConstantTile(ct.noDataValue ,cols, rows, ct)
-      case ct: ShortCellType.type => ShortConstantTile(shortNODATA ,cols, rows, ct)
-      case ct: UShortUserDefinedNoDataCellType => UShortConstantTile(ct.noDataValue ,cols, rows, ct)
-      case ct: UShortConstantNoDataCellType.type => UShortConstantTile(ct.noDataValue ,cols, rows, ct)
-      case ct: UShortCellType.type => UShortConstantTile(ushortNODATA ,cols, rows, ct)
-      case ct: IntUserDefinedNoDataCellType => IntConstantTile(ct.noDataValue ,cols, rows, ct)
-      case ct: IntConstantNoDataCellType.type => IntConstantTile(ct.noDataValue ,cols, rows, ct)
-      case ct: IntCellType.type => IntConstantTile(NODATA ,cols, rows, ct)
-      case ct: FloatUserDefinedNoDataCellType => FloatConstantTile(ct.noDataValue ,cols, rows, ct)
-      case ct: FloatConstantNoDataCellType.type => FloatConstantTile(ct.noDataValue ,cols, rows, ct)
-      case ct: FloatCellType.type => FloatConstantTile(floatNODATA ,cols, rows, ct)
-      case ct: DoubleUserDefinedNoDataCellType => DoubleConstantTile(ct.noDataValue ,cols, rows, ct)
-      case ct: DoubleConstantNoDataCellType.type => DoubleConstantTile(ct.noDataValue ,cols, rows, ct)
-      case ct: DoubleCellType.type => DoubleConstantTile(doubleNODATA ,cols, rows, ct)
+      case _: BitCells => BitConstantTile(v = false, cols, rows)
+      case ct: ByteUserDefinedNoDataCellType => ByteConstantTile(ct.noDataValue, cols, rows, ct)
+      case ct: ByteConstantNoDataCellType.type => ByteConstantTile(ct.noDataValue, cols, rows, ct)
+      case ct: ByteCellType.type => ByteConstantTile(byteNODATA, cols, rows, ct)
+      case ct: UByteConstantNoDataCellType.type => UByteConstantTile(ct.noDataValue, cols, rows, ct)
+      case ct: UByteUserDefinedNoDataCellType => UByteConstantTile(ct.noDataValue, cols, rows, ct)
+      case ct: UByteCellType.type => UByteConstantTile(ubyteNODATA, cols, rows, ct)
+      case ct: ShortUserDefinedNoDataCellType => ShortConstantTile(ct.noDataValue, cols, rows, ct)
+      case ct: ShortConstantNoDataCellType.type => ShortConstantTile(ct.noDataValue, cols, rows, ct)
+      case ct: ShortCellType.type => ShortConstantTile(shortNODATA, cols, rows, ct)
+      case ct: UShortUserDefinedNoDataCellType => UShortConstantTile(ct.noDataValue, cols, rows, ct)
+      case ct: UShortConstantNoDataCellType.type => UShortConstantTile(ct.noDataValue, cols, rows, ct)
+      case ct: UShortCellType.type => UShortConstantTile(ushortNODATA, cols, rows, ct)
+      case ct: IntUserDefinedNoDataCellType => IntConstantTile(ct.noDataValue, cols, rows, ct)
+      case ct: IntConstantNoDataCellType.type => IntConstantTile(ct.noDataValue, cols, rows, ct)
+      case ct: IntCellType.type => IntConstantTile(NODATA, cols, rows, ct)
+      case ct: FloatUserDefinedNoDataCellType => FloatConstantTile(ct.noDataValue, cols, rows, ct)
+      case ct: FloatConstantNoDataCellType.type => FloatConstantTile(ct.noDataValue, cols, rows, ct)
+      case ct: FloatCellType.type => FloatConstantTile(floatNODATA, cols, rows, ct)
+      case ct: DoubleUserDefinedNoDataCellType => DoubleConstantTile(ct.noDataValue, cols, rows, ct)
+      case ct: DoubleConstantNoDataCellType.type => DoubleConstantTile(ct.noDataValue, cols, rows, ct)
+      case ct: DoubleCellType.type => DoubleConstantTile(doubleNODATA, cols, rows, ct)
     }
-  }
-
-
-
 }
 
 /**
