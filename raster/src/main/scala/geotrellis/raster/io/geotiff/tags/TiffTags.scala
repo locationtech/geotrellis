@@ -692,7 +692,7 @@ object TiffTags {
         readLongsTag(byteReader, tiffTags, tagMetadata)
       case (_, IFDOffset) =>
         readLongsTag(byteReader, tiffTags, tagMetadata)
-      case _ => TiffTags() // skip unsupported tags
+      case _ => tiffTags // skip unsupported tags
     }
   }
 

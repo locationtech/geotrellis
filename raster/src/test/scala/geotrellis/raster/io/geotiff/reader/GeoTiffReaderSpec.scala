@@ -508,6 +508,12 @@ class GeoTiffReaderSpec extends AnyFunSpec with Matchers with BeforeAndAfterAll 
 
       geoTiff.options.subfileType should be (None)
     }
+
+    // https://github.com/locationtech/geotrellis/issues/3556
+    it("should skip unknown tags") {
+      val geotiff = GeoTiff.readMultiband(geoTiffPath("unsupported-tiff-tags.tif"))
+      geotiff.tags.headTags.size should be (2)
+    }
   }
 
   describe("Reading and writing special metadata tags ") {

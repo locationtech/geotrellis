@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Update GDAL up to 3.9.x [#3540](https://github.com/locationtech/geotrellis/pull/3540)
 - Fix reprojection with downsampling for GeotiffRasterSource and tile RDDs. Reprojection outside the valid projection bounds may now throw a GeoAttrsError. [#3541](https://github.com/locationtech/geotrellis/issues/3541)
 - ConstantTile with NoData: support idempotent CellType conversions [#3553](https://github.com/locationtech/geotrellis/pull/3553)
+- GeoTiffReader Unknown tags skip fix [#3557](https://github.com/locationtech/geotrellis/pull/3557)
 
 ## [3.7.1] - 2024-01-08
 
