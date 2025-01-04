@@ -53,6 +53,8 @@ jobs:
         with:
           distribution: ${{ matrix.distribution }}
           java-version: ${{ matrix.java }}
+      - name: Install sbt
+        uses: sbt/setup-sbt@v1
 
       - name: Release
         run: sbt ci-release
