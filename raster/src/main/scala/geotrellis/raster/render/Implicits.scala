@@ -22,7 +22,7 @@ import geotrellis.raster.{Tile, MultibandTile}
 object Implicits extends Implicits
 
 trait Implicits {
-  implicit class RGBA(val int: Int) {
+  implicit class RGBAMethods(val int: Int) {
     def red = (int >> 24) & 0xff
     def green = (int >> 16) & 0xff
     def blue = (int >> 8) & 0xff

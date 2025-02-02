@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix reprojection with downsampling for GeotiffRasterSource and tile RDDs. Reprojection outside the valid projection bounds may now throw a GeoAttrsError. [#3541](https://github.com/locationtech/geotrellis/issues/3541)
 - ConstantTile with NoData: support idempotent CellType conversions [#3553](https://github.com/locationtech/geotrellis/pull/3553)
 - GeoTiffReader Unknown tags skip fix [#3557](https://github.com/locationtech/geotrellis/pull/3557)
+- Fix implicitNotFound error and rename RGBAMethods implicit class [#3563](https://github.com/locationtech/geotrellis/pull/3563)
 
 ## [3.7.1] - 2024-01-08
 
