@@ -113,14 +113,19 @@ class GeoTiffWriterSpec extends AnyFunSpec with Matchers with BeforeAndAfterAll 
 
       val newTag1 = ("SOME_CUSTOM_TAG1" -> "1234567890123456789012345678901")
       val newTag2 = ("SOME_CUSTOM_TAG2" -> "12345678901234567890123456789012")
+      val newTag3 = ("OFFSET" -> "43")
       val headTags = geoTiff.tags.headTags + newTag1 + newTag2
-      val bandTags = geoTiff.tags.bandTags.map(_ + newTag1 + newTag2)
+      val bandTags = geoTiff.tags.bandTags.map(_ + newTag1 + newTag2 + newTag3)
 
       val taggedTiff = geoTiff.copy(tags = Tags(headTags, bandTags))
 
       GeoTiffWriter.write(taggedTiff, path)
 
       addToPurge(path)
+
+      val tags = TiffTags.read(path)
+
+      tags.geoTiffTags.metadata.get should be ("<GDALMetadata>\n  <Item name=\"SOME_CUSTOM_TAG2\">12345678901234567890123456789012</Item>\n  <Item name=\"TAG_TYPE\">HEAD</Item>\n  <Item name=\"SOME_CUSTOM_TAG1\">1234567890123456789012345678901</Item>\n  <Item name=\"HEADTAG\">1</Item>\n  <Item name=\"SOME_CUSTOM_TAG2\" sample=\"0\">12345678901234567890123456789012</Item>\n  <Item name=\"TAG_TYPE\" sample=\"0\">BAND1</Item>\n  <Item name=\"SOME_CUSTOM_TAG1\" sample=\"0\">1234567890123456789012345678901</Item>\n  <Item name=\"BANDTAG\" sample=\"0\">1</Item>\n  <Item name=\"OFFSET\" sample=\"0\" role=\"offset\">43</Item>\n  <Item name=\"SOME_CUSTOM_TAG2\" sample=\"1\">12345678901234567890123456789012</Item>\n  <Item name=\"TAG_TYPE\" sample=\"1\">BAND2</Item>\n  <Item name=\"SOME_CUSTOM_TAG1\" sample=\"1\">1234567890123456789012345678901</Item>\n  <Item name=\"BANDTAG\" sample=\"1\">2</Item>\n  <Item name=\"OFFSET\" sample=\"1\" role=\"offset\">43</Item>\n  <Item name=\"SOME_CUSTOM_TAG2\" sample=\"2\">12345678901234567890123456789012</Item>\n  <Item name=\"TAG_TYPE\" sample=\"2\">BAND3</Item>\n  <Item name=\"SOME_CUSTOM_TAG1\" sample=\"2\">1234567890123456789012345678901</Item>\n  <Item name=\"BANDTAG\" sample=\"2\">3</Item>\n  <Item name=\"OFFSET\" sample=\"2\" role=\"offset\">43</Item>\n  <Item name=\"SOME_CUSTOM_TAG2\" sample=\"3\">12345678901234567890123456789012</Item>\n  <Item name=\"TAG_TYPE\" sample=\"3\">BAND4</Item>\n  <Item name=\"SOME_CUSTOM_TAG1\" sample=\"3\">1234567890123456789012345678901</Item>\n  <Item name=\"BANDTAG\" sample=\"3\">4</Item>\n  <Item name=\"OFFSET\" sample=\"3\" role=\"offset\">43</Item>\n</GDALMetadata>")
 
       val actual = MultibandGeoTiff(path).tags
       val expected = taggedTiff.tags
