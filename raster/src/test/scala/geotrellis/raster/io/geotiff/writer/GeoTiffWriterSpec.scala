@@ -114,8 +114,10 @@ class GeoTiffWriterSpec extends AnyFunSpec with Matchers with BeforeAndAfterAll 
       val newTag1 = ("SOME_CUSTOM_TAG1" -> "1234567890123456789012345678901")
       val newTag2 = ("SOME_CUSTOM_TAG2" -> "12345678901234567890123456789012")
       val newTag3 = ("OFFSET" -> "43")
+      val newTag4 = ("DESCRIPTION" -> "band description")
+      val newTag5 = ("SCALE" -> "0.1")
       val headTags = geoTiff.tags.headTags + newTag1 + newTag2
-      val bandTags = geoTiff.tags.bandTags.map(_ + newTag1 + newTag2 + newTag3)
+      val bandTags = geoTiff.tags.bandTags.map(_ + newTag1 + newTag2 + newTag3 + newTag4 + newTag5)
 
       val taggedTiff = geoTiff.copy(tags = Tags(headTags, bandTags))
 
@@ -125,7 +127,40 @@ class GeoTiffWriterSpec extends AnyFunSpec with Matchers with BeforeAndAfterAll 
 
       val tags = TiffTags.read(path)
 
-      tags.geoTiffTags.metadata.get should be ("<GDALMetadata>\n  <Item name=\"SOME_CUSTOM_TAG2\">12345678901234567890123456789012</Item>\n  <Item name=\"TAG_TYPE\">HEAD</Item>\n  <Item name=\"SOME_CUSTOM_TAG1\">1234567890123456789012345678901</Item>\n  <Item name=\"HEADTAG\">1</Item>\n  <Item name=\"SOME_CUSTOM_TAG2\" sample=\"0\">12345678901234567890123456789012</Item>\n  <Item name=\"TAG_TYPE\" sample=\"0\">BAND1</Item>\n  <Item name=\"SOME_CUSTOM_TAG1\" sample=\"0\">1234567890123456789012345678901</Item>\n  <Item name=\"BANDTAG\" sample=\"0\">1</Item>\n  <Item name=\"OFFSET\" sample=\"0\" role=\"offset\">43</Item>\n  <Item name=\"SOME_CUSTOM_TAG2\" sample=\"1\">12345678901234567890123456789012</Item>\n  <Item name=\"TAG_TYPE\" sample=\"1\">BAND2</Item>\n  <Item name=\"SOME_CUSTOM_TAG1\" sample=\"1\">1234567890123456789012345678901</Item>\n  <Item name=\"BANDTAG\" sample=\"1\">2</Item>\n  <Item name=\"OFFSET\" sample=\"1\" role=\"offset\">43</Item>\n  <Item name=\"SOME_CUSTOM_TAG2\" sample=\"2\">12345678901234567890123456789012</Item>\n  <Item name=\"TAG_TYPE\" sample=\"2\">BAND3</Item>\n  <Item name=\"SOME_CUSTOM_TAG1\" sample=\"2\">1234567890123456789012345678901</Item>\n  <Item name=\"BANDTAG\" sample=\"2\">3</Item>\n  <Item name=\"OFFSET\" sample=\"2\" role=\"offset\">43</Item>\n  <Item name=\"SOME_CUSTOM_TAG2\" sample=\"3\">12345678901234567890123456789012</Item>\n  <Item name=\"TAG_TYPE\" sample=\"3\">BAND4</Item>\n  <Item name=\"SOME_CUSTOM_TAG1\" sample=\"3\">1234567890123456789012345678901</Item>\n  <Item name=\"BANDTAG\" sample=\"3\">4</Item>\n  <Item name=\"OFFSET\" sample=\"3\" role=\"offset\">43</Item>\n</GDALMetadata>")
+      tags.geoTiffTags.metadata.get.replaceAll("\\s+","") should be ("""<GDALMetadata>
+        <Item name="SOME_CUSTOM_TAG2">12345678901234567890123456789012</Item>
+        <Item name="TAG_TYPE">HEAD</Item>
+        <Item name="SOME_CUSTOM_TAG1">1234567890123456789012345678901</Item>
+        <Item name="HEADTAG">1</Item>
+        <Item name="SOME_CUSTOM_TAG2" sample="0">12345678901234567890123456789012</Item>
+        <Item name="DESCRIPTION" sample="0" role="description">band description</Item>
+        <Item name="TAG_TYPE" sample="0">BAND1</Item>
+        <Item name="BANDTAG" sample="0">1</Item>
+        <Item name="OFFSET" sample="0" role="offset">43</Item>
+        <Item name="SOME_CUSTOM_TAG1" sample="0">1234567890123456789012345678901</Item>
+        <Item name="SCALE" sample="0" role="scale">0.1</Item>
+        <Item name="SOME_CUSTOM_TAG2" sample="1">12345678901234567890123456789012</Item>
+        <Item name="DESCRIPTION" sample="1" role="description">band description</Item>
+        <Item name="TAG_TYPE" sample="1">BAND2</Item>
+        <Item name="BANDTAG" sample="1">2</Item>
+        <Item name="OFFSET" sample="1" role="offset">43</Item>
+        <Item name="SOME_CUSTOM_TAG1" sample="1">1234567890123456789012345678901</Item>
+        <Item name="SCALE" sample="1" role="scale">0.1</Item>
+        <Item name="SOME_CUSTOM_TAG2" sample="2">12345678901234567890123456789012</Item>
+        <Item name="DESCRIPTION" sample="2" role="description">band description</Item>
+        <Item name="TAG_TYPE" sample="2">BAND3</Item>
+        <Item name="BANDTAG" sample="2">3</Item>
+        <Item name="OFFSET" sample="2" role="offset">43</Item>
+        <Item name="SOME_CUSTOM_TAG1" sample="2">1234567890123456789012345678901</Item>
+        <Item name="SCALE" sample="2" role="scale">0.1</Item>
+        <Item name="SOME_CUSTOM_TAG2" sample="3">12345678901234567890123456789012</Item>
+        <Item name="DESCRIPTION" sample="3" role="description">band description</Item>
+        <Item name="TAG_TYPE" sample="3">BAND4</Item>
+        <Item name="BANDTAG" sample="3">4</Item>
+        <Item name="OFFSET" sample="3" role="offset">43</Item>
+        <Item name="SOME_CUSTOM_TAG1" sample="3">1234567890123456789012345678901</Item>
+        <Item name="SCALE" sample="3" role="scale">0.1</Item>
+      </GDALMetadata>""".replaceAll("\\s+",""))
 
       val actual = MultibandGeoTiff(path).tags
       val expected = taggedTiff.tags

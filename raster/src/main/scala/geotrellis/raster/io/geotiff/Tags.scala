@@ -49,8 +49,8 @@ case class Tags(headTags: Map[String, String], bandTags: List[Map[String, String
     val bandTagsXml: Seq[scala.xml.Elem] =
       bandTags.zipWithIndex.flatMap { case (map, i) =>
         map.toSeq.map { case (key, value) =>
-          if (Tags.TAG_TO_ROLE.contains(key.toUpperCase))
-            <Item name={key} sample={i.toString} role={Tags.TAG_TO_ROLE(key.toUpperCase)}>{value}</Item>
+          if (Tags.TAG_ROLES.contains(key.toLowerCase()))
+            <Item name={key} sample={i.toString} role={key.toLowerCase}>{value}</Item>
           else
             <Item name={key} sample={i.toString}>{value}</Item>
         }
@@ -69,10 +69,12 @@ object Tags {
   final val AREA_OR_POINT = "AREA_OR_POINT"
   final val TIFFTAG_DATETIME = "TIFFTAG_DATETIME"
   final val TIFFTAG_IMAGEDESCRIPTION = "TIFFTAG_IMAGEDESCRIPTION"
-  final val TAG_TO_ROLE = Map(
-    "OFFSET" -> "offset",
-    "SCALE" -> "scale",
-    "DESCRIPTION" -> "description"
+  final val TAG_ROLES = Array(
+    "offset",
+    "scale",
+    "description",
+    "unittype",
+    "colorinterp"
   )
 
 }
