@@ -69,7 +69,7 @@ object Tags {
   final val AREA_OR_POINT = "AREA_OR_POINT"
   final val TIFFTAG_DATETIME = "TIFFTAG_DATETIME"
   final val TIFFTAG_IMAGEDESCRIPTION = "TIFFTAG_IMAGEDESCRIPTION"
-  final val TAG_ROLES = Array(
+  final val TAG_ROLES = Set(
     "offset",
     "scale",
     "description",
