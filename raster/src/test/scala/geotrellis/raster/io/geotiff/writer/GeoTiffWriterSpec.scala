@@ -26,10 +26,11 @@ import geotrellis.raster.testkit._
 import geotrellis.vector.Extent
 
 import java.io._
-
 import org.scalatest.{BeforeAndAfterAll, Inspectors}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.funspec.AnyFunSpec
+
+import scala.xml.{Text, XML}
 
 class GeoTiffWriterSpec extends AnyFunSpec with Matchers with BeforeAndAfterAll with RasterMatchers with TileBuilders with GeoTiffTestUtils {
 
@@ -127,7 +128,7 @@ class GeoTiffWriterSpec extends AnyFunSpec with Matchers with BeforeAndAfterAll 
 
       val tags = TiffTags.read(path)
 
-      tags.geoTiffTags.metadata.get.replaceAll("\\s+","") should be ("""<GDALMetadata>
+      val expectedXML = XML.loadString("""<GDALMetadata>
         <Item name="SOME_CUSTOM_TAG2">12345678901234567890123456789012</Item>
         <Item name="TAG_TYPE">HEAD</Item>
         <Item name="SOME_CUSTOM_TAG1">1234567890123456789012345678901</Item>
@@ -160,7 +161,11 @@ class GeoTiffWriterSpec extends AnyFunSpec with Matchers with BeforeAndAfterAll 
         <Item name="OFFSET" sample="3" role="offset">43</Item>
         <Item name="SOME_CUSTOM_TAG1" sample="3">1234567890123456789012345678901</Item>
         <Item name="SCALE" sample="3" role="scale">0.1</Item>
-      </GDALMetadata>""".replaceAll("\\s+",""))
+      </GDALMetadata>""")
+      val expectedItems = expectedXML.child.filter(_.isInstanceOf[scala.xml.Elem]).sortBy(_.attribute("name").get.text).sortBy(_.attribute("sample").getOrElse(Text("")).text)
+      val actualItems = XML.loadString(tags.geoTiffTags.metadata.get).child.filter(_.isInstanceOf[scala.xml.Elem]).sortBy(_.attribute("name").get.text).sortBy(_.attribute("sample").getOrElse(Text("")).text)
+
+      actualItems.zip(expectedItems).foreach(t=> t._1 should equal (t._2))
 
       val actual = MultibandGeoTiff(path).tags
       val expected = taggedTiff.tags
