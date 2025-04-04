@@ -26,10 +26,11 @@ import geotrellis.raster.testkit._
 import geotrellis.vector.Extent
 
 import java.io._
-
 import org.scalatest.{BeforeAndAfterAll, Inspectors}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.funspec.AnyFunSpec
+
+import scala.xml.{Text, XML}
 
 class GeoTiffWriterSpec extends AnyFunSpec with Matchers with BeforeAndAfterAll with RasterMatchers with TileBuilders with GeoTiffTestUtils {
 
@@ -113,14 +114,58 @@ class GeoTiffWriterSpec extends AnyFunSpec with Matchers with BeforeAndAfterAll 
 
       val newTag1 = ("SOME_CUSTOM_TAG1" -> "1234567890123456789012345678901")
       val newTag2 = ("SOME_CUSTOM_TAG2" -> "12345678901234567890123456789012")
+      val newTag3 = ("OFFSET" -> "43")
+      val newTag4 = ("DESCRIPTION" -> "band description")
+      val newTag5 = ("SCALE" -> "0.1")
       val headTags = geoTiff.tags.headTags + newTag1 + newTag2
-      val bandTags = geoTiff.tags.bandTags.map(_ + newTag1 + newTag2)
+      val bandTags = geoTiff.tags.bandTags.map(_ + newTag1 + newTag2 + newTag3 + newTag4 + newTag5)
 
       val taggedTiff = geoTiff.copy(tags = Tags(headTags, bandTags))
 
       GeoTiffWriter.write(taggedTiff, path)
 
       addToPurge(path)
+
+      val tags = TiffTags.read(path)
+
+      val expectedXML = XML.loadString("""<GDALMetadata>
+        <Item name="SOME_CUSTOM_TAG2">12345678901234567890123456789012</Item>
+        <Item name="TAG_TYPE">HEAD</Item>
+        <Item name="SOME_CUSTOM_TAG1">1234567890123456789012345678901</Item>
+        <Item name="HEADTAG">1</Item>
+        <Item name="SOME_CUSTOM_TAG2" sample="0">12345678901234567890123456789012</Item>
+        <Item name="DESCRIPTION" sample="0" role="description">band description</Item>
+        <Item name="TAG_TYPE" sample="0">BAND1</Item>
+        <Item name="BANDTAG" sample="0">1</Item>
+        <Item name="OFFSET" sample="0" role="offset">43</Item>
+        <Item name="SOME_CUSTOM_TAG1" sample="0">1234567890123456789012345678901</Item>
+        <Item name="SCALE" sample="0" role="scale">0.1</Item>
+        <Item name="SOME_CUSTOM_TAG2" sample="1">12345678901234567890123456789012</Item>
+        <Item name="DESCRIPTION" sample="1" role="description">band description</Item>
+        <Item name="TAG_TYPE" sample="1">BAND2</Item>
+        <Item name="BANDTAG" sample="1">2</Item>
+        <Item name="OFFSET" sample="1" role="offset">43</Item>
+        <Item name="SOME_CUSTOM_TAG1" sample="1">1234567890123456789012345678901</Item>
+        <Item name="SCALE" sample="1" role="scale">0.1</Item>
+        <Item name="SOME_CUSTOM_TAG2" sample="2">12345678901234567890123456789012</Item>
+        <Item name="DESCRIPTION" sample="2" role="description">band description</Item>
+        <Item name="TAG_TYPE" sample="2">BAND3</Item>
+        <Item name="BANDTAG" sample="2">3</Item>
+        <Item name="OFFSET" sample="2" role="offset">43</Item>
+        <Item name="SOME_CUSTOM_TAG1" sample="2">1234567890123456789012345678901</Item>
+        <Item name="SCALE" sample="2" role="scale">0.1</Item>
+        <Item name="SOME_CUSTOM_TAG2" sample="3">12345678901234567890123456789012</Item>
+        <Item name="DESCRIPTION" sample="3" role="description">band description</Item>
+        <Item name="TAG_TYPE" sample="3">BAND4</Item>
+        <Item name="BANDTAG" sample="3">4</Item>
+        <Item name="OFFSET" sample="3" role="offset">43</Item>
+        <Item name="SOME_CUSTOM_TAG1" sample="3">1234567890123456789012345678901</Item>
+        <Item name="SCALE" sample="3" role="scale">0.1</Item>
+      </GDALMetadata>""")
+      val expectedItems = expectedXML.child.filter(_.isInstanceOf[scala.xml.Elem]).sortBy(_.attribute("name").get.text).sortBy(_.attribute("sample").getOrElse(Text("")).text)
+      val actualItems = XML.loadString(tags.geoTiffTags.metadata.get).child.filter(_.isInstanceOf[scala.xml.Elem]).sortBy(_.attribute("name").get.text).sortBy(_.attribute("sample").getOrElse(Text("")).text)
+
+      actualItems.zip(expectedItems).foreach(t=> t._1 should equal (t._2))
 
       val actual = MultibandGeoTiff(path).tags
       val expected = taggedTiff.tags
