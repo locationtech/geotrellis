@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - GeoTiffReader Unknown tags skip fix [#3557](https://github.com/locationtech/geotrellis/pull/3557)
 - Fix implicitNotFound error and rename RGBAMethods implicit class [#3563](https://github.com/locationtech/geotrellis/pull/3563)
 - Set 'role' attribute in GDALMetadata tag written to tiff header, to match GDAL behaviour. [#3496](https://github.com/locationtech/geotrellis/issues/3496)
+- Avoid GeoAttrsError by using more robust target extent calculation [#3572](https://github.com/locationtech/geotrellis/pull/3572)
 
 ## [3.7.1] - 2024-01-08
 

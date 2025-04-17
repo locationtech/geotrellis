@@ -329,20 +329,19 @@ class TileRDDReprojectSpec extends AnyFunSpec with TestEnvironment {
 
   describe("Very small cube at high latitude") {
     it("should reproject without error") {
-      val layout = LayoutDefinition(RasterExtent(Extent(-120.550992, 71.82628788888888, -120.5421031111111, 71.83517677777778),32,32),32,32)
-      val targetLayout = LayoutDefinition(RasterExtent(Extent(585180.0, 7971640.0, 585820.0, 7972280.0),32,32),32,32)
+      val layout = LayoutDefinition(RasterExtent(Extent(-120.550992, 71.82628788888888, -120.5421031111111, 71.83517677777778), 32, 32), 32, 32)
+      val targetLayout = LayoutDefinition(RasterExtent(Extent(585180.0, 7971640.0, 585820.0, 7972280.0), 32, 32), 32, 32)
       val extent = Extent(-120.550992, 71.834899, -120.550792, 71.835099)
-      val cube: TileLayerRDD[SpatialKey] = TileLayerRDDBuilders.createTileLayerRDD(sc,ByteArrayTile.fill(1,32,32),layout.tileLayout,LatLng)
+      val cube: TileLayerRDD[SpatialKey] = TileLayerRDDBuilders.createTileLayerRDD(sc, ByteArrayTile.fill(1, 32, 32), layout.tileLayout, LatLng)
 
       val utm = CRS.fromEpsgCode(32610)
 
-      val badMetadata = cube.metadata.copy(crs = LatLng, extent = extent,layout = layout)
-      val result = TileRDDReproject(ContextRDD(cube,badMetadata), utm, Right(targetLayout), 16,Reproject.Options.DEFAULT,None)
+      val badMetadata = cube.metadata.copy(crs = LatLng, extent = extent, layout = layout)
+      val result = TileRDDReproject(ContextRDD(cube, badMetadata), utm, Right(targetLayout), 16, Reproject.Options.DEFAULT, None)
       //should not throw an error
       val resultMetadata = result._2.metadata
-      targetLayout should be (resultMetadata.layout)
-      utm should be (resultMetadata.crs)
-
+      targetLayout should be(resultMetadata.layout)
+      utm should be(resultMetadata.crs)
     }
   }
 }
