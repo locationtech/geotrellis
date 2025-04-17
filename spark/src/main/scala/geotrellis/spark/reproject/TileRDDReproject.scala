@@ -66,12 +66,17 @@ object TileRDDReproject {
   ): (Int, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]) = {
     val crs: CRS = metadata.crs
     val layout = metadata.layout
-    val tileLayout: TileLayout = layout.tileLayout
     implicit val sc = bufferedTiles.context
 
     val sourceDataGridExtent = metadata.layout.createAlignedGridExtent(metadata.extent)
-    val passthroughGridExtent = ReprojectRasterExtent(sourceDataGridExtent, metadata.crs, destCrs)
-    val targetDataExtent = passthroughGridExtent.extent
+    val (targetCellSize, targetDataExtent) =
+      targetLayout match {
+        case Right(l) =>
+          l.cellSize -> l.createAlignedGridExtent(ProjectedExtent(metadata.extent,metadata.crs).reproject(destCrs)).extent
+        case Left(_) =>
+          val passthroughGridExtent = ReprojectRasterExtent(sourceDataGridExtent, metadata.crs, destCrs)
+          passthroughGridExtent.cellSize -> passthroughGridExtent.extent
+      }
 
     val targetPartitioner: Option[Partitioner] = partitioner.orElse(bufferedTiles.partitioner)
 
@@ -112,7 +117,7 @@ object TileRDDReproject {
                   layoutScheme.levelFor(targetDataExtent, ct)
 
                 case None =>
-                  layoutScheme.levelFor(targetDataExtent, passthroughGridExtent.cellSize)
+                  layoutScheme.levelFor(targetDataExtent, targetCellSize)
               }
           }
         }
