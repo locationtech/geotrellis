@@ -57,7 +57,9 @@ object ReprojectRasterExtent {
               val cols = ge.extent.width / ge.cellwidth
               val rows = ge.extent.height / ge.cellheight
               val pixelSize = distance / math.sqrt(cols * cols + rows * rows)
-              (pixelSize, pixelSize)
+              val pixelWidth = if(newExtent.width < 0.5 * pixelSize) newExtent.width else pixelSize
+              val pixelHeight = if(newExtent.height < 0.5*pixelSize) newExtent.height else pixelSize
+              (pixelWidth, pixelHeight)
           }
 
         val newCols = (newExtent.width / pixelSizeX + 0.5).toLong
