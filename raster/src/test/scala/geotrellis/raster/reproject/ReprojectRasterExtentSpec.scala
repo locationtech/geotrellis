@@ -111,12 +111,11 @@ class ReprojectRasterExtentSpec extends AnyFunSpec
     }
 
     it("should reproject single pixel extents") {
-      val inputExtent = GridExtent[Long](Extent(429180.0, 7652390.0, 429190.0, 7652400.0), CellSize(10.0,10.0))
+      val inputExtent = GridExtent[Long](Extent(429180.0, 7652390.0, 429190.0, 7652400.0), CellSize(10.0, 10.0))
       val destinationRE = ReprojectRasterExtent(inputExtent, CRS.fromEpsgCode(32639), LatLng)
 
       assert(destinationRE.cols == 1)
       assert(destinationRE.rows == 1)
-
     }
   }
 }
