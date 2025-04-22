@@ -1200,7 +1200,7 @@ efficiently using the layer query API.
 - Perform PostGIS `ST_` operations in PostGIS through scala.
 
 [Unreleased]: https://github.com/locationtech/geotrellis/compare/v3.8.0...HEAD
-[3.7.1]: https://github.com/locationtech/geotrellis/compare/v3.7.1...v3.8.0
+[3.8.0]: https://github.com/locationtech/geotrellis/compare/v3.7.1...v3.8.0
 [3.7.1]: https://github.com/locationtech/geotrellis/compare/v3.7.0...v3.7.1
 [3.7.0]: https://github.com/locationtech/geotrellis/compare/v3.6.3...v3.7.0
 [3.6.3]: https://github.com/locationtech/geotrellis/compare/v3.6.2...v3.6.3
