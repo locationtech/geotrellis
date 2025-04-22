@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.8.0] - 2025-04-22
+
 ### Changed
 - Bump GeoTools version up to 30.x [#3521](https://github.com/locationtech/geotrellis/pull/3521)
 - Dependecies update & fix "not found: type Serializable" compiler bug [#3535](https://github.com/locationtech/geotrellis/pull/3535)
@@ -1197,7 +1199,8 @@ efficiently using the layer query API.
   the slick scala database library.
 - Perform PostGIS `ST_` operations in PostGIS through scala.
 
-[Unreleased]: https://github.com/locationtech/geotrellis/compare/v3.7.1...HEAD
+[Unreleased]: https://github.com/locationtech/geotrellis/compare/v3.8.0...HEAD
+[3.7.1]: https://github.com/locationtech/geotrellis/compare/v3.7.1...v3.8.0
 [3.7.1]: https://github.com/locationtech/geotrellis/compare/v3.7.0...v3.7.1
 [3.7.0]: https://github.com/locationtech/geotrellis/compare/v3.6.3...v3.7.0
 [3.6.3]: https://github.com/locationtech/geotrellis/compare/v3.6.2...v3.6.3
