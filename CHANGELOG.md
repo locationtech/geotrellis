@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [3.8.0] - 2025-04-22
+## [3.8.0] - 2025-04-23
 
 ### Changed
 - Bump GeoTools version up to 30.x [#3521](https://github.com/locationtech/geotrellis/pull/3521)
