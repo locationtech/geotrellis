@@ -35,7 +35,7 @@ To grab the latest `SNAPSHOT`, `RC` or milestone build, add these resolvers:
 ```scala
 // maven central snapshots
 resolvers ++= Seq(
-  "sonatype-snapshot" at "https://oss.sonatype.org/content/repositories/snapshots/"
+  "central-snapshots" at "https://central.sonatype.com/repository/maven-snapshots/"
 )
 
 // or eclipse snapshots
