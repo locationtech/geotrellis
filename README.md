@@ -5,7 +5,7 @@
 [![Changelog](https://img.shields.io/badge/changelog-v1.2.0-brightgreen.svg)](https://github.com/locationtech/geotrellis/blob/master/CHANGELOG.md)
 [![Contributing](https://img.shields.io/badge/contributing-see%20conditions-brightgreen.svg)](https://github.com/locationtech/geotrellis/blob/master/docs/CONTRIBUTING.rst)
 
-[![Maven Central](https://img.shields.io/maven-central/v/org.locationtech.geotrellis/geotrellis-spark_2.12)](http://search.maven.org/#search%7Cga%7C1%7Corg.locationtech.geotrellis) [![Snapshots](https://img.shields.io/nexus/s/https/oss.sonatype.org/org.locationtech.geotrellis/geotrellis-spark_2.12.svg)](https://oss.sonatype.org/content/repositories/snapshots/org/locationtech/geotrellis/geotrellis-spark_2.12/)
+[![Maven Central](https://img.shields.io/maven-central/v/org.locationtech.geotrellis/geotrellis-spark_2.12)](http://search.maven.org/#search%7Cga%7C1%7Corg.locationtech.geotrellis) [![Snapshots](https://img.shields.io/badge/snapshots-available-orange)](https://central.sonatype.com/service/rest/repository/browse/maven-snapshots/org/locationtech/geotrellis/geotrellis-spark_2.13/)
 
 _GeoTrellis_ is a Scala library and framework that provides
 APIs for reading, writing and operating on geospatial
