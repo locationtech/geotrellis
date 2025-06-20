@@ -93,7 +93,7 @@ class HttpRangeReaderSpec extends AnyFunSpec with Matchers {
     }
 
     it("should throw HttpStatusException for a 404 Not Found") {
-      val uri = "https://geotrellis.io/404thisdoesntexist"
+      val uri = "https://projects.eclipse.org/projects/locationtech.geotrellis/404thisdoesntexist"
       assertThrows[HttpStatusException] {
         HttpRangeReader(uri)
       }
