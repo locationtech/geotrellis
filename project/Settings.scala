@@ -419,6 +419,7 @@ object Settings {
     name := "geotrellis-raster",
     libraryDependencies ++= Seq(
       squants,
+      zstdJni,
       monocle("core").value,
       monocle("macro").value,
       scalaXml,
