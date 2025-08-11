@@ -92,6 +92,7 @@ object Dependencies {
   val sl4jnop             = "org.slf4j"                   % "slf4j-nop"                % "1.7.25"
   val logbackClassic      = "ch.qos.logback"              % "logback-classic"          % "1.2.3"
   val guava               = "com.google.guava"            % "guava"                    % "16.0.1"
+  val zstdJni             = "com.github.luben"            % "zstd-jni"                 % "1.5.7-3"
 
   val cassandraDriverCore         = "com.datastax.oss" % "java-driver-core"          % Version.cassandra
   val cassandraDriverQueryBuilder = "com.datastax.oss" % "java-driver-query-builder" % Version.cassandra
