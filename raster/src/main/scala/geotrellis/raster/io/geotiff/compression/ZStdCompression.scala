@@ -33,27 +33,20 @@ object ZStdCompression extends ZStdCompression(3)
 
 class ZStdCompressor(segmentCount: Int, level: Int) extends Compressor {
   private val segmentSizes = Array.ofDim[Int](segmentCount)
-  def code = 50000
 
-      def compress(segment: Array[Byte], segmentIndex: Int): Array[Byte] = {
-        segmentSizes(segmentIndex) = segment.size
+  def compress(segment: Array[Byte], segmentIndex: Int): Array[Byte] = {
+    segmentSizes(segmentIndex) = segment.size
 
-        val outputStream = new ByteArrayOutputStream()
-        val compressorOutputStream = new ZstdOutputStream(outputStream, level)
-        IOUtils.copyLarge(new ByteArrayInputStream(segment), compressorOutputStream)
-        compressorOutputStream.close()
-        outputStream.toByteArray
-      }
+    val outputStream = new ByteArrayOutputStream()
+    val compressorOutputStream = new ZstdOutputStream(outputStream, level)
+    IOUtils.copyLarge(new ByteArrayInputStream(segment), compressorOutputStream)
+    compressorOutputStream.close()
+    outputStream.toByteArray
+  }
 
-      def createDecompressor(): Decompressor =
-        new ZStdDecompressor(segmentSizes)
-    }
-
-  def createDecompressor(segmentSizes: Array[Int]): ZStdDecompressor =
+  def createDecompressor(): Decompressor =
     new ZStdDecompressor(segmentSizes)
 }
-
-object ZStdCompression extends ZStdCompression(10)
 
 class ZStdDecompressor(segmentSizes: Array[Int]) extends Decompressor {
   def code = ZstdCoded
