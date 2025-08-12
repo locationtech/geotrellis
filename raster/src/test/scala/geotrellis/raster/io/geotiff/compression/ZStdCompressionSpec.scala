@@ -19,7 +19,7 @@ package geotrellis.raster.io.geotiff.compression
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.funspec.AnyFunSpec
 
-class CompressionSpec extends AnyFunSpec with Matchers {
+class ZstdCompressionSpec extends AnyFunSpec with Matchers {
   describe("ZStdCompression") {
     (-1 to 9).foreach { level =>
       it(s"should decompress and compress to the same things at the ${if(level == -1) "default compression level" else s"zoom level $level"}") {
