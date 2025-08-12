@@ -420,6 +420,7 @@ object Settings {
     libraryDependencies ++= Seq(
       squants,
       zstdJni,
+      apacheIO excludeAll(ExclusionRule("com.fasterxml.jackson.core"), ExclusionRule("com.google.j2objc")),
       monocle("core").value,
       monocle("macro").value,
       scalaXml,

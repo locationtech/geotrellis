@@ -19,7 +19,7 @@ package geotrellis.raster.io.geotiff.compression
 import geotrellis.raster.io.geotiff.compression.{Compression, Compressor, Decompressor}
 import geotrellis.raster.io.geotiff.tags.codes.CompressionType._
 
-import com.github.luben.zstd
+import com.github.luben.zstd.{ZstdInputStream, ZstdOutputStream}
 import org.apache.commons.io.IOUtils
 
 import java.io.{ByteArrayInputStream, ByteArrayOutputStream}
@@ -27,6 +27,10 @@ import java.io.{ByteArrayInputStream, ByteArrayOutputStream}
 case class ZStdCompression(level: Int = 3) extends Compression {
   def createCompressor(segmentCount: Int): Compressor =
     new ZStdCompressor(segmentCount, level)
+
+  def createDecompressor(segmentSizes: Array[Int]): Decompressor =
+    new ZStdDecompressor(segmentSizes)
+
 }
 
 object ZStdCompression extends ZStdCompression(3)
@@ -54,7 +58,7 @@ class ZStdDecompressor(segmentSizes: Array[Int]) extends Decompressor {
   def decompress(segment: Array[Byte], segmentIndex: Int): Array[Byte] = {
     val outputStream = new ByteArrayOutputStream()
     val stream = new ByteArrayInputStream(segment)
-    val compressorInputStream = new ZstdCompressorInputStream(stream)
+    val compressorInputStream = new ZstdInputStream(stream)
     IOUtils.copyLarge(compressorInputStream, outputStream)
     compressorInputStream.close()
     outputStream.toByteArray
