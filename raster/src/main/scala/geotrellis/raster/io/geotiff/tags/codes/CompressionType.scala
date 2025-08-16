@@ -28,5 +28,6 @@ object CompressionType {
   val ZLibCoded = 8
   val PackBitsCoded = 32773
   val PkZipCoded = 32946
+  val ZStdCoded = 50000
 
 }

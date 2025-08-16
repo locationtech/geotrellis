@@ -40,10 +40,9 @@ object Settings {
     val ivy2Local         = Resolver.file("local", file(Path.userHome.absolutePath + "/.ivy2/local"))(Resolver.ivyStylePatterns)
     val mavenLocal        = Resolver.mavenLocal
     val maven             = DefaultMavenRepository
-    val sonatypeReleases  = Resolver.sonatypeOssRepos("releases") 
-    val sonatypeSnapshots = Resolver.sonatypeOssRepos("snapshots")
+    val sonatypeSnapshots = Resolver.sonatypeCentralSnapshots
     val local             = Seq(ivy2Local, mavenLocal)
-    val external          = Seq(osgeoReleases, maven, eclipseReleases, geosolutions, jitpack, apacheSnapshots, osgeoSnapshots) ++ sonatypeReleases ++ sonatypeSnapshots
+    val external          = Seq(osgeoReleases, maven, eclipseReleases, geosolutions, jitpack, apacheSnapshots, osgeoSnapshots, sonatypeSnapshots)
     val all               = external ++ local
   }
 
@@ -419,6 +418,8 @@ object Settings {
     name := "geotrellis-raster",
     libraryDependencies ++= Seq(
       squants,
+      zstdJni,
+      apacheIO excludeAll(ExclusionRule("com.fasterxml.jackson.core"), ExclusionRule("com.google.j2objc")),
       monocle("core").value,
       monocle("macro").value,
       scalaXml,

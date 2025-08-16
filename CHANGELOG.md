@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Add ZStd compression support for GTiff
+
 ## [3.8.0] - 2025-04-23
 
 ### Added
