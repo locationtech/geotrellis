@@ -16,7 +16,6 @@
 
 package geotrellis.raster.io.geotiff.compression
 
-import geotrellis.raster.io.geotiff.compression.{Compression, Compressor, Decompressor}
 import geotrellis.raster.io.geotiff.tags.codes.CompressionType._
 
 import com.github.luben.zstd.{ZstdInputStream, ZstdOutputStream}
