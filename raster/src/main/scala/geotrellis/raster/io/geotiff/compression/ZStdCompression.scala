@@ -27,8 +27,8 @@ case class ZStdCompression(level: Int = 3) extends Compression {
   def createCompressor(segmentCount: Int): Compressor =
     new ZStdCompressor(segmentCount, level)
 
-  def createDecompressor(segmentSizes: Array[Int]): Decompressor =
-    new ZStdDecompressor(segmentSizes)
+  def createDecompressor: Decompressor =
+    new ZStdDecompressor()
 
 }
 
@@ -48,11 +48,11 @@ class ZStdCompressor(segmentCount: Int, level: Int) extends Compressor {
   }
 
   def createDecompressor(): Decompressor =
-    new ZStdDecompressor(segmentSizes)
+    new ZStdDecompressor()
 }
 
-class ZStdDecompressor(segmentSizes: Array[Int]) extends Decompressor {
-  def code = ZstdCoded
+class ZStdDecompressor extends Decompressor {
+  def code = ZStdCoded
 
   def decompress(segment: Array[Byte], segmentIndex: Int): Array[Byte] = {
     val outputStream = new ByteArrayOutputStream()

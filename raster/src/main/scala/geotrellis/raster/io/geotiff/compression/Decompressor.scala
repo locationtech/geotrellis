@@ -117,8 +117,8 @@ object Decompressor {
         checkEndian(PackBitsDecompressor(segmentSizes))
       case JpegCoded =>
         checkEndian(JpegDecompressor(tiffTags))
-      case ZstdCoded =>
-        checkPredictor(ZStdCompression.createDecompressor(segmentSizes))
+      case ZStdCoded =>
+        checkPredictor(ZStdCompression.createDecompressor)
 
       // Unsupported compression types
       case HuffmanCoded =>
