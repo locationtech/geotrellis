@@ -14,16 +14,16 @@
  * limitations under the License.
  */
 
-import Dependencies._
-import GTBenchmarkPlugin.Keys._
-import sbt._
-import sbt.Keys._
-import sbtassembly.AssemblyPlugin.autoImport._
-import com.typesafe.tools.mima.plugin.MimaKeys._
+import Dependencies.*
+import GTBenchmarkPlugin.Keys.*
+import sbt.*
+import sbt.Keys.*
+import sbtassembly.AssemblyPlugin.autoImport.*
+import com.typesafe.tools.mima.plugin.MimaKeys.*
 import de.heikoseeberger.sbtheader.{CommentStyle, FileType}
 import de.heikoseeberger.sbtheader.HeaderPlugin.autoImport.{HeaderLicense, headerLicense, headerMappings}
 import sbtprotoc.ProtocPlugin.autoImport.PB
-import mdoc.MdocPlugin.autoImport._
+import mdoc.MdocPlugin.autoImport.*
 
 import java.io.File
 

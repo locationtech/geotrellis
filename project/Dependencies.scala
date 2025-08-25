@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import sbt._
+import sbt.*
 
 object Version {
   val geotools    = "33.0"
@@ -28,7 +28,7 @@ object Version {
 
   val previousVersion = "3.6.0"
 }
-import sbt.Keys._
+import sbt.Keys.*
 
 object Dependencies {
   private def ver(for212: String, for213: String) = Def.setting {
@@ -63,7 +63,7 @@ object Dependencies {
   }
 
   def apacheSpark(module: String) = Def.setting {
-    "org.apache.spark"  %% s"spark-$module" % "3.5.5"
+    "org.apache.spark"  %% s"spark-$module" % "4.0.0"
   }
 
   def scalaReflect(version: String) = "org.scala-lang" % "scala-reflect" % version
@@ -85,7 +85,7 @@ object Dependencies {
   val chronoscala         = "jp.ne.opt"                  %% "chronoscala"              % "1.0.0"
   val awsSdkS3            = "software.amazon.awssdk"      % "s3"                       % "2.28.17"
   val hadoopClient        = "org.apache.hadoop"           % "hadoop-client"            % Version.hadoop
-  val avro                = "org.apache.avro"             % "avro"                     % "1.11.4" // aligned with the Spark version
+  val avro                = "org.apache.avro"             % "avro"                     % "1.11.4" // aligned with the Spark version // 1.12.0 causes test issues; 1.13.0-SNAPSHOT works
   val parserCombinators   = "org.scala-lang.modules"     %% "scala-parser-combinators" % "2.4.0"
   val jsonSchemaValidator = "com.networknt"               % "json-schema-validator"    % "0.1.23"
   val accumuloCore        = "org.apache.accumulo"         % "accumulo-core"            % Version.accumulo

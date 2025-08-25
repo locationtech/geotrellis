@@ -1,9 +1,9 @@
-import sbt.Keys._
+import sbt.Keys.*
 
 ThisBuild / versionScheme := Some("semver-spec")
 ThisBuild / scalaVersion := "2.13.16"
 ThisBuild / organization := "org.locationtech.geotrellis"
-ThisBuild / crossScalaVersions := List("2.13.16", "2.12.20")
+ThisBuild / crossScalaVersions := List("2.13.16")
 
 lazy val root = Project("geotrellis", file("."))
   .aggregate(
