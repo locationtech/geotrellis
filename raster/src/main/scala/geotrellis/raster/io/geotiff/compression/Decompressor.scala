@@ -62,14 +62,14 @@ trait Decompressor extends Serializable {
       }
     }
 
-  def withPredictor(predictor: Predictor): Decompressor =
+  def withPredictorDecoding(predictor: Predictor): Decompressor =
     new Decompressor {
       def code = Decompressor.this.code
       override def predictorCode = predictor.code
       override def byteOrder = Decompressor.this.byteOrder
 
       def decompress(bytes: Array[Byte], segmentIndex: Int): Array[Byte] =
-        predictor(Decompressor.this.decompress(bytes, segmentIndex), segmentIndex)
+        predictor.decode(Decompressor.this.decompress(bytes, segmentIndex), segmentIndex)
     }
 }
 
@@ -88,9 +88,9 @@ object Decompressor {
     def checkPredictor(d: Decompressor): Decompressor = {
       val predictor = Predictor(tiffTags)
       if(predictor.checkEndian)
-        checkEndian(d).withPredictor(predictor)
+        checkEndian(d).withPredictorDecoding(predictor)
       else
-        d.withPredictor(predictor)
+        d.withPredictorDecoding(predictor)
     }
 
     val segmentCount = tiffTags.segmentCount
@@ -108,7 +108,7 @@ object Decompressor {
 
     tiffTags.compression match {
       case Uncompressed =>
-        checkEndian(NoCompression)
+        checkEndian(NoCompressor)
       case LZWCoded =>
         checkPredictor(LZWDecompressor(segmentSizes))
       case ZLibCoded | PkZipCoded =>

@@ -22,6 +22,14 @@ import cats.syntax.either._
 
 trait Compression extends Serializable {
   def createCompressor(segmentCount: Int): Compressor
+
+  def withPredictorEncoding(predictor: Predictor): Compression = {
+    new Compression {
+      override def createCompressor(segmentCount: Int): Compressor = {
+        Compression.this.createCompressor(segmentCount).withPredictorEncoding(predictor)
+      }
+    }
+  }
 }
 
 object Compression {

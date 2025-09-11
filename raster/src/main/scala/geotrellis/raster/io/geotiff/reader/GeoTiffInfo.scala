@@ -236,7 +236,7 @@ object GeoTiffInfo {
         // If it's any sort of compression, move forward with ZLib compression.
         val compression =
         decompressor match {
-          case NoCompression => NoCompression
+          case NoCompressor => NoCompression
           case _ => DeflateCompression
         }
 

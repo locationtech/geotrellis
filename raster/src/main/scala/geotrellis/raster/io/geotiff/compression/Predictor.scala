@@ -34,7 +34,9 @@ object Predictor {
         new Predictor {
           val code = PREDICTOR_NONE
           val checkEndian = true
-          def apply(bytes: Array[Byte], segmentIndex: Int) = bytes
+
+          override def encode(bytes: Array[Byte]): Array[Byte] = bytes
+          override def decode(bytes: Array[Byte], segmentIndex: Int) = bytes
         }
       case Some(PREDICTOR_HORIZONTAL) =>
         HorizontalPredictor(tiffTags)
@@ -52,5 +54,7 @@ trait Predictor extends Serializable {
   /** GeoTiff tag value for this predictor */
   def code: Int
 
-  def apply(bytes: Array[Byte], segmentIndex: Int): Array[Byte]
+  def encode(bytes: Array[Byte]): Array[Byte]
+
+  def decode(bytes: Array[Byte], segmentIndex: Int): Array[Byte]
 }

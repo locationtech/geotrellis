@@ -39,7 +39,11 @@ object FloatingPointPredictor {
     val code = Predictor.PREDICTOR_FLOATINGPOINT
     val checkEndian = false
 
-    def apply(bytes: Array[Byte], segmentIndex: Int): Array[Byte] = {
+    override def encode(bytes: Array[Byte]): Array[Byte] = {
+      bytes // TODO
+    }
+
+    override def decode(bytes: Array[Byte], segmentIndex: Int): Array[Byte] = {
       val rows = rowsInSegment(segmentIndex)
       val stride = bandCount
       val bytesPerSample = bandType.bytesPerSample
