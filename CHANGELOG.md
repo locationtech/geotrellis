@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Add ZStd compression support for GTiff
+- Add predictor 2 (integer) and predictor 3 (float) support for writing compressed GTiff files
 
 ## [3.8.0] - 2025-04-23
 

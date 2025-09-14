@@ -189,7 +189,7 @@ object HorizontalPredictor {
           if (col < bandCount) {
             encodedBuffer.put(index, buffer.get(index))
           } else {
-            encodedBuffer.put(index, (buffer.get(index) - buffer.get(index - bandCount)))
+            encodedBuffer.put(index, buffer.get(index) - buffer.get(index - bandCount))
           }
         }
       }
