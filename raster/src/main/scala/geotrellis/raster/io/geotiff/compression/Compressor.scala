@@ -29,7 +29,7 @@ trait Compressor extends Serializable {
       def wrapped: Compressor = Compressor.this
 
       override def compress(bytes: Array[Byte], segmentIndex: Int): Array[Byte] = {
-        wrapped.compress(predictor.encode(bytes), segmentIndex = segmentIndex)
+        wrapped.compress(predictor.encode(bytes, segmentIndex), segmentIndex = segmentIndex)
       }
 
       /** Returns the decompressor that can decompress the segments compressed by this compressor */

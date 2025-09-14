@@ -34,18 +34,18 @@ trait Decompressor extends Serializable {
     */
   def flipEndian(bytesPerFlip: Int): Decompressor =
     new Decompressor {
-      def code = Decompressor.this.code
-      override def predictorCode = Decompressor.this.predictorCode
+      def code: Int = Decompressor.this.code
+      override def predictorCode: Int = Decompressor.this.predictorCode
 
       override
-      def byteOrder = ByteOrder.LITTLE_ENDIAN // Since we have to flip, image data is in Little Endian
+      def byteOrder: ByteOrder = ByteOrder.LITTLE_ENDIAN // Since we have to flip, image data is in Little Endian
 
       def decompress(bytes: Array[Byte], segmentIndex: Int): Array[Byte] =
         flip(Decompressor.this.decompress(bytes, segmentIndex))
 
       def flip(bytes: Array[Byte]): Array[Byte] = {
         val arr = bytes.clone
-        val size = arr.size
+        val size = arr.length
 
         var i = 0
         while (i < size) {
@@ -64,9 +64,9 @@ trait Decompressor extends Serializable {
 
   def withPredictorDecoding(predictor: Predictor): Decompressor =
     new Decompressor {
-      def code = Decompressor.this.code
-      override def predictorCode = predictor.code
-      override def byteOrder = Decompressor.this.byteOrder
+      def code: Int = Decompressor.this.code
+      override def predictorCode: Int = predictor.code
+      override def byteOrder: ByteOrder = Decompressor.this.byteOrder
 
       def decompress(bytes: Array[Byte], segmentIndex: Int): Array[Byte] =
         predictor.decode(Decompressor.this.decompress(bytes, segmentIndex), segmentIndex)

@@ -16,14 +16,24 @@
 
 package geotrellis.raster.io.geotiff.compression
 
-import geotrellis.raster.io.geotiff.tags._
+import geotrellis.raster.io.geotiff.GeoTiffImageData
 import geotrellis.raster.io.geotiff.reader.MalformedGeoTiffException
+import geotrellis.raster.io.geotiff.tags._
+import geotrellis.raster.io.geotiff.tags.codes.SampleFormat._
 import monocle.syntax.apply._
 
 object Predictor {
   val PREDICTOR_NONE = 1
   val PREDICTOR_HORIZONTAL = 2
   val PREDICTOR_FLOATINGPOINT = 3
+
+  def apply(imageData: GeoTiffImageData): Predictor = {
+    imageData.bandType.sampleFormat match {
+      case SignedInt | UnsignedInt => HorizontalPredictor(imageData)
+      case FloatingPoint => FloatingPointPredictor(imageData)
+      case _ => throw new UnsupportedOperationException(s"Only predictor 2 (integer-based) and predictor 3 (float-based) are supported.")
+    }
+  }
 
   def apply(tiffTags: TiffTags): Predictor = {
     (tiffTags
@@ -32,11 +42,11 @@ object Predictor {
     ) match {
       case None | Some(PREDICTOR_NONE) =>
         new Predictor {
-          val code = PREDICTOR_NONE
+          val code: Int = PREDICTOR_NONE
           val checkEndian = true
 
-          override def encode(bytes: Array[Byte]): Array[Byte] = bytes
-          override def decode(bytes: Array[Byte], segmentIndex: Int) = bytes
+          override def encode(bytes: Array[Byte], segmentIndex: Int): Array[Byte] = bytes
+          override def decode(bytes: Array[Byte], segmentIndex: Int): Array[Byte] = bytes
         }
       case Some(PREDICTOR_HORIZONTAL) =>
         HorizontalPredictor(tiffTags)
@@ -54,7 +64,7 @@ trait Predictor extends Serializable {
   /** GeoTiff tag value for this predictor */
   def code: Int
 
-  def encode(bytes: Array[Byte]): Array[Byte]
+  def encode(bytes: Array[Byte], segmentIndex: Int): Array[Byte]
 
   def decode(bytes: Array[Byte], segmentIndex: Int): Array[Byte]
 }

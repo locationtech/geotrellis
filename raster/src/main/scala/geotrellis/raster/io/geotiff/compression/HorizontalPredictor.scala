@@ -26,9 +26,27 @@ import spire.syntax.cfor._
 object HorizontalPredictor {
 
   def apply(imageData: GeoTiffImageData): Predictor = {
-    val colsPerRow = 0 // TODO
-    val rowsInSegment: (Int => Int) = { i => i } // TODO
+    val colsPerRow = {
+      if (imageData.segmentLayout.isStriped) {
+        imageData.segmentLayout.totalCols
+      } else {
+        imageData.segmentLayout.tileLayout.tileCols
+      }
+    }
 
+    val rowsInSegment: Int => Int =
+      if (imageData.segmentLayout.isStriped) {
+        def stripedRowsInSegment(segmentIndex: Int): Int = {
+          imageData.segmentLayout.getSegmentDimensions(segmentIndex).rows
+        }
+        stripedRowsInSegment
+      } else {
+        def tiledRowsInSegment(segmentIndex: Int): Int = {
+          imageData.segmentLayout.tileLayout.tileRows
+        }
+        tiledRowsInSegment
+
+      }
     val bandType = imageData.bandType
 
     val predictor =
@@ -44,7 +62,7 @@ object HorizontalPredictor {
 
   def apply(tiffTags: TiffTags): Predictor = {
     val colsPerRow = tiffTags.rowSize
-    val rowsInSegment: (Int => Int) = { i => tiffTags.rowsInSegment(i) }
+    val rowsInSegment: Int => Int = { i => tiffTags.rowsInSegment(i) }
 
     val bandType = tiffTags.bandType
 
@@ -60,7 +78,7 @@ object HorizontalPredictor {
 
   private class HorizontalPredictor(cols: Int, rowsInSegment: Int => Int, bandCount: Int) {
     def forBandType(bandType: BandType): Predictor = {
-      val encodeFunc: Array[Byte] => Array[Byte] =
+      val encodeFunc: (Array[Byte], Int) => Array[Byte] =
         bandType.bitsPerSample match {
           case 8 => encode8
           case 16 => encode16
@@ -80,28 +98,33 @@ object HorizontalPredictor {
 
 
       new Predictor {
-        val code = Predictor.PREDICTOR_HORIZONTAL
+        val code: Int = Predictor.PREDICTOR_HORIZONTAL
         val checkEndian = true
 
-        override def encode(bytes: Array[Byte]): Array[Byte] =
-          encodeFunc(bytes)
+        override def encode(bytes: Array[Byte], segmentIndex: Int): Array[Byte] =
+          encodeFunc(bytes, segmentIndex)
 
         override def decode(bytes: Array[Byte], segmentIndex: Int): Array[Byte] =
           decodeFunc(bytes, segmentIndex)
       }
     }
 
-    def encode8(bytes: Array[Byte]) = {
-      val m = Math.sqrt(bytes.length).toInt
-      val n = m
+    def encode8(bytes: Array[Byte], segmentIndex: Int): Array[Byte] = {
+      val encodedBytes = new Array[Byte](bytes.length)
+      val rows = rowsInSegment(segmentIndex)
+      val n = bytes.length / rows
 
-      cfor(0)(_ < m, _ + 1) { row =>
-        cfor(n - 1)({ k => k > 0 }, _ - 1) { col =>
+      cfor(0)(_ < rows, _ + 1) { row =>
+        cfor(n - 1)({ k => k >= 0 }, _ - 1) { col =>
           val index = row * n + col
-          bytes(index) = (bytes(index) - bytes(index - 1)).toByte
+          if (col < bandCount) {
+            encodedBytes(index) = bytes(index)
+          } else {
+            encodedBytes(index) = (bytes(index) - bytes(index - bandCount)).toByte
+          }
         }
       }
-      bytes
+      encodedBytes
     }
 
     def decode8(bytes: Array[Byte], segmentIndex: Int): Array[Byte] = {
@@ -117,19 +140,25 @@ object HorizontalPredictor {
       bytes
     }
 
-    def encode16(bytes: Array[Byte]): Array[Byte] = {
+    def encode16(bytes: Array[Byte], segmentIndex: Int): Array[Byte] = {
+      val encodedBytes = new Array[Byte](bytes.length)
+      val encodedBuffer = ByteBuffer.wrap(encodedBytes).asShortBuffer
       val buffer = ByteBuffer.wrap(bytes).asShortBuffer
 
-      val m = Math.sqrt(bytes.length / 2).toInt
-      val n = m
+      val rows = rowsInSegment(segmentIndex)
+      val n = bytes.length / (rows * 2)
 
-      cfor(0)(_ < m, _ + 1) { row =>
-        cfor(n - 1)({ k => k > 0 }, _ - 1) { col =>
+      cfor(0)(_ < rows, _ + 1) { row =>
+        cfor(n - 1)({ k => k >= 0 }, _ - 1) { col =>
           val index = row * n + col
-          buffer.put(index, (buffer.get(index) - buffer.get(index - 1)).toShort)
+          if (col < bandCount) {
+            encodedBuffer.put(index, buffer.get(index))
+          } else {
+            encodedBuffer.put(index, (buffer.get(index) - buffer.get(index - bandCount)).toShort)
+          }
         }
       }
-      bytes
+      encodedBytes
     }
 
     def decode16(bytes: Array[Byte], segmentIndex: Int): Array[Byte] = {
@@ -143,23 +172,28 @@ object HorizontalPredictor {
           count += 1
         }
       }
-
       bytes
     }
 
-    def encode32(bytes: Array[Byte]): Array[Byte] = {
+    def encode32(bytes: Array[Byte], segmentIndex: Int): Array[Byte] = {
+      val encodedBytes = new Array[Byte](bytes.length)
+      val encodedBuffer = ByteBuffer.wrap(encodedBytes).asIntBuffer
       val buffer = ByteBuffer.wrap(bytes).asIntBuffer
 
-      val m = Math.sqrt(bytes.length / 4).toInt
-      val n = m
+      val rows = rowsInSegment(segmentIndex)
+      val n = bytes.length / (rows * 4)
 
-      cfor(0)(_ < m, _ + 1) { row =>
-        cfor(n - 1)({ k => k > 0 }, _ - 1) { col =>
+      cfor(0)(_ < rows, _ + 1) { row =>
+        cfor(n - 1)({ k => k >= 0 }, _ - 1) { col =>
           val index = row * n + col
-          buffer.put(index, (buffer.get(index) - buffer.get(index - 1)).toInt)
+          if (col < bandCount) {
+            encodedBuffer.put(index, buffer.get(index))
+          } else {
+            encodedBuffer.put(index, (buffer.get(index) - buffer.get(index - bandCount)))
+          }
         }
       }
-      bytes
+      encodedBytes
     }
 
     def decode32(bytes: Array[Byte], segmentIndex: Int): Array[Byte] = {
@@ -173,7 +207,6 @@ object HorizontalPredictor {
           count += 1
         }
       }
-
       bytes
     }
   }
