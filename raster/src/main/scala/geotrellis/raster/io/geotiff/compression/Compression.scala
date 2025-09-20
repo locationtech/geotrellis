@@ -22,16 +22,13 @@ import io.circe.syntax._
 trait Compression extends Serializable {
   def createCompressor(segmentCount: Int): Compressor
 
-  def withPredictor(predictor: Predictor): Compression = {
-    (segmentCount: Int) => {
-      Compression.this.createCompressor(segmentCount).withPredictorEncoding(predictor)
-    }
-  }
+  def withPredictor(predictor: Predictor): Compression =
+    (segmentCount: Int) => createCompressor(segmentCount).withPredictorEncoding(predictor)
 }
 
 object Compression {
   implicit val compressionDecoder: Decoder[Compression] =
-    (c: HCursor) => {
+    (c: HCursor) =>
       c.downField("compressionType").as[String].map {
         case "NoCompression" => NoCompression
         case _ =>
@@ -40,13 +37,11 @@ object Compression {
             case Right(i) => DeflateCompression(i)
           }
       }
-    }
 
-  implicit val compressionEncoder: Encoder[Compression] =
-    (a: Compression) => a match {
-      case NoCompression =>
-        Json.obj(("compressionType", "NoCompression".asJson))
-      case d: DeflateCompression =>
-        Json.obj(("compressionType", "Deflate".asJson), ("level", d.level.asJson))
-    }
+  implicit val compressionEncoder: Encoder[Compression] = {
+    case NoCompression =>
+      Json.obj(("compressionType", "NoCompression".asJson))
+    case d: DeflateCompression =>
+      Json.obj(("compressionType", "Deflate".asJson), ("level", d.level.asJson))
+  }
 }

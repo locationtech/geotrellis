@@ -56,6 +56,24 @@ object Predictor {
         throw new MalformedGeoTiffException(s"predictor tag $i is not valid (require 1, 2 or 3)")
     }
   }
+
+  def colsPerRow(imageData: GeoTiffImageData): Int =
+    if (imageData.segmentLayout.isStriped)
+      imageData.segmentLayout.totalCols
+    else
+      imageData.segmentLayout.tileLayout.tileCols
+
+  def rowsInSegment(imageData: GeoTiffImageData): Int => Int =
+    if (imageData.segmentLayout.isStriped) {
+      def stripedRowsInSegment(segmentIndex: Int): Int =
+        imageData.segmentLayout.getSegmentDimensions(segmentIndex).rows
+
+      stripedRowsInSegment
+    } else {
+      def tiledRowsInSegment(segmentIndex: Int): Int =
+        imageData.segmentLayout.tileLayout.tileRows
+      tiledRowsInSegment
+    }
 }
 
 trait Predictor extends Serializable {

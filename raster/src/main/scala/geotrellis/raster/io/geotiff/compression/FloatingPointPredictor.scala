@@ -24,31 +24,13 @@ import spire.syntax.cfor._
 object FloatingPointPredictor {
 
   def apply(imageData: GeoTiffImageData): Predictor = {
-    val colsPerRow = {
-      if (imageData.segmentLayout.isStriped) {
-        imageData.segmentLayout.totalCols
-      } else {
-        imageData.segmentLayout.tileLayout.tileCols
-      }
-    }
+    val colsPerRow = Predictor.colsPerRow(imageData)
+    val rowsInSegment = Predictor.rowsInSegment(imageData)
 
-    val rowsInSegment: Int => Int =
-      if (imageData.segmentLayout.isStriped) {
-        def stripedRowsInSegment(segmentIndex: Int): Int = {
-          imageData.segmentLayout.getSegmentDimensions(segmentIndex).rows
-        }
-        stripedRowsInSegment
-      } else {
-        def tiledRowsInSegment(segmentIndex: Int): Int = {
-          imageData.segmentLayout.tileLayout.tileRows
-        }
-        tiledRowsInSegment
-      }
-    if (imageData.segmentLayout.hasPixelInterleave) {
+    if (imageData.segmentLayout.hasPixelInterleave)
       new FloatingPointPredictor(colsPerRow, rowsInSegment, imageData.bandType, imageData.bandCount)
-    } else {
-      new FloatingPointPredictor(colsPerRow, rowsInSegment, imageData.bandType,1)
-    }
+    else
+      new FloatingPointPredictor(colsPerRow, rowsInSegment, imageData.bandType, 1)
   }
 
   def apply(tiffTags: TiffTags): Predictor = {

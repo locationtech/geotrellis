@@ -26,35 +26,16 @@ import spire.syntax.cfor._
 object HorizontalPredictor {
 
   def apply(imageData: GeoTiffImageData): Predictor = {
-    val colsPerRow = {
-      if (imageData.segmentLayout.isStriped) {
-        imageData.segmentLayout.totalCols
-      } else {
-        imageData.segmentLayout.tileLayout.tileCols
-      }
-    }
+    val colsPerRow = Predictor.colsPerRow(imageData)
+    val rowsInSegment = Predictor.rowsInSegment(imageData)
 
-    val rowsInSegment: Int => Int =
-      if (imageData.segmentLayout.isStriped) {
-        def stripedRowsInSegment(segmentIndex: Int): Int = {
-          imageData.segmentLayout.getSegmentDimensions(segmentIndex).rows
-        }
-        stripedRowsInSegment
-      } else {
-        def tiledRowsInSegment(segmentIndex: Int): Int = {
-          imageData.segmentLayout.tileLayout.tileRows
-        }
-        tiledRowsInSegment
-
-      }
     val bandType = imageData.bandType
 
     val predictor =
-      if (imageData.segmentLayout.hasPixelInterleave) {
+      if (imageData.segmentLayout.hasPixelInterleave)
         new HorizontalPredictor(colsPerRow, rowsInSegment, imageData.bandCount)
-      } else {
+      else
         new HorizontalPredictor(colsPerRow, rowsInSegment, 1)
-      }
 
     predictor.forBandType(bandType)
   }
@@ -117,11 +98,10 @@ object HorizontalPredictor {
       cfor(0)(_ < rows, _ + 1) { row =>
         cfor(n - 1)({ k => k >= 0 }, _ - 1) { col =>
           val index = row * n + col
-          if (col < bandCount) {
+          if (col < bandCount)
             encodedBytes(index) = bytes(index)
-          } else {
+          else
             encodedBytes(index) = (bytes(index) - bytes(index - bandCount)).toByte
-          }
         }
       }
       encodedBytes
@@ -151,11 +131,10 @@ object HorizontalPredictor {
       cfor(0)(_ < rows, _ + 1) { row =>
         cfor(n - 1)({ k => k >= 0 }, _ - 1) { col =>
           val index = row * n + col
-          if (col < bandCount) {
+          if (col < bandCount)
             encodedBuffer.put(index, buffer.get(index))
-          } else {
+          else
             encodedBuffer.put(index, (buffer.get(index) - buffer.get(index - bandCount)).toShort)
-          }
         }
       }
       encodedBytes
@@ -186,11 +165,10 @@ object HorizontalPredictor {
       cfor(0)(_ < rows, _ + 1) { row =>
         cfor(n - 1)({ k => k >= 0 }, _ - 1) { col =>
           val index = row * n + col
-          if (col < bandCount) {
+          if (col < bandCount)
             encodedBuffer.put(index, buffer.get(index))
-          } else {
+          else
             encodedBuffer.put(index, buffer.get(index) - buffer.get(index - bandCount))
-          }
         }
       }
       encodedBytes
