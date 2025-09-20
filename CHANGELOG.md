@@ -7,7 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- Add ZStd compression support for GTiff
+- Add ZStd compression support for GTiff [#3580](https://github.com/locationtech/geotrellis/pull/3580)
+- Do not depend on private Spark API, avoids sealing violation [#3586](https://github.com/locationtech/geotrellis/pull/3586)
 
 ## [3.8.0] - 2025-04-23
 

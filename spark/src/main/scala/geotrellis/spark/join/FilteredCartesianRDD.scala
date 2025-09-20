@@ -23,47 +23,8 @@ package geotrellis.spark.join
 
 import org.apache.spark._
 import org.apache.spark.rdd.RDD
-import org.log4s.getLogger
 
-import java.io.{IOException, ObjectOutputStream}
 import scala.reflect.ClassTag
-import scala.util.control.NonFatal
-
-private class CartesianPartition(
-                          idx: Int,
-                          @transient private val rdd1: RDD[_],
-                          @transient private val rdd2: RDD[_],
-                          s1Index: Int,
-                          s2Index: Int
-                        ) extends Partition {
-
-  @transient private[this] lazy val logger = getLogger
-
-  var s1 = rdd1.partitions(s1Index)
-  var s2 = rdd2.partitions(s2Index)
-  override val index: Int = idx
-
-  private def tryOrIOException[T](block: => T): T = {
-    try {
-      block
-    } catch {
-      case e: IOException =>
-        logger.error(e)("Exception encountered")
-        throw e
-      case NonFatal(e) =>
-        logger.error(e)("Exception encountered")
-        throw new IOException(e)
-    }
-  }
-
-  @throws(classOf[IOException])
-  private def writeObject(oos: ObjectOutputStream): Unit = tryOrIOException {
-    // Update the reference to parent split at the time of task serialization
-    s1 = rdd1.partitions(s1Index)
-    s2 = rdd2.partitions(s2Index)
-    oos.defaultWriteObject()
-  }
-}
 
 /** Performs a cartesian join of two RDDs using filter and refine pattern.
   *
