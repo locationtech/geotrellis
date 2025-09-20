@@ -82,10 +82,10 @@ object HorizontalPredictor {
         val code: Int = Predictor.PREDICTOR_HORIZONTAL
         val checkEndian = true
 
-        override def encode(bytes: Array[Byte], segmentIndex: Int): Array[Byte] =
+        def encode(bytes: Array[Byte], segmentIndex: Int): Array[Byte] =
           encodeFunc(bytes, segmentIndex)
 
-        override def decode(bytes: Array[Byte], segmentIndex: Int): Array[Byte] =
+        def decode(bytes: Array[Byte], segmentIndex: Int): Array[Byte] =
           decodeFunc(bytes, segmentIndex)
       }
     }

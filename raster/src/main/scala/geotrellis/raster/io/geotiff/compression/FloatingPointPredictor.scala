@@ -67,7 +67,7 @@ object FloatingPointPredictor {
       bytes
     }
 
-    override def encode(bytes: Array[Byte], segmentIndex: Int): Array[Byte] = {
+    def encode(bytes: Array[Byte], segmentIndex: Int): Array[Byte] = {
       val rows = rowsInSegment(segmentIndex)
       val bytesPerSample = bandType.bytesPerSample
       val bytesPerRow = colsPerRow * bandCount * bytesPerSample

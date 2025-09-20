@@ -19,12 +19,12 @@
   *
   * 1. https://github.com/apache/spark/blob/2f8776ccad532fbed17381ff97d302007918b8d8/core/src/main/scala/org/apache/spark/rdd/CartesianRDD.scala
   */
-package org.apache.spark.rdd
-
-
-import scala.reflect.ClassTag
+package geotrellis.spark.join
 
 import org.apache.spark._
+import org.apache.spark.rdd.RDD
+
+import scala.reflect.ClassTag
 
 /** Performs a cartesian join of two RDDs using filter and refine pattern.
   *

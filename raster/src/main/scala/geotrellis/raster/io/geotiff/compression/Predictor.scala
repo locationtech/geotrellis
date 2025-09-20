@@ -45,8 +45,8 @@ object Predictor {
           val code: Int = PREDICTOR_NONE
           val checkEndian = true
 
-          override def encode(bytes: Array[Byte], segmentIndex: Int): Array[Byte] = bytes
-          override def decode(bytes: Array[Byte], segmentIndex: Int): Array[Byte] = bytes
+          def encode(bytes: Array[Byte], segmentIndex: Int): Array[Byte] = bytes
+          def decode(bytes: Array[Byte], segmentIndex: Int): Array[Byte] = bytes
         }
       case Some(PREDICTOR_HORIZONTAL) =>
         HorizontalPredictor(tiffTags)
