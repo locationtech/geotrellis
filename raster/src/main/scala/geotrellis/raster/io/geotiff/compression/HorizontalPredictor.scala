@@ -24,14 +24,31 @@ import java.nio.ByteBuffer
 import spire.syntax.cfor._
 
 object HorizontalPredictor {
+
+  def apply(imageData: GeoTiffImageData): Predictor = {
+    val colsPerRow = Predictor.colsPerRow(imageData)
+    val rowsInSegment = Predictor.rowsInSegment(imageData)
+
+    val bandType = imageData.bandType
+
+    val predictor =
+      if (imageData.segmentLayout.hasPixelInterleave)
+        new HorizontalPredictor(colsPerRow, rowsInSegment, imageData.bandCount)
+      else
+        new HorizontalPredictor(colsPerRow, rowsInSegment, 1)
+
+    predictor.forBandType(bandType)
+  }
+
+
   def apply(tiffTags: TiffTags): Predictor = {
     val colsPerRow = tiffTags.rowSize
-    val rowsInSegment: (Int => Int) = { i => tiffTags.rowsInSegment(i) }
+    val rowsInSegment: Int => Int = { i => tiffTags.rowsInSegment(i) }
 
     val bandType = tiffTags.bandType
 
     val predictor =
-      if(tiffTags.hasPixelInterleave) {
+      if (tiffTags.hasPixelInterleave) {
         new HorizontalPredictor(colsPerRow, rowsInSegment, tiffTags.bandCount)
       } else {
         new HorizontalPredictor(colsPerRow, rowsInSegment, 1)
@@ -42,24 +59,55 @@ object HorizontalPredictor {
 
   private class HorizontalPredictor(cols: Int, rowsInSegment: Int => Int, bandCount: Int) {
     def forBandType(bandType: BandType): Predictor = {
-      val applyFunc: (Array[Byte], Int) => Array[Byte] =
+      val encodeFunc: (Array[Byte], Int) => Array[Byte] =
         bandType.bitsPerSample match {
-          case  8 => apply8 _
-          case 16 => apply16 _
-          case 32 => apply32 _
+          case 8 => encode8
+          case 16 => encode16
+          case 32 => encode32
           case _ =>
             throw new MalformedGeoTiffException(s"""Horizontal differencing "Predictor" not supported with ${bandType.bitsPerSample} bits per sample""")
         }
 
+      val decodeFunc: (Array[Byte], Int) => Array[Byte] =
+        bandType.bitsPerSample match {
+          case 8 => decode8
+          case 16 => decode16
+          case 32 => decode32
+          case _ =>
+            throw new MalformedGeoTiffException(s"""Horizontal differencing "Predictor" not supported with ${bandType.bitsPerSample} bits per sample""")
+        }
+
+
       new Predictor {
-        val code = Predictor.PREDICTOR_HORIZONTAL
+        val code: Int = Predictor.PREDICTOR_HORIZONTAL
         val checkEndian = true
-        def apply(bytes: Array[Byte], segmentIndex: Int): Array[Byte] =
-          applyFunc(bytes, segmentIndex)
+
+        def encode(bytes: Array[Byte], segmentIndex: Int): Array[Byte] =
+          encodeFunc(bytes, segmentIndex)
+
+        def decode(bytes: Array[Byte], segmentIndex: Int): Array[Byte] =
+          decodeFunc(bytes, segmentIndex)
       }
     }
 
-    def apply8(bytes: Array[Byte], segmentIndex: Int): Array[Byte] = {
+    def encode8(bytes: Array[Byte], segmentIndex: Int): Array[Byte] = {
+      val encodedBytes = new Array[Byte](bytes.length)
+      val rows = rowsInSegment(segmentIndex)
+      val n = bytes.length / rows
+
+      cfor(0)(_ < rows, _ + 1) { row =>
+        cfor(n - 1)({ k => k >= 0 }, _ - 1) { col =>
+          val index = row * n + col
+          if (col < bandCount)
+            encodedBytes(index) = bytes(index)
+          else
+            encodedBytes(index) = (bytes(index) - bytes(index - bandCount)).toByte
+        }
+      }
+      encodedBytes
+    }
+
+    def decode8(bytes: Array[Byte], segmentIndex: Int): Array[Byte] = {
       val rows = rowsInSegment(segmentIndex)
 
       cfor(0)(_ < rows, _ + 1) { row =>
@@ -69,11 +117,30 @@ object HorizontalPredictor {
           count += 1
         }
       }
-
       bytes
     }
 
-    def apply16(bytes: Array[Byte], segmentIndex: Int): Array[Byte] = {
+    def encode16(bytes: Array[Byte], segmentIndex: Int): Array[Byte] = {
+      val encodedBytes = new Array[Byte](bytes.length)
+      val encodedBuffer = ByteBuffer.wrap(encodedBytes).asShortBuffer
+      val buffer = ByteBuffer.wrap(bytes).asShortBuffer
+
+      val rows = rowsInSegment(segmentIndex)
+      val n = bytes.length / (rows * 2)
+
+      cfor(0)(_ < rows, _ + 1) { row =>
+        cfor(n - 1)({ k => k >= 0 }, _ - 1) { col =>
+          val index = row * n + col
+          if (col < bandCount)
+            encodedBuffer.put(index, buffer.get(index))
+          else
+            encodedBuffer.put(index, (buffer.get(index) - buffer.get(index - bandCount)).toShort)
+        }
+      }
+      encodedBytes
+    }
+
+    def decode16(bytes: Array[Byte], segmentIndex: Int): Array[Byte] = {
       val buffer = ByteBuffer.wrap(bytes).asShortBuffer
       val rows = rowsInSegment(segmentIndex)
 
@@ -84,11 +151,30 @@ object HorizontalPredictor {
           count += 1
         }
       }
-
       bytes
     }
 
-    def apply32(bytes: Array[Byte], segmentIndex: Int): Array[Byte] = {
+    def encode32(bytes: Array[Byte], segmentIndex: Int): Array[Byte] = {
+      val encodedBytes = new Array[Byte](bytes.length)
+      val encodedBuffer = ByteBuffer.wrap(encodedBytes).asIntBuffer
+      val buffer = ByteBuffer.wrap(bytes).asIntBuffer
+
+      val rows = rowsInSegment(segmentIndex)
+      val n = bytes.length / (rows * 4)
+
+      cfor(0)(_ < rows, _ + 1) { row =>
+        cfor(n - 1)({ k => k >= 0 }, _ - 1) { col =>
+          val index = row * n + col
+          if (col < bandCount)
+            encodedBuffer.put(index, buffer.get(index))
+          else
+            encodedBuffer.put(index, buffer.get(index) - buffer.get(index - bandCount))
+        }
+      }
+      encodedBytes
+    }
+
+    def decode32(bytes: Array[Byte], segmentIndex: Int): Array[Byte] = {
       val buffer = ByteBuffer.wrap(bytes).asIntBuffer
       val rows = rowsInSegment(segmentIndex)
 
@@ -99,7 +185,6 @@ object HorizontalPredictor {
           count += 1
         }
       }
-
       bytes
     }
   }

@@ -18,11 +18,14 @@ package geotrellis.raster.io.geotiff.compression
 
 import geotrellis.raster.io.geotiff.tags.codes.CompressionType._
 
-object NoCompression extends Compression with Compressor with Decompressor {
-  def code = Uncompressed
+object NoCompression extends Compression {
+  def createCompressor(segmentCount: Int): NoCompressor.type = NoCompressor
+}
 
-  def createCompressor(segmentCount: Int) = NoCompression
-  def createDecompressor() = NoCompression
+object NoCompressor extends Compressor with Decompressor {
+  def code: Int = Uncompressed
+
+  def createDecompressor(): NoCompressor.type = NoCompressor
   def compress(bytes: Array[Byte], sectionIndex: Int): Array[Byte] = { bytes }
   def decompress(bytes: Array[Byte], sectionIndex: Int): Array[Byte] = { bytes }
 }

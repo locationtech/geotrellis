@@ -22,9 +22,20 @@ import spire.syntax.cfor._
 
 /** See TIFF Technical Note 3 */
 object FloatingPointPredictor {
+
+  def apply(imageData: GeoTiffImageData): Predictor = {
+    val colsPerRow = Predictor.colsPerRow(imageData)
+    val rowsInSegment = Predictor.rowsInSegment(imageData)
+
+    if (imageData.segmentLayout.hasPixelInterleave)
+      new FloatingPointPredictor(colsPerRow, rowsInSegment, imageData.bandType, imageData.bandCount)
+    else
+      new FloatingPointPredictor(colsPerRow, rowsInSegment, imageData.bandType, 1)
+  }
+
   def apply(tiffTags: TiffTags): Predictor = {
     val colsPerRow = tiffTags.rowSize
-    val rowsInSegment: (Int => Int) = { i => tiffTags.rowsInSegment(i) }
+    val rowsInSegment: Int => Int = { i => tiffTags.rowsInSegment(i) }
 
     val bandType = tiffTags.bandType
 
@@ -36,10 +47,45 @@ object FloatingPointPredictor {
   }
 
   private class FloatingPointPredictor(colsPerRow: Int, rowsInSegment: Int => Int, bandType: BandType, bandCount: Int) extends Predictor {
-    val code = Predictor.PREDICTOR_FLOATINGPOINT
+    val code: Int = Predictor.PREDICTOR_FLOATINGPOINT
     val checkEndian = false
 
-    def apply(bytes: Array[Byte], segmentIndex: Int): Array[Byte] = {
+    private def encodeDeltaBytes(bytes: Array[Byte], rows:Int): Array[Byte] = {
+      val bytesPerSample = bandType.bytesPerSample
+      val colValuesPerRow = colsPerRow * bandCount
+      val the_cols = colsPerRow * bytesPerSample
+      val bytesPerRow = colValuesPerRow * bytesPerSample
+
+      cfor(0)(_ < rows, _ + 1) { row =>
+        val rowOffset = row * bytesPerRow
+        cfor(the_cols-1)(_ > 0, _ - 1) { col =>
+          cfor(0)(_ < bandCount, _ + 1) { band =>
+            bytes(rowOffset + col * bandCount + band) = (bytes(rowOffset + col * bandCount + band) - bytes(rowOffset + (col - 1) * bandCount + band)).toByte
+          }
+        }
+      }
+      bytes
+    }
+
+    def encode(bytes: Array[Byte], segmentIndex: Int): Array[Byte] = {
+      val rows = rowsInSegment(segmentIndex)
+      val bytesPerSample = bandType.bytesPerSample
+      val bytesPerRow = colsPerRow * bandCount * bytesPerSample
+
+      val outputBytes = new Array[Byte](bytes.length)
+      val rowIncrement = colsPerRow * bandCount
+      cfor(0)(_ < rows, _ + 1) { row =>
+        val rowOffset = bytesPerRow * row
+        cfor(0)(_ < rowIncrement, _ + 1) { col =>
+          cfor(0)(_ < bytesPerSample, _ + 1) { b =>
+            outputBytes(rowOffset + b * rowIncrement + col) = bytes(rowOffset + bytesPerSample * col + b)
+          }
+        }
+      }
+      encodeDeltaBytes(outputBytes, rows)
+  }
+
+    override def decode(bytes: Array[Byte], segmentIndex: Int): Array[Byte] = {
       val rows = rowsInSegment(segmentIndex)
       val stride = bandCount
       val bytesPerSample = bandType.bytesPerSample

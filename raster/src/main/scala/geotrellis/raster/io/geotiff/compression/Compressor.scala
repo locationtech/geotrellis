@@ -16,9 +16,23 @@
 
 package geotrellis.raster.io.geotiff.compression
 
+import geotrellis.raster.io.geotiff.tags.TiffTags
+
 trait Compressor extends Serializable {
   def compress(bytes: Array[Byte], segmentIndex: Int): Array[Byte]
 
   /** Returns the decompressor that can decompress the segments compressed by this compressor */
   def createDecompressor(): Decompressor
+
+  def withPredictorEncoding(predictor: Predictor): Compressor =
+    new Compressor {
+      def wrapped: Compressor = Compressor.this
+
+      def compress(bytes: Array[Byte], segmentIndex: Int): Array[Byte] =
+        wrapped.compress(predictor.encode(bytes, segmentIndex), segmentIndex = segmentIndex)
+
+      /** Returns the decompressor that can decompress the segments compressed by this compressor */
+      def createDecompressor(): Decompressor = wrapped.createDecompressor().withPredictorDecoding(predictor)
+    }
+
 }
