@@ -213,11 +213,11 @@ object IntArrayTile {
   def apply(arr: Array[Int], cols: Int, rows: Int, cellType: IntCells with NoDataHandling): IntArrayTile =
     cellType match {
       case IntCellType =>
-        new IntRawArrayTile(arr, cols, rows)
+        IntRawArrayTile(arr, cols, rows)
       case IntConstantNoDataCellType =>
-        new IntConstantNoDataArrayTile(arr, cols, rows)
+        IntConstantNoDataArrayTile(arr, cols, rows)
       case udct: IntUserDefinedNoDataCellType =>
-        new IntUserDefinedNoDataArrayTile(arr, cols, rows, udct)
+        IntUserDefinedNoDataArrayTile(arr, cols, rows, udct)
     }
 
   /**

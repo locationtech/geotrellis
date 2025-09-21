@@ -66,5 +66,23 @@ class MinResampleSpec extends AnyFunSpec with Matchers {
       val cellsize = CellSize(extent, 3, 3)
       tile.resample(extent, 1, 1, Min).getDouble(0, 0) should be (0.19)
     }
+
+    it("should for an int tile compute the correct minimum value - ignoring the user defined nodata value") {
+      val tile = IntArrayTile(Array(2, 4, 256, 16), 2, 2, noDataValue = 256)
+      val extent = Extent(0, 0, 2, 2)
+      tile.resample(extent, 1, 1, method = Min).get(0, 0) should be (2)
+    }
+
+    it("should for an int tile compute the correct minimum value - ignoring the int nodata value") {
+      val tile = IntArrayTile(Array(2, 4, NODATA, 16), 2, 2)
+      val extent = Extent(0, 0, 2, 2)
+      tile.resample(extent, 1, 1, method = Min).get(0, 0) should be (2)
+    }
+
+    it("should for a double tile compute the correct minimum value - ignoring the double nodata value") {
+      val tile = DoubleArrayTile(Array(2d, 4d, doubleNODATA, 16d), 2, 2)
+      val extent = Extent(0, 0, 2, 2)
+      tile.resample(extent, 1, 1, method = Min).get(0, 0) should be (2)
+    }
   }
 }
