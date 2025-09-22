@@ -29,6 +29,7 @@ class MaxResample(tile: Tile, extent: Extent, targetCS: CellSize)
     extends AggregateResample(tile, extent, targetCS) {
 
   private def calculateMax(indices: Seq[(Int, Int)]): Int =
+    // NODATA would always be min
     indices.foldLeft(Int.MinValue) { case (currentMax, coords) =>
       math.max(currentMax, tile.get(coords._1, coords._2))
     }

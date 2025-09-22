@@ -66,5 +66,11 @@ class MaxResampleSpec extends AnyFunSpec with Matchers {
       val cellsize = CellSize(extent, 3, 3)
       tile.resample(extent, 1, 1, Max).getDouble(0, 0) should be (100.1)
     }
+
+    it("should for an int tile compute the correct maximum value - ignoring the user defined nodata value") {
+      val tile = IntArrayTile(Array(2, 4, 256, 16), 2, 2, noDataValue = 256)
+      val extent = Extent(0, 0, 2, 2)
+      tile.resample(extent, 1, 1, method = Max).get(0, 0) should be (16)
+    }
   }
 }
