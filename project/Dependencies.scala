@@ -142,7 +142,7 @@ object Dependencies {
   val unitApi             = "javax.measure" % "unit-api"  % "2.2"
 
   val scalaURI            = "io.lemonlabs" %% "scala-uri" % "4.0.3"
-  val java8Compat         = "org.scala-lang.modules" %% "scala-java8-compat" % "0.9.1"
+  val java8Compat         = "org.scala-lang.modules" %% "scala-java8-compat" % "1.0.2"
 
   // located in the OSGeo repo: https://repo.osgeo.org/repository/release/
   // 'works with' due to license issues
