@@ -104,13 +104,13 @@ object Settings {
     ).filter(_.asFile.canRead).map(Credentials(_)),
 
     addCompilerPlugin("org.typelevel" % "kind-projector" % "0.13.3" cross CrossVersion.full),
-    addCompilerPlugin("org.scalameta" % "semanticdb-scalac" % "4.13.4" cross CrossVersion.full),
+    addCompilerPlugin("org.scalameta" % "semanticdb-scalac" % "4.13.10" cross CrossVersion.full),
 
     libraryDependencies ++= (CrossVersion.partialVersion(scalaVersion.value) match {
       case Some((2, 13)) => Nil
       case Some((2, 12)) => Seq(
         compilerPlugin("org.scalamacros" % "paradise" % "2.1.1" cross CrossVersion.full),
-        "org.scala-lang.modules" %% "scala-collection-compat" % "2.9.0"
+        "org.scala-lang.modules" %% "scala-collection-compat" % "2.13.0"
       )
         case x => sys.error(s"Encountered unsupported Scala version ${x.getOrElse("undefined")}")
     }),
