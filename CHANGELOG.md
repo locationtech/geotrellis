@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - MinResample should ignore Int NODATA values [#3590](https://github.com/locationtech/geotrellis/pull/3590)
+- Empty (NoData) ConstantTile objects are now correctly converted to empty ConstantTile objects of the desired CellType 
 
 ## [3.8.0] - 2025-04-23
 
