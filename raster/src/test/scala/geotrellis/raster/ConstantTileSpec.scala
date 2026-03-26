@@ -150,5 +150,43 @@ class ConstantTileSpec extends AnyFunSpec with Matchers with RasterMatchers with
     }
   }
 
+  describe("conversion of empty tiles of CellTypes that support NoData should result in NoData tiles") {
+    List(
+      // BitCellType,
+      ByteUserDefinedNoDataCellType(1.toByte),
+      ByteConstantNoDataCellType,
+      // ByteCellType,
+      UByteConstantNoDataCellType,
+      UByteUserDefinedNoDataCellType(1.toByte),
+      // UByteCellType,
+      ShortUserDefinedNoDataCellType(1.toShort),
+      ShortConstantNoDataCellType,
+      // ShortCellType,
+      UShortUserDefinedNoDataCellType(1.toShort),
+      UShortConstantNoDataCellType,
+      // UShortCellType,
+      IntUserDefinedNoDataCellType(1),
+      IntConstantNoDataCellType,
+      // IntCellType,
+      FloatUserDefinedNoDataCellType(1.0f),
+      FloatConstantNoDataCellType,
+      // FloatCellType,
+      DoubleUserDefinedNoDataCellType(1.0),
+      DoubleConstantNoDataCellType,
+      // DoubleCellType
+    ).foreach { cellType =>
+      it(s"should convert an empty tile of $cellType to an empty tile of the new cell type") {
+        val tile = ConstantTile.empty(cellType, 1, 1)
+        assert(tile.isNoDataTile)
+        assert(tile.cellType == cellType)
+        val newCellType = FloatUserDefinedNoDataCellType(666.0f)
+        val convertedNoDataTile = tile.convert(newCellType)
+        assert(convertedNoDataTile.isNoDataTile)
+        assert(convertedNoDataTile.cellType == cellType)
+      }
+    }
+  }
+
+
   private def getClassName[T](obj: T): String = obj.getClass.getName.split("\\.").last
 }
