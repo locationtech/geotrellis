@@ -182,7 +182,7 @@ class ConstantTileSpec extends AnyFunSpec with Matchers with RasterMatchers with
         val newCellType = FloatUserDefinedNoDataCellType(666.0f)
         val convertedNoDataTile = tile.convert(newCellType)
         assert(convertedNoDataTile.isNoDataTile)
-        assert(convertedNoDataTile.cellType == cellType)
+        assert(convertedNoDataTile.cellType == newCellType)
       }
     }
   }
