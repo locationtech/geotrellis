@@ -80,17 +80,22 @@ abstract class ConstantTile extends Tile {
     * @param   newType  The type of cells that the result should have
     * @return            The new Tile
     */
-  def convert(newType: CellType): Tile =
-    newType match {
-      case BitCellType => new BitConstantTile(if (iVal == 0) false else true, cols, rows)
-      case ct: ByteCells => ByteConstantTile(i2b(iVal), cols, rows, ct)
-      case ct: UByteCells => UByteConstantTile(iVal.toByte, cols, rows, ct)
-      case ct: ShortCells => ShortConstantTile(i2s(iVal), cols, rows, ct)
-      case ct: UShortCells => UShortConstantTile(i2us(iVal) , cols, rows, ct)
-      case ct: IntCells => IntConstantTile(iVal, cols, rows, ct)
-      case ct: FloatCells => FloatConstantTile(d2f(dVal), cols, rows, ct)
-      case ct: DoubleCells => DoubleConstantTile(dVal, cols, rows, ct)
+  def convert(newType: CellType): Tile = {
+    if (isNoDataTile) {
+      ConstantTile.empty(newType, cols, rows)
+    } else {
+      newType match {
+        case BitCellType => new BitConstantTile(if (iVal == 0) false else true, cols, rows)
+        case ct: ByteCells => ByteConstantTile(i2b(iVal), cols, rows, ct)
+        case ct: UByteCells => UByteConstantTile(iVal.toByte, cols, rows, ct)
+        case ct: ShortCells => ShortConstantTile(i2s(iVal), cols, rows, ct)
+        case ct: UShortCells => UShortConstantTile(i2us(iVal) , cols, rows, ct)
+        case ct: IntCells => IntConstantTile(iVal, cols, rows, ct)
+        case ct: FloatCells => FloatConstantTile(d2f(dVal), cols, rows, ct)
+        case ct: DoubleCells => DoubleConstantTile(dVal, cols, rows, ct)
+      }
     }
+  }
 
   def interpretAs(newCellType: CellType): Tile =
     withNoData(None).convert(newCellType)
@@ -217,6 +222,14 @@ abstract class ConstantTile extends Tile {
       }
     }
     tile
+  }
+
+  override def isNoDataTile: Boolean = {
+    if (cellType.isFloatingPoint) {
+      !isData(getDouble(0, 0))
+    } else {
+      !isData(get(0, 0))
+    }
   }
 }
 
