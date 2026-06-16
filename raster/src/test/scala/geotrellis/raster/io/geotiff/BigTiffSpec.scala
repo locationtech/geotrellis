@@ -16,11 +16,12 @@
 
 package geotrellis.raster.io.geotiff
 
+import geotrellis.proj4._
+import geotrellis.raster._
 import geotrellis.util._
 import geotrellis.raster.io.geotiff.tags.TiffTags
 import geotrellis.raster.testkit._
 import geotrellis.vector.Extent
-
 import org.scalatest.funspec.AnyFunSpec
 
 class BigTiffSpec extends AnyFunSpec with RasterMatchers with GeoTiffTestUtils {
@@ -107,6 +108,15 @@ class BigTiffSpec extends AnyFunSpec with RasterMatchers with GeoTiffTestUtils {
       val tags = TiffTags.read(geoTiffPath("bigtiff-marcuswr.tif"))
       val e = tags.extent
       e should be (Extent(-105.06398320198056, 40.743636546229, -105.05724549293515, 40.751667086819424))
+    }
+
+    it("should produce a BigTiff") {
+      val tile: Tile = IntConstantTile(123, cols = 4, rows = 4)
+      val crs: CRS = LatLng
+      val extent: Extent = Extent(-180, -90, 180, 90)
+
+      val geoTiff = SinglebandGeoTiff(tile, extent, crs, Tags.empty, GeoTiffOptions.DEFAULT.copy(tiffType = BigTiff))
+      geoTiff.write("/tmp/writeBigTiff.tif")
     }
   }
 }
