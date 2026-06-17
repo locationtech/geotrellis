@@ -21,8 +21,9 @@ import geotrellis.raster.io.geotiff.tags.TiffTags
 import geotrellis.raster.testkit._
 import geotrellis.vector.Extent
 import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.prop.TableDrivenPropertyChecks
 
-class BigTiffSpec extends AnyFunSpec with RasterMatchers with GeoTiffTestUtils {
+class BigTiffSpec extends AnyFunSpec with RasterMatchers with GeoTiffTestUtils with TableDrivenPropertyChecks {
   describe("Reading BigTiffs") {
     val smallPath = geoTiffPath("ls8_int32.tif")
     val bigPath = geoTiffPath("bigtiffs/ls8_int32-big.tif")
@@ -108,6 +109,14 @@ class BigTiffSpec extends AnyFunSpec with RasterMatchers with GeoTiffTestUtils {
       e should be (Extent(-105.06398320198056, 40.743636546229, -105.05724549293515, 40.751667086819424))
     }
 
+    val tiffTypeTable = Table(
+      ("Tiff type", "is cloud optimized"),
+      (Tiff, false),
+      (Tiff, true),
+      (BigTiff, false),
+      (BigTiff, true),
+    )
+
     it("should produce a BigTiff") {
       import geotrellis.proj4._
       import geotrellis.raster._
@@ -117,29 +126,16 @@ class BigTiffSpec extends AnyFunSpec with RasterMatchers with GeoTiffTestUtils {
       val crs: CRS = LatLng
       val extent: Extent = Extent(-180, -90, 180, 90)
 
-      {
-        val outputFile = "/tmp/bigtiff.tif"
+      forAll(tiffTypeTable) { (tiffType, isCloudOptimized) =>
+        val outputFile = s"/tmp/bigtiff_${tiffType}_$isCloudOptimized.tif"
 
-        val out = SinglebandGeoTiff(tile, extent, crs, Tags.empty, GeoTiffOptions.DEFAULT.copy(tiffType = BigTiff))
+        val out = SinglebandGeoTiff(tile, extent, crs, Tags.empty, GeoTiffOptions.DEFAULT.copy(tiffType = tiffType))
           .withOverviews(resampleMethod = NearestNeighbor)
 
-        out.write(outputFile)
+        out.write(outputFile, isCloudOptimized)
 
         val in = SinglebandGeoTiff(outputFile)
-        in.options.tiffType should be(BigTiff)
-        in.overviews should not be empty
-      }
-
-      {
-        val outputFile = "/tmp/classictiff.tif"
-
-        val out = SinglebandGeoTiff(tile, extent, crs, Tags.empty, GeoTiffOptions.DEFAULT)
-          .withOverviews(resampleMethod = NearestNeighbor)
-
-        out.write(outputFile)
-
-        val in = SinglebandGeoTiff(outputFile)
-        in.options.tiffType should be(Tiff)
+        in.options.tiffType should be(tiffType)
         in.overviews should not be empty
       }
     }
