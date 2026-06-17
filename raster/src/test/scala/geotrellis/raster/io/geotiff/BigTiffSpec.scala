@@ -16,11 +16,8 @@
 
 package geotrellis.raster.io.geotiff
 
-import geotrellis.proj4._
-import geotrellis.raster._
 import geotrellis.util._
 import geotrellis.raster.io.geotiff.tags.TiffTags
-import geotrellis.raster.resample.NearestNeighbor
 import geotrellis.raster.testkit._
 import geotrellis.vector.Extent
 import org.scalatest.funspec.AnyFunSpec
@@ -112,20 +109,39 @@ class BigTiffSpec extends AnyFunSpec with RasterMatchers with GeoTiffTestUtils {
     }
 
     it("should produce a BigTiff") {
+      import geotrellis.proj4._
+      import geotrellis.raster._
+      import geotrellis.raster.resample.NearestNeighbor
+
       val tile: Tile = IntConstantTile(123, cols = 256, rows = 256)
       val crs: CRS = LatLng
       val extent: Extent = Extent(-180, -90, 180, 90)
 
-      val outputFile = "/tmp/bigtiff.tif"
+      {
+        val outputFile = "/tmp/bigtiff.tif"
 
-      val out = SinglebandGeoTiff(tile, extent, crs, Tags.empty, GeoTiffOptions.DEFAULT.copy(tiffType = BigTiff))
-        .withOverviews(resampleMethod = NearestNeighbor)
+        val out = SinglebandGeoTiff(tile, extent, crs, Tags.empty, GeoTiffOptions.DEFAULT.copy(tiffType = BigTiff))
+          .withOverviews(resampleMethod = NearestNeighbor)
 
-      out.write(outputFile)
+        out.write(outputFile)
 
-      val in = SinglebandGeoTiff(outputFile)
-      in.options.tiffType should be (BigTiff)
-      in.overviews should not be empty
+        val in = SinglebandGeoTiff(outputFile)
+        in.options.tiffType should be(BigTiff)
+        in.overviews should not be empty
+      }
+
+      {
+        val outputFile = "/tmp/classictiff.tif"
+
+        val out = SinglebandGeoTiff(tile, extent, crs, Tags.empty, GeoTiffOptions.DEFAULT)
+          .withOverviews(resampleMethod = NearestNeighbor)
+
+        out.write(outputFile)
+
+        val in = SinglebandGeoTiff(outputFile)
+        in.options.tiffType should be(Tiff)
+        in.overviews should not be empty
+      }
     }
   }
 }

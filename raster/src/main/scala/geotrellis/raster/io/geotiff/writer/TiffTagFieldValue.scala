@@ -199,6 +199,8 @@ object TiffTagFieldValue {
     // Tags that are different if it is striped or tiled storage, and a function
     // that sets up a tag to point to the offsets of the image data.
 
+    val isBigTiff = geoTiff.options.tiffType == BigTiff
+
     val segmentByteCounts = {
       val len = imageData.segmentBytes.length
       val arr = Array.ofDim[Long](len)
@@ -213,9 +215,15 @@ object TiffTagFieldValue {
         case Tiled(tileCols, tileRows) =>
           fieldValues += TiffTagFieldValue(TileWidthTag, IntsFieldType, 1, toBytes(tileCols))
           fieldValues += TiffTagFieldValue(TileLengthTag, IntsFieldType, 1, toBytes(tileRows))
-          fieldValues += TiffTagFieldValue(TileByteCountsTag, LongsFieldType, segmentByteCounts.length, toBytes(segmentByteCounts))
+          fieldValues +=
+            (if (isBigTiff)
+            TiffTagFieldValue(TileByteCountsTag, LongsFieldType, segmentByteCounts.length, toBytes(segmentByteCounts))
+          else
+            TiffTagFieldValue(TileByteCountsTag, IntsFieldType, segmentByteCounts.length, toBytes(segmentByteCounts.map(_.toInt))))
 
-          { offsets: Array[Long] => TiffTagFieldValue(TileOffsetsTag, LongsFieldType, offsets.length, toBytes(offsets)) }
+          { offsets: Array[Long] =>
+            if (isBigTiff) TiffTagFieldValue(TileOffsetsTag, LongsFieldType, offsets.length, toBytes(offsets))
+            else TiffTagFieldValue(TileOffsetsTag, IntsFieldType, offsets.length, toBytes(offsets.map(_.toInt))) }
         case s: Striped =>
           val rowsPerStrip = imageData.segmentLayout.tileLayout.tileRows
           fieldValues += {
@@ -225,9 +233,14 @@ object TiffTagFieldValue {
               TiffTagFieldValue(RowsPerStripTag, IntsFieldType, 1, rowsPerStrip)
             }
           }
-          fieldValues += TiffTagFieldValue(StripByteCountsTag, LongsFieldType, segmentByteCounts.length, toBytes(segmentByteCounts))
+          fieldValues +=
+            (if (isBigTiff)
+            TiffTagFieldValue(StripByteCountsTag, LongsFieldType, segmentByteCounts.length, toBytes(segmentByteCounts))
+          else TiffTagFieldValue(StripByteCountsTag, IntsFieldType, segmentByteCounts.length, toBytes(segmentByteCounts.map(_.toInt))))
 
-          { offsets: Array[Long] => TiffTagFieldValue(StripOffsetsTag, LongsFieldType, offsets.length, toBytes(offsets)) }
+          { offsets: Array[Long] =>
+            if (isBigTiff) TiffTagFieldValue(StripOffsetsTag, LongsFieldType, offsets.length, toBytes(offsets))
+            else TiffTagFieldValue(StripOffsetsTag, IntsFieldType, offsets.length, toBytes(offsets.map(_.toInt))) }
       }
 
     (fieldValues.toArray, offsetsFieldValueBuilder)
