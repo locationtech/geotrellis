@@ -20,6 +20,7 @@ import geotrellis.proj4._
 import geotrellis.raster._
 import geotrellis.util._
 import geotrellis.raster.io.geotiff.tags.TiffTags
+import geotrellis.raster.resample.NearestNeighbor
 import geotrellis.raster.testkit._
 import geotrellis.vector.Extent
 import org.scalatest.funspec.AnyFunSpec
@@ -111,12 +112,20 @@ class BigTiffSpec extends AnyFunSpec with RasterMatchers with GeoTiffTestUtils {
     }
 
     it("should produce a BigTiff") {
-      val tile: Tile = IntConstantTile(123, cols = 4, rows = 4)
+      val tile: Tile = IntConstantTile(123, cols = 256, rows = 256)
       val crs: CRS = LatLng
       val extent: Extent = Extent(-180, -90, 180, 90)
 
-      val geoTiff = SinglebandGeoTiff(tile, extent, crs, Tags.empty, GeoTiffOptions.DEFAULT.copy(tiffType = BigTiff))
-      geoTiff.write("/tmp/writeBigTiff.tif")
+      val outputFile = "/tmp/bigtiff.tif"
+
+      val out = SinglebandGeoTiff(tile, extent, crs, Tags.empty, GeoTiffOptions.DEFAULT.copy(tiffType = BigTiff))
+        .withOverviews(resampleMethod = NearestNeighbor)
+
+      out.write(outputFile)
+
+      val in = SinglebandGeoTiff(outputFile)
+      in.options.tiffType should be (BigTiff)
+      in.overviews should not be empty
     }
   }
 }
