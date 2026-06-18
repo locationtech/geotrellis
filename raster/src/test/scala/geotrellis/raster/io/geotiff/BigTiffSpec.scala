@@ -109,7 +109,7 @@ class BigTiffSpec extends AnyFunSpec with RasterMatchers with GeoTiffTestUtils w
     it("should read a previously problematic big tiff") {
       val tags = TiffTags.read(geoTiffPath("bigtiff-marcuswr.tif"))
       val e = tags.extent
-      e should be(Extent(-105.06398320198056, 40.743636546229, -105.05724549293515, 40.751667086819424))
+      e should be (Extent(-105.06398320198056, 40.743636546229, -105.05724549293515, 40.751667086819424))
     }
   }
 
