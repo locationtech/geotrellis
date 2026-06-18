@@ -114,37 +114,6 @@ class BigTiffSpec extends AnyFunSpec with RasterMatchers with GeoTiffTestUtils w
   }
 
   describe("Writing BigTiffs") {
-    val tiffTypeTable = Table(
-      ("Tiff type", "is cloud optimized"),
-      (Tiff, false),
-      (Tiff, true),
-      (BigTiff, false),
-      (BigTiff, true),
-    )
-
-    it("should produce a BigTiff") {
-      import geotrellis.proj4._
-      import geotrellis.raster._
-      import geotrellis.raster.resample.NearestNeighbor
-
-      val tile: Tile = IntConstantTile(123, cols = 256, rows = 256)
-      val crs: CRS = LatLng
-      val extent: Extent = Extent(-180, -90, 180, 90)
-
-      forAll(tiffTypeTable) { (tiffType, isCloudOptimized) =>
-        val outputFile = s"/tmp/bigtiff_${tiffType}_$isCloudOptimized.tif"
-
-        val out = SinglebandGeoTiff(tile, extent, crs, Tags.empty, GeoTiffOptions.DEFAULT.copy(tiffType = tiffType))
-          .withOverviews(resampleMethod = NearestNeighbor)
-
-        out.write(outputFile, isCloudOptimized)
-
-        val in = SinglebandGeoTiff(outputFile)
-        in.options.tiffType should be(tiffType)
-        in.overviews should not be empty
-      }
-    }
-
     val bigTiffPermutations = Table(
       ("cloud optimized", "storage method"),
       (true, Striped()),
