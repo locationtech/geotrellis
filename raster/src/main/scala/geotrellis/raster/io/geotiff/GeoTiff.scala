@@ -70,6 +70,7 @@ trait GeoTiff[T <: CellGrid[Int]] extends GeoTiffData {
 
   def withStorageMethod(storageMethod: StorageMethod): GeoTiff[T]
 
+  /** Applies the Tiff type (classic or BigTiff) to this GeoTiff and its overviews. */
   def withTiffType(tiffType: TiffType): GeoTiff[T]
 
   def write(path: String, optimizedOrder: Boolean = false): Unit =
