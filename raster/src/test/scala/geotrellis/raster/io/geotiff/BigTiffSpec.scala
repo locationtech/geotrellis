@@ -162,10 +162,7 @@ class BigTiffSpec extends AnyFunSpec with RasterMatchers with GeoTiffTestUtils w
         val tempFile = File.createTempFile("bigtiff", ".tif").toString
         addToPurge(tempFile)
 
-        val bigTiff = tiffOriginal.copy(
-          options = tiffOriginal.options.copy(tiffType = BigTiff),
-          overviews = tiffOriginal.overviews.map(overview => overview.copy(options=overview.options.copy(tiffType = BigTiff))) // TODO: add withTiffType?
-        ).withStorageMethod(storageMethod)
+        val bigTiff = tiffOriginal.withTiffType(BigTiff).withStorageMethod(storageMethod)
 
         GeoTiffWriter.write(bigTiff, tempFile, optimizedOrder = cloudOptimized)
 

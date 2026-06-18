@@ -70,6 +70,8 @@ trait GeoTiff[T <: CellGrid[Int]] extends GeoTiffData {
 
   def withStorageMethod(storageMethod: StorageMethod): GeoTiff[T]
 
+  def withTiffType(tiffType: TiffType): GeoTiff[T]
+
   def write(path: String, optimizedOrder: Boolean = false): Unit =
     GeoTiffWriter.write(this, path, optimizedOrder)
 
