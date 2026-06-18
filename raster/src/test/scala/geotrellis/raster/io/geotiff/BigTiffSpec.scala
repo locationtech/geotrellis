@@ -18,6 +18,7 @@ package geotrellis.raster.io.geotiff
 
 import geotrellis.util._
 import geotrellis.raster.io.geotiff.tags.TiffTags
+import geotrellis.raster.io.geotiff.writer.GeoTiffWriter
 import geotrellis.raster.testkit._
 import geotrellis.vector.Extent
 import org.scalatest.funspec.AnyFunSpec
@@ -106,9 +107,11 @@ class BigTiffSpec extends AnyFunSpec with RasterMatchers with GeoTiffTestUtils w
     it("should read a previously problematic big tiff") {
       val tags = TiffTags.read(geoTiffPath("bigtiff-marcuswr.tif"))
       val e = tags.extent
-      e should be (Extent(-105.06398320198056, 40.743636546229, -105.05724549293515, 40.751667086819424))
+      e should be(Extent(-105.06398320198056, 40.743636546229, -105.05724549293515, 40.751667086819424))
     }
+  }
 
+  describe("Writing BigTiffs") {
     val tiffTypeTable = Table(
       ("Tiff type", "is cloud optimized"),
       (Tiff, false),
@@ -137,6 +140,39 @@ class BigTiffSpec extends AnyFunSpec with RasterMatchers with GeoTiffTestUtils w
         val in = SinglebandGeoTiff(outputFile)
         in.options.tiffType should be(tiffType)
         in.overviews should not be empty
+      }
+    }
+
+    val bigTiffPermutations = Table(
+      ("cloud optimized", "storage method"),
+      (true, Striped()),
+      (true, Tiled()),
+      (false, Striped()),
+      (false, Tiled()),
+    )
+
+    it("should produce BigTiffs") {
+      import java.io.File
+
+      forAll(bigTiffPermutations) { (cloudOptimized, storageMethod) =>
+        val tiffOriginal = MultibandGeoTiff(geoTiffPath("overviews/multiband.tif"))
+        tiffOriginal.options.storageMethod shouldBe a [Striped]
+        tiffOriginal.options.tiffType should be (Tiff)
+
+        val tempFile = File.createTempFile("bigtiff", ".tif").toString
+        addToPurge(tempFile)
+
+        val bigTiff = tiffOriginal.copy(
+          options = tiffOriginal.options.copy(tiffType = BigTiff),
+          overviews = tiffOriginal.overviews.map(overview => overview.copy(options=overview.options.copy(tiffType = BigTiff))) // TODO: add withTiffType?
+        ).withStorageMethod(storageMethod)
+
+        GeoTiffWriter.write(bigTiff, tempFile, optimizedOrder = cloudOptimized)
+
+        val actual = MultibandGeoTiff(tempFile)
+        actual.options.tiffType should be (BigTiff)
+        actual.options.storageMethod.getClass should be (storageMethod.getClass)
+        actual.getOverviewsCount should be (5)
       }
     }
   }
