@@ -24,6 +24,8 @@ import geotrellis.vector.Extent
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.prop.TableDrivenPropertyChecks
 
+import java.io.File
+
 class BigTiffSpec extends AnyFunSpec with RasterMatchers with GeoTiffTestUtils with TableDrivenPropertyChecks {
   describe("Reading BigTiffs") {
     val smallPath = geoTiffPath("ls8_int32.tif")
@@ -152,8 +154,6 @@ class BigTiffSpec extends AnyFunSpec with RasterMatchers with GeoTiffTestUtils w
     )
 
     it("should produce BigTiffs") {
-      import java.io.File
-
       forAll(bigTiffPermutations) { (cloudOptimized, storageMethod) =>
         val tiffOriginal = MultibandGeoTiff(geoTiffPath("overviews/multiband.tif"))
         tiffOriginal.options.storageMethod shouldBe a [Striped]
