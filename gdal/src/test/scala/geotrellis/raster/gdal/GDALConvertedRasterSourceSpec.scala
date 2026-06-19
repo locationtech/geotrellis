@@ -90,9 +90,13 @@ class GDALConvertedRasterSourceSpec extends AnyFunSpec with RasterMatchers with 
         assertRastersEqual(actual, expected, 1.0)
       }
 
-      it("should convert to: UByteUserDefinedNoDataCellType(10)") {
-        val actual = byteSource.convert(UByteUserDefinedNoDataCellType(10)).read(targetExtent2).get
-        val expected = byteSource.read(targetExtent2).get.mapTile { _.convert(UByteUserDefinedNoDataCellType(10)) }
+      // NoData value chosen outside the source data range ([1, 100]).
+      // GDAL >= 3.11 (PR OSGeo/gdal#11713) nudges valid pixels that collide with -dstnodata
+      // instead of absorbing them into NoData, so a colliding value would diverge from the
+      // in-memory convert. See GDALConvertedRasterSourceSpec collision notes.
+      it("should convert to: UByteUserDefinedNoDataCellType(101)") {
+        val actual = byteSource.convert(UByteUserDefinedNoDataCellType(101)).read(targetExtent2).get
+        val expected = byteSource.read(targetExtent2).get.mapTile { _.convert(UByteUserDefinedNoDataCellType(101)) }
 
         assertRastersEqual(actual, expected, 1.0)
       }
@@ -182,9 +186,10 @@ class GDALConvertedRasterSourceSpec extends AnyFunSpec with RasterMatchers with 
         assertRastersEqual(actual, expected)
       }
 
-      it("should convert to: FloatUserDefinedNoDataCellType(0)") {
-        val actual = source.convert(FloatUserDefinedNoDataCellType(0)).read(targetExtent).get
-        val expected = source.read(targetExtent).get.mapTile { _.convert(FloatUserDefinedNoDataCellType(0)) }
+      // NoData value chosen outside the source data range ([0, 360]); see UByte case above re: GDAL >= 3.11.
+      it("should convert to: FloatUserDefinedNoDataCellType(-1)") {
+        val actual = source.convert(FloatUserDefinedNoDataCellType(-1)).read(targetExtent).get
+        val expected = source.read(targetExtent).get.mapTile { _.convert(FloatUserDefinedNoDataCellType(-1)) }
 
         assertRastersEqual(actual, expected)
       }
@@ -205,9 +210,10 @@ class GDALConvertedRasterSourceSpec extends AnyFunSpec with RasterMatchers with 
         assertRastersEqual(actual, expected)
       }
 
-      it("should convert to: DoubleUserDefinedNoDataCellType(1.0)") {
-        val actual = source.convert(DoubleUserDefinedNoDataCellType(1.0)).read(targetExtent).get
-        val expected = source.read(targetExtent).get.mapTile { _.convert(DoubleUserDefinedNoDataCellType(1.0)) }
+      // NoData value chosen outside the source data range ([0, 360]); see UByte case above re: GDAL >= 3.11.
+      it("should convert to: DoubleUserDefinedNoDataCellType(-1.0)") {
+        val actual = source.convert(DoubleUserDefinedNoDataCellType(-1.0)).read(targetExtent).get
+        val expected = source.read(targetExtent).get.mapTile { _.convert(DoubleUserDefinedNoDataCellType(-1.0)) }
 
         assertRastersEqual(actual, expected)
       }
