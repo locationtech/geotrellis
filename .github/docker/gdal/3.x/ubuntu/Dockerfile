@@ -4,6 +4,8 @@
 # docker buildx build --build-arg="JAVA_VERSION=11" --build-arg="GDAL_VERSION=3.10.3" --platform linux/amd64,linux/arm64 --push --tag daunnc/osgeo-gdal-jdk11:3.10.3 .
 # docker buildx build --build-arg="JAVA_VERSION=17" --build-arg="GDAL_VERSION=3.10.3" --platform linux/amd64,linux/arm64 --push --tag daunnc/osgeo-gdal-jdk17:3.10.3 .
 # docker buildx build --build-arg="JAVA_VERSION=21" --build-arg="GDAL_VERSION=3.10.3" --platform linux/amd64,linux/arm64 --push --tag daunnc/osgeo-gdal-jdk21:3.10.3 .
+# docker buildx build --build-arg="JAVA_VERSION=17" --build-arg="GDAL_VERSION=3.13.1" --platform linux/amd64,linux/arm64 --push --tag daunnc/osgeo-gdal-jdk17:3.13.1 .
+# docker buildx build --build-arg="JAVA_VERSION=21" --build-arg="GDAL_VERSION=3.13.1" --platform linux/amd64,linux/arm64 --push --tag daunnc/osgeo-gdal-jdk21:3.13.1 .
 
 ARG GDAL_VERSION=3.10.3
 FROM ghcr.io/osgeo/gdal:ubuntu-full-${GDAL_VERSION}
@@ -30,6 +32,6 @@ RUN apt-get update && apt-get -y install bash wget unzip gpg software-properties
 RUN apt-get install -y curl gnupg && \
  echo 'deb https://repo.scala-sbt.org/scalasbt/debian all main' | tee /etc/apt/sources.list.d/sbt.list && \
  echo 'deb https://repo.scala-sbt.org/scalasbt/debian /' | tee /etc/apt/sources.list.d/sbt_old.list && \
- curl -sL 'https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x2EE0EA64E40A89B84B2DF73499E82A75642AC823' | apt-key add - && \
+ curl -sL 'https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x2EE0EA64E40A89B84B2DF73499E82A75642AC823' | gpg --dearmor | tee /etc/apt/trusted.gpg.d/scalasbt-release.gpg > /dev/null && \
  apt-get update && \
  apt-get install -y sbt

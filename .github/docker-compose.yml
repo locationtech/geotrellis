@@ -31,7 +31,7 @@ services:
     network_mode: host
 
   test-jdk17:
-    image: daunnc/osgeo-gdal-jdk17:3.10.3
+    image: daunnc/osgeo-gdal-jdk17:3.13.1
     working_dir: /usr/local/src
     command: sbt ++$SCALA_VERSION test
     environment:
@@ -47,7 +47,7 @@ services:
     network_mode: host
 
   test-jdk21:
-    image: daunnc/osgeo-gdal-jdk21:3.10.3
+    image: daunnc/osgeo-gdal-jdk21:3.13.1
     working_dir: /usr/local/src
     command: sbt ++$SCALA_VERSION test
     environment:

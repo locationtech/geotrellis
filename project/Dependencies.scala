@@ -24,7 +24,7 @@ object Version {
   val hbase       = "2.6.3"
   val hadoop      = "3.4.2"
   val gdal        = "3.10.1"
-  val gdalWarp    = "3.10.0"
+  val gdalWarp    = "3.13.0"
 
   val previousVersion = "3.6.0"
 }
