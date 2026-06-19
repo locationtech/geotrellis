@@ -9,19 +9,20 @@ ARG GDAL_VERSION=3.10.3
 FROM ghcr.io/osgeo/gdal:ubuntu-full-${GDAL_VERSION}
 
 ARG JAVA_VERSION=21
+ARG TARGETARCH
 
-LABEL Grigory Pomadchin <daunnc@gmail.com>
+LABEL maintainer="Grigory Pomadchin <daunnc@gmail.com>"
 
-ENV DEBIAN_FRONTEND noninteractive
+ENV DEBIAN_FRONTEND=noninteractive
 
 RUN set -ex && \
     apt update -y && \
     apt install --no-install-recommends -y openjdk-${JAVA_VERSION}-jdk
 
-ENV JAVA_HOME /usr/lib/jvm/java-${JAVA_VERSION}-openjdk-amd64
+ENV JAVA_HOME=/usr/lib/jvm/java-${JAVA_VERSION}-openjdk-${TARGETARCH}
 RUN update-alternatives --set java `update-alternatives --list java | grep java-${JAVA_VERSION}`
 
-ENV LD_LIBRARY_PATH "/lib/x86_64-linux-gnu/:/lib/x86_64-linux-gnu/jni/:/lib/aarch64-linux-gnu/:/lib/aarch64-linux-gnu/jni/:$LD_LIBRARY_PATH"
+ENV LD_LIBRARY_PATH="/lib/x86_64-linux-gnu/:/lib/x86_64-linux-gnu/jni/:/lib/aarch64-linux-gnu/:/lib/aarch64-linux-gnu/jni/:${LD_LIBRARY_PATH:-}"
 
 RUN apt-get update && apt-get -y install bash wget unzip gpg software-properties-common
 
