@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add ZStd compression support for GTiff [#3580](https://github.com/locationtech/geotrellis/pull/3580)
 - Do not depend on private Spark API, avoids sealing violation [#3586](https://github.com/locationtech/geotrellis/pull/3586)
 - Add predictor 2 (integer) and predictor 3 (float) support for writing compressed GTiff files [#3588](https://github.com/locationtech/geotrellis/pull/3588)
+- Support writing GeoTiffs as BigTiff [#3605](https://github.com/locationtech/geotrellis/pull/3605)
 
 ### Changed
 - MinResample should ignore Int NODATA values [#3590](https://github.com/locationtech/geotrellis/pull/3590)

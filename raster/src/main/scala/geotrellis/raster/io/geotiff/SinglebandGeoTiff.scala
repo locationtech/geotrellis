@@ -40,6 +40,9 @@ case class SinglebandGeoTiff(
   def withStorageMethod(storageMethod: StorageMethod): SinglebandGeoTiff =
     SinglebandGeoTiff(tile.toArrayTile(), extent, crs, tags, options.copy(storageMethod = storageMethod), overviews)
 
+  override def withTiffType(tiffType: TiffType): SinglebandGeoTiff =
+    SinglebandGeoTiff(tile, extent, crs, tags, options.copy(tiffType = tiffType), overviews.map(_.withTiffType(tiffType)))
+
   def imageData: GeoTiffImageData =
     tile match {
       case gtt: GeoTiffTile => gtt
