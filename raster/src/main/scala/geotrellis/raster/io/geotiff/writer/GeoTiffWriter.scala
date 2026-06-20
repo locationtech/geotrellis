@@ -124,9 +124,11 @@ class GeoTiffWriter(geoTiff: GeoTiffData, dos: DataOutputStream) {
 
     // Compute the offsetFieldValue
     val offsetFieldValue = { // StripOffsets/TileOffsets tag
+      val numberOfTags = if (isBigTiff) 8 else 2
+
       val imageDataStartOffset = // image starts right after this IFD
         index +
-          (if (isBigTiff) 8 else 2) + // number of tags
+          numberOfTags + // number of tags
           offsetSize + // next IFD address
           tagFieldByteCount + tagDataByteCount
 

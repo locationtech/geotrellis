@@ -25,7 +25,6 @@ import geotrellis.raster.io.geotiff.tags.codes.TiffFieldType._
 import spire.syntax.cfor._
 
 import scala.collection.mutable
-import scala.reflect.ClassTag
 import java.nio.ByteOrder
 
 case class TiffTagFieldValue(
