@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add predictor 2 (integer) and predictor 3 (float) support for writing compressed GTiff files [#3588](https://github.com/locationtech/geotrellis/pull/3588)
 - Support writing GeoTiffs as BigTiff [#3605](https://github.com/locationtech/geotrellis/pull/3605)
 - GeoTiffWriter minor cleanups [#3607](https://github.com/locationtech/geotrellis/pull/3607)
+- Fix version of caffeine dependency [#3609](https://github.com/locationtech/geotrellis/pull/3609)
 
 ### Changed
 - MinResample should ignore Int NODATA values [#3590](https://github.com/locationtech/geotrellis/pull/3590)
