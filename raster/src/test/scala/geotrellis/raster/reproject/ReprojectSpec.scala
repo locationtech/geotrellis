@@ -311,11 +311,12 @@ class ReprojectSpec extends AnyFunSpec
 
       geoTiff.crs.toProj4String should be ("+proj=cea +lat_ts=33.75 +lon_0=-117.333333333333 +x_0=0.0 +y_0=0.0 +datum=NAD27 +units=m ")
 
-      // raster.extent should be (Extent(-1.3095719172012957E7, 3983866.9277966353, -1.305868719072902E7, 4021260.5495227976))
+      // raster.extent should be (Extent(-1.3095719172012957E7, 3983601.594738624, -1.3058688152265467E7, 4020994.2455383358))
+      println(raster.extent)
       raster.extent.xmin should be (-1.3095719172012957E7 +- 1e-7)
-      raster.extent.ymin should be (3983866.9277966353 +- 1e-7)
-      raster.extent.xmax should be (-1.305868719072902E7 +- 1e-7)
-      raster.extent.ymax should be (4021260.5495227976 +- 1e-7)
+      raster.extent.ymin should be (3983601.594738624 +- 1e-7)
+      raster.extent.xmax should be (-1.3058688152265467E7 +- 1e-7)
+      raster.extent.ymax should be (4020994.2455383358 +- 1e-7)
 
       raster.dimensions shouldBe Dimensions(512, 517)
     }

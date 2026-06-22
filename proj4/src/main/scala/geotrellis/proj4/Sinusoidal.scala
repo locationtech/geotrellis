@@ -24,6 +24,6 @@ import org.locationtech.proj4j.CoordinateReferenceSystem
  */
 object Sinusoidal extends CRS with ObjectNameToString {
   lazy val proj4jCrs: CoordinateReferenceSystem = factory.createFromParameters(null,
-    "+proj=sinu +lon_0=0 +x_0=0 +y_0=0 +a=6371007.181 +b=6371007.181 +units=m +no_defs")
+    "+proj=sinu +lon_0=0 +x_0=0 +y_0=0 +a=6371007.181 +b=6371007.181 +units=m +no_defs +nadgrids=@null")
   override val epsgCode: Option[Int] = None
 }
