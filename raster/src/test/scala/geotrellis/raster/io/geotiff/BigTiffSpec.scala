@@ -18,12 +18,15 @@ package geotrellis.raster.io.geotiff
 
 import geotrellis.util._
 import geotrellis.raster.io.geotiff.tags.TiffTags
+import geotrellis.raster.io.geotiff.writer.GeoTiffWriter
 import geotrellis.raster.testkit._
 import geotrellis.vector.Extent
-
 import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.prop.TableDrivenPropertyChecks
 
-class BigTiffSpec extends AnyFunSpec with RasterMatchers with GeoTiffTestUtils {
+import java.io.File
+
+class BigTiffSpec extends AnyFunSpec with RasterMatchers with GeoTiffTestUtils with TableDrivenPropertyChecks {
   describe("Reading BigTiffs") {
     val smallPath = geoTiffPath("ls8_int32.tif")
     val bigPath = geoTiffPath("bigtiffs/ls8_int32-big.tif")
@@ -107,6 +110,36 @@ class BigTiffSpec extends AnyFunSpec with RasterMatchers with GeoTiffTestUtils {
       val tags = TiffTags.read(geoTiffPath("bigtiff-marcuswr.tif"))
       val e = tags.extent
       e should be (Extent(-105.06398320198056, 40.743636546229, -105.05724549293515, 40.751667086819424))
+    }
+  }
+
+  describe("Writing BigTiffs") {
+    val bigTiffPermutations = Table(
+      ("cloud optimized", "storage method"),
+      (true, Striped()),
+      (true, Tiled()),
+      (false, Striped()),
+      (false, Tiled()),
+    )
+
+    it("should produce BigTiffs") {
+      forAll(bigTiffPermutations) { (cloudOptimized, storageMethod) =>
+        val tiffOriginal = MultibandGeoTiff(geoTiffPath("overviews/multiband.tif"))
+        tiffOriginal.options.storageMethod shouldBe a [Striped]
+        tiffOriginal.options.tiffType should be (Tiff)
+
+        val tempFile = File.createTempFile("bigtiff", ".tif").toString
+        addToPurge(tempFile)
+
+        val bigTiff = tiffOriginal.withTiffType(BigTiff).withStorageMethod(storageMethod)
+
+        GeoTiffWriter.write(bigTiff, tempFile, optimizedOrder = cloudOptimized)
+
+        val actual = MultibandGeoTiff(tempFile)
+        actual.options.tiffType should be (BigTiff)
+        actual.options.storageMethod.getClass should be (storageMethod.getClass)
+        actual.getOverviewsCount should be (5)
+      }
     }
   }
 }

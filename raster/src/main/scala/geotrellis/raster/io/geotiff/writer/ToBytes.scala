@@ -60,6 +60,17 @@ sealed trait ToBytes {
     }
     result
   }
+
+  def apply(arr: Array[Long]): Array[Byte] = {
+    val result = Array.ofDim[Byte](arr.length * 8)
+    var resultIndex = 0
+    cfor(0)(_ < arr.length, _ + 1) { i =>
+      val bytes = apply(arr(i))
+      System.arraycopy(bytes, 0, result, resultIndex, bytes.length)
+      resultIndex += bytes.length
+    }
+    result
+  }
 }
 
 object BigEndianToBytes extends ToBytes {

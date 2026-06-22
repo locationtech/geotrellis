@@ -20,6 +20,7 @@ import geotrellis.store.s3._
 import geotrellis.store.s3.conf.S3Config
 
 import software.amazon.awssdk.auth.credentials.{AwsBasicCredentials, StaticCredentialsProvider}
+import software.amazon.awssdk.core.checksums.{RequestChecksumCalculation, ResponseChecksumValidation}
 import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.regions.Region
@@ -34,6 +35,9 @@ object MockS3Client {
 
     S3Client.builder()
       .overrideConfiguration(overrideConfig)
+      // MinIO rejects the AWS SDK >= 2.30 default flexible checksums (x-amz-content-sha256 mismatch)
+      .requestChecksumCalculation(RequestChecksumCalculation.WHEN_REQUIRED)
+      .responseChecksumValidation(ResponseChecksumValidation.WHEN_REQUIRED)
       // To forcePathStyle we can use localhost ip address
       // https://docs.aws.amazon.com/AmazonS3/latest/userguide/VirtualHosting.html#path-style-access
       // https://docs.aws.amazon.com/sdk-for-java/latest/developer-guide/examples-s3.html
