@@ -79,7 +79,7 @@ Contribution Questionnaire
 Visit `https://gitlab.eclipse.org/eclipsefdn/emo-team/iplab/-/wikis/Requesting-a-Review <https://gitlab.eclipse.org/eclipsefdn/emo-team/iplab/-/wikis/Requesting-a-Review>`__
 for more details.
 
-- Run the dependencies list generation command: ``sbt dependencyListGT/toFile target/dependencies-list.txt``
+- Run the dependencies list generation command: ``sbt "dependencyListGT/toFile target/dependencies-list.txt"`` or ``sbt "dependencyListGTFast target/dependencies-list.txt"``
 
   - It is going to produce the output file with all project compile time dependencies stored in the ``target/dependencies-list.txt`` file.
 

@@ -1,12 +1,5 @@
 import sbt.Keys._
 
-// Faster `dependencyUpdates`: swap in a resolver set without the snapshot repos (which dominate the
-// runtime by re-fetching uncached version metadata), then `reload` to restore the regular resolvers.
-addCommandAlias(
-  "dependencyUpdatesFast",
-  "; set every externalResolvers := Settings.Repositories.allNoSnapshots; dependencyUpdates; reload"
-)
-
 ThisBuild / versionScheme := Some("semver-spec")
 ThisBuild / scalaVersion := "2.13.18"
 ThisBuild / organization := "org.locationtech.geotrellis"

@@ -17,7 +17,7 @@ object DependencyListPlugin extends AutoPlugin {
   object Keys {
     val dependencyListGT       = inputKey[Unit]("Execute dependencyList GeoTrellis command; usage example: dependencyListGT/toFile target/dependencies-list.txt")
     val dependencyListGTAppend = settingKey[Boolean]("dependencyList GeoTrellis command append mode: true by default").withRank(KeyRanks.Invisible)
-    val dependencyListGTIgnore = settingKey[Seq[String]]("dependencyList GeoTrellis command ignored dependencies: skips dependencies containing ignored strings in the output file").withRank(KeyRanks.Invisible)
+    val dependencyListGTIgnore = settingKey[Set[String]]("dependencyList GeoTrellis command ignored dependencies: skips dependencies containing ignored strings in the output file").withRank(KeyRanks.Invisible)
   }
 
   val autoImport = Keys
@@ -28,7 +28,7 @@ object DependencyListPlugin extends AutoPlugin {
   private def renderingTaskSettings(key: InputKey[Unit]) =
     Seq(
       dependencyListGTAppend := true,
-      dependencyListGTIgnore := Seq("locationtech"),
+      dependencyListGTIgnore := Set("locationtech"),
       key := {
         val s = streams.value
         val str = (Compile / dependencyList / asString).value
@@ -37,11 +37,21 @@ object DependencyListPlugin extends AutoPlugin {
       key / toFile := {
         val (targetFile, force) = targetFileAndForceParser.parsed
         val list = if(!(publish / skip).value) { // generate a list of published artifacts dependencies only
+          // provided-scope modules (and their transitive closure) to drop from the published list
+          val providedModules =
+            update.value.configurations
+              .find(_.configuration.name == "provided")
+              .toSeq
+              .flatMap(_.modules)
+              .map(r => s"${r.module.organization}:${r.module.name}:${r.module.revision}")
+              .toSet
+
           val string =
             (Compile / dependencyList / asString)
               .value
               .split('\n')
               .filterNot(str => dependencyListGTIgnore.value.exists(str.contains))
+              .filterNot(str => providedModules.contains(str.trim))
               .mkString("\n")
 
           if (string.nonEmpty) string ++ "\n" else string
@@ -64,7 +74,11 @@ object DependencyListPlugin extends AutoPlugin {
         s"Target file for $what already exists at ${targetFile.getAbsolutePath}. Use '-f' to override"
       )
     } else {
-      IO.write(targetFile, data, IO.utf8, append)
+      // in append mode each module contributes its own list; merge with the existing content and keep
+      // the file distinct (and sorted), which also makes re-runs idempotent
+      val existing = if (append && targetFile.exists) IO.readLines(targetFile, IO.utf8) else Nil
+      val merged = (existing ++ data.split('\n')).map(_.trim).filter(_.nonEmpty).distinct.sorted
+      IO.writeLines(targetFile, merged, IO.utf8, append = false)
 
       streams.log.info(s"Wrote $what to '$targetFile'")
       targetFile
