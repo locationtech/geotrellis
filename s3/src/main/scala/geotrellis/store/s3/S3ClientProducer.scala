@@ -18,6 +18,7 @@ package geotrellis.store.s3
 
 import geotrellis.store.s3.conf.S3Config
 import software.amazon.awssdk.services.s3.S3Client
+import software.amazon.awssdk.core.checksums.{RequestChecksumCalculation, ResponseChecksumValidation}
 import software.amazon.awssdk.core.retry.backoff.FullJitterBackoffStrategy
 import software.amazon.awssdk.core.retry.conditions.{OrRetryCondition, RetryCondition}
 import software.amazon.awssdk.awscore.retry.conditions.RetryOnErrorCodeCondition
@@ -60,6 +61,9 @@ object S3ClientProducer {
 
     S3Client.builder()
       .overrideConfiguration(overrideConfig)
+      // AWS SDK >= 2.30 defaults request checksums to WHEN_SUPPORTED
+      .requestChecksumCalculation(RequestChecksumCalculation.WHEN_REQUIRED)
+      .responseChecksumValidation(ResponseChecksumValidation.WHEN_REQUIRED)
       .build()
   }
 

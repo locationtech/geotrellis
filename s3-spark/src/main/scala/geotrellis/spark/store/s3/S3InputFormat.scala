@@ -21,6 +21,7 @@ import geotrellis.store.hadoop._
 
 import org.log4s._
 
+import software.amazon.awssdk.core.checksums.{RequestChecksumCalculation, ResponseChecksumValidation}
 import software.amazon.awssdk.regions._
 import software.amazon.awssdk.services.s3.model.{ListObjectsV2Request, S3Object}
 import software.amazon.awssdk.services.s3.S3Client
@@ -235,6 +236,9 @@ object S3InputFormat {
           case Some(region) =>
             S3Client.builder()
               .region(region)
+              // match S3ClientProducer: AWS SDK >= 2.30 default checksums break S3-compatible stores
+              .requestChecksumCalculation(RequestChecksumCalculation.WHEN_REQUIRED)
+              .responseChecksumValidation(ResponseChecksumValidation.WHEN_REQUIRED)
               .build()
           case None =>
             S3ClientProducer.get()
