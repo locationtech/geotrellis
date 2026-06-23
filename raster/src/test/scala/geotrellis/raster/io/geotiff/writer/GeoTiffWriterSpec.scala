@@ -21,64 +21,73 @@ import geotrellis.raster._
 import geotrellis.raster.io.geotiff._
 import geotrellis.raster.io.geotiff.tags.TiffTags
 import geotrellis.raster.io.geotiff.tags.codes.ColorSpace
+import geotrellis.raster.io.geotiff.writer.GeoTiffWriterSpec.tempPath
 import geotrellis.raster.render.{ColorRamps, IndexedColorMap}
 import geotrellis.raster.testkit._
 import geotrellis.vector.Extent
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.{BeforeAndAfterAll, Inspectors}
 
 import java.io._
-import org.scalatest.{BeforeAndAfterAll, Inspectors}
-import org.scalatest.matchers.should.Matchers
-import org.scalatest.funspec.AnyFunSpec
-
 import scala.xml.{Text, XML}
+
+object GeoTiffWriterSpec {
+
+  def tempPath(): String = {
+    val tempFile: File = File.createTempFile("geotiff-writer", ".tif")
+    tempFile.deleteOnExit()
+    tempFile.getPath
+  }
+}
 
 class GeoTiffWriterSpec extends AnyFunSpec with Matchers with BeforeAndAfterAll with RasterMatchers with TileBuilders with GeoTiffTestUtils {
 
-  override def afterAll() = purge
+  override def afterAll() = {
+    println("done :)")
+  }
 
   private val testCRS = CRS.fromName("EPSG:3857")
   private val testExtent = Extent(100.0, 400.0, 120.0, 420.0)
 
-  describe ("writing GeoTiffs without errors and with correct tiles, crs and extent") {
-    val temp = File.createTempFile("geotiff-writer", ".tif")
-    val path = temp.getPath
-
+  describe("writing GeoTiffs without errors and with correct tiles, crs and extent") {
     it("should write GeoTiff with tags") {
       val geoTiff = MultibandGeoTiff(geoTiffPath("multi-tag.tif"))
+      val path = tempPath()
       GeoTiffWriter.write(geoTiff, path)
 
-      addToPurge(path)
+      val tiffTags = TiffTags.read(path)
+      val samples = tiffTags.nonBasicTags.extraSamples
+      samples.get should equal(Array(0))
 
       val actual = MultibandGeoTiff(path).tags
       val expected = geoTiff.tags
 
-      actual should be (expected)
+      actual should be(expected)
     }
 
     it("should write singleband geotiffs (tiled)") {
       val tile = IntArrayTile.fill(7, 1000, 1000)
       val sbGeoTiffTiled = SinglebandGeoTiff(
         tile, Extent(0, 0, 1, 1), LatLng, Tags.empty,
-        GeoTiffOptions.DEFAULT.copy(storageMethod=Tiled(256, 256))
+        GeoTiffOptions.DEFAULT.copy(storageMethod = Tiled(256, 256))
       )
-      val sbtempTiled = File.createTempFile("geotiff-writer-tiled-sb", ".tif")
-      addToPurge(sbtempTiled.getPath)
-      GeoTiffWriter.write(sbGeoTiffTiled, sbtempTiled.getPath)
-      val sbactualTiled = SinglebandGeoTiff(sbtempTiled.getPath)
-      sbactualTiled.options.storageMethod shouldBe a [Tiled]
+      val path = tempPath()
+      GeoTiffWriter.write(sbGeoTiffTiled, path)
+      val sbactualTiled = SinglebandGeoTiff(path)
+      sbactualTiled.options.storageMethod shouldBe a[Tiled]
     }
 
     it("should write singleband geotiffs (striped)") {
       val tile = IntArrayTile.fill(7, 1000, 1000)
       val sbGeoTiffStriped = SinglebandGeoTiff(
         tile, Extent(0, 0, 1, 1), LatLng, Tags.empty,
-        GeoTiffOptions.DEFAULT.copy(storageMethod=Striped())
+        GeoTiffOptions.DEFAULT.copy(storageMethod = Striped())
       )
-      val sbtempStriped = File.createTempFile("geotiff-writer-striped-sb", ".tif")
-      addToPurge(sbtempStriped.getPath)
-      GeoTiffWriter.write(sbGeoTiffStriped, sbtempStriped.getPath)
-      val sbactualStriped = SinglebandGeoTiff(sbtempStriped.getPath)
-      sbactualStriped.options.storageMethod shouldBe a [Striped]
+      val path = tempPath()
+      GeoTiffWriter.write(sbGeoTiffStriped, path)
+      val sbactualStriped = SinglebandGeoTiff(path)
+      sbactualStriped.options.storageMethod shouldBe a[Striped]
     }
 
     it("should write multiband geotiffs (tiled)") {
@@ -86,13 +95,17 @@ class GeoTiffWriterSpec extends AnyFunSpec with Matchers with BeforeAndAfterAll 
       val mbtile = ArrayMultibandTile(tile)
       val mbGeoTiffTiled = MultibandGeoTiff(
         mbtile, Extent(0, 0, 1, 1), LatLng, Tags.empty,
-        GeoTiffOptions.DEFAULT.copy(storageMethod=Tiled(256, 256))
+        GeoTiffOptions.DEFAULT.copy(storageMethod = Tiled(256, 256))
       )
-      val mbtempTiled = File.createTempFile("geotiff-writer-tiled-mb", ".tif")
-      addToPurge(mbtempTiled.getPath)
-      GeoTiffWriter.write(mbGeoTiffTiled, mbtempTiled.getPath)
-      val mbactualTiled = MultibandGeoTiff(mbtempTiled.getPath)
-      mbactualTiled.options.storageMethod shouldBe a [Tiled]
+      val path = tempPath()
+      GeoTiffWriter.write(mbGeoTiffTiled, path)
+
+      val tiffTags = TiffTags.read(path)
+      val samples = tiffTags.nonBasicTags.extraSamples
+      samples should equal(None)
+
+      val mbactualTiled = MultibandGeoTiff(path)
+      mbactualTiled.options.storageMethod shouldBe a[Tiled]
     }
 
     it("should write multiband geotiffs (striped)") {
@@ -100,13 +113,12 @@ class GeoTiffWriterSpec extends AnyFunSpec with Matchers with BeforeAndAfterAll 
       val mbtile = ArrayMultibandTile(tile)
       val mbGeoTiffStriped = MultibandGeoTiff(
         mbtile, Extent(0, 0, 1, 1), LatLng, Tags.empty,
-        GeoTiffOptions.DEFAULT.copy(storageMethod=Striped())
+        GeoTiffOptions.DEFAULT.copy(storageMethod = Striped())
       )
-      val mbtempStriped = File.createTempFile("geotiff-writer-striped-mb", ".tif")
-      addToPurge(mbtempStriped.getPath)
-      GeoTiffWriter.write(mbGeoTiffStriped, mbtempStriped.getPath)
-      val mbactualStriped = MultibandGeoTiff(mbtempStriped.getPath)
-      mbactualStriped.options.storageMethod shouldBe a [Striped]
+      val path = tempPath()
+      GeoTiffWriter.write(mbGeoTiffStriped, path)
+      val mbactualStriped = MultibandGeoTiff(path)
+      mbactualStriped.options.storageMethod shouldBe a[Striped]
     }
 
     it("should write GeoTiff with oversized custom tags") {
@@ -122,13 +134,14 @@ class GeoTiffWriterSpec extends AnyFunSpec with Matchers with BeforeAndAfterAll 
 
       val taggedTiff = geoTiff.copy(tags = Tags(headTags, bandTags))
 
+      val path = tempPath()
       GeoTiffWriter.write(taggedTiff, path)
-
-      addToPurge(path)
-
       val tags = TiffTags.read(path)
+      val samples = tags.nonBasicTags.extraSamples
+      samples.get should equal(Array(0))
 
-      val expectedXML = XML.loadString("""<GDALMetadata>
+      val expectedXML = XML.loadString(
+        """<GDALMetadata>
         <Item name="SOME_CUSTOM_TAG2">12345678901234567890123456789012</Item>
         <Item name="TAG_TYPE">HEAD</Item>
         <Item name="SOME_CUSTOM_TAG1">1234567890123456789012345678901</Item>
@@ -165,143 +178,145 @@ class GeoTiffWriterSpec extends AnyFunSpec with Matchers with BeforeAndAfterAll 
       val expectedItems = expectedXML.child.filter(_.isInstanceOf[scala.xml.Elem]).sortBy(_.attribute("name").get.text).sortBy(_.attribute("sample").getOrElse(Text("")).text)
       val actualItems = XML.loadString(tags.geoTiffTags.metadata.get).child.filter(_.isInstanceOf[scala.xml.Elem]).sortBy(_.attribute("name").get.text).sortBy(_.attribute("sample").getOrElse(Text("")).text)
 
-      actualItems.zip(expectedItems).foreach(t=> t._1 should equal (t._2))
+      actualItems.zip(expectedItems).foreach(t => t._1 should equal(t._2))
 
       val actual = MultibandGeoTiff(path).tags
       val expected = taggedTiff.tags
 
-      actual should be (expected)
+      actual should be(expected)
     }
 
     it("should write web mercator correctly") {
       val geoTiff = SinglebandGeoTiff(geoTiffPath("ndvi-web-mercator.tif"))
 
-      addToPurge(path)
+      val path = tempPath()
       geoTiff.write(path)
       val actualCRS = SinglebandGeoTiff(path).crs
 
-      actualCRS.epsgCode should be (geoTiff.crs.epsgCode)
+      actualCRS.epsgCode should be(geoTiff.crs.epsgCode)
     }
 
     it("should write NY State Plane correctly") {
       val geoTiff = SinglebandGeoTiff(geoTiffPath("ny-state-plane.tif"))
 
-      addToPurge(path)
+      val path = tempPath()
       geoTiff.write(path)
       val actualCRS = SinglebandGeoTiff(path).crs
 
-      actualCRS.epsgCode should be (geoTiff.crs.epsgCode)
+      actualCRS.epsgCode should be(geoTiff.crs.epsgCode)
     }
 
-    it ("should write Polar stereographic correctly") {
+    it("should write Polar stereographic correctly") {
       val geoTiff = SinglebandGeoTiff(geoTiffPath("alaska-polar-3572.tif"))
-
-      addToPurge(path)
+      val path = tempPath()
       geoTiff.write(path)
       val actualCRS = SinglebandGeoTiff(path).crs
 
-      actualCRS.epsgCode should be (geoTiff.crs.epsgCode)
+      actualCRS.epsgCode should be(geoTiff.crs.epsgCode)
     }
 
-    it ("should write Sinusoidal correctly") {
+    it("should write Sinusoidal correctly") {
 
       val geoTiff = SinglebandGeoTiff(geoTiffPath("reproject/modis_sinu.tif"))
 
-      addToPurge(path)
+      val path = tempPath()
       geoTiff.write(path)
       val actualCRS = SinglebandGeoTiff(path).crs
 
-      actualCRS.toProj4String should be (geoTiff.crs.toProj4String)
+      actualCRS.toProj4String should be(geoTiff.crs.toProj4String)
     }
 
-    it ("should write Albers Equal Area correctly") {
+    it("should write Albers Equal Area correctly") {
 
       val geoTiff = SinglebandGeoTiff(geoTiffPath("reproject/alaska-aea.tif"))
 
-      addToPurge(path)
+      val path = tempPath()
       geoTiff.write(path)
       val actualCRS = SinglebandGeoTiff(path).crs
 
-      actualCRS.toProj4String should be (geoTiff.crs.toProj4String)
+      actualCRS.toProj4String should be(geoTiff.crs.toProj4String)
     }
 
-    it ("should write Lambert Conformal Conic correctly") {
+    it("should write Lambert Conformal Conic correctly") {
 
       val geoTiff = SinglebandGeoTiff(geoTiffPath("reproject/lcc.tif"))
 
-      addToPurge(path)
+      val path = tempPath()
       geoTiff.write(path)
       val actualCRS = SinglebandGeoTiff(path).crs
 
-      actualCRS.toProj4String should be (geoTiff.crs.toProj4String)
+      actualCRS.toProj4String should be(geoTiff.crs.toProj4String)
     }
 
-    it ("should write DHDN_3_Degree_Gauss_Zone_3 correctly") {
+    it("should write DHDN_3_Degree_Gauss_Zone_3 correctly") {
       val geoTiff = MultibandGeoTiff(geoTiffPath("epsg31467.tif"))
+      val originalTiffTags = TiffTags.read(geoTiffPath("epsg31467.tif"))
+      val originalSamples = originalTiffTags.nonBasicTags.extraSamples
+      originalSamples.get should equal(Array(2))
 
-      addToPurge(path)
+      val path = tempPath()
       geoTiff.write(path)
+      val tiffTags = TiffTags.read(path)
+      val samples = tiffTags.nonBasicTags.extraSamples
+      samples.get should equal(Array(2))
+
       val actualCRS = SinglebandGeoTiff(path).crs
 
-      actualCRS.toProj4String should be (geoTiff.crs.toProj4String)
+      actualCRS.toProj4String should be(geoTiff.crs.toProj4String)
     }
 
-    it ("should write web mercator with no epsg code correctly") {
+    it("should write web mercator with no epsg code correctly") {
       val geoTiff = MultibandGeoTiff(geoTiffPath("ndvi-web-mercator.tif"))
 
-      addToPurge(path)
+      val path = tempPath()
       GeoTiff(geoTiff.raster, CRS.fromString(geoTiff.crs.toProj4String)).write(path)
       val actualCRS = SinglebandGeoTiff(path).crs
 
-      actualCRS.toProj4String should be (geoTiff.crs.toProj4String)
+      actualCRS.toProj4String should be(geoTiff.crs.toProj4String)
     }
 
     it("should write floating point rasters correctly") {
       val t = DoubleArrayTile(Array(11.0, 22.0, 33.0, 44.0), 2, 2)
 
       val geoTiff = SinglebandGeoTiff(t, testExtent, testCRS, Tags.empty, GeoTiffOptions.DEFAULT)
-
+      val path = tempPath()
       GeoTiffWriter.write(geoTiff, path)
-
-      addToPurge(path)
 
       val SinglebandGeoTiff(tile, extent, crs, _, _, _) = SinglebandGeoTiff(path)
 
-      extent should equal (testExtent)
-      crs should equal (testCRS)
+      extent should equal(testExtent)
+      crs should equal(testCRS)
       assertEqual(tile, t)
     }
 
-    it ("should read write raster correctly") {
+    it("should read write raster correctly") {
       val geoTiff = SinglebandGeoTiff(geoTiffPath("econic_zlib_tiled_bandint_wm.tif"))
       val projectedRaster = geoTiff.projectedRaster
       val ProjectedRaster(Raster(tile, extent), crs) = projectedRaster.reproject(LatLng)
       val reprojGeoTiff = SinglebandGeoTiff(tile, extent, crs, geoTiff.tags, geoTiff.options)
 
+      val path = tempPath()
       GeoTiffWriter.write(reprojGeoTiff, path)
-
-      addToPurge(path)
 
       val SinglebandGeoTiff(actualTile, actualExtent, actualCrs, _, _, _) = SinglebandGeoTiff(path)
 
-      actualExtent should equal (extent)
-      crs should equal (LatLng)
+      actualExtent should equal(extent)
+      crs should equal(LatLng)
       assertEqual(actualTile, tile)
     }
 
-    it ("should read write multibandraster correctly") {
+    it("should read write multibandraster correctly") {
       val geoTiff = MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-pixel.tif"))
 
+      val path = tempPath()
       GeoTiffWriter.write(geoTiff, path)
-
-      addToPurge(path)
 
       val gt = MultibandGeoTiff(path)
 
-      gt.extent should equal (geoTiff.extent)
-      gt.crs should equal (geoTiff.crs)
-      gt.tile.bandCount should equal (geoTiff.tile.bandCount)
-      for(i <- 0 until gt.tile.bandCount) {
+      gt.extent should equal(geoTiff.extent)
+      gt.crs should equal(geoTiff.crs)
+      gt.tile.bandCount should equal(geoTiff.tile.bandCount)
+      for (i <- 0 until gt.tile.bandCount) {
         val actualBand = gt.tile.band(i)
         val expectedBand = geoTiff.tile.band(i)
 
@@ -309,25 +324,24 @@ class GeoTiffWriterSpec extends AnyFunSpec with Matchers with BeforeAndAfterAll 
       }
     }
 
-    it ("should read write multibandraster with compression correctly") {
+    it("should read write multibandraster with compression correctly") {
       val geoTiff = {
         val gt = MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-pixel.tif"))
         MultibandGeoTiff(Raster(gt.raster.tile.toArrayTile(), gt.raster.extent), gt.crs, options = GeoTiffOptions(compression.DeflateCompression))
       }
 
+      val path = tempPath()
       GeoTiffWriter.write(geoTiff, path)
 
-      addToPurge(path)
-
       val tags = TiffTags.read(path)
-      tags.compression should be (geotrellis.raster.io.geotiff.tags.codes.CompressionType.ZLibCoded)
+      tags.compression should be(geotrellis.raster.io.geotiff.tags.codes.CompressionType.ZLibCoded)
 
       val gt = MultibandGeoTiff(path)
 
-      gt.extent should equal (geoTiff.extent)
-      gt.crs should equal (geoTiff.crs)
-      gt.tile.bandCount should equal (geoTiff.tile.bandCount)
-      for(i <- 0 until gt.tile.bandCount) {
+      gt.extent should equal(geoTiff.extent)
+      gt.crs should equal(geoTiff.crs)
+      gt.tile.bandCount should equal(geoTiff.tile.bandCount)
+      for (i <- 0 until gt.tile.bandCount) {
         val actualBand = gt.tile.band(i)
         val expectedBand = geoTiff.tile.band(i)
 
@@ -335,7 +349,7 @@ class GeoTiffWriterSpec extends AnyFunSpec with Matchers with BeforeAndAfterAll 
       }
     }
 
-    it ("should write hand made multiband and read back correctly") {
+    it("should write hand made multiband and read back correctly") {
       val tile =
         ArrayMultibandTile(
           positiveIntegerRaster,
@@ -344,17 +358,15 @@ class GeoTiffWriterSpec extends AnyFunSpec with Matchers with BeforeAndAfterAll 
         )
 
       val geoTiff = MultibandGeoTiff(tile, Extent(0.0, 0.0, 1000.0, 1000.0), LatLng)
-
+      val path = tempPath()
       GeoTiffWriter.write(geoTiff, path)
-
-      addToPurge(path)
 
       val gt = MultibandGeoTiff(path).projectedRaster
 
-      gt.extent should equal (geoTiff.extent)
-      gt.crs should equal (geoTiff.crs)
-      gt.tile.bandCount should equal (tile.bandCount)
-      for(i <- 0 until gt.tile.bandCount) {
+      gt.extent should equal(geoTiff.extent)
+      gt.crs should equal(geoTiff.crs)
+      gt.tile.bandCount should equal(tile.bandCount)
+      for (i <- 0 until gt.tile.bandCount) {
         val actualBand = gt.tile.band(i)
         val expectedBand = tile.band(i)
 
@@ -376,10 +388,10 @@ class GeoTiffWriterSpec extends AnyFunSpec with Matchers with BeforeAndAfterAll 
 
       val gt = MultibandGeoTiff(bytes)
 
-      gt.extent should equal (geoTiff.extent)
-      gt.crs should equal (geoTiff.crs)
-      gt.tile.bandCount should equal (tile.bandCount)
-      for(i <- 0 until gt.tile.bandCount) {
+      gt.extent should equal(geoTiff.extent)
+      gt.crs should equal(geoTiff.crs)
+      gt.tile.bandCount should equal(tile.bandCount)
+      for (i <- 0 until gt.tile.bandCount) {
         val actualBand = gt.tile.band(i)
         val expectedBand = tile.band(i)
 
@@ -391,25 +403,27 @@ class GeoTiffWriterSpec extends AnyFunSpec with Matchers with BeforeAndAfterAll 
       val sizes = List(1056 -> 1052, 528 -> 526, 264 -> 263, 132 -> 132, 66 -> 66, 33 -> 33)
 
       val tiffOriginal = MultibandGeoTiff(geoTiffPath("overviews/multiband.tif"))
+
+      val path = tempPath()
       tiffOriginal.write(path)
 
       val tiff = MultibandGeoTiff(path)
       val tile = tiff.tile
 
-      tiff.getOverviewsCount should be (5)
-      tile.bandCount should be (4)
-      tile.bands.map(_.isNoDataTile).reduce(_ && _) should be (false)
+      tiff.getOverviewsCount should be(5)
+      tile.bandCount should be(4)
+      tile.bands.map(_.isNoDataTile).reduce(_ && _) should be(false)
 
-      tile.cols -> tile.rows should be (sizes(0))
+      tile.cols -> tile.rows should be(sizes(0))
 
       tiff.overviews.zip(sizes.tail).foreach { case (ovrTiff, ovrSize) =>
         val ovrTile = ovrTiff.tile
 
-        ovrTiff.getOverviewsCount should be (0)
-        ovrTile.bandCount should be (4)
-        ovrTile.bands.map(_.isNoDataTile).reduce(_ && _) should be (false)
+        ovrTiff.getOverviewsCount should be(0)
+        ovrTile.bandCount should be(4)
+        ovrTile.bands.map(_.isNoDataTile).reduce(_ && _) should be(false)
 
-        ovrTile.cols -> ovrTile.rows should be (ovrSize)
+        ovrTile.cols -> ovrTile.rows should be(ovrSize)
       }
     }
 
@@ -422,31 +436,32 @@ class GeoTiffWriterSpec extends AnyFunSpec with Matchers with BeforeAndAfterAll 
       (tiffOriginal.options.storageMethod match {
         case _: Striped => true
         case _: Tiled => false
-      }) should be (true)
+      }) should be(true)
 
       val tiledTiff = tiffOriginal.withStorageMethod(Tiled(128, 128))
 
+      val path = tempPath()
       tiledTiff.write(path, true)
 
       val tiff = MultibandGeoTiff(path)
       val tile = tiff.tile
 
-      tiff.options.storageMethod should be (Tiled(128, 128))
-      tiff.getOverviewsCount should be (5)
-      tile.bandCount should be (4)
-      tile.bands.map(_.isNoDataTile).reduce(_ && _) should be (false)
+      tiff.options.storageMethod should be(Tiled(128, 128))
+      tiff.getOverviewsCount should be(5)
+      tile.bandCount should be(4)
+      tile.bands.map(_.isNoDataTile).reduce(_ && _) should be(false)
 
-      tile.cols -> tile.rows should be (sizes(0))
+      tile.cols -> tile.rows should be(sizes(0))
 
       tiff.overviews.zip(sizes.tail).foreach { case (ovrTiff, ovrSize) =>
         val ovrTile = ovrTiff.tile
 
-        ovrTiff.options.storageMethod should be (Tiled(128, 128))
-        ovrTiff.getOverviewsCount should be (0)
-        ovrTile.bandCount should be (4)
-        ovrTile.bands.map(_.isNoDataTile).reduce(_ && _) should be (false)
+        ovrTiff.options.storageMethod should be(Tiled(128, 128))
+        ovrTiff.getOverviewsCount should be(0)
+        ovrTile.bandCount should be(4)
+        ovrTile.bands.map(_.isNoDataTile).reduce(_ && _) should be(false)
 
-        ovrTile.cols -> ovrTile.rows should be (ovrSize)
+        ovrTile.cols -> ovrTile.rows should be(ovrSize)
       }
     }
 
@@ -459,29 +474,30 @@ class GeoTiffWriterSpec extends AnyFunSpec with Matchers with BeforeAndAfterAll 
       (tiffOriginal.options.storageMethod match {
         case _: Striped => true
         case _: Tiled => false
-      }) should be (true)
+      }) should be(true)
 
       val tiledTiff = tiffOriginal.withStorageMethod(Tiled(128, 128))
 
+      val path = tempPath()
       tiledTiff.write(path, true)
 
       val tiff = SinglebandGeoTiff(path)
       val tile = tiff.tile
 
-      tiff.options.storageMethod should be (Tiled(128, 128))
-      tiff.getOverviewsCount should be (5)
-      tile.isNoDataTile should be (false)
+      tiff.options.storageMethod should be(Tiled(128, 128))
+      tiff.getOverviewsCount should be(5)
+      tile.isNoDataTile should be(false)
 
-      tile.cols -> tile.rows should be (sizes(0))
+      tile.cols -> tile.rows should be(sizes(0))
 
       tiff.overviews.zip(sizes.tail).foreach { case (ovrTiff, ovrSize) =>
         val ovrTile = ovrTiff.tile
 
-        ovrTiff.options.storageMethod should be (Tiled(128, 128))
-        ovrTiff.getOverviewsCount should be (0)
-        ovrTile.isNoDataTile should be (false)
+        ovrTiff.options.storageMethod should be(Tiled(128, 128))
+        ovrTiff.getOverviewsCount should be(0)
+        ovrTile.isNoDataTile should be(false)
 
-        ovrTile.cols -> ovrTile.rows should be (ovrSize)
+        ovrTile.cols -> ovrTile.rows should be(ovrSize)
       }
     }
 
@@ -490,23 +506,24 @@ class GeoTiffWriterSpec extends AnyFunSpec with Matchers with BeforeAndAfterAll 
       val sizes = List(1056 -> 1052, 528 -> 526, 264 -> 263, 132 -> 132, 66 -> 66, 33 -> 33)
 
       val tiffOriginal = SinglebandGeoTiff(geoTiffPath("overviews/singleband.tif"))
+      val path = tempPath()
       tiffOriginal.write(path)
 
       val tiff = SinglebandGeoTiff(path)
       val tile = tiff.tile
 
-      tiff.getOverviewsCount should be (5)
-      tile.isNoDataTile should be (false)
+      tiff.getOverviewsCount should be(5)
+      tile.isNoDataTile should be(false)
 
-      tile.cols -> tile.rows should be (sizes(0))
+      tile.cols -> tile.rows should be(sizes(0))
 
       tiff.overviews.zip(sizes.tail).foreach { case (ovrTiff, ovrSize) =>
         val ovrTile = ovrTiff.tile
 
-        ovrTiff.getOverviewsCount should be (0)
-        ovrTile.isNoDataTile should be (false)
+        ovrTiff.getOverviewsCount should be(0)
+        ovrTile.isNoDataTile should be(false)
 
-        ovrTile.cols -> ovrTile.rows should be (ovrSize)
+        ovrTile.cols -> ovrTile.rows should be(ovrSize)
       }
     }
 
@@ -514,25 +531,26 @@ class GeoTiffWriterSpec extends AnyFunSpec with Matchers with BeforeAndAfterAll 
       val sizes = List(1056 -> 1052, 528 -> 526, 264 -> 263, 132 -> 132, 66 -> 66, 33 -> 33)
 
       val tiffOriginal = MultibandGeoTiff(geoTiffPath("overviews/multiband_co.tif"))
+      val path = tempPath()
       tiffOriginal.write(path, true)
 
       val tiff = MultibandGeoTiff(path)
       val tile = tiff.tile
 
-      tiff.getOverviewsCount should be (5)
-      tile.bandCount should be (4)
-      tile.bands.map(_.isNoDataTile).reduce(_ && _) should be (false)
+      tiff.getOverviewsCount should be(5)
+      tile.bandCount should be(4)
+      tile.bands.map(_.isNoDataTile).reduce(_ && _) should be(false)
 
-      tile.cols -> tile.rows should be (sizes(0))
+      tile.cols -> tile.rows should be(sizes(0))
 
       tiff.overviews.zip(sizes.tail).foreach { case (ovrTiff, ovrSize) =>
         val ovrTile = ovrTiff.tile
 
-        ovrTiff.getOverviewsCount should be (0)
-        ovrTile.bandCount should be (4)
-        ovrTile.bands.map(_.isNoDataTile).reduce(_ && _) should be (false)
+        ovrTiff.getOverviewsCount should be(0)
+        ovrTile.bandCount should be(4)
+        ovrTile.bands.map(_.isNoDataTile).reduce(_ && _) should be(false)
 
-        ovrTile.cols -> ovrTile.rows should be (ovrSize)
+        ovrTile.cols -> ovrTile.rows should be(ovrSize)
       }
     }
 
@@ -541,49 +559,45 @@ class GeoTiffWriterSpec extends AnyFunSpec with Matchers with BeforeAndAfterAll 
       val sizes = List(1056 -> 1052, 528 -> 526, 264 -> 263, 132 -> 132, 66 -> 66, 33 -> 33)
 
       val tiffOriginal = SinglebandGeoTiff(geoTiffPath("overviews/singleband_co.tif"))
+      val path = tempPath()
       tiffOriginal.write(path, true)
 
       val tiff = SinglebandGeoTiff(path)
       val tile = tiff.tile
 
-      tiff.getOverviewsCount should be (5)
-      tile.isNoDataTile should be (false)
+      tiff.getOverviewsCount should be(5)
+      tile.isNoDataTile should be(false)
 
-      tile.cols -> tile.rows should be (sizes(0))
+      tile.cols -> tile.rows should be(sizes(0))
 
       tiff.overviews.zip(sizes.tail).foreach { case (ovrTiff, ovrSize) =>
         val ovrTile = ovrTiff.tile
 
-        ovrTiff.getOverviewsCount should be (0)
-        ovrTile.isNoDataTile should be (false)
+        ovrTiff.getOverviewsCount should be(0)
+        ovrTile.isNoDataTile should be(false)
 
-        ovrTile.cols -> ovrTile.rows should be (ovrSize)
+        ovrTile.cols -> ovrTile.rows should be(ovrSize)
       }
     }
   }
-  describe ("writing GeoTiffs with correct color handling") {
-    val temp = File.createTempFile("geotiff-writer", ".tif")
-    val path = temp.getPath
-
-
+  describe("writing GeoTiffs with correct color handling") {
 
     it("should write photometric interpretation code") {
       // Read in a 4-band file interpreted as RGB(A)
       val base = MultibandGeoTiff(geoTiffPath("multi-tag.tif"))
 
-      base.options.colorSpace should be (ColorSpace.RGB)
+      base.options.colorSpace should be(ColorSpace.RGB)
 
       val modifiedOptions = base.options.copy(colorSpace = ColorSpace.CMYK)
 
       val modifiedImage = base.copy(options = modifiedOptions)
 
+      val path = tempPath()
       GeoTiffWriter.write(modifiedImage, path)
 
       val reread = MultibandGeoTiff(path)
 
-      addToPurge(path)
-
-      reread.options.colorSpace should be (ColorSpace.CMYK)
+      reread.options.colorSpace should be(ColorSpace.CMYK)
     }
 
     it("should write color map when photometric interpretation is 'Palette'") {
@@ -596,36 +610,34 @@ class GeoTiffWriterSpec extends AnyFunSpec with Matchers with BeforeAndAfterAll 
 
       val indexed = SinglebandGeoTiff(hundreds, testExtent, testCRS, Tags.empty, GeoTiffOptions(indexedColorMap))
 
+      val path = tempPath()
       GeoTiffWriter.write(indexed, path)
 
       val reread = MultibandGeoTiff(path)
 
-      addToPurge(path)
-
-      reread.options.colorSpace should be (ColorSpace.Palette)
+      reread.options.colorSpace should be(ColorSpace.Palette)
       reread.options.colorMap should be(Symbol("defined"))
 
       val p1 = reread.options.colorMap.get.colors
       val p2 = indexed.options.colorMap.get.colors
 
       Inspectors.forEvery(p1.zip(p2)) { case (c1, c2) =>
-        c1 should equal (c2)
+        c1 should equal(c2)
       }
     }
 
     it("should preserve color map in existing file") {
       val base = SinglebandGeoTiff(geoTiffPath("colormap.tif"))
+      val path = tempPath()
       GeoTiffWriter.write(base, path)
 
       val reread = MultibandGeoTiff(path)
-
-      addToPurge(path)
 
       val p1 = reread.options.colorMap.get.colors
       val p2 = base.options.colorMap.get.colors
 
       Inspectors.forEvery(p1.zip(p2)) { case (c1, c2) =>
-        c1 should equal (c2)
+        c1 should equal(c2)
       }
     }
 
@@ -635,6 +647,7 @@ class GeoTiffWriterSpec extends AnyFunSpec with Matchers with BeforeAndAfterAll 
 
       Inspectors.forEvery(illegal) { cellType =>
         val naughty = base.copy(tile = base.tile.convert(cellType))
+        val path = tempPath()
         intercept[IncompatibleGeoTiffOptionsException] {
           GeoTiffWriter.write(naughty, path)
         }

@@ -77,4 +77,23 @@ object ColorSpace {
    * Pixar 'LogLuv' encoding.
    */
   val LogLuv = 32845
+
+  def bandCount(colorSpace: Int): Int = colorSpace match {
+    case WhiteIsZero => 1
+    case BlackIsZero => 1
+    case RGB => 3
+    case Palette => 1
+    case TransparencyMask => 1
+    case CMYK => 4
+    case YCbCr => 3
+    case CIELab => 3
+    case ICCLab => 3
+    case ITULab => 3
+    case CFA => 1
+    case LinearRaw => 1
+    case LogL => 1
+    case LogLuv => 3
+    case _ =>
+      throw new IllegalArgumentException(s"Unknown color space: $colorSpace")
+  }
 }

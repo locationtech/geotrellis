@@ -93,6 +93,14 @@ object TiffTagFieldValue {
     fieldValues += TiffTagFieldValue(PredictorTag, ShortsFieldType, 1, imageData.decompressor.predictorCode)
     fieldValues += TiffTagFieldValue(PhotometricInterpTag, ShortsFieldType, 1, geoTiff.options.colorSpace)
     fieldValues += TiffTagFieldValue(SamplesPerPixelTag, ShortsFieldType, 1, imageData.bandCount)
+    val extraBands = imageData.bandCount - ColorSpace.bandCount(geoTiff.options.colorSpace)
+    if (extraBands > 0) {
+      val bytes = new Array[Byte](extraBands)
+      if (geoTiff.options.colorSpace == ColorSpace.RGB && extraBands == 1) {
+        bytes(0) = 2 // assume alpha channel for RGB
+      }
+      fieldValues += TiffTagFieldValue(ExtraSamplesTag, BytesFieldType, extraBands, bytes)
+    }
     fieldValues += TiffTagFieldValue(SampleFormatTag, ShortsFieldType, 1, imageData.bandType.sampleFormat)
 
     imageData.segmentLayout.interleaveMethod match {
