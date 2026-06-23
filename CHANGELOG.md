@@ -6,10 +6,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Spark 4 update; drops Scala 2.12 and JDK 11 support [#3582](https://github.com/locationtech/geotrellis/pull/3582)
+
+## [3.8.1] - 2026-06-22
+
 ### Added
 - Add ZStd compression support for GTiff [#3580](https://github.com/locationtech/geotrellis/pull/3580)
 - Do not depend on private Spark API, avoids sealing violation [#3586](https://github.com/locationtech/geotrellis/pull/3586)
 - Add predictor 2 (integer) and predictor 3 (float) support for writing compressed GTiff files [#3588](https://github.com/locationtech/geotrellis/pull/3588)
+- Support writing GeoTiffs as BigTiff [#3605](https://github.com/locationtech/geotrellis/pull/3605)
+- GeoTiffWriter minor cleanups [#3607](https://github.com/locationtech/geotrellis/pull/3607)
+- Fix version of caffeine dependency [#3609](https://github.com/locationtech/geotrellis/pull/3609)
 
 ### Changed
 - MinResample should ignore Int NODATA values [#3590](https://github.com/locationtech/geotrellis/pull/3590)
@@ -1209,7 +1217,8 @@ efficiently using the layer query API.
   the slick scala database library.
 - Perform PostGIS `ST_` operations in PostGIS through scala.
 
-[Unreleased]: https://github.com/locationtech/geotrellis/compare/v3.8.0...HEAD
+[Unreleased]: https://github.com/locationtech/geotrellis/compare/v3.8.1...HEAD
+[3.8.1]: https://github.com/locationtech/geotrellis/compare/v3.8.0...v3.8.1
 [3.8.0]: https://github.com/locationtech/geotrellis/compare/v3.7.1...v3.8.0
 [3.7.1]: https://github.com/locationtech/geotrellis/compare/v3.7.0...v3.7.1
 [3.7.0]: https://github.com/locationtech/geotrellis/compare/v3.6.3...v3.7.0

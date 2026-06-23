@@ -20,8 +20,8 @@ import sbt.*
 import sbt.Keys.*
 import sbtassembly.AssemblyPlugin.autoImport.*
 import com.typesafe.tools.mima.plugin.MimaKeys.*
-import de.heikoseeberger.sbtheader.{CommentStyle, FileType}
-import de.heikoseeberger.sbtheader.HeaderPlugin.autoImport.{HeaderLicense, headerLicense, headerMappings}
+import sbtheader.{CommentStyle, FileType}
+import sbtheader.HeaderPlugin.autoImport.{HeaderLicense, headerLicense, headerMappings}
 import sbtprotoc.ProtocPlugin.autoImport.PB
 import mdoc.MdocPlugin.autoImport.*
 
@@ -42,8 +42,10 @@ object Settings {
     val maven             = DefaultMavenRepository
     val sonatypeSnapshots = Resolver.sonatypeCentralSnapshots
     val local             = Seq(ivy2Local, mavenLocal)
-    val external          = Seq(osgeoReleases, maven, eclipseReleases, geosolutions, jitpack, apacheSnapshots, osgeoSnapshots, sonatypeSnapshots)
-    val all               = external ++ local
+    val external          = Seq(osgeoReleases, maven, eclipseReleases, geosolutions, jitpack)
+    val snapshots         = Seq(apacheSnapshots, osgeoSnapshots, sonatypeSnapshots)
+    val all               = external ++ snapshots ++ local 
+    val allNoSnapshots    = external ++ local
   }
 
   lazy val noForkInTests = Seq(
@@ -103,14 +105,14 @@ object Settings {
       Path.userHome / ".sbt" / ".credentials"
     ).filter(_.asFile.canRead).map(Credentials(_)),
 
-    addCompilerPlugin("org.typelevel" % "kind-projector" % "0.13.3" cross CrossVersion.full),
-    addCompilerPlugin("org.scalameta" % "semanticdb-scalac" % "4.13.10" cross CrossVersion.full),
+    addCompilerPlugin("org.typelevel" % "kind-projector" % "0.13.4" cross CrossVersion.full),
+    addCompilerPlugin("org.scalameta" % "semanticdb-scalac" % "4.17.0" cross CrossVersion.full),
 
     libraryDependencies ++= (CrossVersion.partialVersion(scalaVersion.value) match {
       case Some((2, 13)) => Nil
       case Some((2, 12)) => Seq(
         compilerPlugin("org.scalamacros" % "paradise" % "2.1.1" cross CrossVersion.full),
-        "org.scala-lang.modules" %% "scala-collection-compat" % "2.13.0"
+        "org.scala-lang.modules" %% "scala-collection-compat" % "2.14.0"
       )
         case x => sys.error(s"Encountered unsupported Scala version ${x.getOrElse("undefined")}")
     }),
