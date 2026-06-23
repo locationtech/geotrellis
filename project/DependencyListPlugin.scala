@@ -1,5 +1,5 @@
-import sbt._
-import sbt.Keys._
+import sbt.*
+import sbt.Keys.*
 import sbt.io.IO
 import sbt.plugins.DependencyTreeKeys.dependencyList
 import sbt.plugins.DependencyTreeSettings.targetFileAndForceParser
@@ -21,7 +21,7 @@ object DependencyListPlugin extends AutoPlugin {
   }
 
   val autoImport = Keys
-  import autoImport._
+  import autoImport.*
 
   override def projectSettings = renderingTaskSettings(dependencyListGT)
 

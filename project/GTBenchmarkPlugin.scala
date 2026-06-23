@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import sbt.Keys._
-import sbt._
-import sbt.complete.DefaultParsers._
+import sbt.Keys.*
+import sbt.*
+import sbt.complete.DefaultParsers.*
 import sbt.complete.Parser
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -52,7 +52,7 @@ object GTBenchmarkPlugin extends AutoPlugin {
   }
 
   val autoImport = Keys
-  import autoImport._
+  import autoImport.*
 
   override def projectSettings = Seq(
     jmhOutputFormat := "json",

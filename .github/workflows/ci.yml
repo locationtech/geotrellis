@@ -12,8 +12,8 @@ jobs:
     name: Build and Test
     strategy:
       matrix:
-        scala: ["2.12.20", "2.13.16"]
-        java: ["11", "21"]
+        scala: ["2.13.16"]
+        java: ["17", "21"]
     runs-on: ubuntu-latest
   
     env:
@@ -41,7 +41,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        java: [11]
+        java: [17]
         distribution: [temurin]
     runs-on: ${{ matrix.os }}
     steps:

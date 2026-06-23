@@ -15,9 +15,8 @@
  */
 
 import java.util.zip.ZipFile
-import java.io.FileInputStream
 import java.io.FileOutputStream
-import scala.collection.JavaConverters._
+import scala.collection.JavaConverters.*
 import java.util.zip.ZipEntry
 import java.io.InputStream
 import java.io.OutputStream
