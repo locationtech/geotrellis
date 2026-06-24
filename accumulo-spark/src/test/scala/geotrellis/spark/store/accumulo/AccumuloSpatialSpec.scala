@@ -33,8 +33,6 @@ class AccumuloSpatialSpec
     with TestFiles
     with AllOnesTestTileSpec {
 
-  implicit lazy val instance = MockAccumuloInstance()
-
   lazy val reader    = AccumuloLayerReader(instance)
   lazy val creader   = AccumuloCollectionLayerReader(instance)
   lazy val writer    = AccumuloLayerWriter(instance, "tiles", SocketWriteStrategy())

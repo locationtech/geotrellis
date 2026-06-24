@@ -19,7 +19,7 @@ import sbt.*
 object Version {
   val geotools    = "35.0"
   val spire       = "0.17.0"
-  val accumulo    = "1.10.4"
+  val accumulo    = "2.1.4"
   val cassandra   = "4.19.3"
   val hbase       = "2.6.6"
   val hadoop      = "3.4.3"
@@ -89,6 +89,7 @@ object Dependencies {
   val parserCombinators   = "org.scala-lang.modules"     %% "scala-parser-combinators" % "2.4.0"
   val jsonSchemaValidator = "com.networknt"               % "json-schema-validator"    % "0.1.23"
   val accumuloCore        = "org.apache.accumulo"         % "accumulo-core"            % Version.accumulo
+  val accumuloMiniCluster = "org.apache.accumulo"         % "accumulo-minicluster"     % Version.accumulo
   val sl4jnop             = "org.slf4j"                   % "slf4j-nop"                % "1.7.25"
   val logbackClassic      = "ch.qos.logback"              % "logback-classic"          % "1.2.3"
   val guava               = "com.google.guava"            % "guava"                    % "16.0.1"
