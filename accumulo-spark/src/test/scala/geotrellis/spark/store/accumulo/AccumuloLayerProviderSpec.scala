@@ -19,12 +19,13 @@ package geotrellis.spark.store.accumulo
 import geotrellis.store._
 import geotrellis.store.accumulo._
 import geotrellis.spark.store._
-import geotrellis.spark.testkit.TestEnvironment
+import geotrellis.spark.AccumuloTestEnvironment
 
 import org.scalatest.funspec.AnyFunSpec
 
-class AccumuloLayerProviderSpec extends AnyFunSpec with TestEnvironment {
-  val uri = new java.net.URI("accumulo://root:@localhost/fake?attributes=attributes&layers=tiles")
+class AccumuloLayerProviderSpec extends AnyFunSpec with AccumuloTestEnvironment {
+  lazy val uri = new java.net.URI(s"accumulo://root:@${miniAccumuloCluster.getZooKeepers}/${miniAccumuloCluster.getInstanceName}?attributes=attributes&layers=tiles")
+
   it("construct AccumuloAttributeStore from URI"){
     val store = AttributeStore(uri)
     assert(store.isInstanceOf[AccumuloAttributeStore])

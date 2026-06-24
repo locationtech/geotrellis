@@ -63,7 +63,8 @@ class AccumuloAttributeStore(val connector: Connector, val attributeTable: Strin
     try {
       layerId.foreach { id => scanner.setRange(new Range(layerIdText(id))) }
       scanner.fetchColumnFamily(new Text(attributeName))
-      scanner.iterator.asScala.map(_.getValue)
+      // materialize the results before closing the scanner
+      scanner.iterator.asScala.map(_.getValue).toVector.iterator
     } finally scanner.close()
   }
 
