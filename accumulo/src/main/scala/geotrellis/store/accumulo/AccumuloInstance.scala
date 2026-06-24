@@ -54,7 +54,7 @@ object AccumuloInstance {
   def apply(uri: URI): AccumuloInstance = {
     import geotrellis.util.UriUtils._
 
-    val zookeeper = uri.getHost
+    val zookeeper = if (uri.getPort != -1) s"${uri.getHost}:${uri.getPort}" else uri.getHost
     val instance = uri.getPath.drop(1)
     val (user, pass) = getUserInfo(uri)
     val useKerberos =

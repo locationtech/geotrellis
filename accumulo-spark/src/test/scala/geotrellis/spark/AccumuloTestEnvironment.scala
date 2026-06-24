@@ -33,8 +33,6 @@ trait AccumuloTestEnvironment extends TestEnvironment { self: Suite =>
     conf.set("spark.kryo.registrator", classOf[KryoRegistrator].getName)
         .set("spark.kryo.registrationRequired", "false")
 
-  // Accumulo 2.x removed the in-memory MockInstance; tests run against a real
-  // in-process MiniAccumuloCluster started lazily and stopped after all tests.
   protected lazy val miniAccumuloCluster: MiniAccumuloCluster = {
     val tempDir = Files.createTempDir()
     tempDir.deleteOnExit()
@@ -44,8 +42,6 @@ trait AccumuloTestEnvironment extends TestEnvironment { self: Suite =>
     cluster
   }
 
-  // BaseAccumuloInstance is serializable, so it can be captured in Spark closures
-  // and rebuild its connector on the executors from the (host, port, user, token).
   implicit lazy val instance: AccumuloInstance = AccumuloInstance(
     instanceName = miniAccumuloCluster.getInstanceName,
     zookeeper = miniAccumuloCluster.getZooKeepers,
