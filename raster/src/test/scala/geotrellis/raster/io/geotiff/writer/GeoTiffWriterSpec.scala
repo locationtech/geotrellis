@@ -58,7 +58,7 @@ class GeoTiffWriterSpec extends AnyFunSpec with Matchers with BeforeAndAfterAll 
 
       val tiffTags = TiffTags.read(path)
       val samples = tiffTags.nonBasicTags.extraSamples
-//      samples.get should equal(Array(0))
+      samples.get should equal(Array(0))
 
       val actual = MultibandGeoTiff(path).tags
       val expected = geoTiff.tags
@@ -102,7 +102,7 @@ class GeoTiffWriterSpec extends AnyFunSpec with Matchers with BeforeAndAfterAll 
 
       val tiffTags = TiffTags.read(path)
       val samples = tiffTags.nonBasicTags.extraSamples
-//      samples should equal(None)
+      samples should equal(None)
 
       val mbactualTiled = MultibandGeoTiff(path)
       mbactualTiled.options.storageMethod shouldBe a[Tiled]
@@ -138,7 +138,7 @@ class GeoTiffWriterSpec extends AnyFunSpec with Matchers with BeforeAndAfterAll 
       GeoTiffWriter.write(taggedTiff, path)
       val tags = TiffTags.read(path)
       val samples = tags.nonBasicTags.extraSamples
-//      samples.get should equal(Array(0))
+      samples.get should equal(Array(0))
 
       val expectedXML = XML.loadString(
         """<GDALMetadata>
@@ -254,11 +254,12 @@ class GeoTiffWriterSpec extends AnyFunSpec with Matchers with BeforeAndAfterAll 
       val originalSamples = originalTiffTags.nonBasicTags.extraSamples
       originalSamples.get should equal(Array(2))
 
+      val geoTiffToWrite = geoTiff.copy(options = geoTiff.options.copy(rgbChannels = 4))
       val path = tempPath()
-      geoTiff.write(path)
+      geoTiffToWrite.write(path)
       val tiffTags = TiffTags.read(path)
       val samples = tiffTags.nonBasicTags.extraSamples
-//      samples.get should equal(Array(2))
+      samples.get should equal(Array(2))
 
       val actualCRS = SinglebandGeoTiff(path).crs
 
