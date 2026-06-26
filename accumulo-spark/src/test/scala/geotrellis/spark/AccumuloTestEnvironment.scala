@@ -18,13 +18,34 @@ package geotrellis.spark
 
 import geotrellis.spark.store.kryo.KryoRegistrator
 import geotrellis.spark.testkit.TestEnvironment
+import geotrellis.store.accumulo.AccumuloInstance
 
+import org.apache.accumulo.core.client.security.tokens.PasswordToken
+import org.apache.accumulo.minicluster.MiniAccumuloCluster
 import org.apache.spark.SparkConf
 
 import org.scalatest.Suite
 
+import com.google.common.io.Files
+
 trait AccumuloTestEnvironment extends TestEnvironment { self: Suite =>
-  override def setKryoRegistrator(conf: SparkConf) =
+  override def setKryoRegistrator(conf: SparkConf): Unit =
     conf.set("spark.kryo.registrator", classOf[KryoRegistrator].getName)
         .set("spark.kryo.registrationRequired", "false")
+
+  protected lazy val miniAccumuloCluster: MiniAccumuloCluster = {
+    val tempDir = Files.createTempDir()
+    tempDir.deleteOnExit()
+    val cluster = new MiniAccumuloCluster(tempDir, "")
+    cluster.start()
+    registerAfterAll(() => cluster.stop())
+    cluster
+  }
+
+  implicit lazy val instance: AccumuloInstance = AccumuloInstance(
+    instanceName = miniAccumuloCluster.getInstanceName,
+    zookeeper = miniAccumuloCluster.getZooKeepers,
+    user = "root",
+    token = new PasswordToken("")
+  )
 }

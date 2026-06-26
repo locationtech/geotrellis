@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Spark 4 Update; drops Scala 2.12 and JDK 11 support [#3582](https://github.com/locationtech/geotrellis/pull/3582)
 - GDAL 3.13 Update [#3606](https://github.com/locationtech/geotrellis/pull/3606)
+- Accumulo 2.1.4 Update [#3612](https://github.com/locationtech/geotrellis/pull/3612/)
 - GeoTiffWriter should write correct ExtraSamples tag [#3613](https://github.com/locationtech/geotrellis/issues/3613)
 
 ## [3.8.1] - 2026-06-22
