@@ -958,6 +958,9 @@ object TiffTags {
       case JpegPointTransformsTag => tiffTags &|->
         TiffTags._jpegTags ^|->
         JpegTags._jpegPointTransforms set(Some(shorts))
+      case ExtraSamplesTag => tiffTags &|->
+        TiffTags._nonBasicTags ^|->
+        NonBasicTags._extraSamples set(Some(shorts))
       case tag => tiffTags &|->
         TiffTags._nonStandardizedTags ^|->
         NonStandardizedTags._longsMap modify(_ + (tag -> shorts.map(_.toLong)))
