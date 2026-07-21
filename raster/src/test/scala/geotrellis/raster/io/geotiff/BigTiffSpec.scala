@@ -16,9 +16,12 @@
 
 package geotrellis.raster.io.geotiff
 
+import geotrellis.proj4.{CRS, LatLng}
+import geotrellis.raster.{IntConstantTile, Tile}
 import geotrellis.util._
 import geotrellis.raster.io.geotiff.tags.TiffTags
 import geotrellis.raster.io.geotiff.writer.GeoTiffWriter
+import geotrellis.raster.resample.NearestNeighbor
 import geotrellis.raster.testkit._
 import geotrellis.vector.Extent
 import org.scalatest.funspec.AnyFunSpec
@@ -140,6 +143,26 @@ class BigTiffSpec extends AnyFunSpec with RasterMatchers with GeoTiffTestUtils w
         actual.options.storageMethod.getClass should be (storageMethod.getClass)
         actual.getOverviewsCount should be (5)
       }
+    }
+
+    it("should handle offsets greater than 2^32 without overflowing") {
+      val (cols, rows) = (32768, 32768)
+      val tile: Tile = IntConstantTile(123, cols = cols, rows = rows) // over 2^32
+      val crs: CRS = LatLng
+      val extent: Extent = Extent(-180, -90, 180, 90)
+
+      val fullResolution = SinglebandGeoTiff(tile, extent, crs, Tags.empty, GeoTiffOptions.DEFAULT.copy(tiffType = BigTiff))
+      val firstOverview = fullResolution.buildOverview(resampleMethod = NearestNeighbor, decimationFactor = 2)
+
+      val tempFile = File.createTempFile("bigtiff", ".tif").toString
+      addToPurge(tempFile)
+
+      firstOverview // intentionally make first overview already exceed the threshold
+        .copy(options = firstOverview.options.copy(subfileType = None))
+        .withOverviews(Seq(fullResolution.copy(options = fullResolution.options.copy(subfileType = Some(ReducedImage)))))
+        .write(tempFile, optimizedOrder = true)
+
+      // TODO: inspect offsets with e.g. tiffinfo -s?
     }
   }
 }
