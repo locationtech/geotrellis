@@ -24,12 +24,15 @@ import geotrellis.raster.io.geotiff.writer.GeoTiffWriter
 import geotrellis.raster.resample.NearestNeighbor
 import geotrellis.raster.testkit._
 import geotrellis.vector.Extent
+import org.scalatest.BeforeAndAfterAll
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.prop.TableDrivenPropertyChecks
 
 import java.io.File
 
-class BigTiffSpec extends AnyFunSpec with RasterMatchers with GeoTiffTestUtils with TableDrivenPropertyChecks {
+class BigTiffSpec extends AnyFunSpec with RasterMatchers with BeforeAndAfterAll with GeoTiffTestUtils with TableDrivenPropertyChecks {
+  override def afterAll(): Unit = purge
+
   describe("Reading BigTiffs") {
     val smallPath = geoTiffPath("ls8_int32.tif")
     val bigPath = geoTiffPath("bigtiffs/ls8_int32-big.tif")
