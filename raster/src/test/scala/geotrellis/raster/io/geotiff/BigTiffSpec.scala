@@ -17,11 +17,11 @@
 package geotrellis.raster.io.geotiff
 
 import geotrellis.proj4.{CRS, LatLng}
-import geotrellis.raster.{IntConstantTile, Tile}
+import geotrellis.raster.io.geotiff.compression.{Decompressor, NoCompressor}
+import geotrellis.raster.{CellType, IntConstantNoDataCellType, TileLayout}
 import geotrellis.util._
 import geotrellis.raster.io.geotiff.tags.TiffTags
 import geotrellis.raster.io.geotiff.writer.GeoTiffWriter
-import geotrellis.raster.resample.NearestNeighbor
 import geotrellis.raster.testkit._
 import geotrellis.vector.Extent
 import org.scalatest.BeforeAndAfterAll
@@ -149,23 +149,77 @@ class BigTiffSpec extends AnyFunSpec with RasterMatchers with BeforeAndAfterAll 
     }
 
     it("should handle offsets greater than 2^32 without overflowing") {
-      val (cols, rows) = (32768, 32768)
-      val tile: Tile = IntConstantTile(123, cols = cols, rows = rows) // over 2^32
-      val crs: CRS = LatLng
-      val extent: Extent = Extent(-180, -90, 180, 90)
+      val tempFile = File.createTempFile("bigtiff_", ".tif")
+      addToPurge(tempFile.toString)
 
-      val fullResolution = SinglebandGeoTiff(tile, extent, crs, Tags.empty, GeoTiffOptions.DEFAULT.copy(tiffType = BigTiff))
-      val firstOverview = fullResolution.buildOverview(resampleMethod = NearestNeighbor, decimationFactor = 2)
+      val overview = geoTiffData(cols = 32768, rows = 32768, overviews = Nil, subfileType = ReducedImage) // over 2^32
+      val fullRes = geoTiffData(cols = 256, rows = 256, overviews = List(overview), subfileType = FullResolutionImage)
+      GeoTiffWriter.write(fullRes, path = tempFile.toString, optimizedOrder = true)
 
-      val tempFile = File.createTempFile("bigtiff", ".tif").toString
-      addToPurge(tempFile)
+      assert(tempFile.length() > scala.math.pow(2, 32))
 
-      firstOverview // intentionally make first overview already exceed the threshold
-        .copy(options = firstOverview.options.copy(subfileType = None))
-        .withOverviews(Seq(fullResolution.copy(options = fullResolution.options.copy(subfileType = Some(ReducedImage)))))
-        .write(tempFile, optimizedOrder = true)
+      // TODO: inspect offsets with e.g. tiffinfo -s or even tiffdump?
+    }
+  }
 
-      // TODO: inspect offsets with e.g. tiffinfo -s?
+  private def geoTiffData(cols: Int, rows: Int, overviews: List[GeoTiffData], subfileType: NewSubfileType): GeoTiffData = {
+    val (_cols, _rows) = (cols, rows)
+    val _overviews = overviews
+    val _cellType = IntConstantNoDataCellType
+
+    new GeoTiffData {
+      override val cellType: CellType = _cellType
+
+      override val extent: Extent = Extent(-180, -90, 180, 90)
+
+      override val crs: CRS = LatLng
+
+      override val tags: Tags = Tags.empty
+
+      override val options: GeoTiffOptions = GeoTiffOptions.DEFAULT
+        .copy(tiffType = BigTiff, subfileType = Some(subfileType))
+
+      override val overviews: List[GeoTiffData] = _overviews
+
+      override val imageData: GeoTiffImageData = new GeoTiffImageData {
+        private val (blockCols, blockRows) = (256, 256)
+
+        override val cols: Int = _cols
+
+        override val rows: Int = _rows
+
+        override val bandType: BandType = BandType.forCellType(_cellType)
+
+        override val bandCount: Int = 1
+
+        override val segmentBytes: SegmentBytes = new SegmentBytes {
+          private lazy val segment = (for {
+            _ <- 0 until (blockCols * blockRows)
+            byte <- Array[Byte](0, 0, 0, 123)
+          } yield byte).toArray
+
+          override def getSegment(i: Int): Array[Byte] = segment
+
+          override def getSegments(indices: Traversable[Int]): Iterator[(Int, Array[Byte])] =
+            indices.iterator.map(i => i -> getSegment(i))
+
+          override def getSegmentByteCount(i: Int): Int = blockCols * blockRows * cellType.bytes
+
+          override def length: Int = (cols / blockCols) * (rows / blockRows) // # of blocks
+        }
+
+        override val decompressor: Decompressor = NoCompressor
+
+        override val segmentLayout: GeoTiffSegmentLayout = {
+          GeoTiffSegmentLayout(
+            totalCols = cols,
+            totalRows = rows,
+            tileLayout = TileLayout(layoutCols = cols / blockCols, layoutRows = rows / blockRows, tileCols = blockCols, tileRows = blockRows),
+            storageMethod = Tiled(blockCols = blockCols, blockRows = blockRows),
+            interleaveMethod = BandInterleave,
+          )
+        }
+      }
     }
   }
 }
