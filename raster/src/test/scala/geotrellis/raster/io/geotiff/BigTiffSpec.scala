@@ -152,17 +152,41 @@ class BigTiffSpec extends AnyFunSpec with RasterMatchers with BeforeAndAfterAll 
       val tempFile = File.createTempFile("bigtiff_", ".tif")
       addToPurge(tempFile.toString)
 
-      val overview = geoTiffData(cols = 32768, rows = 32768, overviews = Nil, subfileType = ReducedImage) // over 2^32
-      val fullRes = geoTiffData(cols = 256, rows = 256, overviews = List(overview), subfileType = FullResolutionImage)
+      // the overview having a finer resolution than the full res image does not make sense but the point is that
+      // the overview already tips the file size over 2^32 and the full res image's offsets should go beyond that
+      // without overflowing [in the case of a cloud-optimized file layout]
+      val overview = geoTiffData(cols = 32768, rows = 32768, subfileType = ReducedImage, overviews = Nil) // over 2^32
+      val fullRes = geoTiffData(cols = 256, rows = 256, subfileType = FullResolutionImage, overviews = List(overview))
       GeoTiffWriter.write(fullRes, path = tempFile.toString, optimizedOrder = true)
 
-      assert(tempFile.length() > scala.math.pow(2, 32))
+      val bigTiffSizeThreshold = math.pow(2, 32).toLong
 
-      // TODO: inspect offsets with e.g. tiffinfo -s or even tiffdump?
+      assert(tempFile.length() > bigTiffSizeThreshold)
+
+      val Array(firstFullResTileOffset, _*) = firstTileOffsets(tempFile)
+      firstFullResTileOffset should be > bigTiffSizeThreshold
     }
   }
 
-  private def geoTiffData(cols: Int, rows: Int, overviews: List[GeoTiffData], subfileType: NewSubfileType): GeoTiffData = {
+  private def firstTileOffsets(tiff: File): Array[Long] = {
+    import sys.process._
+
+    val cmd = Seq("tiffdump", tiff.toString)
+    val output = cmd!!
+
+    val tagValue = raw"<(.+)>".r.unanchored
+
+    output.split("\n")
+      .filter(_ startsWith "TileOffsets")
+      .map { line =>
+        val firstTileOffset = line match {
+          case tagValue(values) => values.split(" ").head
+        }
+        firstTileOffset.toLong
+      }
+  }
+
+  private def geoTiffData(cols: Int, rows: Int, subfileType: NewSubfileType, overviews: List[GeoTiffData]): GeoTiffData = {
     val (_cols, _rows) = (cols, rows)
     val _overviews = overviews
     val _cellType = IntConstantNoDataCellType
