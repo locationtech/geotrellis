@@ -155,8 +155,8 @@ class BigTiffSpec extends AnyFunSpec with RasterMatchers with BeforeAndAfterAll 
       // the overview having a finer resolution than the full res image does not make sense but the point is that
       // the overview already tips the file size over 2^32 and the full res image's offsets should go beyond that
       // without overflowing [in the case of a cloud-optimized file layout]
-      val overview = geoTiffData(cols = 32768, rows = 32768, subfileType = ReducedImage, overviews = Nil) // over 2^32
-      val fullRes = geoTiffData(cols = 256, rows = 256, subfileType = FullResolutionImage, overviews = List(overview))
+      val overview = constantBigTiff(cols = 32768, rows = 32768, subfileType = ReducedImage) // over 2^32
+      val fullRes = constantBigTiff(cols = 256, rows = 256, subfileType = FullResolutionImage, overviews = List(overview))
       GeoTiffWriter.write(fullRes, path = tempFile.toString, optimizedOrder = true)
 
       val bigTiffSizeThreshold = math.pow(2, 32).toLong
@@ -186,7 +186,8 @@ class BigTiffSpec extends AnyFunSpec with RasterMatchers with BeforeAndAfterAll 
       }
   }
 
-  private def geoTiffData(cols: Int, rows: Int, subfileType: NewSubfileType, overviews: List[GeoTiffData]): GeoTiffData = {
+  private def constantBigTiff(cols: Int, rows: Int, subfileType: NewSubfileType, overviews: List[GeoTiffData] = Nil)
+  : GeoTiffData = {
     val (_cols, _rows) = (cols, rows)
     val _overviews = overviews
     val _cellType = IntConstantNoDataCellType
