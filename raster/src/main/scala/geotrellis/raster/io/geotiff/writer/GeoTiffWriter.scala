@@ -93,7 +93,7 @@ class GeoTiffWriter(geoTiff: GeoTiffData, dos: DataOutputStream) {
     val (fieldValues, offsetFieldValueBuilder) = TiffTagFieldValue.collect(geoTiff)
     val segments = geoTiff.imageData.segmentBytes
     val segmentCount = segments.size
-    val segmentBytesCount = (0 until segmentCount).map(segments.getSegmentByteCount).foldLeft(0L) {_ + _}
+    val segmentBytesCount = (0 until segmentCount).map(segments.getSegmentByteCount).foldLeft(0L)(_ + _)
 
     // footprint of tags themselves
     val tagFieldSize = if (isBigTiff) 20 else 12
@@ -212,7 +212,7 @@ class GeoTiffWriter(geoTiff: GeoTiffData, dos: DataOutputStream) {
       val (fieldValues, offsetFieldValueBuilder) = TiffTagFieldValue.collect(geoTiff)
       val segments = geoTiff.imageData.segmentBytes
       val segmentCount = segments.size
-      val segmentBytesCount = (0 until segmentCount).map(segments.getSegmentByteCount).foldLeft(0L) {_ + _}
+      val segmentBytesCount = (0 until segmentCount).map(segments.getSegmentByteCount).foldLeft(0L)(_ + _)
 
       val tagFieldSize = if (isBigTiff) 20 else 12
       val tagFieldByteCount = (fieldValues.length + 1) * tagFieldSize
