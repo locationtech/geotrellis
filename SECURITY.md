@@ -7,8 +7,7 @@ Fixing vulnerabilities is done by the GeoTrellis committers, with assistance and
 
 ## How To Report a Vulnerability
 
-If you think you have found a vulnerability in this repository, please report it to us through coordinated disclosure
-using one of the following ways:
+If you think you have found a vulnerability in this repository, please report it to us through coordinated disclosure:
 
 * [Create a confidential issue](https://gitlab.eclipse.org/security/vulnerability-reports/-/issues/new?issuable_template=new_vulnerability)
   in the Eclipse Foundation Vulnerability Reporting Tracker
