@@ -12,8 +12,6 @@ using one of the following ways:
 
 * [Create a confidential issue](https://gitlab.eclipse.org/security/vulnerability-reports/-/issues/new?issuable_template=new_vulnerability)
   in the Eclipse Foundation Vulnerability Reporting Tracker
-* [Report a vulnerability](https://github.com/locationtech/geotrellis/security/advisories/new) directly via private
-  vulnerability reporting on GitHub
 
 **Please do not report security vulnerabilities through public issues, discussions, or change requests.**
 
