@@ -144,6 +144,11 @@ object Settings {
       </developers>
     ),
 
+    // The Eclipse Foundation requires the license file to be present in every distribution
+    // artifact; for JARs it belongs in META-INF.
+    // See https://www.eclipse.org/projects/handbook/#legaldoc-distribution
+    Compile / packageBin / mappings += ((LocalRootProject / baseDirectory).value / "LICENSE") -> "META-INF/LICENSE",
+
     externalResolvers := Settings.Repositories.all,
     headerLicense := Some(HeaderLicense.ALv2(java.time.Year.now.getValue.toString, "Azavea")),
     headerMappings := Map(
