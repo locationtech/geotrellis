@@ -26,7 +26,7 @@ RUN update-alternatives --set java `update-alternatives --list java | grep java-
 
 ENV LD_LIBRARY_PATH="/lib/x86_64-linux-gnu/:/lib/x86_64-linux-gnu/jni/:/lib/aarch64-linux-gnu/:/lib/aarch64-linux-gnu/jni/:${LD_LIBRARY_PATH:-}"
 
-RUN apt-get update && apt-get -y install bash wget unzip gpg software-properties-common
+RUN apt-get update && apt-get -y install bash wget unzip gpg software-properties-common libtiff-tools
 
 # Install SBT
 RUN apt-get install -y curl gnupg && \
