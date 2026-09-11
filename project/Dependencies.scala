@@ -17,7 +17,7 @@
 import sbt.*
 
 object Version {
-  val geotools    = "33.2"
+  val geotools    = "35.0"
   val spire       = "0.17.0"
   val accumulo    = "2.1.4"
   val cassandra   = "4.19.3"
@@ -151,7 +151,7 @@ object Dependencies {
   val jaiCodec            = "javax.media" % "jai_codec"    % "1.1.3"
   val imageIo             = "javax.media" % "jai_imageio"  % "1.1"
 
-  val imageioExtUtilities = "it.geosolutions.imageio-ext" % "imageio-ext-utilities" % "1.4.16"
+  val imageioExtUtilities = "it.geosolutions.imageio-ext" % "imageio-ext-utilities" % "2.1.0"
 
   val worksWithDependencies = Seq(jaiCore, jaiCodec, imageIo, imageioExtUtilities).map(_ % Provided)
 }
