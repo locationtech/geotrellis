@@ -37,10 +37,10 @@ object SpaceTimeKey {
   def apply(col: Int, row: Int, dateTime: ZonedDateTime): SpaceTimeKey =
     SpaceTimeKey(col, row, dateTime.toInstant.toEpochMilli)
 
-  implicit val spatialComponent =
+  implicit val spatialComponent: Component[SpaceTimeKey, SpatialKey] =
     Component[SpaceTimeKey, SpatialKey](k => k.spatialKey, (k, sk) => SpaceTimeKey(sk.col, sk.row, k.time))
 
-  implicit val temporalComponent =
+  implicit val temporalComponent: Component[SpaceTimeKey, TemporalKey] =
     Component[SpaceTimeKey, TemporalKey](k => k.temporalKey, (k, tk) => SpaceTimeKey(k.col, k.row, tk.instant))
 
   implicit def ordering: Ordering[SpaceTimeKey] =

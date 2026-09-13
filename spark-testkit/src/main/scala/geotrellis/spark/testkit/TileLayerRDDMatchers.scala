@@ -25,7 +25,7 @@ import org.apache.spark.rdd._
 import scala.reflect.ClassTag
 
 trait TileLayerRDDMatchers extends RasterMatchers {
-  implicit def rddToTile(rdd: RDD[(SpatialKey, Tile)]) = rdd.stitch()
+  implicit def rddToTile(rdd: RDD[(SpatialKey, Tile)]): Tile = rdd.stitch()
 
   /*
    * Takes a 3-tuple, min, max, and count and checks

@@ -38,7 +38,7 @@ class HttpSlippyTileReader[T](pathTemplate: String)(fromBytes: (SpatialKey, Arra
          y <- 0 until math.pow(2,z).toInt) yield getURL(z, x, y)
 
   private def getByteArray(url: String): Array[Byte] = {
-    val inStream = new URL(url).openStream()
+    val inStream = URI.create(url).toURL.openStream()
 
     try {
       toByteArray(inStream)

@@ -142,7 +142,7 @@ package object internal {
     )
 
   /** Instance definition of the ProtobufGeom typeclass for Points. */
-  private[vectortile] implicit val protoPoint = new ProtobufGeom[Point, MultiPoint] {
+  private[vectortile] implicit val protoPoint: ProtobufGeom[Point, MultiPoint] = new ProtobufGeom[Point, MultiPoint] {
     def fromCommands(
       cmds: Seq[Command],
       topLeft: Point,
@@ -169,7 +169,7 @@ package object internal {
   }
 
   /** Instance definition of the ProtobufGeom typeclass for Lines. */
-  private[vectortile] implicit val protoLine = new ProtobufGeom[LineString, MultiLineString] {
+  private[vectortile] implicit val protoLine: ProtobufGeom[LineString, MultiLineString] = new ProtobufGeom[LineString, MultiLineString] {
     def fromCommands(
       cmds: Seq[Command],
       topLeft: Point,
@@ -224,7 +224,7 @@ package object internal {
   }
 
   /** Instance definition of the ProtobufGeom typeclass for Polygons. */
-  private[vectortile] implicit val protoPolygon = new ProtobufGeom[Polygon, MultiPolygon] {
+  private[vectortile] implicit val protoPolygon: ProtobufGeom[Polygon, MultiPolygon] = new ProtobufGeom[Polygon, MultiPolygon] {
     def fromCommands(
       cmds: Seq[Command],
       topLeft: Point,

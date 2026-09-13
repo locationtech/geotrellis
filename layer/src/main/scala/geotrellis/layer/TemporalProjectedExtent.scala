@@ -38,13 +38,13 @@ object TemporalProjectedExtent {
   def apply(projectedExtent: ProjectedExtent, instant: Long): TemporalProjectedExtent =
     TemporalProjectedExtent(projectedExtent.extent, projectedExtent.crs, instant)
 
-  implicit val projectedExtentComponent =
+  implicit val projectedExtentComponent: Component[TemporalProjectedExtent, ProjectedExtent] =
     Component[TemporalProjectedExtent, ProjectedExtent](
       k => k.projectedExtent,
       (k, pe) => TemporalProjectedExtent(pe, k.instant)
     )
 
-  implicit val temporalComponent =
+  implicit val temporalComponent: Component[TemporalProjectedExtent, TemporalKey] =
     Component[TemporalProjectedExtent, TemporalKey](
       k => TemporalKey(k.instant),
       (k, tk) => TemporalProjectedExtent(k.extent, k.crs, tk.instant)

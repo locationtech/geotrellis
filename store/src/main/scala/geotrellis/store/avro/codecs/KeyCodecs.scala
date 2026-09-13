@@ -22,7 +22,7 @@ import org.apache.avro._
 import org.apache.avro.generic._
 
 trait KeyCodecs {
-  implicit def spatialKeyAvroFormat = new AvroRecordCodec[SpatialKey] {
+  implicit def spatialKeyAvroFormat: AvroRecordCodec[SpatialKey] = new AvroRecordCodec[SpatialKey] {
     def schema = SchemaBuilder
       .record("SpatialKey").namespace("geotrellis.tiling")
       .fields()
@@ -42,7 +42,7 @@ trait KeyCodecs {
 
   }
 
-  implicit def spaceTimeKeyAvroFormat = new AvroRecordCodec[SpaceTimeKey] {
+  implicit def spaceTimeKeyAvroFormat: AvroRecordCodec[SpaceTimeKey] = new AvroRecordCodec[SpaceTimeKey] {
     def schema = SchemaBuilder
       .record("SpaceTimeKey").namespace("geotrellis.tiling")
       .fields()

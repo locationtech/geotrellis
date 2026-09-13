@@ -30,7 +30,7 @@ trait Implicits
     with ProjectedExtentCodec
     with TemporalProjectedExtentCodec
     with KeyCodecs {
-  implicit def constantTileUnionCodec = new AvroUnionCodec[ConstantTile](
+  implicit def constantTileUnionCodec: AvroUnionCodec[ConstantTile] = new AvroUnionCodec[ConstantTile](
     byteConstantTileCodec,
     floatConstantTileCodec,
     doubleConstantTileCodec,
@@ -60,7 +60,7 @@ trait Implicits
     uShortConstantTileCodec
   )
 
-  implicit def tileUnionCodec = new AvroUnionCodec[Tile](
+  implicit def tileUnionCodec: AvroUnionCodec[Tile] = new AvroUnionCodec[Tile](
     byteArrayTileCodec,
     floatArrayTileCodec,
     doubleArrayTileCodec,

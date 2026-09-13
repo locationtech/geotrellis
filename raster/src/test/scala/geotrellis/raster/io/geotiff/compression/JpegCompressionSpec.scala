@@ -23,7 +23,7 @@ import geotrellis.vector.Extent
 
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, ExecutionContext, ExecutionContextExecutor, Future}
-import java.net.URL
+import java.net.URI
 import java.io.File
 import scala.util.Random
 import sys.process._
@@ -54,7 +54,7 @@ class JpegCompressionSpec extends AnyFunSpec
 
       println(f"Downloading ${url}...")
 
-      new URL(url) #> new File(jpegRasterPath) !!
+      URI.create(url).toURL #> new File(jpegRasterPath) !!
 
       println(f"Starting test...")
 

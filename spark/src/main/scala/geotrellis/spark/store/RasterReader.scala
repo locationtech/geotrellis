@@ -57,7 +57,7 @@ object RasterReader {
     }
   }
 
-  implicit def singlebandGeoTiffReader = new RasterReader[Options, (ProjectedExtent, Tile)] {
+  implicit def singlebandGeoTiffReader: RasterReader[Options, (ProjectedExtent, Tile)] = new RasterReader[Options, (ProjectedExtent, Tile)] {
     def readFully(byteReader: ByteReader, options: Options) = {
       val geotiff = SinglebandGeoTiff(byteReader)
       val raster: Raster[Tile] = geotiff.raster
@@ -79,7 +79,7 @@ object RasterReader {
     }
   }
 
-  implicit def multibandGeoTiffReader = new RasterReader[Options, (ProjectedExtent, MultibandTile)] {
+  implicit def multibandGeoTiffReader: RasterReader[Options, (ProjectedExtent, MultibandTile)] = new RasterReader[Options, (ProjectedExtent, MultibandTile)] {
     def readFully(byteReader: ByteReader, options: Options) = {
       val geotiff = MultibandGeoTiff(byteReader)
       val raster: Raster[MultibandTile] = geotiff.raster
@@ -101,7 +101,7 @@ object RasterReader {
     }
   }
 
-  implicit def temporalSinglebandGeoTiffReader = new RasterReader[Options, (TemporalProjectedExtent, Tile)]  {
+  implicit def temporalSinglebandGeoTiffReader: RasterReader[Options, (TemporalProjectedExtent, Tile)] = new RasterReader[Options, (TemporalProjectedExtent, Tile)]  {
     def readFully(byteReader: ByteReader, options: Options) = {
       val geotiff = SinglebandGeoTiff(byteReader)
       val raster: Raster[Tile] = geotiff.raster
@@ -131,7 +131,7 @@ object RasterReader {
     }
   }
 
-  implicit def temporalMultibandGeoTiffReader = new RasterReader[Options, (TemporalProjectedExtent, MultibandTile)]  {
+  implicit def temporalMultibandGeoTiffReader: RasterReader[Options, (TemporalProjectedExtent, MultibandTile)] = new RasterReader[Options, (TemporalProjectedExtent, MultibandTile)]  {
     def readFully(byteReader: ByteReader, options: Options) = {
       val geotiff = MultibandGeoTiff(byteReader)
       val raster: Raster[MultibandTile] = geotiff.raster

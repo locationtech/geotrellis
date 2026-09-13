@@ -16,14 +16,14 @@
 
 package geotrellis.util
 
-import java.net.{URI, URL}
+import java.net.URI
 
 class HttpRangeReaderProvider extends RangeReaderProvider {
   def canProcess(uri: URI): Boolean =
     try {
       val scheme = uri.getScheme
       if (scheme == "http" || scheme == "https") {
-        new URL(uri.toString)
+        uri.toURL
         true
       } else {
         false

@@ -23,7 +23,7 @@ import org.apache.avro.util.Utf8
 import org.apache.avro.{Schema, SchemaBuilder}
 
 trait CRSCodec {
-  implicit def crsCodec = new AvroRecordCodec[CRS] {
+  implicit def crsCodec: AvroRecordCodec[CRS] = new AvroRecordCodec[CRS] {
     override def schema: Schema = SchemaBuilder
       .record("CRS").namespace("geotrellis.spark")
       .fields()

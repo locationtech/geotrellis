@@ -25,7 +25,7 @@ import org.apache.avro.generic._
 // --- //
 
 trait ExtentCodec {
-  implicit def extentCodec = new AvroRecordCodec[Extent] {
+  implicit def extentCodec: AvroRecordCodec[Extent] = new AvroRecordCodec[Extent] {
     def schema: Schema = SchemaBuilder
       .record("Extent").namespace("geotrellis.spark")
       .fields()
