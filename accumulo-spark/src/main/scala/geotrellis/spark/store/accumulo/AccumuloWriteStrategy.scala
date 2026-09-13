@@ -25,7 +25,7 @@ import org.apache.hadoop.mapreduce.Job
 import org.apache.hadoop.fs.Path
 import org.apache.spark.rdd.RDD
 import org.apache.accumulo.core.data.{Key, Mutation, Value}
-import org.apache.accumulo.core.client.mapreduce.AccumuloFileOutputFormat
+import org.apache.accumulo.hadoop.mapreduce.AccumuloFileOutputFormat
 import org.apache.accumulo.core.client.BatchWriterConfig
 
 import cats.effect._
@@ -56,12 +56,11 @@ case class HdfsWriteStrategy(ingestPath: Path) extends AccumuloWriteStrategy {
   def write(kvPairs: RDD[(Key, Value)], instance: AccumuloInstance, table: String): Unit = {
     val sc = kvPairs.sparkContext
     val job = Job.getInstance(sc.hadoopConfiguration)
-    instance.setAccumuloConfig(job)
     val conf = job.getConfiguration
     val outPath = HdfsUtils.tmpPath(ingestPath, UUID.randomUUID.toString, conf)
-    val failuresPath = outPath.suffix("-failures")
 
-    HdfsUtils.ensurePathExists(failuresPath, conf)
+    AccumuloFileOutputFormat.configure().outputPath(outPath).store(job)
+
     kvPairs
       .sortByKey()
       .saveAsNewAPIHadoopFile(
@@ -71,17 +70,13 @@ case class HdfsWriteStrategy(ingestPath: Path) extends AccumuloWriteStrategy {
         classOf[AccumuloFileOutputFormat],
         conf)
 
-    val ops = instance.client.tableOperations()
-    ops.importDirectory(table, outPath.toString, failuresPath.toString, true)
-
-    // cleanup ingest directories on success
     val fs = ingestPath.getFileSystem(conf)
-    if( fs.exists(new Path(outPath, "_SUCCESS")) ) {
-      fs.delete(outPath, true)
-      fs.delete(failuresPath, true)
-    } else {
+    if(!fs.exists(new Path(outPath, "_SUCCESS")))
       throw new java.io.IOException(s"Accumulo bulk ingest failed at $ingestPath")
-    }
+
+    instance.client.tableOperations().importDirectory(outPath.toString).to(table).tableTime(true).load()
+
+    fs.delete(outPath, true)
   }
 }
 object HdfsWriteStrategy {

@@ -88,12 +88,14 @@ object Dependencies {
   val avro                = "org.apache.avro"             % "avro"                     % "1.11.5" // aligned with the Spark version // 1.12.0 causes test issues; 1.13.0-SNAPSHOT works
   val parserCombinators   = "org.scala-lang.modules"     %% "scala-parser-combinators" % "2.4.0"
   val jsonSchemaValidator = "com.networknt"               % "json-schema-validator"    % "0.1.23"
-  val accumuloCore        = "org.apache.accumulo"         % "accumulo-core"            % Version.accumulo
-  val accumuloMiniCluster = "org.apache.accumulo"         % "accumulo-minicluster"     % Version.accumulo
   val sl4jnop             = "org.slf4j"                   % "slf4j-nop"                % "1.7.25"
   val logbackClassic      = "ch.qos.logback"              % "logback-classic"          % "1.2.3"
   val guava               = "com.google.guava"            % "guava"                    % "16.0.1"
   val zstdJni             = "com.github.luben"            % "zstd-jni"                 % "1.5.7-11"
+
+  val accumuloCore        = "org.apache.accumulo"         % "accumulo-core"             % Version.accumulo
+  val accumuloHadoopMR    = "org.apache.accumulo"         % "accumulo-hadoop-mapreduce" % Version.accumulo
+  val accumuloMiniCluster = "org.apache.accumulo"         % "accumulo-minicluster"      % Version.accumulo
 
   val cassandraDriverCore         = "org.apache.cassandra" % "java-driver-core"          % Version.cassandra
   val cassandraDriverQueryBuilder = "org.apache.cassandra" % "java-driver-query-builder" % Version.cassandra

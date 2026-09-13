@@ -17,18 +17,18 @@
 package geotrellis.store.accumulo
 
 import org.apache.accumulo.core.client._
-import org.apache.accumulo.core.client.mapreduce.{AbstractInputFormat => AIF, AccumuloOutputFormat => AOF}
 import org.apache.accumulo.core.client.security.tokens.{AuthenticationToken, KerberosToken, PasswordToken}
 import org.apache.hadoop.io.Text
-import org.apache.hadoop.mapreduce.Job
 
 import scala.jdk.CollectionConverters._
 import java.net.URI
+import java.util.Properties
 
 trait AccumuloInstance  extends Serializable {
   def client: AccumuloClient
   def instanceName: String
-  def setAccumuloConfig(job: Job): Unit
+
+  def clientProperties: Properties
 
   def ensureTableExists(tableName: String): Unit = {
     val ops = client.tableOperations()
@@ -57,13 +57,10 @@ object AccumuloInstance {
     val zookeeper = if (uri.getPort != -1) s"${uri.getHost}:${uri.getPort}" else uri.getHost
     val instance = uri.getPath.drop(1)
     val (user, pass) = getUserInfo(uri)
-    val useKerberos =
-      ClientConfiguration
-        .loadDefault()
-        .get(ClientConfiguration.ClientProperty.INSTANCE_RPC_SASL_ENABLED)
-        .toBoolean
+    // Kerberos is opt-in via the `sasl` URI parameter, i.e. accumulo://zookeeper/instance?sasl=true
+    val useKerberos = getParams(uri).get("sasl").exists(_.toBoolean)
 
-    val (username:String,token:AuthenticationToken) = {
+    val (username: String, token: AuthenticationToken) = {
       if (useKerberos) {
         val token = new KerberosToken()
         (user.getOrElse(token.getPrincipal), token)
@@ -82,20 +79,10 @@ case class BaseAccumuloInstance(
   user: String, tokenBytes: (String, Array[Byte])) extends AccumuloInstance
 {
   @transient lazy val token = AuthenticationToken.AuthenticationTokenSerializer.deserialize(tokenBytes._1, tokenBytes._2)
+
+  @transient lazy val clientProperties: Properties =
+    Accumulo.newClientProperties().to(instanceName, zookeeper).as(user, token).build()
+
   @transient lazy val client: AccumuloClient =
-    Accumulo.newClient().to(instanceName, zookeeper).as(user, token).build()
-
-  def setAccumuloConfig(job: Job): Unit = {
-    val clientConfig =
-      ClientConfiguration
-        .loadDefault()
-        .withZkHosts(zookeeper)
-        .withInstance(instanceName)
-
-    AIF.setZooKeeperInstance(job, clientConfig)
-    AOF.setZooKeeperInstance(job, clientConfig)
-
-    AIF.setConnectorInfo(job, user, token)
-    AOF.setConnectorInfo(job, user, token)
-  }
+    Accumulo.newClient().from(clientProperties).build()
 }
