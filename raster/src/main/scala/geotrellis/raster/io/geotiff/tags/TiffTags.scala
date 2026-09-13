@@ -462,9 +462,9 @@ case class TiffTags(
       (dir
         &|-> GeoKeyDirectory._configKeys
         ^|-> ConfigKeys._gtRasterType get) match {
-        case Some(v) if v == 1 => Some(PixelIsArea)
-        case Some(v) if v == 2 => Some(PixelIsPoint)
-        case None => None
+        case Some(1) => Some(PixelIsArea)
+        case Some(2) => Some(PixelIsPoint)
+        case _       => None
       }
     }
 

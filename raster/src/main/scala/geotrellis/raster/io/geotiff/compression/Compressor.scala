@@ -16,8 +16,6 @@
 
 package geotrellis.raster.io.geotiff.compression
 
-import geotrellis.raster.io.geotiff.tags.TiffTags
-
 trait Compressor extends Serializable {
   def compress(bytes: Array[Byte], segmentIndex: Int): Array[Byte]
 
