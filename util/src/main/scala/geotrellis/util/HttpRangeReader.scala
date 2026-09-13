@@ -91,7 +91,7 @@ class HttpRangeReader(url: URL, useHeadRequest: Boolean) extends RangeReader {
 /** The companion object of [[HttpRangeReader]] */
 object HttpRangeReader {
 
-  def apply(address: String): HttpRangeReader = apply(new URL(address))
+  def apply(address: String): HttpRangeReader = apply(URI.create(address))
 
   def apply(uri: URI): HttpRangeReader = apply(uri.toURL)
 
@@ -112,7 +112,7 @@ object HttpRangeReader {
     */
   def withoutHeadRequest(url: URL): HttpRangeReader = new HttpRangeReader(url, false)
 
-  def withoutHeadRequest(address: String): HttpRangeReader = withoutHeadRequest(new URL(address))
+  def withoutHeadRequest(address: String): HttpRangeReader = withoutHeadRequest(URI.create(address))
 
   def withoutHeadRequest(uri: URI): HttpRangeReader = withoutHeadRequest(uri.toURL)
 }
