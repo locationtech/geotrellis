@@ -32,14 +32,15 @@ case class GeoTiffOptions(
   colorMap: Option[IndexedColorMap] = GeoTiffOptions.DEFAULT.colorMap,
   interleaveMethod: InterleaveMethod = GeoTiffOptions.DEFAULT.interleaveMethod,
   subfileType: Option[NewSubfileType] = GeoTiffOptions.DEFAULT.subfileType,
-  tiffType: TiffType = GeoTiffOptions.DEFAULT.tiffType
+  tiffType: TiffType = GeoTiffOptions.DEFAULT.tiffType,
+  rgbChannels: Int = GeoTiffOptions.DEFAULT.rgbChannels
 )
 
 /**
  * The companion object to [[GeoTiffOptions]]
  */
 object GeoTiffOptions {
-  val DEFAULT = GeoTiffOptions(Tiled, NoCompression, ColorSpace.BlackIsZero, None, BandInterleave, None, Tiff)
+  val DEFAULT = GeoTiffOptions(Tiled, NoCompression, ColorSpace.BlackIsZero, None, BandInterleave, None, Tiff, 3)
 
   /**
    * Creates a new instance of [[GeoTiffOptions]] with the given
