@@ -48,7 +48,7 @@ object AccumuloUtils {
     keyIndexer: KeyIndex[K],
     count: Int
   ) = {
-    val ops = accumuloInstance.connector.tableOperations
+    val ops = accumuloInstance.client.tableOperations
 
     val splits = AccumuloUtils
       .getSplits(keyBounds, keyIndexer, count)

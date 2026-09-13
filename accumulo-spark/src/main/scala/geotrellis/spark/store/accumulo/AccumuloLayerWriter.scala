@@ -119,7 +119,7 @@ class AccumuloLayerWriter(
     // This is a "best guess" scenario; users should use AccumuloUtils to
     // manually create splits based on their cluster configuration for best
     // performance.
-    val ops = instance.connector.tableOperations()
+    val ops = instance.client.tableOperations()
     if (!ops.exists(table)) {
       ops.create(table)
       AccumuloUtils.addSplits(table, instance, keyIndex.keyBounds, keyIndex, rdd.partitions.length)
@@ -157,7 +157,7 @@ object AccumuloLayerWriter {
     options: Options
   ): AccumuloLayerWriter =
     new AccumuloLayerWriter(
-      attributeStore = AccumuloAttributeStore(instance.connector),
+      attributeStore = AccumuloAttributeStore(instance.client),
       instance = instance,
       table = table,
       options = options
@@ -168,7 +168,7 @@ object AccumuloLayerWriter {
     table: String
   ): AccumuloLayerWriter =
     new AccumuloLayerWriter(
-      attributeStore = AccumuloAttributeStore(instance.connector),
+      attributeStore = AccumuloAttributeStore(instance.client),
       instance = instance,
       table = table,
       options = Options.DEFAULT

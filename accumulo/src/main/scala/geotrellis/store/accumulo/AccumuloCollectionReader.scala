@@ -53,7 +53,7 @@ object AccumuloCollectionReader {
     val range: fs2.Stream[IO, AccumuloRange] = fs2.Stream.fromIterator[IO](ranges, chunkSize = 1)
 
     val read = { range: AccumuloRange => fs2.Stream eval IO.blocking {
-      val scanner = instance.connector.createScanner(table, new Authorizations())
+      val scanner = instance.client.createScanner(table, new Authorizations())
       scanner.setRange(range)
       scanner.fetchColumnFamily(columnFamily)
       val result =

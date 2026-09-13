@@ -44,7 +44,7 @@ class AccumuloAttributeStoreSpec extends AttributeStoreSpec with BeforeAndAfterA
     token = new PasswordToken("")
   )
 
-  lazy val attributeStore = new AccumuloAttributeStore(accumulo.connector, "attributes")
+  lazy val attributeStore = new AccumuloAttributeStore(accumulo.client, "attributes")
 
   it("should read the Layer's Header as a LayerHeader and then an as an AccumuloLayerHeader") {
     val header = AccumuloLayerHeader("SpatialKey", "Tile", attributeStore.attributeTable)

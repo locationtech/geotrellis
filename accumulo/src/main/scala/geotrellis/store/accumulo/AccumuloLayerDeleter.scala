@@ -20,13 +20,13 @@ import geotrellis.store._
 
 import org.log4s._
 
-import org.apache.accumulo.core.client.{BatchWriterConfig, Connector}
+import org.apache.accumulo.core.client.{AccumuloClient, BatchWriterConfig}
 import org.apache.accumulo.core.security.Authorizations
 import org.apache.accumulo.core.data.{Range => AccumuloRange}
 
 import scala.jdk.CollectionConverters._
 
-class AccumuloLayerDeleter(val attributeStore: AttributeStore, connector: Connector) extends LayerDeleter[LayerId] {
+class AccumuloLayerDeleter(val attributeStore: AttributeStore, client: AccumuloClient) extends LayerDeleter[LayerId] {
   @transient private[this] lazy val logger = getLogger
 
   def delete(id: LayerId): Unit = {
@@ -35,7 +35,7 @@ class AccumuloLayerDeleter(val attributeStore: AttributeStore, connector: Connec
       val numThreads = 1
       val config = new BatchWriterConfig()
       config.setMaxWriteThreads(numThreads)
-      val deleter = connector.createBatchDeleter(header.tileTable, new Authorizations(), numThreads, config)
+      val deleter = client.createBatchDeleter(header.tileTable, new Authorizations(), numThreads, config)
       try {
         deleter.fetchColumnFamily(columnFamily(id))
         deleter.setRanges(List(new AccumuloRange()).asJava)
@@ -54,15 +54,15 @@ class AccumuloLayerDeleter(val attributeStore: AttributeStore, connector: Connec
 }
 
 object AccumuloLayerDeleter {
-  def apply(attributeStore: AttributeStore, connector: Connector): AccumuloLayerDeleter =
-    new AccumuloLayerDeleter(attributeStore, connector)
+  def apply(attributeStore: AttributeStore, client: AccumuloClient): AccumuloLayerDeleter =
+    new AccumuloLayerDeleter(attributeStore, client)
 
   def apply(attributeStore: AttributeStore, instance: AccumuloInstance): AccumuloLayerDeleter =
-    new AccumuloLayerDeleter(attributeStore, instance.connector)
+    new AccumuloLayerDeleter(attributeStore, instance.client)
 
   def apply(attributeStore: AccumuloAttributeStore): AccumuloLayerDeleter =
-    new AccumuloLayerDeleter(attributeStore, attributeStore.connector)
+    new AccumuloLayerDeleter(attributeStore, attributeStore.client)
 
   def apply(instance: AccumuloInstance): AccumuloLayerDeleter =
-    apply(AccumuloAttributeStore(instance.connector), instance.connector)
+    apply(AccumuloAttributeStore(instance.client), instance.client)
 }
