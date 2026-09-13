@@ -60,5 +60,5 @@ object AccumuloCollectionLayerReader {
     new AccumuloCollectionLayerReader(attributeStore)
 
   def apply(implicit instance: AccumuloInstance): AccumuloCollectionLayerReader =
-    new AccumuloCollectionLayerReader(AccumuloAttributeStore(instance.connector))
+    new AccumuloCollectionLayerReader(AccumuloAttributeStore(instance.client))
 }

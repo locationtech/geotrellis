@@ -71,7 +71,7 @@ case class HdfsWriteStrategy(ingestPath: Path) extends AccumuloWriteStrategy {
         classOf[AccumuloFileOutputFormat],
         conf)
 
-    val ops = instance.connector.tableOperations()
+    val ops = instance.client.tableOperations()
     ops.importDirectory(table, outPath.toString, failuresPath.toString, true)
 
     // cleanup ingest directories on success
@@ -117,7 +117,7 @@ class SocketWriteStrategy(
       if(partition.nonEmpty) {
         implicit val ioRuntime: unsafe.IORuntime = runtime
 
-        val writer = instance.connector.createBatchWriter(table, kwConfig.value)
+        val writer = instance.client.createBatchWriter(table, kwConfig.value)
 
         try {
           val mutations: fs2.Stream[IO, Mutation] = fs2.Stream.fromBlockingIterator[IO](

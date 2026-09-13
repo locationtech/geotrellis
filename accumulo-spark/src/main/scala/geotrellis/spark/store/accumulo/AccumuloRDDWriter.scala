@@ -64,7 +64,7 @@ object AccumuloRDDWriter {
         // on a key type that may no longer by valid for the key type of the resulting RDD.
         .groupBy({ row => encodeKey(row._1) }, numPartitions = raster.partitions.length)
         .mapPartitions { it =>
-          val scanner = instance.connector.createScanner(table, Authorizations.EMPTY)
+          val scanner = instance.client.createScanner(table, Authorizations.EMPTY)
 
           it.map { case (key, _kvs1) =>
             val current: Vector[(K,V)] = _kvs1.toVector

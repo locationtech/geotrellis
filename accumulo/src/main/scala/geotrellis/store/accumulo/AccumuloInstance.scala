@@ -26,18 +26,18 @@ import scala.jdk.CollectionConverters._
 import java.net.URI
 
 trait AccumuloInstance  extends Serializable {
-  def connector: Connector
+  def client: AccumuloClient
   def instanceName: String
   def setAccumuloConfig(job: Job): Unit
 
   def ensureTableExists(tableName: String): Unit = {
-    val ops = connector.tableOperations()
+    val ops = client.tableOperations()
     if (!ops.exists(tableName))
       ops.create(tableName)
   }
 
   def makeLocalityGroup(tableName: String, columnFamily: String): Unit = {
-    val ops = connector.tableOperations()
+    val ops = client.tableOperations()
     val groups = ops.getLocalityGroups(tableName).asScala
     val newGroup: java.util.Set[Text] = Set(new Text(columnFamily)).asJava
     ops.setLocalityGroups(tableName, groups.clone().addOne((tableName, newGroup)).asJava)
@@ -82,8 +82,8 @@ case class BaseAccumuloInstance(
   user: String, tokenBytes: (String, Array[Byte])) extends AccumuloInstance
 {
   @transient lazy val token = AuthenticationToken.AuthenticationTokenSerializer.deserialize(tokenBytes._1, tokenBytes._2)
-  @transient lazy val instance: Instance = new ZooKeeperInstance(instanceName, zookeeper)
-  @transient lazy val connector: Connector = instance.getConnector(user, token)
+  @transient lazy val client: AccumuloClient =
+    Accumulo.newClient().to(instanceName, zookeeper).as(user, token).build()
 
   def setAccumuloConfig(job: Job): Unit = {
     val clientConfig =

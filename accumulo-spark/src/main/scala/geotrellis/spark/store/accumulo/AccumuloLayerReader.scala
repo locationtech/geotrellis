@@ -74,11 +74,11 @@ class AccumuloLayerReader(val attributeStore: AttributeStore)(implicit sc: Spark
 
 object AccumuloLayerReader {
   def apply(instance: AccumuloInstance)(implicit sc: SparkContext): AccumuloLayerReader =
-    new AccumuloLayerReader(AccumuloAttributeStore(instance.connector))(sc, instance)
+    new AccumuloLayerReader(AccumuloAttributeStore(instance.client))(sc, instance)
 
   def apply(attributeStore: AccumuloAttributeStore)(implicit sc: SparkContext, instance: AccumuloInstance): AccumuloLayerReader =
     new AccumuloLayerReader(attributeStore)
 
   def apply()(implicit sc: SparkContext, instance: AccumuloInstance): AccumuloLayerReader =
-    new AccumuloLayerReader(AccumuloAttributeStore(instance.connector))
+    new AccumuloLayerReader(AccumuloAttributeStore(instance.client))
 }

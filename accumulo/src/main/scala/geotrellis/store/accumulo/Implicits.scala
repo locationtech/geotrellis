@@ -17,9 +17,8 @@
 package geotrellis.store.accumulo
 
 import org.apache.hadoop.io.Text
-import org.apache.accumulo.core.client.{BatchWriterConfig, Connector, Scanner}
+import org.apache.accumulo.core.client.{BatchWriterConfig, AccumuloClient, Scanner}
 import org.apache.accumulo.core.data.{Key, Mutation, Value}
-
 
 object Implicits extends Implicits
 
@@ -46,10 +45,10 @@ trait Implicits {
     def encode(thing: T): Mutation
   }
 
-  implicit class connectorWriter(conn: Connector) {
+  implicit class clientWriter(client: AccumuloClient) {
     def write(table: String, muts: Seq[Mutation]): Unit = {
       val cfg = new BatchWriterConfig()
-      val batchWriter = conn.createBatchWriter(table, cfg)
+      val batchWriter = client.createBatchWriter(table, cfg)
       muts.foreach(mut => batchWriter.addMutation(mut))
       batchWriter.close()
     }
