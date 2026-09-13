@@ -217,7 +217,8 @@ class GeoTiffReaderSpec extends AnyFunSpec with Matchers with BeforeAndAfterAll 
 
       (tiffTags &|-> TiffTags._geoTiffTags
         ^|-> GeoTiffTags._modelTiePoints get) match {
-        case Some(modelTiePoints) if (modelTiePoints.size == 1) => {
+        case Some(modelTiePoints) => {
+          modelTiePoints.size should equal (1)
           val (p1, p2) = modelTiePoints(0)
           p1.x should equal (0.0)
           p1.y should equal (0.0)
