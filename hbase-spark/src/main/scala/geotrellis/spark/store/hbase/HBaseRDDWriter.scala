@@ -28,7 +28,7 @@ import org.apache.hadoop.hbase.filter._
 import org.apache.hadoop.hbase.{CompareOperator, TableName}
 import org.apache.spark.rdd.RDD
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 object HBaseRDDWriter {
   def write[K: AvroRecordCodec, V: AvroRecordCodec](

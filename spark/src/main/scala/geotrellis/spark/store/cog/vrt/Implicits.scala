@@ -22,7 +22,7 @@ import geotrellis.util._
 
 import org.apache.spark.util.CollectionAccumulator
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 
 object Implicits extends Implicits

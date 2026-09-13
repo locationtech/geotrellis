@@ -24,7 +24,7 @@ import org.apache.accumulo.core.client.{BatchWriterConfig, Connector}
 import org.apache.accumulo.core.security.Authorizations
 import org.apache.accumulo.core.data.{Range => AccumuloRange}
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 class AccumuloLayerDeleter(val attributeStore: AttributeStore, connector: Connector) extends LayerDeleter[LayerId] {
   @transient private[this] lazy val logger = getLogger

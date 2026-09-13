@@ -28,7 +28,7 @@ import spire.math.Fractional
 import spire.syntax.fractional._
 import spire.syntax.cfor._
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import math.{ceil, floor}
 
 

@@ -234,7 +234,7 @@ object COGLayerWriter {
    * Find instances of [[COGLayerWriterProvider]] through Java SPI.
    */
   def apply(attributeStore: AttributeStore, layerWriterUri: URI): COGLayerWriter = {
-    import scala.collection.JavaConverters._
+    import scala.jdk.CollectionConverters._
     ServiceLoader.load(classOf[COGLayerWriterProvider])
       .iterator().asScala
       .find(_.canProcess(layerWriterUri))

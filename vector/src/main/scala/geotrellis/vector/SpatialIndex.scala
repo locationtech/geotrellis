@@ -23,16 +23,16 @@ import org.locationtech.jts.geom.Envelope
 import org.locationtech.jts.operation.distance.DistanceOp
 
 import scala.collection.mutable
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 object SpatialIndex {
-  def apply(points: Traversable[(Double, Double)]): SpatialIndex[(Double, Double)] = {
+  def apply(points: Iterable[(Double, Double)]): SpatialIndex[(Double, Double)] = {
     val si = new SpatialIndex[(Double, Double)](Measure.Euclidean)
     for(point <- points) { si.insert(point, point._1, point._2) }
     si
   }
 
-  def apply[T](points: Traversable[T])(f: T=>(Double, Double)): SpatialIndex[T] = {
+  def apply[T](points: Iterable[T])(f: T=>(Double, Double)): SpatialIndex[T] = {
     val si = new SpatialIndex[T](Measure.Euclidean)
     for(point <- points) {
       val (x, y) = f(point)
@@ -41,7 +41,7 @@ object SpatialIndex {
     si
   }
 
-  def fromExtents[T](items: Traversable[T])(f: T => Extent): SpatialIndex[T] = {
+  def fromExtents[T](items: Iterable[T])(f: T => Extent): SpatialIndex[T] = {
     val idx = new SpatialIndex[T]
     items.foreach { i => idx.insert(i, f(i)) }
     idx
@@ -73,9 +73,9 @@ class SpatialIndex[T](val measure: Measure = Measure.Euclidean) extends Serializ
   def nearest(ex: Extent): T =
     rtree.nearestNeighbour(ex.jtsEnvelope, null, measure).asInstanceOf[T]
 
-  @deprecated("As of Scala 2.13, Iterable is preferred over Traversable, which will be removed in Scala 3. Use pointsInExtentAsIterable instead.", "3.5.3")
-  def traversePointsInExtent(extent: Extent): Traversable[T] =
-    new Traversable[T] {
+  @deprecated("As of Scala 2.13, Iterable is preferred over Iterable, which will be removed in Scala 3. Use pointsInExtentAsIterable instead.", "3.5.3")
+  def traversePointsInExtent(extent: Extent): Iterable[T] =
+    new Iterable[T] {
       override def foreach[U](f: T => U): Unit = {
         val visitor = new org.locationtech.jts.index.ItemVisitor {
           override def visitItem(obj: AnyRef): Unit = f(obj.asInstanceOf[T])
@@ -83,7 +83,7 @@ class SpatialIndex[T](val measure: Measure = Measure.Euclidean) extends Serializ
         rtree.query(extent.jtsEnvelope, visitor)
       }
 
-      // Traversable implementations must override iterator in 2.13
+      // Iterable implementations must override iterator in 2.13
       def iterator: Iterator[T] =
         rtree.query(extent.jtsEnvelope).asScala.map(_.asInstanceOf[T]).iterator
     }

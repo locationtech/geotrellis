@@ -59,9 +59,9 @@ trait PowTileRDDMethods[K] extends TileRDDMethods[K] {
   def **(other: RDD[(K, Tile)]): RDD[(K, Tile)] = localPow(other, None)
 
   /** Pow the values of each cell in each raster. */
-  def localPow(others: Traversable[RDD[(K, Tile)]], partitioner: Option[Partitioner]): RDD[(K, Tile)] =
+  def localPow(others: Iterable[RDD[(K, Tile)]], partitioner: Option[Partitioner]): RDD[(K, Tile)] =
     self.combineValues(others, partitioner)(Pow.apply)
 
   /** Pow the values of each cell in each raster. */
-  def **(others: Traversable[RDD[(K, Tile)]]): RDD[(K, Tile)] = localPow(others, None)
+  def **(others: Iterable[RDD[(K, Tile)]]): RDD[(K, Tile)] = localPow(others, None)
 }

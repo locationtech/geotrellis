@@ -227,7 +227,7 @@ class BigTiffSpec extends AnyFunSpec with RasterMatchers with BeforeAndAfterAll 
 
           override def getSegment(i: Int): Array[Byte] = segment
 
-          override def getSegments(indices: Traversable[Int]): Iterator[(Int, Array[Byte])] =
+          override def getSegments(indices: Iterable[Int]): Iterator[(Int, Array[Byte])] =
             indices.iterator.map(i => i -> getSegment(i))
 
           override def getSegmentByteCount(i: Int): Int = blockCols * blockRows * cellType.bytes

@@ -26,7 +26,7 @@ object LinearSemivariogram {
   def apply(pts: Array[PointFeature[Double]], radius: Option[Double] = None, lag: Double = 0): Semivariogram = {
     // Construct slope and intercept
     val regression = new SimpleRegression
-    val empiricalSemivariogram: Seq[(Double, Double)] = EmpiricalVariogram.linear(pts, radius, lag)
+    val empiricalSemivariogram: Seq[(Double, Double)] = EmpiricalVariogram.linear(pts, radius, lag).toIndexedSeq
     for((x, y) <- empiricalSemivariogram) { regression.addData(x, y) }
     val slope = regression.getSlope
     val intercept = regression.getIntercept

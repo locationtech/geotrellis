@@ -26,7 +26,7 @@ import geotrellis.raster.testkit._
 import cats.syntax.option._
 import org.gdal.gdal._
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 import org.scalatest.GivenWhenThen
 import org.scalatest.funspec.AnyFunSpec

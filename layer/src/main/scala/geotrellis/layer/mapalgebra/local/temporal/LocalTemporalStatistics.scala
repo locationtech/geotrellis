@@ -66,7 +66,7 @@ object LocalTemporalStatistics {
     windowSize: Int,
     unit: Int,
     start: ZonedDateTime,
-    end: ZonedDateTime)(reduceOp: Traversable[Tile] => Tile): Seq[(K, Tile)] = {
+    end: ZonedDateTime)(reduceOp: Iterable[Tile] => Tile): Seq[(K, Tile)] = {
     val seq =
       sourceSeq
         .map { case (key, tile) =>
@@ -116,12 +116,12 @@ object LocalTemporalStatistics {
   // If the raster local operations doesn't have the operation you need as
   // a operation on tile sequences, just create it through a reduce.
 
-  private[geotrellis] def minReduceOp(tiles: Traversable[Tile]): Tile = tiles.localMin()
+  private[geotrellis] def minReduceOp(tiles: Iterable[Tile]): Tile = tiles.localMin()
 
-  private[geotrellis] def maxReduceOp(tiles: Traversable[Tile]): Tile = tiles.localMax()
+  private[geotrellis] def maxReduceOp(tiles: Iterable[Tile]): Tile = tiles.localMax()
 
-  private[geotrellis] def meanReduceOp(tiles: Traversable[Tile]): Tile = tiles.localMean()
+  private[geotrellis] def meanReduceOp(tiles: Iterable[Tile]): Tile = tiles.localMean()
 
-  private[geotrellis] def varianceReduceOp(tiles: Traversable[Tile]): Tile = tiles.localVariance()
+  private[geotrellis] def varianceReduceOp(tiles: Iterable[Tile]): Tile = tiles.localVariance()
 
 }

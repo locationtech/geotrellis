@@ -80,7 +80,7 @@ trait Implicits
       )
   }
 
-  implicit class TraversableTileExtensions(rs: Traversable[Tile]) {
+  implicit class TraversableTileExtensions(rs: Iterable[Tile]) {
     def assertEqualDimensions(): Unit =
       if(Set(rs.map(_.dimensions)).size != 1) {
         val dimensions = rs.map(_.dimensions).toSeq

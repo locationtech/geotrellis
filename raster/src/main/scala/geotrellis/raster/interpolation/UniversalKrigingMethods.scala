@@ -24,7 +24,7 @@ import geotrellis.util.MethodExtensions
 /** Methods implicitly added to tile via the package import.
   * Contains a method for each overloaded way to create a UniversalKriging
   */
-trait UniversalKrigingMethods extends MethodExtensions[Traversable[PointFeature[Double]]] {
+trait UniversalKrigingMethods extends MethodExtensions[Iterable[PointFeature[Double]]] {
   def universalKriging(rasterExtent: RasterExtent) =
     Interpolation.kriging(rasterExtent)(UniversalKriging(self.toArray))
 

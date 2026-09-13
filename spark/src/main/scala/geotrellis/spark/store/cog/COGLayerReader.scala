@@ -197,7 +197,7 @@ abstract class COGLayerReader[ID] extends Serializable {
     val croppedTilesWithGridBounds: Iterator[(GridBounds[Int], Array[Tile])] =
       geoTiff
         .tile
-        .cropBands(gridBounds, targetBands)
+        .cropBands(gridBounds, targetBands.toIndexedSeq)
         .map { case (k, v) => k -> v.bands.toArray }
 
     val croppedTilesWithBandIndexes: Iterator[(GridBounds[Int], Array[(Int, Tile)])] =
@@ -425,7 +425,7 @@ object COGLayerReader {
     * Find instances of [[COGLayerReaderProvider]] through Java SPI.
     */
   def apply(attributeStore: AttributeStore, layerReaderUri: URI)(implicit sc: SparkContext): COGLayerReader[LayerId] = {
-    import scala.collection.JavaConverters._
+    import scala.jdk.CollectionConverters._
     ServiceLoader.load(classOf[COGLayerReaderProvider])
       .iterator().asScala
       .find(_.canProcess(layerReaderUri))

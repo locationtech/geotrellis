@@ -19,7 +19,7 @@ package geotrellis.raster.mapalgebra.local
 import geotrellis.raster._
 import geotrellis.util.MethodExtensions
 
-trait LocalSeqMethods extends MethodExtensions[Traversable[Tile]] {
+trait LocalSeqMethods extends MethodExtensions[Iterable[Tile]] {
   def localAdd(): Tile =
     Add(self)
   def +(): Tile = localAdd()

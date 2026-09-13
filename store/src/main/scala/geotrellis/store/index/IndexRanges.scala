@@ -54,6 +54,6 @@ object IndexRanges {
         i += 1
       }
     }
-    arr
+    arr.toIndexedSeq
   }
 }

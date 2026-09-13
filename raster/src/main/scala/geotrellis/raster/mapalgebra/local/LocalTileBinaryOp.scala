@@ -58,7 +58,7 @@ trait LocalTileBinaryOp extends Serializable {
   // Combine a sequence of rasters
 
   /** Apply this operation to a Seq of rasters */
-  def apply(rs: Traversable[Tile]): Tile = 
+  def apply(rs: Iterable[Tile]): Tile = 
     new TileReducer(combine)(combine)(rs)
 
   def combine(z1: Int, z2: Int): Int

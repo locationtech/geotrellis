@@ -42,10 +42,10 @@ trait OrTileRDDMethods[K] extends TileRDDMethods[K] {
   def |(r: RDD[(K, Tile)]): RDD[(K, Tile)] = localOr(r, None)
 
   /** Or the values of each cell in each raster.  */
-  def localOr(others: Traversable[RDD[(K, Tile)]]): RDD[(K, Tile)] = localOr(others, None)
-  def localOr(others: Traversable[RDD[(K, Tile)]], partitioner: Option[Partitioner]): RDD[(K, Tile)] =
+  def localOr(others: Iterable[RDD[(K, Tile)]]): RDD[(K, Tile)] = localOr(others, None)
+  def localOr(others: Iterable[RDD[(K, Tile)]], partitioner: Option[Partitioner]): RDD[(K, Tile)] =
     self.combineValues(others, partitioner)(Or.apply)
 
   /** Or the values of each cell in each raster. */
-  def |(others: Traversable[RDD[(K, Tile)]]): RDD[(K, Tile)] = localOr(others, None)
+  def |(others: Iterable[RDD[(K, Tile)]]): RDD[(K, Tile)] = localOr(others, None)
 }

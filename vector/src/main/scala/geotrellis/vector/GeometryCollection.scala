@@ -30,7 +30,7 @@ trait GeometryCollectionConstructors {
            ): jts.GeometryCollection =
     apply(points ++ lines ++ polygons ++ multiPoints ++ multiLines ++ multiPolygons ++ geometryCollections)
 
-  def apply(geoms: Traversable[jts.Geometry]): jts.GeometryCollection =
+  def apply(geoms: Iterable[jts.Geometry]): jts.GeometryCollection =
     factory.createGeometryCollection(geoms.toArray)
 
   def unapply(gc: jts.GeometryCollection):

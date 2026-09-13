@@ -22,7 +22,7 @@ import org.apache.commons.math3.linear.MatrixUtils
 
 object QuadricError {
 
-  def facetMatrix(tris: Traversable[(Int, Int, Int)], trans: Int => Coordinate) = {
+  def facetMatrix(tris: Iterable[(Int, Int, Int)], trans: Int => Coordinate) = {
     tris.map{ case (a, b, c) => {
       val pa = trans(a)
       val pb = trans(b)

@@ -38,8 +38,8 @@ class VectorJoinRDDSpec extends AnyFunSpec with Matchers with TestEnvironment {
 
   it("Joins two RDDs of Geometries") {
 
-    val left: RDD[Polygon] = sc.parallelize(Array(polyA, polyB, polyC))
-    val right: RDD[LineString] = sc.parallelize(Array(line1, line2, line2))
+    val left: RDD[Polygon] = sc.parallelize(Array(polyA, polyB, polyC).toIndexedSeq)
+    val right: RDD[LineString] = sc.parallelize(Array(line1, line2, line2).toIndexedSeq)
     val pred = { (a: Geometry, b: Geometry) => a intersects b }
 
     val res: Vector[(Polygon, LineString)] = VectorJoin(left, right, pred).collect().toVector
@@ -49,8 +49,8 @@ class VectorJoinRDDSpec extends AnyFunSpec with Matchers with TestEnvironment {
 
   it("Joins two RDDs of Geometries using Implicit Methods") {
 
-    val left: RDD[Polygon] = sc.parallelize(Array(polyA, polyB, polyC))
-    val right: RDD[LineString] = sc.parallelize(Array(line1, line2, line2))
+    val left: RDD[Polygon] = sc.parallelize(Array(polyA, polyB, polyC).toIndexedSeq)
+    val right: RDD[LineString] = sc.parallelize(Array(line1, line2, line2).toIndexedSeq)
     val pred = { (a: Geometry, b: Geometry) => a intersects b }
 
     val res: Vector[(Polygon, LineString)] = left.vectorJoin(right, pred).collect().toVector
@@ -60,8 +60,8 @@ class VectorJoinRDDSpec extends AnyFunSpec with Matchers with TestEnvironment {
 
   it("Joins another two RDDs of Geometries using Implicit Methods (1/2)") {
 
-    val left: RDD[LineString] = sc.parallelize(Array(line2, line1))
-    val right: RDD[Polygon] = sc.parallelize(Array(polyA, polyB, polyC, polyC, polyC, polyB))
+    val left: RDD[LineString] = sc.parallelize(Array(line2, line1).toIndexedSeq)
+    val right: RDD[Polygon] = sc.parallelize(Array(polyA, polyB, polyC, polyC, polyC, polyB).toIndexedSeq)
     val pred = { (a: Geometry, b: Geometry) => a intersects b }
 
     val res: Vector[(LineString, Polygon)] = left.vectorJoin(right, pred).collect().toVector
@@ -71,8 +71,8 @@ class VectorJoinRDDSpec extends AnyFunSpec with Matchers with TestEnvironment {
 
   it("Joins another two RDDs of Geometries using Implicit Methods (2/2)") {
 
-    val left: RDD[LineString] = sc.parallelize(Array(line2, line2, line2, line1), 4)
-    val right: RDD[Polygon] = sc.parallelize(Array(polyA, polyB, polyC, polyC, polyC, polyB), 6)
+    val left: RDD[LineString] = sc.parallelize(Array(line2, line2, line2, line1).toIndexedSeq, 4)
+    val right: RDD[Polygon] = sc.parallelize(Array(polyA, polyB, polyC, polyC, polyC, polyB).toIndexedSeq, 6)
     val pred = { (a: Geometry, b: Geometry) => a intersects b }
 
     val res: Vector[(LineString, Polygon)] = left.vectorJoin(right, pred).collect().toVector

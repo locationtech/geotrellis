@@ -128,12 +128,12 @@ class JsonFeatureCollection(features: List[Json] = Nil) {
 object JsonFeatureCollection{
   def apply() = new JsonFeatureCollection()
 
-  def apply[G <: Geometry, D: Encoder](features: Traversable[Feature[G, D]]) = {
+  def apply[G <: Geometry, D: Encoder](features: Iterable[Feature[G, D]]) = {
     val fc = new JsonFeatureCollection()
     fc ++= features.toList
     fc
   }
 
-  def apply(features: Traversable[Json])(implicit d: DummyImplicit): JsonFeatureCollection =
+  def apply(features: Iterable[Json])(implicit d: DummyImplicit): JsonFeatureCollection =
     new JsonFeatureCollection(features.toList)
 }

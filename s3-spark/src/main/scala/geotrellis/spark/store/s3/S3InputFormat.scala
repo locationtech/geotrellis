@@ -30,7 +30,7 @@ import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.mapreduce.{InputFormat, Job, JobContext}
 
 import scala.util.matching.Regex
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 /** Reads keys from s3n URL using AWS Java SDK.
   * The number of keys per InputSplits are controlled by S3 pagination.

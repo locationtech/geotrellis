@@ -89,7 +89,7 @@ object RasterSourceRDD {
           rs.sourceToTargetBand.map { case (sourceBand, targetBand) =>
             (key, (targetBand, layoutSource.read(key, Seq(sourceBand))))
           }
-        }.toTraversable }
+        }.toIndexedSeq }
       }
 
     sourcesRDD.persist()
@@ -316,7 +316,7 @@ object RasterSourceRDD {
 
     val sourcesRDD: RDD[(RasterSource, Array[SpatialKey])] =
       sc.parallelize(sources).flatMap { source =>
-        val keys: Traversable[SpatialKey] =
+        val keys: Iterable[SpatialKey] =
           extent.intersection(source.extent) match {
             case Some(intersection) => layout.mapTransform.keysForGeometry(intersection.toPolygon())
             case None => Seq.empty[SpatialKey]
@@ -347,7 +347,7 @@ object RasterSourceRDD {
 
   /** Partition a set of chunks not to exceed certain size per partition */
   private def partition[T: ClassTag](
-    chunks: Traversable[T],
+    chunks: Iterable[T],
     maxPartitionSize: Long
   )(chunkSize: T => Long = { c: T => 1L }): Array[Array[T]] = {
     if (chunks.isEmpty) {

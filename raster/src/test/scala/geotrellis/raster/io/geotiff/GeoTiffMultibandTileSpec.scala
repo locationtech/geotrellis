@@ -744,21 +744,21 @@ class GeoTiffMultibandTileSpec extends AnyFunSpec with Matchers with BeforeAndAf
 
     it("should have the correct number of subset bands - pixel") {
       val bounds = GridBounds(pixelStripedRasterExtent.dimensions)
-      val cropped = pixelStripedGeoTiff.tile.cropBands(bounds, Array(1, 0))
+      val cropped = pixelStripedGeoTiff.tile.cropBands(bounds, Seq(1, 0))
 
       cropped.bands.size should be (2)
     }
 
     it("should have the correct number of subset bands - band") {
       val bounds = GridBounds(bandStripedRasterExtent.dimensions)
-      val cropped = bandStripedGeoTiff.tile.cropBands(bounds, Array(1))
+      val cropped = bandStripedGeoTiff.tile.cropBands(bounds, Seq(1))
 
       cropped.bands.size should be (1)
     }
 
     it("should have the crop the correct area - pixel striped") {
       val bounds = GridBounds(pixelStripedRasterExtent.dimensions)
-      val actual = pixelStripedGeoTiff.tile.cropBands(bounds, Array(1, 0, 2))
+      val actual = pixelStripedGeoTiff.tile.cropBands(bounds, Seq(1, 0, 2))
       val expected = pixelStripedGeoTiff.crop(bounds).tile.subsetBands(1, 0, 2)
 
       actual should be (expected)
@@ -766,7 +766,7 @@ class GeoTiffMultibandTileSpec extends AnyFunSpec with Matchers with BeforeAndAf
 
     it("should have the crop the correct area - pixel tiled") {
       val bounds = GridBounds(pixelStripedRasterExtent.dimensions)
-      val actual = pixelTiledGeoTiff.tile.cropBands(bounds, Array(1, 0, 2))
+      val actual = pixelTiledGeoTiff.tile.cropBands(bounds, Seq(1, 0, 2))
       val expected = pixelTiledGeoTiff.crop(bounds).tile.subsetBands(1, 0, 2)
 
       actual should be (expected)
@@ -774,7 +774,7 @@ class GeoTiffMultibandTileSpec extends AnyFunSpec with Matchers with BeforeAndAf
 
     it("should have the crop the correct area - band striped") {
       val bounds = GridBounds(bandStripedRasterExtent.dimensions)
-      val actual = bandStripedGeoTiff.tile.cropBands(bounds, Array(1, 2, 0))
+      val actual = bandStripedGeoTiff.tile.cropBands(bounds, Seq(1, 2, 0))
       val expected = bandStripedGeoTiff.crop(bounds).tile.subsetBands(1, 2, 0)
 
       actual should be (expected)
@@ -782,7 +782,7 @@ class GeoTiffMultibandTileSpec extends AnyFunSpec with Matchers with BeforeAndAf
 
     it("should have the crop the correct area - band tiled") {
       val bounds = GridBounds(bandStripedRasterExtent.dimensions)
-      val actual = bandTiledGeoTiff.tile.cropBands(bounds, Array(1, 2, 0))
+      val actual = bandTiledGeoTiff.tile.cropBands(bounds, Seq(1, 2, 0))
       val expected = bandTiledGeoTiff.crop(bounds).tile.subsetBands(1, 2, 0)
 
       actual should be (expected)
@@ -804,7 +804,7 @@ class GeoTiffMultibandTileSpec extends AnyFunSpec with Matchers with BeforeAndAf
         .listWindows(10)
         .map(_.buffer(5))
 
-      val tiles = tiff.crop(windows)
+      val tiles = tiff.crop(windows.toIndexedSeq)
     }
   }
 }

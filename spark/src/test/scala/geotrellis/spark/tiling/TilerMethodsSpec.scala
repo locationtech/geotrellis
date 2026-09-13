@@ -59,7 +59,7 @@ class TilerMethodsSpec extends AnyFunSpec with Matchers with TestEnvironment {
       val mapTransform = MapKeyTransform(totalExtent, tileLayout.layoutCols, tileLayout.layoutRows)
 
       implicit val tm: Int => TilerKeyMethods[Int, SpatialKey] = i => new IntTilerKeyMethods(i, extents)
-      val rdd: RDD[(Int, Tile)] = sc.parallelize(Array( (1, tile1), (2, tile2) ))
+      val rdd: RDD[(Int, Tile)] = sc.parallelize(Array( (1, tile1), (2, tile2) ).toIndexedSeq)
       val tiled =
         rdd.cutTiles(IntConstantNoDataCellType, layoutDefinition)
           .reduceByKey { (tile1, tile2) => if(tile1.get(0,0) > tile2.get(0,0)) tile2.merge(tile1) else tile1.merge(tile2) }

@@ -26,7 +26,7 @@ import java.io.File
 import java.nio.charset.Charset
 
 import scala.collection.mutable
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 object ShapeFileReader {
   val DEFAULT_CHARSET = Charset.forName("ISO-8859-1")

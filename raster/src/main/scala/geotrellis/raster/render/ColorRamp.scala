@@ -124,7 +124,7 @@ object ColorRamp {
 
   def apply(colors: Array[Int]): ColorRamp = apply(colors.toVector)
 
-  def apply(colors: Traversable[Int]): ColorRamp = new ColorRamp(colors.toVector)
+  def apply(colors: Iterable[Int]): ColorRamp = new ColorRamp(colors.toVector)
 
   def apply(colors: Int*)(implicit d: DummyImplicit): ColorRamp = apply(colors)
 

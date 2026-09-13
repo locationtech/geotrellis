@@ -43,12 +43,12 @@ abstract class RasterMaskMethods[T <: CellGrid[Int]: * => TileMaskMethods[T]](va
     * Masks this raster by the given Geometry. Do not include polygon
     * exteriors.
     */
-  def mask(geoms: Traversable[Geometry]): Raster[T] =
+  def mask(geoms: Iterable[Geometry]): Raster[T] =
     mask(geoms, Options.DEFAULT)
 
   /**
     * Masks this raster by the given Geometry.
     */
-  def mask(geoms: Traversable[Geometry], options: Options): Raster[T] =
+  def mask(geoms: Iterable[Geometry], options: Options): Raster[T] =
     self.mapTile(_.mask(self.extent, geoms, options))
 }

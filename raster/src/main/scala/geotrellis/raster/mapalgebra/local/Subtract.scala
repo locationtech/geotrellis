@@ -58,7 +58,7 @@ trait SubtractMethods extends MethodExtensions[Tile] {
   /** Subtract the values of each cell in each raster. */
   def -(r: Tile): Tile = localSubtract(r)
   /** Subtract the values of each cell in each raster. */
-  def localSubtract(rs: Traversable[Tile]): Tile = Subtract(self +: rs.toSeq)
+  def localSubtract(rs: Iterable[Tile]): Tile = Subtract(self +: rs.toSeq)
   /** Subtract the values of each cell in each raster. */
-  def -(rs: Traversable[Tile]): Tile = localSubtract(rs)
+  def -(rs: Iterable[Tile]): Tile = localSubtract(rs)
 }

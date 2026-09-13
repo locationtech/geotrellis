@@ -234,7 +234,7 @@ class EuclideanDistanceSpec extends AnyFunSpec with TestEnvironment with Matcher
       }
 
       val keyedPoints: Seq[(Direction, Array[Coordinate])] =
-        dirs.zip(points).map{ case (dir, pt) => (dir, Array(pt)) }
+        dirs.zip(points).map{ case (dir, pt) => (dir, Array(pt)) }.toIndexedSeq
 
       println("Forming DelaunayTriangulations")
       val triangulations = keyedPoints.map{ case (dir, pts) => {
@@ -286,7 +286,7 @@ class EuclideanDistanceSpec extends AnyFunSpec with TestEnvironment with Matcher
       }
 
       val keyedPoints: Seq[(Direction, Array[Coordinate])] =
-        dirs.zip(points).map{ case (dir, pt) => (dir, Array(pt)) }
+        dirs.zip(points).map{ case (dir, pt) => (dir, Array(pt)) }.toIndexedSeq
 
       println("Forming DelaunayTriangulations")
       val triangulations = keyedPoints.map{ case (dir, pts) => {

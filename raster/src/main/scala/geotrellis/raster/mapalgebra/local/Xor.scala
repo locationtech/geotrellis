@@ -50,7 +50,7 @@ trait XorMethods extends MethodExtensions[Tile] {
   /** Xor the values of each cell in each raster. */
   def ^(r: Tile): Tile = localXor(r)
   /** Xor the values of each cell in each raster. */
-  def localXor(rs: Traversable[Tile]): Tile = Xor(self +: rs.toSeq)
+  def localXor(rs: Iterable[Tile]): Tile = Xor(self +: rs.toSeq)
   /** Xor the values of each cell in each raster. */
   def ^(rs: Seq[Tile]): Tile = localXor(rs)
 }

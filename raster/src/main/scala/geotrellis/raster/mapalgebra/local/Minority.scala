@@ -27,13 +27,13 @@ object Minority extends Serializable {
   def apply(r: Tile*): Tile =
     apply(0, r)
 
-  def apply(rs: Traversable[Tile])(implicit d: DI): Tile =
+  def apply(rs: Iterable[Tile])(implicit d: DI): Tile =
     apply(0, rs)
 
   def apply(level: Int, rs: Tile*): Tile =
     apply(level, rs)
 
-  def apply(level: Int, rs: Traversable[Tile])(implicit d: DI): Tile = {
+  def apply(level: Int, rs: Iterable[Tile])(implicit d: DI): Tile = {
     // TODO: Replace all of these with rs.assertEqualDimensions()
     if(Set(rs.map(_.dimensions)).size != 1) {
       val dimensions = rs.map(_.dimensions).toSeq
@@ -115,7 +115,7 @@ object Minority extends Serializable {
 
 trait MinorityMethods extends MethodExtensions[Tile] {
   /** Assigns to each cell the value within the given rasters that is the least numerous. */
-  def localMinority(rs: Traversable[Tile]): Tile =
+  def localMinority(rs: Iterable[Tile]): Tile =
     Minority(self +: rs.toSeq)
 
   /** Assigns to each cell the value within the given rasters that is the least numerous. */
@@ -123,7 +123,7 @@ trait MinorityMethods extends MethodExtensions[Tile] {
     localMinority(rs)
 
   /** Assigns to each cell the value within the given rasters that is the nth least numerous. */
-  def localMinority(n: Int, rs: Traversable[Tile]): Tile =
+  def localMinority(n: Int, rs: Iterable[Tile]): Tile =
     Minority(n, self +: rs.toSeq)
 
   /** Assigns to each cell the value within the given rasters that is the nth least numerous. */

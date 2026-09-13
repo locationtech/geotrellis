@@ -32,9 +32,9 @@ abstract class RasterTileFeatureMaskMethods[
   def mask(geom: Geometry, options: Rasterizer.Options): TileFeature[Raster[T], D] =
     TileFeature(self.tile.mask(geom, options), self.data)
 
-  def mask(geoms: Traversable[Geometry]): TileFeature[Raster[T], D] =
+  def mask(geoms: Iterable[Geometry]): TileFeature[Raster[T], D] =
     TileFeature(self.tile.mask(geoms), self.data)
 
-  def mask(geoms: Traversable[Geometry], options: Rasterizer.Options): TileFeature[Raster[T], D] =
+  def mask(geoms: Iterable[Geometry], options: Rasterizer.Options): TileFeature[Raster[T], D] =
     TileFeature(self.tile.mask(geoms, options), self.data)
 }

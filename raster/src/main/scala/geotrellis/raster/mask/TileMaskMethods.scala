@@ -66,11 +66,11 @@ trait TileMaskMethods[T] extends MethodExtensions[T] {
     * Masks this tile by the given Geometry. Do not include polygon
     * exteriors.
     */
-  def mask(ext: Extent, geoms: Traversable[Geometry]): T =
+  def mask(ext: Extent, geoms: Iterable[Geometry]): T =
     mask(ext, geoms, Options.DEFAULT)
 
   /**
     * Masks this tile by the given Geometry.
     */
-  def mask(ext: Extent, geoms: Traversable[Geometry], options: Options): T
+  def mask(ext: Extent, geoms: Iterable[Geometry], options: Options): T
 }

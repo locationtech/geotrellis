@@ -37,6 +37,6 @@ abstract class TileFeatureMaskMethods[
   def localInverseMask(mask: T, readMask: Int, writeMask: Int): TileFeature[T, D] =
     TileFeature(self.tile.localInverseMask(mask, readMask, writeMask), self.data)
 
-  def mask(extent: Extent, geoms: Traversable[Geometry], options: Rasterizer.Options): TileFeature[T, D] =
+  def mask(extent: Extent, geoms: Iterable[Geometry], options: Rasterizer.Options): TileFeature[T, D] =
     TileFeature(self.tile.mask(extent, geoms, options), self.data)
 }

@@ -289,7 +289,7 @@ case class GridBounds[@specialized(Int, Long) N: Integral](
       *
       * @param  gridBounds  A traversable collection of GridBounds
       */
-    def distinct[N](gridBounds: Traversable[GridBounds[N]]): Seq[GridBounds[N]] =
+    def distinct[N](gridBounds: Iterable[GridBounds[N]]): Seq[GridBounds[N]] =
       gridBounds.foldLeft(Seq[GridBounds[N]]()) { (acc, bounds) =>
         acc ++ acc.foldLeft(Seq(bounds)) { (cuts, bounds) =>
           cuts.flatMap(_ - bounds)

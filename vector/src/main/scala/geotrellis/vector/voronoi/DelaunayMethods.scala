@@ -24,14 +24,14 @@ import geotrellis.util.MethodExtensions
 import org.locationtech.jts.geom.Coordinate
 
 
-trait DelaunayTriangulationPointMethods extends MethodExtensions[Traversable[Point]] {
+trait DelaunayTriangulationPointMethods extends MethodExtensions[Iterable[Point]] {
   def delaunayTriangulation(): DelaunayTriangulation = {
     val ips = IndexedPointSet(self.map({ _.getCoordinate }).toArray)
     DelaunayTriangulation(ips)
   }
 }
 
-trait DelaunayTriangulationCoordinateMethods extends MethodExtensions[Traversable[Coordinate]] {
+trait DelaunayTriangulationCoordinateMethods extends MethodExtensions[Iterable[Coordinate]] {
   def delaunayTriangulation(): DelaunayTriangulation = {
     val ips = IndexedPointSet(self.toArray)
     DelaunayTriangulation(ips)

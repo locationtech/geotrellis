@@ -41,8 +41,8 @@ class ArraySegmentBytes(compressedBytes: Array[Array[Byte]]) extends SegmentByte
 
   def getSegmentByteCount(i: Int): Int = compressedBytes(i).length
 
-  def getSegments(indices: Traversable[Int]): Iterator[(Int, Array[Byte])] =
-    indices.toIterator
+  def getSegments(indices: Iterable[Int]): Iterator[(Int, Array[Byte])] =
+    indices.iterator
       .map { i => i -> compressedBytes(i) }
 }
 

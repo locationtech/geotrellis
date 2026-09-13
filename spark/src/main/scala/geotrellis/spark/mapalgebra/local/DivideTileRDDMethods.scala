@@ -59,9 +59,9 @@ trait DivideTileRDDMethods[K] extends TileRDDMethods[K] {
   /** Divide the values of each cell in each raster. */
   def /(other: RDD[(K, Tile)]): RDD[(K, Tile)] = localDivide(other, None)
 
-  def localDivide(others: Traversable[RDD[(K, Tile)]]): RDD[(K, Tile)] = localDivide(others, None)
-  def localDivide(others: Traversable[RDD[(K, Tile)]], partitioner: Option[Partitioner]): RDD[(K, Tile)] =
+  def localDivide(others: Iterable[RDD[(K, Tile)]]): RDD[(K, Tile)] = localDivide(others, None)
+  def localDivide(others: Iterable[RDD[(K, Tile)]], partitioner: Option[Partitioner]): RDD[(K, Tile)] =
     self.combineValues(others, partitioner)(Divide.apply)
 
-  def /(others: Traversable[RDD[(K, Tile)]]): RDD[(K, Tile)] = localDivide(others, None)
+  def /(others: Iterable[RDD[(K, Tile)]]): RDD[(K, Tile)] = localDivide(others, None)
 }

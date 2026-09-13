@@ -22,7 +22,7 @@ import org.locationtech.jts.geom.CoordinateSequence
 import org.locationtech.jts.operation.union._
 import spire.syntax.cfor._
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 trait ExtraPolygonMethods extends MethodExtensions[Polygon] {
   def exterior: LineString =

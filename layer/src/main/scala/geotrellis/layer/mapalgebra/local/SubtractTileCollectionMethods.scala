@@ -58,9 +58,9 @@ trait SubtractTileCollectionMethods[K] extends MethodExtensions[Seq[(K, Tile)]] 
   def -(other: Seq[(K, Tile)]): Seq[(K, Tile)] = localSubtract(other)
 
   /** Subtract the values of each cell in each raster. */
-  def localSubtract(others: Traversable[Seq[(K, Tile)]]): Seq[(K, Tile)] =
+  def localSubtract(others: Iterable[Seq[(K, Tile)]]): Seq[(K, Tile)] =
     self.combineValues(others)(Subtract.apply)
 
   /** Subtract the values of each cell in each raster. */
-  def -(others: Traversable[Seq[(K, Tile)]]): Seq[(K, Tile)] = localSubtract(others)
+  def -(others: Iterable[Seq[(K, Tile)]]): Seq[(K, Tile)] = localSubtract(others)
 }

@@ -28,7 +28,7 @@ import _root_.io.circe.syntax._
 import _root_.io.circe.parser._
 import cats.syntax.either._
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 object HBaseAttributeStore {
   def apply(instance: HBaseInstance): HBaseAttributeStore =

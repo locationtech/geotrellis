@@ -28,7 +28,7 @@ import spire.syntax.cfor._
   */
 object Variance extends Serializable {
 
-  def apply(rs: Traversable[Tile]): Tile =
+  def apply(rs: Iterable[Tile]): Tile =
     apply(rs.toSeq)
 
   def apply(rs: Tile*)(implicit d: DI): Tile =

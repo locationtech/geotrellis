@@ -27,7 +27,7 @@ import org.apache.accumulo.core.security.Authorizations
 import org.apache.avro.Schema
 import org.apache.spark.rdd.RDD
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 object AccumuloRDDWriter {
 

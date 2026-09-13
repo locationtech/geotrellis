@@ -71,7 +71,7 @@ class LazySegmentBytes(
   def getSegmentByteCount(i: Int): Int = segmentByteCounts(i).toInt
 
   /** These are chunked segments in the order they appear in Image Data */
-  protected def chunkSegments(segmentIds: Traversable[Int]): List[List[Segment]]  = {
+  protected def chunkSegments(segmentIds: Iterable[Int]): List[List[Segment]]  = {
     {for { id <- segmentIds } yield {
       val offset = segmentOffsets(id)
       val length = segmentByteCounts(id)
@@ -110,7 +110,7 @@ class LazySegmentBytes(
     getBytes(startOffset, segmentByteCounts(i))
   }
 
-  def getSegments(indices: Traversable[Int]): Iterator[(Int, Array[Byte])] = {
+  def getSegments(indices: Iterable[Int]): Iterator[(Int, Array[Byte])] = {
     val chunks = chunkSegments(indices)
     chunks
       .iterator

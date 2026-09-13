@@ -51,9 +51,9 @@ trait MultiplyTileCollectionMethods[K] extends MethodExtensions[Seq[(K, Tile)]] 
   def *(other: Seq[(K, Tile)]): Seq[(K, Tile)] = localMultiply(other)
 
   /** Multiply the values of each cell in each raster. */
-  def localMultiply(others: Traversable[Seq[(K, Tile)]]): Seq[(K, Tile)] =
+  def localMultiply(others: Iterable[Seq[(K, Tile)]]): Seq[(K, Tile)] =
     self.combineValues(others)(Multiply.apply)
 
   /** Multiply the values of each cell in each raster. */
-  def *(others: Traversable[Seq[(K, Tile)]]): Seq[(K, Tile)] = localMultiply(others)
+  def *(others: Iterable[Seq[(K, Tile)]]): Seq[(K, Tile)] = localMultiply(others)
 }

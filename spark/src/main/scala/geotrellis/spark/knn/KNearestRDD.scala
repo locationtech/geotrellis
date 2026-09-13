@@ -21,7 +21,7 @@ import geotrellis.vector._
 import org.apache.spark.rdd.RDD
 
 import java.util.PriorityQueue
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 class BoundedPriorityQueue[A: Ordering](val maxSize: Int) extends Serializable{
   val pq = new PriorityQueue[A](maxSize, implicitly[Ordering[A]].reverse)
@@ -32,8 +32,8 @@ class BoundedPriorityQueue[A: Ordering](val maxSize: Int) extends Serializable{
     this
   }
 
-  def ++=(xs: TraversableOnce[A]): this.type = {
-    xs.foreach { this += _ }
+  def ++=(xs: IterableOnce[A]): this.type = {
+    xs.iterator.foreach { this += _ }
     this
   }
 
@@ -86,11 +86,11 @@ object KNearestRDD {
   def kNearest[T](rdd: RDD[T], ex: Extent, k: Int)(f: T => Geometry): Seq[T] = {
     implicit val ord = new Ord[T](ex, f)
 
-    rdd.takeOrdered(k)
+    rdd.takeOrdered(k).toIndexedSeq
   }
 
-  def kNearest[G, H](rdd: RDD[G], centers: Traversable[H], k: Int)(g: G => Geometry, h: H => Geometry): Seq[Seq[G]] = {
-    var zero: Traversable[BoundedPriorityQueue[G]] = centers.map { center =>
+  def kNearest[G, H](rdd: RDD[G], centers: Iterable[H], k: Int)(g: G => Geometry, h: H => Geometry): Seq[Seq[G]] = {
+    var zero: Iterable[BoundedPriorityQueue[G]] = centers.map { center =>
       implicit val ord = new Ord[G](h(center), g)
       BoundedPriorityQueue[G](k)
     }
@@ -109,7 +109,7 @@ object KNearestRDD {
       result
     }
 
-    val result = rdd.aggregate(zero)({ (bpqs, toAdd) => bpqs.map { _ += toAdd } }, { (a, b) => zipWith(a.toList, b.toList)(merge).toTraversable })
+    val result = rdd.aggregate(zero)({ (bpqs, toAdd) => bpqs.map { _ += toAdd } }, { (a, b) => zipWith(a.toList, b.toList)(merge) })
     result.map(_.iterator().asScala.toList).toList
   }
 }

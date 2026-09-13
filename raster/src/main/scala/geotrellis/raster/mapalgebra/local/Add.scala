@@ -55,7 +55,7 @@ trait AddMethods extends MethodExtensions[Tile] {
   /** Add the values of each cell in each raster. */
   def +(r: Tile): Tile = localAdd(r)
   /** Add the values of each cell in each raster.  */
-  def localAdd(rs: Traversable[Tile]): Tile = Add(self +: rs.toSeq)
+  def localAdd(rs: Iterable[Tile]): Tile = Add(self +: rs.toSeq)
   /** Add the values of each cell in each raster. */
-  def +(rs: Traversable[Tile]): Tile = localAdd(rs)
+  def +(rs: Iterable[Tile]): Tile = localAdd(rs)
 }

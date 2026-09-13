@@ -355,6 +355,7 @@ object IterativeViewshed {
               val packets: Array[(From, Array[Ray])] =
                 list
                   .groupBy(_._1)
+                  .view
                   .mapValues({ case rss =>
                     rss
                       .map({ case (_, rs) => rs })

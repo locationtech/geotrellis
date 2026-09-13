@@ -27,7 +27,7 @@ object VectorExamples {
 
     // Because we've imported geotrellis.vector.io, we get
     // GeoJson methods implicitly added to vector types,
-    // including any Traversable[Feature[G, D]]
+    // including any Iterable[Feature[G, D]]
 
     val geojson: String = features.toGeoJson()
 

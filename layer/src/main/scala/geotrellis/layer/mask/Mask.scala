@@ -90,7 +90,7 @@ trait Mask {
     K: SpatialComponent,
     V: * => TileMaskMethods[V],
     M: GetComponent[*, LayoutDefinition]
-  ](seq: Seq[(K, V)] with Metadata[M], geoms: Traversable[Polygon], options: Options): Seq[(K, V)] with Metadata[M] =
+  ](seq: Seq[(K, V)] with Metadata[M], geoms: Iterable[Polygon], options: Options): Seq[(K, V)] with Metadata[M] =
     _mask(seq, { case (tileExtent, tile) =>
       val tileGeoms = geoms.flatMap { g =>
         val intersections = g.intersectionSafe(tileExtent).toGeometry()
@@ -107,7 +107,7 @@ trait Mask {
     K: SpatialComponent,
     V: * => TileMaskMethods[V],
     M: GetComponent[*, LayoutDefinition]
-  ](seq: Seq[(K, V)] with Metadata[M], geoms: Traversable[MultiPolygon], options: Options)(implicit d: DummyImplicit): Seq[(K, V)] with Metadata[M] =
+  ](seq: Seq[(K, V)] with Metadata[M], geoms: Iterable[MultiPolygon], options: Options)(implicit d: DummyImplicit): Seq[(K, V)] with Metadata[M] =
     _mask(seq, { case (tileExtent, tile) =>
       val tileGeoms = geoms.flatMap { g =>
         val intersections = g.intersectionSafe(tileExtent).toGeometry()

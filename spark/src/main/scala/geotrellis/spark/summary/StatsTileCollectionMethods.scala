@@ -22,7 +22,7 @@ import geotrellis.util.MethodExtensions
 trait StatsTileCollectionMethods[K] extends MethodExtensions[Seq[(K, Tile)]] {
 
   def averageByKey(): Seq[(K, Tile)] =
-    self.groupBy(_._1).mapValues { seq => seq.map(_._2).reduce(_ + _) / seq.size } toSeq
+    self.groupBy(_._1).view.mapValues { seq => seq.map(_._2).reduce(_ + _) / seq.size } toSeq
 
   def histogram(): Histogram[Double] =
     histogram(StreamingHistogram.DEFAULT_NUM_BUCKETS)

@@ -144,7 +144,7 @@ class RDDStitchMethodsSpec extends AnyFunSpec with TileBuilders with TileLayerRD
         (SpatialKey(10,33), IntArrayTile.ofDim( 5, 7).map{ (x: Int, y: Int, _: Int) => math.max(x,    y+20) }),
         (SpatialKey(11,33), IntArrayTile.ofDim(15, 7).map{ (x: Int, y: Int, _: Int) => math.max(x+5,  y+20) }),
         (SpatialKey(12,33), IntArrayTile.ofDim( 7, 7).map{ (x: Int, y: Int, _: Int) => math.max(x+20, y+20) })
-      ))
+      ).toIndexedSeq)
       val reference = IntArrayTile.ofDim(27,27).map{ (x: Int, y: Int, _) => math.max(x, y) }
 
       assertEqual(tiles.stitch(), reference)

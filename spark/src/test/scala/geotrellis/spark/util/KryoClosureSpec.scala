@@ -28,7 +28,7 @@ class KryoClosureSpec extends AnyFunSpec with TestEnvironment {
   val numbers = Array.fill(10)(10)
 
   describe("KryoClosure") {
-    val rdd = sc.parallelize(numbers, 1)
+    val rdd = sc.parallelize(numbers.toIndexedSeq, 1)
 
     it("should be better then Java serialization") {
       intercept[org.apache.spark.SparkException] {

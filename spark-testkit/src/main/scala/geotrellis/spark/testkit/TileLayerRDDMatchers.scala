@@ -95,7 +95,7 @@ trait TileLayerRDDMatchers extends RasterMatchers {
     }
 
     val grouped: Map[K, Array[(K, Tile)]] =
-      ft.union(st).groupBy(_._1).toMap.map { case (k ,v) => (k, v.toArray) }
+      ft.concat(st).groupBy(_._1).toMap.map { case (k ,v) => (k, v.toArray) }
 
     for( (key, tiles) <- grouped) {
       tiles.size should be (2)

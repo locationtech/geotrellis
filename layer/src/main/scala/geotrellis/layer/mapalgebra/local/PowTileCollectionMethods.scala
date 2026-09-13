@@ -57,9 +57,9 @@ trait PowTileCollectionMethods[K] extends MethodExtensions[Seq[(K, Tile)]] {
   def **(other: Seq[(K, Tile)]): Seq[(K, Tile)] = localPow(other)
 
   /** Pow the values of each cell in each raster. */
-  def localPow(others: Traversable[Seq[(K, Tile)]]): Seq[(K, Tile)] =
+  def localPow(others: Iterable[Seq[(K, Tile)]]): Seq[(K, Tile)] =
     self.combineValues(others)(Pow.apply)
 
   /** Pow the values of each cell in each raster. */
-  def **(others: Traversable[Seq[(K, Tile)]]): Seq[(K, Tile)] = localPow(others)
+  def **(others: Iterable[Seq[(K, Tile)]]): Seq[(K, Tile)] = localPow(others)
 }

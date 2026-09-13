@@ -38,7 +38,7 @@ object Output {
     K: SpatialComponent : AvroRecordCodec : Encoder : ClassTag,
     V <: CellGrid[Int] : AvroRecordCodec : ClassTag: * => TileMergeMethods[V]: * => TilePrototypeMethods[V],
     M: Component[*, LayoutDefinition]: Component[*, Bounds[K]]: Encoder : GetComponent[*, Bounds[K]]
-  ](arg: JsonWrite)(tuples: Stream[(Int, RDD[(K, V)] with Metadata[M])]): Stream[(Int, RDD[(K, V)] with Metadata[M])] = {
+  ](arg: JsonWrite)(tuples: LazyList[(Int, RDD[(K, V)] with Metadata[M])]): LazyList[(Int, RDD[(K, V)] with Metadata[M])] = {
     lazy val writer = LayerWriter(arg.uri)
     tuples.foreach { tuple =>
       val (zoom, rdd) = tuple

@@ -34,9 +34,9 @@ abstract class TileCollectionMaskMethods[
   def mask(geom: Polygon, options: Options): Seq[(K, V)] with Metadata[M] = mask(Seq(geom), options)
 
   /** Masks this raster by the given Polygons. */
-  def mask(geoms: Traversable[Polygon]): Seq[(K, V)] with Metadata[M] = mask(geoms, Options.DEFAULT)
+  def mask(geoms: Iterable[Polygon]): Seq[(K, V)] with Metadata[M] = mask(geoms, Options.DEFAULT)
 
-  def mask(geoms: Traversable[Polygon], options: Options): Seq[(K, V)] with Metadata[M] =
+  def mask(geoms: Iterable[Polygon], options: Options): Seq[(K, V)] with Metadata[M] =
     Mask(self, geoms, options)
 
   /** Masks this raster by the given MultiPolygon. */
@@ -45,7 +45,7 @@ abstract class TileCollectionMaskMethods[
   def mask(geom: MultiPolygon, options: Options): Seq[(K, V)] with Metadata[M] = mask(Seq(geom), options)
 
   /** Masks this raster by the given MultiPolygons. */
-  def mask(geoms: Traversable[MultiPolygon], options: Options)(implicit d: DummyImplicit): Seq[(K, V)] with Metadata[M] =
+  def mask(geoms: Iterable[MultiPolygon], options: Options)(implicit d: DummyImplicit): Seq[(K, V)] with Metadata[M] =
     Mask(self, geoms, options)
 
   /** Masks this raster by the given Extent. */

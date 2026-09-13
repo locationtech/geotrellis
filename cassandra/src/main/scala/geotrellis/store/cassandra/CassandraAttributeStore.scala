@@ -27,7 +27,7 @@ import io.circe.syntax._
 import io.circe.parser._
 import cats.syntax.either._
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 object CassandraAttributeStore {
   def apply(instance: CassandraInstance, attributeKeyspace: String, attributeTable: String): CassandraAttributeStore =

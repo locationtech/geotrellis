@@ -30,8 +30,8 @@ abstract class CombineMethods[K: ClassTag, V: ClassTag] extends MethodExtensions
       .fold(self.join(other))(self.join(other, _))
       .mapValues { case (tile1, tile2) => f(tile1, tile2) }
 
-  def combineValues[R: ClassTag](others: Traversable[RDD[(K, V)]])(f: Iterable[V] => R): RDD[(K, R)] = combineValues(others, None)(f)
-  def combineValues[R: ClassTag](others: Traversable[RDD[(K, V)]], partitioner: Option[Partitioner])(f: Iterable[V] => R): RDD[(K, R)] = {
+  def combineValues[R: ClassTag](others: Iterable[RDD[(K, V)]])(f: Iterable[V] => R): RDD[(K, R)] = combineValues(others, None)(f)
+  def combineValues[R: ClassTag](others: Iterable[RDD[(K, V)]], partitioner: Option[Partitioner])(f: Iterable[V] => R): RDD[(K, R)] = {
     val union = self.sparkContext.union(self :: others.toList)
     partitioner
       .fold(union.groupByKey(Partitioner.defaultPartitioner(self, others.toSeq: _*)))(union.groupByKey(_))

@@ -22,8 +22,8 @@ import geotrellis.layer._
 import geotrellis.util.MethodExtensions
 
 
-abstract class LocalTileCollectionSeqMethods[K] extends MethodExtensions[Traversable[Seq[(K, Tile)]]] {
-  private def r(f: Traversable[Tile] => (Tile)): Seq[(K, Tile)] =
+abstract class LocalTileCollectionSeqMethods[K] extends MethodExtensions[Iterable[Seq[(K, Tile)]]] {
+  private def r(f: Iterable[Tile] => (Tile)): Seq[(K, Tile)] =
     self match {
       case Seq() => sys.error("raster seq operations can't be applied to empty seq!")
       case Seq(rdd) => rdd

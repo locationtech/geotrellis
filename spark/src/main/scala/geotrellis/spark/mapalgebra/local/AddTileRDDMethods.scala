@@ -51,9 +51,9 @@ trait AddTileRDDMethods[K] extends TileRDDMethods[K] {
   /** Add the values of each cell in each raster. */
   def +(other: RDD[(K, Tile)]): RDD[(K, Tile)] = localAdd(other, None)
 
-  def localAdd(others: Traversable[RDD[(K, Tile)]]): RDD[(K, Tile)] = localAdd(others, None)
-  def localAdd(others: Traversable[RDD[(K, Tile)]], partitioner: Option[Partitioner]): RDD[(K, Tile)] =
+  def localAdd(others: Iterable[RDD[(K, Tile)]]): RDD[(K, Tile)] = localAdd(others, None)
+  def localAdd(others: Iterable[RDD[(K, Tile)]], partitioner: Option[Partitioner]): RDD[(K, Tile)] =
     self.combineValues(others, partitioner) { Add.apply }
 
-  def +(others: Traversable[RDD[(K, Tile)]]): RDD[(K, Tile)] = localAdd(others, None)
+  def +(others: Iterable[RDD[(K, Tile)]]): RDD[(K, Tile)] = localAdd(others, None)
 }

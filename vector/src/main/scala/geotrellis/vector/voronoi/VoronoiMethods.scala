@@ -20,11 +20,11 @@ import geotrellis.util.MethodExtensions
 import geotrellis.vector._
 import org.locationtech.jts.geom.Coordinate
 
-trait VoronoiDiagramCoordinateMethods extends MethodExtensions[Traversable[Coordinate]] {
+trait VoronoiDiagramCoordinateMethods extends MethodExtensions[Iterable[Coordinate]] {
   def voronoiDiagram(extent: Extent): VoronoiDiagram = { VoronoiDiagram(self.toArray, extent) }
 }
 
-trait VoronoiDiagramPointMethods extends MethodExtensions[Traversable[Point]] {
+trait VoronoiDiagramPointMethods extends MethodExtensions[Iterable[Point]] {
   def voronoiDiagram(extent: Extent): VoronoiDiagram = { VoronoiDiagram(self.map(_.getCoordinate).toArray, extent) }
 }
 

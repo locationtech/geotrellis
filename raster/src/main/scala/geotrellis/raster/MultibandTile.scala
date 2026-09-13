@@ -33,7 +33,7 @@ object MultibandTile {
     * represent the bands.  This creates an [[ArrayMultibandTile]],
     * the default implementation of [[MultibandTile]].
     */
-  def apply(bands: Traversable[Tile]): MultibandTile =
+  def apply(bands: Iterable[Tile]): MultibandTile =
     ArrayMultibandTile(bands)
 
   /** Creates a multiband tile from a sequence of tiles which represent the bands.

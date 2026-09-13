@@ -26,7 +26,7 @@ import geotrellis.util.annotations.experimental
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.model.ListObjectsV2Request
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import java.net.URI
 
 /**

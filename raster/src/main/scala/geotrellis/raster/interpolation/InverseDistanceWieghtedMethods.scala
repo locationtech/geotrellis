@@ -20,7 +20,7 @@ import geotrellis.raster._
 import geotrellis.vector._
 import geotrellis.util.MethodExtensions
 
-abstract class InverseDistanceWeightedMethods[D](implicit ev: D => Double) extends MethodExtensions[Traversable[PointFeature[D]]] {
+abstract class InverseDistanceWeightedMethods[D](implicit ev: D => Double) extends MethodExtensions[Iterable[PointFeature[D]]] {
   def inverseDistanceWeighted(rasterExtent: RasterExtent, options: InverseDistanceWeighted.Options): Raster[Tile] =
     InverseDistanceWeighted(self, rasterExtent, options)
 

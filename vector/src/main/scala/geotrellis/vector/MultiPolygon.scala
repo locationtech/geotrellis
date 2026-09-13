@@ -27,7 +27,7 @@ trait MultiPolygonConstructors {
   def apply(ps: jts.Polygon*): jts.MultiPolygon =
     apply(ps)
 
-  def apply(ps: Traversable[jts.Polygon]): jts.MultiPolygon =
+  def apply(ps: Iterable[jts.Polygon]): jts.MultiPolygon =
     factory.createMultiPolygon(ps.toArray)
 
   def apply(ps: Array[jts.Polygon]): jts.MultiPolygon = {

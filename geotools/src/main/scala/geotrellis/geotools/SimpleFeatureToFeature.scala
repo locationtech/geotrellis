@@ -20,7 +20,7 @@ import geotrellis.vector._
 import org.geotools.api.feature.simple.SimpleFeature
 
 import scala.collection._
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import scala.reflect.ClassTag
 
 object SimpleFeatureToFeature {

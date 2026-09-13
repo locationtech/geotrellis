@@ -193,7 +193,7 @@ object GeoTiffSegment {
     deinterleave(bytes, bandCount, bytesPerSample, index :: Nil).head
 
   private[raster]
-  def deinterleave(bytes: Array[Byte], bandCount: Int, bytesPerSample: Int, indices: Traversable[Int]): Array[Array[Byte]] = {
+  def deinterleave(bytes: Array[Byte], bandCount: Int, bytesPerSample: Int, indices: Iterable[Int]): Array[Array[Byte]] = {
     val indicesList = indices.toList
     val bandToIndex = indicesList.zipWithIndex.toMap
     val actualBandCount = indicesList.length
@@ -261,7 +261,7 @@ object GeoTiffSegment {
     deinterleaveBitSegment(segment, dims, bandCount, index :: Nil).head
 
   private[raster]
-  def deinterleaveBitSegment(segment: GeoTiffSegment, dims: Dimensions[Int], bandCount: Int, indices: Traversable[Int]): Array[Array[Byte]] = {
+  def deinterleaveBitSegment(segment: GeoTiffSegment, dims: Dimensions[Int], bandCount: Int, indices: Iterable[Int]): Array[Array[Byte]] = {
     val cols = dims.cols
     val rows = dims.rows
     val paddedCols = {

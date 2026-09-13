@@ -26,7 +26,7 @@ trait MinorityTileCollectionMethods[K] extends MethodExtensions[Seq[(K, Tile)]] 
     * Assigns to each cell the value within the given rasters that is the least
     * numerous.
     */
-  def localMinority(others: Traversable[Seq[(K, Tile)]]): Seq[(K, Tile)] =
+  def localMinority(others: Iterable[Seq[(K, Tile)]]): Seq[(K, Tile)] =
     self.combineValues(others)(Minority.apply)
 
   /**
@@ -40,7 +40,7 @@ trait MinorityTileCollectionMethods[K] extends MethodExtensions[Seq[(K, Tile)]] 
     * Assigns to each cell the value within the given rasters that is the nth
     * least numerous.
     */
-  def localMinority(n: Int, others: Traversable[Seq[(K, Tile)]]): Seq[(K, Tile)] =
+  def localMinority(n: Int, others: Iterable[Seq[(K, Tile)]]): Seq[(K, Tile)] =
     self.combineValues(others) { tiles => Minority(n, tiles) }
 
   /**

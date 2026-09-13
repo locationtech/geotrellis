@@ -50,7 +50,7 @@ case class Pyramid[
   def minZoom = levels.keys.min
   def maxZoom = levels.keys.max
 
-  def persist(storageLevel: StorageLevel) = levels.mapValues{ _.persist(storageLevel) }
+  def persist(storageLevel: StorageLevel) = levels.view.mapValues{ _.persist(storageLevel) }.toMap
 
   def write(
     layerName: String,
@@ -278,13 +278,13 @@ object Pyramid {
     startZoom: Int,
     endZoom: Int,
     options: Options
-  ): Stream[(Int, RDD[(K, V)] with Metadata[M])] =
+  ): LazyList[(Int, RDD[(K, V)] with Metadata[M])] =
     (startZoom, rdd) #:: {
       if (startZoom > endZoom) {
         val (nextZoom, nextRdd) = Pyramid.up(rdd, layoutScheme, startZoom, options)
         levelStream(nextRdd, layoutScheme, nextZoom, endZoom, options)
       } else {
-        Stream.empty
+        LazyList.empty
       }
     }
 
@@ -296,7 +296,7 @@ object Pyramid {
     layoutScheme: LayoutScheme,
     startZoom: Int,
     endZoom: Int
-  ): Stream[(Int, RDD[(K, V)] with Metadata[M])] =
+  ): LazyList[(Int, RDD[(K, V)] with Metadata[M])] =
     levelStream(rdd, layoutScheme, startZoom, endZoom, Options.DEFAULT)
 
   def levelStream[
@@ -307,7 +307,7 @@ object Pyramid {
     layoutScheme: LayoutScheme,
     startZoom: Int,
     options: Options
-  ): Stream[(Int, RDD[(K, V)] with Metadata[M])] =
+  ): LazyList[(Int, RDD[(K, V)] with Metadata[M])] =
     levelStream(rdd, layoutScheme, startZoom, 0, options)
 
   def levelStream[
@@ -317,7 +317,7 @@ object Pyramid {
   ](rdd: RDD[(K, V)] with Metadata[M],
     layoutScheme: LayoutScheme,
     startZoom: Int
-  ): Stream[(Int, RDD[(K, V)] with Metadata[M])] =
+  ): LazyList[(Int, RDD[(K, V)] with Metadata[M])] =
     levelStream(rdd, layoutScheme, startZoom, Options.DEFAULT)
 
   def upLevels[

@@ -31,11 +31,11 @@ trait KNearestMethods[T] extends MethodExtensions[RDD[T]] {
 
   def kNearest(ex: Extent, k: Int)(f: T => Geometry): Seq[T] = { KNearestRDD.kNearest[T](self, ex, k)(f) }
 
-  def kNearest[H <: Geometry](centers: Traversable[H], k: Int)(f: T => Geometry): Seq[Seq[T]] = {
+  def kNearest[H <: Geometry](centers: Iterable[H], k: Int)(f: T => Geometry): Seq[Seq[T]] = {
     KNearestRDD.kNearest[T, H](self, centers, k)(f, {g => Extent(g.getEnvelopeInternal)})
   }
 
-  def kNearest[H <: Geometry, F](centers: Traversable[Feature[H, F]], k: Int)(f: T => Geometry)(implicit d: DummyImplicit): Seq[Seq[T]] = {
+  def kNearest[H <: Geometry, F](centers: Iterable[Feature[H, F]], k: Int)(f: T => Geometry)(implicit d: DummyImplicit): Seq[Seq[T]] = {
     KNearestRDD.kNearest[T, Feature[H, F]](self, centers, k)(f, {f => Extent(f.geom.getEnvelopeInternal)})
   }
 }
@@ -49,11 +49,11 @@ trait KNearestGeometryMethods[G <: Geometry] extends MethodExtensions[RDD[G]] {
 
   def kNearest(ex: Extent, k: Int): Seq[G] = KNearestRDD.kNearest[G](self, ex, k){ g: G => g }
 
-  def kNearest[H <: Geometry](centers: Traversable[H], k: Int): Seq[Seq[G]] = {
+  def kNearest[H <: Geometry](centers: Iterable[H], k: Int): Seq[Seq[G]] = {
     KNearestRDD.kNearest[G, H](self, centers, k)(x => x, x => x)
   }
 
-  def kNearest[H <: Geometry, F](centers: Traversable[Feature[H, F]], k: Int)(implicit d: DummyImplicit): Seq[Seq[G]] = {
+  def kNearest[H <: Geometry, F](centers: Iterable[Feature[H, F]], k: Int)(implicit d: DummyImplicit): Seq[Seq[G]] = {
     KNearestRDD.kNearest[G, Feature[H, F]](self, centers, k)(x => x, _.geom)
   }
 }
@@ -71,11 +71,11 @@ trait KNearestFeatureMethods[G <: Geometry, D] extends MethodExtensions[RDD[Feat
   def kNearest(ex: Extent, k: Int): Seq[Feature[G, D]] =
     KNearestRDD.kNearest[Feature[G, D]](self, ex, k){ g: Feature[G, D] => g.geom }
 
-  def kNearest[H <: Geometry](centers: Traversable[H], k: Int): Seq[Seq[Feature[G, D]]] = {
+  def kNearest[H <: Geometry](centers: Iterable[H], k: Int): Seq[Seq[Feature[G, D]]] = {
     KNearestRDD.kNearest[Feature[G, D], H](self, centers, k)(_.geom, x => x)
   }
 
-  def kNearest[H <: Geometry, F](centers: Traversable[Feature[H, F]], k: Int)(implicit d: DummyImplicit): Seq[Seq[Feature[G, D]]] = {
+  def kNearest[H <: Geometry, F](centers: Iterable[Feature[H, F]], k: Int)(implicit d: DummyImplicit): Seq[Seq[Feature[G, D]]] = {
     KNearestRDD.kNearest[Feature[G, D], Feature[H, F]](self, centers, k)(_.geom, _.geom)
   }
 }

@@ -32,7 +32,7 @@ import com.google.uzaygezen.core.ranges.LongRange
 import com.google.uzaygezen.core.ranges.LongRangeHome
 import com.google.common.base.Functions
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import spire.syntax.cfor._
 
 object HilbertSpatialKeyIndex {
@@ -116,6 +116,6 @@ class HilbertSpatialKeyIndex(val keyBounds: KeyBounds[SpatialKey], val xResoluti
       result(i) = (BigInt(range.getIndexRange.getStart), BigInt(range.getIndexRange.getEnd) - 1)
     }
 
-    result
+    result.toIndexedSeq
   }
 }

@@ -28,7 +28,7 @@ import cats.effect._
 /**
   * @define experimental <span class="badge badge-red" style="float: right;">EXPERIMENTAL</span>@experimental
   */
-@experimental class FileGeoTiffLayerReader[M[T] <: Traversable[T]](
+@experimental class FileGeoTiffLayerReader[M[T] <: Iterable[T]](
   val attributeStore: AttributeStore[M, GeoTiffMetadata],
   val layoutScheme: ZoomedLayoutScheme,
   val resampleMethod: ResampleMethod = NearestNeighbor,
@@ -39,7 +39,7 @@ import cats.effect._
 }
 
 @experimental object FileGeoTiffLayerReader {
-  def apply[M[T] <: Traversable[T]](
+  def apply[M[T] <: Iterable[T]](
     attributeStore: AttributeStore[M, GeoTiffMetadata],
     layoutScheme: ZoomedLayoutScheme,
     resampleMethod: ResampleMethod = NearestNeighbor,

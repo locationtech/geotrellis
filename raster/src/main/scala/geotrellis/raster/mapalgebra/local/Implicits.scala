@@ -24,5 +24,5 @@ object Implicits extends Implicits
 trait Implicits {
   implicit class withTileLocalMethods(val self: Tile) extends LocalMethods
 
-  implicit class withTileSeqLocalMethods(val self: Traversable[Tile]) extends LocalSeqMethods
+  implicit class withTileSeqLocalMethods(val self: Iterable[Tile]) extends LocalSeqMethods
 }

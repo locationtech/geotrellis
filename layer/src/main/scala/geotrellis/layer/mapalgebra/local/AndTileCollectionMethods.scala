@@ -41,9 +41,9 @@ trait AndTileCollectionMethods[K] extends MethodExtensions[Seq[(K, Tile)]] {
   def &(rs: TileLayerCollection[K]): Seq[(K, Tile)] = localAnd(rs)
 
   /** And the values of each cell in each raster.  */
-  def localAnd(others: Traversable[Seq[(K, Tile)]]): Seq[(K, Tile)] =
+  def localAnd(others: Iterable[Seq[(K, Tile)]]): Seq[(K, Tile)] =
     self.combineValues(others){ And.apply }
 
   /** And the values of each cell in each raster. */
-  def &(others: Traversable[Seq[(K, Tile)]]): Seq[(K, Tile)] = localAnd(others)
+  def &(others: Iterable[Seq[(K, Tile)]]): Seq[(K, Tile)] = localAnd(others)
 }

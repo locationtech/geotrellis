@@ -49,7 +49,7 @@ class TileLayerMetadataSpec extends AnyFunSpec with Matchers {
       json.hcursor.downField("crs").as[CRS] should equal(Right(LatLng))
       json.hcursor.downField("bounds").as[Bounds[SpaceTimeKey]] should equal(Right(bounds))
 
-      json.as[TileLayerMetadata[SpaceTimeKey]].right.map(_ should equal(tileLayerMetadata))
+      json.as[TileLayerMetadata[SpaceTimeKey]].map(_ should equal(tileLayerMetadata))
     }
 
     it("should parse a GeoTrellis 1.2 TileLayerMetadata object") {

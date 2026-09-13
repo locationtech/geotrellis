@@ -63,7 +63,7 @@ object LayerReader {
    * Find instances of [[LayerReaderProvider]] through Java SPI.
    */
   def apply(attributeStore: AttributeStore, layerReaderUri: URI)(implicit sc: SparkContext): FilteringLayerReader[LayerId] = {
-    import scala.collection.JavaConverters._
+    import scala.jdk.CollectionConverters._
     ServiceLoader.load(classOf[LayerReaderProvider])
       .iterator().asScala
       .find(_.canProcess(layerReaderUri))

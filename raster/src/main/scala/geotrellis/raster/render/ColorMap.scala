@@ -243,7 +243,7 @@ class IntColorMap(breaksToColors: Map[Int, Int], val options: Options = Options.
 
   def breaksString: String = {
     breaksToColors
-      .toStream
+      .to(LazyList)
       .map({ case (k,v) => s"${k}:${Integer.toHexString(v)}"})
       .mkString(";")
   }
@@ -339,7 +339,7 @@ class DoubleColorMap(breaksToColors: Map[Double, Int], val options: Options = Op
 
   def breaksString: String = {
     breaksToColors
-      .toStream
+      .to(LazyList)
       .map({ case (k,v) => s"${k}:${Integer.toHexString(v)}"})
       .mkString(";")
   }

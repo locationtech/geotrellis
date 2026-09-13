@@ -21,17 +21,17 @@ import org.locationtech.jts.geom.{Coordinate, MultiPoint, Point}
 object Implicits extends Implicits
 
 trait Implicits {
-  implicit class withDelaunayTriangulationPointMethods(val self: Traversable[Point]) extends DelaunayTriangulationPointMethods
+  implicit class withDelaunayTriangulationPointMethods(val self: Iterable[Point]) extends DelaunayTriangulationPointMethods
 
-  implicit class withDelaunayTriangulationCoordinateMethods(val self: Traversable[Coordinate]) extends DelaunayTriangulationCoordinateMethods
+  implicit class withDelaunayTriangulationCoordinateMethods(val self: Iterable[Coordinate]) extends DelaunayTriangulationCoordinateMethods
 
   implicit class withDelaunayTriangulationPointArrayMethods(val self: Array[Point]) extends DelaunayTriangulationArrayMethods
 
-  implicit class withVoronoiDiagramPointMethods(val self: Traversable[Point]) extends VoronoiDiagramPointMethods
+  implicit class withVoronoiDiagramPointMethods(val self: Iterable[Point]) extends VoronoiDiagramPointMethods
 
   implicit class withVoronoiDiagramPointArrayMethods(val self: Array[Point]) extends VoronoiDiagramPointArrayMethods
 
-  implicit class withVoronoiDiagramCoordinateMethods(val self: Traversable[Coordinate]) extends VoronoiDiagramCoordinateMethods
+  implicit class withVoronoiDiagramCoordinateMethods(val self: Iterable[Coordinate]) extends VoronoiDiagramCoordinateMethods
 
   implicit class withVoronoiDiagramCoordinateArrayMethods(val self: Array[Coordinate]) extends VoronoiDiagramCoordinateArrayMethods
 

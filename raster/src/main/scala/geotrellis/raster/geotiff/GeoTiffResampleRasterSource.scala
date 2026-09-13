@@ -96,14 +96,14 @@ class GeoTiffResampleRasterSource(
     tiff.synchronized { if (it.hasNext) Some(it.next()) else None }
   }
 
-  override def readExtents(extents: Traversable[Extent], bands: Seq[Int]): Iterator[Raster[MultibandTile]] = {
+  override def readExtents(extents: Iterable[Extent], bands: Seq[Int]): Iterator[Raster[MultibandTile]] = {
     val targetPixelBounds = extents.map(gridExtent.gridBoundsFor(_))
     // result extents may actually expand to cover pixels at our resolution
     // TODO: verify the logic here, should the sourcePixelBounds be calculated from input or expanded extent?
     readBounds(targetPixelBounds, bands)
   }
 
-  override def readBounds(bounds: Traversable[GridBounds[Long]], bands: Seq[Int]): Iterator[Raster[MultibandTile]] = {
+  override def readBounds(bounds: Iterable[GridBounds[Long]], bands: Seq[Int]): Iterator[Raster[MultibandTile]] = {
     val geoTiffTile = closestTiffOverview.tile.asInstanceOf[GeoTiffMultibandTile]
 
     val windows = { for {

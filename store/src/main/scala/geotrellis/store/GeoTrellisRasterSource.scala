@@ -47,7 +47,7 @@ case class Layer(id: LayerId, metadata: TileLayerMetadata[_], bandCount: Int) {
 class GeoTrellisRasterSource(
   val attributeStore: AttributeStore,
   val dataPath: GeoTrellisPath,
-  val sourceLayers: Stream[Layer],
+  val sourceLayers: LazyList[Layer],
   val targetCellType: Option[TargetCellType],
   val time: Option[ZonedDateTime],
   val timeMetadataKey: String = "times"
@@ -118,11 +118,11 @@ class GeoTrellisRasterSource(
       .map(gridExtent.extentFor(_).buffer(- cellSize.width / 2, - cellSize.height / 2))
       .flatMap(read(_, bands))
 
-  override def readExtents(extents: Traversable[Extent], bands: Seq[Int]): Iterator[Raster[MultibandTile]] =
-    extents.toIterator.flatMap(read(_, bands))
+  override def readExtents(extents: Iterable[Extent], bands: Seq[Int]): Iterator[Raster[MultibandTile]] =
+    extents.iterator.flatMap(read(_, bands))
 
-  override def readBounds(bounds: Traversable[GridBounds[Long]], bands: Seq[Int]): Iterator[Raster[MultibandTile]] =
-    bounds.toIterator.flatMap(_.intersection(this.dimensions).flatMap(read(_, bands)))
+  override def readBounds(bounds: Iterable[GridBounds[Long]], bands: Seq[Int]): Iterator[Raster[MultibandTile]] =
+    bounds.iterator.flatMap(_.intersection(this.dimensions).flatMap(read(_, bands)))
 
   def reprojection(targetCRS: CRS, resampleTarget: ResampleTarget = DefaultTarget, method: ResampleMethod = ResampleMethod.DEFAULT, strategy: OverviewStrategy = OverviewStrategy.DEFAULT): RasterSource = {
     if (targetCRS != this.crs) {
@@ -175,12 +175,12 @@ object GeoTrellisRasterSource {
   }
 
   /** Read metadata for all layers that share a name and sort them by their resolution */
-  def getSourceLayersByName(attributeStore: AttributeStore, layerName: String, bandCount: Int): Stream[Layer] = {
+  def getSourceLayersByName(attributeStore: AttributeStore, layerName: String, bandCount: Int): LazyList[Layer] = {
     attributeStore.
       layerIds.
       filter(_.name == layerName).
       sortWith(_.zoom > _.zoom).
-      toStream. // We will be lazy about fetching higher zoom levels
+      to(LazyList). // We will be lazy about fetching higher zoom levels
       map { id =>
         val metadata = attributeStore.readTileLayerMetadataErased(id)
         Layer(id, metadata, bandCount)

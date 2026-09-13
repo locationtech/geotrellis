@@ -79,6 +79,7 @@ class FileAttributeStore(val catalogPath: String) extends BlobLayerAttributeStor
   def layerAttributeFiles(layerId: LayerId): Seq[File] =
     attributeDirectory
       .listFiles(new WildcardFileFilter(s"${layerId.name}${SEP}${layerId.zoom}${SEP}*.json"): FileFilter)
+      .toIndexedSeq
 
   def layerExists(layerId: LayerId): Boolean =
     attributeFile(layerId, AttributeStore.Fields.metadata).exists
@@ -110,6 +111,7 @@ class FileAttributeStore(val catalogPath: String) extends BlobLayerAttributeStor
         LayerId(name, zoomStr.toInt)
       }
       .distinct
+      .toIndexedSeq
 
   def availableAttributes(layerId: LayerId): Seq[String] = {
     layerAttributeFiles(layerId).map { file =>

@@ -38,7 +38,7 @@ import scala.reflect.ClassTag
 /**
   * @define experimental <span class="badge badge-red" style="float: right;">EXPERIMENTAL</span>@experimental
   */
-@experimental trait GeoTiffLayerReader[M[T] <: Traversable[T]] {
+@experimental trait GeoTiffLayerReader[M[T] <: Iterable[T]] {
   val attributeStore: AttributeStore[M, GeoTiffMetadata]
   val layoutScheme: ZoomedLayoutScheme
   val resampleMethod: ResampleMethod
@@ -61,7 +61,7 @@ import scala.reflect.ClassTag
     val keyExtent: Extent = mapTransform(SpatialKey(x, y))
 
     val index: fs2.Stream[IO, GeoTiffMetadata] =
-      fs2.Stream.fromBlockingIterator[IO](attributeStore.query(layerId.name, ProjectedExtent(keyExtent, layoutScheme.crs)).toIterator, chunkSize = 1)
+      fs2.Stream.fromBlockingIterator[IO](attributeStore.query(layerId.name, ProjectedExtent(keyExtent, layoutScheme.crs)).iterator, chunkSize = 1)
 
     val readRecord: GeoTiffMetadata => fs2.Stream[IO, Option[Raster[V]]] = { md =>
       fs2.Stream eval IO.blocking {
@@ -94,14 +94,14 @@ import scala.reflect.ClassTag
   @experimental def readAll[V <: CellGrid[Int]: GeoTiffReader: ClassTag]
     (layerId: LayerId)
     (implicit rep: Raster[V] => RasterReprojectMethods[Raster[V]],
-              res: Raster[V] => RasterResampleMethods[Raster[V]]): Traversable[Raster[V]] = {
+              res: Raster[V] => RasterResampleMethods[Raster[V]]): Iterable[Raster[V]] = {
     val layout =
       layoutScheme
         .levelForZoom(layerId.zoom)
         .layout
 
     val index: fs2.Stream[IO, GeoTiffMetadata] =
-      fs2.Stream.fromIterator[IO](attributeStore.query(layerId.name).toIterator, 1)
+      fs2.Stream.fromIterator[IO](attributeStore.query(layerId.name).iterator, 1)
 
     val readRecord: GeoTiffMetadata => fs2.Stream[IO, Raster[V]] = { md =>
       fs2.Stream eval IO {

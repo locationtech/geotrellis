@@ -26,8 +26,8 @@ trait Implicits {
   implicit class withCollectionCombineMethods[K, V](val self: Seq[(K, V)])
     extends CollectionCombineMethods[K, V]
 
-  implicit class withCollectionCombineTraversableMethods[K, V](rs: Traversable[Seq[(K, V)]]) {
-    def combineValues[R](f: Traversable[V] => R): Seq[(K, R)] =
+  implicit class withCollectionCombineTraversableMethods[K, V](rs: Iterable[Seq[(K, V)]]) {
+    def combineValues[R](f: Iterable[V] => R): Seq[(K, R)] =
       rs.head.combineValues(rs.tail)(f)
   }
 

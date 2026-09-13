@@ -42,10 +42,10 @@ trait XorTileRDDMethods[K] extends TileRDDMethods[K] {
   def ^(r: TileLayerRDD[K]): RDD[(K, Tile)] = localXor(r, None)
   
   /** Xor the values of each cell in each raster. */
-  def localXor(others: Traversable[RDD[(K, Tile)]]): RDD[(K, Tile)] = localXor(others, None)
-  def localXor(others: Traversable[RDD[(K, Tile)]], partitioner: Option[Partitioner]): RDD[(K, Tile)] =
+  def localXor(others: Iterable[RDD[(K, Tile)]]): RDD[(K, Tile)] = localXor(others, None)
+  def localXor(others: Iterable[RDD[(K, Tile)]], partitioner: Option[Partitioner]): RDD[(K, Tile)] =
     self.combineValues(others, partitioner)(Xor.apply)
 
   /** Xor the values of each cell in each raster. */
-  def ^(others: Traversable[RDD[(K, Tile)]]): RDD[(K, Tile)] = localXor(others, None)
+  def ^(others: Iterable[RDD[(K, Tile)]]): RDD[(K, Tile)] = localXor(others, None)
 }

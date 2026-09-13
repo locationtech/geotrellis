@@ -185,7 +185,7 @@ class StitchedDelaunaySpec extends AnyFunSpec with Matchers {
       val dt = DelaunayTriangulation(points)
       println(s"Raw triangulation result: ${dt.triangleMap.triangleVertices}")
 
-      (dt.triangleMap.triangleVertices.sameElements(stitch.triangles())) should be (true)
+      (dt.triangleMap.triangleVertices.iterator.sameElements(stitch.triangles())) should be (true)
     }
   }
 }

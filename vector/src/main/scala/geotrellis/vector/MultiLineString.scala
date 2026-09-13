@@ -28,7 +28,7 @@ trait MultiLineStringConstructors {
   def apply(ls: jts.LineString*): jts.MultiLineString =
     apply(ls)
 
-  def apply(ls: Traversable[jts.LineString]): jts.MultiLineString =
+  def apply(ls: Iterable[jts.LineString]): jts.MultiLineString =
     factory.createMultiLineString(ls.toArray)
 
   def apply(ls: Array[jts.LineString]): jts.MultiLineString = {

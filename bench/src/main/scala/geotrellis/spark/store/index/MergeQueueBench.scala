@@ -67,7 +67,7 @@ class MergeQueueBench {
 
 object MergeQueueBench {
   object AlternateMergeQueue {
-    def apply(ranges: TraversableOnce[(Long, Long)]): Seq[(Long, Long)] = {
+    def apply(ranges: IterableOnce[(Long, Long)]): Seq[(Long, Long)] = {
       var merged: List[(Long, Long)] = Nil
       ranges.toSeq
         .sortBy(_._1)

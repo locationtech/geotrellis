@@ -50,7 +50,7 @@ trait AndMethods extends MethodExtensions[Tile] {
   /** And the values of each cell in each raster. */
   def &(r: Tile): Tile = localAnd(r)
   /** And the values of each cell in each raster.  */
-  def localAnd(rs: Traversable[Tile]): Tile = And(self +: rs.toSeq)
+  def localAnd(rs: Iterable[Tile]): Tile = And(self +: rs.toSeq)
   /** And the values of each cell in each raster. */
-  def &(rs: Traversable[Tile]): Tile = localAnd(rs)
+  def &(rs: Iterable[Tile]): Tile = localAnd(rs)
 }

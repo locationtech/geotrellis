@@ -314,7 +314,7 @@ abstract class GeoTiffMultibandTile(
 
   def getSegment(i: Int): GeoTiffSegment
 
-  def getSegments(ids: Traversable[Int]): Iterator[(Int, GeoTiffSegment)]
+  def getSegments(ids: Iterable[Int]): Iterator[(Int, GeoTiffSegment)]
 
   val segmentCount: Int = segmentBytes.size
   private val isTiled = segmentLayout.isTiled
@@ -402,8 +402,8 @@ abstract class GeoTiffMultibandTile(
 
   private def _subsetBands(
     bandSequence: Seq[Int],
-    deinterleaveBitSegment: (GeoTiffSegment, Dimensions[Int], Int, Traversable[Int]) => Array[Array[Byte]],
-    deinterleave: (Array[Byte], Int, Int, Traversable[Int]) => Array[Array[Byte]]
+    deinterleaveBitSegment: (GeoTiffSegment, Dimensions[Int], Int, Iterable[Int]) => Array[Array[Byte]],
+    deinterleave: (Array[Byte], Int, Int, Iterable[Int]) => Array[Array[Byte]]
   ): Array[Tile] = {
     val actualBandCount = bandSequence.size
     val tiles = new Array[Tile](actualBandCount)

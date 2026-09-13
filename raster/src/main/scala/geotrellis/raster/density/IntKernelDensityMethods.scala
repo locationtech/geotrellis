@@ -21,7 +21,7 @@ import geotrellis.raster.mapalgebra.focal.Kernel
 import geotrellis.util.MethodExtensions
 import geotrellis.vector._
 
-trait IntKernelDensityMethods extends MethodExtensions[Traversable[PointFeature[Int]]] {
+trait IntKernelDensityMethods extends MethodExtensions[Iterable[PointFeature[Int]]] {
   def kernelDensity(kernel: Kernel, rasterExtent: RasterExtent): Tile =
     KernelDensity(self, kernel, rasterExtent)
 

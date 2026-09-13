@@ -40,9 +40,9 @@ trait XorTileCollectionMethods[K] extends MethodExtensions[Seq[(K, Tile)]] {
   def ^(r: TileLayerCollection[K]): Seq[(K, Tile)] = localXor(r)
 
   /** Xor the values of each cell in each raster. */
-  def localXor(others: Traversable[Seq[(K, Tile)]]): Seq[(K, Tile)] =
+  def localXor(others: Iterable[Seq[(K, Tile)]]): Seq[(K, Tile)] =
     self.combineValues(others)(Xor.apply)
 
   /** Xor the values of each cell in each raster. */
-  def ^(others: Traversable[Seq[(K, Tile)]]): Seq[(K, Tile)] = localXor(others)
+  def ^(others: Iterable[Seq[(K, Tile)]]): Seq[(K, Tile)] = localXor(others)
 }

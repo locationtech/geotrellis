@@ -28,7 +28,7 @@ import org.apache.hadoop.conf.Configuration
 /**
   * @define experimental <span class="badge badge-red" style="float: right;">EXPERIMENTAL</span>@experimental
   */
-@experimental class HadoopGeoTiffLayerReader[M[T] <: Traversable[T]](
+@experimental class HadoopGeoTiffLayerReader[M[T] <: Iterable[T]](
   val attributeStore: AttributeStore[M, GeoTiffMetadata],
   val layoutScheme: ZoomedLayoutScheme,
   val resampleMethod: ResampleMethod = NearestNeighbor,
@@ -40,7 +40,7 @@ import org.apache.hadoop.conf.Configuration
 }
 
 @experimental object HadoopGeoTiffLayerReader {
-  def apply[M[T] <: Traversable[T]](
+  def apply[M[T] <: Iterable[T]](
     attributeStore: AttributeStore[M, GeoTiffMetadata],
     layoutScheme: ZoomedLayoutScheme,
     resampleMethod: ResampleMethod = NearestNeighbor,

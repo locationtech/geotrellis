@@ -59,7 +59,7 @@ trait DivideMethods extends MethodExtensions[Tile] {
   /** Divide the values of each cell in each raster. */
   def /(r: Tile): Tile = localDivide(r)
   /** Divide the values of each cell in each raster. */
-  def localDivide(rs: Traversable[Tile]): Tile = Divide(self +: rs.toSeq)
+  def localDivide(rs: Iterable[Tile]): Tile = Divide(self +: rs.toSeq)
   /** Divide the values of each cell in each raster. */
-  def /(rs: Traversable[Tile]): Tile = localDivide(rs)
+  def /(rs: Iterable[Tile]): Tile = localDivide(rs)
 }

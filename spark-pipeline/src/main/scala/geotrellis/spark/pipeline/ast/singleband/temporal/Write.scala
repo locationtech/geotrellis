@@ -26,9 +26,9 @@ import geotrellis.spark.pipeline.json.write
 import org.apache.spark.SparkContext
 
 case class Write(
-  node: Node[Stream[(Int,TileLayerRDD[SpaceTimeKey])]],
+  node: Node[LazyList[(Int,TileLayerRDD[SpaceTimeKey])]],
   arg: write.JsonWrite
-) extends Output[Stream[(Int, TileLayerRDD[SpaceTimeKey])]] {
+) extends Output[LazyList[(Int, TileLayerRDD[SpaceTimeKey])]] {
   def asJson = node.asJson :+ arg.asJson
-  def eval(implicit sc: SparkContext): Stream[(Int, TileLayerRDD[SpaceTimeKey])] = Output.write(arg)(node.eval)
+  def eval(implicit sc: SparkContext): LazyList[(Int, TileLayerRDD[SpaceTimeKey])] = Output.write(arg)(node.eval)
 }

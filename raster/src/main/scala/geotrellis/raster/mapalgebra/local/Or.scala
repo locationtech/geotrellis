@@ -50,7 +50,7 @@ trait OrMethods extends MethodExtensions[Tile] {
   /** Or the values of each cell in each raster. */
   def |(r: Tile): Tile = localOr(r)
   /** Or the values of each cell in each raster.  */
-  def localOr(rs: Traversable[Tile]): Tile = Or(self +: rs.toSeq)
+  def localOr(rs: Iterable[Tile]): Tile = Or(self +: rs.toSeq)
   /** Or the values of each cell in each raster. */
-  def |(rs: Traversable[Tile]): Tile = localOr(rs)
+  def |(rs: Iterable[Tile]): Tile = localOr(rs)
 }
