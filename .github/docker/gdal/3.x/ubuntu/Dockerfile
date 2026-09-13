@@ -1,11 +1,14 @@
 # docker buildx create --use --platform=linux/arm64,linux/amd64 --name multi-platform-builder
 # docker buildx inspect --bootstrap
 #
+# docker buildx use multi-platform-builder
 # docker buildx build --build-arg="JAVA_VERSION=11" --build-arg="GDAL_VERSION=3.10.3" --platform linux/amd64,linux/arm64 --push --tag daunnc/osgeo-gdal-jdk11:3.10.3 .
 # docker buildx build --build-arg="JAVA_VERSION=17" --build-arg="GDAL_VERSION=3.10.3" --platform linux/amd64,linux/arm64 --push --tag daunnc/osgeo-gdal-jdk17:3.10.3 .
 # docker buildx build --build-arg="JAVA_VERSION=21" --build-arg="GDAL_VERSION=3.10.3" --platform linux/amd64,linux/arm64 --push --tag daunnc/osgeo-gdal-jdk21:3.10.3 .
 # docker buildx build --build-arg="JAVA_VERSION=17" --build-arg="GDAL_VERSION=3.13.1" --platform linux/amd64,linux/arm64 --push --tag daunnc/osgeo-gdal-jdk17:3.13.1 .
 # docker buildx build --build-arg="JAVA_VERSION=21" --build-arg="GDAL_VERSION=3.13.1" --platform linux/amd64,linux/arm64 --push --tag daunnc/osgeo-gdal-jdk21:3.13.1 .
+# docker buildx build --build-arg="JAVA_VERSION=17" --build-arg="GDAL_VERSION=3.13.3" --platform linux/amd64,linux/arm64 --push --tag daunnc/osgeo-gdal-jdk17:3.13.3 .
+# docker buildx build --build-arg="JAVA_VERSION=21" --build-arg="GDAL_VERSION=3.13.3" --platform linux/amd64,linux/arm64 --push --tag daunnc/osgeo-gdal-jdk21:3.13.3 .
 
 ARG GDAL_VERSION=3.10.3
 FROM ghcr.io/osgeo/gdal:ubuntu-full-${GDAL_VERSION}
