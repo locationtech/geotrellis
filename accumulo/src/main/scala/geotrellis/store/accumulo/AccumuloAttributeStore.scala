@@ -19,7 +19,7 @@ package geotrellis.store.accumulo
 import geotrellis.store._
 import geotrellis.store.accumulo.conf.AccumuloConfig
 
-import org.apache.accumulo.core.client.{BatchWriterConfig, AccumuloClient}
+import org.apache.accumulo.core.client.{AccumuloClient, BatchWriterConfig}
 import org.apache.accumulo.core.security.Authorizations
 import org.apache.accumulo.core.data._
 import org.apache.accumulo.core.client.IteratorSetting

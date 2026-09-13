@@ -17,7 +17,7 @@
 package geotrellis.store.accumulo
 
 import org.apache.hadoop.io.Text
-import org.apache.accumulo.core.client.{BatchWriterConfig, AccumuloClient, Scanner}
+import org.apache.accumulo.core.client.{AccumuloClient, BatchWriterConfig, Scanner}
 import org.apache.accumulo.core.data.{Key, Mutation, Value}
 
 object Implicits extends Implicits
