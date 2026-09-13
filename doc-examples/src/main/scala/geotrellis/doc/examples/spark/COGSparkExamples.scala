@@ -195,6 +195,6 @@ object COGSparkExamples {
     val red: Raster[Tile] = geoTiffLayer.read[Tile](LayerId("RED", zoom))(x, y)
 
     // Read the entire layer
-    val layer: Traversable[Raster[Tile]] = geoTiffLayer.readAll[Tile](LayerId("RED", zoom))
+    val layer: Iterable[Raster[Tile]] = geoTiffLayer.readAll[Tile](LayerId("RED", zoom))
   }
 }

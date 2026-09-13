@@ -16,7 +16,7 @@
 
 package geotrellis.store.index
 
-import scala.collection.TraversableOnce
+import scala.collection.IterableOnce
 
 class MergeQueue(initialSize: Int = 1) {
   // Sorted data structure
@@ -63,9 +63,9 @@ class MergeQueue(initialSize: Int = 1) {
   }
 }
 object MergeQueue {
-  def apply(ranges: TraversableOnce[(BigInt, BigInt)]): Seq[(BigInt, BigInt)] = {
+  def apply(ranges: IterableOnce[(BigInt, BigInt)]): Seq[(BigInt, BigInt)] = {
     val q = new MergeQueue()
-    ranges.foreach(range => q += range)
+    ranges.iterator.foreach(range => q += range)
     q.toSeq
   }
 }

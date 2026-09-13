@@ -71,7 +71,7 @@ case class ConformingDelaunay(
     val len = tris.getNumGeometries
     val arr = Array.ofDim[Polygon](len)
     cfor(0)(_ < len, _ + 1) { i => arr(i) = tris.getGeometryN(i).asInstanceOf[Polygon] }
-    arr
+    arr.toIndexedSeq
   }
 
   val steinerPoints: Seq[Point] = {

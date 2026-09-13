@@ -22,7 +22,7 @@ import scala.annotation.tailrec
 
 class TileReducer(handle: (Int, Int)=>Int)(handleDouble: (Double, Double)=>Double) {
   // This class benchmarks fast, if you change it be sure to compare performance.
-  def apply(seq: Traversable[Tile]): Tile =
+  def apply(seq: Iterable[Tile]): Tile =
     apply(seq.toList)
 
   def apply(list: List[Tile]): Tile =

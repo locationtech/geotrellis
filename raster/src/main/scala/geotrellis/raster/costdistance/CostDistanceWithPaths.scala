@@ -43,7 +43,7 @@ case class CostDistanceWithPathsResult(
       res(i) = LineString(path.map(idx => ((idx % cols).toDouble, (idx / cols).toDouble)))
     }
 
-    (costs(idx), res)
+    (costs(idx), res.toIndexedSeq)
   }
 
   def getPath(prevPath: Seq[Int]): Seq[Seq[Int]] = {

@@ -121,7 +121,7 @@ trait GeoTiffBuilder[T <: CellGrid[Int]] extends Serializable {
 object GeoTiffBuilder {
   def apply[T <: CellGrid[Int]: GeoTiffBuilder] = implicitly[GeoTiffBuilder[T]]
 
-  implicit val singlebandGeoTiffBuilder = new GeoTiffBuilder[Tile] {
+  implicit val singlebandGeoTiffBuilder: GeoTiffBuilder[Tile] = new GeoTiffBuilder[Tile] {
     def makeTile(
       segments: Iterator[(Product2[Int, Int], Tile)],
       segmentLayout: GeoTiffSegmentLayout,
@@ -170,7 +170,7 @@ object GeoTiffBuilder {
     ) = SinglebandGeoTiff(tile, extent, crs, tags, options)
   }
 
-  implicit val multibandGeoTiffBuilder = new GeoTiffBuilder[MultibandTile] {
+  implicit val multibandGeoTiffBuilder: GeoTiffBuilder[MultibandTile] = new GeoTiffBuilder[MultibandTile] {
     def makeTile(
       segments: Iterator[(Product2[Int, Int], MultibandTile)],
       segmentLayout: GeoTiffSegmentLayout,

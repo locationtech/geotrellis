@@ -43,7 +43,7 @@ object EmpiricalVariogram {
     * Computes empirical semivariogram  for [[Linear]] model
     */
   def linear(pts: Array[PointFeature[Double]], radius: Option[Double] = None, lag: Double = 0.0): Array[(Double, Double)] =
-    LinearEmpiricalVariogram(pts, radius, lag)
+    LinearEmpiricalVariogram(pts.toIndexedSeq, radius, lag)
 }
 
 object NonLinearEmpiricalVariogram {

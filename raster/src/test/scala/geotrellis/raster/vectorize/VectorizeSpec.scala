@@ -36,7 +36,7 @@ class VectorizeSpec extends AnyFunSpec with RasterMatchers with RasterTestFiles 
   def br(col: Int, row: Int) = (d(col + 1), (d(row) + 1)* -10)    // Bottom right
 
   def assertPolygon(polygon: Polygon, expectedCoords: List[(Double, Double)]) = {
-    assertCoords(polygon.getCoordinates.map(c => (c.x, c.y)), expectedCoords)
+    assertCoords(polygon.getCoordinates.map(c => (c.x, c.y)).toIndexedSeq, expectedCoords)
   }
 
   def assertCoords(coordinates: Seq[(Double, Double)], expectedCoords: List[(Double, Double)]) = {
@@ -134,8 +134,8 @@ class VectorizeSpec extends AnyFunSpec with RasterMatchers with RasterTestFiles 
       val holes = poly.holes
       holes.length should be (1)
       val hole = holes(0)
-      assertCoords(shell.getCoordinates.map { c => (c.x, c.y) }, onesCoords)
-      assertCoords(hole.getCoordinates.map { c => (c.x, c.y) }, holeCoords)
+      assertCoords(shell.getCoordinates.map { c => (c.x, c.y) }.toIndexedSeq, onesCoords)
+      assertCoords(hole.getCoordinates.map { c => (c.x, c.y) }.toIndexedSeq, holeCoords)
     }
 
     it("should vectorize an off shape.") {
@@ -239,8 +239,8 @@ class VectorizeSpec extends AnyFunSpec with RasterMatchers with RasterTestFiles 
       val holes = poly.holes
       holes.length should be (1)
       val hole = holes(0)
-      assertCoords(shell.getCoordinates.map { c => (c.x, c.y) }, shellCoords)
-      assertCoords(hole.getCoordinates.map { c => (c.x, c.y) }, holeCoords)
+      assertCoords(shell.getCoordinates.map { c => (c.x, c.y) }.toIndexedSeq, shellCoords)
+      assertCoords(hole.getCoordinates.map { c => (c.x, c.y) }.toIndexedSeq, holeCoords)
     }
 
     it("should vectorize an shape with a hole.") {
@@ -286,11 +286,11 @@ class VectorizeSpec extends AnyFunSpec with RasterMatchers with RasterTestFiles 
 
       polygon.data should be (1)
       val shellCoordinates = polygon.geom.getExteriorRing.getCoordinates.map(c => (c.x, c.y))
-      assertCoords(shellCoordinates, expectedShellCoords)
+      assertCoords(shellCoordinates.toIndexedSeq, expectedShellCoords)
 
       polygon.geom.getNumInteriorRing() should be (1)
       val holeCoordinates = polygon.geom.getInteriorRingN(0).getCoordinates.map(c => (c.x, c.y))
-      assertCoords(holeCoordinates, expectedHoleCoords)
+      assertCoords(holeCoordinates.toIndexedSeq, expectedHoleCoords)
     }
 
     it("should vectorize an shape with two holes.") {
@@ -347,7 +347,7 @@ class VectorizeSpec extends AnyFunSpec with RasterMatchers with RasterTestFiles 
 
       polygon.data should be (1)
       val shellCoordinates = polygon.geom.getExteriorRing.getCoordinates.map(c => (c.x, c.y))
-      assertCoords(shellCoordinates, expectedShellCoords)
+      assertCoords(shellCoordinates.toIndexedSeq, expectedShellCoords)
 
       polygon.geom.getNumInteriorRing() should be (2)
 
@@ -358,9 +358,9 @@ class VectorizeSpec extends AnyFunSpec with RasterMatchers with RasterTestFiles 
           .map(_.map(c => (c.x, c.y)))
 
       val holeCoordinates = polygon.geom.getInteriorRingN(1).getCoordinates.map(c => (c.x, c.y))
-      assertCoords(holes(0), expectedHoleCoords)
+      assertCoords(holes(0).toIndexedSeq, expectedHoleCoords)
       val holeCoordinates2 = polygon.geom.getInteriorRingN(0).getCoordinates.map(c => (c.x, c.y))
-      assertCoords(holes(1), expectedHoleCoords2)
+      assertCoords(holes(1).toIndexedSeq, expectedHoleCoords2)
     }
 
     it("should vectorize an shape with two polys.") {

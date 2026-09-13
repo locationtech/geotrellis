@@ -50,8 +50,8 @@ trait AddTileCollectionMethods[K] extends MethodExtensions[Seq[(K, Tile)]] {
   /** Add the values of each cell in each raster. */
   def +(other: Seq[(K, Tile)]): Seq[(K, Tile)] = localAdd(other)
 
-  def localAdd(others: Traversable[Seq[(K, Tile)]]): Seq[(K, Tile)] =
+  def localAdd(others: Iterable[Seq[(K, Tile)]]): Seq[(K, Tile)] =
     self.combineValues(others) { Add.apply }
 
-  def +(others: Traversable[Seq[(K, Tile)]]): Seq[(K, Tile)] = localAdd(others)
+  def +(others: Iterable[Seq[(K, Tile)]]): Seq[(K, Tile)] = localAdd(others)
 }

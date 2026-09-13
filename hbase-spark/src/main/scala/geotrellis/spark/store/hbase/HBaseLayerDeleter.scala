@@ -22,7 +22,7 @@ import org.log4s._
 import org.apache.hadoop.hbase.client._
 import org.apache.hadoop.hbase.filter.PrefixFilter
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 class HBaseLayerDeleter(val attributeStore: AttributeStore, instance: HBaseInstance) extends LayerDeleter[LayerId] {
   @transient private[this] lazy val logger = getLogger

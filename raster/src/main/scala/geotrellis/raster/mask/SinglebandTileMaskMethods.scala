@@ -54,7 +54,7 @@ trait SinglebandTileMaskMethods extends TileMaskMethods[Tile] {
   /**
     * Masks this tile by the given Geometry.
     */
-  def mask(ext: Extent, geoms: Traversable[Geometry], options: Options): Tile = {
+  def mask(ext: Extent, geoms: Iterable[Geometry], options: Options): Tile = {
     val re = RasterExtent(self, ext)
     val result = ArrayTile.empty(self.cellType, self.cols, self.rows)
     for (g <- geoms) {

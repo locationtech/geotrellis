@@ -22,7 +22,7 @@ import org.apache.accumulo.core.client.security.tokens.{AuthenticationToken, Ker
 import org.apache.hadoop.io.Text
 import org.apache.hadoop.mapreduce.Job
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import java.net.URI
 
 trait AccumuloInstance  extends Serializable {
@@ -40,7 +40,7 @@ trait AccumuloInstance  extends Serializable {
     val ops = connector.tableOperations()
     val groups = ops.getLocalityGroups(tableName).asScala
     val newGroup: java.util.Set[Text] = Set(new Text(columnFamily)).asJava
-    ops.setLocalityGroups(tableName, groups.updated(tableName, newGroup).asJava)
+    ops.setLocalityGroups(tableName, groups.clone().addOne((tableName, newGroup)).asJava)
   }
 }
 

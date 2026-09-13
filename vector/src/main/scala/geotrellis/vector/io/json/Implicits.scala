@@ -32,7 +32,7 @@ object Implicits extends Implicits
 
 trait Implicits extends GeoJsonSupport {
 
-  implicit class GeometriesToGeoJson(val geoms: Traversable[Geometry]) {
+  implicit class GeometriesToGeoJson(val geoms: Iterable[Geometry]) {
     def toGeoJson(): String = {
       GeometryCollection(geoms).asJson.noSpaces
     }
@@ -44,7 +44,7 @@ trait Implicits extends GeoJsonSupport {
     }
   }
 
-  implicit class FeaturesToGeoJson[G <: Geometry, D: Encoder](features: Traversable[Feature[G, D]]) {
+  implicit class FeaturesToGeoJson[G <: Geometry, D: Encoder](features: Iterable[Feature[G, D]]) {
     def toGeoJson(): String = {
       JsonFeatureCollection(features).asJson.noSpaces
     }

@@ -66,12 +66,12 @@ trait Boundable[K] extends Serializable {
 }
 
 object Boundable {
-  implicit val zonedDateTimeBoundable = new Boundable[ZonedDateTime] {
+  implicit val zonedDateTimeBoundable: Boundable[ZonedDateTime] = new Boundable[ZonedDateTime] {
     def minBound(p1: ZonedDateTime, p2: ZonedDateTime): ZonedDateTime = if(p1 <= p2) p1 else p2
     def maxBound(p1: ZonedDateTime, p2: ZonedDateTime): ZonedDateTime = if(p1 > p2) p1 else p2
   }
 
-  implicit val unitBoundable = new Boundable[Unit] {
+  implicit val unitBoundable: Boundable[Unit] = new Boundable[Unit] {
     def minBound(p1: Unit, p2: Unit): Unit = p1
     def maxBound(p1: Unit, p2: Unit): Unit = p1
   }

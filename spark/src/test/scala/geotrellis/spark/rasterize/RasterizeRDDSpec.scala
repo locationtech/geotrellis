@@ -81,7 +81,7 @@ class RasterizeRDDSpec extends AnyFunSpec with Matchers with TestEnvironment {
     val layout = TileLayout(3,3,256,256)
     val ld = LayoutDefinition(huc10.extent, layout)
 
-    val polyRdd = sc.parallelize(huc10.polygons)
+    val polyRdd = sc.parallelize(huc10.polygons.toIndexedSeq)
     val rasterizedRdd = polyRdd.rasterize(1, IntConstantNoDataCellType, ld)
     val actual = rasterizedRdd.stitch()
 

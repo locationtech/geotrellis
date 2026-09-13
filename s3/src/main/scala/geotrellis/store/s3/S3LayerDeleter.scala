@@ -22,7 +22,7 @@ import software.amazon.awssdk.services.s3.model._
 import software.amazon.awssdk.services.s3.S3Client
 import org.log4s._
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 class S3LayerDeleter(
   val attributeStore: AttributeStore,

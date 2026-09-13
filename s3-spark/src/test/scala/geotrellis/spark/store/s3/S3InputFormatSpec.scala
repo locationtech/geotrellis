@@ -24,7 +24,7 @@ import software.amazon.awssdk.core.sync.RequestBody
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.mapreduce.{Job, TaskAttemptContext, InputSplit}
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.funspec.AnyFunSpec

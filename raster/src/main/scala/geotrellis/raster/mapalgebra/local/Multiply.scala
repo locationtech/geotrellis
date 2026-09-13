@@ -54,7 +54,7 @@ trait MultiplyMethods extends MethodExtensions[Tile] {
   /** Multiply the values of each cell in each raster. */
   def *(r: Tile): Tile = localMultiply(r)
   /** Multiply the values of each cell in each raster. */
-  def localMultiply(rs: Traversable[Tile]): Tile = Multiply(self +: rs.toSeq)
+  def localMultiply(rs: Iterable[Tile]): Tile = Multiply(self +: rs.toSeq)
   /** Multiply the values of each cell in each raster. */
-  def *(rs: Traversable[Tile]): Tile = localMultiply(rs)
+  def *(rs: Iterable[Tile]): Tile = localMultiply(rs)
 }

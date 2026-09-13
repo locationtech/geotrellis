@@ -101,7 +101,7 @@ trait COGValueReader[ID] {
 
       val croppedTiles: Array[Tile] =
         try {
-          sourceTile.cropBands(gridBounds, targetBands).bands.toArray
+          sourceTile.cropBands(gridBounds, targetBands.toIndexedSeq).bands.toArray
         } catch {
           case th: Throwable => exceptionHandler(key)(th)
         }
@@ -131,7 +131,7 @@ object COGValueReader {
    * Find instances of [[COGValueReaderProvider]] through Java SPI.
    */
   def apply(attributeStore: AttributeStore, valueReaderUri: URI): COGValueReader[LayerId] = {
-    import scala.collection.JavaConverters._
+    import scala.jdk.CollectionConverters._
     ServiceLoader.load(classOf[COGValueReaderProvider])
       .iterator().asScala
       .find(_.canProcess(valueReaderUri))

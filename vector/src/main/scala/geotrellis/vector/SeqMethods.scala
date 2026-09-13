@@ -16,13 +16,13 @@
 
 package geotrellis.vector
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 import org.locationtech.jts.operation.union.CascadedPolygonUnion
 
 trait SeqMethods {
 
-  implicit class SeqLineStringExtensions(val lines: Traversable[LineString]) {
+  implicit class SeqLineStringExtensions(val lines: Iterable[LineString]) {
 
     val ml: MultiLineString = MultiLineString(lines)
 
@@ -45,7 +45,7 @@ trait SeqMethods {
     def extent: Extent = ml.extent
   }
 
-  implicit class SeqPointExtensions(val points: Traversable[Point]) {
+  implicit class SeqPointExtensions(val points: Iterable[Point]) {
 
     val mp: MultiPoint = MultiPoint(points)
 
@@ -68,7 +68,7 @@ trait SeqMethods {
     def extent: Extent = mp.extent
   }
 
-  implicit class SeqPolygonExtensions(val polygons: Traversable[Polygon]) {
+  implicit class SeqPolygonExtensions(val polygons: Iterable[Polygon]) {
 
     val mp: MultiPolygon = MultiPolygon(polygons)
 
@@ -85,7 +85,7 @@ trait SeqMethods {
     def extent: Extent = mp.extent
   }
 
-  implicit class SeqMultiLineStringExtensions(val multilines: Traversable[MultiLineString]) {
+  implicit class SeqMultiLineStringExtensions(val multilines: Iterable[MultiLineString]) {
 
     private val seq = multilines.flatMap(_.lines)
     val ml: MultiLineString = MultiLineString(seq)
@@ -98,7 +98,7 @@ trait SeqMethods {
     def extent: Extent = ml.extent
   }
 
-  implicit class SeqMultiPointExtensions(val multipoints: Traversable[MultiPoint]) {
+  implicit class SeqMultiPointExtensions(val multipoints: Iterable[MultiPoint]) {
 
     private val seq = multipoints.flatMap(_.points)
     val mp: MultiPoint = MultiPoint(seq)
@@ -111,7 +111,7 @@ trait SeqMethods {
     def extent: Extent = mp.extent
   }
 
-  implicit class SeqMultiPolygonExtensions(val multipolygons: Traversable[MultiPolygon]) {
+  implicit class SeqMultiPolygonExtensions(val multipolygons: Iterable[MultiPolygon]) {
 
     private val seq = multipolygons.flatMap(_.polygons)
     val mp: MultiPolygon = MultiPolygon(seq)

@@ -26,11 +26,11 @@ import scala.collection.mutable
 object Majority extends Serializable {
   def apply(r: Tile*): Tile = apply(0, r)
 
-  def apply(rs: Traversable[Tile])(implicit d: DI): Tile = apply(0, rs)
+  def apply(rs: Iterable[Tile])(implicit d: DI): Tile = apply(0, rs)
 
   def apply(level: Int, r: Tile*): Tile = apply(level, r)
 
-  def apply(level: Int, rs: Traversable[Tile])(implicit d: DI): Tile = {
+  def apply(level: Int, rs: Iterable[Tile])(implicit d: DI): Tile = {
     rs.assertEqualDimensions()
 
     val layerCount = rs.toSeq.length
@@ -107,16 +107,16 @@ object Majority extends Serializable {
 
 trait MajorityMethods extends MethodExtensions[Tile] {
   /** Assigns to each cell the value within the given rasters that is the most numerous. */
-  def localMajority(rs: Traversable[Tile]): Tile =
-    Majority(Traversable(self) ++ rs)
+  def localMajority(rs: Iterable[Tile]): Tile =
+    Majority(Iterable(self) ++ rs)
 
   /** Assigns to each cell the value within the given rasters that is the most numerous. */
   def localMajority(rs: Tile*)(implicit d: DI): Tile =
     localMajority(rs)
 
   /** Assigns to each cell the value within the given rasters that is the nth most numerous. */
-  def localMajority(n: Int, rs: Traversable[Tile]): Tile =
-    Majority(n, Traversable(self) ++ rs)
+  def localMajority(n: Int, rs: Iterable[Tile]): Tile =
+    Majority(n, Iterable(self) ++ rs)
 
   /** Assigns to each cell the value within the given rasters that is the nth most numerous. */
   def localMajority(n: Int, rs: Tile*)(implicit d: DI): Tile =

@@ -25,7 +25,7 @@ import org.apache.hadoop.io.Text
 object AccumuloKeyEncoder {
   final def long2Bytes(x: BigInt): Array[Byte] = {
     val bytes1: Array[Byte] = x.toByteArray
-    val bytes2: Array[Byte] = Stream.continually(0.toByte).take(8 - bytes1.length).toArray
+    val bytes2: Array[Byte] = LazyList.continually(0.toByte).take(8 - bytes1.length).toArray
     (bytes2 ++ bytes1) // XXX
   }
 

@@ -69,7 +69,7 @@ abstract class CollectionLayerReader[ID] { self =>
 
 object CollectionLayerReader {
   def apply(attributeStore: AttributeStore, collectionReaderUri: URI): CollectionLayerReader[LayerId] = {
-    import scala.collection.JavaConverters._
+    import scala.jdk.CollectionConverters._
     ServiceLoader.load(classOf[CollectionLayerReaderProvider])
       .iterator().asScala
       .find(_.canProcess(collectionReaderUri))

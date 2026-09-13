@@ -19,11 +19,10 @@ package geotrellis.store.s3
 import geotrellis.store.s3.conf.S3Config
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.core.checksums.{RequestChecksumCalculation, ResponseChecksumValidation}
-import software.amazon.awssdk.core.retry.backoff.FullJitterBackoffStrategy
-import software.amazon.awssdk.core.retry.conditions.{OrRetryCondition, RetryCondition}
-import software.amazon.awssdk.awscore.retry.conditions.RetryOnErrorCodeCondition
 import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration
-import software.amazon.awssdk.core.retry.RetryPolicy
+import software.amazon.awssdk.awscore.exception.AwsServiceException
+import software.amazon.awssdk.awscore.retry.AwsRetryStrategy
+import software.amazon.awssdk.retries.api.BackoffStrategy
 
 import java.time.Duration
 
@@ -37,25 +36,19 @@ import java.time.Duration
   */
 object S3ClientProducer {
   @transient private lazy val client = {
-    val retryCondition =
-      OrRetryCondition.create(
-        RetryCondition.defaultRetryCondition(),
-        RetryOnErrorCodeCondition.create("RequestTimeout")
-      )
-    val backoffStrategy =
-      FullJitterBackoffStrategy.builder()
-        .baseDelay(Duration.ofMillis(50))
-        .maxBackoffTime(Duration.ofMillis(15))
-        .build()
-    val retryPolicy =
-      RetryPolicy.defaultRetryPolicy()
+    val retryStrategy =
+      AwsRetryStrategy.standardRetryStrategy()
         .toBuilder
-        .retryCondition(retryCondition)
-        .backoffStrategy(backoffStrategy)
+        .retryOnException((t: Throwable) => t match {
+          case e: AwsServiceException =>
+            Option(e.awsErrorDetails()).map(_.errorCode()).contains("RequestTimeout")
+          case _ => false
+        })
+        .backoffStrategy(BackoffStrategy.exponentialDelay(Duration.ofMillis(50), Duration.ofSeconds(15)))
         .build()
     val overrideConfig =
       ClientOverrideConfiguration.builder()
-        .retryPolicy(retryPolicy)
+        .retryStrategy(retryStrategy)
         .requestPayer(S3Config.requestPayer)
         .build()
 

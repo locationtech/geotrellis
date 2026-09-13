@@ -28,8 +28,8 @@ import org.apache.spark.SparkContext
 case class Pyramid(
   node: Node[MultibandTileLayerRDD[SpatialKey]],
   arg: transform.Pyramid
-) extends Transform[MultibandTileLayerRDD[SpatialKey], Stream[(Int, MultibandTileLayerRDD[SpatialKey])]] {
+) extends Transform[MultibandTileLayerRDD[SpatialKey], LazyList[(Int, MultibandTileLayerRDD[SpatialKey])]] {
   def asJson = node.asJson :+ arg.asJson
-  def eval(implicit sc: SparkContext): Stream[(Int, MultibandTileLayerRDD[SpatialKey])] =
+  def eval(implicit sc: SparkContext): LazyList[(Int, MultibandTileLayerRDD[SpatialKey])] =
     Transform.pyramid(arg)(node.eval)
 }

@@ -26,7 +26,7 @@ import org.apache.hadoop.hbase.client.Scan
 import org.apache.hadoop.hbase.filter.{FilterList, MultiRowRangeFilter, PrefixFilter}
 import org.apache.avro.Schema
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import scala.reflect.ClassTag
 
 object HBaseCollectionReader {

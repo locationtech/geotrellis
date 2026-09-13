@@ -27,7 +27,7 @@ trait MultiPointConstructors {
   def apply(ps: jts.Point*): jts.MultiPoint =
     apply(ps)
 
-  def apply(ps: Traversable[jts.Point]): jts.MultiPoint =
+  def apply(ps: Iterable[jts.Point]): jts.MultiPoint =
     factory.createMultiPoint(ps.toArray)
 
   def apply(ps: Array[jts.Point]): jts.MultiPoint = {
@@ -40,7 +40,7 @@ trait MultiPointConstructors {
     factory.createMultiPoint(arr)
   }
 
-  def apply(ps: Traversable[(Double, Double)])(implicit d: DummyImplicit): jts.MultiPoint =
+  def apply(ps: Iterable[(Double, Double)])(implicit d: DummyImplicit): jts.MultiPoint =
     factory.createMultiPointFromCoords(ps.map { p => new jts.Coordinate(p._1, p._2) }.toArray)
 }
 

@@ -53,7 +53,7 @@ object MaskRDD extends Mask {
     K: SpatialComponent: ClassTag,
     V: * => TileMaskMethods[V],
     M: GetComponent[*, LayoutDefinition]
-  ](rdd: RDD[(K, V)] with Metadata[M], geoms: Traversable[Polygon], options: Options): RDD[(K, V)] with Metadata[M] =
+  ](rdd: RDD[(K, V)] with Metadata[M], geoms: Iterable[Polygon], options: Options): RDD[(K, V)] with Metadata[M] =
     _mask(rdd, { case (tileExtent, tile) =>
       val tileGeoms = geoms.flatMap { g =>
         val intersections = g.intersectionSafe(tileExtent).toGeometry()
@@ -70,7 +70,7 @@ object MaskRDD extends Mask {
     K: SpatialComponent: ClassTag,
     V: * => TileMaskMethods[V],
     M: GetComponent[*, LayoutDefinition]
-  ](rdd: RDD[(K, V)] with Metadata[M], geoms: Traversable[MultiPolygon], options: Options)(implicit d: DummyImplicit): RDD[(K, V)] with Metadata[M] =
+  ](rdd: RDD[(K, V)] with Metadata[M], geoms: Iterable[MultiPolygon], options: Options)(implicit d: DummyImplicit): RDD[(K, V)] with Metadata[M] =
     _mask(rdd, { case (tileExtent, tile) =>
       val tileGeoms = geoms.flatMap { g =>
         val intersections = g.intersectionSafe(tileExtent).toGeometry()

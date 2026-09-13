@@ -32,9 +32,10 @@ object Extent {
 
   val listDecoder: Decoder[Extent] =
     Decoder.decodeJson.emap { value =>
-      value.as[List[Double]]
-        .map { case List(xmin, ymin, xmax, ymax) => Extent(xmin, ymin, xmax, ymax) }
-        .leftMap(_ => s"Extent [xmin,ymin,xmax,ymax] expected: $value")
+      value.as[List[Double]] match {
+        case Right(List(xmin, ymin, xmax, ymax)) => Extent(xmin, ymin, xmax, ymax).asRight
+        case _ => s"Extent [xmin,ymin,xmax,ymax] expected: $value".asLeft
+      }
     }
 
   def apply(env: jts.Envelope): Extent =

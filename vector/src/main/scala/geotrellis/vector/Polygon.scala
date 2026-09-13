@@ -20,8 +20,6 @@ import org.locationtech.jts.{geom => jts}
 
 import geotrellis.vector.GeomFactory._
 
-import scala.collection.GenTraversable
-
 trait PolygonConstructors {
   def apply(exterior: Point*)(implicit d: DummyImplicit): Polygon =
     apply(LineString(exterior), Set())
@@ -50,10 +48,10 @@ trait PolygonConstructors {
   def apply(exterior: LineString, holes: LineString*): Polygon =
     apply(exterior, holes)
 
-  def apply(exterior: jts.CoordinateSequence, holes: GenTraversable[jts.CoordinateSequence]): Polygon =
+  def apply(exterior: jts.CoordinateSequence, holes: Iterable[jts.CoordinateSequence]): Polygon =
     apply(factory.createLinearRing(exterior), holes.map(factory.createLinearRing))
 
-  def apply(exterior: LineString, holes: GenTraversable[LineString]): Polygon = {
+  def apply(exterior: LineString, holes: Iterable[LineString]): Polygon = {
     if(!exterior.isClosed) {
       sys.error(s"Cannot create a polygon with unclosed exterior: $exterior")
     }
@@ -80,7 +78,7 @@ trait PolygonConstructors {
     apply(extGeom, holeGeoms)
   }
 
-  def apply(exterior: jts.LinearRing, holes: GenTraversable[jts.LinearRing]): Polygon =
+  def apply(exterior: jts.LinearRing, holes: Iterable[jts.LinearRing]): Polygon =
     factory.createPolygon(exterior, holes.toArray)
 }
 

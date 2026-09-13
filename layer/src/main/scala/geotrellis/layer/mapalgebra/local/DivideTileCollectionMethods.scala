@@ -58,8 +58,8 @@ trait DivideTileCollectionMethods[K] extends MethodExtensions[Seq[(K, Tile)]] {
   /** Divide the values of each cell in each raster. */
   def /(other: Seq[(K, Tile)]): Seq[(K, Tile)] = localDivide(other)
 
-  def localDivide(others: Traversable[Seq[(K, Tile)]]): Seq[(K, Tile)] =
+  def localDivide(others: Iterable[Seq[(K, Tile)]]): Seq[(K, Tile)] =
     self.combineValues(others)(Divide.apply)
 
-  def /(others: Traversable[Seq[(K, Tile)]]): Seq[(K, Tile)] = localDivide(others)
+  def /(others: Iterable[Seq[(K, Tile)]]): Seq[(K, Tile)] = localDivide(others)
 }

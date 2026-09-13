@@ -27,7 +27,7 @@ trait MajorityTileCollectionMethods[K] extends MethodExtensions[Seq[(K, Tile)]] 
     * Assigns to each cell the value within the given rasters that is the
     * most numerous.
     */
-  def localMajority(others: Traversable[Seq[(K, Tile)]]): Seq[(K, Tile)] =
+  def localMajority(others: Iterable[Seq[(K, Tile)]]): Seq[(K, Tile)] =
     self.combineValues(others)(Majority.apply)
 
   /**
@@ -41,7 +41,7 @@ trait MajorityTileCollectionMethods[K] extends MethodExtensions[Seq[(K, Tile)]] 
     * Assigns to each cell the value within the given rasters that is the
     * nth most numerous.
     */
-  def localMajority(n: Int, others: Traversable[Seq[(K, Tile)]]): Seq[(K, Tile)] =
+  def localMajority(n: Int, others: Iterable[Seq[(K, Tile)]]): Seq[(K, Tile)] =
     self.combineValues(others) { tiles => Majority(n, tiles) }
 
   /**

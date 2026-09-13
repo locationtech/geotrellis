@@ -20,7 +20,7 @@ import geotrellis.layer._
 import geotrellis.store.index.KeyIndex
 
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 object AccumuloUtils {
   /**

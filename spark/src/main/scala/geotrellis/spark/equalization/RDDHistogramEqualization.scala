@@ -107,7 +107,7 @@ object RDDHistogramEqualization {
   ): RDD[(K, MultibandTile)] with Metadata[M] = {
     ContextRDD(
       rdd.map({ case (key, tile) =>
-        (key, HistogramEqualization(tile, histograms)) }),
+        (key, HistogramEqualization(tile, histograms.toIndexedSeq)) }),
       rdd.metadata
     )
   }

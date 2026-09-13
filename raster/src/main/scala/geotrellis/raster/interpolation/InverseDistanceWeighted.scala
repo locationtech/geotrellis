@@ -53,7 +53,7 @@ object InverseDistanceWeighted {
     * @return The data interpolated across the study area
     */
   def apply[D](
-    points: Traversable[PointFeature[D]],
+    points: Iterable[PointFeature[D]],
     rasterExtent: RasterExtent,
     options: Options = Options.DEFAULT
   )(implicit ev: D => Double): Raster[Tile] = {
@@ -69,7 +69,7 @@ object InverseDistanceWeighted {
       val radiusYSquared = radiusY * radiusY
       val radiusXYSquared = radiusXSquared * radiusYSquared
 
-      def idw(points: Traversable[PointFeature[D]], x: Double, y: Double, hasRadius: Boolean) = {
+      def idw(points: Iterable[PointFeature[D]], x: Double, y: Double, hasRadius: Boolean) = {
         var sum = 0.0
         var count = 0
         var weightSum = 0.0

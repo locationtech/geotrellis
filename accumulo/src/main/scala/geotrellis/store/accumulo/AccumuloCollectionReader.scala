@@ -28,7 +28,7 @@ import org.apache.hadoop.io.Text
 import cats.effect._
 import cats.syntax.either._
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import scala.reflect.ClassTag
 
 object AccumuloCollectionReader {

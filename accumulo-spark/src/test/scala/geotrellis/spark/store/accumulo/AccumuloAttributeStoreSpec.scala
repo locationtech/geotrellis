@@ -23,13 +23,13 @@ import org.apache.accumulo.core.client.security.tokens.PasswordToken
 import org.scalatest.BeforeAndAfterAll
 import org.apache.accumulo.minicluster.MiniAccumuloCluster
 
-import com.google.common.io.Files
+import java.nio.file.Files
 
 class AccumuloAttributeStoreSpec extends AttributeStoreSpec with BeforeAndAfterAll {
   var miniAccumuloCluster: MiniAccumuloCluster = _
 
   override def beforeAll(): Unit = {
-    val tempDir = Files.createTempDir
+    val tempDir = Files.createTempDirectory("accumulo-minicluster").toFile
     tempDir.deleteOnExit()
     miniAccumuloCluster = new MiniAccumuloCluster(tempDir, "")
     miniAccumuloCluster.start()

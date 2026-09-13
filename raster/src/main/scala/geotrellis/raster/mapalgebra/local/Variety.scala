@@ -26,7 +26,7 @@ import spire.syntax.cfor._
  * @return     An IntConstantNoDataCellType raster with the count values.
  */
 object Variety extends Serializable {
-  def apply(rs: Traversable[Tile]): Tile =
+  def apply(rs: Iterable[Tile]): Tile =
     apply(rs.toSeq)
 
   def apply(rs: Tile*)(implicit d: DI): Tile =

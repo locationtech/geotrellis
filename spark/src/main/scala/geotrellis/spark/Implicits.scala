@@ -202,7 +202,7 @@ trait Implicits
   }
 
   implicit class withCollectionConversionMethods[K, V, M](val rdd: RDD[(K, V)] with Metadata[M]) {
-    def toCollection: Seq[(K, V)] with Metadata[M] = ContextCollection(rdd.collect(), rdd.metadata)
+    def toCollection: Seq[(K, V)] with Metadata[M] = ContextCollection(rdd.collect().toIndexedSeq, rdd.metadata)
   }
 
   implicit class withRddConversionMethods[K, V, M](val seq: Seq[(K, V)] with Metadata[M]) {

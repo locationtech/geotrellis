@@ -60,10 +60,10 @@ trait SubtractTileRDDMethods[K] extends TileRDDMethods[K] {
   def -(other: RDD[(K, Tile)]): RDD[(K, Tile)] = localSubtract(other, None)
 
   /** Subtract the values of each cell in each raster. */
-  def localSubtract(others: Traversable[RDD[(K, Tile)]]): RDD[(K, Tile)] = localSubtract(others, None)
-  def localSubtract(others: Traversable[RDD[(K, Tile)]], partitioner: Option[Partitioner]): RDD[(K, Tile)] =
+  def localSubtract(others: Iterable[RDD[(K, Tile)]]): RDD[(K, Tile)] = localSubtract(others, None)
+  def localSubtract(others: Iterable[RDD[(K, Tile)]], partitioner: Option[Partitioner]): RDD[(K, Tile)] =
     self.combineValues(others, partitioner)(Subtract.apply)
 
   /** Subtract the values of each cell in each raster. */
-  def -(others: Traversable[RDD[(K, Tile)]]): RDD[(K, Tile)] = localSubtract(others)
+  def -(others: Iterable[RDD[(K, Tile)]]): RDD[(K, Tile)] = localSubtract(others)
 }

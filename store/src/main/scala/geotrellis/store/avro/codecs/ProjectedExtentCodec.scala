@@ -25,7 +25,7 @@ import org.apache.avro.generic._
 // --- //
 
 trait ProjectedExtentCodec {
-  implicit def projectedExtentCodec = new AvroRecordCodec[ProjectedExtent] {
+  implicit def projectedExtentCodec: AvroRecordCodec[ProjectedExtent] = new AvroRecordCodec[ProjectedExtent] {
     def schema: Schema = {
       val base = SchemaBuilder
         .record("ProjectedExtent").namespace("geotrellis.vector")

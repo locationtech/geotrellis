@@ -21,7 +21,7 @@ import org.locationtech.jts.geom.{Coordinate, MultiPoint}
 object Implicits extends Implicits
 
 trait Implicits {
-  implicit class withDelaunayTriangulationMethods(val self: Traversable[Coordinate]) extends DelaunayTriangulationMethods
+  implicit class withDelaunayTriangulationMethods(val self: Iterable[Coordinate]) extends DelaunayTriangulationMethods
 
   implicit class withDelaunayTriangulationArrayMethods(val self: Array[Coordinate]) extends DelaunayTriangulationArrayMethods
 

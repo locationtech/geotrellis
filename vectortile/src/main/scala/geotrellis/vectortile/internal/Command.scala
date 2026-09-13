@@ -136,7 +136,7 @@ private[vectortile] object Command {
   private def params(ns: Array[(Int,Int)]): ListBuffer[Int] = {
     val res = new ListBuffer[Int]
 
-    ns.foreach { case (dx,dy) => res.append(zig(dx), zig(dy)) }
+    ns.foreach { case (dx,dy) => res.appendAll(Seq(zig(dx), zig(dy))) }
 
     res
   }

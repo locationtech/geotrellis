@@ -24,7 +24,7 @@ import spire.syntax.cfor._
  * The mean of values at each location in a set of Tiles.
  */
 object Mean extends Serializable {
-  def apply(rs: Traversable[Tile]): Tile =
+  def apply(rs: Iterable[Tile]): Tile =
     apply(rs.toSeq)
 
   def apply(rs: Tile*)(implicit d: DI): Tile =

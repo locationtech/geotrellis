@@ -203,7 +203,7 @@ class DelayedConversionMultibandTile(inner: MultibandTile, override val targetCe
         cfor(0)(_ < subsetSize, _ + 1) { b =>
           values(b) = inner.bands(subsetArray(b)).get(col, row)
         }
-        result.set(col, row, f(values))
+        result.set(col, row, f(values.toIndexedSeq))
       }
     }
 
@@ -231,7 +231,7 @@ class DelayedConversionMultibandTile(inner: MultibandTile, override val targetCe
         cfor(0)(_ < subsetSize, _ + 1) { b =>
           values(b) = inner.bands(subsetArray(b)).getDouble(col, row)
         }
-        result.setDouble(col, row, f(values))
+        result.setDouble(col, row, f(values.toIndexedSeq))
       }
     }
     result

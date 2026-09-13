@@ -25,7 +25,7 @@ import org.apache.spark._
 import org.apache.spark.rdd._
 
 import java.io._
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 class FileSlippyTileReader[T](uri: String, extensions: Seq[String] = Seq())(fromBytes: (SpatialKey, Array[Byte]) => T) extends SlippyTileReader[T] {
   import SlippyTileReader.TilePath

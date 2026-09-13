@@ -182,7 +182,7 @@ object LayerWriter {
    * Find instances of [[LayerWriterProvider]] through Java SPI.
    */
   def apply(attributeStore: AttributeStore, layerWriterUri: URI): LayerWriter[LayerId] = {
-    import scala.collection.JavaConverters._
+    import scala.jdk.CollectionConverters._
     ServiceLoader.load(classOf[LayerWriterProvider])
       .iterator().asScala
       .find(_.canProcess(layerWriterUri))
@@ -229,6 +229,7 @@ object LayerWriter {
             .map(_ ++ updating)
             .map {
               _.groupBy(_._1)
+               .view
                .mapValues { row =>
                  val vs = row.map(_._2)
                  vs.foldLeft(vs.head)(fn)

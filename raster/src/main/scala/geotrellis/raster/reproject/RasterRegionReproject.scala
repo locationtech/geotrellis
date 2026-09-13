@@ -150,7 +150,7 @@ object RasterRegionReproject {
     }
   }
 
-  implicit val singlebandInstance = new RasterRegionReproject[Tile] {
+  implicit val singlebandInstance: RasterRegionReproject[Tile] = new RasterRegionReproject[Tile] {
     def regionReproject(
       raster: Raster[Tile],
       src: CRS,
@@ -220,7 +220,7 @@ object RasterRegionReproject {
     }
   }
 
-  implicit val multibandInstance = new RasterRegionReproject[MultibandTile] {
+  implicit val multibandInstance: RasterRegionReproject[MultibandTile] = new RasterRegionReproject[MultibandTile] {
     def regionReproject(
       raster: Raster[MultibandTile],
       src: CRS,
@@ -301,7 +301,7 @@ object RasterRegionReproject {
     }
   }
 
-  implicit def TileFeatureRasterRegionReproject[T <: CellGrid[Int] : RasterRegionReproject, D: Monoid](implicit ev: T => TileMergeMethods[T]) =
+  implicit def TileFeatureRasterRegionReproject[T <: CellGrid[Int] : RasterRegionReproject, D: Monoid](implicit ev: T => TileMergeMethods[T]): RasterRegionReproject[TileFeature[T, D]] =
     new RasterRegionReproject[TileFeature[T, D]] {
       def regionReproject(
         raster: Raster[TileFeature[T, D]],

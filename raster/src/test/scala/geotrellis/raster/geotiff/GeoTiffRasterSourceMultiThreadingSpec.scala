@@ -27,13 +27,13 @@ import cats.syntax.traverse._
 
 import org.scalatest.funspec.AsyncFunSpec
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ExecutionContext, ExecutionContextExecutor, Future}
 
 class GeoTiffRasterSourceMultiThreadingSpec extends AsyncFunSpec with GeoTiffTestUtils {
   lazy val url = baseGeoTiffPath("vlm/aspect-tiled.tif")
   val source = GeoTiffRasterSource(url)
 
-  implicit val ec = ExecutionContext.global
+  implicit val ec: ExecutionContextExecutor = ExecutionContext.global
 
   val iterations = (0 to 30).toList
 

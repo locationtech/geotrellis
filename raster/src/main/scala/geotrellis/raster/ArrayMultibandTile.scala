@@ -36,13 +36,13 @@ object ArrayMultibandTile {
     apply(bands.toArray)
 
   /**
-    * Create a new [[ArrayMultibandTile]] from a given Traversable of
+    * Create a new [[ArrayMultibandTile]] from a given Iterable of
     * [[Tile]] objects.
     *
-    * @param   bands  The Traversable collection of source Tile objects.
+    * @param   bands  The Iterable collection of source Tile objects.
     * @return         An ArrayMultibandTile whose bands are given tiles.
     */
-  def apply(bands: Traversable[Tile]): ArrayMultibandTile =
+  def apply(bands: Iterable[Tile]): ArrayMultibandTile =
     new ArrayMultibandTile(bands.toArray)
 
   /**
@@ -355,7 +355,7 @@ class ArrayMultibandTile(_bands: Array[Tile]) extends MultibandTile with MacroMu
         cfor(0)(_ < subsetSize, _ + 1) { i =>
           values(i) = _bands(subsetArray(i)).get(col, row)
         }
-        result.set(col, row, f(values))
+        result.set(col, row, f(values.toIndexedSeq))
       }
     }
 
@@ -382,7 +382,7 @@ class ArrayMultibandTile(_bands: Array[Tile]) extends MultibandTile with MacroMu
         cfor(0)(_ < subsetSize, _ + 1) { i =>
           values(i) = _bands(subsetArray(i)).getDouble(col, row)
         }
-        result.setDouble(col, row, f(values))
+        result.setDouble(col, row, f(values.toIndexedSeq))
       }
     }
     result

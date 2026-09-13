@@ -27,8 +27,8 @@ trait MinorityTileRDDMethods[K] extends TileRDDMethods[K] {
     * Assigns to each cell the value within the given rasters that is the least
     * numerous.
     */
-  def localMinority(others: Traversable[RDD[(K, Tile)]]): RDD[(K, Tile)] = localMinority(others, None)
-  def localMinority(others: Traversable[RDD[(K, Tile)]], partitioner: Option[Partitioner]): RDD[(K, Tile)] =
+  def localMinority(others: Iterable[RDD[(K, Tile)]]): RDD[(K, Tile)] = localMinority(others, None)
+  def localMinority(others: Iterable[RDD[(K, Tile)]], partitioner: Option[Partitioner]): RDD[(K, Tile)] =
     self.combineValues(others, partitioner)(Minority.apply)
 
   /**
@@ -42,8 +42,8 @@ trait MinorityTileRDDMethods[K] extends TileRDDMethods[K] {
     * Assigns to each cell the value within the given rasters that is the nth
     * least numerous.
     */
-  def localMinority(n: Int, others: Traversable[RDD[(K, Tile)]]): RDD[(K, Tile)] = localMinority(n, others, None)
-  def localMinority(n: Int, others: Traversable[RDD[(K, Tile)]], partitioner: Option[Partitioner]): RDD[(K, Tile)] =
+  def localMinority(n: Int, others: Iterable[RDD[(K, Tile)]]): RDD[(K, Tile)] = localMinority(n, others, None)
+  def localMinority(n: Int, others: Iterable[RDD[(K, Tile)]], partitioner: Option[Partitioner]): RDD[(K, Tile)] =
     self.combineValues(others, partitioner) { tiles => Minority(n, tiles) }
 
   /**

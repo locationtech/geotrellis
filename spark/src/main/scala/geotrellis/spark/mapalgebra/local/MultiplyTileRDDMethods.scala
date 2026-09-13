@@ -52,10 +52,10 @@ trait MultiplyTileRDDMethods[K] extends TileRDDMethods[K] {
   def *(other: RDD[(K, Tile)]): RDD[(K, Tile)] = localMultiply(other, None)
 
   /** Multiply the values of each cell in each raster. */
-  def localMultiply(others: Traversable[RDD[(K, Tile)]]): RDD[(K, Tile)] = localMultiply(others, None)
-  def localMultiply(others: Traversable[RDD[(K, Tile)]], partitioner: Option[Partitioner]): RDD[(K, Tile)] =
+  def localMultiply(others: Iterable[RDD[(K, Tile)]]): RDD[(K, Tile)] = localMultiply(others, None)
+  def localMultiply(others: Iterable[RDD[(K, Tile)]], partitioner: Option[Partitioner]): RDD[(K, Tile)] =
     self.combineValues(others, partitioner)(Multiply.apply)
 
   /** Multiply the values of each cell in each raster. */
-  def *(others: Traversable[RDD[(K, Tile)]]): RDD[(K, Tile)] = localMultiply(others)
+  def *(others: Iterable[RDD[(K, Tile)]]): RDD[(K, Tile)] = localMultiply(others)
 }

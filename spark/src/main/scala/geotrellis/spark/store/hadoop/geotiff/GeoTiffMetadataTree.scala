@@ -23,7 +23,7 @@ import geotrellis.util.annotations.experimental
 import org.locationtech.jts.index.strtree.STRtree
 
 import scala.collection.mutable
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import java.io._
 
 /**

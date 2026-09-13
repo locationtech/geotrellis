@@ -194,7 +194,7 @@ case class DelaunayTriangulation(
     }
 
     val (bnd, isBnd) = if (sortedVs.length < 2) (-1, true) else triangulate(0, sortedVs.length - 1)
-    (bnd, isBnd, collection.mutable.Set(sortedVs:_*))
+    (bnd, isBnd, collection.mutable.Set(sortedVs.toIndexedSeq:_*))
   }
 
   def liveVertices: collection.mutable.Set[Int] = _liveVertices
@@ -646,7 +646,7 @@ case class DelaunayTriangulation(
 
     if (allVertices() != triverts) {
       val vertsNotInTris = allVertices().toSet -- triverts
-      val trivertsNotInEdges = triverts -- allVertices()
+      val trivertsNotInEdges = triverts.diff(allVertices().toSet)
       if (vertsNotInTris nonEmpty) {
         println(s"The vertices $vertsNotInTris are not contained in triangles but have incident edges")
       }

@@ -131,7 +131,7 @@ class KrigingSpec extends AnyFunSpec with Matchers {
   }
 
   describe("Kriging Geo Interpolation : Venice") {
-    val points: Seq[PointFeature[Double]] = Array(
+    val points: Seq[PointFeature[Double]] = Seq(
       PointFeature(Point(720, 436), -0.99), PointFeature(Point(538, 397), -2.50), PointFeature(Point(518, 395), -1.18),
       PointFeature(Point(612, 365), 0.43), PointFeature(Point(562, 287), -1.66), PointFeature(Point(544, 248), -1.18),
       PointFeature(Point(626, 565), -0.43), PointFeature(Point(630, 551), -0.61), PointFeature(Point(568, 560), -0.83),

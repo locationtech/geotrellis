@@ -25,7 +25,7 @@ package geotrellis.raster.io.geotiff
 trait SegmentBytes extends Seq[Array[Byte]] with Serializable {
   def getSegment(i: Int): Array[Byte]
 
-  def getSegments(indices: Traversable[Int]): Iterator[(Int, Array[Byte])]
+  def getSegments(indices: Iterable[Int]): Iterator[(Int, Array[Byte])]
 
   def getSegmentByteCount(i: Int): Int
 

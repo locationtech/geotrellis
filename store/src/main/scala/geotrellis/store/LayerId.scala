@@ -27,5 +27,5 @@ case class LayerId(name: String, zoom: Int) {
 }
 
 object LayerId{
-  implicit def fromTuple(tup: (String, Int)) = LayerId(tup._1, tup._2)
+  implicit def fromTuple(tup: (String, Int)): LayerId = LayerId(tup._1, tup._2)
 }

@@ -56,7 +56,7 @@ trait AttributeStore extends AttributeCaching with LayerAttributeStore {
    * This function should be re-implemented by AttributeStore subclasses so that
    * catalogs with large numbers of layers can be queried efficiently.
    */
-  def layersWithZoomLevels: Map[String, Seq[Int]] = layerIds.groupBy(_.name).mapValues(_.map(_.zoom)).toMap
+  def layersWithZoomLevels: Map[String, Seq[Int]] = layerIds.groupBy(_.name).view.mapValues(_.map(_.zoom)).toMap
 
   /** Return a sequence of available zoom levels for a named layer.
    *
@@ -94,7 +94,7 @@ object AttributeStore {
    * This method uses instances of [[AttributeServiceProvider]] loaded through Java SPI.
    */
   def apply(uri: URI): AttributeStore = {
-    import scala.collection.JavaConverters._
+    import scala.jdk.CollectionConverters._
 
     ServiceLoader.load(classOf[AttributeStoreProvider])
       .iterator().asScala

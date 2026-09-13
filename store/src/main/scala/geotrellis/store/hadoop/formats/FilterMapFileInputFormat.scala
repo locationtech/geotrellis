@@ -24,7 +24,7 @@ import org.apache.hadoop.io._
 import org.apache.hadoop.mapreduce._
 import org.apache.hadoop.mapreduce.lib.input._
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 object FilterMapFileInputFormat {
   // Define some key names for Hadoop configuration
@@ -38,7 +38,7 @@ object FilterMapFileInputFormat {
       .globStatus(new Path(layerPath, "*"))
       .filter(_.isDirectory)
       .map(_.getPath)
-    mapFileRanges(file, conf)
+    mapFileRanges(file.toIndexedSeq, conf)
   }
 
   def mapFileRanges(mapFiles: Seq[Path], conf: Configuration): Vector[(Path, BigInt, BigInt)] = {

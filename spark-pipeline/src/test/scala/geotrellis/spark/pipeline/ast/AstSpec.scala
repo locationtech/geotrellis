@@ -206,14 +206,14 @@ class AstSpec extends AnyFunSpec
 
       val typedAst =
         list
-          .node[Stream[(Int, TileLayerRDD[SpatialKey])]]
+          .node[LazyList[(Int, TileLayerRDD[SpatialKey])]]
 
       val untypedAst = list.erasedNode
 
       ErasedUtils.eprint(untypedAst)
 
       val typedAst2 =
-        untypedAst.node[Stream[(Int, TileLayerRDD[SpatialKey])]]
+        untypedAst.node[LazyList[(Int, TileLayerRDD[SpatialKey])]]
 
       // println(typedAst.prettyPrint)
       // println(typedAst2.prettyPrint)
@@ -273,14 +273,14 @@ class AstSpec extends AnyFunSpec
 
     val typedAst =
       list
-        .node[Stream[(Int, TileLayerRDD[SpatialKey])]]
+        .node[LazyList[(Int, TileLayerRDD[SpatialKey])]]
 
     val untypedAst = list.erasedNode
 
     ErasedUtils.eprint(untypedAst)
 
     val typedAst2 =
-      untypedAst.node[Stream[(Int, TileLayerRDD[SpatialKey])]]
+      untypedAst.node[LazyList[(Int, TileLayerRDD[SpatialKey])]]
 
     // println(typedAst.prettyPrint)
     // println(typedAst2.prettyPrint)
@@ -348,7 +348,7 @@ class AstSpec extends AnyFunSpec
 
     intercept[Exception] {
       Try {
-        erasedNode.eval[Stream[(Int, TileLayerRDD[SpatialKey])]]
+        erasedNode.eval[LazyList[(Int, TileLayerRDD[SpatialKey])]]
       } match {
         case Failure(e) => println("run failed as expected"); throw e
         case _ =>

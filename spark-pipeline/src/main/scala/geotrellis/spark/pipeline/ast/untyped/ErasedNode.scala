@@ -160,7 +160,7 @@ case class ErasedJsonNode(arg: PipelineExpr) {
             }
           }
           case a: write.JsonWrite =>
-            ErasedTypedNode.fromWrite { child: Node[Stream[(Int, TileLayerRDD[SpatialKey])]] => Write(child, a) }
+            ErasedTypedNode.fromWrite { child: Node[LazyList[(Int, TileLayerRDD[SpatialKey])]] => Write(child, a) }
         }
       }
       case _: SinglebandTemporalExprType => {
@@ -187,7 +187,7 @@ case class ErasedJsonNode(arg: PipelineExpr) {
             }
           }
           case a: write.JsonWrite =>
-            ErasedTypedNode.fromWrite { child: Node[Stream[(Int, TileLayerRDD[SpaceTimeKey])]] => Write(child, a) }
+            ErasedTypedNode.fromWrite { child: Node[LazyList[(Int, TileLayerRDD[SpaceTimeKey])]] => Write(child, a) }
         }
       }
       case _: MultibandSpatialExprType => {
@@ -214,7 +214,7 @@ case class ErasedJsonNode(arg: PipelineExpr) {
             }
           }
           case a: write.JsonWrite =>
-            ErasedTypedNode.fromWrite { child: Node[Stream[(Int, MultibandTileLayerRDD[SpatialKey])]] => Write(child, a) }
+            ErasedTypedNode.fromWrite { child: Node[LazyList[(Int, MultibandTileLayerRDD[SpatialKey])]] => Write(child, a) }
         }
       }
       case _: MultibandTemporalExprType => {
@@ -241,7 +241,7 @@ case class ErasedJsonNode(arg: PipelineExpr) {
             }
           }
           case a: write.JsonWrite =>
-            ErasedTypedNode.fromWrite { child: Node[Stream[(Int, MultibandTileLayerRDD[SpaceTimeKey])]] => Write(child, a) }
+            ErasedTypedNode.fromWrite { child: Node[LazyList[(Int, MultibandTileLayerRDD[SpaceTimeKey])]] => Write(child, a) }
         }
       }
     }

@@ -26,7 +26,7 @@ import java.io.File
 import java.nio.charset.Charset
 
 import scala.collection.mutable
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 object ShapeFileReader {
   val DEFAULT_CHARSET = Charset.forName("ISO-8859-1")
@@ -47,8 +47,8 @@ object ShapeFileReader {
   }
 
   // TODO: use default argument instead of overloads in the next major release
-  def readSimpleFeatures(path: String): Seq[SimpleFeature] = readSimpleFeatures(new URL(s"file://${new File(path).getAbsolutePath}"), DEFAULT_CHARSET)
-  def readSimpleFeatures(path: String, charSet: Charset): Seq[SimpleFeature] = readSimpleFeatures(new URL(s"file://${new File(path).getAbsolutePath}"), charSet)
+  def readSimpleFeatures(path: String): Seq[SimpleFeature] = readSimpleFeatures(new File(path).toURI.toURL, DEFAULT_CHARSET)
+  def readSimpleFeatures(path: String, charSet: Charset): Seq[SimpleFeature] = readSimpleFeatures(new File(path).toURI.toURL, charSet)
 
   def readSimpleFeatures(url: URL): Seq[SimpleFeature] = readSimpleFeatures(url, DEFAULT_CHARSET)
   def readSimpleFeatures(url: URL, charSet: Charset): Seq[SimpleFeature] = {

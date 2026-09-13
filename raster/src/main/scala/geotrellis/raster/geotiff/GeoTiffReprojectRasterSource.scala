@@ -100,13 +100,13 @@ class GeoTiffReprojectRasterSource(
     tiff.synchronized { if (it.hasNext) Some(it.next()) else None }
   }
 
-  override def readExtents(extents: Traversable[Extent], bands: Seq[Int]): Iterator[Raster[MultibandTile]] = {
+  override def readExtents(extents: Iterable[Extent], bands: Seq[Int]): Iterator[Raster[MultibandTile]] = {
     val bounds = extents.map(gridExtent.gridBoundsFor(_))
 
     readBounds(bounds, bands)
   }
 
-  override def readBounds(bounds: Traversable[GridBounds[Long]], bands: Seq[Int]): Iterator[Raster[MultibandTile]] = {
+  override def readBounds(bounds: Iterable[GridBounds[Long]], bands: Seq[Int]): Iterator[Raster[MultibandTile]] = {
     val geoTiffTile = closestTiffOverview.tile.asInstanceOf[GeoTiffMultibandTile]
     val intersectingWindows = { for {
       queryPixelBounds <- bounds

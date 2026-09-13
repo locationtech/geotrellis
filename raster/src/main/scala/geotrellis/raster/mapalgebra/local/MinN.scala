@@ -87,7 +87,7 @@ object MinN extends Serializable {
   def apply(n: Int, rs: Tile*): Tile =
     apply(n, rs)
 
-  def apply(n: Int, rs: Traversable[Tile])(implicit d: DI): Tile = {
+  def apply(n: Int, rs: Iterable[Tile])(implicit d: DI): Tile = {
     rs.assertEqualDimensions()
 
     val layerCount = rs.toSeq.length

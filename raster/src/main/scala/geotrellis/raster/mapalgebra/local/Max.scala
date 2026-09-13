@@ -44,5 +44,5 @@ trait MaxMethods extends MethodExtensions[Tile] {
   /** Max the values of each cell in each raster.  */
   def localMax(r: Tile): Tile = Max(self, r)
   /** Max the values of each cell in each raster.  */
-  def localMax(rs: Traversable[Tile]): Tile = Max(self +: rs.toSeq)
+  def localMax(rs: Iterable[Tile]): Tile = Max(self +: rs.toSeq)
 }

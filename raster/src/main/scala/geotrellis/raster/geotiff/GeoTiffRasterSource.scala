@@ -84,12 +84,12 @@ class GeoTiffRasterSource(
     tiff.synchronized { if (it.hasNext) Some(it.next()) else None }
   }
 
-  override def readExtents(extents: Traversable[Extent], bands: Seq[Int]): Iterator[Raster[MultibandTile]] = {
+  override def readExtents(extents: Iterable[Extent], bands: Seq[Int]): Iterator[Raster[MultibandTile]] = {
     val bounds = extents.map(gridExtent.gridBoundsFor(_))
     readBounds(bounds, bands)
   }
 
-  override def readBounds(bounds: Traversable[GridBounds[Long]], bands: Seq[Int]): Iterator[Raster[MultibandTile]] = {
+  override def readBounds(bounds: Iterable[GridBounds[Long]], bands: Seq[Int]): Iterator[Raster[MultibandTile]] = {
     val geoTiffTile = tiff.tile.asInstanceOf[GeoTiffMultibandTile]
     val intersectingBounds: Seq[GridBounds[Int]] =
       bounds.flatMap(_.intersection(this.dimensions)).toSeq.map(_.toGridType[Int])

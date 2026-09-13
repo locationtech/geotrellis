@@ -206,13 +206,13 @@ trait BufferTiles {
 
           }
 
-      contributingKeys.groupBy(_._1).mapValues { _.map(_._2).toMap }.toSeq
+      contributingKeys.groupBy(_._1).view.mapValues { _.map(_._2).toMap }.toSeq
     }
 
     val grouped: Seq[(K, Seq[(raster.buffer.Direction, V)])] =
       seq.zip(surroundingBufferSizes).flatMap { case ((key, tile), (k2, bufferSizesMap)) =>
         collectWithTileNeighbors(key, tile, bufferSizesMap.contains _, bufferSizesMap)
-      }.groupBy(_._1).mapValues(_.map(_._2)).toSeq
+      }.groupBy(_._1).view.mapValues(_.map(_._2)).toSeq
 
     bufferWithNeighbors(grouped)
   }
@@ -240,7 +240,7 @@ trait BufferTiles {
       seq
         .flatMap { case (key, tile) =>
           collectWithTileNeighbors(key, tile, { key => layerBounds.contains(key.col, key.row) }, { key => bufferSizes })
-        }.groupBy(_._1).mapValues { _.map(_._2) }.toSeq
+        }.groupBy(_._1).view.mapValues { _.map(_._2) }.toSeq
 
     bufferWithNeighbors(grouped)
   }

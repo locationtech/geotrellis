@@ -223,7 +223,7 @@ trait TileLayerRDDBuilders {
   }
 
   def createSpaceTimeTileLayerRDD(
-    tiles: Traversable[(Tile, ZonedDateTime)],
+    tiles: Iterable[(Tile, ZonedDateTime)],
     tileLayout: TileLayout,
     cellType: CellType = IntConstantNoDataCellType)(implicit sc: SparkContext): TileLayerRDD[SpaceTimeKey] = {
 

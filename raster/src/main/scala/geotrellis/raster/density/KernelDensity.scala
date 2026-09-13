@@ -29,7 +29,7 @@ object KernelDensity {
     * Computes a Density raster based on the Kernel and set of points
     * provided.  Defaults to IntConstantNoDataCellType.
     */
-  def apply(points: Traversable[PointFeature[Int]],
+  def apply(points: Iterable[PointFeature[Int]],
             kernel: Kernel,
             rasterExtent: RasterExtent): Tile =
     apply(points, kernel, rasterExtent, IntConstantNoDataCellType)
@@ -45,7 +45,7 @@ object KernelDensity {
     * @param      cellType         CellType of the resulting tile.
     *
     */
-  def apply(points: Traversable[PointFeature[Int]],
+  def apply(points: Iterable[PointFeature[Int]],
             kernel: Kernel,
             rasterExtent: RasterExtent,
             cellType: CellType): Tile = {
@@ -67,7 +67,7 @@ object KernelDensity {
     * Computes a Density raster based on the Kernel and set of points provided.
     * Defaults to DoubleConstantNoDataCellType.
     */
-  def apply(points: Traversable[PointFeature[Double]],
+  def apply(points: Iterable[PointFeature[Double]],
             kernel: Kernel,
             rasterExtent: RasterExtent)(implicit d: DummyImplicit): Tile =
     apply(points, kernel, rasterExtent, DoubleConstantNoDataCellType)
@@ -83,7 +83,7 @@ object KernelDensity {
     * @param      cellType         CellType of the resulting tile.
     *
     */
-  def apply(points: Traversable[PointFeature[Double]],
+  def apply(points: Iterable[PointFeature[Double]],
             kernel: Kernel,
             rasterExtent: RasterExtent,
             cellType: CellType)(implicit d: DummyImplicit): Tile = {

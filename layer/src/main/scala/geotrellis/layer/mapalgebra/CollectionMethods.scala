@@ -20,10 +20,10 @@ import geotrellis.util.MethodExtensions
 
 abstract class CollectionCombineMethods[K, V] extends MethodExtensions[Seq[(K, V)]] {
   def combineValues[R](other: Seq[(K, V)])(f: (V, V) => R): Seq[(K, R)] =
-    (self ++ other).groupBy(_._1).mapValues { case Seq((_, v1), (_, v2)) => f(v1, v2) }.toSeq
+    (self ++ other).groupBy(_._1).view.mapValues { case Seq((_, v1), (_, v2)) => f(v1, v2) }.toSeq
 
-  def combineValues[R](others: Traversable[Seq[(K, V)]])(f: Iterable[V] => R): Seq[(K, R)] =
-    (self ++ others.flatten).groupBy(_._1).mapValues(tiles => f(tiles.map(_._2))).toSeq
+  def combineValues[R](others: Iterable[Seq[(K, V)]])(f: Iterable[V] => R): Seq[(K, R)] =
+    (self ++ others.flatten).groupBy(_._1).view.mapValues(tiles => f(tiles.map(_._2))).toSeq
 
   def mapValues[R](f: V => R): Seq[(K, R)] = self.map { case (k, v) => (k, f(v)) }
 }

@@ -58,7 +58,7 @@ trait PowMethods extends MethodExtensions[Tile] {
   /** Pow the values of each cell in each raster. */
   def **(r: Tile): Tile = localPow(r)
   /** Pow the values of each cell in each raster. */
-  def localPow(rs: Traversable[Tile]): Tile = Pow(self +: rs.toSeq)
+  def localPow(rs: Iterable[Tile]): Tile = Pow(self +: rs.toSeq)
   /** Pow the values of each cell in each raster. */
-  def **(rs: Traversable[Tile]): Tile = localPow(rs)
+  def **(rs: Iterable[Tile]): Tile = localPow(rs)
 }

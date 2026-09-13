@@ -38,7 +38,7 @@ package object temporal extends Implicits {
     start: ZonedDateTime,
     end: ZonedDateTime,
     partitioner: Option[Partitioner] = None)(
-    reduceOp: Traversable[Tile] => Tile
+    reduceOp: Iterable[Tile] => Tile
   ): RDD[(K, Tile)] = {
     val rdd =
       sourceRdd

@@ -25,7 +25,7 @@ import org.apache.spark.rdd._
 import scala.reflect.ClassTag
 
 trait TileLayerRDDMatchers extends RasterMatchers {
-  implicit def rddToTile(rdd: RDD[(SpatialKey, Tile)]) = rdd.stitch()
+  implicit def rddToTile(rdd: RDD[(SpatialKey, Tile)]): Tile = rdd.stitch()
 
   /*
    * Takes a 3-tuple, min, max, and count and checks
@@ -95,7 +95,7 @@ trait TileLayerRDDMatchers extends RasterMatchers {
     }
 
     val grouped: Map[K, Array[(K, Tile)]] =
-      ft.union(st).groupBy(_._1).toMap.map { case (k ,v) => (k, v.toArray) }
+      ft.concat(st).groupBy(_._1).toMap.map { case (k ,v) => (k, v.toArray) }
 
     for( (key, tiles) <- grouped) {
       tiles.size should be (2)

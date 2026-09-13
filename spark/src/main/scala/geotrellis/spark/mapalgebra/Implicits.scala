@@ -28,8 +28,8 @@ trait Implicits {
   implicit class withCombineMethods[K: ClassTag, V: ClassTag](val self: RDD[(K, V)])
     extends CombineMethods[K, V]
 
-  implicit class withCombineTraversableMethods[K: ClassTag, V: ClassTag](rs: Traversable[RDD[(K, V)]]) {
-    def combineValues[R: ClassTag](f: Traversable[V] => R, partitioner: Option[Partitioner] = None): RDD[(K, R)] =
+  implicit class withCombineTraversableMethods[K: ClassTag, V: ClassTag](rs: Iterable[RDD[(K, V)]]) {
+    def combineValues[R: ClassTag](f: Iterable[V] => R, partitioner: Option[Partitioner] = None): RDD[(K, R)] =
       rs.head.combineValues(rs.tail, partitioner)(f)
   }
 

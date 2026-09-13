@@ -61,7 +61,7 @@ trait MultibandTileMaskMethods extends TileMaskMethods[MultibandTile] {
   /**
     * Masks this tile by the given Geometry.
     */
-  def mask(ext: Extent, geoms: Traversable[Geometry], options: Options): MultibandTile =
+  def mask(ext: Extent, geoms: Iterable[Geometry], options: Options): MultibandTile =
     ArrayMultibandTile(
       self.bands.map(_.mask(ext, geoms, options))
     )

@@ -282,7 +282,7 @@ object COGLayerMetadata {
     val (zoomRanges, _, _, _, _) = {
       // generate a stream from the max zoom level by -1, we want to perform a lazy fold with a conditional break
       val Left(res) =
-        Stream.from(maxZoom, -1).foldLeftM(accSeed) { case (prod@(acc, currMaxZoom, currTileSize, isLowLevel, fitsZoomRange), z) =>
+        LazyList.from(maxZoom, -1).foldLeftM(accSeed) { case (prod@(acc, currMaxZoom, currTileSize, isLowLevel, fitsZoomRange), z) =>
           // TMS doesn't support zoom levels below 0
           if (z < 0 || !fitsZoomRange) {
             Left(prod)

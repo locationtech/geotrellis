@@ -43,7 +43,7 @@ import java.time.ZonedDateTime
     layer: TileLayerRDD[SpaceTimeKey],
     projection: Tile => R,
     reduction: (R, R) => R,
-    geoms: Traversable[MultiPolygon],
+    geoms: Iterable[MultiPolygon],
     options: Mask.Options = Mask.Options.DEFAULT
   ): RDD[(ZonedDateTime, R)] = {
 

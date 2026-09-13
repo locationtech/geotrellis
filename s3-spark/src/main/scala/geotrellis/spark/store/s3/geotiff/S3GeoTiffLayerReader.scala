@@ -30,7 +30,7 @@ import software.amazon.awssdk.services.s3.S3Client
 /**
   * @define experimental <span class="badge badge-red" style="float: right;">EXPERIMENTAL</span>@experimental
   */
-@experimental class S3GeoTiffLayerReader[M[T] <: Traversable[T]](
+@experimental class S3GeoTiffLayerReader[M[T] <: Iterable[T]](
   val attributeStore: AttributeStore[M, GeoTiffMetadata],
   val layoutScheme: ZoomedLayoutScheme,
   val resampleMethod: ResampleMethod = NearestNeighbor,
@@ -42,7 +42,7 @@ import software.amazon.awssdk.services.s3.S3Client
 }
 
 @experimental object S3GeoTiffLayerReader {
-  def apply[M[T] <: Traversable[T]](
+  def apply[M[T] <: Iterable[T]](
     attributeStore: AttributeStore[M, GeoTiffMetadata],
     layoutScheme: ZoomedLayoutScheme,
     resampleMethod: ResampleMethod = NearestNeighbor,

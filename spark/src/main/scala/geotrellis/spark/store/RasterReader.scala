@@ -57,7 +57,7 @@ object RasterReader {
     }
   }
 
-  implicit def singlebandGeoTiffReader = new RasterReader[Options, (ProjectedExtent, Tile)] {
+  implicit def singlebandGeoTiffReader: RasterReader[Options, (ProjectedExtent, Tile)] = new RasterReader[Options, (ProjectedExtent, Tile)] {
     def readFully(byteReader: ByteReader, options: Options) = {
       val geotiff = SinglebandGeoTiff(byteReader)
       val raster: Raster[Tile] = geotiff.raster
@@ -73,13 +73,13 @@ object RasterReader {
     def readWindows(gbs: Array[GridBounds[Int]], info: GeoTiffInfo, options: Options) = {
       val geoTiff = GeoTiffReader.geoTiffSinglebandTile(info)
       val re = info.rasterExtent
-      geoTiff.crop(gbs.filter(_.intersects(geoTiff.dimensions))).map { case (gb, tile) =>
+      geoTiff.crop(gbs.filter(_.intersects(geoTiff.dimensions)).toIndexedSeq).map { case (gb, tile) =>
         (ProjectedExtent(re.extentFor(gb, clamp = false), options.crs.getOrElse(info.crs)), tile)
       }
     }
   }
 
-  implicit def multibandGeoTiffReader = new RasterReader[Options, (ProjectedExtent, MultibandTile)] {
+  implicit def multibandGeoTiffReader: RasterReader[Options, (ProjectedExtent, MultibandTile)] = new RasterReader[Options, (ProjectedExtent, MultibandTile)] {
     def readFully(byteReader: ByteReader, options: Options) = {
       val geotiff = MultibandGeoTiff(byteReader)
       val raster: Raster[MultibandTile] = geotiff.raster
@@ -95,13 +95,13 @@ object RasterReader {
     def readWindows(gbs: Array[GridBounds[Int]], info: GeoTiffInfo, options: Options) = {
       val geoTiff = GeoTiffReader.geoTiffMultibandTile(info)
       val re = info.rasterExtent
-      geoTiff.crop(gbs.filter(_.intersects(geoTiff.dimensions))).map { case (gb, tile) =>
+      geoTiff.crop(gbs.filter(_.intersects(geoTiff.dimensions)).toIndexedSeq).map { case (gb, tile) =>
         (ProjectedExtent(re.extentFor(gb, clamp = false), options.crs.getOrElse(info.crs)), tile)
       }
     }
   }
 
-  implicit def temporalSinglebandGeoTiffReader = new RasterReader[Options, (TemporalProjectedExtent, Tile)]  {
+  implicit def temporalSinglebandGeoTiffReader: RasterReader[Options, (TemporalProjectedExtent, Tile)] = new RasterReader[Options, (TemporalProjectedExtent, Tile)]  {
     def readFully(byteReader: ByteReader, options: Options) = {
       val geotiff = SinglebandGeoTiff(byteReader)
       val raster: Raster[Tile] = geotiff.raster
@@ -121,7 +121,7 @@ object RasterReader {
     def readWindows(gbs: Array[GridBounds[Int]], info: GeoTiffInfo, options: Options) = {
       val geoTiff = GeoTiffReader.geoTiffSinglebandTile(info)
       val re = info.rasterExtent
-      geoTiff.crop(gbs.filter(_.intersects(geoTiff.dimensions))).map { case (gb, tile) =>
+      geoTiff.crop(gbs.filter(_.intersects(geoTiff.dimensions)).toIndexedSeq).map { case (gb, tile) =>
         (TemporalProjectedExtent(
           extent = re.extentFor(gb, clamp = false),
           crs = options.crs.getOrElse(info.crs),
@@ -131,7 +131,7 @@ object RasterReader {
     }
   }
 
-  implicit def temporalMultibandGeoTiffReader = new RasterReader[Options, (TemporalProjectedExtent, MultibandTile)]  {
+  implicit def temporalMultibandGeoTiffReader: RasterReader[Options, (TemporalProjectedExtent, MultibandTile)] = new RasterReader[Options, (TemporalProjectedExtent, MultibandTile)]  {
     def readFully(byteReader: ByteReader, options: Options) = {
       val geotiff = MultibandGeoTiff(byteReader)
       val raster: Raster[MultibandTile] = geotiff.raster
@@ -151,7 +151,7 @@ object RasterReader {
     def readWindows(gbs: Array[GridBounds[Int]], info: GeoTiffInfo, options: Options) = {
       val geoTiff = GeoTiffReader.geoTiffMultibandTile(info)
       val re = info.rasterExtent
-      geoTiff.crop(gbs.filter(_.intersects(geoTiff.dimensions))).map { case (gb, tile) =>
+      geoTiff.crop(gbs.filter(_.intersects(geoTiff.dimensions)).toIndexedSeq).map { case (gb, tile) =>
         (TemporalProjectedExtent(
           extent = re.extentFor(gb, clamp = false ),
           crs = options.crs.getOrElse(info.crs),

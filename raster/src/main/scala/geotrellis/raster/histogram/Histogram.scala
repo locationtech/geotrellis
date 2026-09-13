@@ -77,7 +77,7 @@ abstract trait Histogram[@specialized (Int, Double) T <: AnyVal] extends Seriali
   def binCounts(): Seq[(T, Long)] = {
     val labels = values()
     val counts = labels.map(itemCount)
-    labels.zip(counts)
+    labels.zip(counts).toIndexedSeq
   }
 
   /**

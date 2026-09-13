@@ -49,7 +49,7 @@ trait SinglebandTileSplitMethods extends SplitMethods[Tile] {
       }
     }
 
-    tiles
+    tiles.toIndexedSeq
   }
 
 }

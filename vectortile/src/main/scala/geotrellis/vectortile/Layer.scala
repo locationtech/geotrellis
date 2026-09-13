@@ -267,15 +267,15 @@ object StrictLayer {
   private lazy val (pointFs, lineFs, polyFs) = segregate(rawLayer.features)
 
   /**
-   * Polymorphically generate a [[Stream]] of parsed Geometries and
+   * Polymorphically generate a [[LazyList]] of parsed Geometries and
    * their metadata.
    */
   private def geomStream[G1 <: Geometry, G2 <: Geometry](
     feats: ListBuffer[PBFeature]
-  )(implicit protobufGeom: ProtobufGeom[G1, G2]): Stream[(Option[Long], Either[G1, G2], Map[String, Value])] = {
-    def loop(fs: ListBuffer[PBFeature]): Stream[(Option[Long], Either[G1, G2], Map[String, Value])] = {
+  )(implicit protobufGeom: ProtobufGeom[G1, G2]): LazyList[(Option[Long], Either[G1, G2], Map[String, Value])] = {
+    def loop(fs: ListBuffer[PBFeature]): LazyList[(Option[Long], Either[G1, G2], Map[String, Value])] = {
       if (fs.isEmpty) {
-        Stream.empty[(Option[Long], Either[G1, G2], Map[String, Value])]
+        LazyList.empty[(Option[Long], Either[G1, G2], Map[String, Value])]
       } else {
         val geoms: Seq[Int] = fs.head.geometry
 
@@ -319,7 +319,7 @@ object StrictLayer {
   private lazy val polyStream = geomStream[Polygon, MultiPolygon](polyFs)
 
   /* OPTIMIZATION NOTES
-   * `Stream.flatMap` maintains laziness. A common pattern here to "fold away"
+   * `LazyList.flatMap` maintains laziness. A common pattern here to "fold away"
    * results you don't want is to use [[Option]]. However, flatMap here
    * expects an [[Iterable]], and employs an implicit conversion from [[Option]]
    * to get it.
@@ -332,37 +332,37 @@ object StrictLayer {
    * a legal state for JTS Geoms. These cause problems later when reading/writing
    * VT Features, so we avoid those problems by ignoring any empty Geoms here.
    */
-  lazy val points: Stream[MVTFeature[Point]] = pointStream
+  lazy val points: LazyList[MVTFeature[Point]] = pointStream
     .flatMap({
       case (id, Left(p), meta) => new ::(MVTFeature(id, p, meta), Nil)
       case _ => Nil
     })
 
-  lazy val multiPoints: Stream[MVTFeature[MultiPoint]] = pointStream
+  lazy val multiPoints: LazyList[MVTFeature[MultiPoint]] = pointStream
     .flatMap({
       case (id, Right(p), meta) if !p.isEmpty => new ::(MVTFeature(id, p, meta), Nil)
       case _ => Nil
     })
 
-  lazy val lines: Stream[MVTFeature[LineString]] = lineStream
+  lazy val lines: LazyList[MVTFeature[LineString]] = lineStream
     .flatMap({
       case (id, Left(p), meta) if !p.isEmpty => new ::(MVTFeature(id, p, meta), Nil)
       case _ => Nil
     })
 
-  lazy val multiLines: Stream[MVTFeature[MultiLineString]] = lineStream
+  lazy val multiLines: LazyList[MVTFeature[MultiLineString]] = lineStream
     .flatMap({
       case (id, Right(p), meta) if !p.isEmpty => new ::(MVTFeature(id, p, meta), Nil)
       case _ => Nil
     })
 
-  lazy val polygons: Stream[MVTFeature[Polygon]] = polyStream
+  lazy val polygons: LazyList[MVTFeature[Polygon]] = polyStream
     .flatMap({
       case (id, Left(p), meta) if !p.isEmpty => new ::(MVTFeature(id, p, meta), Nil)
       case _ => Nil
     })
 
-  lazy val multiPolygons: Stream[MVTFeature[MultiPolygon]] = polyStream
+  lazy val multiPolygons: LazyList[MVTFeature[MultiPolygon]] = polyStream
     .flatMap({
       case (id, Right(p), meta) if !p.isEmpty => new ::(MVTFeature(id, p, meta), Nil)
       case _ => Nil

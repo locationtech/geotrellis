@@ -128,7 +128,7 @@ import java.time.ZonedDateTime
     * $experimental
     */
   @experimental def sumSeries(
-    polygons: Traversable[MultiPolygon]
+    polygons: Iterable[MultiPolygon]
   ): Map[ZonedDateTime, Double] =
     sumSeries(polygons, Options.DEFAULT)
 
@@ -136,7 +136,7 @@ import java.time.ZonedDateTime
     * $experimental
     */
   @experimental def sumSeries(
-    polygons: Traversable[MultiPolygon],
+    polygons: Iterable[MultiPolygon],
     options: Options
   ): Map[ZonedDateTime, Double] = {
     TimeSeries(
@@ -171,7 +171,7 @@ import java.time.ZonedDateTime
     * $experimental
     */
   @experimental def minSeries(
-    polygons: Traversable[MultiPolygon]
+    polygons: Iterable[MultiPolygon]
   ): Map[ZonedDateTime, Double] =
     minSeries(polygons, Options.DEFAULT)
 
@@ -179,7 +179,7 @@ import java.time.ZonedDateTime
     * $experimental
     */
   @experimental def minSeries(
-    polygons: Traversable[MultiPolygon],
+    polygons: Iterable[MultiPolygon],
     options: Options
   ): Map[ZonedDateTime, Double] = {
     TimeSeries(
@@ -214,7 +214,7 @@ import java.time.ZonedDateTime
     * $experimental
     */
   @experimental def maxSeries(
-    polygons: Traversable[MultiPolygon]
+    polygons: Iterable[MultiPolygon]
   ): Map[ZonedDateTime, Double] =
     maxSeries(polygons, Options.DEFAULT)
 
@@ -222,7 +222,7 @@ import java.time.ZonedDateTime
     * $experimental
     */
   @experimental def maxSeries(
-    polygons: Traversable[MultiPolygon],
+    polygons: Iterable[MultiPolygon],
     options: Options
   ): Map[ZonedDateTime, Double] = {
     TimeSeries(
@@ -257,7 +257,7 @@ import java.time.ZonedDateTime
     * $experimental
     */
   @experimental def meanSeries(
-    polygons: Traversable[MultiPolygon]
+    polygons: Iterable[MultiPolygon]
   ): Map[ZonedDateTime, Double] =
     meanSeries(polygons, Options.DEFAULT)
 
@@ -265,7 +265,7 @@ import java.time.ZonedDateTime
     * $experimental
     */
   @experimental def meanSeries(
-    polygons: Traversable[MultiPolygon],
+    polygons: Iterable[MultiPolygon],
     options: Options
   ): Map[ZonedDateTime, Double] = {
     TimeSeries(
@@ -301,7 +301,7 @@ import java.time.ZonedDateTime
     * $experimental
     */
   @experimental def histogramSeries(
-    polygons: Traversable[MultiPolygon]
+    polygons: Iterable[MultiPolygon]
   ): Map[ZonedDateTime, Histogram[Double]] =
     histogramSeries(polygons, Options.DEFAULT)
 
@@ -309,7 +309,7 @@ import java.time.ZonedDateTime
     * $experimental
     */
   @experimental def histogramSeries(
-    polygons: Traversable[MultiPolygon],
+    polygons: Iterable[MultiPolygon],
     options: Options
   ): Map[ZonedDateTime, Histogram[Double]] = {
     TimeSeries(

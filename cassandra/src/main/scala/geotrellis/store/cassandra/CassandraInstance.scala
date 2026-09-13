@@ -20,7 +20,7 @@ import geotrellis.store.cassandra.conf.CassandraConfig
 import com.datastax.oss.driver.api.core.CqlSession
 import com.datastax.oss.driver.api.querybuilder.SchemaBuilder
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import java.net.{InetSocketAddress, URI}
 
 object CassandraInstance {

@@ -24,7 +24,7 @@ trait LineStringConstructors {
   def apply(points: (Double, Double)*)(implicit d: DummyImplicit): jts.LineString =
     apply(points)
 
-  def apply(points: Traversable[(Double, Double)])(implicit d: DummyImplicit): jts.LineString =
+  def apply(points: Iterable[(Double, Double)])(implicit d: DummyImplicit): jts.LineString =
     apply(points.map { case (x,y) => Point(x,y) })
 
   def apply(points: jts.Point*): jts.LineString =
@@ -33,13 +33,13 @@ trait LineStringConstructors {
   def apply(coords: jts.Coordinate*)(implicit d: DummyImplicit, e: DummyImplicit): jts.LineString =
     apply(GeomFactory.factory.getCoordinateSequenceFactory.create(coords.toArray))
 
-  def apply(coords: Traversable[jts.Coordinate]): jts.LineString =
+  def apply(coords: Iterable[jts.Coordinate]): jts.LineString =
     apply(GeomFactory.factory.getCoordinateSequenceFactory.create(coords.toArray))
 
   def apply(coords: jts.CoordinateSequence): jts.LineString =
     GeomFactory.factory.createLineString(coords)
 
-  def apply(points: Traversable[jts.Point])(implicit ev: DummyImplicit, ev2: DummyImplicit): jts.LineString = {
+  def apply(points: Iterable[jts.Point])(implicit ev: DummyImplicit, ev2: DummyImplicit): jts.LineString = {
     if (points.size < 2) {
       sys.error("Invalid line: Requires 2 or more points.")
     }

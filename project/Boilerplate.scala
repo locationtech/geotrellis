@@ -345,7 +345,7 @@ object GenMacroSegmentCombiner extends Template {
          |trait MacroGeotiffMultibandCombiners {
          |  def cellType: CellType
          |  def getSegment(i: Int): GeoTiffSegment
-         |  def getSegments(ids: Traversable[Int]): Iterator[(Int, GeoTiffSegment)]
+         |  def getSegments(ids: Iterable[Int]): Iterator[(Int, GeoTiffSegment)]
          |
          |  val segmentLayout: GeoTiffSegmentLayout
          |  val segmentCount: Int

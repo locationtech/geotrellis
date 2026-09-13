@@ -57,7 +57,7 @@ object VoxelKey {
     * the [[SpatialComponent]] lens. Lenses are essentially "getters and setters"
     * that can be used in highly generic code.
     */
-  implicit val spatialComponent = {
+  implicit val spatialComponent: Component[VoxelKey, SpatialKey] = {
     Component[VoxelKey, SpatialKey](
       /* "get" a SpatialKey from VoxelKey */
       k => SpatialKey(k.x, k.y),

@@ -34,7 +34,7 @@ import spire.syntax.cfor._
 
 import java.awt.Color
 import java.awt.image.{Raster => AwtRaster, _}
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 /**
   * Houses methods that aide the translate between GridCoverage2D and

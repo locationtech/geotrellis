@@ -27,7 +27,7 @@ import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.matchers.should.Matchers
 
 class SparkExamplesTests extends AnyFunSuite with Matchers with TestEnvironment with TileLayerRDDBuilders with TileBuilders {
-  implicit def longToTemporalKey(l: Long) = TemporalKey(l)
+  implicit def longToTemporalKey(l: Long): TemporalKey = TemporalKey(l)
 
   test("Applying a threshold and then median filter on multiband imagery in an RDD layer") {
     import geotrellis.raster.mapalgebra.focal.Square

@@ -26,7 +26,7 @@ trait EuclideanDistanceTileArrayMethods extends MethodExtensions[Array[Point]] {
   def euclideanDistanceTile(rasterExtent: RasterExtent): Tile = { EuclideanDistanceTile(self, rasterExtent) }
 }
 
-trait EuclideanDistanceTileMethods extends MethodExtensions[Traversable[Point]] {
+trait EuclideanDistanceTileMethods extends MethodExtensions[Iterable[Point]] {
   def euclideanDistanceTile(rasterExtent: RasterExtent): Tile = { EuclideanDistanceTile(self.toArray, rasterExtent) }
 }
 
@@ -34,7 +34,7 @@ trait EuclideanDistanceTileCoordinateArrayMethods extends MethodExtensions[Array
   def euclideanDistanceTile(rasterExtent: RasterExtent): Tile = { EuclideanDistanceTile(self, rasterExtent) }
 }
 
-trait EuclideanDistanceTileCoordinateMethods extends MethodExtensions[Traversable[Coordinate]] {
+trait EuclideanDistanceTileCoordinateMethods extends MethodExtensions[Iterable[Coordinate]] {
   def euclideanDistanceTile(rasterExtent: RasterExtent): Tile = { EuclideanDistanceTile(self.toArray, rasterExtent) }
 }
 

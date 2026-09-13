@@ -32,7 +32,7 @@ object TileLayoutStitcher {
     */
   def stitch[
     V <: CellGrid[Int]: Stitcher
-  ](tiles: Traversable[(Product2[Int, Int], V)]): (V, (Int, Int), (Int, Int)) = {
+  ](tiles: Iterable[(Product2[Int, Int], V)]): (V, (Int, Int), (Int, Int)) = {
     assert(tiles.size > 0, "Cannot stitch empty collection")
 
     val colWidths = mutable.Map.empty[Int, Int]
@@ -52,7 +52,7 @@ object TileLayoutStitcher {
     }
 
     val stitcher = implicitly[Stitcher[V]]
-    val result = stitcher.stitch(tiles.map{ case (key, tile) => tile -> (colPos(key._1), rowPos(key._2)) }.toIterable, width, height)
+    val result = stitcher.stitch(tiles.map{ case (key, tile) => tile -> (colPos(key._1), rowPos(key._2)) }, width, height)
 
     val (minx, miny) = (colWidths.keys.min, rowHeights.keys.min)
     (result, (minx, miny), (colWidths(minx), rowHeights(miny)))

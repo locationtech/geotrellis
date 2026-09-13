@@ -18,7 +18,7 @@ package geotrellis.store.avro
 
 import org.apache.avro._
 import org.apache.avro.generic._
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import scala.reflect.ClassTag
 
 /**
@@ -26,7 +26,7 @@ import scala.reflect.ClassTag
  * @param formats list of formats that make up the union
  * @tparam T      superclass of listed formats
  */
-class AvroUnionCodec[T: ClassTag](formats: AvroRecordCodec[X] forSome {type X <: T} *) extends AvroRecordCodec[T] {
+class AvroUnionCodec[T: ClassTag](formats: AvroRecordCodec[_ <: T]*) extends AvroRecordCodec[T] {
   def schema: Schema =
     Schema.createUnion(formats.map(_.schema).asJava)
 

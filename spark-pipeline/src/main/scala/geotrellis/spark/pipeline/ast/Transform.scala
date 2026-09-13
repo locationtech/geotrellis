@@ -124,8 +124,8 @@ object Transform {
   def pyramid[
     K: SpatialComponent: AvroRecordCodec: ClassTag,
     V <: CellGrid[Int]: AvroRecordCodec: ClassTag: * => TileMergeMethods[V]: * => TilePrototypeMethods[V]
-  ](arg: JsonPyramid)(rdd: RDD[(K, V)] with Metadata[TileLayerMetadata[K]]): Stream[(Int, RDD[(K, V)] with Metadata[TileLayerMetadata[K]])] = {
-    def pyramid(resampleMethod: ResampleMethod): Stream[(Int, RDD[(K, V)] with Metadata[TileLayerMetadata[K]])] = {
+  ](arg: JsonPyramid)(rdd: RDD[(K, V)] with Metadata[TileLayerMetadata[K]]): LazyList[(Int, RDD[(K, V)] with Metadata[TileLayerMetadata[K]])] = {
+    def pyramid(resampleMethod: ResampleMethod): LazyList[(Int, RDD[(K, V)] with Metadata[TileLayerMetadata[K]])] = {
       require(!rdd.metadata.bounds.isEmpty, "Can not pyramid an empty RDD")
       val part = rdd.partitioner.getOrElse(new HashPartitioner(rdd.partitions.length))
       val (baseZoom, scheme) =

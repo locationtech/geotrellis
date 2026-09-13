@@ -58,7 +58,7 @@ private [geotrellis] trait GeoTiffInfoReader extends Serializable {
           info.segmentLayout.listWindows(maxSize)
       }
 
-    info.segmentLayout.partitionWindowsBySegments(windows, partitionBytes / math.max(info.cellType.bytes, 1))
+    info.segmentLayout.partitionWindowsBySegments(windows.toIndexedSeq, partitionBytes / math.max(info.cellType.bytes, 1))
   }
 
   def readWindows[O, I, K, V](

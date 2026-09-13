@@ -40,9 +40,9 @@ trait OrTileCollectionMethods[K] extends MethodExtensions[Seq[(K, Tile)]] {
   def |(r: Seq[(K, Tile)]): Seq[(K, Tile)] = localOr(r)
 
   /** Or the values of each cell in each raster.  */
-  def localOr(others: Traversable[Seq[(K, Tile)]]): Seq[(K, Tile)] =
+  def localOr(others: Iterable[Seq[(K, Tile)]]): Seq[(K, Tile)] =
     self.combineValues(others)(Or.apply)
 
   /** Or the values of each cell in each raster. */
-  def |(others: Traversable[Seq[(K, Tile)]]): Seq[(K, Tile)] = localOr(others)
+  def |(others: Iterable[Seq[(K, Tile)]]): Seq[(K, Tile)] = localOr(others)
 }

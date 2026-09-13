@@ -24,7 +24,7 @@ import geotrellis.util.MethodExtensions
 /** Methods implicitly added to tile via the package import.
   * Contains a method for each overloaded way to create a SimpleKriging
   */
-trait SimpleKrigingMethods extends MethodExtensions[Traversable[PointFeature[Double]]] {
+trait SimpleKrigingMethods extends MethodExtensions[Iterable[PointFeature[Double]]] {
   def simpleKriging(rasterExtent: RasterExtent) =
     Interpolation.kriging(rasterExtent)(SimpleKriging(self.toArray))
 

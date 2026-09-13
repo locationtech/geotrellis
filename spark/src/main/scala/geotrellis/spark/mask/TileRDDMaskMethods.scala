@@ -38,9 +38,9 @@ abstract class TileRDDMaskMethods[
   def mask(geom: Polygon, options: Options): RDD[(K, V)] with Metadata[M] = mask(Seq(geom), options)
 
   /** Masks this raster by the given Polygons. */
-  def mask(geoms: Traversable[Polygon]): RDD[(K, V)] with Metadata[M] = mask(geoms, Options.DEFAULT)
+  def mask(geoms: Iterable[Polygon]): RDD[(K, V)] with Metadata[M] = mask(geoms, Options.DEFAULT)
 
-  def mask(geoms: Traversable[Polygon], options: Options): RDD[(K, V)] with Metadata[M] =
+  def mask(geoms: Iterable[Polygon], options: Options): RDD[(K, V)] with Metadata[M] =
     MaskRDD(self, geoms, options)
 
   /** Masks this raster by the given MultiPolygon. */
@@ -49,7 +49,7 @@ abstract class TileRDDMaskMethods[
   def mask(geom: MultiPolygon, options: Options): RDD[(K, V)] with Metadata[M] = mask(Seq(geom), options)
 
   /** Masks this raster by the given MultiPolygons. */
-  def mask(geoms: Traversable[MultiPolygon], options: Options)(implicit d: DummyImplicit): RDD[(K, V)] with Metadata[M] =
+  def mask(geoms: Iterable[MultiPolygon], options: Options)(implicit d: DummyImplicit): RDD[(K, V)] with Metadata[M] =
     MaskRDD(self, geoms, options)
 
   /** Masks this raster by the given Extent. */

@@ -79,7 +79,7 @@ object Accumulation {
 
     if(sum == -1) {
       sum = 0
-      val stack = new ArrayStack[(Int, Int)]()
+      val stack = new Stack[(Int, Int)]()
 
       stack.push((c, r))
       stack.push((c, r))

@@ -75,13 +75,13 @@ object PipelineSparkExamples {
       """.stripMargin
 
     // parse the JSON above
-    val list: Option[Node[Stream[(Int, TileLayerRDD[SpatialKey])]]] = maskJson.node
+    val list: Option[Node[LazyList[(Int, TileLayerRDD[SpatialKey])]]] = maskJson.node
 
     list match {
       case None => println("Couldn't parse the JSON")
       case Some(node) => {
         // eval evaluates the pipeline
-        // the result type of evaluation in this case would ben Stream[(Int, TileLayerRDD[SpatialKey])]
+        // the result type of evaluation in this case would ben LazyList[(Int, TileLayerRDD[SpatialKey])]
         node.eval.foreach { case (zoom, rdd) =>
           println(s"ZOOM: ${zoom}")
           println(s"COUNT: ${rdd.count()}")
@@ -104,8 +104,8 @@ object PipelineSparkExamples {
     }
 
     // typed result
-    val typedResult: Option[Stream[(Int, TileLayerRDD[SpatialKey])]] = untypedAst.flatMap { en =>
-      Try { en.eval[Stream[(Int, TileLayerRDD[SpatialKey])]] } match {
+    val typedResult: Option[LazyList[(Int, TileLayerRDD[SpatialKey])]] = untypedAst.flatMap { en =>
+      Try { en.eval[LazyList[(Int, TileLayerRDD[SpatialKey])]] } match {
         case Success(stream) => Some(stream)
         case Failure(e) => None
       }
@@ -140,10 +140,10 @@ object PipelineSparkExamples {
     val list: List[PipelineExpr] = jsonRead ~ jsonTileToLayout ~ jsonReproject ~ jsonPyramid ~ jsonWrite
 
     // typed way, as in the JSON example above
-    val typedAst: Node[Stream[(Int, TileLayerRDD[SpatialKey])]] =
+    val typedAst: Node[LazyList[(Int, TileLayerRDD[SpatialKey])]] =
       list
-        .node[Stream[(Int, TileLayerRDD[SpatialKey])]]
-    val result: Stream[(Int, TileLayerRDD[SpatialKey])] = typedAst.eval
+        .node[LazyList[(Int, TileLayerRDD[SpatialKey])]]
+    val result: LazyList[(Int, TileLayerRDD[SpatialKey])] = typedAst.eval
 
     // in some cases you may want just to evaluate the pipeline
     // to add some flexibility we can do parsing and avaluation steps manually
@@ -159,7 +159,7 @@ object PipelineSparkExamples {
       }
 
     // typed result
-    val typedResult: Option[Stream[(Int, TileLayerRDD[SpatialKey])]] =
+    val typedResult: Option[LazyList[(Int, TileLayerRDD[SpatialKey])]] =
       Try { untypedAst.eval } match {
         case Success(stream) => Some(stream)
         case Failure(e) => None

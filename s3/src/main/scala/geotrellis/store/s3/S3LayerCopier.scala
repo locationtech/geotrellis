@@ -25,7 +25,7 @@ import software.amazon.awssdk.services.s3.model._
 import software.amazon.awssdk.services.s3.S3Client
 import _root_.io.circe._
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import scala.reflect.ClassTag
 
 class S3LayerCopier(

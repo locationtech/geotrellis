@@ -75,7 +75,7 @@ object CellSize {
     CellSize(width, height)
   }
 
-  implicit val cellsizeOrdering = new Ordering[CellSize] {
+  implicit val cellsizeOrdering: Ordering[CellSize] = new Ordering[CellSize] {
     def compare(x: CellSize, y: CellSize): Int =
     (x.resolution - y.resolution).toInt
   }

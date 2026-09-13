@@ -47,6 +47,6 @@ class RowMajorSpatialKeyIndex(val keyBounds: KeyBounds[SpatialKey]) extends KeyI
       val min = toIndex(colMin, row)
       result(i) = (min, min + cols - 1)
     }
-    result
+    result.toIndexedSeq
   }
 }

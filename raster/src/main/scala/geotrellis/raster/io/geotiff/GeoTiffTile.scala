@@ -342,7 +342,7 @@ abstract class GeoTiffTile(
    */
   def getSegment(i: Int): GeoTiffSegment
 
-  def getSegments(ids: Traversable[Int]): Iterator[(Int, GeoTiffSegment)]
+  def getSegments(ids: Iterable[Int]): Iterator[(Int, GeoTiffSegment)]
 
   /**
    * Given a col and row, find the segment where this point resides.

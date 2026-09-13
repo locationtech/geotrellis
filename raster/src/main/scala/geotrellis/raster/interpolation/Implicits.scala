@@ -22,10 +22,10 @@ import geotrellis.util.MethodExtensions
 object Implicits extends Implicits
 
 trait Implicits {
-  implicit class withInverseDistanceWeightedMethods[D](val self: Traversable[PointFeature[D]])(implicit ev: D => Double)
+  implicit class withInverseDistanceWeightedMethods[D](val self: Iterable[PointFeature[D]])(implicit ev: D => Double)
       extends InverseDistanceWeightedMethods[D]
 
-  implicit class withKrigingInterpolationMethods(val self: Traversable[PointFeature[Double]]) extends MethodExtensions[Traversable[PointFeature[Double]]]
+  implicit class withKrigingInterpolationMethods(val self: Iterable[PointFeature[Double]]) extends MethodExtensions[Iterable[PointFeature[Double]]]
       with SimpleKrigingMethods
       with OrdinaryKrigingMethods
       with UniversalKrigingMethods

@@ -41,7 +41,7 @@ trait GeoTiffSegmentCollection {
     _lastSegment
   }
 
-  def getSegments(ids: Traversable[Int]): Iterator[(Int, T)] = {
+  def getSegments(ids: Iterable[Int]): Iterator[(Int, T)] = {
     for { (id, bytes) <- segmentBytes.getSegments(ids) }
       yield id -> decompressGeoTiffSegment(id, bytes)
   }

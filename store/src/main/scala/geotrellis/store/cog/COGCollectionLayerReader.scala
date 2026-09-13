@@ -162,7 +162,7 @@ object COGCollectionLayerReader {
    * Find instances of [[COGCollectionLayerReaderProvider]] through Java SPI.
    */
   def apply(attributeStore: AttributeStore, collectionReaderUri: URI): COGCollectionLayerReader[LayerId] = {
-    import scala.collection.JavaConverters._
+    import scala.jdk.CollectionConverters._
     ServiceLoader.load(classOf[COGCollectionLayerReaderProvider])
       .iterator().asScala
       .find(_.canProcess(collectionReaderUri))

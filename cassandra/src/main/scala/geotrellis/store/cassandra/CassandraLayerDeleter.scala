@@ -23,7 +23,7 @@ import org.log4s._
 import com.datastax.oss.driver.api.querybuilder.QueryBuilder
 import com.datastax.oss.driver.api.querybuilder.QueryBuilder.literal
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 class CassandraLayerDeleter(val attributeStore: AttributeStore, instance: CassandraInstance) extends LayerDeleter[LayerId] {
   @transient private[this] lazy val logger = getLogger

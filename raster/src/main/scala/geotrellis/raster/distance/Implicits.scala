@@ -22,14 +22,14 @@ import geotrellis.vector.{MultiPoint, Point}
 object Implicits extends Implicits
 
 trait Implicits {
-  implicit class withEuclideanDistanceTileCoordinateMethods(val self: Traversable[Coordinate]) extends EuclideanDistanceTileCoordinateMethods
+  implicit class withEuclideanDistanceTileCoordinateMethods(val self: Iterable[Coordinate]) extends EuclideanDistanceTileCoordinateMethods
 
   implicit class withEuclideanDistanceTileArrayCoordinateMethods(val self: Array[Coordinate]) extends EuclideanDistanceTileCoordinateArrayMethods
 
   implicit class withEuclideanDistanceTileMultiPointMethods(val self: MultiPoint) extends EuclideanDistanceTileMultiPointMethods
 
   // The following will be edited to use the new Euclidean distance classes upon deleting the JTS-derived versions
-  implicit class withEuclideanDistanceTileMethods(val self: Traversable[Point]) extends EuclideanDistanceTileMethods
+  implicit class withEuclideanDistanceTileMethods(val self: Iterable[Point]) extends EuclideanDistanceTileMethods
 
   implicit class withEuclideanDistanceTileArrayMethods(val self: Array[Point]) extends EuclideanDistanceTileArrayMethods
 

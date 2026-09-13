@@ -28,7 +28,7 @@ import software.amazon.awssdk.services.s3.model.ListObjectsV2Request
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 class S3GeoTiffInfoReader(
   val bucket: String,
