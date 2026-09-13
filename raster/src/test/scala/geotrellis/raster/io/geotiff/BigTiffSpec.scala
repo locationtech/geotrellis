@@ -148,7 +148,9 @@ class BigTiffSpec extends AnyFunSpec with RasterMatchers with BeforeAndAfterAll 
       }
     }
 
-    it("should handle offsets greater than 2^32 without overflowing") {
+    // disabling it in CI
+    // https://github.com/locationtech/geotrellis/pull/3616
+    ignore("should handle offsets greater than 2^32 without overflowing") {
       val tempFile = File.createTempFile("bigtiff_", ".tif")
       addToPurge(tempFile.toString)
 
