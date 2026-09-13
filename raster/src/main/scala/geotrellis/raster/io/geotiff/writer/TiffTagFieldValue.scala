@@ -95,11 +95,11 @@ object TiffTagFieldValue {
     fieldValues += TiffTagFieldValue(SamplesPerPixelTag, ShortsFieldType, 1, imageData.bandCount)
     val extraBands = imageData.bandCount - ColorSpace.bandCount(geoTiff.options.colorSpace)
     if (extraBands > 0) {
-      val bytes = new Array[Byte](extraBands)
+      val extraSamples = new Array[Short](extraBands)
       if (geoTiff.options.colorSpace == ColorSpace.RGB && geoTiff.options.rgbChannels > 3) {
-        bytes(0) = 2 // next band acts as alpha channel for RGB
+        extraSamples(0) = 2 // next band acts as alpha channel for RGB
       }
-      fieldValues += TiffTagFieldValue(ExtraSamplesTag, BytesFieldType, extraBands, bytes)
+      fieldValues += TiffTagFieldValue(ExtraSamplesTag, ShortsFieldType, extraBands, toBytes(extraSamples))
     }
     fieldValues += TiffTagFieldValue(SampleFormatTag, ShortsFieldType, 1, imageData.bandType.sampleFormat)
 
