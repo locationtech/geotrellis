@@ -34,7 +34,7 @@ object SparkUtils {
   def setGeoTrellisHome(path: String): Unit =
     _geoTrellisHome match {
       case Some(s) =>
-        if(s != _geoTrellisHome) {
+        if(s != path) {
           sys.error(s"GeoTrellis Home directory already set to $s")
         }
       case None =>
