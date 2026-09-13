@@ -454,10 +454,10 @@ class StreamingHistogram(
   def areaUnderCurve(): Double = {
     buckets()
       .sliding(2)
-      .map({
+      .map {
         case List(x,y) => computeArea(x,y)
-        case List(_) => 0.0
-      })
+        case _ => 0.0
+      }
       .sum
   }
 
