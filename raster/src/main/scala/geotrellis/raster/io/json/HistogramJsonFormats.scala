@@ -27,25 +27,25 @@ import scala.collection.mutable.ArrayBuffer
 trait HistogramJsonFormats {
   implicit val histogramIntEncoder: Encoder[Histogram[Int]] =
     Encoder.encodeJson.contramap[Histogram[Int]] { h =>
-      var pairs = ArrayBuffer[Json]()
+      val pairs = ArrayBuffer[Json]()
       h.foreach { (value, count) => pairs += Vector(value, count).asJson }
       Json.fromValues(pairs)
     }
 
   implicit val histogramIntDecoder: Decoder[Histogram[Int]] =
     Decoder.decodeJson.emap { json: Json =>
+      val error = "Array of [label, count] pairs expected"
       json.asArray match {
         case Some(pairs) =>
           val hist = FastMapHistogram()
-          for(pair <- pairs) {
+          pairs.traverse { pair =>
             pair.as[Vector[Int]] match {
-              case Right(Vector(item, count)) => hist.countItem(item, count)
-              case Left(e) => throw e
+              case Right(Vector(item, count)) => hist.countItem(item, count).asRight
+              case _                          => error.asLeft
             }
-          }
-          Right(hist)
+          }.as(hist)
 
-        case _ => Left("Array of [label, count] pairs expected")
+        case _ => Left(error)
       }
     }
 
@@ -55,7 +55,7 @@ trait HistogramJsonFormats {
         h.maxValue().map { max => (min, max) }
       } match {
         case Some((min, max)) =>
-          var pairs = ArrayBuffer[Json]()
+          val pairs = ArrayBuffer[Json]()
           h.foreach { (value, count) => pairs += Vector(value, count.toDouble).asJson }
           Json.obj(
             "buckets" -> pairs.asJson,

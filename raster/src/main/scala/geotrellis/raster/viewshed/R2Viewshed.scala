@@ -255,7 +255,7 @@ object R2Viewshed extends Serializable {
         case _ if ((-1.0 < cameraFOV && cameraFOV < 1.0) && (vx*math.cos(theta) + vy*math.sin(theta)) < cameraFOV) =>
           None
         case FromInside if inTile => Some(DirectedSegment(x0,y0,x1,y1,theta))
-        case FromInside if !inTile => throw new Exception
+        case FromInside => throw new Exception(s"Ray marked FromInside, but the start point ($startCol, $startRow) is outside of the tile")
         case FromNorth =>
           val y2 = rows-1
           val x2 = math.round(((y2 - y1) / m) + x1).toInt
