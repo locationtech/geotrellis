@@ -71,10 +71,10 @@ class GeoTiffResampleRasterSource(
           ReprojectRasterExtent(
             baseGridExtent,
             transform,
-            Reproject.Options.DEFAULT.copy(method = resampleMethod, errorThreshold = errorThreshold)
+            Reproject.Options.DEFAULT.copy(method = this.resampleMethod, errorThreshold = errorThreshold)
           )
 
-        resampleTarget(reprojectedRasterExtent)
+        this.resampleTarget(reprojectedRasterExtent)
       }
     }
 

@@ -24,7 +24,7 @@ import org.scalatest.BeforeAndAfterAll
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.funspec.AnyFunSpec
 
-trait Tester {
+trait TesterSupport {
   def paths: List[String]
 
   class Tester(path: String) {
@@ -55,7 +55,7 @@ class SegmentBytesSpec extends AnyFunSpec
   with BeforeAndAfterAll
   with RasterMatchers
   with TileBuilders
-  with Tester {
+  with TesterSupport {
 
   val paths = List(
     geoTiffPath("uncompressed/striped/byte.tif"),
