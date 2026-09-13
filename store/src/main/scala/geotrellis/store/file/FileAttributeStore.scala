@@ -40,6 +40,9 @@ class FileAttributeStore(val catalogPath: String) extends BlobLayerAttributeStor
   if(!attributeDirectory.exists)
     attributeDirectory.mkdirs()
 
+  private def wildcardFilter(wildcard: String): FileFilter =
+    WildcardFileFilter.builder().setWildcards(wildcard).get()
+
   def attributeFile(layerId: LayerId, attributeName: String): File =
     new File(attributeDirectory, s"${layerId.name}${SEP}${layerId.zoom}${SEP}${attributeName}.json")
 
@@ -66,7 +69,7 @@ class FileAttributeStore(val catalogPath: String) extends BlobLayerAttributeStor
 
   def readAll[T: Decoder](attributeName: String): Map[LayerId, T] =
     attributeDirectory
-      .listFiles(new WildcardFileFilter(s"*${SEP}${attributeName}.json"): FileFilter)
+      .listFiles(wildcardFilter(s"*${SEP}${attributeName}.json"))
       .map(read[T])
       .toMap
 
@@ -78,7 +81,7 @@ class FileAttributeStore(val catalogPath: String) extends BlobLayerAttributeStor
 
   def layerAttributeFiles(layerId: LayerId): Seq[File] =
     attributeDirectory
-      .listFiles(new WildcardFileFilter(s"${layerId.name}${SEP}${layerId.zoom}${SEP}*.json"): FileFilter)
+      .listFiles(wildcardFilter(s"${layerId.name}${SEP}${layerId.zoom}${SEP}*.json"))
       .toIndexedSeq
 
   def layerExists(layerId: LayerId): Boolean =
@@ -87,7 +90,7 @@ class FileAttributeStore(val catalogPath: String) extends BlobLayerAttributeStor
   def delete(layerId: LayerId, attributeName: String): Unit = {
     val layerFiles =
       attributeDirectory
-        .listFiles(new WildcardFileFilter(s"${layerId.name}${SEP}${layerId.zoom}${SEP}*.json"): FileFilter)
+        .listFiles(wildcardFilter(s"${layerId.name}${SEP}${layerId.zoom}${SEP}*.json"))
     layerFiles.find(f => f.getAbsolutePath.endsWith(s"${SEP}${attributeName}.json")) match {
       case Some(f) => f.delete()
       case _ =>
@@ -98,14 +101,14 @@ class FileAttributeStore(val catalogPath: String) extends BlobLayerAttributeStor
   def delete(layerId: LayerId): Unit = {
     val layerFiles =
       attributeDirectory
-        .listFiles(new WildcardFileFilter(s"${layerId.name}${SEP}${layerId.zoom}${SEP}*.json"): FileFilter)
+        .listFiles(wildcardFilter(s"${layerId.name}${SEP}${layerId.zoom}${SEP}*.json"))
     layerFiles.foreach { f => f.delete() }
     clearCache(layerId)
   }
 
   def layerIds: Seq[LayerId] =
     attributeDirectory
-      .listFiles(new WildcardFileFilter(s"*.json"): FileFilter)
+      .listFiles(wildcardFilter("*.json"))
       .map { f =>
         val List(name, zoomStr) = f.getName.split(SEP).take(2).toList
         LayerId(name, zoomStr.toInt)
