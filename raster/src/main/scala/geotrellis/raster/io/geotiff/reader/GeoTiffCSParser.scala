@@ -311,12 +311,12 @@ class GeoTiffCSParser(geoKeyDirectory: GeoKeyDirectory) {
 
           valueMap.get(CoordOpCode) match {
             case Some(v) if (v.toInt > 0) => gtgp.projCode = v.toInt
-            case None => gtgp.length = UserDefinedCPV
+            case _ => gtgp.length = UserDefinedCPV
           }
 
           valueMap.get(SourceGeoCRSCode) match {
             case Some(v) if (v.toInt > 0) => gtgp.gcs = v.toInt
-            case None => gtgp.gcs = UserDefinedCPV
+            case _ => gtgp.gcs = UserDefinedCPV
           }
         }
       }
@@ -513,8 +513,9 @@ class GeoTiffCSParser(geoKeyDirectory: GeoKeyDirectory) {
         case Some(factorB) if (factorB != "") => map.get(FactorCCode) match {
           case Some(factorC) if (factorC != "" && factorC.toDouble != 0.0) =>
             Some((factorB.toDouble / factorC.toDouble) * 180.0 / math.Pi)
+          case _ => None
         }
-        case None => None
+        case _ => None
       }
       case None => None
     }
@@ -561,7 +562,7 @@ class GeoTiffCSParser(geoKeyDirectory: GeoKeyDirectory) {
                   case Some(conv) => semiMajorStr.toDouble * conv
                   case None => semiMajorStr.toDouble
                 }
-                case None => Double.NaN
+                case _ => Double.NaN
               }
 
               if (semiMajor == Double.NaN) (None, None)
@@ -576,7 +577,7 @@ class GeoTiffCSParser(geoKeyDirectory: GeoKeyDirectory) {
                           Some(semiMajor),
                           Some(semiMinorComp(semiMajor, invFlatteningStr.toDouble))
                         )
-                      case None => (Some(semiMajor), None)
+                      case _ => (Some(semiMajor), None)
                     } else (Some(semiMajor), Some(semiMinor))
                   }
                   case _ => (Some(semiMajor), None)
@@ -612,7 +613,7 @@ class GeoTiffCSParser(geoKeyDirectory: GeoKeyDirectory) {
           case Some(angleString) => Some(angleStringToDD(angleString, uomAngleStr.toInt))
           case None => None
         }
-        case None => None
+        case _ => None
       }
       case None => None
     }
@@ -941,11 +942,8 @@ class GeoTiffCSParser(geoKeyDirectory: GeoKeyDirectory) {
     }
   }
 
-  private def getOptDoubleValue(opts: List[Option[Double]], default: Double) =
-    opts.filter(_ != None).headOption match {
-      case Some(head) if (!head.isEmpty) => head.get
-      case None => default
-    }
+  private def getOptDoubleValue(opts: List[Option[Double]], default: Double): Double =
+    opts.flatten.headOption.getOrElse(default)
 
   private def getMapSystemAndZone(projCode: Int) =
     if (projCode >= Proj_UTM_zone_1N && projCode <= Proj_UTM_zone_60N)
