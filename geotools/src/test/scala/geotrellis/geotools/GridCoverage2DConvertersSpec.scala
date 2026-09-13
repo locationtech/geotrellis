@@ -29,7 +29,7 @@ import org.scalatest.funspec.AnyFunSpec
 class GridCoverage2DConvertersSpec extends AnyFunSpec with Matchers with GeoTiffTestUtils {
 
   case class TestFile(description: String, path: String, isMultiband: Boolean) {
-    def gridCoverage2D: GridCoverage2D = new GeoTiffReader(new java.io.File(path)).read(null)
+    def gridCoverage2D: GridCoverage2D = new GeoTiffReader(new java.io.File(path)).read()
 
     def singlebandRaster: ProjectedRaster[Tile] = {
       val tiff = SinglebandGeoTiff(path)
