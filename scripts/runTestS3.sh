@@ -4,5 +4,5 @@
 docker run -d --restart=always \
     -p 9091:9000 \
     -e MINIO_ROOT_USER=minio -e MINIO_ROOT_PASSWORD=password \
-    minio/minio:RELEASE.2025-09-07T16-13-09Z \
+    pgsty/silo:RELEASE.2026-09-03T13-18-01Z \
     server /data
