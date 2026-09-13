@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Clean up the deprecated syntax and Scala 2.12 APIs [#3628](https://github.com/locationtech/geotrellis/pull/3628)
 - Drop JDK17 builds [#3629](https://github.com/locationtech/geotrellis/pull/3629)
 - Accumulo Deprecated APIs removal [#3630](https://github.com/locationtech/geotrellis/pull/3630)
+- GeoTools 35.1 update [#3611](https://github.com/locationtech/geotrellis/pull/3611)
 
 ## [3.8.1] - 2026-06-22
 
