@@ -31,7 +31,7 @@ object AccumuloLayerMover {
   def apply(
    instance: AccumuloInstance
   )(implicit sc: SparkContext): LayerMover[LayerId] = {
-    val attributeStore = AccumuloAttributeStore(instance.connector)
+    val attributeStore = AccumuloAttributeStore(instance.client)
     apply(
       layerCopier = AccumuloLayerCopier(instance),
       layerDeleter = AccumuloLayerDeleter(attributeStore)

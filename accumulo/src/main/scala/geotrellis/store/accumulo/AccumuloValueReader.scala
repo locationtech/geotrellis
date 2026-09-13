@@ -45,7 +45,7 @@ class AccumuloValueReader(
     val codec = KeyValueRecordCodec[K, V]
 
     def read(key: K): V = {
-      val scanner = instance.connector.createScanner(header.tileTable, new Authorizations())
+      val scanner = instance.client.createScanner(header.tileTable, new Authorizations())
       scanner.setRange(new ARange(rowId(keyIndex.toIndex(key))))
       scanner.fetchColumnFamily(columnFamily(layerId))
 
@@ -83,5 +83,5 @@ object AccumuloValueReader {
   def apply(instance: AccumuloInstance): AccumuloValueReader =
     new AccumuloValueReader(
       instance = instance,
-      attributeStore = AccumuloAttributeStore(instance.connector))
+      attributeStore = AccumuloAttributeStore(instance.client))
 }

@@ -83,7 +83,7 @@ object AccumuloLayerCopier {
     layerWriter: AccumuloLayerWriter
   )(implicit sc: SparkContext): AccumuloLayerCopier =
     apply(
-      AccumuloAttributeStore(instance.connector),
+      AccumuloAttributeStore(instance.client),
       layerReader,
       _ => layerWriter
     )

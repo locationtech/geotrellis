@@ -19,7 +19,7 @@ package geotrellis.store.accumulo
 import geotrellis.store._
 import geotrellis.store.accumulo.conf.AccumuloConfig
 
-import org.apache.accumulo.core.client.{BatchWriterConfig, Connector}
+import org.apache.accumulo.core.client.{AccumuloClient, BatchWriterConfig}
 import org.apache.accumulo.core.security.Authorizations
 import org.apache.accumulo.core.data._
 import org.apache.accumulo.core.client.IteratorSetting
@@ -33,23 +33,23 @@ import cats.syntax.either._
 import scala.jdk.CollectionConverters._
 
 object AccumuloAttributeStore {
-  def apply(connector: Connector, attributeTable: String): AccumuloAttributeStore =
-    new AccumuloAttributeStore(connector, attributeTable)
+  def apply(client: AccumuloClient, attributeTable: String): AccumuloAttributeStore =
+    new AccumuloAttributeStore(client, attributeTable)
 
-  def apply(connector: Connector): AccumuloAttributeStore =
-    apply(connector, AccumuloConfig.catalog)
+  def apply(client: AccumuloClient): AccumuloAttributeStore =
+    apply(client, AccumuloConfig.catalog)
 
   def apply(instance: AccumuloInstance, attributeTable: String): AccumuloAttributeStore =
-    apply(instance.connector, attributeTable)
+    apply(instance.client, attributeTable)
 
   def apply(instance: AccumuloInstance): AccumuloAttributeStore =
-    apply(instance.connector)
+    apply(instance.client)
 }
 
-class AccumuloAttributeStore(val connector: Connector, val attributeTable: String) extends DiscreteLayerAttributeStore {
+class AccumuloAttributeStore(val client: AccumuloClient, val attributeTable: String) extends DiscreteLayerAttributeStore {
   //create the attribute table if it does not exist
   {
-    val ops = connector.tableOperations()
+    val ops = client.tableOperations()
     if (!ops.exists(attributeTable)) ops.create(attributeTable)
   }
 
@@ -59,7 +59,7 @@ class AccumuloAttributeStore(val connector: Connector, val attributeTable: Strin
     s"${layerId.name}${SEP}${layerId.zoom}"
 
   private def fetch(layerId: Option[LayerId], attributeName: String): Iterator[Value] = {
-    val scanner = connector.createScanner(attributeTable, new Authorizations())
+    val scanner = client.createScanner(attributeTable, new Authorizations())
     try {
       layerId.foreach { id => scanner.setRange(new Range(layerIdText(id))) }
       scanner.fetchColumnFamily(new Text(attributeName))
@@ -72,7 +72,7 @@ class AccumuloAttributeStore(val connector: Connector, val attributeTable: Strin
     val numThreads = 1
     val config = new BatchWriterConfig()
     config.setMaxWriteThreads(numThreads)
-    val deleter = connector.createBatchDeleter(attributeTable, new Authorizations(), numThreads, config)
+    val deleter = client.createBatchDeleter(attributeTable, new Authorizations(), numThreads, config)
 
     try {
       deleter.setRanges(List(new Range(layerIdText(layerId))).asJava)
@@ -112,7 +112,7 @@ class AccumuloAttributeStore(val connector: Connector, val attributeTable: Strin
       new Value((layerId, value).asJson.noSpaces.getBytes)
     )
 
-    connector.write(attributeTable, mutation)
+    client.write(attributeTable, mutation)
   }
 
   def layerExists(layerId: LayerId): Boolean =
@@ -123,7 +123,7 @@ class AccumuloAttributeStore(val connector: Connector, val attributeTable: Strin
   def delete(layerId: LayerId, attributeName: String): Unit = delete(layerId, Some(attributeName))
 
   def layerIds: Seq[LayerId] = {
-    val scanner = connector.createScanner(attributeTable, new Authorizations())
+    val scanner = client.createScanner(attributeTable, new Authorizations())
     try {
       scanner.iterator.asScala.map { kv =>
         val Array(name, zoomStr) = kv.getKey.getRow.toString.split(SEP)
@@ -135,7 +135,7 @@ class AccumuloAttributeStore(val connector: Connector, val attributeTable: Strin
   }
 
   def availableAttributes(id: LayerId): Seq[String] = {
-    val scanner = connector.createScanner(attributeTable, new Authorizations())
+    val scanner = client.createScanner(attributeTable, new Authorizations())
     try {
       scanner.setRange(new Range(layerIdText(id)))
       scanner.iterator.asScala.map(_.getKey.getColumnFamily.toString).toVector
@@ -143,7 +143,7 @@ class AccumuloAttributeStore(val connector: Connector, val attributeTable: Strin
   }
 
   override def availableZoomLevels(layerName: String): Seq[Int] = {
-    val scanner = connector.createScanner(attributeTable, new Authorizations())
+    val scanner = client.createScanner(attributeTable, new Authorizations())
     try {
       // 15 is a default priority from docs https://accumulo.apache.org/1.8/accumulo_user_manual.html#_setting_iterators_via_the_shell
       val iter = new IteratorSetting(15, "AttributeStoreLayerNameFilter", classOf[RegExFilter])

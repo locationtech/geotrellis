@@ -233,6 +233,9 @@ object Settings {
       accumuloCore
         exclude("org.jboss.netty", "netty")
         exclude("org.apache.hadoop", "hadoop-client"),
+      accumuloHadoopMR
+        exclude("org.jboss.netty", "netty")
+        exclude("org.apache.hadoop", "hadoop-client"),
       hadoopClient % Provided,
       apacheSpark("core").value % Provided,
       apacheSpark("sql").value % Test,
