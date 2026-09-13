@@ -25,9 +25,12 @@ import geotrellis.raster.io.geotiff.writer.GeoTiffWriterSpec.tempPath
 import geotrellis.raster.render.{ColorRamps, IndexedColorMap}
 import geotrellis.raster.testkit._
 import geotrellis.vector.Extent
+
+import cats.syntax.option._
+
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
-import org.scalatest.{BeforeAndAfterAll, Inspectors}
+import org.scalatest.Inspectors
 
 import java.io._
 import scala.xml.{Text, XML}
@@ -41,11 +44,7 @@ object GeoTiffWriterSpec {
   }
 }
 
-class GeoTiffWriterSpec extends AnyFunSpec with Matchers with BeforeAndAfterAll with RasterMatchers with TileBuilders with GeoTiffTestUtils {
-
-  override def afterAll() = {
-    println("done :)")
-  }
+class GeoTiffWriterSpec extends AnyFunSpec with Matchers with RasterMatchers with TileBuilders with GeoTiffTestUtils {
 
   private val testCRS = CRS.fromName("EPSG:3857")
   private val testExtent = Extent(100.0, 400.0, 120.0, 420.0)
@@ -58,7 +57,7 @@ class GeoTiffWriterSpec extends AnyFunSpec with Matchers with BeforeAndAfterAll 
 
       val tiffTags = TiffTags.read(path)
       val samples = tiffTags.nonBasicTags.extraSamples
-      samples.get should equal(Array(0))
+      samples.map(_.toSeq) should equal(Seq(0).some)
 
       val actual = MultibandGeoTiff(path).tags
       val expected = geoTiff.tags
@@ -138,7 +137,7 @@ class GeoTiffWriterSpec extends AnyFunSpec with Matchers with BeforeAndAfterAll 
       GeoTiffWriter.write(taggedTiff, path)
       val tags = TiffTags.read(path)
       val samples = tags.nonBasicTags.extraSamples
-      samples.get should equal(Array(0))
+      samples.map(_.toSeq) should equal(Seq(0).some)
 
       val expectedXML = XML.loadString(
         """<GDALMetadata>
@@ -252,14 +251,14 @@ class GeoTiffWriterSpec extends AnyFunSpec with Matchers with BeforeAndAfterAll 
       val geoTiff = MultibandGeoTiff(geoTiffPath("epsg31467.tif"))
       val originalTiffTags = TiffTags.read(geoTiffPath("epsg31467.tif"))
       val originalSamples = originalTiffTags.nonBasicTags.extraSamples
-      originalSamples.get should equal(Array(2))
+      originalSamples.map(_.toSeq) should equal(Seq(2).some)
 
       val geoTiffToWrite = geoTiff.copy(options = geoTiff.options.copy(rgbChannels = 4))
       val path = tempPath()
       geoTiffToWrite.write(path)
       val tiffTags = TiffTags.read(path)
       val samples = tiffTags.nonBasicTags.extraSamples
-      samples.get should equal(Array(2))
+      samples.map(_.toSeq) should equal(Seq(2).some)
 
       val actualCRS = SinglebandGeoTiff(path).crs
 
