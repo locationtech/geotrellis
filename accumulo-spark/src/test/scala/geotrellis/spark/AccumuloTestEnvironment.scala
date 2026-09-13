@@ -26,7 +26,7 @@ import org.apache.spark.SparkConf
 
 import org.scalatest.Suite
 
-import com.google.common.io.Files
+import java.nio.file.Files
 
 trait AccumuloTestEnvironment extends TestEnvironment { self: Suite =>
   override def setKryoRegistrator(conf: SparkConf): Unit =
@@ -34,7 +34,7 @@ trait AccumuloTestEnvironment extends TestEnvironment { self: Suite =>
         .set("spark.kryo.registrationRequired", "false")
 
   protected lazy val miniAccumuloCluster: MiniAccumuloCluster = {
-    val tempDir = Files.createTempDir()
+    val tempDir = Files.createTempDirectory("accumulo-minicluster").toFile
     tempDir.deleteOnExit()
     val cluster = new MiniAccumuloCluster(tempDir, "")
     cluster.start()
