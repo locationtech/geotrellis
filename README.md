@@ -83,14 +83,14 @@ available at [locationtech-releases](https://repo.locationtech.org/#view-reposit
 ## Hello Raster
 
 ```scala
-scala> import geotrellis.raster._
-import geotrellis.raster._
+scala> import geotrellis.raster.*
+import geotrellis.raster.*
 
-scala> import geotrellis.raster.render.ascii._
-import geotrellis.raster.render.ascii._
+scala> import geotrellis.raster.render.ascii.*
+import geotrellis.raster.render.ascii.*
 
-scala> import geotrellis.raster.mapalgebra.focal._
-import geotrellis.raster.mapalgebra.focal._
+scala> import geotrellis.raster.mapalgebra.focal.*
+import geotrellis.raster.mapalgebra.focal.*
 
 scala> val nd = NODATA
 nd: Int = -2147483648
