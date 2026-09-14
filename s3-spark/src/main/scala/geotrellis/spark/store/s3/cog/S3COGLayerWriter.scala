@@ -16,26 +16,26 @@
 
 package geotrellis.spark.store.s3.cog
 
-import geotrellis.raster._
+import geotrellis.raster.*
 import geotrellis.raster.io.geotiff.GeoTiff
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.raster.io.geotiff.writer.GeoTiffWriter
-import geotrellis.layer._
-import geotrellis.store._
-import geotrellis.store.cog._
+import geotrellis.layer.*
+import geotrellis.store.*
+import geotrellis.store.cog.*
 import geotrellis.store.cog.vrt.VRT
 import geotrellis.store.cog.vrt.VRT.IndexedSimpleSource
 import geotrellis.store.index.{Index, KeyIndex}
-import geotrellis.store.s3._
-import geotrellis.spark.store.cog._
+import geotrellis.store.s3.*
+import geotrellis.spark.store.cog.*
 import geotrellis.store.util.IORuntimeTransient
 
 import software.amazon.awssdk.services.s3.model.{GetObjectRequest, PutObjectRequest, S3Exception}
-import software.amazon.awssdk.services.s3._
+import software.amazon.awssdk.services.s3.*
 import software.amazon.awssdk.core.sync.RequestBody
 import org.apache.commons.io.IOUtils
-import _root_.io.circe._
-import cats.effect._
+import _root_.io.circe.*
+import cats.effect.*
 
 import scala.util.Try
 import scala.reflect.{ClassTag, classTag}

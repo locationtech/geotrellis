@@ -16,7 +16,7 @@
 
 package geotrellis.raster.io.geotiff
 
-import geotrellis.raster._
+import geotrellis.raster.*
 import geotrellis.raster.resample.NearestNeighbor
 import geotrellis.raster.testkit.RasterMatchers
 

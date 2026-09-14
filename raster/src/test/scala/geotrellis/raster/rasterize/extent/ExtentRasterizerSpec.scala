@@ -16,11 +16,11 @@
 
 package geotrellis.raster.rasterize.extent
 
-import geotrellis.raster._
-import geotrellis.vector._
+import geotrellis.raster.*
+import geotrellis.vector.*
 import geotrellis.raster.rasterize.polygon.PolygonRasterizer
 import geotrellis.raster.rasterize.Rasterizer.Options
-import geotrellis.raster.testkit._
+import geotrellis.raster.testkit.*
 
 import org.scalatest.funsuite.AnyFunSuite
 

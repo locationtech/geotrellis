@@ -16,7 +16,7 @@
 
 package geotrellis.raster.stitch
 
-import geotrellis.raster._
+import geotrellis.raster.*
 import cats.Semigroup
 
 /**

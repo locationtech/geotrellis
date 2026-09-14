@@ -16,16 +16,16 @@
 
 package geotrellis.spark.store.hbase
 
-import geotrellis.store._
-import geotrellis.store.hbase._
-import geotrellis.spark.store._
-import geotrellis.layer._
-import geotrellis.store.avro._
-import geotrellis.store.index._
-import geotrellis.util._
+import geotrellis.store.*
+import geotrellis.store.hbase.*
+import geotrellis.spark.store.*
+import geotrellis.layer.*
+import geotrellis.store.avro.*
+import geotrellis.store.index.*
+import geotrellis.util.*
 
 import org.apache.spark.SparkContext
-import io.circe._
+import io.circe.*
 
 import scala.reflect.ClassTag
 import java.time.ZonedDateTime

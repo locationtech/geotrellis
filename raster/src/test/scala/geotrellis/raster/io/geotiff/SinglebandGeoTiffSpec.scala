@@ -16,8 +16,8 @@
 
 package geotrellis.raster.io.geotiff
 
-import geotrellis.raster._
-import geotrellis.raster.resample._
+import geotrellis.raster.*
+import geotrellis.raster.resample.*
 import geotrellis.raster.testkit.RasterMatchers
 
 import org.scalatest.matchers.should.Matchers

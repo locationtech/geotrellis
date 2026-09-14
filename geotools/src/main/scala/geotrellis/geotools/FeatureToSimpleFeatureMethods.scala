@@ -18,7 +18,7 @@ package geotrellis.geotools
 
 import geotrellis.proj4.CRS
 import geotrellis.util.MethodExtensions
-import geotrellis.vector._
+import geotrellis.vector.*
 import org.geotools.api.feature.simple.SimpleFeature
 
 trait FeatureToSimpleFeatureMethods[G <: Geometry, T] extends MethodExtensions[Feature[G, T]] {

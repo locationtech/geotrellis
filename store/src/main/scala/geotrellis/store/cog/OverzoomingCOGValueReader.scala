@@ -16,15 +16,15 @@
 
 package geotrellis.store.cog
 
-import geotrellis.layer._
+import geotrellis.layer.*
 import geotrellis.raster.{CellGrid, RasterExtent, Tile}
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.raster.resample.{ResampleMethod, TileResampleMethods}
-import geotrellis.store._
-import geotrellis.util._
+import geotrellis.store.*
+import geotrellis.util.*
 
 import scala.reflect.ClassTag
-import io.circe._
+import io.circe.*
 
 trait OverzoomingCOGValueReader extends COGValueReader[LayerId] {
   implicit def getLayerId(id: LayerId): LayerId = id

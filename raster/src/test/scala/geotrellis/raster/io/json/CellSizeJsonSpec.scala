@@ -18,8 +18,8 @@ package geotrellis.raster.io.json
 
 import geotrellis.raster.CellSize
 
-import io.circe.parser._
-import cats.syntax.either._
+import io.circe.parser.*
+import cats.syntax.either.*
 
 import org.scalatest.Assertions
 import org.scalatest.funspec.AnyFunSpec

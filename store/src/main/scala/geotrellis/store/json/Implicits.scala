@@ -16,14 +16,14 @@
 
 package geotrellis.store.json
 
-import geotrellis.layer._
+import geotrellis.layer.*
 import geotrellis.proj4.CRS
 import geotrellis.vector.io.json.CrsFormats
 
-import _root_.io.circe._
-import _root_.io.circe.parser._
-import _root_.io.circe.syntax._
-import cats.syntax.either._
+import _root_.io.circe.*
+import _root_.io.circe.parser.*
+import _root_.io.circe.syntax.*
+import cats.syntax.either.*
 import org.apache.avro.Schema
 
 import java.time.{ZoneOffset, ZonedDateTime}
@@ -49,7 +49,7 @@ trait Implicits extends KeyIndexFormats with CrsFormats {
     }
 
   implicit val zoomedLayoutSchemeDecoder: Decoder[ZoomedLayoutScheme] =
-    Decoder.decodeHCursor.emap { c: HCursor =>
+    Decoder.decodeHCursor.emap { (c: HCursor) =>
       (c.downField("crs").as[CRS], c.downField("tileSize").as[Int], c.downField("resolutionThreshold").as[Double]) match {
         case (Right(crs), Right(tileSize), Right(resolutionThreshold)) => Right(ZoomedLayoutScheme(crs, tileSize, resolutionThreshold))
         case _ => Left("ZoomedLayoutScheme expected")
@@ -65,7 +65,7 @@ trait Implicits extends KeyIndexFormats with CrsFormats {
     }
 
   implicit val floatingSchemeDecoder: Decoder[FloatingLayoutScheme] =
-    Decoder.decodeHCursor.emap { c: HCursor =>
+    Decoder.decodeHCursor.emap { (c: HCursor) =>
       (c.downField("tileCols").as[Int], c.downField("tileRows").as[Int]) match {
         case (Right(tileCols), Right(tileRows)) => Right(FloatingLayoutScheme(tileCols, tileRows))
         case _ => Left("FloatingLayoutScheme expected")
@@ -80,7 +80,7 @@ trait Implicits extends KeyIndexFormats with CrsFormats {
     }
 
   implicit val layoutSchemeDecoder: Decoder[LayoutScheme] = {
-    Decoder.decodeHCursor.emap { c: HCursor =>
+    Decoder.decodeHCursor.emap { (c: HCursor) =>
       zoomedLayoutSchemeDecoder(c) match {
         case Right(r) => Right(r)
         case _ => floatingSchemeDecoder(c) match {

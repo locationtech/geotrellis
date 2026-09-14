@@ -16,7 +16,7 @@
 
 package geotrellis.raster
 
-import spire.implicits._
+import spire.implicits.*
 
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.funspec.AnyFunSpec

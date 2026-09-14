@@ -16,8 +16,8 @@
 
 package geotrellis.raster.hydrology
 
-import geotrellis.raster._
-import scala.math._
+import geotrellis.raster.*
+import scala.math.*
 
 /**
  *  Operation to compute a flow direction raster from an elevation raster

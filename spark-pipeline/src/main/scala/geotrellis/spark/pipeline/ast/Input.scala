@@ -20,7 +20,7 @@ import geotrellis.raster.{MultibandTile, Tile}
 import geotrellis.layer.TemporalProjectedExtent
 import geotrellis.spark.store.hadoop.HadoopGeoTiffRDD
 import geotrellis.spark.store.s3.S3GeoTiffRDD
-import geotrellis.spark.pipeline.json.read._
+import geotrellis.spark.pipeline.json.read.*
 import geotrellis.vector.ProjectedExtent
 
 import geotrellis.store.s3.AmazonS3URI

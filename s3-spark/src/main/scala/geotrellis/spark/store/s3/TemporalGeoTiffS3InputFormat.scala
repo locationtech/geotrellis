@@ -16,12 +16,12 @@
 
 package geotrellis.spark.store.s3
 
-import geotrellis.raster._
-import geotrellis.raster.io.geotiff._
+import geotrellis.raster.*
+import geotrellis.raster.io.geotiff.*
 import geotrellis.layer.TemporalProjectedExtent
 
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.mapreduce._
+import org.apache.hadoop.mapreduce.*
 import software.amazon.awssdk.services.s3.S3Client
 
 import java.time.{ZoneOffset, ZonedDateTime}
@@ -62,7 +62,7 @@ object TemporalGeoTiffS3InputFormat {
   */
 @deprecated("TemporalGeoTiffS3InputFormat is deprecated, use S3GeoTiffRDD instead", "1.0.0")
 class TemporalGeoTiffS3InputFormat extends S3InputFormat[TemporalProjectedExtent, Tile] {
-  def createRecordReader(split: InputSplit, context: TaskAttemptContext) =
+  def createRecordReader(split: InputSplit, context: TaskAttemptContext): TemporalGeoTiffS3RecordReader =
     new TemporalGeoTiffS3RecordReader(getS3Client(context), context)
 }
 

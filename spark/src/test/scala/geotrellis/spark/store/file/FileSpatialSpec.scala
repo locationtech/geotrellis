@@ -16,14 +16,14 @@
 
 package geotrellis.spark.store.file
 
-import geotrellis.layer._
+import geotrellis.layer.*
 import geotrellis.raster.Tile
-import geotrellis.store._
-import geotrellis.store.file._
-import geotrellis.store.index._
-import geotrellis.spark.store._
-import geotrellis.spark.testkit._
-import geotrellis.spark.testkit.io._
+import geotrellis.store.*
+import geotrellis.store.file.*
+import geotrellis.store.index.*
+import geotrellis.spark.store.*
+import geotrellis.spark.testkit.*
+import geotrellis.spark.testkit.io.*
 import geotrellis.spark.testkit.testfiles.TestFiles
 
 class FileSpatialSpec
@@ -32,15 +32,15 @@ class FileSpatialSpec
     with TestEnvironment
     with TestFiles
     with AllOnesTestTileSpec {
-  lazy val reader = FileLayerReader(outputLocalPath)
-  lazy val creader = FileCollectionLayerReader(outputLocalPath)
-  lazy val writer = FileLayerWriter(outputLocalPath)
-  lazy val deleter = FileLayerDeleter(outputLocalPath)
+  lazy val reader: FileLayerReader = FileLayerReader(outputLocalPath)
+  lazy val creader: FileCollectionLayerReader = FileCollectionLayerReader(outputLocalPath)
+  lazy val writer: FileLayerWriter = FileLayerWriter(outputLocalPath)
+  lazy val deleter: FileLayerDeleter = FileLayerDeleter(outputLocalPath)
   lazy val copier = FileLayerCopier(outputLocalPath)
   lazy val mover  = FileLayerMover(outputLocalPath)
   lazy val reindexer = FileLayerReindexer(outputLocalPath)
-  lazy val tiles = FileValueReader(outputLocalPath)
-  lazy val sample = AllOnesTestFile
+  lazy val tiles: FileValueReader = FileValueReader(outputLocalPath)
+  lazy val sample: AllOnesTestFile.type = AllOnesTestFile
 
   describe("Filesystem layer names") {
     it("should not throw with bad characters in name") {

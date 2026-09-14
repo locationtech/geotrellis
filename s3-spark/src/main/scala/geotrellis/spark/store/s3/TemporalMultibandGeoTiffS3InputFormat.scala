@@ -16,11 +16,11 @@
 
 package geotrellis.spark.store.s3
 
-import geotrellis.raster._
-import geotrellis.raster.io.geotiff._
+import geotrellis.raster.*
+import geotrellis.raster.io.geotiff.*
 import geotrellis.layer.TemporalProjectedExtent
 
-import org.apache.hadoop.mapreduce._
+import org.apache.hadoop.mapreduce.*
 
 import java.time.ZonedDateTime
 
@@ -32,7 +32,7 @@ import java.time.ZonedDateTime
   */
 @deprecated("TemporalMultibandGeoTiffS3InputFormat is deprecated, use S3GeoTiffRDD instead", "1.0.0")
 class TemporalMultibandGeoTiffS3InputFormat extends S3InputFormat[TemporalProjectedExtent, MultibandTile] {
-  def createRecordReader(split: InputSplit, context: TaskAttemptContext) =
+  def createRecordReader(split: InputSplit, context: TaskAttemptContext): S3RecordReader[geotrellis.layer.TemporalProjectedExtent,MultibandTile] =
     new S3RecordReader[TemporalProjectedExtent, MultibandTile](getS3Client(context)) {
       def read(key: String, bytes: Array[Byte]) = {
         val geoTiff = MultibandGeoTiff(bytes)

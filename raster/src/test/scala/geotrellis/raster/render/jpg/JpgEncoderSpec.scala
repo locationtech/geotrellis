@@ -16,7 +16,7 @@
 
 package geotrellis.raster.render.jpg
 
-import geotrellis.raster._
+import geotrellis.raster.*
 
 import java.io.{File, FileInputStream}
 

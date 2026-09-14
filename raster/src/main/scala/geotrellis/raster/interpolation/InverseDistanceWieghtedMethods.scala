@@ -16,8 +16,8 @@
 
 package geotrellis.raster.interpolation
 
-import geotrellis.raster._
-import geotrellis.vector._
+import geotrellis.raster.*
+import geotrellis.vector.*
 import geotrellis.util.MethodExtensions
 
 abstract class InverseDistanceWeightedMethods[D](implicit ev: D => Double) extends MethodExtensions[Iterable[PointFeature[D]]] {

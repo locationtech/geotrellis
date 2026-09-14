@@ -16,14 +16,14 @@
 
 package geotrellis.spark.pyramid
 
-import geotrellis.layer._
-import geotrellis.spark._
-import geotrellis.proj4._
-import geotrellis.raster._
-import geotrellis.vector._
-import geotrellis.spark.testkit._
+import geotrellis.layer.*
+import geotrellis.spark.*
+import geotrellis.proj4.*
+import geotrellis.raster.*
+import geotrellis.vector.*
+import geotrellis.spark.testkit.*
 
-import jp.ne.opt.chronoscala.Imports._
+import jp.ne.opt.chronoscala.Imports.*
 
 import java.time.{ZoneOffset, ZonedDateTime}
 

@@ -16,11 +16,11 @@
 
 package geotrellis.spark.store
 
-import geotrellis.layer._
+import geotrellis.layer.*
 import geotrellis.vector.Extent
 import geotrellis.raster.{GridBounds, Tile}
-import geotrellis.store._
-import geotrellis.spark.testkit.io._
+import geotrellis.store.*
+import geotrellis.spark.testkit.io.*
 
 trait AllOnesTestTileSpec { self: PersistenceSpec[SpatialKey, Tile, TileLayerMetadata[SpatialKey]] =>
 

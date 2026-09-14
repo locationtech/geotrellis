@@ -16,9 +16,9 @@
 
 package geotrellis.vector.interpolation
 
-import geotrellis.vector._
-import org.apache.commons.math3.linear._
-import spire.syntax.cfor._
+import geotrellis.vector.*
+import org.apache.commons.math3.linear.*
+import spire.syntax.cfor.*
 import scala.collection.mutable
 
 trait Kriging extends Function2[Double, Double, (Double, Double)] with Serializable {
@@ -30,9 +30,9 @@ trait Kriging extends Function2[Double, Double, (Double, Double)] with Serializa
                                   points: Array[PointFeature[Double]]): RealMatrix = {
     val n = points.length
     val varianceMatrix: RealMatrix = MatrixUtils.createRealMatrix(n, n)
-    cfor(0)(_ < n, _ + 1) { i: Int =>
+    cfor(0)(_ < n, _ + 1) { (i: Int) =>
       varianceMatrix.setEntry(i, i, sv.nugget)
-      cfor(i + 1)(_ < n, _ + 1) { j: Int =>
+      cfor(i + 1)(_ < n, _ + 1) { (j: Int) =>
         val dx = points(i).geom.x - points(j).geom.x
         val dy = points(i).geom.y - points(j).geom.y
         val varVal: Double = sv(math.min(math.sqrt(dx * dx + dy * dy), sv.range))
@@ -91,7 +91,7 @@ trait Kriging extends Function2[Double, Double, (Double, Double)] with Serializa
     val krigingPrediction = Array.ofDim[(Double, Double)](pointMatrix.length)
     val predictor = createPredictor(pointMatrix.length)
 
-    cfor(0)(_ < pointMatrix.length, _ + 1) { i: Int =>
+    cfor(0)(_ < pointMatrix.length, _ + 1) { (i: Int) =>
       val pointPredict: Point = pointMatrix(i)
       krigingPrediction(i) = predictor(pointPredict.x, pointPredict.y)
     }

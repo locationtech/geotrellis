@@ -16,11 +16,11 @@
 
 package geotrellis.spark.filter
 
-import geotrellis.layer._
+import geotrellis.layer.*
 import geotrellis.store.{LayerQuery, BoundLayerQuery}
-import geotrellis.spark._
-import geotrellis.util._
-import org.apache.spark.rdd._
+import geotrellis.spark.*
+import geotrellis.util.*
+import org.apache.spark.rdd.*
 
 object Filter {
   /**

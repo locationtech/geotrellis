@@ -16,19 +16,19 @@
 
 package geotrellis.spark
 
-import geotrellis.raster._
-import geotrellis.raster.geotiff._
-import geotrellis.raster.io.geotiff._
-import geotrellis.proj4._
-import geotrellis.layer._
+import geotrellis.raster.*
+import geotrellis.raster.geotiff.*
+import geotrellis.raster.io.geotiff.*
+import geotrellis.proj4.*
+import geotrellis.layer.*
 
-import geotrellis.spark.testkit._
+import geotrellis.spark.testkit.*
 import geotrellis.raster.testkit.{RasterMatchers, Resource}
 
-import org.apache.spark.rdd._
+import org.apache.spark.rdd.*
 import org.scalatest.GivenWhenThen
 import org.scalatest.funspec.AnyFunSpec
-import org.scalatest.Inspectors._
+import org.scalatest.Inspectors.*
 
 class RasterRegionSpec extends AnyFunSpec with TestEnvironment with RasterMatchers with LayoutRasterMatchers with GivenWhenThen {
   it("reads RDD of raster refs") {

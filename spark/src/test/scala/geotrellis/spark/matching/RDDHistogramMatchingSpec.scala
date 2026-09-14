@@ -16,10 +16,10 @@
 
 package geotrellis.spark.matching
 
-import geotrellis.raster._
-import geotrellis.layer._
-import geotrellis.spark._
-import geotrellis.spark.testkit._
+import geotrellis.raster.*
+import geotrellis.layer.*
+import geotrellis.spark.*
+import geotrellis.spark.testkit.*
 import geotrellis.raster.histogram.StreamingHistogram
 
 import org.scalatest.matchers.should.Matchers

@@ -16,12 +16,12 @@
 
 package geotrellis.raster.io.geotiff
 
-import geotrellis.raster._
-import geotrellis.raster.io.geotiff.compression._
-import geotrellis.raster.split._
+import geotrellis.raster.*
+import geotrellis.raster.io.geotiff.compression.*
+import geotrellis.raster.split.*
 
 
-import spire.syntax.cfor._
+import spire.syntax.cfor.*
 
 object GeoTiffTile {
   /**

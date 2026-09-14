@@ -45,13 +45,13 @@ case class TargetDimensions(cols: Long, rows: Long) extends ResampleTarget {
  * Snap to a target grid - useful prior to comparison between rasters
  * as a means of ensuring clear correspondence between underlying cell values
  */
-case class TargetAlignment(grid: GridExtent[_]) extends ResampleTarget {
+case class TargetAlignment(grid: GridExtent[?]) extends ResampleTarget {
   def apply[N: Integral](source: => GridExtent[N]): GridExtent[N] =
     grid.createAlignedGridExtent(source.extent).toGridType[N]
 }
 
 /** Resample, sampling values into a user-supplied [[GridExtent]] */
-case class TargetRegion(region: GridExtent[_]) extends ResampleTarget {
+case class TargetRegion(region: GridExtent[?]) extends ResampleTarget {
   def apply[N: Integral](source: => GridExtent[N]): GridExtent[N] =
     region.toGridType[N]
 }

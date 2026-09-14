@@ -16,8 +16,8 @@
 
 package geotrellis.raster.resample
 
-import geotrellis.raster._
-import geotrellis.vector._
+import geotrellis.raster.*
+import geotrellis.vector.*
 
 sealed trait ResampleMethod
 

@@ -18,15 +18,15 @@ package geotrellis.spark.store.s3
 
 import geotrellis.layer.SpatialKey
 import geotrellis.store.LayerId
-import geotrellis.store.s3._
+import geotrellis.store.s3.*
 import geotrellis.store.util.IORuntimeTransient
 
 import software.amazon.awssdk.services.s3.model.{PutObjectRequest, PutObjectResponse, S3Exception}
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.core.sync.RequestBody
 import org.apache.spark.rdd.RDD
-import cats.effect._
-import cats.syntax.either._
+import cats.effect.*
+import cats.syntax.either.*
 
 import java.net.URI
 
@@ -89,7 +89,7 @@ object SaveToS3 {
 
       implicit val ioRuntime: unsafe.IORuntime = runtime
 
-      import geotrellis.store.util.IOUtils._
+      import geotrellis.store.util.IOUtils.*
       val write: (PutObjectRequest, RequestBody) => fs2.Stream[IO, PutObjectResponse] =
         (request, requestBody) => {
           fs2.Stream eval IO.blocking {

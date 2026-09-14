@@ -16,8 +16,8 @@
 
 package geotrellis.raster.io.geotiff
 
-import geotrellis.raster._
-import geotrellis.raster.crop._
+import geotrellis.raster.*
+import geotrellis.raster.crop.*
 import geotrellis.raster.resample.{NearestNeighbor, ResampleMethod}
 import geotrellis.raster.io.geotiff.writer.GeoTiffWriter
 import geotrellis.vector.{Extent, ProjectedExtent}

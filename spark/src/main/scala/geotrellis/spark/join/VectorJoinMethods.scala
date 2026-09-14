@@ -16,12 +16,12 @@
 
 package geotrellis.spark.join
 
-import geotrellis.util._
-import geotrellis.vector._
-import org.apache.spark.rdd._
+import geotrellis.util.*
+import geotrellis.vector.*
+import org.apache.spark.rdd.*
 import org.apache.spark.SparkContext
 
-import scala.reflect._
+import scala.reflect.*
 
 
 abstract class VectorJoinMethods[

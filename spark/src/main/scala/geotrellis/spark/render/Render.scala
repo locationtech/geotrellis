@@ -17,11 +17,11 @@
 package geotrellis.spark.render
 
 import geotrellis.proj4.CRS
-import geotrellis.raster._
-import geotrellis.raster.io.geotiff._
-import geotrellis.raster.render._
-import geotrellis.layer._
-import geotrellis.util._
+import geotrellis.raster.*
+import geotrellis.raster.io.geotiff.*
+import geotrellis.raster.render.*
+import geotrellis.layer.*
+import geotrellis.util.*
 import org.apache.spark.rdd.RDD
 
 object Render {

@@ -18,10 +18,10 @@ package geotrellis.doc.examples.distance
 
 object ClipToGridExamples {
   def `Performing a count of points that lie in regular polygon grid`: Unit = {
-    import geotrellis.raster._
+    import geotrellis.raster.*
     import geotrellis.layer.{SpatialKey, LayoutDefinition}
-    import geotrellis.spark._
-    import geotrellis.vector._
+    import geotrellis.spark.*
+    import geotrellis.vector.*
 
     import org.apache.spark.HashPartitioner
     import org.apache.spark.rdd.RDD

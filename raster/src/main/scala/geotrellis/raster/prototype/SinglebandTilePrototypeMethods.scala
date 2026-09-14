@@ -16,7 +16,7 @@
 
 package geotrellis.raster.prototype
 
-import geotrellis.raster._
+import geotrellis.raster.*
 
 
 /**
@@ -29,13 +29,13 @@ trait SinglebandTilePrototypeMethods extends TilePrototypeMethods[Tile] {
     * new [[ArrayTile]] of the given size and the same band count as
     * the calling object.
     */
-  def prototype(cellType: CellType, cols: Int, rows: Int) =
+  def prototype(cellType: CellType, cols: Int, rows: Int): MutableArrayTile =
     ArrayTile.empty(cellType, cols, rows)
 
   /**
     * Given numbers of columns and rows, produce a new [[ArrayTile]]
     * of the given size and the same band count as the calling object.
     */
-  def prototype(cols: Int, rows: Int) =
+  def prototype(cols: Int, rows: Int): MutableArrayTile =
     prototype(self.cellType, cols, rows)
 }

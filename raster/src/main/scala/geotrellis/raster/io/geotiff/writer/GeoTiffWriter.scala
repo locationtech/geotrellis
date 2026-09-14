@@ -16,8 +16,8 @@
 
 package geotrellis.raster.io.geotiff.writer
 
-import geotrellis.raster.io.geotiff._
-import spire.syntax.cfor._
+import geotrellis.raster.io.geotiff.*
+import spire.syntax.cfor.*
 
 import java.io.ByteArrayOutputStream
 import java.io.DataOutputStream

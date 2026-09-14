@@ -16,12 +16,12 @@
 
 package geotrellis.raster
 
-import _root_.io.circe._
-import _root_.io.circe.generic.semiauto._
+import _root_.io.circe.*
+import _root_.io.circe.generic.semiauto.*
 
 import scala.collection.mutable
-import spire.math._
-import spire.implicits._
+import spire.math.*
+import spire.implicits.*
 
 /**
   * Represents grid coordinates of a subsection of a RasterExtent.

@@ -16,11 +16,11 @@
 
 package geotrellis.raster.rasterize
 
-import geotrellis.raster._
-import geotrellis.vector._
-import geotrellis.util.Constants.{FLOAT_EPSILON => EPSILON}
+import geotrellis.raster.*
+import geotrellis.vector.*
+import geotrellis.util.Constants.{FLOAT_EPSILON as EPSILON}
 
-import geotrellis.raster.testkit._
+import geotrellis.raster.testkit.*
 import scala.collection.mutable
 
 import org.scalatest.funsuite.AnyFunSuite

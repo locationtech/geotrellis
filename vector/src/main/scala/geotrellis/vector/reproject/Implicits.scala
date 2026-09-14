@@ -16,9 +16,9 @@
 
 package geotrellis.vector.reproject
 
-import geotrellis.proj4._
-import geotrellis.vector._
-import org.locationtech.jts.geom._
+import geotrellis.proj4.*
+import geotrellis.vector.*
+import org.locationtech.jts.geom.*
 
 object Implicits extends Implicits
 

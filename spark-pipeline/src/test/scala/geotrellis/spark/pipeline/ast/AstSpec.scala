@@ -16,17 +16,17 @@
 
 package geotrellis.spark.pipeline.ast
 
-import geotrellis.layer._
-import geotrellis.spark.pipeline._
+import geotrellis.layer.*
+import geotrellis.spark.pipeline.*
 import geotrellis.spark.pipeline.json
-import geotrellis.spark.pipeline.json._
-import geotrellis.spark.pipeline.ast.untyped._
-import geotrellis.spark._
-import geotrellis.spark.testkit._
+import geotrellis.spark.pipeline.json.*
+import geotrellis.spark.pipeline.ast.untyped.*
+import geotrellis.spark.*
+import geotrellis.spark.testkit.*
 
-import _root_.io.circe.syntax._
-import _root_.io.circe.parser._
-import cats.implicits._
+import _root_.io.circe.syntax.*
+import _root_.io.circe.parser.*
+import cats.implicits.*
 
 import scala.util.{Failure, Try}
 
@@ -175,7 +175,7 @@ class AstSpec extends AnyFunSpec
 
   describe("Build AST") {
     it("should validate AST") {
-      import singleband.spatial._
+      import singleband.spatial.*
       val scheme = Left[LayoutScheme, LayoutDefinition](FloatingLayoutScheme(512))
       val read = HadoopRead(json.read.JsonRead("/", `type` = ReadTypes.SpatialHadoopType))
       val tiled = TileToLayout(read, json.transform.TileToLayout(`type` = TransformTypes.SpatialTileToLayoutType))

@@ -17,7 +17,7 @@
 package geotrellis.vector.voronoi
 
 import geotrellis.util.MethodExtensions
-import geotrellis.vector._
+import geotrellis.vector.*
 import org.locationtech.jts.geom.Coordinate
 
 trait VoronoiDiagramCoordinateMethods extends MethodExtensions[Iterable[Coordinate]] {

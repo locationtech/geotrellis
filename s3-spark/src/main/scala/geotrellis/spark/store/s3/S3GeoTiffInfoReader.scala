@@ -17,9 +17,9 @@
 package geotrellis.spark.store.s3
 
 import geotrellis.raster.io.geotiff.reader.GeoTiffInfo
-import geotrellis.store.s3._
+import geotrellis.store.s3.*
 import geotrellis.store.s3.util.S3RangeReader
-import geotrellis.spark.store._
+import geotrellis.spark.store.*
 import geotrellis.util.ByteReader
 
 import software.amazon.awssdk.services.s3.S3Client
@@ -28,7 +28,7 @@ import software.amazon.awssdk.services.s3.model.ListObjectsV2Request
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
-import scala.jdk.CollectionConverters._
+import scala.jdk.CollectionConverters.*
 
 class S3GeoTiffInfoReader(
   val bucket: String,

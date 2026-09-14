@@ -16,9 +16,9 @@
 
 package geotrellis.vector.interpolation
 
-import geotrellis.vector._
-import org.apache.commons.math3.linear._
-import spire.syntax.cfor._
+import geotrellis.vector.*
+import org.apache.commons.math3.linear.*
+import spire.syntax.cfor.*
 
 object GeoKriging {
   def apply(points: Array[PointFeature[Double]], attrFunc: (Double, Double) => Array[Double], bandwidth: Double, model: ModelType): Kriging = {
@@ -113,7 +113,7 @@ class GeoKriging(points: Array[PointFeature[Double]],
     val errorOLS: RealMatrix = ptData.subtract(attrMatrix.multiply(betaOLS))
 
     val pointsFitting: Array[PointFeature[Double]] =
-      Array.tabulate(n) { row: Int =>
+      Array.tabulate(n) { (row: Int) =>
         PointFeature(points(row).geom, errorOLS.getEntry(row, 0))
       }
     var res: Semivariogram = NonLinearSemivariogram(pointsFitting, 0, 0, model)
@@ -149,7 +149,7 @@ class GeoKriging(points: Array[PointFeature[Double]],
       val beta = scale.multiply(unscaledBeta)
       val errorIter = ptData.subtract(attrMatrix.multiply(beta))
       val pointsFittingIter = Array.tabulate(n) {
-        row: Int =>
+        (row: Int) =>
           PointFeature(points(row).geom, errorIter.getEntry(row, 0))
       }
       val process: Array[Double] = beta.subtract(betaEval).getColumn(0)
@@ -197,7 +197,7 @@ class GeoKriging(points: Array[PointFeature[Double]],
             )
           )
 
-      cfor(0)(_ < distanceID.length, _ + 1) { i: Int =>
+      cfor(0)(_ < distanceID.length, _ + 1) { (i: Int) =>
         if (sortedDist.getEntry(i, 0) == 0)
           localCovVector.setEntry(i, 0, localCovVector.getEntry(i, 0) + res.nugget)
       }

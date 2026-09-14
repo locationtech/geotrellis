@@ -17,9 +17,9 @@
 package geotrellis.spark.store.hadoop.formats
 
 import geotrellis.layer.TemporalProjectedExtent
-import geotrellis.raster._
-import geotrellis.raster.io.geotiff._
-import org.apache.hadoop.mapreduce._
+import geotrellis.raster.*
+import geotrellis.raster.io.geotiff.*
+import org.apache.hadoop.mapreduce.*
 import java.time.ZonedDateTime
 
 import geotrellis.store.hadoop.formats.BinaryFileInputFormat

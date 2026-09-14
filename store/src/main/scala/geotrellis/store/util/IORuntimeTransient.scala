@@ -16,7 +16,7 @@
 
 package geotrellis.store.util
 
-import cats.effect._
+import cats.effect.*
 
 object IORuntimeTransient extends Serializable {
   val ThreadsNumber: Int = Runtime.getRuntime.availableProcessors

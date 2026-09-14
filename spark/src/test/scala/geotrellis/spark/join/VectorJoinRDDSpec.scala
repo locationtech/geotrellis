@@ -16,11 +16,11 @@
 
 package geotrellis.spark.join
 
-import geotrellis.spark._
-import geotrellis.vector._
-import geotrellis.spark.testkit._
+import geotrellis.spark.*
+import geotrellis.vector.*
+import geotrellis.spark.testkit.*
 
-import org.apache.spark.rdd._
+import org.apache.spark.rdd.*
 
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.funspec.AnyFunSpec

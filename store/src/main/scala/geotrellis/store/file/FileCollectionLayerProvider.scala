@@ -16,7 +16,7 @@
 
 package geotrellis.store.file
 
-import geotrellis.store._
+import geotrellis.store.*
 
 import java.net.URI
 import java.io.File

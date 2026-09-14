@@ -64,7 +64,7 @@ abstract class ShortArrayTile(val array: Array[Short], cols: Int, rows: Int)
   */
 final case class ShortRawArrayTile(arr: Array[Short], val cols: Int, val rows: Int)
     extends ShortArrayTile(arr, cols, rows) {
-  val cellType = ShortCellType
+  val cellType: ShortCellType.type = ShortCellType
 
   /**
     * Fetch the datum at the given index in the array.
@@ -104,7 +104,7 @@ final case class ShortRawArrayTile(arr: Array[Short], val cols: Int, val rows: I
   */
 final case class ShortConstantNoDataArrayTile(arr: Array[Short], val cols: Int, val rows: Int)
     extends ShortArrayTile(arr, cols, rows) {
-  val cellType = ShortConstantNoDataCellType
+  val cellType: ShortConstantNoDataCellType.type = ShortConstantNoDataCellType
 
   /**
     * Fetch the datum at the given index in the array.

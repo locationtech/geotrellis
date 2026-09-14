@@ -16,7 +16,7 @@
 
 package geotrellis.spark.store.s3
 
-import geotrellis.store.s3._
+import geotrellis.store.s3.*
 import geotrellis.store.s3.conf.S3Config
 
 import software.amazon.awssdk.auth.credentials.{AwsBasicCredentials, StaticCredentialsProvider}

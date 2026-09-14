@@ -16,12 +16,12 @@
 
 package geotrellis.spark.store.file.cog
 
-import geotrellis.layer._
+import geotrellis.layer.*
 import geotrellis.raster.Tile
-import geotrellis.store.file.cog._
-import geotrellis.spark.store.cog._
-import geotrellis.spark.testkit._
-import geotrellis.spark.testkit.io.cog._
+import geotrellis.store.file.cog.*
+import geotrellis.spark.store.cog.*
+import geotrellis.spark.testkit.*
+import geotrellis.spark.testkit.io.cog.*
 import geotrellis.spark.testkit.testfiles.cog.COGTestFiles
 
 class COGFileSpaceTimeSpec
@@ -31,14 +31,14 @@ class COGFileSpaceTimeSpec
     with TestEnvironment
     with COGCoordinateSpaceTimeSpec
     with COGLayerUpdateSpaceTimeTileSpec {
-  lazy val reader = FileCOGLayerReader(outputLocalPath)
-  lazy val creader = FileCOGCollectionLayerReader(outputLocalPath)
-  lazy val writer = FileCOGLayerWriter(outputLocalPath)
+  lazy val reader: FileCOGLayerReader = FileCOGLayerReader(outputLocalPath)
+  lazy val creader: FileCOGCollectionLayerReader = FileCOGCollectionLayerReader(outputLocalPath)
+  lazy val writer: FileCOGLayerWriter = FileCOGLayerWriter(outputLocalPath)
   // TODO: implement and test all layer functions
   // lazy val deleter = FileLayerDeleter(outputLocalPath)
   // lazy val copier = FileLayerCopier(outputLocalPath)
   // lazy val mover  = FileLayerMover(outputLocalPath)
   // lazy val reindexer = FileLayerReindexer(outputLocalPath)
-  lazy val tiles = FileCOGValueReader(outputLocalPath)
-  lazy val sample = CoordinateSpaceTime // spaceTimeCea
+  lazy val tiles: FileCOGValueReader = FileCOGValueReader(outputLocalPath)
+  lazy val sample: CoordinateSpaceTime.type = CoordinateSpaceTime // spaceTimeCea
 }

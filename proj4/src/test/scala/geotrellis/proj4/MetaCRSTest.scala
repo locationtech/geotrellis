@@ -16,8 +16,8 @@
 
 package geotrellis.proj4
 
-import org.locationtech.proj4j._
-import org.locationtech.proj4j.util._
+import org.locationtech.proj4j.*
+import org.locationtech.proj4j.util.*
 
 import java.io.File
 
@@ -66,7 +66,7 @@ class MetaCRSTest extends AnyFunSuite with Matchers {
 object passing extends BeMatcher[MetaCRSTestCase] {
   val crsFactory = new CRSFactory
   def apply(left: MetaCRSTestCase) = {
-    import left._
+    import left.*
     val (success, x, y) = left.execute(crsFactory)
     MatchResult(
       success,

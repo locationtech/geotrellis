@@ -16,20 +16,20 @@
 
 package geotrellis.store.s3.cog
 
-import io.circe._
+import io.circe.*
 
 import geotrellis.raster.CellGrid
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
-import geotrellis.layer._
-import geotrellis.store._
-import geotrellis.store.util._
-import geotrellis.store.cog._
-import geotrellis.store.index._
-import geotrellis.store.s3._
+import geotrellis.layer.*
+import geotrellis.store.*
+import geotrellis.store.util.*
+import geotrellis.store.cog.*
+import geotrellis.store.index.*
+import geotrellis.store.s3.*
 
-import cats.effect._
+import cats.effect.*
 import software.amazon.awssdk.services.s3.S3Client
-import software.amazon.awssdk.services.s3.model._
+import software.amazon.awssdk.services.s3.model.*
 
 import java.net.URI
 

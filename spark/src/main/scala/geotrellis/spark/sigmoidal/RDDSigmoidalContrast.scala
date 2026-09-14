@@ -16,7 +16,7 @@
 
 package geotrellis.spark.sigmoidal
 
-import geotrellis.raster._
+import geotrellis.raster.*
 import geotrellis.raster.sigmoidal.SigmoidalContrast
 
 import org.apache.spark.rdd.RDD

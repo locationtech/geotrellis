@@ -16,16 +16,16 @@
 
 package geotrellis.spark.mapalgebra.zonal
 
-import geotrellis.spark._
-import geotrellis.spark.testkit.testfiles._
-import geotrellis.raster._
+import geotrellis.spark.*
+import geotrellis.spark.testkit.testfiles.*
+import geotrellis.raster.*
 import geotrellis.raster.histogram.Histogram
-import geotrellis.spark.testkit._
+import geotrellis.spark.testkit.*
 
 
 import org.scalatest.funspec.AnyFunSpec
 
-import collection._
+import collection.*
 
 class HistogramSpec extends AnyFunSpec with TestEnvironment with TestFiles {
 

@@ -19,7 +19,7 @@ package geotrellis.vector.triangulation
 import org.locationtech.jts.geom.{Coordinate}
 
 import geotrellis.util.MethodExtensions
-import geotrellis.vector._
+import geotrellis.vector.*
 
 trait DelaunayTriangulationMethods extends MethodExtensions[Iterable[Coordinate]] {
   def delaunayTriangulation(): DelaunayTriangulation = { DelaunayTriangulation(self.toArray) }

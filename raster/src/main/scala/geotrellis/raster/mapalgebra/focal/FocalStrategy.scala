@@ -16,9 +16,9 @@
 
 package geotrellis.raster.mapalgebra.focal
 
-import scala.math._
+import scala.math.*
 
-import geotrellis.raster._
+import geotrellis.raster.*
 
 sealed trait TraversalStrategy
 case object ZigZagTraversalStrategy extends TraversalStrategy

@@ -16,14 +16,14 @@
 
 package geotrellis.store.cassandra
 
-import geotrellis.layer._
-import geotrellis.store._
-import geotrellis.store.avro._
-import geotrellis.util._
+import geotrellis.layer.*
+import geotrellis.store.*
+import geotrellis.store.avro.*
+import geotrellis.util.*
 
-import io.circe._
+import io.circe.*
 
-import scala.reflect._
+import scala.reflect.*
 
 class CassandraCollectionLayerReader(val attributeStore: AttributeStore, instance: CassandraInstance) extends CollectionLayerReader[LayerId] {
 
@@ -31,7 +31,7 @@ class CassandraCollectionLayerReader(val attributeStore: AttributeStore, instanc
     K: AvroRecordCodec: Boundable: Decoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: Decoder: Component[*, Bounds[K]]
-  ](id: LayerId, rasterQuery: LayerQuery[K, M], filterIndexOnly: Boolean) = {
+  ](id: LayerId, rasterQuery: LayerQuery[K, M], filterIndexOnly: Boolean): ContextCollection[K, V, M] = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
 
     val LayerAttributes(header, metadata, keyIndex, writerSchema) = try {

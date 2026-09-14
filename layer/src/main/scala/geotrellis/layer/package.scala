@@ -16,11 +16,11 @@
 
 package geotrellis
 
-import geotrellis.raster._
+import geotrellis.raster.*
 import geotrellis.raster.io.geotiff.reader.GeoTiffInfo
 import geotrellis.vector.Extent
-import geotrellis.proj4._
-import geotrellis.util._
+import geotrellis.proj4.*
+import geotrellis.util.*
 
 import org.locationtech.proj4j.UnsupportedParameterException
 

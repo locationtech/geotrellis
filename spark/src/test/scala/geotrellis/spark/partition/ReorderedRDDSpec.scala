@@ -16,15 +16,15 @@
 
 package geotrellis.spark.partition
 
-import geotrellis.layer._
-import geotrellis.spark.testkit._
+import geotrellis.layer.*
+import geotrellis.spark.testkit.*
 import org.apache.spark.rdd.RDD
 
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.funspec.AnyFunSpec
 
 class ReorderedRDDSpec extends AnyFunSpec with Matchers with TestEnvironment {
-  import TestImplicits._
+  import TestImplicits.*
 
   val bounds1 = KeyBounds(SpatialKey(0,0), SpatialKey(10,10))
   val part1 = SpacePartitioner(bounds1)

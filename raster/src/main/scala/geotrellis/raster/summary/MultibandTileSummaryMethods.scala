@@ -16,7 +16,7 @@
 
 package geotrellis.raster.summary
 
-import geotrellis.raster._
+import geotrellis.raster.*
 import geotrellis.raster.histogram.{Histogram, StreamingHistogram}
 import geotrellis.util.MethodExtensions
 

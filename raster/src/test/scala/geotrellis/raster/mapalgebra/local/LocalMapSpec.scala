@@ -16,10 +16,10 @@
 
 package geotrellis.raster.mapalgebra.local
 
-import geotrellis.raster._
+import geotrellis.raster.*
 import geotrellis.vector.Extent
 
-import geotrellis.raster.testkit._
+import geotrellis.raster.testkit.*
 
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.funspec.AnyFunSpec
@@ -131,7 +131,7 @@ class LocalMapSpec extends AnyFunSpec
       val a = Array(1, 2, 3, 4, 5, 6, 7, 8, 9)
       val r = f(a, 3, 3)
 
-      val r2 = r.map { z:Int => z + 1 }
+      val r2 = r.map { (z:Int) => z + 1 }
       val d = r2.toArray()
       d should be (a.map { _ + 1 })
     }

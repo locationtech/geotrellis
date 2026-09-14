@@ -18,7 +18,7 @@ package geotrellis.layer.mapalgebra.local
 
 import geotrellis.raster.Tile
 import geotrellis.raster.mapalgebra.local.Multiply
-import geotrellis.layer._
+import geotrellis.layer.*
 import geotrellis.util.MethodExtensions
 
 trait MultiplyTileCollectionMethods[K] extends MethodExtensions[Seq[(K, Tile)]] {

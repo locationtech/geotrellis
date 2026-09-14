@@ -16,9 +16,9 @@
 
 package geotrellis.raster.reproject
 
-import geotrellis.proj4._
+import geotrellis.proj4.*
 
-import spire.syntax.cfor._
+import spire.syntax.cfor.*
 
 object RowTransform {
   /** Transform each point exactly. Assumes user has taken care to make all array dimensions equal. */

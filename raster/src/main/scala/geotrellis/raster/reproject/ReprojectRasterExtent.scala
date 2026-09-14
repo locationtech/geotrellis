@@ -16,9 +16,9 @@
 
 package geotrellis.raster.reproject
 
-import geotrellis.raster._
-import geotrellis.vector._
-import geotrellis.proj4._
+import geotrellis.raster.*
+import geotrellis.vector.*
+import geotrellis.proj4.*
 
 
 import spire.math.Integral

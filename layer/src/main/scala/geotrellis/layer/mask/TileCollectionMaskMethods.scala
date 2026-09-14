@@ -16,11 +16,11 @@
 
 package geotrellis.layer.mask
 
-import geotrellis.vector._
-import geotrellis.layer._
-import geotrellis.raster.mask._
+import geotrellis.vector.*
+import geotrellis.layer.*
+import geotrellis.raster.mask.*
 import Mask.Options
-import geotrellis.util._
+import geotrellis.util.*
 
 
 abstract class TileCollectionMaskMethods[

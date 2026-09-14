@@ -19,7 +19,7 @@ package geotrellis.raster
 import geotrellis.vector.Extent
 
 import java.nio.ByteBuffer
-import spire.syntax.cfor._
+import spire.syntax.cfor.*
 
 
 /**
@@ -315,7 +315,7 @@ case class BitConstantTile(v: Boolean, cols: Int, rows: Int) extends ConstantTil
   protected val iVal = if(v) 1 else 0
   protected val dVal = if(v) 1.0 else 0.0
 
-  val cellType = BitCellType
+  val cellType: BitCellType.type = BitCellType
 
   /**
     * Another name for the 'mutable' method on this class.
@@ -353,7 +353,7 @@ case class ByteConstantTile(v: Byte, cols: Int, rows: Int,
 ) extends ConstantTile {
   protected val (iVal: Int, dVal: Double) =
     cellType match {
-      case _: ConstantNoData[_] =>
+      case _: ConstantNoData[?] =>
         (b2i(v), b2d(v))
       case _: NoNoData =>
         (v.toInt, v.toDouble)
@@ -382,7 +382,7 @@ case class ByteConstantTile(v: Byte, cols: Int, rows: Int,
     */
   def toBytes(): Array[Byte] = Array(v)
 
-  def withNoData(noDataValue: Option[Double]) =
+  def withNoData(noDataValue: Option[Double]): ByteConstantTile =
     ByteConstantTile(v, cols, rows, cellType.withNoData(noDataValue))
 
   def map(f: Int => Int): Tile = ByteConstantTile(i2b(f(iVal)), cols, rows, cellType)
@@ -417,7 +417,7 @@ case class UByteConstantTile(v: Byte, cols: Int, rows: Int,
 
   protected val (iVal: Int, dVal: Double) =
     cellType match {
-      case _: ConstantNoData[_] =>
+      case _: ConstantNoData[?] =>
         (ub2i(v), ub2d(v))
       case _: NoNoData =>
         (v.toInt, v.toDouble)
@@ -457,7 +457,7 @@ case class UByteConstantTile(v: Byte, cols: Int, rows: Int,
   def resample(current: Extent, target: RasterExtent, method: ResampleMethod): Tile =
     ByteConstantTile(v, target.cols, target.rows)
 
-  def withNoData(noDataValue: Option[Double]) =
+  def withNoData(noDataValue: Option[Double]): UByteConstantTile =
     UByteConstantTile(v, cols, rows, cellType.withNoData(noDataValue))
 
   def map(f: Int => Int): Tile = UByteConstantTile(i2ub(f(iVal)), cols, rows, cellType)
@@ -492,7 +492,7 @@ case class ShortConstantTile(v: Short, cols: Int, rows: Int,
 
   protected val (iVal: Int, dVal: Double) =
     cellType match {
-      case _: ConstantNoData[_] =>
+      case _: ConstantNoData[?] =>
         (s2i(v), s2d(v))
       case _: NoNoData =>
         (v.toInt, v.toDouble)
@@ -525,7 +525,7 @@ case class ShortConstantTile(v: Short, cols: Int, rows: Int,
     arr
   }
 
-  def withNoData(noDataValue: Option[Double]) =
+  def withNoData(noDataValue: Option[Double]): ShortConstantTile =
     ShortConstantTile(v, cols, rows, cellType.withNoData(noDataValue))
 
   def map(f: Int => Int): Tile = ShortConstantTile(i2s(f(iVal)), cols, rows, cellType)
@@ -560,7 +560,7 @@ case class UShortConstantTile(v: Short, cols: Int, rows: Int,
 
   protected val (iVal: Int, dVal: Double) =
     cellType match {
-      case _: ConstantNoData[_] =>
+      case _: ConstantNoData[?] =>
         (us2i(v), us2d(v))
       case _: NoNoData =>
         (v.toInt, v.toDouble)
@@ -603,7 +603,7 @@ case class UShortConstantTile(v: Short, cols: Int, rows: Int,
   def resample(current: Extent, target: RasterExtent, method: ResampleMethod): Tile =
     ShortConstantTile(v, target.cols, target.rows)
 
-  def withNoData(noDataValue: Option[Double]) =
+  def withNoData(noDataValue: Option[Double]): UShortConstantTile =
     UShortConstantTile(v, cols, rows, cellType.withNoData(noDataValue))
 
   def map(f: Int => Int): Tile = UShortConstantTile(i2us(f(iVal)), cols, rows, cellType)
@@ -638,7 +638,7 @@ case class IntConstantTile(v: Int, cols: Int, rows: Int,
 
   protected val (iVal: Int, dVal: Double) =
     cellType match {
-      case _: ConstantNoData[_] =>
+      case _: ConstantNoData[?] =>
         (v, i2d(v))
       case _: NoNoData =>
         (v, v.toDouble)
@@ -670,7 +670,7 @@ case class IntConstantTile(v: Int, cols: Int, rows: Int,
     arr
   }
 
-  def withNoData(noDataValue: Option[Double]) =
+  def withNoData(noDataValue: Option[Double]): IntConstantTile =
     IntConstantTile(v, cols, rows, cellType.withNoData(noDataValue))
 
   def map(f: Int => Int): Tile = IntConstantTile(f(iVal), cols, rows, cellType)
@@ -705,7 +705,7 @@ case class FloatConstantTile(v: Float, cols: Int, rows: Int,
 
   protected val (iVal: Int, dVal: Double) =
     cellType match {
-      case _: ConstantNoData[_] =>
+      case _: ConstantNoData[?] =>
         (f2i(v), f2d(v))
       case _: NoNoData =>
         (v.toInt, v.toDouble)
@@ -737,7 +737,7 @@ case class FloatConstantTile(v: Float, cols: Int, rows: Int,
     arr
   }
 
-  def withNoData(noDataValue: Option[Double]) =
+  def withNoData(noDataValue: Option[Double]): FloatConstantTile =
     FloatConstantTile(v, cols, rows, cellType.withNoData(noDataValue))
 
   def map(f: Int => Int): Tile = FloatConstantTile(i2f(f(iVal)), cols, rows, cellType)
@@ -773,7 +773,7 @@ case class DoubleConstantTile(v: Double, cols: Int, rows: Int,
 
   protected val (iVal: Int, dVal: Double) =
     cellType match {
-      case _: ConstantNoData[_] =>
+      case _: ConstantNoData[?] =>
         (d2i(v), v)
       case _: NoNoData =>
         (v.toInt, v)

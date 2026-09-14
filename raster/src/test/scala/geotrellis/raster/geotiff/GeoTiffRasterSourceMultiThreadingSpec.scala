@@ -18,12 +18,12 @@ package geotrellis.raster.geotiff
 
 import geotrellis.raster.{RasterSource, GridBounds}
 import geotrellis.proj4.CRS
-import geotrellis.raster.resample._
+import geotrellis.raster.resample.*
 import geotrellis.raster.io.geotiff.GeoTiffTestUtils
 
-import cats.instances.future._
-import cats.instances.list._
-import cats.syntax.traverse._
+import cats.instances.future.*
+import cats.instances.list.*
+import cats.syntax.traverse.*
 
 import org.scalatest.funspec.AsyncFunSpec
 

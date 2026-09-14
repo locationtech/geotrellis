@@ -19,7 +19,7 @@ package geotrellis.raster.histogram
 import geotrellis.raster.summary.Statistics
 
 import math.sqrt
-import spire.syntax.cfor._
+import spire.syntax.cfor.*
 
 
 object IntHistogram {

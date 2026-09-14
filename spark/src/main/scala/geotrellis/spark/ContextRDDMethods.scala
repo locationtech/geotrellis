@@ -17,9 +17,9 @@
 package geotrellis.spark
 
 import geotrellis.layer.Metadata
-import org.apache.spark.rdd._
+import org.apache.spark.rdd.*
 
-import scala.reflect._
+import scala.reflect.*
 
 class ContextRDDMethods[K: ClassTag, V: ClassTag, M](val rdd: RDD[(K, V)] with Metadata[M]) extends Serializable {
   def metadata = rdd.metadata

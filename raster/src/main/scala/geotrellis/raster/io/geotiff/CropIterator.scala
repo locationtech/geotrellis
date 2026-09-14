@@ -16,7 +16,7 @@
 
 package geotrellis.raster.io.geotiff
 
-import geotrellis.raster._
+import geotrellis.raster.*
 
 /**
  * This class is an extension of [[Iterator]] where it takes a GeoTif and the

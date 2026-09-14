@@ -16,14 +16,14 @@
 
 package geotrellis.spark.store.accumulo
 
-import geotrellis.layer._
-import geotrellis.store._
-import geotrellis.store.accumulo._
-import geotrellis.store.avro._
-import geotrellis.util._
+import geotrellis.layer.*
+import geotrellis.store.*
+import geotrellis.store.accumulo.*
+import geotrellis.store.avro.*
+import geotrellis.util.*
 
 import org.apache.spark.SparkContext
-import io.circe._
+import io.circe.*
 
 import scala.reflect.ClassTag
 
@@ -117,7 +117,7 @@ object AccumuloLayerCopier {
     apply(
       attributeStore,
       AccumuloLayerReader(instance),
-      { layerId: LayerId =>
+      { (layerId: LayerId) =>
         val header = attributeStore.readHeader[AccumuloLayerHeader](layerId)
         AccumuloLayerWriter(instance, header.tileTable, options)
       }

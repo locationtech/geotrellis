@@ -20,7 +20,7 @@ import geotrellis.raster.rasterize.Rasterizer
 import geotrellis.vector.{Feature, Geometry, Point, Polygon, Extent}
 import geotrellis.util.MethodExtensions
 
-import spire.syntax.cfor._
+import spire.syntax.cfor.*
 
 
 /** Type class to convert a raster into features of cell geometries */

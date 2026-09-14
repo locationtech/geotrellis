@@ -16,7 +16,7 @@
 
 package geotrellis.raster.mapalgebra.local
 
-import geotrellis.raster._
+import geotrellis.raster.*
 
 /**
  * Maps values to 0 if the are NoData values, otherwise 1.
@@ -24,6 +24,6 @@ import geotrellis.raster._
 object Defined extends Serializable {
   /** Maps an integer typed Tile to 1 if the cell value is not NODATA, otherwise 0. */
   def apply(r: Tile): Tile = 
-    r.map { z: Int => if(isNoData(z)) 0 else 1 }
+    r.map { (z: Int) => if(isNoData(z)) 0 else 1 }
      .convert(BitCellType)
 }

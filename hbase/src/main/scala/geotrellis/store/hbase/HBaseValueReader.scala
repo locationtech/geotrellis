@@ -16,15 +16,15 @@
 
 package geotrellis.store.hbase
 
-import geotrellis.layer._
-import geotrellis.store._
-import geotrellis.raster._
-import geotrellis.raster.resample._
+import geotrellis.layer.*
+import geotrellis.store.*
+import geotrellis.raster.*
+import geotrellis.raster.resample.*
 import geotrellis.store.avro.codecs.KeyValueRecordCodec
 import geotrellis.store.avro.{AvroEncoder, AvroRecordCodec}
 
 import org.apache.hadoop.hbase.client.Get
-import _root_.io.circe._
+import _root_.io.circe.*
 
 import scala.reflect.ClassTag
 

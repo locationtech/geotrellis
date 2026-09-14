@@ -16,10 +16,10 @@
 
 package geotrellis.raster.density
 
-import geotrellis.raster._
+import geotrellis.raster.*
 import geotrellis.raster.mapalgebra.focal.Kernel
 import geotrellis.util.MethodExtensions
-import geotrellis.vector._
+import geotrellis.vector.*
 
 trait DoubleKernelDensityMethods extends MethodExtensions[Iterable[PointFeature[Double]]] {
   def kernelDensity(kernel: Kernel, rasterExtent: RasterExtent): Tile =

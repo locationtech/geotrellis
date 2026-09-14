@@ -16,13 +16,13 @@
 
 package geotrellis.spark.store.slippy
 
-import geotrellis.layer._
-import geotrellis.raster._
-import geotrellis.raster.io.geotiff._
-import geotrellis.proj4._
-import geotrellis.spark.testkit._
+import geotrellis.layer.*
+import geotrellis.raster.*
+import geotrellis.raster.io.geotiff.*
+import geotrellis.proj4.*
+import geotrellis.spark.testkit.*
 
-import geotrellis.spark.testkit.testfiles._
+import geotrellis.spark.testkit.testfiles.*
 
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.funspec.AnyFunSpec

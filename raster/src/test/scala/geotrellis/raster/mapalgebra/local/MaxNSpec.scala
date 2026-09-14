@@ -16,12 +16,12 @@
 
 package geotrellis.raster.mapalgebra.local
 
-import geotrellis.raster._
+import geotrellis.raster.*
 
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.funspec.AnyFunSpec
 
-import geotrellis.raster.testkit._
+import geotrellis.raster.testkit.*
 
 /**
  * Created by jchien on 2/22/14.

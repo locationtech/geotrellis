@@ -16,12 +16,12 @@
 
 package geotrellis.vector.interpolation
 
-import geotrellis.vector._
+import geotrellis.vector.*
 import org.apache.commons.math3.stat.regression.SimpleRegression
 
 object LinearSemivariogram {
   def apply(sill: Double, nugget: Double): Double => Double =
-    { x: Double => x * sill + nugget }
+    { (x: Double) => x * sill + nugget }
 
   def apply(pts: Array[PointFeature[Double]], radius: Option[Double] = None, lag: Double = 0): Semivariogram = {
     // Construct slope and intercept

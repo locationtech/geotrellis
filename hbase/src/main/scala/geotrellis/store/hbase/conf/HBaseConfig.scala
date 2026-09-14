@@ -17,7 +17,7 @@
 package geotrellis.store.hbase.conf
 
 import pureconfig.ConfigSource
-import pureconfig.generic.auto._
+import pureconfig.generic.auto.*
 
 case class HBaseConfig(catalog: String)
 

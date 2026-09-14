@@ -16,7 +16,7 @@
 
 package geotrellis.store.index.zcurve
 
-import geotrellis.layer._
+import geotrellis.layer.*
 import geotrellis.store.index.KeyIndex
 
 class ZSpatialKeyIndex(val keyBounds: KeyBounds[SpatialKey]) extends KeyIndex[SpatialKey] {

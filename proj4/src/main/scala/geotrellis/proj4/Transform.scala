@@ -16,7 +16,7 @@
 
 package geotrellis.proj4
 
-import org.locationtech.proj4j._
+import org.locationtech.proj4j.*
 
 object Transform {
   def apply(src: CRS, dest: CRS): (Double, Double) => (Double, Double) =

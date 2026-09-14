@@ -18,9 +18,9 @@ package geotrellis.spark.clip
 
 import geotrellis.layer.{SpatialKey, LayoutDefinition}
 import geotrellis.util.MethodExtensions
-import geotrellis.vector._
+import geotrellis.vector.*
 
-import org.apache.spark.rdd._
+import org.apache.spark.rdd.*
 
 /** See [[ClipToGrid]]. */
 trait GeometryClipToGridMethods[G <: Geometry] extends MethodExtensions[RDD[G]] {

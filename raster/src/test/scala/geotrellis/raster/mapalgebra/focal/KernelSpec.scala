@@ -16,9 +16,9 @@
 
 package geotrellis.raster.mapalgebra.focal
 
-import geotrellis.raster._
+import geotrellis.raster.*
 import geotrellis.raster.io.geotiff.{GeoTiffReader, MultibandGeoTiff}
-import geotrellis.raster.mapalgebra.focal.Kernel._
+import geotrellis.raster.mapalgebra.focal.Kernel.*
 import geotrellis.raster.testkit.RasterMatchers
 import org.scalatest.funsuite.AnyFunSuite
 

@@ -16,16 +16,16 @@
 
 package geotrellis.spark.store.s3
 
-import geotrellis.layer._
-import geotrellis.store._
-import geotrellis.store.avro._
-import geotrellis.store.index._
-import geotrellis.store.s3._
-import geotrellis.util._
+import geotrellis.layer.*
+import geotrellis.store.*
+import geotrellis.store.avro.*
+import geotrellis.store.index.*
+import geotrellis.store.s3.*
+import geotrellis.util.*
 
 import software.amazon.awssdk.services.s3.S3Client
 import org.apache.spark.SparkContext
-import _root_.io.circe._
+import _root_.io.circe.*
 
 import scala.reflect.ClassTag
 

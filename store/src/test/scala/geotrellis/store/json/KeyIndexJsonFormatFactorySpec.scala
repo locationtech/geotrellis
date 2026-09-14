@@ -16,12 +16,12 @@
 
 package geotrellis.store.json
 
-import geotrellis.layer._
-import geotrellis.store._
-import geotrellis.store.index._
+import geotrellis.layer.*
+import geotrellis.store.*
+import geotrellis.store.index.*
 
-import io.circe.syntax._
-import cats.syntax.either._
+import io.circe.syntax.*
+import cats.syntax.either.*
 
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.funspec.AnyFunSpec

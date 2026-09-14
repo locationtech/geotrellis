@@ -16,11 +16,11 @@
 
 package geotrellis.store
 
-import geotrellis.proj4._
-import geotrellis.raster._
+import geotrellis.proj4.*
+import geotrellis.raster.*
 import geotrellis.raster.io.geotiff.{Auto, AutoHigherResolution, Base}
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
-import geotrellis.raster.testkit._
+import geotrellis.raster.testkit.*
 import geotrellis.raster.MultibandTile
 import geotrellis.raster.reproject.{Reproject, ReprojectRasterExtent}
 import geotrellis.raster.resample.NearestNeighbor

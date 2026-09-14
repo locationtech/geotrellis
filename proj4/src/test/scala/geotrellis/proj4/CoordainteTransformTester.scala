@@ -16,7 +16,7 @@
 
 package geotrellis.proj4
 
-import org.locationtech.proj4j._
+import org.locationtech.proj4j.*
 
 class CoordinateTransformTester(val verbose: Boolean = true) {
   val ctFactory = new CoordinateTransformFactory()

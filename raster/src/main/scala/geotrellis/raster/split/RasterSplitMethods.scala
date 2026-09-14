@@ -16,7 +16,7 @@
 
 package geotrellis.raster.split
 
-import geotrellis.raster._
+import geotrellis.raster.*
 
 
 import Split.Options

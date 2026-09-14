@@ -16,14 +16,14 @@
 
 package geotrellis.store.s3
 
-import geotrellis.layer._
+import geotrellis.layer.*
 import geotrellis.store.avro.codecs.KeyValueRecordCodec
 import geotrellis.store.index.MergeQueue
 import geotrellis.store.avro.{AvroEncoder, AvroRecordCodec}
-import geotrellis.store.util.{IORuntimeTransient, IOUtils => GTIOUtils}
+import geotrellis.store.util.{IORuntimeTransient, IOUtils as GTIOUtils}
 
-import cats.effect._
-import software.amazon.awssdk.services.s3.model._
+import cats.effect.*
+import software.amazon.awssdk.services.s3.model.*
 import software.amazon.awssdk.services.s3.S3Client
 import org.apache.avro.Schema
 import org.apache.commons.io.IOUtils
@@ -54,7 +54,7 @@ class S3CollectionReader(
     val recordCodec = KeyValueRecordCodec[K, V]
     implicit val ioRuntime: unsafe.IORuntime = runtime
 
-    GTIOUtils.parJoin[K, V](ranges.iterator) { index: BigInt =>
+    GTIOUtils.parJoin[K, V](ranges.iterator) { (index: BigInt) =>
       try {
         val getRequest = GetObjectRequest.builder()
           .bucket(bucket)

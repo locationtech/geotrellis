@@ -16,11 +16,11 @@
 
 package geotrellis.spark.testkit
 
-import geotrellis.raster._
-import geotrellis.raster.testkit._
+import geotrellis.raster.*
+import geotrellis.raster.testkit.*
 import geotrellis.layer.{SpatialKey, SpaceTimeKey}
-import geotrellis.spark._
-import org.apache.spark.rdd._
+import geotrellis.spark.*
+import org.apache.spark.rdd.*
 
 import scala.reflect.ClassTag
 

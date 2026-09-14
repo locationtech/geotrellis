@@ -16,12 +16,12 @@
 
 package geotrellis.spark.crop
 
-import geotrellis.raster._
-import geotrellis.raster.crop.Crop.{Options => CropOptions}
+import geotrellis.raster.*
+import geotrellis.raster.crop.Crop.{Options as CropOptions}
 import geotrellis.raster.io.geotiff.SinglebandGeoTiff
-import geotrellis.spark._
+import geotrellis.spark.*
 import geotrellis.vector.Extent
-import geotrellis.spark.testkit._
+import geotrellis.spark.testkit.*
 
 import org.scalatest.funspec.AnyFunSpec
 

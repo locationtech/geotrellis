@@ -16,7 +16,7 @@
 
 package geotrellis.proj4
 
-import org.locationtech.proj4j._
+import org.locationtech.proj4j.*
 
 import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.matchers.should.Matchers

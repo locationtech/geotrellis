@@ -16,8 +16,8 @@
 
 package geotrellis.raster.io.geotiff.reader
 
-import geotrellis.raster.io.geotiff._
-import geotrellis.raster.testkit._
+import geotrellis.raster.io.geotiff.*
+import geotrellis.raster.testkit.*
 
 import org.scalatest.funspec.AnyFunSpec
 

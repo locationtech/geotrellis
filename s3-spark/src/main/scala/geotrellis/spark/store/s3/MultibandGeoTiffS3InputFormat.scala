@@ -16,15 +16,15 @@
 
 package geotrellis.spark.store.s3
 
-import geotrellis.raster._
-import geotrellis.raster.io.geotiff._
-import geotrellis.vector._
+import geotrellis.raster.*
+import geotrellis.raster.io.geotiff.*
+import geotrellis.vector.*
 import org.apache.hadoop.mapreduce.{InputSplit, TaskAttemptContext}
 
 /** Read multi band GeoTiff from S3 */
 @deprecated("MultibandGeoTiffS3InputFormat is deprecated, use S3GeoTiffRDD instead", "1.0.0")
 class MultibandGeoTiffS3InputFormat extends S3InputFormat[ProjectedExtent, MultibandTile] {
-  def createRecordReader(split: InputSplit, context: TaskAttemptContext) =
+  def createRecordReader(split: InputSplit, context: TaskAttemptContext): S3RecordReader[ProjectedExtent, MultibandTile] =
     new S3RecordReader[ProjectedExtent, MultibandTile](getS3Client(context)) {
       def read(key: String, bytes: Array[Byte]) = {
         val geoTiff = MultibandGeoTiff(bytes)

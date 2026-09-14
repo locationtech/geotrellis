@@ -16,8 +16,8 @@
 
 package geotrellis.raster.mapalgebra.focal
 
-import geotrellis.raster._
-import geotrellis.macros._
+import geotrellis.raster.*
+import geotrellis.macros.*
 
 class KernelCursor(r: Tile, kernel: Kernel, analysisArea: GridBounds[Int])
     extends Cursor(r, analysisArea, kernel.extent)

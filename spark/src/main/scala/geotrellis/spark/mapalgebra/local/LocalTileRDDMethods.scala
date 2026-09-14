@@ -16,9 +16,9 @@
 
 package geotrellis.spark.mapalgebra.local
 
-import geotrellis.raster.mapalgebra.local._
-import geotrellis.raster._
-import geotrellis.spark._
+import geotrellis.raster.mapalgebra.local.*
+import geotrellis.raster.*
+import geotrellis.spark.*
 import org.apache.spark.Partitioner
 import org.apache.spark.rdd.RDD
 

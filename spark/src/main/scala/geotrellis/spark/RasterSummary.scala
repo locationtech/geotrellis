@@ -17,13 +17,13 @@
 package geotrellis.spark
 
 import geotrellis.proj4.CRS
-import geotrellis.raster._
-import geotrellis.layer._
+import geotrellis.raster.*
+import geotrellis.layer.*
 import geotrellis.vector.Extent
-import geotrellis.util._
+import geotrellis.util.*
 
 import org.apache.spark.rdd.RDD
-import org.log4s._
+import org.log4s.*
 
 case class RasterSummary[M](
   crs: CRS,
@@ -38,7 +38,7 @@ case class RasterSummary[M](
   @transient private[this] lazy val logger = getLogger
 
   def estimatePartitionsNumber: Int = {
-    import squants.information._
+    import squants.information.*
     val bytes = Bytes(cellType.bytes * cells)
     val numPartitions: Int = math.max((bytes / Megabytes(64)).toInt, 1)
     logger.info(s"Using $numPartitions partitions for ${bytes.toString(Gigabytes)}")

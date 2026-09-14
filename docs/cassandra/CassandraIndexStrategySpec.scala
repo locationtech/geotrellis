@@ -1,23 +1,23 @@
 package geotrellis.spark.io.cassandra.bench
 
 import geotrellis.proj4.CRS
-import geotrellis.raster._
+import geotrellis.raster.*
 import geotrellis.spark.io.cassandra.conf.{CassandraConfig, ReadOptimized}
 import geotrellis.spark.io.cassandra.{BaseCassandraInstance, CassandraAttributeStore, CassandraInstance, CassandraLayerReader, CassandraLayerWriter, CassandraValueReader}
 import geotrellis.spark.io.index.zcurve.ZSpatialKeyIndex
 import geotrellis.spark.tiling.LayoutDefinition
 import geotrellis.spark.{CassandraTestEnvironment, ContextRDD, KeyBounds, LayerId, SpatialKey, TileLayerMetadata}
 import org.apache.spark.rdd.RDD
-import geotrellis.spark._
-import geotrellis.spark.io._
+import geotrellis.spark.*
+import geotrellis.spark.io.*
 import geotrellis.spark.io.index.ZCurveKeyIndexMethod
-import geotrellis.util._
-import geotrellis.spark.tiling._
-import org.apache.spark.SparkContext._
+import geotrellis.util.*
+import geotrellis.spark.tiling.*
+import org.apache.spark.SparkContext.*
 import geotrellis.vector.{Extent, ProjectedExtent}
-import org.scalatest._
+import org.scalatest.*
 
-import scala.concurrent.duration._
+import scala.concurrent.duration.*
 
 class CassandraIndexStrategySpec extends FunSpec with Matchers with CassandraTestEnvironment{
 
@@ -129,9 +129,9 @@ class CassandraIndexStrategySpec extends FunSpec with Matchers with CassandraTes
 
   it("reading a layer using the read-optimized schema should be faster than the write-optimized variant"){
 
-    import cats.effect._
-    import cats.effect.syntax.all._
-    import cats.implicits._
+    import cats.effect.*
+    import cats.effect.syntax.all.*
+    import cats.implicits.*
     import scala.concurrent.ExecutionContext
     import java.util.concurrent.Executors
 
@@ -216,7 +216,7 @@ class CassandraIndexStrategySpec extends FunSpec with Matchers with CassandraTes
 }
 
 object MathUtils{
-  import Numeric.Implicits._
+  import Numeric.Implicits.*
 
   def mean[T: Numeric](xs: Iterable[T]): Double = xs.sum.toDouble / xs.size.toDouble
 

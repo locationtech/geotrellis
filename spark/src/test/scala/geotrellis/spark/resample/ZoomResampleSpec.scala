@@ -16,13 +16,13 @@
 
 package geotrellis.spark.resample
 
-import geotrellis.raster._
-import geotrellis.raster.testkit._
+import geotrellis.raster.*
+import geotrellis.raster.testkit.*
 import geotrellis.raster.io.geotiff.{SinglebandGeoTiff, MultibandGeoTiff}
-import geotrellis.spark._
-import geotrellis.spark.testkit._
+import geotrellis.spark.*
+import geotrellis.spark.testkit.*
 import geotrellis.vector.Extent
-import geotrellis.spark.testkit._
+import geotrellis.spark.testkit.*
 
 import org.scalatest.funspec.AnyFunSpec
 

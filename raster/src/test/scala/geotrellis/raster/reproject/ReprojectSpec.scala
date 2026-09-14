@@ -16,14 +16,14 @@
 
 package geotrellis.raster.reproject
 
-import geotrellis.raster._
-import geotrellis.raster.resample._
-import geotrellis.vector._
-import geotrellis.raster.testkit._
-import geotrellis.proj4._
+import geotrellis.raster.*
+import geotrellis.raster.resample.*
+import geotrellis.vector.*
+import geotrellis.raster.testkit.*
+import geotrellis.proj4.*
 import geotrellis.raster.geotiff.GeoTiffRasterSource
-import geotrellis.raster.io.geotiff._
-import spire.syntax.cfor._
+import geotrellis.raster.io.geotiff.*
+import spire.syntax.cfor.*
 import org.scalatest.funspec.AnyFunSpec
 
 import java.io.File

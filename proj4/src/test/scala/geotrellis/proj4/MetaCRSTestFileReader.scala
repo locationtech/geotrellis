@@ -19,7 +19,7 @@ package geotrellis.proj4
 import java.io.File
 import com.opencsv.CSVReader
 
-import scala.jdk.CollectionConverters._
+import scala.jdk.CollectionConverters.*
 
 /**
  * Reads a file in MetaCRS Test format

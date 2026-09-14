@@ -22,11 +22,11 @@ object EuclideanDistanceExamples {
     import org.apache.spark.SparkContext
     import org.apache.spark.rdd.RDD
 
-    import geotrellis.proj4._
-    import geotrellis.raster._
-    import geotrellis.layer._
-    import geotrellis.spark._
-    import geotrellis.vector._
+    import geotrellis.proj4.*
+    import geotrellis.raster.*
+    import geotrellis.layer.*
+    import geotrellis.spark.*
+    import geotrellis.vector.*
 
     // This examples show some problems that may arise when using the distribued
     // Euclidean distance operations on data that does not sufficiently cover

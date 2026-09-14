@@ -16,17 +16,17 @@
 
 package geotrellis.store.s3.cog
 
-import io.circe._
+import io.circe.*
 
-import geotrellis.raster._
+import geotrellis.raster.*
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
-import geotrellis.layer._
-import geotrellis.store._
-import geotrellis.store.cog._
-import geotrellis.store.index._
-import geotrellis.store.s3._
+import geotrellis.layer.*
+import geotrellis.store.*
+import geotrellis.store.cog.*
+import geotrellis.store.index.*
+import geotrellis.store.s3.*
 
-import software.amazon.awssdk.services.s3.model._
+import software.amazon.awssdk.services.s3.model.*
 import software.amazon.awssdk.services.s3.S3Client
 
 import scala.reflect.ClassTag

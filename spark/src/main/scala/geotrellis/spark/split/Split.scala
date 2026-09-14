@@ -16,11 +16,11 @@
 
 package geotrellis.spark.split
 
-import geotrellis.raster._
-import geotrellis.raster.split._
+import geotrellis.raster.*
+import geotrellis.raster.split.*
 import geotrellis.raster.split.Split.Options
 import geotrellis.vector.ProjectedExtent
-import geotrellis.util._
+import geotrellis.util.*
 
 import org.apache.spark.rdd.RDD
 

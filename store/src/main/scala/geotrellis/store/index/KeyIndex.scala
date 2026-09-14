@@ -16,7 +16,7 @@
 
 package geotrellis.store.index
 
-import geotrellis.layer._
+import geotrellis.layer.*
 
 trait KeyIndex[K] extends Serializable {
   /** Some(keybounds) if the indexed space is bounded; None if it is unbounded */

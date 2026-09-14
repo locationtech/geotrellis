@@ -16,7 +16,7 @@
 
 package geotrellis.raster.mapalgebra.local
 
-import geotrellis.raster._
+import geotrellis.raster.*
 
 
 /**
@@ -27,6 +27,6 @@ object Negate extends Serializable {
     * Negate the values of a Tile
     */
   def apply(r: Tile): Tile =
-    r.dualMap { z: Int => if(isNoData(z)) z else -z }
-              { z: Double => if(isNoData(z)) z else -z }
+    r.dualMap { (z: Int) => if(isNoData(z)) z else -z }
+              { (z: Double) => if(isNoData(z)) z else -z }
 }

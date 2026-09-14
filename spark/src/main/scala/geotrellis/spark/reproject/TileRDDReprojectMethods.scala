@@ -16,17 +16,17 @@
 
 package geotrellis.spark.reproject
 
-import geotrellis.raster._
-import geotrellis.raster.crop._
-import geotrellis.raster.merge._
-import geotrellis.raster.prototype._
-import geotrellis.raster.reproject._
-import geotrellis.raster.stitch._
-import geotrellis.layer._
-import geotrellis.proj4._
+import geotrellis.raster.*
+import geotrellis.raster.crop.*
+import geotrellis.raster.merge.*
+import geotrellis.raster.prototype.*
+import geotrellis.raster.reproject.*
+import geotrellis.raster.stitch.*
+import geotrellis.layer.*
+import geotrellis.proj4.*
 import geotrellis.util.MethodExtensions
-import org.apache.spark._
-import org.apache.spark.rdd._
+import org.apache.spark.*
+import org.apache.spark.rdd.*
 
 import scala.reflect.ClassTag
 

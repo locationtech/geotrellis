@@ -17,29 +17,29 @@
 package geotrellis.spark.store.cog
 
 import geotrellis.raster.{CellGrid, GridBounds, MultibandTile, Tile}
-import geotrellis.raster.io.geotiff._
+import geotrellis.raster.io.geotiff.*
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.raster.io.geotiff.tags.TiffTags
-import geotrellis.layer._
-import geotrellis.store._
-import geotrellis.store.cog._
+import geotrellis.layer.*
+import geotrellis.store.*
+import geotrellis.store.cog.*
 import geotrellis.store.index.{Index, IndexRanges, KeyIndex, MergeQueue}
 import geotrellis.store.util.IOUtils
-import geotrellis.spark._
+import geotrellis.spark.*
 import geotrellis.spark.util.KryoWrapper
-import geotrellis.util._
+import geotrellis.util.*
 
-import org.apache.spark.rdd._
+import org.apache.spark.rdd.*
 import org.apache.spark.SparkContext
-import io.circe._
-import io.circe.parser._
-import cats.syntax.either._
-import cats.effect._
+import io.circe.*
+import io.circe.parser.*
+import cats.syntax.either.*
+import cats.effect.*
 
 import java.net.URI
 import java.util.ServiceLoader
 
-import scala.reflect._
+import scala.reflect.*
 
 abstract class COGLayerReader[ID] extends Serializable {
 
@@ -383,11 +383,11 @@ abstract class COGLayerReader[ID] extends Serializable {
     val kwDecoder = KryoWrapper(implicitly[Decoder[K]])
 
     sc.parallelize(bins, bins.size)
-      .mapPartitions { partition: Iterator[Seq[(BigInt, BigInt)]] =>
+      .mapPartitions { (partition: Iterator[Seq[(BigInt, BigInt)]]) =>
         val keyDecoder = kwDecoder.value
 
         partition flatMap { seq =>
-          IOUtils.parJoin[K, R](seq.iterator) { index: BigInt =>
+          IOUtils.parJoin[K, R](seq.iterator) { (index: BigInt) =>
             if (!pathExists(keyPath(index))) Vector()
             else {
               val uri = fullPath(keyPath(index))
@@ -425,7 +425,7 @@ object COGLayerReader {
     * Find instances of [[COGLayerReaderProvider]] through Java SPI.
     */
   def apply(attributeStore: AttributeStore, layerReaderUri: URI)(implicit sc: SparkContext): COGLayerReader[LayerId] = {
-    import scala.jdk.CollectionConverters._
+    import scala.jdk.CollectionConverters.*
     ServiceLoader.load(classOf[COGLayerReaderProvider])
       .iterator().asScala
       .find(_.canProcess(layerReaderUri))

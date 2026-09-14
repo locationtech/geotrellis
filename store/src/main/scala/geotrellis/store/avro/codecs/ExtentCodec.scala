@@ -16,11 +16,11 @@
 
 package geotrellis.store.avro.codecs
 
-import geotrellis.store.avro._
+import geotrellis.store.avro.*
 import geotrellis.vector.Extent
 
-import org.apache.avro._
-import org.apache.avro.generic._
+import org.apache.avro.*
+import org.apache.avro.generic.*
 
 // --- //
 

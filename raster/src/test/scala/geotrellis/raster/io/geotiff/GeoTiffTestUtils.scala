@@ -25,7 +25,7 @@ object GeoTiffTestUtils {
 }
 
 trait GeoTiffTestUtils extends Matchers {
-  import GeoTiffTestUtils._
+  import GeoTiffTestUtils.*
 
   def geoTiffPath(name: String): String = {
     val path = s"$testDirPath/$name"

@@ -16,17 +16,17 @@
 
 package geotrellis.spark.buffer
 
-import geotrellis.layer._
+import geotrellis.layer.*
 import geotrellis.raster
-import geotrellis.raster._
+import geotrellis.raster.*
 import geotrellis.raster.buffer.{BufferSizes, BufferedTile}
-import geotrellis.raster.buffer.Direction._
-import geotrellis.raster.crop._
-import geotrellis.raster.stitch._
+import geotrellis.raster.buffer.Direction.*
+import geotrellis.raster.crop.*
+import geotrellis.raster.stitch.*
 import geotrellis.layer.buffer.BufferTiles
-import geotrellis.util._
+import geotrellis.util.*
 
-import org.log4s._
+import org.log4s.*
 import org.apache.spark.rdd.RDD
 import org.apache.spark.Partitioner
 
@@ -106,7 +106,7 @@ object BufferTilesRDD extends BufferTiles {
     rdd: RDD[(K, V)],
     bufferSize: Int
   ): RDD[(K, BufferedTile[V])] =
-    apply(rdd, { _: K => BufferSizes(bufferSize, bufferSize, bufferSize, bufferSize) }, None)
+    apply(rdd, { (_: K) => BufferSizes(bufferSize, bufferSize, bufferSize, bufferSize) }, None)
 
   /** Buffer the tiles of type V by a constant buffer size.
     *
@@ -129,7 +129,7 @@ object BufferTilesRDD extends BufferTiles {
     bufferSize: Int,
     partitioner: Option[Partitioner]
   ): RDD[(K, BufferedTile[V])] =
-    apply(rdd, { _: K => BufferSizes(bufferSize, bufferSize, bufferSize, bufferSize) }, partitioner)
+    apply(rdd, { (_: K) => BufferSizes(bufferSize, bufferSize, bufferSize, bufferSize) }, partitioner)
 
   /** Buffer the tiles of type V by a constant buffer size.
     *
@@ -184,11 +184,11 @@ object BufferTilesRDD extends BufferTiles {
   ): RDD[(K, BufferedTile[V])] =
     apply(
       rdd,
-      { key: K =>
+      { (key: K) =>
         val k = key.getComponent[SpatialKey]
         layerBounds.contains(k.col, k.row)
       },
-      { _: K => BufferSizes(bufferSize, bufferSize, bufferSize, bufferSize) },
+      { (_: K) => BufferSizes(bufferSize, bufferSize, bufferSize, bufferSize) },
       partitioner
     )
 
@@ -236,7 +236,7 @@ object BufferTilesRDD extends BufferTiles {
     getBufferSizes: K => BufferSizes,
     partitioner: Option[Partitioner]
   ): RDD[(K, BufferedTile[V])] =
-    apply(layer, { _: K => true }, getBufferSizes, partitioner)
+    apply(layer, { (_: K) => true }, getBufferSizes, partitioner)
 
   /** Buffer the tiles of type V by a constant buffer size.
     *

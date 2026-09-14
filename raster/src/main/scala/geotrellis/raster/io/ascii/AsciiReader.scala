@@ -16,7 +16,7 @@
 
 package geotrellis.raster.io.ascii
 
-import geotrellis.raster._
+import geotrellis.raster.*
 
 class AsciiReader(path: String, noDataValue: Int) extends FileReader(path) {
   def readStateFromPath(cellType: CellType, 
@@ -28,6 +28,6 @@ class AsciiReader(path: String, noDataValue: Int) extends FileReader(path) {
   def readStateFromCache(b: Array[Byte], 
                          cellType: CellType,
                          rasterExtent: RasterExtent,
-                         targetExtent: RasterExtent) = 
+                         targetExtent: RasterExtent): Nothing = 
     sys.error("caching ascii grid is not supported")
 }

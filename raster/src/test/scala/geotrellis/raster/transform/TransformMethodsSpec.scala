@@ -16,7 +16,7 @@
 
 package geotrellis.raster.transform
 
-import geotrellis.raster._
+import geotrellis.raster.*
 import geotrellis.raster.testkit.TileBuilders
 
 import org.scalatest.matchers.should.Matchers

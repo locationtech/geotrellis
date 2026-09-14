@@ -16,8 +16,8 @@
 
 package geotrellis.raster.io.arg
 
-import geotrellis.raster._
-import geotrellis.raster.testkit._
+import geotrellis.raster.*
+import geotrellis.raster.testkit.*
 
 import org.scalatest.funsuite.AnyFunSuite
 

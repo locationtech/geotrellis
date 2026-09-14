@@ -17,8 +17,8 @@
 package geotrellis.raster.io.geotiff.tags
 
 import monocle.macros.Lenses
-import io.circe._
-import io.circe.generic.semiauto._
+import io.circe.*
+import io.circe.generic.semiauto.*
 
 @Lenses("_")
 case class JpegTags(

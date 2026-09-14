@@ -16,18 +16,18 @@
 
 package geotrellis.store.cog
 
-import geotrellis.layer._
-import geotrellis.store._
-import geotrellis.store.index._
-import geotrellis.raster._
+import geotrellis.layer.*
+import geotrellis.store.*
+import geotrellis.store.index.*
+import geotrellis.raster.*
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
-import geotrellis.raster.resample._
-import geotrellis.layer._
-import geotrellis.util._
+import geotrellis.raster.resample.*
+import geotrellis.layer.*
+import geotrellis.util.*
 
-import _root_.io.circe._
+import _root_.io.circe.*
 
-import scala.reflect._
+import scala.reflect.*
 import java.net.URI
 import java.util.ServiceLoader
 
@@ -49,7 +49,7 @@ trait COGValueReader[ID] {
     layerId: ID,
     keyPath: (K, Int, KeyIndex[K], ZoomRange) => String, // Key, maxWidth, toIndex, zoomRange
     fullPath: String => URI,
-    exceptionHandler: K => PartialFunction[Throwable, Nothing] = { key: K => ({ case e: Throwable => throw e }): PartialFunction[Throwable, Nothing] }
+    exceptionHandler: K => PartialFunction[Throwable, Nothing] = { (key: K) => ({ case e: Throwable => throw e }): PartialFunction[Throwable, Nothing] }
    ): COGReader[K, V] = new COGReader[K, V] {
     val COGLayerStorageMetadata(cogLayerMetadata, keyIndexes) =
       attributeStore.readMetadata[COGLayerStorageMetadata[K]](LayerId(layerId.name, 0))
@@ -131,7 +131,7 @@ object COGValueReader {
    * Find instances of [[COGValueReaderProvider]] through Java SPI.
    */
   def apply(attributeStore: AttributeStore, valueReaderUri: URI): COGValueReader[LayerId] = {
-    import scala.jdk.CollectionConverters._
+    import scala.jdk.CollectionConverters.*
     ServiceLoader.load(classOf[COGValueReaderProvider])
       .iterator().asScala
       .find(_.canProcess(valueReaderUri))

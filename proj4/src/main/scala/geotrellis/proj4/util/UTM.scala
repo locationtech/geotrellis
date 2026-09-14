@@ -16,7 +16,7 @@
 
 package geotrellis.proj4.util
 
-import geotrellis.proj4._
+import geotrellis.proj4.*
 
 // Ported from javascript https://github.com/chrisveness/geodesy by Chris Veness (MIT license)
 object UTM {

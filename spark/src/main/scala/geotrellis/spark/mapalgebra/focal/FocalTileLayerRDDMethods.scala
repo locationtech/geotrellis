@@ -16,10 +16,10 @@
 
 package geotrellis.spark.mapalgebra.focal
 
-import geotrellis.raster._
+import geotrellis.raster.*
 import geotrellis.raster.Neighborhoods.Square
 import geotrellis.raster.mapalgebra.focal.{Kernel, Aspect, Sum, Max, Min, Mean, Median, Mode, StandardDeviation, Convolve, Slope, ZFactor}
-import geotrellis.spark._
+import geotrellis.spark.*
 
 import org.apache.spark.Partitioner
 

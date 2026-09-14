@@ -15,8 +15,8 @@
  */
 
 package geotrellis.vector.interpolation
-import geotrellis.vector._
-import spire.syntax.cfor._
+import geotrellis.vector.*
+import spire.syntax.cfor.*
 import scala.collection.mutable
 
 class EmpiricalVariogram(val distances: Array[Double], val variance: Array[Double]) extends Serializable
@@ -63,8 +63,8 @@ object NonLinearEmpiricalVariogram {
 
     var dMax = Double.MinValue
 
-    cfor(0)(_ < n, _ + 1) { i: Int =>
-      cfor(i + 1)(_ < n, _ + 1) { j: Int =>
+    cfor(0)(_ < n, _ + 1) { (i: Int) =>
+      cfor(i + 1)(_ < n, _ + 1) { (j: Int) =>
         val dx = pts(i).geom.x - pts(j).geom.x
         val dy = pts(i).geom.y - pts(j).geom.y
         val d = math.sqrt(dx * dx + dy * dy)
@@ -116,7 +116,7 @@ object NonLinearEmpiricalVariogram {
     val empiricalVariance = Array.ofDim[Double](binNum)
     val data: Array[Double] = Array.tabulate(n){ j => pts(j).data }
 
-    cfor(0)(_ < binNum, _ + 1) { i: Int =>
+    cfor(0)(_ < binNum, _ + 1) { (i: Int) =>
       val n0: Int = i * binSize + 1 - 1
       val n1Temp: Int = (i + 1) * binSize - 1
       val n1: Int = if (n1Temp > n_S) n_S - 1 else n1Temp

@@ -16,13 +16,13 @@
 
 package geotrellis.spark.reproject
 
-import geotrellis.raster._
-import geotrellis.raster.reproject._
-import geotrellis.vector._
-import geotrellis.proj4._
-import geotrellis.util._
+import geotrellis.raster.*
+import geotrellis.raster.reproject.*
+import geotrellis.vector.*
+import geotrellis.proj4.*
+import geotrellis.util.*
 
-import org.apache.spark.rdd._
+import org.apache.spark.rdd.*
 
 class ProjectedExtentComponentReprojectMethods[K: Component[*, ProjectedExtent], V <: CellGrid[Int]: * => TileReprojectMethods[V]](val self: RDD[(K, V)])
     extends MethodExtensions[RDD[(K, V)]] {

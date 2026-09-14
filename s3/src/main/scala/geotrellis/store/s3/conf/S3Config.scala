@@ -17,7 +17,7 @@
 package geotrellis.store.s3.conf
 
 import pureconfig.{ConfigReader, ConfigSource}
-import pureconfig.generic.auto._
+import pureconfig.generic.auto.*
 import software.amazon.awssdk.services.s3.model.RequestPayer
 
 case class S3Config(requestPayer: Option[RequestPayer] = None)

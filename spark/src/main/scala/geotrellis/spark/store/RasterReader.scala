@@ -16,13 +16,13 @@
 
 package geotrellis.spark.store
 
-import geotrellis.proj4._
-import geotrellis.raster._
-import geotrellis.raster.io.geotiff._
+import geotrellis.proj4.*
+import geotrellis.raster.*
+import geotrellis.raster.io.geotiff.*
 import geotrellis.raster.io.geotiff.reader.{ GeoTiffReader, GeoTiffInfo }
 import geotrellis.layer.TemporalProjectedExtent
 import geotrellis.util.{ByteReader, StreamingByteReader}
-import geotrellis.vector._
+import geotrellis.vector.*
 
 import java.time.format.DateTimeFormatter
 import java.time.{ZoneOffset, ZonedDateTime}
@@ -58,13 +58,13 @@ object RasterReader {
   }
 
   implicit def singlebandGeoTiffReader: RasterReader[Options, (ProjectedExtent, Tile)] = new RasterReader[Options, (ProjectedExtent, Tile)] {
-    def readFully(byteReader: ByteReader, options: Options) = {
+    def readFully(byteReader: ByteReader, options: Options): (ProjectedExtent, ArrayTile) = {
       val geotiff = SinglebandGeoTiff(byteReader)
       val raster: Raster[Tile] = geotiff.raster
       (ProjectedExtent(raster.extent, options.crs.getOrElse(geotiff.crs)), raster.tile.toArrayTile())
     }
 
-    def readWindow(streamingByteReader: StreamingByteReader, pixelWindow: GridBounds[Int], options: Options) = {
+    def readWindow(streamingByteReader: StreamingByteReader, pixelWindow: GridBounds[Int], options: Options): (ProjectedExtent, ArrayTile) = {
       val geotiff = SinglebandGeoTiff.streaming(streamingByteReader)
       val raster: Raster[Tile] = geotiff.raster.crop(pixelWindow)
       (ProjectedExtent(raster.extent, options.crs.getOrElse(geotiff.crs)), raster.tile.toArrayTile())
@@ -80,13 +80,13 @@ object RasterReader {
   }
 
   implicit def multibandGeoTiffReader: RasterReader[Options, (ProjectedExtent, MultibandTile)] = new RasterReader[Options, (ProjectedExtent, MultibandTile)] {
-    def readFully(byteReader: ByteReader, options: Options) = {
+    def readFully(byteReader: ByteReader, options: Options): (ProjectedExtent, ArrayMultibandTile) = {
       val geotiff = MultibandGeoTiff(byteReader)
       val raster: Raster[MultibandTile] = geotiff.raster
       (ProjectedExtent(raster.extent, options.crs.getOrElse(geotiff.crs)), raster.tile.toArrayTile())
     }
 
-    def readWindow(streamingByteReader: StreamingByteReader, pixelWindow: GridBounds[Int], options: Options) = {
+    def readWindow(streamingByteReader: StreamingByteReader, pixelWindow: GridBounds[Int], options: Options): (ProjectedExtent, ArrayMultibandTile) = {
       val geotiff = MultibandGeoTiff.streaming(streamingByteReader)
       val raster: Raster[MultibandTile] = geotiff.raster.crop(pixelWindow)
       (ProjectedExtent(raster.extent, options.crs.getOrElse(geotiff.crs)), raster.tile.toArrayTile())
@@ -102,7 +102,7 @@ object RasterReader {
   }
 
   implicit def temporalSinglebandGeoTiffReader: RasterReader[Options, (TemporalProjectedExtent, Tile)] = new RasterReader[Options, (TemporalProjectedExtent, Tile)]  {
-    def readFully(byteReader: ByteReader, options: Options) = {
+    def readFully(byteReader: ByteReader, options: Options): (geotrellis.layer.TemporalProjectedExtent, ArrayTile) = {
       val geotiff = SinglebandGeoTiff(byteReader)
       val raster: Raster[Tile] = geotiff.raster
       val time = options.parseTime(geotiff.tags)
@@ -110,7 +110,7 @@ object RasterReader {
       (TemporalProjectedExtent(raster.extent, crs, time), raster.tile.toArrayTile())
     }
 
-    def readWindow(streamingByteReader: StreamingByteReader, pixelWindow: GridBounds[Int], options: Options) = {
+    def readWindow(streamingByteReader: StreamingByteReader, pixelWindow: GridBounds[Int], options: Options): (geotrellis.layer.TemporalProjectedExtent, ArrayTile) = {
       val geotiff = SinglebandGeoTiff.streaming(streamingByteReader)
       val raster: Raster[Tile] = geotiff.raster.crop(pixelWindow)
       val time = options.parseTime(geotiff.tags)
@@ -132,7 +132,7 @@ object RasterReader {
   }
 
   implicit def temporalMultibandGeoTiffReader: RasterReader[Options, (TemporalProjectedExtent, MultibandTile)] = new RasterReader[Options, (TemporalProjectedExtent, MultibandTile)]  {
-    def readFully(byteReader: ByteReader, options: Options) = {
+    def readFully(byteReader: ByteReader, options: Options): (geotrellis.layer.TemporalProjectedExtent, ArrayMultibandTile) = {
       val geotiff = MultibandGeoTiff(byteReader)
       val raster: Raster[MultibandTile] = geotiff.raster
       val time = options.parseTime(geotiff.tags)
@@ -140,7 +140,7 @@ object RasterReader {
       (TemporalProjectedExtent(raster.extent, crs, time), raster.tile.toArrayTile())
     }
 
-    def readWindow(streamingByteReader: StreamingByteReader, pixelWindow: GridBounds[Int], options: Options) = {
+    def readWindow(streamingByteReader: StreamingByteReader, pixelWindow: GridBounds[Int], options: Options): (geotrellis.layer.TemporalProjectedExtent, ArrayMultibandTile) = {
       val geotiff = MultibandGeoTiff.streaming(streamingByteReader)
       val raster: Raster[MultibandTile] = geotiff.raster.crop(pixelWindow)
       val time = options.parseTime(geotiff.tags)

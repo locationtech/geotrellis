@@ -17,7 +17,7 @@
 package geotrellis.store.cassandra.conf
 
 import pureconfig.ConfigSource
-import pureconfig.generic.auto._
+import pureconfig.generic.auto.*
 
 case class CassandraConfig(
   port: Int = 9042,

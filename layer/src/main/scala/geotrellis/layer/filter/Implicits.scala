@@ -17,8 +17,8 @@
 package geotrellis.layer.filter
 
 import cats.Functor
-import geotrellis.layer._
-import geotrellis.util._
+import geotrellis.layer.*
+import geotrellis.util.*
 
 object Implicits extends Implicits
 

@@ -16,7 +16,7 @@
 
 package geotrellis.raster.hydrology
 
-import geotrellis.raster._
+import geotrellis.raster.*
 import geotrellis.raster.mapalgebra.focal.{CursorCalculation, DoubleArrayTileResult, IntArrayTileResult, Cursor}
 
 case class FillOptions(threshold: Double)

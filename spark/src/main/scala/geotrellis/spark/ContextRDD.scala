@@ -18,8 +18,8 @@ package geotrellis.spark
 
 import geotrellis.layer.Metadata
 
-import org.apache.spark._
-import org.apache.spark.rdd._
+import org.apache.spark.*
+import org.apache.spark.rdd.*
 
 object ContextRDD {
   def apply[K, V, M](rdd: RDD[(K, V)], metadata: M): RDD[(K, V)] with Metadata[M] =

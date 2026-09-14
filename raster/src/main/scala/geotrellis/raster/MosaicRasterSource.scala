@@ -16,13 +16,13 @@
 
 package geotrellis.raster
 
-import geotrellis.vector._
-import geotrellis.raster.resample._
+import geotrellis.vector.*
+import geotrellis.raster.resample.*
 import geotrellis.proj4.CRS
 import geotrellis.raster.io.geotiff.OverviewStrategy
 
 import cats.Semigroup
-import cats.implicits._
+import cats.implicits.*
 import cats.data.NonEmptyList
 import spire.math.Integral
 
@@ -42,9 +42,9 @@ abstract class MosaicRasterSource extends RasterSource {
   val crs: CRS
   def gridExtent: GridExtent[Long]
 
-  import MosaicRasterSource._
+  import MosaicRasterSource.*
 
-  val targetCellType = None
+  val targetCellType: None.type = None
 
   /**
     * The bandCount of the first [[RasterSource]] in sources

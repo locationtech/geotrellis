@@ -16,8 +16,8 @@
 
 package geotrellis.spark.store.hadoop
 
-import geotrellis.raster.io.geotiff._
-import geotrellis.raster.testkit._
+import geotrellis.raster.io.geotiff.*
+import geotrellis.raster.testkit.*
 import geotrellis.raster.{IntCellType, MultibandTile}
 import geotrellis.spark.store.hadoop
 import geotrellis.spark.testkit.TestEnvironment
@@ -28,7 +28,7 @@ import org.scalatest.BeforeAndAfterAll
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.funspec.AnyFunSpec
 
-import java.io._
+import java.io.*
 
 class HadoopRasterMethodsSpec extends AnyFunSpec with Matchers with BeforeAndAfterAll with RasterMatchers with TileBuilders with TestEnvironment {
 

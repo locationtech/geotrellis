@@ -16,11 +16,11 @@
 
 package geotrellis.store.hadoop.formats
 
-import geotrellis.store.hadoop.util._
+import geotrellis.store.hadoop.util.*
 
-import org.apache.hadoop.fs._
-import org.apache.hadoop.mapreduce._
-import org.apache.hadoop.mapreduce.lib.input._
+import org.apache.hadoop.fs.*
+import org.apache.hadoop.mapreduce.*
+import org.apache.hadoop.mapreduce.lib.input.*
 
 
 class BinaryFileRecordReader[K, V](read: Array[Byte] => (K, V)) extends RecordReader[K, V] {

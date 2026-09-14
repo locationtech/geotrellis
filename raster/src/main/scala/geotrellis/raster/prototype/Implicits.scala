@@ -16,7 +16,7 @@
 
 package geotrellis.raster.prototype
 
-import geotrellis.raster._
+import geotrellis.raster.*
 import cats.Monoid
 
 object Implicits extends Implicits

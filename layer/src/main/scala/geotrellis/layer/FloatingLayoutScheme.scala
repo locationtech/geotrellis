@@ -17,7 +17,7 @@
 package geotrellis.layer
 
 
-import geotrellis.raster._
+import geotrellis.raster.*
 import geotrellis.vector.Extent
 
 object FloatingLayoutScheme {
@@ -38,9 +38,9 @@ class FloatingLayoutScheme(val tileCols: Int, val tileRows: Int) extends LayoutS
     0 -> LayoutDefinition(GridExtent[Long](extent, cellSize), tileCols, tileRows)
 
   // TODO: Fix type system so that there is no runtime error
-  def zoomOut(level: LayoutLevel) =
+  def zoomOut(level: LayoutLevel): Nothing =
     throw new UnsupportedOperationException("zoomOut not supported for FloatingLayoutScheme")
 
-  def zoomIn(level: LayoutLevel) =
+  def zoomIn(level: LayoutLevel): Nothing =
     throw new UnsupportedOperationException("zoomIn not supported for FloatingLayoutScheme")
 }

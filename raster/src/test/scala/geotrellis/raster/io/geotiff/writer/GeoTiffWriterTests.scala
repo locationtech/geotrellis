@@ -16,11 +16,11 @@
 
 package geotrellis.raster.io.geotiff.writer
 
-import geotrellis.raster.io.geotiff._
-import geotrellis.raster.testkit._
-import geotrellis.util._
+import geotrellis.raster.io.geotiff.*
+import geotrellis.raster.testkit.*
+import geotrellis.util.*
 
-import java.io._
+import java.io.*
 
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.funsuite.AnyFunSuite

@@ -16,14 +16,14 @@
 
 package geotrellis.spark.store
 
-import geotrellis.proj4._
-import geotrellis.vector._
+import geotrellis.proj4.*
+import geotrellis.vector.*
 import geotrellis.vector.io.wkt.WKT
-import geotrellis.layer._
-import geotrellis.raster._
-import geotrellis.store._
-import geotrellis.spark.testkit.testfiles._
-import geotrellis.spark.testkit._
+import geotrellis.layer.*
+import geotrellis.raster.*
+import geotrellis.store.*
+import geotrellis.spark.testkit.testfiles.*
+import geotrellis.spark.testkit.*
 
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.funspec.AnyFunSpec

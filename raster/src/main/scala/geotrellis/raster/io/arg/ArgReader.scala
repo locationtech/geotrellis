@@ -16,8 +16,8 @@
 
 package geotrellis.raster.io.arg
 
-import geotrellis.raster._
-import geotrellis.raster.resample._
+import geotrellis.raster.*
+import geotrellis.raster.resample.*
 import geotrellis.vector.Extent
 import geotrellis.util.Filesystem
 

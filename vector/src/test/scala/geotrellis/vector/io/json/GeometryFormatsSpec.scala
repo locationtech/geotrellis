@@ -16,10 +16,10 @@
 
 package geotrellis.vector.io.json
 
-import io.circe.syntax._
-import cats.syntax.either._
+import io.circe.syntax.*
+import cats.syntax.either.*
 
-import geotrellis.vector._
+import geotrellis.vector.*
 
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.flatspec.AnyFlatSpec

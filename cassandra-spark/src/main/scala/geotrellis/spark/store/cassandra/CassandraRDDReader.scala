@@ -16,16 +16,16 @@
 
 package geotrellis.spark.store.cassandra
 
-import geotrellis.layer._
-import geotrellis.store._
-import geotrellis.store.cassandra._
+import geotrellis.layer.*
+import geotrellis.store.*
+import geotrellis.store.cassandra.*
 import geotrellis.store.avro.codecs.KeyValueRecordCodec
 import geotrellis.store.avro.{AvroEncoder, AvroRecordCodec}
 import geotrellis.store.index.{IndexRanges, MergeQueue}
 import geotrellis.store.util.{IORuntimeTransient, IOUtils}
 import geotrellis.spark.util.KryoWrapper
 
-import cats.effect._
+import cats.effect.*
 import com.datastax.oss.driver.api.querybuilder.QueryBuilder
 import com.datastax.oss.driver.api.querybuilder.QueryBuilder.literal
 import org.apache.avro.Schema
@@ -70,13 +70,13 @@ object CassandraRDDReader {
       .asCql()
 
     sc.parallelize(bins, bins.size)
-      .mapPartitions { partition: Iterator[Seq[(BigInt, BigInt)]] =>
+      .mapPartitions { (partition: Iterator[Seq[(BigInt, BigInt)]]) =>
         instance.withSession { session =>
           implicit val ioRuntime: unsafe.IORuntime = runtime
           val statement = session.prepare(query)
 
           val result = partition map { seq =>
-            IOUtils.parJoinIO[K, V](seq.iterator) { index: BigInt =>
+            IOUtils.parJoinIO[K, V](seq.iterator) { (index: BigInt) =>
               session.executeF[IO](statement.bind(index.asJava)).map { row =>
                 if (row.nonEmpty) {
                   val bytes = row.one().getByteBuffer("value").array()

@@ -17,13 +17,13 @@
 package geotrellis.store
 
 import geotrellis.layer.SpatialComponent
-import geotrellis.raster._
-import geotrellis.raster.resample._
-import geotrellis.store.avro._
+import geotrellis.raster.*
+import geotrellis.raster.resample.*
+import geotrellis.store.avro.*
 
 import _root_.io.circe.Decoder
 
-import scala.reflect._
+import scala.reflect.*
 import java.net.URI
 import java.util.ServiceLoader
 
@@ -45,7 +45,7 @@ trait ValueReader[ID] {
 object ValueReader {
 
   def apply(attributeStore: AttributeStore, valueReaderUri: URI): ValueReader[LayerId] = {
-    import scala.jdk.CollectionConverters._
+    import scala.jdk.CollectionConverters.*
     ServiceLoader.load(classOf[ValueReaderProvider])
       .iterator().asScala
       .find(_.canProcess(valueReaderUri))

@@ -16,7 +16,7 @@
 
 package geotrellis.spark.density
 
-import geotrellis.vector._
+import geotrellis.vector.*
 
 import org.apache.spark.rdd.RDD
 

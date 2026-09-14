@@ -16,8 +16,8 @@
 
 package geotrellis.layer
 
-import geotrellis.raster._
-import geotrellis.util._
+import geotrellis.raster.*
+import geotrellis.util.*
 
 abstract class CellGridLayoutCollectionMethods[K: SpatialComponent, V <: CellGrid[Int], M: GetComponent[*, LayoutDefinition]]
     extends MethodExtensions[Seq[(K, V)] with Metadata[M]] {

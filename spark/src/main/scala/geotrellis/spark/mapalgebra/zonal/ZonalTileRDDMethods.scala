@@ -16,11 +16,11 @@
 
 package geotrellis.spark.mapalgebra.zonal
 
-import geotrellis.raster._
+import geotrellis.raster.*
 import geotrellis.util.MethodExtensions
 
 import org.apache.spark.Partitioner
-import org.apache.spark.rdd._
+import org.apache.spark.rdd.*
 
 import scala.reflect.ClassTag
 

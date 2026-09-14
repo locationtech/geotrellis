@@ -16,18 +16,18 @@
 
 package geotrellis.spark.store.hbase
 
-import geotrellis.layer._
-import geotrellis.store._
-import geotrellis.store.avro._
-import geotrellis.store.hbase._
-import geotrellis.spark._
-import geotrellis.spark.store._
-import geotrellis.util._
+import geotrellis.layer.*
+import geotrellis.store.*
+import geotrellis.store.avro.*
+import geotrellis.store.hbase.*
+import geotrellis.spark.*
+import geotrellis.spark.store.*
+import geotrellis.util.*
 
 import org.apache.spark.SparkContext
-import io.circe._
+import io.circe.*
 
-import scala.reflect._
+import scala.reflect.*
 
 class HBaseLayerReader(val attributeStore: AttributeStore, instance: HBaseInstance)(implicit sc: SparkContext)
     extends FilteringLayerReader[LayerId] {
@@ -38,7 +38,7 @@ class HBaseLayerReader(val attributeStore: AttributeStore, instance: HBaseInstan
     K: AvroRecordCodec: Boundable: Decoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: Decoder: Component[*, Bounds[K]]
-  ](id: LayerId, tileQuery: LayerQuery[K, M], numPartitions: Int, filterIndexOnly: Boolean) = {
+  ](id: LayerId, tileQuery: LayerQuery[K, M], numPartitions: Int, filterIndexOnly: Boolean): ContextRDD[K, V, M] = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
 
     val LayerAttributes(header, metadata, keyIndex, writerSchema) = try {

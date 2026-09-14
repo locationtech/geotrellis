@@ -16,8 +16,8 @@
 
 package geotrellis.store
 
-import geotrellis.layer._
-import geotrellis.raster.geotiff._
+import geotrellis.layer.*
+import geotrellis.raster.geotiff.*
 import geotrellis.raster.{MultibandTile, Tile}
 
 import org.scalatest.funspec.AnyFunSpec

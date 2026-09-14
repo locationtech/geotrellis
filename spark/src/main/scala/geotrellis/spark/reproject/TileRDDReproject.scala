@@ -16,24 +16,24 @@
 
 package geotrellis.spark.reproject
 
-import geotrellis.proj4._
-import geotrellis.layer._
-import geotrellis.raster._
+import geotrellis.proj4.*
+import geotrellis.layer.*
+import geotrellis.raster.*
 import geotrellis.raster.buffer.{BufferSizes, BufferedTile}
-import geotrellis.raster.crop._
-import geotrellis.raster.merge._
-import geotrellis.raster.prototype._
+import geotrellis.raster.crop.*
+import geotrellis.raster.merge.*
+import geotrellis.raster.prototype.*
 import geotrellis.raster.reproject.{ReprojectRasterExtent, RasterRegionReproject}
-import geotrellis.raster.stitch._
-import geotrellis.spark._
+import geotrellis.raster.stitch.*
+import geotrellis.spark.*
 import geotrellis.spark.buffer.BufferTilesRDD
-import geotrellis.vector._
-import geotrellis.util._
+import geotrellis.vector.*
+import geotrellis.util.*
 
-import org.log4s._
+import org.log4s.*
 
-import org.apache.spark.rdd._
-import org.apache.spark._
+import org.apache.spark.rdd.*
+import org.apache.spark.*
 
 import scala.reflect.ClassTag
 
@@ -269,7 +269,7 @@ object TileRDDReproject {
         BufferTilesRDD(
           layer = rdd,
           includeKey = rdd.metadata.bounds.includes(_: K),
-          getBufferSizes = { key: K =>
+          getBufferSizes = { (key: K) =>
             val extent = key.getComponent[SpatialKey].extent(layout)
             val srcRE = RasterExtent(extent, tileLayout.tileCols, tileLayout.tileRows)
             val dstRE = ReprojectRasterExtent(srcRE, transform)
@@ -320,7 +320,7 @@ object TileRDDReproject {
     partitioner: Option[Partitioner]
   ): (Int, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]) =
     if(bufferSize == 0) {
-      val fakeBuffers: RDD[(K, BufferedTile[V])] = rdd.withContext(_.mapValues { tile: V => BufferedTile(tile, GridBounds(0, 0, tile.cols - 1, tile.rows - 1)) })
+      val fakeBuffers: RDD[(K, BufferedTile[V])] = rdd.withContext(_.mapValues { (tile: V) => BufferedTile(tile, GridBounds(0, 0, tile.cols - 1, tile.rows - 1)) })
       apply(fakeBuffers, rdd.metadata, destCrs, targetLayout, options, partitioner)
     } else
       apply(rdd.bufferTiles(bufferSize), rdd.metadata, destCrs, targetLayout, options, partitioner)
@@ -354,8 +354,8 @@ object TileRDDReproject {
     val chunks = bounds.split(512, 512).toVector
     sc.parallelize(chunks, chunks.length)
       .map { boundsChunk =>
-        import scala.concurrent._
-        import scala.concurrent.duration._
+        import scala.concurrent.*
+        import scala.concurrent.duration.*
         import ExecutionContext.Implicits.global
 
         val splitWork: Iterator[Future[ReprojectSummary]] =

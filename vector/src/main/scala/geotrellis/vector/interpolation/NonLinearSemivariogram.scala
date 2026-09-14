@@ -16,13 +16,13 @@
 
 package geotrellis.vector.interpolation
 
-import geotrellis.vector._
+import geotrellis.vector.*
 
 object NonLinearSemivariogram {
 
   /** Explicit [[Gaussian]] Semivariogram model */
   private def explicitGaussian(r: Double, s: Double, a: Double): Double => Double = {
-    h: Double => {
+    (h: Double) => {
       if (h == 0) 0
       else
         a + (s - a) * (1 - math.exp(- math.pow(h, 2) / math.pow(r, 2)))
@@ -40,7 +40,7 @@ object NonLinearSemivariogram {
     * to the explicit models
     */
   private def jacobianGaussian(variables: Array[Double]): Double => Array[Double] = {
-    x: Double => {
+    (x: Double) => {
       if (x == 0)
         Array.fill[Double](3)(0)
       else {
@@ -55,7 +55,7 @@ object NonLinearSemivariogram {
   }
 
   private def jacobianGaussianNugget(variables: Array[Double]): Double => Array[Double] = {
-    x: Double => {
+    (x: Double) => {
       if (x == 0)
         Array.fill[Double](2)(0)
       else {
@@ -69,7 +69,7 @@ object NonLinearSemivariogram {
 
   /** Explicit [[Circular]] Semivariogram model */
   private def explicitCircular(r: Double, s: Double, a: Double): Double => Double = {
-    h: Double => {
+    (h: Double) => {
       if (h == 0) 0
       else if (h > r)
         s
@@ -95,7 +95,7 @@ object NonLinearSemivariogram {
     * to the explicit models
     */
   private def jacobianCircular(variables: Array[Double]): Double => Array[Double] = {
-    x: Double => {
+    (x: Double) => {
       if (x == 0)
         Array.fill[Double](3)(0)
       else {
@@ -109,7 +109,7 @@ object NonLinearSemivariogram {
   }
 
   private def jacobianCircularNugget(variables: Array[Double]): Double => Array[Double] = {
-    x: Double => {
+    (x: Double) => {
       if (x == 0)
         Array.fill[Double](2)(0)
       else {
@@ -123,7 +123,7 @@ object NonLinearSemivariogram {
 
   /** Explicit [[Spherical]] Semivariogram model */
   private def explicitSpherical(r: Double, s: Double, a: Double): Double => Double = {
-    h: Double => {
+    (h: Double) => {
       if (h == 0) 0
       else if (h > r) s
       else
@@ -144,7 +144,7 @@ object NonLinearSemivariogram {
     * to the explicit models
     */
   private def jacobianSpherical(variables: Array[Double]): Double => Array[Double] = {
-    x: Double => {
+    (x: Double) => {
       if (x == 0)
         Array.fill[Double](3)(0)
       else if (x > 0 && x <= variables(0)) {
@@ -160,7 +160,7 @@ object NonLinearSemivariogram {
   }
 
   private def jacobianSphericalNugget(variables: Array[Double]): Double => Array[Double] = {
-    x: Double => {
+    (x: Double) => {
       if (x == 0)
         Array.fill[Double](2)(0)
       else if (x>0 && x<=variables(0)) {
@@ -176,7 +176,7 @@ object NonLinearSemivariogram {
 
   /** Explicit [[Exponential]] Semivariogram model */
   private def explicitExponential(r: Double, s: Double, a: Double): Double => Double = {
-    h: Double => {
+    (h: Double) => {
       if (h == 0) 0
       else
         a + (s - a) * (1 - math.exp(- 3 * h / r))
@@ -194,7 +194,7 @@ object NonLinearSemivariogram {
     * to the explicit models
     */
   private def jacobianExponential(variables: Array[Double]): Double => Array[Double] = {
-    x: Double => {
+    (x: Double) => {
       if (x == 0)
         Array.fill[Double](3)(0)
       else {
@@ -208,7 +208,7 @@ object NonLinearSemivariogram {
   }
 
   private def jacobianExponentialNugget(variables: Array[Double]): Double => Array[Double] = {
-    x: Double => {
+    (x: Double) => {
       if (x == 0)
         Array.fill[Double](2)(0)
       else {
@@ -222,7 +222,7 @@ object NonLinearSemivariogram {
 
   /** Explicit [[Wave]] Semivariogram model */
   private def explicitWave(w: Double, s: Double, a: Double): Double => Double = {
-    h: Double => {
+    (h: Double) => {
       if (h == 0) 0
       else
         a + (s - a) * (1 - w * math.sin(h / w) / h)
@@ -242,7 +242,7 @@ object NonLinearSemivariogram {
     * to the explicit models
     */
   private def jacobianWave(variables: Array[Double]): Double => Array[Double] = {
-    x: Double => {
+    (x: Double) => {
       if (x == 0)
         Array.fill[Double](3)(0)
       else {
@@ -256,7 +256,7 @@ object NonLinearSemivariogram {
   }
 
   private def jacobianWaveNugget(variables: Array[Double]): Double => Array[Double] = {
-    x: Double => {
+    (x: Double) => {
       if (x == 0)
         Array.fill[Double](2)(0)
       else {

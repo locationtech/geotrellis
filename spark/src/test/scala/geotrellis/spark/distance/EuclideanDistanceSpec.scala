@@ -16,22 +16,22 @@
 
 package geotrellis.spark.distance
 
-import geotrellis.proj4._
-import geotrellis.layer._
-import geotrellis.raster._
+import geotrellis.proj4.*
+import geotrellis.layer.*
+import geotrellis.raster.*
 import geotrellis.raster.buffer.Direction
-import geotrellis.raster.buffer.Direction._
-import geotrellis.raster.distance.{EuclideanDistanceTile => RasterEuclideanDistance}
-import geotrellis.raster.testkit._
-import geotrellis.spark._
-import geotrellis.spark.testkit._
-import geotrellis.vector._
-import geotrellis.vector.triangulation._
+import geotrellis.raster.buffer.Direction.*
+import geotrellis.raster.distance.{EuclideanDistanceTile as RasterEuclideanDistance}
+import geotrellis.raster.testkit.*
+import geotrellis.spark.*
+import geotrellis.spark.testkit.*
+import geotrellis.vector.*
+import geotrellis.vector.triangulation.*
 import geotrellis.vector.io.wkt.WKT
 
 import org.locationtech.jts.geom.Coordinate
 import org.apache.spark.rdd.RDD
-import spire.syntax.cfor._
+import spire.syntax.cfor.*
 
 import scala.util.Random
 import scala.math.{Pi, atan, cos, max, pow, sin}

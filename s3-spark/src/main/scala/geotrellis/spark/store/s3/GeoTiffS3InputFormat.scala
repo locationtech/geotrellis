@@ -17,14 +17,14 @@
 package geotrellis.spark.store.s3
 
 import geotrellis.proj4.CRS
-import geotrellis.raster._
-import geotrellis.raster.io.geotiff._
-import geotrellis.store.hadoop._
-import geotrellis.vector._
+import geotrellis.raster.*
+import geotrellis.raster.io.geotiff.*
+import geotrellis.store.hadoop.*
+import geotrellis.vector.*
 
 import software.amazon.awssdk.services.s3.S3Client
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.mapreduce._
+import org.apache.hadoop.mapreduce.*
 
 @deprecated("GeoTiffS3InputFormat is deprecated, use S3GeoTiffRDD instead", "1.0.0")
 object GeoTiffS3InputFormat {
@@ -43,7 +43,7 @@ object GeoTiffS3InputFormat {
 /** Read single band GeoTiff from S3 */
 @deprecated("GeoTiffS3InputFormat is deprecated, use S3GeoTiffRDD instead", "1.0.0")
 class GeoTiffS3InputFormat extends S3InputFormat[ProjectedExtent, Tile] {
-  def createRecordReader(split: InputSplit, context: TaskAttemptContext) =
+  def createRecordReader(split: InputSplit, context: TaskAttemptContext): GeoTiffS3RecordReader =
     new GeoTiffS3RecordReader(getS3Client(context), context)
 }
 

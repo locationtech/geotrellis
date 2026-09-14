@@ -16,7 +16,7 @@
 
 package geotrellis.raster.density
 
-import geotrellis.vector._
+import geotrellis.vector.*
 
 object Implicits extends Implicits
 

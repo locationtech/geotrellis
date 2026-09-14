@@ -16,16 +16,16 @@
 
 package geotrellis.spark.store.cassandra
 
-import geotrellis.layer._
-import geotrellis.store._
-import geotrellis.store.avro._
-import geotrellis.store.cassandra._
-import geotrellis.store.index._
-import geotrellis.spark.store._
-import geotrellis.util._
+import geotrellis.layer.*
+import geotrellis.store.*
+import geotrellis.store.avro.*
+import geotrellis.store.cassandra.*
+import geotrellis.store.index.*
+import geotrellis.spark.store.*
+import geotrellis.util.*
 
 import org.apache.spark.SparkContext
-import io.circe._
+import io.circe.*
 
 import java.time.ZonedDateTime
 import scala.reflect.ClassTag

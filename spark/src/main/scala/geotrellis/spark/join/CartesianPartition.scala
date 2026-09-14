@@ -10,8 +10,8 @@ import scala.util.control.NonFatal
 // https://github.com/apache/spark/blob/686d84453610e463df7df95395ce6ed36a6efacd/core/src/main/scala/org/apache/spark/rdd/CartesianRDD.scala#L29
 private[join] class CartesianPartition(
   idx: Int,
-  @transient private val rdd1: RDD[_],
-  @transient private val rdd2: RDD[_],
+  @transient private val rdd1: RDD[?],
+  @transient private val rdd2: RDD[?],
   s1Index: Int,
   s2Index: Int
 ) extends Partition {

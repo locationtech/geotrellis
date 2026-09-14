@@ -16,13 +16,13 @@
 
 package geotrellis.vector.check.jts
 
-import org.locationtech.jts.geom._
+import org.locationtech.jts.geom.*
 
-import org.scalacheck._
-import Prop._
+import org.scalacheck.*
+import Prop.*
 
 object PolygonCheck extends Properties("Polygon") {
-  import Generators._
+  import Generators.*
 
   property("union[polygon] => (Polygon,Multipolygon)") = forAll { (p1:Polygon,p2:Polygon) =>
     p1.union(p2) match {

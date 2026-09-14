@@ -18,19 +18,19 @@ package geotrellis.spark.store.s3.cog
 
 import geotrellis.raster.CellGrid
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
-import geotrellis.layer._
-import geotrellis.store._
-import geotrellis.store.util._
-import geotrellis.store.cog._
-import geotrellis.store.index._
-import geotrellis.store.s3._
-import geotrellis.spark.store.cog._
+import geotrellis.layer.*
+import geotrellis.store.*
+import geotrellis.store.util.*
+import geotrellis.store.cog.*
+import geotrellis.store.index.*
+import geotrellis.store.s3.*
+import geotrellis.spark.store.cog.*
 
 import org.apache.spark.SparkContext
-import software.amazon.awssdk.services.s3._
-import software.amazon.awssdk.services.s3.model._
-import io.circe._
-import cats.effect._
+import software.amazon.awssdk.services.s3.*
+import software.amazon.awssdk.services.s3.model.*
+import io.circe.*
+import cats.effect.*
 
 import scala.reflect.ClassTag
 import java.net.URI

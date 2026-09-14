@@ -16,11 +16,11 @@
 
 package geotrellis.spark.store.s3
 
-import geotrellis.store._
-import geotrellis.store.s3._
-import geotrellis.spark.store._
+import geotrellis.store.*
+import geotrellis.store.s3.*
+import geotrellis.spark.store.*
 
-import org.apache.spark._
+import org.apache.spark.*
 
 import java.net.URI
 

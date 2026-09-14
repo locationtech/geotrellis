@@ -16,7 +16,7 @@
 
 package geotrellis.vectortile
 
-import geotrellis.vectortile.internal.PBTile._
+import geotrellis.vectortile.internal.PBTile.*
 
 // --- //
 

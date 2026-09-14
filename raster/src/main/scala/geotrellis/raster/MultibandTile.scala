@@ -16,8 +16,8 @@
 
 package geotrellis.raster
 
-import geotrellis.macros._
-import spire.syntax.cfor._
+import geotrellis.macros.*
+import spire.syntax.cfor.*
 
 object MultibandTile {
   /**

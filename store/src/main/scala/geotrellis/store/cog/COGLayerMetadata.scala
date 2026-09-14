@@ -18,15 +18,15 @@ package geotrellis.store.cog
 
 import geotrellis.proj4.CRS
 import geotrellis.vector.Extent
-import geotrellis.raster._
-import geotrellis.layer._
-import geotrellis.util._
+import geotrellis.raster.*
+import geotrellis.layer.*
+import geotrellis.util.*
 
-import cats.instances.either._
-import cats.instances.stream._
-import cats.syntax.foldable._
-import _root_.io.circe._
-import _root_.io.circe.generic.semiauto._
+import cats.instances.either.*
+import cats.instances.stream.*
+import cats.syntax.foldable.*
+import _root_.io.circe.*
+import _root_.io.circe.generic.semiauto.*
 
 import scala.reflect.ClassTag
 

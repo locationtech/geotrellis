@@ -16,8 +16,8 @@
 
 package geotrellis.raster.io.geotiff.compression
 
-import io.circe._
-import io.circe.syntax._
+import io.circe.*
+import io.circe.syntax.*
 
 trait Compression extends Serializable {
   def createCompressor(segmentCount: Int): Compressor

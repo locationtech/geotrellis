@@ -17,16 +17,16 @@
 package geotrellis.spark.store.hadoop
 
 import geotrellis.layer.{Boundable, KeyBounds}
-import geotrellis.store.avro._
-import geotrellis.store.avro.codecs._
-import geotrellis.store.hadoop._
+import geotrellis.store.avro.*
+import geotrellis.store.avro.codecs.*
+import geotrellis.store.hadoop.*
 import geotrellis.store.hadoop.formats.FilterMapFileInputFormat
 import geotrellis.spark.util.KryoWrapper
 
-import org.log4s._
+import org.log4s.*
 
 import org.apache.avro.Schema
-import org.apache.hadoop.io._
+import org.apache.hadoop.io.*
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat
 import org.apache.spark.SparkContext

@@ -19,7 +19,7 @@ package geotrellis.util
 import java.net.{URI, URL}
 
 import scalaj.http.Http
-import org.log4s._
+import org.log4s.*
 
 import scala.util.Try
 

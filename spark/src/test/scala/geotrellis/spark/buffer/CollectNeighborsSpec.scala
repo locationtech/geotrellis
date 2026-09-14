@@ -16,11 +16,11 @@
 
 package geotrellis.spark.buffer
 
-import geotrellis.layer._
+import geotrellis.layer.*
 import geotrellis.raster.buffer.Direction
-import geotrellis.raster.buffer.Direction._
-import geotrellis.spark._
-import geotrellis.spark.testkit._
+import geotrellis.raster.buffer.Direction.*
+import geotrellis.spark.*
+import geotrellis.spark.testkit.*
 
 import org.scalatest.funspec.AnyFunSpec
 

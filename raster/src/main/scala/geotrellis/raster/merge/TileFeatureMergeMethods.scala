@@ -16,12 +16,12 @@
 
 package geotrellis.raster.merge
 
-import geotrellis.raster._
-import geotrellis.raster.resample._
-import geotrellis.vector._
+import geotrellis.raster.*
+import geotrellis.raster.resample.*
+import geotrellis.vector.*
 
 import cats.Semigroup
-import cats.syntax.semigroup._ 
+import cats.syntax.semigroup.* 
 
 
 abstract class TileFeatureMergeMethods[

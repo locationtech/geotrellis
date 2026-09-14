@@ -19,11 +19,11 @@ package geotrellis.store
 import geotrellis.store.hadoop.conf.AttributeConfig
 
 import com.github.blemale.scaffeine.Scaffeine
-import io.circe._
-import io.circe.syntax._
-import cats.syntax.either._
+import io.circe.*
+import io.circe.syntax.*
+import cats.syntax.either.*
 
-import scala.concurrent.duration._
+import scala.concurrent.duration.*
 
 trait AttributeCaching { self: AttributeStore =>
   @transient private lazy val cache =

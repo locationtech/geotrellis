@@ -16,11 +16,11 @@
 
 package geotrellis.spark.store.cog
 
-import geotrellis.raster._
-import geotrellis.raster.io.geotiff._
+import geotrellis.raster.*
+import geotrellis.raster.io.geotiff.*
 import geotrellis.layer.SpatialComponent
 import geotrellis.store.index.KeyIndex
-import geotrellis.util._
+import geotrellis.util.*
 
 import org.apache.spark.rdd.RDD
 

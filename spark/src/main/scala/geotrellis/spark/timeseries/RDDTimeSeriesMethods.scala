@@ -16,12 +16,12 @@
 
 package geotrellis.spark.timeseries
 
-import geotrellis.vector._
+import geotrellis.vector.*
 import geotrellis.layer.mask.Mask.Options
 import geotrellis.layer.SpaceTimeKey
-import geotrellis.raster._
+import geotrellis.raster.*
 import geotrellis.raster.summary.types.MeanValue
-import geotrellis.spark._
+import geotrellis.spark.*
 import geotrellis.util.annotations.experimental
 import geotrellis.util.MethodExtensions
 

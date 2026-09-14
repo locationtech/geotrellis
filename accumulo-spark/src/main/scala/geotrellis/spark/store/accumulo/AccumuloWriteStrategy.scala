@@ -16,9 +16,9 @@
 
 package geotrellis.spark.store.accumulo
 
-import geotrellis.store.accumulo._
-import geotrellis.store.hadoop.util._
-import geotrellis.spark.util._
+import geotrellis.store.accumulo.*
+import geotrellis.store.hadoop.util.*
+import geotrellis.spark.util.*
 import geotrellis.store.util.IORuntimeTransient
 
 import org.apache.hadoop.mapreduce.Job
@@ -28,8 +28,8 @@ import org.apache.accumulo.core.data.{Key, Mutation, Value}
 import org.apache.accumulo.hadoop.mapreduce.AccumuloFileOutputFormat
 import org.apache.accumulo.core.client.BatchWriterConfig
 
-import cats.effect._
-import cats.syntax.either._
+import cats.effect.*
+import cats.syntax.either.*
 
 import java.util.UUID
 
@@ -123,7 +123,7 @@ class SocketWriteStrategy(
             }, chunkSize = 1
           )
 
-          val write = { mutation: Mutation => fs2.Stream eval IO.blocking { writer.addMutation(mutation) } }
+          val write = { (mutation: Mutation) => fs2.Stream eval IO.blocking { writer.addMutation(mutation) } }
 
           (mutations map write)
             .parJoinUnbounded

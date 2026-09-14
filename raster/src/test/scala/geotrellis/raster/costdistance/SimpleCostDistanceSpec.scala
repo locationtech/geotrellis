@@ -16,8 +16,8 @@
 
 package geotrellis.raster.costdistance
 
-import geotrellis.raster._
-import geotrellis.raster.testkit._
+import geotrellis.raster.*
+import geotrellis.raster.testkit.*
 
 import java.util.Locale
 import scala.language.implicitConversions

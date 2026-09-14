@@ -17,20 +17,20 @@
 package geotrellis.spark.store.cog
 
 import geotrellis.proj4.LatLng
-import geotrellis.vector._
-import geotrellis.layer._
-import geotrellis.store._
-import geotrellis.store.cog._
-import geotrellis.raster._
-import geotrellis.raster.testkit._
+import geotrellis.vector.*
+import geotrellis.layer.*
+import geotrellis.store.*
+import geotrellis.store.cog.*
+import geotrellis.raster.*
+import geotrellis.raster.testkit.*
 import geotrellis.raster.io.geotiff.GeoTiff
-import geotrellis.spark._
-import geotrellis.spark.testkit._
-import geotrellis.spark.testkit.io._
-import geotrellis.spark.testkit.io.cog._
-import geotrellis.util._
+import geotrellis.spark.*
+import geotrellis.spark.testkit.*
+import geotrellis.spark.testkit.io.*
+import geotrellis.spark.testkit.io.cog.*
+import geotrellis.util.*
 
-import java.time._
+import java.time.*
 
 
 trait COGLayerUpdateSpaceTimeTileSpec

@@ -16,11 +16,11 @@
 
 package geotrellis.raster.summary.polygonal
 
-import geotrellis.raster._
+import geotrellis.raster.*
 import geotrellis.raster.summary.polygonal.visitors.SumVisitor
 import geotrellis.raster.summary.types.SumValue
-import geotrellis.raster.testkit._
-import geotrellis.vector._
+import geotrellis.raster.testkit.*
+import geotrellis.vector.*
 
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.funspec.AnyFunSpec

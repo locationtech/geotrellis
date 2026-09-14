@@ -16,13 +16,13 @@
 
 package geotrellis.vector.methods
 
-import geotrellis.vector._
+import geotrellis.vector.*
 import geotrellis.util.MethodExtensions
 import org.locationtech.jts.geom.CoordinateSequence
-import org.locationtech.jts.operation.union._
-import spire.syntax.cfor._
+import org.locationtech.jts.operation.union.*
+import spire.syntax.cfor.*
 
-import scala.jdk.CollectionConverters._
+import scala.jdk.CollectionConverters.*
 
 trait ExtraPolygonMethods extends MethodExtensions[Polygon] {
   def exterior: LineString =

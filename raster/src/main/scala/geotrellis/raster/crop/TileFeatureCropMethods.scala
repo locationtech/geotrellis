@@ -16,8 +16,8 @@
 
 package geotrellis.raster.crop
 
-import geotrellis.raster._
-import geotrellis.vector._
+import geotrellis.raster.*
+import geotrellis.vector.*
 
 
 abstract class TileFeatureCropMethods[

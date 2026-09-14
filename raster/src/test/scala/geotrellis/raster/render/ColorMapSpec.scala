@@ -16,13 +16,13 @@
 
 package geotrellis.raster.render
 
-import geotrellis.raster._
+import geotrellis.raster.*
 import geotrellis.raster.render.png.IndexedPngEncoding
-import geotrellis.raster.testkit._
+import geotrellis.raster.testkit.*
 
-import java.io._
+import java.io.*
 import java.awt.Color
-import javax.imageio._
+import javax.imageio.*
 
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.funspec.AnyFunSpec

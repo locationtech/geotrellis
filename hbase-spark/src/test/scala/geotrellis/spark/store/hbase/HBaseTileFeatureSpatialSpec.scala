@@ -16,14 +16,14 @@
 
 package geotrellis.spark.store.hbase
 
-import geotrellis.store.hbase._
+import geotrellis.store.hbase.*
 import geotrellis.raster.{Tile, TileFeature}
-import geotrellis.layer._
+import geotrellis.layer.*
 import geotrellis.spark.HBaseTestEnvironment
-import geotrellis.spark._
-import geotrellis.spark.store._
-import geotrellis.spark.store._
-import geotrellis.spark.testkit.io._
+import geotrellis.spark.*
+import geotrellis.spark.store.*
+import geotrellis.spark.store.*
+import geotrellis.spark.testkit.io.*
 import geotrellis.spark.testkit.testfiles.TestTileFeatureFiles
 
 class HBaseTileFeatureSpatialSpec
@@ -45,13 +45,13 @@ class HBaseTileFeatureSpatialSpec
   lazy val instance       = HBaseInstance(Seq("localhost"), "localhost")
   lazy val attributeStore = HBaseAttributeStore(instance)
 
-  lazy val reader    = HBaseLayerReader(attributeStore)
-  lazy val creader   = HBaseCollectionLayerReader(attributeStore)
-  lazy val writer    = HBaseLayerWriter(attributeStore, "tiles")
-  lazy val deleter   = HBaseLayerDeleter(attributeStore)
-  lazy val tiles     = HBaseValueReader(attributeStore)
-  lazy val sample    = AllOnesTestFile
-  lazy val copier    = HBaseLayerCopier(attributeStore, reader, writer)
+  lazy val reader: HBaseLayerReader = HBaseLayerReader(attributeStore)
+  lazy val creader: HBaseCollectionLayerReader = HBaseCollectionLayerReader(attributeStore)
+  lazy val writer: HBaseLayerWriter = HBaseLayerWriter(attributeStore, "tiles")
+  lazy val deleter: HBaseLayerDeleter = HBaseLayerDeleter(attributeStore)
+  lazy val tiles: HBaseValueReader = HBaseValueReader(attributeStore)
+  lazy val sample: AllOnesTestFile.type = AllOnesTestFile
+  lazy val copier: HBaseLayerCopier = HBaseLayerCopier(attributeStore, reader, writer)
   lazy val reindexer = HBaseLayerReindexer(attributeStore, reader, writer, deleter, copier)
   lazy val mover     = HBaseLayerMover(copier, deleter)
 }

@@ -63,7 +63,7 @@ abstract class FloatArrayTile(val array: Array[Float], cols: Int, rows: Int)
   */
 final case class FloatRawArrayTile(arr: Array[Float], val cols: Int, val rows: Int)
     extends FloatArrayTile(arr, cols, rows) {
-  val cellType = FloatCellType
+  val cellType: FloatCellType.type = FloatCellType
   /**
     * Fetch the datum at the given index in the array.
     *
@@ -103,7 +103,7 @@ final case class FloatRawArrayTile(arr: Array[Float], val cols: Int, val rows: I
   */
 final case class FloatConstantNoDataArrayTile(arr: Array[Float], val cols: Int, val rows: Int)
     extends FloatArrayTile(arr, cols, rows) {
-  val cellType = FloatConstantNoDataCellType
+  val cellType: FloatConstantNoDataCellType.type = FloatConstantNoDataCellType
 
   /**
     * Fetch the datum at the given index in the array.

@@ -17,14 +17,14 @@
 package geotrellis.spark.store.hadoop.formats
 
 import geotrellis.proj4.CRS
-import geotrellis.vector._
-import geotrellis.raster._
-import geotrellis.raster.io.geotiff._
-import geotrellis.store.hadoop._
+import geotrellis.vector.*
+import geotrellis.raster.*
+import geotrellis.raster.io.geotiff.*
+import geotrellis.store.hadoop.*
 import geotrellis.store.hadoop.formats.BinaryFileInputFormat
 
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.mapreduce._
+import org.apache.hadoop.mapreduce.*
 
 @deprecated("GeoTiffInputFormat is deprecated, use HadoopGeoTiffRDD instead", "1.0.0")
 object GeoTiffInputFormat {

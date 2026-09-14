@@ -16,9 +16,9 @@
 
 package geotrellis.spark.store.cassandra
 
-import geotrellis.store._
-import geotrellis.store.cassandra._
-import geotrellis.spark.store._
+import geotrellis.store.*
+import geotrellis.store.cassandra.*
+import geotrellis.spark.store.*
 import geotrellis.spark.CassandraTestEnvironment
 
 import org.scalatest.funspec.AnyFunSpec

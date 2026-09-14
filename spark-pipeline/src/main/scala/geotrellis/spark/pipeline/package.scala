@@ -20,8 +20,8 @@ import geotrellis.proj4.CRS
 import geotrellis.spark.pipeline.ast.Node
 import geotrellis.spark.pipeline.json.PipelineExpr
 
-import _root_.io.circe._
-import _root_.io.circe.syntax._
+import _root_.io.circe.*
+import _root_.io.circe.syntax.*
 import cats.Monoid
 
 import scala.util.Try
@@ -35,7 +35,7 @@ package object pipeline extends json.Implicits with ast.untyped.Implicits {
     def map[B](f: PipelineExpr => B): List[B] = list.map(f)
   }
 
-  implicit class withPipelinePrettyPrint(that: Node[_]) {
+  implicit class withPipelinePrettyPrint(that: Node[?]) {
     def prettyPrint: String = that.asJson.asJson.printWith(pipelineJsonPrinter)
   }
 

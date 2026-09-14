@@ -16,8 +16,8 @@
 
 package geotrellis.raster.regiongroup
 
-import geotrellis.raster._
-import geotrellis.raster.testkit._
+import geotrellis.raster.*
+import geotrellis.raster.testkit.*
 
 import scala.collection.mutable
 

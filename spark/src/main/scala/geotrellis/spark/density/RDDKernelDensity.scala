@@ -16,14 +16,14 @@
 
 package geotrellis.spark.density
 
-import geotrellis.proj4._
-import geotrellis.raster._
-import geotrellis.raster.density._
-import geotrellis.raster.mapalgebra.focal._
-import geotrellis.raster.mapalgebra.local._
-import geotrellis.layer._
-import geotrellis.spark._
-import geotrellis.vector._
+import geotrellis.proj4.*
+import geotrellis.raster.*
+import geotrellis.raster.density.*
+import geotrellis.raster.mapalgebra.focal.*
+import geotrellis.raster.mapalgebra.local.*
+import geotrellis.layer.*
+import geotrellis.spark.*
+import geotrellis.vector.*
 import org.apache.spark.rdd.RDD
 
 object RDDKernelDensity {
@@ -163,7 +163,7 @@ object RDDKernelDensity {
           }
         }, preservesPartitioning = true)
         .aggregateByKey(ArrayTile.empty(cellType, ld.tileCols, ld.tileRows))(stampPointFeature, sumTiles)
-        .mapValues{ tile: MutableArrayTile => tile.asInstanceOf[Tile] }
+        .mapValues{ (tile: MutableArrayTile) => tile.asInstanceOf[Tile] }
 
     val metadata = TileLayerMetadata(DoubleCellType,
                                      ld,

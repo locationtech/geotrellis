@@ -16,14 +16,14 @@
 
 package geotrellis.spark.testkit
 
-import geotrellis.proj4._
-import geotrellis.vector._
-import geotrellis.raster._
-import geotrellis.layer._
-import geotrellis.spark._
-import org.apache.spark._
+import geotrellis.proj4.*
+import geotrellis.vector.*
+import geotrellis.raster.*
+import geotrellis.layer.*
+import geotrellis.spark.*
+import org.apache.spark.*
 import org.apache.spark.rdd.RDD
-import jp.ne.opt.chronoscala.Imports._
+import jp.ne.opt.chronoscala.Imports.*
 import java.time.ZonedDateTime
 
 import scala.collection.mutable

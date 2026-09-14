@@ -16,15 +16,15 @@
 
 package geotrellis.store.accumulo
 
-import geotrellis.store._
+import geotrellis.store.*
 
-import org.log4s._
+import org.log4s.*
 
 import org.apache.accumulo.core.client.{AccumuloClient, BatchWriterConfig}
 import org.apache.accumulo.core.security.Authorizations
-import org.apache.accumulo.core.data.{Range => AccumuloRange}
+import org.apache.accumulo.core.data.{Range as AccumuloRange}
 
-import scala.jdk.CollectionConverters._
+import scala.jdk.CollectionConverters.*
 
 class AccumuloLayerDeleter(val attributeStore: AttributeStore, client: AccumuloClient) extends LayerDeleter[LayerId] {
   @transient private[this] lazy val logger = getLogger

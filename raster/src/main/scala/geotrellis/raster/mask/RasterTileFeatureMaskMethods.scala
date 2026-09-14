@@ -16,10 +16,10 @@
 
 package geotrellis.raster.mask
 
-import geotrellis.raster._
-import geotrellis.raster.rasterize._
+import geotrellis.raster.*
+import geotrellis.raster.rasterize.*
 import geotrellis.util.MethodExtensions
-import geotrellis.vector._
+import geotrellis.vector.*
 
 
 abstract class RasterTileFeatureMaskMethods[

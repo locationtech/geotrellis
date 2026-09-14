@@ -16,9 +16,9 @@
 
 package geotrellis.vector
 
-import org.locationtech.jts.{geom => jts}
+import org.locationtech.jts.{geom as jts}
 
-import geotrellis.vector.GeomFactory._
+import geotrellis.vector.GeomFactory.*
 
 trait PolygonConstructors {
   def apply(exterior: Point*)(implicit d: DummyImplicit): Polygon =

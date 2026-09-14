@@ -17,9 +17,9 @@
 package geotrellis.vector
 
 import org.locationtech.jts.geom.Coordinate
-import org.apache.commons.math3.linear._
+import org.apache.commons.math3.linear.*
 
-import geotrellis.util.Constants.{DOUBLE_EPSILON => EPSILON}
+import geotrellis.util.Constants.{DOUBLE_EPSILON as EPSILON}
 
 /** Provides a set of numerically-sound geometric predicates.
  */

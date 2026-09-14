@@ -16,20 +16,20 @@
 
 package geotrellis.spark.rasterize
 
-import geotrellis.raster._
+import geotrellis.raster.*
 import geotrellis.raster.rasterize.Rasterizer
-import geotrellis.layer._
-import geotrellis.spark._
-import geotrellis.spark.testkit._
+import geotrellis.layer.*
+import geotrellis.spark.*
+import geotrellis.spark.testkit.*
 import geotrellis.spark.testkit.TestEnvironment
-import geotrellis.vector._
+import geotrellis.vector.*
 import geotrellis.vector.io.wkt.WKT
-import geotrellis.vector.io.json._
+import geotrellis.vector.io.json.*
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
-import org.apache.spark._
+import org.apache.spark.*
 
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.funspec.AnyFunSpec

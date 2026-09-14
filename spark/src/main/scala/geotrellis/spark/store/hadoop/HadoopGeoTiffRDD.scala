@@ -16,15 +16,15 @@
 
 package geotrellis.spark.store.hadoop
 
-import geotrellis.proj4._
-import geotrellis.vector._
-import geotrellis.layer._
-import geotrellis.raster._
-import geotrellis.store.hadoop._
+import geotrellis.proj4.*
+import geotrellis.vector.*
+import geotrellis.layer.*
+import geotrellis.raster.*
+import geotrellis.store.hadoop.*
 import geotrellis.store.hadoop.formats.BytesFileInputFormat
 import geotrellis.spark.store.RasterReader
 
-import org.log4s._
+import org.log4s.*
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path

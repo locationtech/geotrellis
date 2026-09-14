@@ -18,9 +18,9 @@ package geotrellis.raster.costdistance
 
 import java.util.{BitSet, PriorityQueue}
 
-import geotrellis.raster._
-import geotrellis.vector._
-import spire.syntax.cfor._
+import geotrellis.raster.*
+import geotrellis.vector.*
+import spire.syntax.cfor.*
 
 import scala.collection.mutable.ArrayBuffer
 

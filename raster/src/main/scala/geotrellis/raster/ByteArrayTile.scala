@@ -64,7 +64,7 @@ abstract class ByteArrayTile(val array: Array[Byte], cols: Int, rows: Int)
   */
 final case class ByteRawArrayTile(arr: Array[Byte], val cols: Int, val rows: Int)
     extends ByteArrayTile(arr, cols, rows) {
-  val cellType = ByteCellType
+  val cellType: ByteCellType.type = ByteCellType
 
   /**
     * Get the datum at the specified index.
@@ -109,7 +109,7 @@ final case class ByteRawArrayTile(arr: Array[Byte], val cols: Int, val rows: Int
   */
 final case class ByteConstantNoDataArrayTile(arr: Array[Byte], val cols: Int, val rows: Int)
     extends ByteArrayTile(arr, cols, rows) {
-  val cellType = ByteConstantNoDataCellType
+  val cellType: ByteConstantNoDataCellType.type = ByteConstantNoDataCellType
 
   /**
     * Get the datum at the specified index.

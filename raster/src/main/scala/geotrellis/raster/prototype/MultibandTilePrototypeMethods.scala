@@ -16,7 +16,7 @@
 
 package geotrellis.raster.prototype
 
-import geotrellis.raster._
+import geotrellis.raster.*
 
 
 /**
@@ -29,7 +29,7 @@ trait MultibandTilePrototypeMethods extends TilePrototypeMethods[MultibandTile] 
     * new [[ArrayMultibandTile]] of the given size and the same band
     * count as the calling object.
     */
-  def prototype(cellType: CellType, cols: Int, rows: Int) =
+  def prototype(cellType: CellType, cols: Int, rows: Int): ArrayMultibandTile =
     ArrayMultibandTile.empty(cellType, self.bandCount, cols, rows)
 
   /**
@@ -37,6 +37,6 @@ trait MultibandTilePrototypeMethods extends TilePrototypeMethods[MultibandTile] 
     * [[ArrayMultibandTile]] of the given size and the same band count
     * as the calling object.
     */
-  def prototype(cols: Int, rows: Int) =
+  def prototype(cols: Int, rows: Int): ArrayMultibandTile =
     prototype(self.cellType, cols, rows)
 }

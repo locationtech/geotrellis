@@ -16,8 +16,8 @@
 
 package geotrellis.layer
 
-import geotrellis.raster._
-import geotrellis.vector._
+import geotrellis.raster.*
+import geotrellis.vector.*
 
 /** A LayoutScheme is something that provides LayoutLevels based on an integer id or
   * an extent and cellsize. The resolution of the tiles for the LayoutLevel returned

@@ -16,7 +16,7 @@
 
 package geotrellis.spark.mapalgebra.zonal
 
-import geotrellis.raster._
+import geotrellis.raster.*
 import org.apache.spark.rdd.RDD
 import scala.reflect.ClassTag
 

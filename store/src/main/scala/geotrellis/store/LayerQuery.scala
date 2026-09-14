@@ -16,8 +16,8 @@
 
 package geotrellis.store
 
-import geotrellis.layer._
-import geotrellis.util._
+import geotrellis.layer.*
+import geotrellis.util.*
 
 /**
   * Accumulation of [[LayerFilter]]s that will be asked to filter layer [[KeyBounds]]
@@ -26,7 +26,7 @@ import geotrellis.util._
   * @tparam M  Type of metadata used for filtering
   */
 class LayerQuery[K: Boundable, M: GetComponent[*, Bounds[K]]](
-  filterChain: ( (M, List[KeyBounds[K]]) ) => (M, List[KeyBounds[K]]) = { x: (M, List[KeyBounds[K]]) => x }) {
+  filterChain: ( (M, List[KeyBounds[K]]) ) => (M, List[KeyBounds[K]]) = { (x: (M, List[KeyBounds[K]])) => x }) {
 
   /**
     * @param metadata RasterMetaData of the layer being queried
@@ -42,8 +42,8 @@ class LayerQuery[K: Boundable, M: GetComponent[*, Bounds[K]]](
     }
 
   // Allows us to treat Function1 as an instance of a Functor
-  import cats.instances.function._
-  import cats.syntax.functor._
+  import cats.instances.function.*
+  import cats.syntax.functor.*
 
   def where[F, T](exp: LayerFilter.Expression[F, T])(implicit filter: LayerFilter[K, F, T, M]): LayerQuery[K, M] = {
     new LayerQuery({

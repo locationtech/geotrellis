@@ -22,7 +22,7 @@ import geotrellis.util.annotations.experimental
 import org.apache.hadoop.conf.Configuration
 import org.apache.commons.io.IOUtils
 import org.apache.hadoop.fs.Path
-import io.circe.syntax._
+import io.circe.syntax.*
 
 import java.net.URI
 

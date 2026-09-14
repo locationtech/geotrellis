@@ -16,13 +16,13 @@
 
 package geotrellis.vector.voronoi
 
-import geotrellis.vector._
-import geotrellis.vector.triangulation._
+import geotrellis.vector.*
+import geotrellis.vector.triangulation.*
 
-import org.locationtech.jts.{ geom => jts }
-import org.locationtech.jts.geom.{MultiPoint, Polygon => JTSPolygon}
+import org.locationtech.jts.{ geom as jts }
+import org.locationtech.jts.geom.{MultiPoint, Polygon as JTSPolygon}
 import org.locationtech.jts.triangulate.DelaunayTriangulationBuilder
-import spire.syntax.cfor._
+import spire.syntax.cfor.*
 
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.funspec.AnyFunSpec

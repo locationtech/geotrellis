@@ -16,7 +16,7 @@
 
 package geotrellis.layer.mapalgebra.focal.hillshade
 
-import geotrellis.layer._
+import geotrellis.layer.*
 
 
 

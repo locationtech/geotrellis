@@ -193,7 +193,7 @@ package object raster extends Implicits {
   }
 
   private[raster] def integralIterator[@specialized(Int, Long) N: Integral](start: N, end: N, step: N): Iterator[N] = new Iterator[N] {
-    import spire.implicits._
+    import spire.implicits.*
     require(start < end, s"start: $start >= end: $end")
     private var nextValue = start
     def hasNext: Boolean = nextValue < end

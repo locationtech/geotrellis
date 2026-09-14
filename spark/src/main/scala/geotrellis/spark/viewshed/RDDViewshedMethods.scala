@@ -18,8 +18,8 @@ package geotrellis.spark.viewshed
 
 import geotrellis.layer.{Metadata, TileLayerMetadata}
 import geotrellis.raster.Tile
-import geotrellis.raster.viewshed.R2Viewshed._
-import geotrellis.layer._
+import geotrellis.raster.viewshed.R2Viewshed.*
+import geotrellis.layer.*
 import geotrellis.util.MethodExtensions
 import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkContext

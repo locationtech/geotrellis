@@ -16,10 +16,10 @@
 
 package geotrellis.raster.mapalgebra.zonal
 
-import geotrellis.raster._
+import geotrellis.raster.*
 
-import geotrellis.raster.testkit._
-import spire.syntax.cfor._
+import geotrellis.raster.testkit.*
+import spire.syntax.cfor.*
 
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.funspec.AnyFunSpec

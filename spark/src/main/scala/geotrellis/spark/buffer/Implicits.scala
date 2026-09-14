@@ -17,9 +17,9 @@
 package geotrellis.spark.buffer
 
 import geotrellis.layer.SpatialComponent
-import geotrellis.raster._
-import geotrellis.raster.crop._
-import geotrellis.raster.stitch._
+import geotrellis.raster.*
+import geotrellis.raster.crop.*
+import geotrellis.raster.stitch.*
 
 import org.apache.spark.rdd.RDD
 

@@ -16,7 +16,7 @@
 
 package geotrellis.raster.equalization
 
-import geotrellis.raster._
+import geotrellis.raster.*
 
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.funspec.AnyFunSpec

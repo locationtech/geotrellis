@@ -16,22 +16,22 @@
 
 package geotrellis.spark.gdal
 
-import geotrellis.layer._
-import geotrellis.raster.gdal._
-import geotrellis.raster.geotiff._
+import geotrellis.layer.*
+import geotrellis.raster.gdal.*
+import geotrellis.raster.geotiff.*
 import geotrellis.raster.{RasterSource, ReadingSource}
-import geotrellis.proj4._
-import geotrellis.raster._
-import geotrellis.raster.io.geotiff._
-import geotrellis.spark._
-import geotrellis.spark.store.hadoop._
-import geotrellis.spark.testkit._
-import geotrellis.store.hadoop._
-import cats.effect._
-import cats.syntax.parallel._
-import spire.syntax.cfor._
+import geotrellis.proj4.*
+import geotrellis.raster.*
+import geotrellis.raster.io.geotiff.*
+import geotrellis.spark.*
+import geotrellis.spark.store.hadoop.*
+import geotrellis.spark.testkit.*
+import geotrellis.store.hadoop.*
+import cats.effect.*
+import cats.syntax.parallel.*
+import spire.syntax.cfor.*
 import org.apache.spark.rdd.RDD
-import org.scalatest.Inspectors._
+import org.scalatest.Inspectors.*
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.funspec.AnyFunSpec
 
@@ -39,12 +39,12 @@ import java.util.concurrent.{Executors, ScheduledThreadPoolExecutor}
 import scala.concurrent.ExecutionContext
 
 class GDALRasterSourceRDDSpec extends AnyFunSpec with TestEnvironment with BeforeAndAfterAll {
-  import geotrellis.GDALTestUtils._
+  import geotrellis.GDALTestUtils.*
 
   def createRuntime(compute: ExecutionContext, blocking: ExecutionContext, shutdown: () => Unit): unsafe.IORuntime = {
     val scheduler = new ScheduledThreadPoolExecutor(
       1,
-      { r: Runnable =>
+      { (r: Runnable) =>
         val t = new Thread(r)
         t.setName("io-scheduler")
         t.setDaemon(true)

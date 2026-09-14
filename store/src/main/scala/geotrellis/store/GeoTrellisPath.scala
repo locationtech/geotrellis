@@ -18,7 +18,7 @@ package geotrellis.store
 
 import geotrellis.raster.SourcePath
 
-import cats.syntax.option._
+import cats.syntax.option.*
 import io.lemonlabs.uri.{Url, UrlWithAuthority}
 
 import java.net.MalformedURLException

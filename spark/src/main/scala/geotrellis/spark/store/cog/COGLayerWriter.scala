@@ -16,28 +16,28 @@
 
 package geotrellis.spark.store.cog
 
-import geotrellis.layer._
-import geotrellis.raster._
+import geotrellis.layer.*
+import geotrellis.raster.*
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
-import geotrellis.raster.merge._
-import geotrellis.raster.prototype._
-import geotrellis.raster.resample._
-import geotrellis.raster.crop._
-import geotrellis.raster.io.geotiff._
+import geotrellis.raster.merge.*
+import geotrellis.raster.prototype.*
+import geotrellis.raster.resample.*
+import geotrellis.raster.crop.*
+import geotrellis.raster.io.geotiff.*
 import geotrellis.raster.io.geotiff.compression.{Compression, NoCompression}
-import geotrellis.store._
+import geotrellis.store.*
 import geotrellis.store.cog.{COGLayerStorageMetadata, ZoomRange}
-import geotrellis.store.index._
-import geotrellis.spark._
+import geotrellis.store.index.*
+import geotrellis.spark.*
 
-import org.log4s._
+import org.log4s.*
 import org.apache.spark.rdd.RDD
-import _root_.io.circe._
+import _root_.io.circe.*
 
 import java.net.URI
 import java.util.ServiceLoader
 
-import scala.reflect._
+import scala.reflect.*
 
 trait COGLayerWriter extends Serializable {
   import COGLayerWriter.Options
@@ -234,7 +234,7 @@ object COGLayerWriter {
    * Find instances of [[COGLayerWriterProvider]] through Java SPI.
    */
   def apply(attributeStore: AttributeStore, layerWriterUri: URI): COGLayerWriter = {
-    import scala.jdk.CollectionConverters._
+    import scala.jdk.CollectionConverters.*
     ServiceLoader.load(classOf[COGLayerWriterProvider])
       .iterator().asScala
       .find(_.canProcess(layerWriterUri))

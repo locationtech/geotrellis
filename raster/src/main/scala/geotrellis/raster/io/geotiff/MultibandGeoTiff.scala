@@ -17,7 +17,7 @@
 package geotrellis.raster.io.geotiff
 
 import geotrellis.util.ByteReader
-import geotrellis.raster._
+import geotrellis.raster.*
 import geotrellis.vector.Extent
 import geotrellis.proj4.CRS
 import geotrellis.raster.crop.Crop

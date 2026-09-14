@@ -16,9 +16,9 @@
 
 package geotrellis.raster.io.geotiff
 
-import geotrellis.raster._
+import geotrellis.raster.*
 
-import spire.syntax.cfor._
+import spire.syntax.cfor.*
 
 
 abstract class ByteGeoTiffSegment(val bytes: Array[Byte]) extends GeoTiffSegment {

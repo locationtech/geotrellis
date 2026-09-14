@@ -19,11 +19,11 @@ package geotrellis.raster.gdal
 import cats.data.NonEmptyList
 import geotrellis.proj4.{CRS, LatLng, WebMercator}
 import geotrellis.raster.geotiff.GeoTiffRasterSource
-import geotrellis.raster._
+import geotrellis.raster.*
 import geotrellis.raster.io.geotiff.{AutoHigherResolution, GeoTiff}
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
-import geotrellis.raster.resample._
-import geotrellis.raster.testkit._
+import geotrellis.raster.resample.*
+import geotrellis.raster.testkit.*
 import geotrellis.vector.Extent
 
 import org.scalatest.GivenWhenThen

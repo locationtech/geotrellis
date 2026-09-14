@@ -17,7 +17,7 @@
 package geotrellis.raster
 
 import geotrellis.bench.init
-import org.openjdk.jmh.annotations._
+import org.openjdk.jmh.annotations.*
 import org.openjdk.jmh.infra.BenchmarkParams
 
 import scala.util.Random
@@ -26,7 +26,7 @@ import scala.util.Random
 @BenchmarkMode(Array(Mode.AverageTime))
 @State(Scope.Thread)
 class GenericRasterBench  {
-  import GenericRasterBench._
+  import GenericRasterBench.*
 
   @Param(Array( "128", "256", "512", "1024", "2048", "4096", "8192"))
   var size: Int = _

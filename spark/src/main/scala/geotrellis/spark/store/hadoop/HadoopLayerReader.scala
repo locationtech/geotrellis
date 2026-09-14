@@ -16,19 +16,19 @@
 
 package geotrellis.spark.store.hadoop
 
-import geotrellis.layer._
+import geotrellis.layer.*
 
-import geotrellis.spark._
-import geotrellis.spark.store._
-import geotrellis.store._
-import geotrellis.store.avro._
+import geotrellis.spark.*
+import geotrellis.spark.store.*
+import geotrellis.store.*
+import geotrellis.store.avro.*
 import geotrellis.store.hadoop.{HadoopAttributeStore, HadoopLayerHeader}
-import geotrellis.util._
+import geotrellis.util.*
 
 import org.apache.hadoop.fs.Path
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
-import io.circe._
+import io.circe.*
 
 import scala.reflect.ClassTag
 

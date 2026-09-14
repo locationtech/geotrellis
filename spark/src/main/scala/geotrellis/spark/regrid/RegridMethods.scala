@@ -16,10 +16,10 @@
 
 package geotrellis.spark.regrid
 
-import geotrellis.raster.crop._
-import geotrellis.raster.stitch._
-import geotrellis.layer._
-import geotrellis.util._
+import geotrellis.raster.crop.*
+import geotrellis.raster.stitch.*
+import geotrellis.layer.*
+import geotrellis.util.*
 import org.apache.spark.rdd.RDD
 
 import scala.reflect.ClassTag

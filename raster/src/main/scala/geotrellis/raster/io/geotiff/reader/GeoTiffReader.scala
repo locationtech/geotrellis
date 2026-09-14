@@ -18,8 +18,8 @@ package geotrellis.raster.io.geotiff.reader
 
 import java.io.File
 
-import geotrellis.raster._
-import geotrellis.raster.io.geotiff._
+import geotrellis.raster.*
+import geotrellis.raster.io.geotiff.*
 import geotrellis.vector.Extent
 import geotrellis.util.{ByteReader, Filesystem, FileRangeReader, StreamingByteReader}
 import java.nio.ByteBuffer

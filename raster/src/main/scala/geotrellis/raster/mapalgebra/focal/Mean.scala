@@ -16,7 +16,7 @@
 
 package geotrellis.raster.mapalgebra.focal
 
-import geotrellis.raster._
+import geotrellis.raster.*
 
 object Mean {
   def calculation(tile: Tile, n: Neighborhood, bounds: Option[GridBounds[Int]] = None, target: TargetCell = TargetCell.All): FocalCalculation[Tile] = {

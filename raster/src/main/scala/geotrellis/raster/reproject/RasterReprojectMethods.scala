@@ -16,11 +16,11 @@
 
 package geotrellis.raster.reproject
 
-import geotrellis.proj4._
-import geotrellis.raster._
+import geotrellis.proj4.*
+import geotrellis.raster.*
 import geotrellis.util.MethodExtensions
 
-trait RasterReprojectMethods[+T <: Raster[_]] extends MethodExtensions[T] {
+trait RasterReprojectMethods[+T <: Raster[?]] extends MethodExtensions[T] {
   import Reproject.Options
 
   def reproject(targetRasterExtent: RasterExtent, transform: Transform, inverseTransform: Transform, options: Options): T

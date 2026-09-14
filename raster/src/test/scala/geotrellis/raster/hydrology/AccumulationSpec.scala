@@ -17,11 +17,11 @@
 package geotrellis.raster.hydrology
 
 import geotrellis.vector.Extent
-import geotrellis.raster._
+import geotrellis.raster.*
 
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.funspec.AnyFunSpec
-import geotrellis.raster.testkit._
+import geotrellis.raster.testkit.*
 
 class AccumulationSpec extends AnyFunSpec with Matchers with RasterMatchers with TileBuilders {
 

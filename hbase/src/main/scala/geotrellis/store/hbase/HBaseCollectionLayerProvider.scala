@@ -16,7 +16,7 @@
 
 package geotrellis.store.hbase
 
-import geotrellis.store._
+import geotrellis.store.*
 import geotrellis.store.hbase.conf.HBaseConfig
 import geotrellis.util.UriUtils
 import java.net.URI

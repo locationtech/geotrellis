@@ -16,9 +16,9 @@
 
 package geotrellis.raster.io.geotiff
 
-import geotrellis.util._
+import geotrellis.util.*
 import geotrellis.raster.io.geotiff.tags.TiffTags
-import geotrellis.raster.testkit._
+import geotrellis.raster.testkit.*
 
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.matchers.should.Matchers

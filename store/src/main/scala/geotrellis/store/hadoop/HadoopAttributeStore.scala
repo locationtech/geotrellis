@@ -16,13 +16,13 @@
 
 package geotrellis.store.hadoop
 
-import geotrellis.store._
-import geotrellis.store.hadoop.util._
+import geotrellis.store.*
+import geotrellis.store.hadoop.util.*
 
-import io.circe._
-import io.circe.parser._
-import io.circe.syntax._
-import cats.syntax.either._
+import io.circe.*
+import io.circe.parser.*
+import io.circe.syntax.*
+import cats.syntax.either.*
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 
@@ -33,7 +33,7 @@ class HadoopAttributeStore(
   rootPathString: String,
   serConf: SerializableConfiguration // This needs to be serializable
 ) extends BlobLayerAttributeStore {
-  import HadoopAttributeStore._
+  import HadoopAttributeStore.*
 
   @transient lazy val conf = serConf.value
 
@@ -95,7 +95,7 @@ class HadoopAttributeStore(
   def readAll[T: Decoder](attributeName: String): Map[LayerId,T] = {
     HdfsUtils
       .listFiles(attributeWildcard(attributeName), conf)
-      .map{ path: Path =>
+      .map{ (path: Path) =>
         readFile[T](path) match {
           case Some(tup) => tup
           case None => throw new LayerIOError(s"Unable to list $attributeName attributes from $path")
@@ -145,7 +145,7 @@ class HadoopAttributeStore(
   def layerIds: Seq[LayerId] =
     HdfsUtils
       .listFiles(new Path(attributePath, s"*.json"), conf)
-      .map { path: Path =>
+      .map { (path: Path) =>
         val List(name, zoomStr) = path.getName.split(SEP).take(2).toList
         LayerId(name, zoomStr.toInt)
       }
@@ -157,7 +157,7 @@ class HadoopAttributeStore(
 
     HdfsUtils
       .listFiles(new Path(metadataRelativeParentPath, layerWildcard(layerId)), conf)
-      .map { path: Path =>
+      .map { (path: Path) =>
         val attributeRx(name, zoom, attribute) = path.getName
         attribute
       }

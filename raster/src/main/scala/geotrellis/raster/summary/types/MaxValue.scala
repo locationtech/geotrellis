@@ -17,8 +17,8 @@
 package geotrellis.raster.summary.types
 
 import cats.Monoid
-import cats.syntax.monoid._
-import geotrellis.raster._
+import cats.syntax.monoid.*
+import geotrellis.raster.*
 
 /**
   * Typesafe wrapper for a Double value that stores the Max value for a summary computation.

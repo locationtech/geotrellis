@@ -43,7 +43,7 @@ case class Feature[+G <: Geometry, +D](geom: G, data: D) {
 
 /** Feature companion object */
 object Feature {
-  implicit def featureToGeometry[G <: Geometry](f: Feature[G, _]): G = f.geom
+  implicit def featureToGeometry[G <: Geometry](f: Feature[G, ?]): G = f.geom
 }
 
 /** PointFeature companion object */

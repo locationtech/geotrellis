@@ -17,7 +17,7 @@
 package geotrellis.spark.store.index
 import geotrellis.store.index.MergeQueue
 
-import org.openjdk.jmh.annotations._
+import org.openjdk.jmh.annotations.*
 
 import scala.util.Random
 

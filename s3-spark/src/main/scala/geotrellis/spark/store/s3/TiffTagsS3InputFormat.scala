@@ -20,7 +20,7 @@ import geotrellis.util.ByteReader
 import geotrellis.raster.io.geotiff.tags.TiffTags
 
 import org.apache.hadoop.mapreduce.{InputSplit, TaskAttemptContext}
-import software.amazon.awssdk.services.s3.model._
+import software.amazon.awssdk.services.s3.model.*
 
 /** Reads the tiff tags of GeoTiffs on S3, avoiding full file read. */
 class TiffTagsS3InputFormat extends S3InputFormat[GetObjectRequest, TiffTags] {
@@ -33,7 +33,7 @@ class TiffTagsS3InputFormat extends S3InputFormat[GetObjectRequest, TiffTags] {
    *
    * @return A [[StreamingS3RecordReader]] that can read [[TiffTags]] of GeoTiffs from S3.
    */
-  def createRecordReader(split: InputSplit, context: TaskAttemptContext) =
+  def createRecordReader(split: InputSplit, context: TaskAttemptContext): StreamingS3RecordReader[GetObjectRequest,geotrellis.raster.io.geotiff.tags.TiffTags] =
     new StreamingS3RecordReader[GetObjectRequest, TiffTags](getS3Client(context)) {
 
       /**

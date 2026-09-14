@@ -16,7 +16,7 @@
 
 package geotrellis.spark.store.accumulo
 
-import geotrellis.layer._
+import geotrellis.layer.*
 import geotrellis.store.accumulo.AccumuloInstance
 import geotrellis.store.avro.{AvroEncoder, AvroRecordCodec}
 import geotrellis.store.avro.codecs.KeyValueRecordCodec
@@ -24,14 +24,14 @@ import geotrellis.spark.util.KryoWrapper
 
 import org.apache.accumulo.core.client.IteratorSetting
 import org.apache.accumulo.hadoop.mapreduce.AccumuloInputFormat
-import org.apache.accumulo.core.data.{Range => AccumuloRange, Value, Key}
+import org.apache.accumulo.core.data.{Range as AccumuloRange, Value, Key}
 import org.apache.avro.Schema
 import org.apache.hadoop.io.Text
 import org.apache.hadoop.mapreduce.Job
 import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkContext
 
-import scala.jdk.CollectionConverters._
+import scala.jdk.CollectionConverters.*
 import scala.reflect.ClassTag
 
 object AccumuloRDDReader {
@@ -68,7 +68,7 @@ object AccumuloRDDReader {
     .map { case (_, value) =>
       AvroEncoder.fromBinary(kwWriterSchema.value.getOrElse(codec.value.schema), value.get)(codec.value)
     }
-    .flatMap { pairs: Vector[(K, V)] =>
+    .flatMap { (pairs: Vector[(K, V)]) =>
       if(filterIndexOnly)
         pairs
       else

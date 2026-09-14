@@ -18,9 +18,9 @@ package geotrellis.vector.io.wkb
 
 import geotrellis.vector.GeomFactory
 
-import org.log4s._
-import org.locationtech.jts.geom._
-import org.locationtech.jts.{io => jts}
+import org.log4s.*
+import org.locationtech.jts.geom.*
+import org.locationtech.jts.{io as jts}
 
 
 /** A thread-safe wrapper for the [https://en.wikipedia.org/wiki/Well-known_text#Well-known_binary WKB]

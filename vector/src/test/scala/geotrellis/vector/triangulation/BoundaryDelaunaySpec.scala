@@ -55,8 +55,8 @@ class BoundaryDelaunaySpec extends AnyFunSpec with Matchers {
       val bdtTris = bdt.triangleMap.getTriangles().keys.toSet
 
       def circumcircleLeavesExtent(tri: Int): Boolean = {
-        import dt.halfEdgeTable._
-        import dt.predicates._
+        import dt.halfEdgeTable.*
+        import dt.predicates.*
 
         val (radius, center, valid) = circleCenter(getDest(tri), getDest(getNext(tri)), getDest(getNext(getNext(tri))))
         val ppd = new PointPairDistance
@@ -79,9 +79,9 @@ class BoundaryDelaunaySpec extends AnyFunSpec with Matchers {
       val dt = DelaunayTriangulation(pts, debug=false)
       val bdt = BoundaryDelaunay(dt, Extent(0,0,1,1))
 
-      import bdt.halfEdgeTable._
+      import bdt.halfEdgeTable.*
       val predicates = new TriangulationPredicates(bdt.pointSet, bdt.halfEdgeTable)
-      import predicates._
+      import predicates.*
 
       var validCW = true
       var e = bdt.boundary

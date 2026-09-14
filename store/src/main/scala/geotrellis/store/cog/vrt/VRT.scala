@@ -18,9 +18,9 @@ package geotrellis.store.cog.vrt
 
 import geotrellis.raster.{CellType, GridBounds, RasterExtent}
 import geotrellis.store.cog.vrt.VRT.{SimpleSource, VRTRasterBand}
-import geotrellis.vector._
+import geotrellis.vector.*
 import geotrellis.proj4.CRS
-import geotrellis.layer._
+import geotrellis.layer.*
 
 import java.io.{BufferedWriter, ByteArrayOutputStream, OutputStreamWriter}
 

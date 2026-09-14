@@ -19,7 +19,7 @@ package geotrellis.vector.interpolation
 import org.apache.commons.math3.analysis.{MultivariateMatrixFunction, MultivariateVectorFunction}
 import org.apache.commons.math3.fitting.leastsquares.LeastSquaresOptimizer.Optimum
 import org.apache.commons.math3.fitting.leastsquares.{LeastSquaresBuilder, LeastSquaresProblem, LevenbergMarquardtOptimizer}
-import spire.syntax.cfor._
+import spire.syntax.cfor.*
 
 /** Computes fitting of the given empirical semivariogram using a [[ModelType]]'s function definitions valueFunc() and jacobianFunc()
   * @param x     Empirical Semivariogram distance value

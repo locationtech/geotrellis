@@ -16,17 +16,17 @@
 
 package geotrellis.store.hadoop.cog
 
-import geotrellis.raster._
+import geotrellis.raster.*
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
-import geotrellis.layer._
-import geotrellis.store._
+import geotrellis.layer.*
+import geotrellis.store.*
 import geotrellis.store.cog.{COGReader, OverzoomingCOGValueReader, ZoomRange, Extension}
 import geotrellis.store.hadoop.{HadoopAttributeStore, HadoopLayerHeader}
 import geotrellis.store.index.{Index, KeyIndex}
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
-import _root_.io.circe._
+import _root_.io.circe.*
 
 import java.net.URI
 import scala.reflect.ClassTag

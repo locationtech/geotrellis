@@ -16,9 +16,9 @@
 
 package geotrellis.store.index
 
-import geotrellis.layer._
-import geotrellis.layer._
-import geotrellis.store.index.hilbert._
+import geotrellis.layer.*
+import geotrellis.layer.*
+import geotrellis.store.index.hilbert.*
 
 import java.time.ZonedDateTime
 
@@ -27,7 +27,7 @@ private[index] trait HilbertKeyIndexMethod
 object HilbertKeyIndexMethod extends HilbertKeyIndexMethod {
   implicit def spatialKeyIndexIndex(m: HilbertKeyIndexMethod): KeyIndexMethod[SpatialKey] =
     new KeyIndexMethod[SpatialKey] {
-      def createIndex(keyBounds: KeyBounds[SpatialKey]) = {
+      def createIndex(keyBounds: KeyBounds[SpatialKey]): HilbertSpatialKeyIndex = {
         val xResolution = resolution(keyBounds.maxKey.col, keyBounds.minKey.col)
         val yResolution = resolution(keyBounds.maxKey.row, keyBounds.minKey.row)
         HilbertSpatialKeyIndex(keyBounds, xResolution, yResolution)
@@ -36,7 +36,7 @@ object HilbertKeyIndexMethod extends HilbertKeyIndexMethod {
 
   def apply(temporalResolution: Int): KeyIndexMethod[SpaceTimeKey] =
     new KeyIndexMethod[SpaceTimeKey] {
-      def createIndex(keyBounds: KeyBounds[SpaceTimeKey]) = {
+      def createIndex(keyBounds: KeyBounds[SpaceTimeKey]): HilbertSpaceTimeKeyIndex = {
         val xResolution = resolution(keyBounds.maxKey.col, keyBounds.minKey.col)
         val yResolution = resolution(keyBounds.maxKey.row, keyBounds.minKey.row)
         HilbertSpaceTimeKeyIndex(keyBounds, xResolution, yResolution, temporalResolution)

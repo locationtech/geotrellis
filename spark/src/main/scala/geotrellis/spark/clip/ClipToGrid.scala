@@ -16,11 +16,11 @@
 
 package geotrellis.spark.clip
 
-import geotrellis.layer._
-import geotrellis.vector._
+import geotrellis.layer.*
+import geotrellis.vector.*
 
 import org.locationtech.jts.geom.prep.{PreparedGeometry, PreparedGeometryFactory}
-import org.apache.spark.rdd._
+import org.apache.spark.rdd.*
 
 /**
   * These functions perform the following transformation:

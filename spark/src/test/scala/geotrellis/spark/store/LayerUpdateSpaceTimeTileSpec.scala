@@ -17,19 +17,19 @@
 package geotrellis.spark.store
 
 import geotrellis.proj4.LatLng
-import geotrellis.vector._
-import geotrellis.layer._
-import geotrellis.raster._
-import geotrellis.raster.testkit._
-import geotrellis.store._
-import geotrellis.spark._
-import geotrellis.spark.testkit._
-import geotrellis.spark.util._
-import geotrellis.spark.testkit._
-import geotrellis.spark.testkit.io._
-import geotrellis.util._
+import geotrellis.vector.*
+import geotrellis.layer.*
+import geotrellis.raster.*
+import geotrellis.raster.testkit.*
+import geotrellis.store.*
+import geotrellis.spark.*
+import geotrellis.spark.testkit.*
+import geotrellis.spark.util.*
+import geotrellis.spark.testkit.*
+import geotrellis.spark.testkit.io.*
+import geotrellis.util.*
 
-import jp.ne.opt.chronoscala.Imports._
+import jp.ne.opt.chronoscala.Imports.*
 
 import java.time.{ZoneOffset, ZonedDateTime}
 

@@ -17,8 +17,8 @@
 package geotrellis.raster.summary.polygonal.visitors
 
 import cats.Monoid
-import cats.syntax.monoid._
-import geotrellis.raster._
+import cats.syntax.monoid.*
+import geotrellis.raster.*
 
 trait Implicits {
   implicit def arrayMultibandTileFastMapHistogramMonoid: Monoid[Array[FastMapHistogram]] = new Monoid[Array[FastMapHistogram]] {

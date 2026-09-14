@@ -26,7 +26,7 @@ import geotrellis.util.annotations.experimental
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.model.ListObjectsV2Request
 
-import scala.jdk.CollectionConverters._
+import scala.jdk.CollectionConverters.*
 import java.net.URI
 
 /**
@@ -72,7 +72,7 @@ import java.net.URI
           case regexp(_*) => Some((s3Uri.getBucket(), s3obj.key))
           case _ => None
         }
-      }).map({ bucketAndKey: (String, String) =>
+      }).map({ (bucketAndKey: (String, String)) =>
         val tiffTags = TiffTags.read(StreamingByteReader(
           S3RangeReader(
             bucket = bucketAndKey._1,

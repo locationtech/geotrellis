@@ -16,9 +16,9 @@
 
 package geotrellis.spark.knn
 
-import geotrellis.spark._
-import geotrellis.vector._
-import geotrellis.spark.testkit._
+import geotrellis.spark.*
+import geotrellis.vector.*
+import geotrellis.spark.testkit.*
 
 
 import org.scalatest.matchers.should.Matchers

@@ -16,8 +16,8 @@
 
 package geotrellis.raster.merge
 
-import geotrellis.raster._
-import geotrellis.raster.testkit._
+import geotrellis.raster.*
+import geotrellis.raster.testkit.*
 import geotrellis.raster.resample.NearestNeighbor
 import geotrellis.vector.Extent
 

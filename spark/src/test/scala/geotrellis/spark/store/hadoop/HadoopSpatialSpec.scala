@@ -16,14 +16,14 @@
 
 package geotrellis.spark.store.hadoop
 
-import geotrellis.layer._
+import geotrellis.layer.*
 import geotrellis.raster.Tile
-import geotrellis.store._
-import geotrellis.store.index._
-import geotrellis.store.hadoop._
-import geotrellis.spark.store._
-import geotrellis.spark.testkit._
-import geotrellis.spark.testkit.io._
+import geotrellis.store.*
+import geotrellis.store.index.*
+import geotrellis.store.hadoop.*
+import geotrellis.spark.store.*
+import geotrellis.spark.testkit.*
+import geotrellis.spark.testkit.io.*
 import geotrellis.spark.testkit.testfiles.TestFiles
 
 class HadoopSpatialSpec
@@ -33,15 +33,15 @@ class HadoopSpatialSpec
     with TestFiles
     with AllOnesTestTileSpec {
 
-  lazy val reader = HadoopLayerReader(outputLocal)
-  lazy val creader = HadoopCollectionLayerReader(outputLocal)
-  lazy val writer = HadoopLayerWriter(outputLocal)
-  lazy val deleter = HadoopLayerDeleter(outputLocal)
-  lazy val copier = HadoopLayerCopier(outputLocal)
-  lazy val mover  = HadoopLayerMover(outputLocal)
+  lazy val reader: HadoopLayerReader = HadoopLayerReader(outputLocal)
+  lazy val creader: HadoopCollectionLayerReader = HadoopCollectionLayerReader(outputLocal)
+  lazy val writer: HadoopLayerWriter = HadoopLayerWriter(outputLocal)
+  lazy val deleter: HadoopLayerDeleter = HadoopLayerDeleter(outputLocal)
+  lazy val copier: HadoopLayerCopier = HadoopLayerCopier(outputLocal)
+  lazy val mover: HadoopLayerMover = HadoopLayerMover(outputLocal)
   lazy val reindexer = HadoopLayerReindexer(outputLocal)
-  lazy val tiles = HadoopValueReader(outputLocal)
-  lazy val sample = AllOnesTestFile
+  lazy val tiles: HadoopValueReader = HadoopValueReader(outputLocal)
+  lazy val sample: AllOnesTestFile.type = AllOnesTestFile
 
   describe("HDFS layer names") {
     it("should handle layer names with spaces") {

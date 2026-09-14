@@ -18,23 +18,23 @@ package geotrellis.spark.store.hadoop
 
 import geotrellis.store.LayerId
 import geotrellis.store.AttributeStore
-import geotrellis.store.avro._
-import geotrellis.store.avro.codecs._
-import geotrellis.store.index._
+import geotrellis.store.avro.*
+import geotrellis.store.avro.codecs.*
+import geotrellis.store.index.*
 import geotrellis.store.hadoop.formats.FilterMapFileInputFormat
-import geotrellis.store.hadoop._
-import geotrellis.store.hadoop.util._
-import geotrellis.spark.partition._
-import geotrellis.spark.util._
+import geotrellis.store.hadoop.*
+import geotrellis.store.hadoop.util.*
+import geotrellis.spark.partition.*
+import geotrellis.spark.util.*
 
-import org.log4s._
+import org.log4s.*
 
 import org.apache.hadoop.fs.Path
-import org.apache.hadoop.io._
-import org.apache.spark.rdd._
+import org.apache.hadoop.io.*
+import org.apache.spark.rdd.*
 import org.apache.hadoop.conf.Configuration
 
-import scala.reflect._
+import scala.reflect.*
 import scala.collection.mutable
 
 

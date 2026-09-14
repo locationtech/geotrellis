@@ -17,10 +17,10 @@
 package geotrellis.store.json
 
 
-import cats.syntax.either._
-import geotrellis.store.json.Implicits._
-import io.circe._
-import io.circe.parser._
+import cats.syntax.either.*
+import geotrellis.store.json.Implicits.*
+import io.circe.*
+import io.circe.parser.*
 import org.apache.avro.Schema
 
 import org.scalatest.matchers.should.Matchers

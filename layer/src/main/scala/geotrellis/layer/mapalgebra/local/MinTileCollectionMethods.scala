@@ -18,7 +18,7 @@ package geotrellis.layer.mapalgebra.local
 
 import geotrellis.raster.mapalgebra.local.Min
 import geotrellis.raster.{DI, Tile}
-import geotrellis.layer._
+import geotrellis.layer.*
 import geotrellis.util.MethodExtensions
 
 trait MinTileCollectionMethods[K] extends MethodExtensions[Seq[(K, Tile)]] {

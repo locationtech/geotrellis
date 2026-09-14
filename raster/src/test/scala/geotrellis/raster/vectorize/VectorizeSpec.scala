@@ -16,9 +16,9 @@
 
 package geotrellis.raster.vectorize
 
-import geotrellis.raster._
-import geotrellis.raster.testkit._
-import geotrellis.vector._
+import geotrellis.raster.*
+import geotrellis.raster.testkit.*
+import geotrellis.vector.*
 
 import org.scalatest.funspec.AnyFunSpec
 
@@ -627,7 +627,7 @@ class VectorizeSpec extends AnyFunSpec with RasterMatchers with RasterTestFiles 
   }
 
   describe("test case that has thrown topology exceptions in the past") {
-    import geotrellis.raster.io.geotiff._
+    import geotrellis.raster.io.geotiff.*
 
     val gt = SinglebandGeoTiff("raster/data/vectorize-bug-1.tif")
     val r = gt.raster

@@ -16,11 +16,11 @@
 
 package geotrellis.store.accumulo
 
-import org.apache.accumulo.core.client._
+import org.apache.accumulo.core.client.*
 import org.apache.accumulo.core.client.security.tokens.{AuthenticationToken, KerberosToken, PasswordToken}
 import org.apache.hadoop.io.Text
 
-import scala.jdk.CollectionConverters._
+import scala.jdk.CollectionConverters.*
 import java.net.URI
 import java.util.Properties
 
@@ -52,7 +52,7 @@ object AccumuloInstance {
   }
 
   def apply(uri: URI): AccumuloInstance = {
-    import geotrellis.util.UriUtils._
+    import geotrellis.util.UriUtils.*
 
     val zookeeper = if (uri.getPort != -1) s"${uri.getHost}:${uri.getPort}" else uri.getHost
     val instance = uri.getPath.drop(1)

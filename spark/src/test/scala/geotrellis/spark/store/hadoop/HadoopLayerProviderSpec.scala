@@ -17,8 +17,8 @@
 package geotrellis.spark.store.hadoop
 
 import geotrellis.store.{AttributeStore, ValueReader}
-import geotrellis.store.hadoop._
-import geotrellis.spark.store._
+import geotrellis.store.hadoop.*
+import geotrellis.spark.store.*
 import geotrellis.spark.testkit.TestEnvironment
 
 import org.scalatest.funspec.AnyFunSpec

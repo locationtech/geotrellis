@@ -16,15 +16,15 @@
 
 package geotrellis.spark.store
 
-import geotrellis.layer._
+import geotrellis.layer.*
 import geotrellis.store.{LayerQuery, BoundLayerQuery}
-import geotrellis.store.avro._
-import geotrellis.util._
+import geotrellis.store.avro.*
+import geotrellis.util.*
 
-import org.apache.spark.rdd._
-import io.circe._
+import org.apache.spark.rdd.*
+import io.circe.*
 
-import scala.reflect._
+import scala.reflect.*
 
 abstract class FilteringLayerReader[ID] extends LayerReader[ID] {
 

@@ -16,7 +16,7 @@
 
 package geotrellis.vectortile
 
-import geotrellis.vectortile.internal.Command._
+import geotrellis.vectortile.internal.Command.*
 import geotrellis.vectortile.internal.{MoveTo, LineTo, ClosePath}
 
 import org.scalatest.matchers.should.Matchers

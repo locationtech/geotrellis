@@ -16,7 +16,7 @@
 
 package geotrellis.proj4
 
-import scala.sys.process._
+import scala.sys.process.*
 import scala.util.Try
 
 /**

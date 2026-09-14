@@ -16,23 +16,23 @@
 
 package geotrellis.raster.gdal
 
-import geotrellis.proj4._
-import geotrellis.raster._
+import geotrellis.proj4.*
+import geotrellis.raster.*
 import geotrellis.raster.io.geotiff.OverviewStrategy
-import geotrellis.raster.resample._
+import geotrellis.raster.resample.*
 import geotrellis.vector.Extent
-import geotrellis.raster.testkit._
+import geotrellis.raster.testkit.*
 
-import cats.syntax.option._
-import org.gdal.gdal._
+import cats.syntax.option.*
+import org.gdal.gdal.*
 
-import scala.jdk.CollectionConverters._
+import scala.jdk.CollectionConverters.*
 
 import org.scalatest.GivenWhenThen
 import org.scalatest.funspec.AnyFunSpec
 
 class GDALWarpOptionsSpec extends AnyFunSpec with RasterMatchers with GivenWhenThen {
-  import GDALWarpOptionsSpec._
+  import GDALWarpOptionsSpec.*
 
   org.gdal.gdal.gdal.AllRegister()
 

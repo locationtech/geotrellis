@@ -16,18 +16,18 @@
 
 package geotrellis.store.s3
 
-import geotrellis.store._
+import geotrellis.store.*
 
 import software.amazon.awssdk.core.sync.RequestBody
 import software.amazon.awssdk.services.s3.S3Client
-import software.amazon.awssdk.services.s3.model._
+import software.amazon.awssdk.services.s3.model.*
 import org.apache.commons.io.IOUtils
-import _root_.io.circe._
-import _root_.io.circe.syntax._
-import _root_.io.circe.parser._
-import cats.syntax.either._
+import _root_.io.circe.*
+import _root_.io.circe.syntax.*
+import _root_.io.circe.parser.*
+import cats.syntax.either.*
 
-import scala.jdk.CollectionConverters._
+import scala.jdk.CollectionConverters.*
 import java.nio.charset.Charset
 
 /**
@@ -41,7 +41,7 @@ class S3AttributeStore(
   val prefix: String,
   s3Client: => S3Client = S3ClientProducer.get()
 ) extends BlobLayerAttributeStore {
-  import S3AttributeStore._
+  import S3AttributeStore.*
 
   @transient lazy val client = s3Client
 

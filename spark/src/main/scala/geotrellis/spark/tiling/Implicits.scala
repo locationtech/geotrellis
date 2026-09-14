@@ -16,14 +16,14 @@
 
 package geotrellis.spark.tiling
 
-import geotrellis.vector._
-import geotrellis.raster._
-import geotrellis.raster.merge._
-import geotrellis.raster.prototype._
-import geotrellis.layer._
-import geotrellis.util._
+import geotrellis.vector.*
+import geotrellis.raster.*
+import geotrellis.raster.merge.*
+import geotrellis.raster.prototype.*
+import geotrellis.layer.*
+import geotrellis.util.*
 
-import org.apache.spark.rdd._
+import org.apache.spark.rdd.*
 
 import scala.reflect.ClassTag
 

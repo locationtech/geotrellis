@@ -25,8 +25,8 @@ import geotrellis.vector.Extent
   * Uneven layouts will pyramid up until they are reduced to a single tile.
   */
 class LocalLayoutScheme extends LayoutScheme {
-  import LocalLayoutScheme._
-  import math._
+  import LocalLayoutScheme.*
+  import math.*
 
   def zoomOut(level: LayoutLevel): LayoutLevel = {
     val LayoutLevel(zoom, LayoutDefinition(extent, tileLayout)) = level
@@ -44,7 +44,7 @@ class LocalLayoutScheme extends LayoutScheme {
 }
 
 object LocalLayoutScheme {
-  import math._
+  import math.*
   private def pow2(x: Int) = ceil(log(x)/log(2)).toInt
   private def pad2(x: Int) = pow(2, ceil(log(x)/log(2))).toInt
 

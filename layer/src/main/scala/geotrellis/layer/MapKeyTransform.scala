@@ -16,11 +16,11 @@
 
 package geotrellis.layer
 
-import geotrellis.raster._
+import geotrellis.raster.*
 import geotrellis.raster.rasterize.{Rasterizer, Callback}
-import geotrellis.vector._
-import geotrellis.proj4._
-import geotrellis.util._
+import geotrellis.vector.*
+import geotrellis.proj4.*
+import geotrellis.util.*
 
 import scala.collection.mutable
 

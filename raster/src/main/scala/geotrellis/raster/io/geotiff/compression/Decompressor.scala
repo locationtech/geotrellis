@@ -16,10 +16,10 @@
 
 package geotrellis.raster.io.geotiff.compression
 
-import geotrellis.raster.io.geotiff.tags._
+import geotrellis.raster.io.geotiff.tags.*
 import geotrellis.raster.io.geotiff.reader.{GeoTiffReaderLimitationException, MalformedGeoTiffException}
 import java.nio.ByteOrder
-import spire.syntax.cfor._
+import spire.syntax.cfor.*
 
 trait Decompressor extends Serializable {
   def code: Int
@@ -75,7 +75,7 @@ trait Decompressor extends Serializable {
 
 object Decompressor {
   def apply(tiffTags: TiffTags, byteOrder: ByteOrder): Decompressor = {
-    import geotrellis.raster.io.geotiff.tags.codes.CompressionType._
+    import geotrellis.raster.io.geotiff.tags.codes.CompressionType.*
 
     def checkEndian(d: Decompressor): Decompressor = {
       if(byteOrder != ByteOrder.BIG_ENDIAN && tiffTags.bitsPerPixel() > 8) {

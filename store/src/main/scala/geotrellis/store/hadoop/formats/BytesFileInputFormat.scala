@@ -17,8 +17,8 @@
 package geotrellis.store.hadoop.formats
 
 import org.apache.hadoop.fs.Path
-import org.apache.hadoop.mapreduce._
-import org.apache.hadoop.mapreduce.lib.input._
+import org.apache.hadoop.mapreduce.*
+import org.apache.hadoop.mapreduce.lib.input.*
 
 
 class BytesFileInputFormat extends FileInputFormat[Path, Array[Byte]] {

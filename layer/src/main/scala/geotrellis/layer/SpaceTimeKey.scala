@@ -18,9 +18,9 @@ package geotrellis.layer
 
 import _root_.io.circe.generic.JsonCodec
 
-import geotrellis.util._
+import geotrellis.util.*
 
-import jp.ne.opt.chronoscala.Imports._
+import jp.ne.opt.chronoscala.Imports.*
 import java.time.{ZoneOffset, ZonedDateTime}
 
 @JsonCodec

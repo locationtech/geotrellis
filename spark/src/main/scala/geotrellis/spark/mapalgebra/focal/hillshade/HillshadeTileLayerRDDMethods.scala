@@ -16,10 +16,10 @@
 
 package geotrellis.spark.mapalgebra.focal.hillshade
 
-import geotrellis.raster._
+import geotrellis.raster.*
 import geotrellis.raster.Neighborhoods.Square
-import geotrellis.raster.mapalgebra.focal.hillshade._
-import geotrellis.spark._
+import geotrellis.raster.mapalgebra.focal.hillshade.*
+import geotrellis.spark.*
 import geotrellis.spark.mapalgebra.focal.FocalOperation
 
 import org.apache.spark.Partitioner

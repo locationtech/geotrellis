@@ -16,21 +16,21 @@
 
 package geotrellis.raster.io.geotiff.reader
 
-import geotrellis.proj4._
-import geotrellis.raster._
-import geotrellis.raster.io.arg._
-import geotrellis.raster.io.geotiff._
-import geotrellis.raster.io.geotiff.tags._
+import geotrellis.proj4.*
+import geotrellis.raster.*
+import geotrellis.raster.io.arg.*
+import geotrellis.raster.io.geotiff.*
+import geotrellis.raster.io.geotiff.tags.*
 import geotrellis.raster.io.geotiff.tags.codes.ColorSpace
 import geotrellis.raster.render.RGB
-import geotrellis.raster.summary.polygonal._
-import geotrellis.raster.summary.polygonal.visitors._
+import geotrellis.raster.summary.polygonal.*
+import geotrellis.raster.summary.polygonal.visitors.*
 import geotrellis.raster.summary.types.{MaxValue, MinValue}
-import geotrellis.raster.testkit._
+import geotrellis.raster.testkit.*
 import geotrellis.vector.{Extent, Point}
 
-import monocle.syntax.apply._
-import spire.syntax.cfor._
+import monocle.syntax.apply.*
+import spire.syntax.cfor.*
 
 import org.scalatest.{BeforeAndAfterAll, Inspectors}
 import org.scalatest.funsuite.AnyFunSuite

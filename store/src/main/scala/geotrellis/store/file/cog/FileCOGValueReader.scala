@@ -16,15 +16,15 @@
 
 package geotrellis.store.file.cog
 
-import geotrellis.layer._
-import geotrellis.raster._
+import geotrellis.layer.*
+import geotrellis.raster.*
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
-import geotrellis.store._
-import geotrellis.store.cog._
+import geotrellis.store.*
+import geotrellis.store.cog.*
 import geotrellis.store.file.{FileAttributeStore, KeyPathGenerator}
-import geotrellis.store.index._
+import geotrellis.store.index.*
 
-import _root_.io.circe._
+import _root_.io.circe.*
 
 import scala.reflect.ClassTag
 import java.net.URI

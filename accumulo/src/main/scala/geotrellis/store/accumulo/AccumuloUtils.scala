@@ -16,11 +16,11 @@
 
 package geotrellis.store.accumulo
 
-import geotrellis.layer._
+import geotrellis.layer.*
 import geotrellis.store.index.KeyIndex
 
 
-import scala.jdk.CollectionConverters._
+import scala.jdk.CollectionConverters.*
 
 object AccumuloUtils {
   /**

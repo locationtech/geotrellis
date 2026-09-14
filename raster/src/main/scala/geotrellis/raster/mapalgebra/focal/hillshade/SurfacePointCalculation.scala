@@ -16,10 +16,10 @@
 
 package geotrellis.raster.mapalgebra.focal.hillshade
 
-import geotrellis.raster._
+import geotrellis.raster.*
 import geotrellis.raster.mapalgebra.focal.{FocalCalculation, Neighborhood, TargetCell}
 
-import scala.math._
+import scala.math.*
 
 /** A representation of the approximated partial derivatives of a raster cell,
  *  and the slope and aspect that can be calculated from those values.

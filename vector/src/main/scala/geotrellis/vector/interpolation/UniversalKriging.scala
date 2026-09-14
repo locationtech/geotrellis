@@ -16,9 +16,9 @@
 
 package geotrellis.vector.interpolation
 
-import geotrellis.vector._
-import org.apache.commons.math3.linear._
-import spire.syntax.cfor._
+import geotrellis.vector.*
+import org.apache.commons.math3.linear.*
+import spire.syntax.cfor.*
 
 object UniversalKriging {
   def apply(points: Array[PointFeature[Double]], attrFunc: (Double, Double) => Array[Double], bandwidth: Double, model: ModelType): Kriging = {
@@ -115,7 +115,7 @@ class UniversalKriging(points: Array[PointFeature[Double]],
     val errorOLS: Array[Double] = ptData.subtract(attrMatrix.multiply(betaOLS)).getColumn(0)
     val pointsFitting: Array[PointFeature[Double]] =
       Array.tabulate(n)
-      { row: Int => PointFeature(points(row).geom, errorOLS(row)) }
+      { (row: Int) => PointFeature(points(row).geom, errorOLS(row)) }
 
     val res: Semivariogram = NonLinearSemivariogram(pointsFitting, 0, 0, model)
     val covariogramMatrix: RealMatrix =
@@ -170,7 +170,7 @@ class UniversalKriging(points: Array[PointFeature[Double]],
               { (i, _) => res(sortedDist.getEntry(i,0)) }
             )
           )
-      cfor(0)(_ < sortedDist.getRowDimension, _ + 1) { i: Int =>
+      cfor(0)(_ < sortedDist.getRowDimension, _ + 1) { (i: Int) =>
         if (sortedDist.getEntry(i, 0) == 0)
           localCovVector.setEntry(i, 0, localCovVector.getEntry(i, 0) + res.nugget)
       }

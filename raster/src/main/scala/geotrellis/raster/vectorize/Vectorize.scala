@@ -16,9 +16,9 @@
 
 package geotrellis.raster.vectorize
 
-import geotrellis.raster._
+import geotrellis.raster.*
 import geotrellis.raster.regiongroup.{RegionGroup, RegionGroupOptions}
-import geotrellis.vector._
+import geotrellis.vector.*
 
 import org.locationtech.jts.geom
 

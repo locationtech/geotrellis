@@ -16,11 +16,11 @@
 
 package geotrellis.vector.io.json
 
-import io.circe._
-import io.circe.syntax._
-import cats.syntax.either._
+import io.circe.*
+import io.circe.syntax.*
+import cats.syntax.either.*
 
-import geotrellis.vector._
+import geotrellis.vector.*
 
 import scala.collection.mutable
 import scala.collection.immutable.VectorBuilder
@@ -98,7 +98,7 @@ class JsonFeatureCollection(features: List[Json] = Nil) {
     ret.result()
   }
 
-  def getAllFeatures[F <: Feature[_, _] :Decoder]: Vector[F] =
+  def getAllFeatures[F <: Feature[?, ?] :Decoder]: Vector[F] =
     getAll[F]
 
   def getAllPointFeatures[D: Decoder]()           = getAll[PointFeature[D]]

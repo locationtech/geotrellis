@@ -17,10 +17,10 @@
 package geotrellis.store.avro.codecs
 
 import geotrellis.layer.TemporalProjectedExtent
-import geotrellis.store.avro._
-import geotrellis.store.avro.codecs.Implicits._
-import org.apache.avro._
-import org.apache.avro.generic._
+import geotrellis.store.avro.*
+import geotrellis.store.avro.codecs.Implicits.*
+import org.apache.avro.*
+import org.apache.avro.generic.*
 
 
 trait TemporalProjectedExtentCodec {

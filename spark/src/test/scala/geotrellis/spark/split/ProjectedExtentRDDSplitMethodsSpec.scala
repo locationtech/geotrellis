@@ -16,12 +16,12 @@
 
 package geotrellis.spark.split
 
-import geotrellis.proj4._
-import geotrellis.raster._
-import geotrellis.raster.testkit._
-import geotrellis.spark._
-import geotrellis.vector._
-import geotrellis.spark.testkit._
+import geotrellis.proj4.*
+import geotrellis.raster.*
+import geotrellis.raster.testkit.*
+import geotrellis.spark.*
+import geotrellis.vector.*
+import geotrellis.spark.testkit.*
 
 import org.apache.spark.rdd.RDD
 import org.scalatest.matchers.should.Matchers

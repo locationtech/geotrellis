@@ -16,10 +16,10 @@
 
 package geotrellis.store.index.rowmajor
 
-import geotrellis.layer._
+import geotrellis.layer.*
 import geotrellis.store.index.KeyIndex
 
-import spire.syntax.cfor._
+import spire.syntax.cfor.*
 
 /** Represents a row major ordering for SpatialKey */
 class RowMajorSpatialKeyIndex(val keyBounds: KeyBounds[SpatialKey]) extends KeyIndex[SpatialKey] {

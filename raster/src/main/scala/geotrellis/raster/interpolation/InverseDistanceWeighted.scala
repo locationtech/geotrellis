@@ -16,9 +16,9 @@
 
 package geotrellis.raster.interpolation
 
-import geotrellis.raster._
-import geotrellis.vector._
-import spire.syntax.cfor._
+import geotrellis.raster.*
+import geotrellis.vector.*
+import spire.syntax.cfor.*
 
 object InverseDistanceWeighted {
   case class Options(

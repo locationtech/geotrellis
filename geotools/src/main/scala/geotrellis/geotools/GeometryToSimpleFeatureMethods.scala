@@ -16,9 +16,9 @@
 
 package geotrellis.geotools
 
-import geotrellis.proj4._
+import geotrellis.proj4.*
 import geotrellis.util.MethodExtensions
-import geotrellis.vector._
+import geotrellis.vector.*
 
 import org.geotools.api.feature.simple.SimpleFeature
 

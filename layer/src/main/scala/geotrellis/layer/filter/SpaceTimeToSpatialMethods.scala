@@ -16,8 +16,8 @@
 
 package geotrellis.layer.filter
 
-import geotrellis.layer._
-import geotrellis.util._
+import geotrellis.layer.*
+import geotrellis.util.*
 
 import cats.Functor
 import java.time.ZonedDateTime

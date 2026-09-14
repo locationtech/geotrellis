@@ -16,20 +16,20 @@
 
 package geotrellis.doc.examples.spark
 
-import geotrellis.layer._
-import geotrellis.store._
-import geotrellis.spark._
-import geotrellis.spark.store._
-import geotrellis.store._
-import geotrellis.store.json._
-import geotrellis.store.index._
-import geotrellis.store.index.zcurve._
-import geotrellis.util._
+import geotrellis.layer.*
+import geotrellis.store.*
+import geotrellis.spark.*
+import geotrellis.spark.store.*
+import geotrellis.store.*
+import geotrellis.store.json.*
+import geotrellis.store.index.*
+import geotrellis.store.index.zcurve.*
+import geotrellis.util.*
 
-import _root_.io.circe._
-import _root_.io.circe.syntax._
-import _root_.io.circe.generic.semiauto._
-import cats.syntax.either._
+import _root_.io.circe.*
+import _root_.io.circe.syntax.*
+import _root_.io.circe.generic.semiauto.*
+import cats.syntax.either.*
 
 // --- //
 
@@ -96,7 +96,7 @@ object ZVoxelKeyIndex {
 
   /** A [[Decoder]] for [[ZVoxelKeyIndex]]. */
   implicit val zVoxelKeyIndexDecoder: Decoder[ZVoxelKeyIndex] =
-    Decoder.decodeHCursor.emap { c: HCursor =>
+    Decoder.decodeHCursor.emap { (c: HCursor) =>
       (c.downField("type").as[String], c.downField("properties")) match {
         case (Right(typeName), properties) =>
           if(typeName != voxel) Left(s"Wrong KeyIndex type: $voxel expected.")

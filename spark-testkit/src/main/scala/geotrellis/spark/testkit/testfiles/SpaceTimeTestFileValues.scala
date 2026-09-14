@@ -17,9 +17,9 @@
 package geotrellis.spark.testkit.testfiles
 
 import geotrellis.layer.SpaceTimeKey
-import geotrellis.raster._
+import geotrellis.raster.*
 
-import spire.syntax.cfor._
+import spire.syntax.cfor.*
 
 abstract class TestFileSpaceTimeTiles(tileLayout: TileLayout) {
   final def apply(key: SpaceTimeKey, timeIndex: Int): Tile = {

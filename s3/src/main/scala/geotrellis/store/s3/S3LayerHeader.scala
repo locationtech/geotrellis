@@ -18,9 +18,9 @@ package geotrellis.store.s3
 
 import geotrellis.store.{LayerHeader, LayerType, AvroLayerType}
 
-import io.circe._
-import io.circe.syntax._
-import cats.syntax.either._
+import io.circe.*
+import io.circe.syntax.*
+import cats.syntax.either.*
 
 case class S3LayerHeader(
   keyClass: String,

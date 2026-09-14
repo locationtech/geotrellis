@@ -16,7 +16,7 @@
 
 package geotrellis.store.hadoop
 
-import geotrellis.store._
+import geotrellis.store.*
 import geotrellis.store.hadoop.util.HdfsUtils
 import geotrellis.util.UriUtils
 
@@ -46,7 +46,7 @@ class HadoopCollectionLayerProvider extends AttributeStoreProvider with ValueRea
     new HadoopValueReader(store, conf, maxOpenFiles)
   }
 
-  def collectionLayerReader(uri: URI, store: AttributeStore) = {
+  def collectionLayerReader(uri: URI, store: AttributeStore): HadoopCollectionLayerReader = {
     val _uri = HdfsUtils.trim(uri)
     val path = new Path(_uri)
     val conf = new Configuration()

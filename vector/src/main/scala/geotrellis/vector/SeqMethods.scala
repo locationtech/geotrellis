@@ -16,7 +16,7 @@
 
 package geotrellis.vector
 
-import scala.jdk.CollectionConverters._
+import scala.jdk.CollectionConverters.*
 
 import org.locationtech.jts.operation.union.CascadedPolygonUnion
 

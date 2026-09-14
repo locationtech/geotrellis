@@ -16,12 +16,12 @@
 
 package geotrellis.spark.store.cog
 
-import geotrellis.layer._
-import geotrellis.store._
+import geotrellis.layer.*
+import geotrellis.store.*
 import geotrellis.store.cog.COGLayerStorageMetadata
-import geotrellis.store.index._
-import geotrellis.spark.testkit.testfiles.cog._
-import geotrellis.spark.testkit._
+import geotrellis.store.index.*
+import geotrellis.spark.testkit.testfiles.cog.*
+import geotrellis.spark.testkit.*
 
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.funspec.AnyFunSpec

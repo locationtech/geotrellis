@@ -42,7 +42,7 @@ final case class BitArrayTile(val array: Array[Byte], cols: Int, rows: Int)
     sys.error(s"BitArrayTile array length must be ${(size + 7) / 8}, was ${array.size}")
   }
 
-  val cellType = BitCellType
+  val cellType: BitCellType.type = BitCellType
 
   /**
     * Get the datum at the specified index.
@@ -120,7 +120,7 @@ final case class BitArrayTile(val array: Array[Byte], cols: Int, rows: Int)
     *
     * @return  The copy
     */
-  def copy = BitArrayTile(array.clone, cols, rows)
+  def copy: BitArrayTile = BitArrayTile(array.clone, cols, rows)
 
   /**
     * Convert the present [[BitArrayTile]] to an array of bytes and

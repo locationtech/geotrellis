@@ -17,8 +17,8 @@
 package geotrellis.spark.store.hadoop
 
 import geotrellis.store.hadoop.HadoopAttributeStore
-import geotrellis.spark.store._
+import geotrellis.spark.store.*
 
 class HadoopAttributeStoreSpec extends AttributeStoreSpec {
-  lazy val attributeStore = HadoopAttributeStore(outputLocal)
+  lazy val attributeStore: HadoopAttributeStore = HadoopAttributeStore(outputLocal)
 }

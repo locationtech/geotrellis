@@ -16,8 +16,8 @@
 
 package geotrellis.layer
 
-import geotrellis.raster._
-import geotrellis.vector._
+import geotrellis.raster.*
+import geotrellis.vector.*
 import spire.math.Integral
 import _root_.io.circe.generic.JsonCodec
 

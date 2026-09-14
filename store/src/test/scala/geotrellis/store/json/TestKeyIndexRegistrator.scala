@@ -16,12 +16,12 @@
 
 package geotrellis.store.json
 
-import geotrellis.layer._
-import geotrellis.store.index._
+import geotrellis.layer.*
+import geotrellis.store.index.*
 
-import io.circe._
-import io.circe.syntax._
-import cats.syntax.either._
+import io.circe.*
+import io.circe.syntax.*
+import cats.syntax.either.*
 
 class TestKeyIndex(val keyBounds: KeyBounds[SpatialKey]) extends KeyIndex[SpatialKey] {
   def toIndex(key: SpatialKey): BigInt = BigInt(1)
@@ -42,7 +42,7 @@ class TestKeyIndexRegistrator extends KeyIndexRegistrator {
     }
 
   implicit val testKeyIndexDecoder: Decoder[TestKeyIndex] =
-    Decoder.decodeHCursor.emap { c: HCursor =>
+    Decoder.decodeHCursor.emap { (c: HCursor) =>
       (c.downField("type").as[String], c.downField("properties")) match {
         case (Right(typeName), properties) =>
           if(typeName != test) Left(s"Wrong KeyIndex type: $test expected.")

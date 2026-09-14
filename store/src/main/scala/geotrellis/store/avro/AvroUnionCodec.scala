@@ -16,9 +16,9 @@
 
 package geotrellis.store.avro
 
-import org.apache.avro._
-import org.apache.avro.generic._
-import scala.jdk.CollectionConverters._
+import org.apache.avro.*
+import org.apache.avro.generic.*
+import scala.jdk.CollectionConverters.*
 import scala.reflect.ClassTag
 
 /**
@@ -26,7 +26,7 @@ import scala.reflect.ClassTag
  * @param formats list of formats that make up the union
  * @tparam T      superclass of listed formats
  */
-class AvroUnionCodec[T: ClassTag](formats: AvroRecordCodec[_ <: T]*) extends AvroRecordCodec[T] {
+class AvroUnionCodec[T: ClassTag](formats: AvroRecordCodec[? <: T]*) extends AvroRecordCodec[T] {
   def schema: Schema =
     Schema.createUnion(formats.map(_.schema).asJava)
 
@@ -47,7 +47,7 @@ class AvroUnionCodec[T: ClassTag](formats: AvroRecordCodec[_ <: T]*) extends Avr
     findFormat(_.schema.getFullName == fullName, fullName).decode(rec)
   }
 
-  private def findFormat(f: AvroRecordCodec[_] => Boolean, target: String): AvroRecordCodec[T] =
+  private def findFormat(f: AvroRecordCodec[?] => Boolean, target: String): AvroRecordCodec[T] =
     formats.filter(f) match {
       case Seq(format) => format.asInstanceOf[AvroRecordCodec[T]]
       case Seq() => sys.error(s"No formats found to support $target")

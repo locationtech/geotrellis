@@ -20,9 +20,9 @@ import geotrellis.raster.io.geotiff.tags.TiffTags
 import geotrellis.store.hadoop.util.HdfsRangeReader
 import geotrellis.util.StreamingByteReader
 
-import org.apache.hadoop.fs._
-import org.apache.hadoop.mapreduce._
-import org.apache.hadoop.mapreduce.lib.input._
+import org.apache.hadoop.fs.*
+import org.apache.hadoop.mapreduce.*
+import org.apache.hadoop.mapreduce.lib.input.*
 
 /**
  * This class extends [[FileInputFormat]] and is used to create RDDs of TiffTags.

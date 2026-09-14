@@ -16,9 +16,9 @@
 
 package geotrellis.raster.gdal
 
-import geotrellis.raster._
+import geotrellis.raster.*
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
-import geotrellis.raster.testkit._
+import geotrellis.raster.testkit.*
 
 import org.scalatest.GivenWhenThen
 import org.scalatest.funspec.AnyFunSpec

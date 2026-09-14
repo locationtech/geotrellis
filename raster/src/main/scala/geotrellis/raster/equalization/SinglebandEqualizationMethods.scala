@@ -16,7 +16,7 @@
 
 package geotrellis.raster.equalization
 
-import geotrellis.raster.histogram._
+import geotrellis.raster.histogram.*
 import geotrellis.raster.Tile
 import geotrellis.util.MethodExtensions
 

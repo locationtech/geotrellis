@@ -27,7 +27,7 @@ object BoundaryDelaunay {
   type Vertex = Int
 
   def isMeshValid(triangles: TriangleMap, het: HalfEdgeTable): Boolean = {
-    import het._
+    import het.*
     var valid = true
     triangles.getTriangles().map { case (idx, e0) => {
       val (a, b, c) = idx
@@ -65,8 +65,8 @@ object BoundaryDelaunay {
     val triangles = new TriangleMap(halfEdgeTable)
 
     def circumcircleLeavesExtent(extent: Extent)(tri: HalfEdge): Boolean = {
-      import dt.halfEdgeTable._
-      import dt.predicates._
+      import dt.halfEdgeTable.*
+      import dt.predicates.*
 
       val (radius, center, valid) = circleCenter(getDest(tri), getDest(getNext(tri)), getDest(getNext(getNext(tri))))
 
@@ -78,7 +78,7 @@ object BoundaryDelaunay {
     }
 
     def inclusionTest(extent: Extent, thresh: Double)(tri: HalfEdge): Boolean = {
-      import dt.halfEdgeTable._
+      import dt.halfEdgeTable.*
 
       val (i, j, k) = (getSrc(tri), getDest(tri), getDest(getNext(tri)))
       val trans = dt.pointSet.getCoordinate(_)
@@ -111,7 +111,7 @@ object BoundaryDelaunay {
      * vertices in the local mesh (i.e., getDest(edge) == getDest(orig)).
      */
     def lookupTriangle(tri: HalfEdge): Option[ResultEdge] = {
-      import dt.halfEdgeTable._
+      import dt.halfEdgeTable.*
 
       triangles.get(getDest(tri), getDest(getNext(tri)), getDest(getNext(getNext(tri)))) match {
         case Some(base) => {
@@ -132,7 +132,7 @@ object BoundaryDelaunay {
     }
 
     def copyConvertEdge(e: HalfEdge): ResultEdge = {
-      import dt.halfEdgeTable._
+      import dt.halfEdgeTable.*
 
       addPoint(getSrc(e))
       addPoint(getDest(e))
@@ -140,7 +140,7 @@ object BoundaryDelaunay {
     }
 
     def copyConvertLinearBound(): ResultEdge = {
-      import dt.halfEdgeTable._
+      import dt.halfEdgeTable.*
 
       val correspondingEdge = collection.mutable.Map.empty[(Vertex, Vertex), ResultEdge]
       var e = dt.boundary()
@@ -168,7 +168,7 @@ object BoundaryDelaunay {
     val innerEdges = collection.mutable.Map.empty[(Vertex, Vertex), (HalfEdge, ResultEdge)]
 
     def copyConvertBoundingLoop(): ResultEdge = {
-      import dt.halfEdgeTable._
+      import dt.halfEdgeTable.*
 
       val first = copyConvertEdge(dt.boundary())
       var last = first
@@ -192,7 +192,7 @@ object BoundaryDelaunay {
     }
 
     def copyConvertTriangle(tri: HalfEdge): ResultEdge = {
-      import dt.halfEdgeTable._
+      import dt.halfEdgeTable.*
 
       val a = addPoint(getDest(tri))
       val b = addPoint(getDest(getNext(tri)))
@@ -210,7 +210,7 @@ object BoundaryDelaunay {
     }
 
     def recursiveAddTris(e0: HalfEdge, opp0: ResultEdge): Unit = {
-      import dt.halfEdgeTable._
+      import dt.halfEdgeTable.*
 
       val workQueue = collection.mutable.Queue( (e0, opp0) )
 
@@ -249,7 +249,7 @@ object BoundaryDelaunay {
     }
 
     def fillInnerLoop(): Unit = {
-      import dt.halfEdgeTable._
+      import dt.halfEdgeTable.*
 
       val polys = collection.mutable.ListBuffer.empty[Polygon]
       val bounds = innerEdges.values.map{ case (_, o) => (halfEdgeTable.getSrc(o) -> halfEdgeTable.getDest(o), o) }.toMap
@@ -316,7 +316,7 @@ object BoundaryDelaunay {
     }
 
     def copyConvertBoundingTris(): ResultEdge = {
-      import dt.halfEdgeTable._
+      import dt.halfEdgeTable.*
 
       val newBound: ResultEdge = copyConvertBoundingLoop()
       var e = dt.boundary()
@@ -360,7 +360,7 @@ case class BoundaryDelaunay(
   isLinear: Boolean
 ) extends Serializable {
   def trianglesFromVertices: MultiPolygon = {
-    val indexToCoord = { i: Int => Point(pointSet.getCoordinate(i)) }
+    val indexToCoord = { (i: Int) => Point(pointSet.getCoordinate(i)) }
     geotrellis.vector.MultiPolygon(
       triangleMap
         .triangleVertices
@@ -371,8 +371,8 @@ case class BoundaryDelaunay(
   }
 
   def trianglesFromEdges: MultiPolygon = {
-    val indexToCoord = { i: Int => Point(pointSet.getCoordinate(i)) }
-    import halfEdgeTable._
+    val indexToCoord = { (i: Int) => Point(pointSet.getCoordinate(i)) }
+    import halfEdgeTable.*
     geotrellis.vector.MultiPolygon(
       triangleMap
         .triangleEdges
@@ -382,7 +382,7 @@ case class BoundaryDelaunay(
     )
   }
   def writeWkt(wktFile: String) = {
-    val indexToCoord = { i: Int => Point(pointSet.getCoordinate(i)) }
+    val indexToCoord = { (i: Int) => Point(pointSet.getCoordinate(i)) }
     val mp = geotrellis.vector.MultiPolygon(triangleMap.triangleVertices.map{ case (i,j,k) => Polygon(indexToCoord(i), indexToCoord(j), indexToCoord(k), indexToCoord(i)) })
     val wktString = geotrellis.vector.io.wkt.WKT.write(mp)
     new java.io.PrintWriter(wktFile) { write(wktString); close() }

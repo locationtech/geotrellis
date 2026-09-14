@@ -16,13 +16,13 @@
 
 package geotrellis.store.hadoop
 
-import geotrellis.store._
-import geotrellis.store.hadoop.util._
+import geotrellis.store.*
+import geotrellis.store.hadoop.util.*
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 
-import org.log4s._
+import org.log4s.*
 
 class HadoopLayerDeleter(
   val attributeStore: AttributeStore,

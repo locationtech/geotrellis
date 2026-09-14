@@ -16,11 +16,11 @@
 
 package geotrellis.util
 
-import java.io._
+import java.io.*
 import java.nio.ByteBuffer
-import java.nio.channels.FileChannel.MapMode._
+import java.nio.channels.FileChannel.MapMode.*
 import java.nio.charset.StandardCharsets
-import java.nio.file._
+import java.nio.file.*
 
 
 object Filesystem {

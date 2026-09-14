@@ -16,7 +16,7 @@
 
 package geotrellis.raster.io.geotiff
 
-import geotrellis.raster.io.geotiff.compression._
+import geotrellis.raster.io.geotiff.compression.*
 
 /**
  * This trait holds the basic information about the image data of a [[GeoTiff]]

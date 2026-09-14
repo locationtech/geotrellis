@@ -16,27 +16,27 @@
 
 package geotrellis.spark.store.kryo
 
-import org.apache.spark.serializer.{KryoRegistrator => SparkKryoRegistrator}
+import org.apache.spark.serializer.{KryoRegistrator as SparkKryoRegistrator}
 import com.esotericsoftware.kryo.Kryo
-import com.esotericsoftware.kryo.serializers._
+import com.esotericsoftware.kryo.serializers.*
 import com.esotericsoftware.kryo.io.Input
 import com.esotericsoftware.kryo.io.Output
 import java.util.{Comparator, TreeMap}
 
 /** Account for a bug in Kryo < 2.22 for serializing TreeMaps */
 class XTreeMapSerializer extends MapSerializer {
-  override def write (kryo: Kryo, output: Output, map: java.util.Map[_, _]): Unit = {
-    val treeMap = map.asInstanceOf[TreeMap[_, _]]
+  override def write (kryo: Kryo, output: Output, map: java.util.Map[?, ?]): Unit = {
+    val treeMap = map.asInstanceOf[TreeMap[?, ?]]
     kryo.writeClassAndObject(output, treeMap.comparator())
     super.write(kryo, output, map)
   }
 
-  protected override def create (kryo: Kryo, input: Input, t: Class[java.util.Map[_, _]]): java.util.Map[_, _] = {
-    new TreeMap(kryo.readClassAndObject(input).asInstanceOf[Comparator[_]])
+  protected override def create (kryo: Kryo, input: Input, t: Class[java.util.Map[?, ?]]): java.util.Map[?, ?] = {
+    new TreeMap(kryo.readClassAndObject(input).asInstanceOf[Comparator[?]])
   }
 
-  protected override def createCopy (kryo: Kryo, original: java.util.Map[_, _]): java.util.Map[_, _] = {
-    new TreeMap(original.asInstanceOf[TreeMap[_, _]].comparator())
+  protected override def createCopy (kryo: Kryo, original: java.util.Map[?, ?]): java.util.Map[?, ?] = {
+    new TreeMap(original.asInstanceOf[TreeMap[?, ?]].comparator())
   }
 }
 
@@ -45,10 +45,10 @@ class KryoRegistrator extends SparkKryoRegistrator {
   override def registerClasses(kryo: Kryo): Unit = {
     // TreeMap serializaiton has a bug; we fix it here as we're stuck on low
     // Kryo versions due to Spark. Hack-tastic.
-    kryo.register(classOf[TreeMap[_, _]], (new XTreeMapSerializer).asInstanceOf[com.esotericsoftware.kryo.Serializer[TreeMap[_, _]]])
+    kryo.register(classOf[TreeMap[?, ?]], (new XTreeMapSerializer).asInstanceOf[com.esotericsoftware.kryo.Serializer[TreeMap[?, ?]]])
 
-    kryo.register(classOf[(_,_)])
-    kryo.register(classOf[::[_]])
+    kryo.register(classOf[(?,?)])
+    kryo.register(classOf[::[?]])
     kryo.register(classOf[geotrellis.raster.ByteArrayFiller])
 
     // CellTypes
@@ -107,22 +107,22 @@ class KryoRegistrator extends SparkKryoRegistrator {
     kryo.register(classOf[geotrellis.raster.DoubleUserDefinedNoDataArrayTile])
 
     kryo.register(classOf[Array[geotrellis.raster.Tile]])
-    kryo.register(classOf[Array[geotrellis.raster.TileFeature[_,_]]])
+    kryo.register(classOf[Array[geotrellis.raster.TileFeature[?,?]]])
     kryo.register(classOf[geotrellis.raster.Tile])
-    kryo.register(classOf[geotrellis.raster.TileFeature[_,_]])
+    kryo.register(classOf[geotrellis.raster.TileFeature[?,?]])
 
     kryo.register(classOf[geotrellis.raster.ArrayMultibandTile])
     kryo.register(classOf[geotrellis.raster.CompositeTile])
     kryo.register(classOf[geotrellis.raster.ConstantTile])
     kryo.register(classOf[geotrellis.raster.CroppedTile])
-    kryo.register(classOf[geotrellis.raster.Raster[_]])
+    kryo.register(classOf[geotrellis.raster.Raster[?]])
     kryo.register(classOf[geotrellis.raster.RasterExtent])
-    kryo.register(classOf[geotrellis.raster.CellGrid[_]])
+    kryo.register(classOf[geotrellis.raster.CellGrid[?]])
     kryo.register(classOf[geotrellis.raster.CellSize])
-    kryo.register(classOf[geotrellis.raster.GridBounds[_]])
-    kryo.register(classOf[geotrellis.raster.GridExtent[_]])
+    kryo.register(classOf[geotrellis.raster.GridBounds[?]])
+    kryo.register(classOf[geotrellis.raster.GridExtent[?]])
     kryo.register(classOf[geotrellis.raster.mapalgebra.focal.TargetCell])
-    kryo.register(classOf[geotrellis.raster.summary.GridVisitor[_, _]])
+    kryo.register(classOf[geotrellis.raster.summary.GridVisitor[?, ?]])
     kryo.register(geotrellis.raster.mapalgebra.focal.TargetCell.All.getClass)
     kryo.register(geotrellis.raster.mapalgebra.focal.TargetCell.Data.getClass)
     kryo.register(geotrellis.raster.mapalgebra.focal.TargetCell.NoData.getClass)
@@ -160,7 +160,7 @@ class KryoRegistrator extends SparkKryoRegistrator {
     kryo.register(classOf[Array[geotrellis.store.avro.AvroRecordCodec[Any]]])
     kryo.register(classOf[Array[geotrellis.layer.SpaceTimeKey]])
     kryo.register(classOf[Array[geotrellis.layer.SpatialKey]])
-    kryo.register(classOf[Array[geotrellis.vector.Feature[_, Any]]])
+    kryo.register(classOf[Array[geotrellis.vector.Feature[?, Any]]])
     kryo.register(classOf[Array[geotrellis.vector.MultiPolygon]])
     kryo.register(classOf[Array[geotrellis.vector.Point]])
     kryo.register(classOf[Array[geotrellis.vector.Polygon]])
@@ -186,7 +186,7 @@ class KryoRegistrator extends SparkKryoRegistrator {
     kryo.register(classOf[geotrellis.raster.histogram.StreamingHistogram.Delta])
     kryo.register(classOf[geotrellis.raster.histogram.StreamingHistogram.Bucket])
     kryo.register(classOf[geotrellis.raster.density.KernelStamper])
-    kryo.register(classOf[geotrellis.raster.ProjectedRaster[_]])
+    kryo.register(classOf[geotrellis.raster.ProjectedRaster[?]])
     kryo.register(classOf[geotrellis.raster.TileLayout])
     kryo.register(classOf[geotrellis.layer.TemporalProjectedExtent])
     kryo.register(classOf[geotrellis.raster.buffer.BufferSizes])
@@ -196,7 +196,7 @@ class KryoRegistrator extends SparkKryoRegistrator {
     kryo.register(classOf[geotrellis.store.avro.codecs.TupleCodec[Any, Any]])
     kryo.register(classOf[geotrellis.layer.KeyBounds[Any]])
     kryo.register(classOf[geotrellis.spark.knn.KNearestRDD.Ord[Any]])
-    kryo.register(classOf[geotrellis.vector.Feature[_, Any]])
+    kryo.register(classOf[geotrellis.vector.Feature[?, Any]])
     kryo.register(classOf[geotrellis.vector.Geometry], new GeometrySerializer[geotrellis.vector.Geometry])
     kryo.register(classOf[geotrellis.vector.GeometryCollection])
     kryo.register(classOf[geotrellis.vector.LineString], new GeometrySerializer[geotrellis.vector.LineString])

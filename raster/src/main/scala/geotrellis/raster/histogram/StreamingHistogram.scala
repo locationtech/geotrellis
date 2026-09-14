@@ -16,7 +16,7 @@
 
 package geotrellis.raster.histogram
 
-import geotrellis.raster._
+import geotrellis.raster.*
 import geotrellis.raster.summary.Statistics
 import StreamingHistogram.{Bucket, Delta, DeltaCompare}
 
@@ -26,8 +26,8 @@ import java.util.TreeMap
 
 import cats.Monoid
 
-import scala.jdk.CollectionConverters._
-import scala.collection.mutable.{ListBuffer => MutableListBuffer}
+import scala.jdk.CollectionConverters.*
+import scala.collection.mutable.{ListBuffer as MutableListBuffer}
 
 
 object StreamingHistogram {

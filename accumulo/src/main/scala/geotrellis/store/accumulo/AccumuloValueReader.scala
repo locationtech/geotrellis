@@ -16,19 +16,19 @@
 
 package geotrellis.store.accumulo
 
-import geotrellis.raster._
-import geotrellis.raster.resample._
-import geotrellis.layer._
-import geotrellis.store._
+import geotrellis.raster.*
+import geotrellis.raster.resample.*
+import geotrellis.layer.*
+import geotrellis.store.*
 import geotrellis.store.avro.{AvroEncoder, AvroRecordCodec}
 import geotrellis.store.avro.codecs.KeyValueRecordCodec
 
-import org.apache.accumulo.core.data.{Range => ARange}
+import org.apache.accumulo.core.data.{Range as ARange}
 import org.apache.accumulo.core.security.Authorizations
 import org.apache.hadoop.io.Text
-import _root_.io.circe._
+import _root_.io.circe.*
 
-import scala.jdk.CollectionConverters._
+import scala.jdk.CollectionConverters.*
 import scala.reflect.ClassTag
 
 class AccumuloValueReader(
@@ -51,7 +51,7 @@ class AccumuloValueReader(
 
       val tiles = scanner.iterator.asScala
         .map { entry => AvroEncoder.fromBinary(writerSchema, entry.getValue.get)(codec) }
-        .flatMap { pairs: Vector[(K, V)] => pairs.filter(pair => pair._1 == key) }.toVector
+        .flatMap { (pairs: Vector[(K, V)]) => pairs.filter(pair => pair._1 == key) }.toVector
 
       if (tiles.isEmpty) {
         throw new ValueNotFoundError(key, layerId)

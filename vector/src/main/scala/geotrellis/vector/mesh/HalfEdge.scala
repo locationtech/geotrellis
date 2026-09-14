@@ -16,7 +16,7 @@
 
 package geotrellis.vector.mesh
 
-import geotrellis.vector._
+import geotrellis.vector.*
 
 class HalfEdge[V,F](val vert: V, var flip: HalfEdge[V,F], var next: HalfEdge[V,F], var face: Option[F]) extends Serializable {
 

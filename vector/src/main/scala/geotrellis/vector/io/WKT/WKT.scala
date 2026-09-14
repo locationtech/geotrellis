@@ -16,10 +16,10 @@
 
 package geotrellis.vector.io.wkt
 
-import geotrellis.vector._
+import geotrellis.vector.*
 
 import org.locationtech.jts.io.{WKTReader, WKTWriter}
-import org.log4s._
+import org.log4s.*
 
 /** A thread-safe wrapper for the WKT Writer and Reader */
 object WKT {

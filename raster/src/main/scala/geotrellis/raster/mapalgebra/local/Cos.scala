@@ -16,7 +16,7 @@
 
 package geotrellis.raster.mapalgebra.local
 
-import geotrellis.raster._
+import geotrellis.raster.*
 
 /**
   * Operation to get the Cosine of values.

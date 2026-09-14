@@ -16,7 +16,7 @@
 
 package geotrellis.store.s3
 
-import geotrellis.store._
+import geotrellis.store.*
 
 import java.net.URI
 

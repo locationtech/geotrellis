@@ -17,7 +17,7 @@
 package geotrellis.raster
 
 import geotrellis.proj4.CRS
-import geotrellis.vector._
+import geotrellis.vector.*
 
 class ProjectedRasterExtent(
   val projectedExtent: ProjectedExtent, 

@@ -16,14 +16,14 @@
 
 package geotrellis.spark.stitch
 
-import geotrellis.raster._
-import geotrellis.raster.prototype._
+import geotrellis.raster.*
+import geotrellis.raster.prototype.*
 import geotrellis.raster.stitch.Stitcher
-import geotrellis.layer._
-import geotrellis.layer.stitch._
-import geotrellis.vector._
-import geotrellis.spark._
-import geotrellis.util._
+import geotrellis.layer.*
+import geotrellis.layer.stitch.*
+import geotrellis.vector.*
+import geotrellis.spark.*
+import geotrellis.util.*
 import org.apache.spark.rdd.RDD
 
 abstract class SpatialTileLayoutRDDStitchMethods[

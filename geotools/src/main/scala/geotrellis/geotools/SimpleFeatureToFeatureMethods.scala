@@ -17,7 +17,7 @@
 package geotrellis.geotools
 
 import geotrellis.util.MethodExtensions
-import geotrellis.vector._
+import geotrellis.vector.*
 import org.geotools.api.feature.simple.SimpleFeature
 
 import scala.reflect.ClassTag

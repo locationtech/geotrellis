@@ -18,8 +18,8 @@ package geotrellis.doc.examples.vector
 
 object VectorExamples {
   def `Writing a sequence of vector data to a GeoJson feature collection`: Unit = {
-    import geotrellis.vector._
-    import geotrellis.vector.io._
+    import geotrellis.vector.*
+    import geotrellis.vector.io.*
 
     // Starting with a list of polygon features,
     // e.g. the return type of tile.toVector

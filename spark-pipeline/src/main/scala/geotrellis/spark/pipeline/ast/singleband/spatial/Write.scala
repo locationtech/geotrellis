@@ -16,11 +16,11 @@
 
 package geotrellis.spark.pipeline.ast.singleband.spatial
 
-import io.circe.syntax._
+import io.circe.syntax.*
 
-import geotrellis.spark._
+import geotrellis.spark.*
 import geotrellis.layer.SpatialKey
-import geotrellis.spark.pipeline.ast._
+import geotrellis.spark.pipeline.ast.*
 import geotrellis.spark.pipeline.json.write
 
 import org.apache.spark.SparkContext

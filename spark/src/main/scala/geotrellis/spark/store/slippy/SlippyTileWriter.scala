@@ -18,7 +18,7 @@ package geotrellis.spark.store.slippy
 
 import geotrellis.layer.SpatialKey
 
-import org.apache.spark.rdd._
+import org.apache.spark.rdd.*
 
 trait SlippyTileWriter[T] {
   def setupWrite(zoom: Int, rdd: RDD[(SpatialKey, T)]): RDD[(SpatialKey, T)]

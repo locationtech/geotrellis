@@ -16,11 +16,11 @@
 
 package geotrellis.raster.histogram
 
-import geotrellis.raster._
+import geotrellis.raster.*
 
-import _root_.io.circe.syntax._
-import _root_.io.circe.parser._
-import cats.syntax.either._
+import _root_.io.circe.syntax.*
+import _root_.io.circe.parser.*
+import cats.syntax.either.*
 
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.funspec.AnyFunSpec

@@ -16,15 +16,15 @@
 
 package geotrellis.spark.mapalgebra.local
 
-import geotrellis.spark._
-import geotrellis.raster._
-import geotrellis.raster.mapalgebra.local._
+import geotrellis.spark.*
+import geotrellis.raster.*
+import geotrellis.raster.mapalgebra.local.*
 import geotrellis.util.MethodExtensions
 
 import org.apache.spark.Partitioner
 import org.apache.spark.rdd.RDD
 
-import scala.reflect._
+import scala.reflect.*
 
 
 abstract class LocalTileRDDSeqMethods[K: ClassTag] extends MethodExtensions[Iterable[RDD[(K, Tile)]]] {

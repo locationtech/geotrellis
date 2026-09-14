@@ -17,12 +17,12 @@
 package geotrellis.vector.io.json
 
 import geotrellis.vector.{Extent, Feature, Geometry, GeometryCollection}
-import geotrellis.vector.methods.Implicits._
+import geotrellis.vector.methods.Implicits.*
 
-import io.circe._
-import io.circe.syntax._
-import cats.syntax.either._
-import io.circe.parser.{parse => circeParse}
+import io.circe.*
+import io.circe.syntax.*
+import cats.syntax.either.*
+import io.circe.parser.{parse as circeParse}
 
 import scala.reflect.ClassTag
 import scala.reflect.runtime.universe.TypeTag
@@ -95,7 +95,7 @@ trait Implicits extends GeoJsonSupport {
       * @tparam F type of feature desired to extract
       * @return Seq[F] containing features
       */
-    def extractFeatures[F <: Feature[_, _]: Decoder](): Seq[F] =
+    def extractFeatures[F <: Feature[?, ?]: Decoder](): Seq[F] =
       circeParse(s).flatMap(_.as[F]) match {
         case Right(g) => Seq(g)
         case Left(_) =>

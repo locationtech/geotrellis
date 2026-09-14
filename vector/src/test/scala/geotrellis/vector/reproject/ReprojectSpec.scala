@@ -16,10 +16,10 @@
 
 package geotrellis.vector.reproject
 
-import geotrellis.proj4._
-import geotrellis.vector._
+import geotrellis.proj4.*
+import geotrellis.vector.*
 
-import geotrellis.vector.testkit._
+import geotrellis.vector.testkit.*
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.funspec.AnyFunSpec
 

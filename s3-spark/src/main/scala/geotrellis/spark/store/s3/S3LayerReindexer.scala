@@ -16,9 +16,9 @@
 
 package geotrellis.spark.store.s3
 
-import geotrellis.store._
-import geotrellis.store.s3._
-import geotrellis.spark.store._
+import geotrellis.store.*
+import geotrellis.store.s3.*
+import geotrellis.spark.store.*
 
 import org.apache.spark.SparkContext
 import software.amazon.awssdk.services.s3.S3Client

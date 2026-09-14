@@ -16,7 +16,7 @@
 
 package geotrellis.raster.render.png
 
-import geotrellis.raster._
+import geotrellis.raster.*
 import java.io.{File, FileInputStream}
 
 import org.scalatest.matchers.should.Matchers

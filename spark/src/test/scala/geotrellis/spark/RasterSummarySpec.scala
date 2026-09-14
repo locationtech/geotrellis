@@ -16,16 +16,16 @@
 
 package geotrellis.spark
 
-import geotrellis.spark.partition._
-import geotrellis.proj4._
-import geotrellis.raster._
-import geotrellis.raster.geotiff._
+import geotrellis.spark.partition.*
+import geotrellis.proj4.*
+import geotrellis.raster.*
+import geotrellis.raster.geotiff.*
 import geotrellis.raster.resample.Bilinear
-import geotrellis.layer._
+import geotrellis.layer.*
 
-import org.apache.spark.rdd._
-import geotrellis.spark.testkit._
-import geotrellis.raster.testkit._
+import org.apache.spark.rdd.*
+import geotrellis.spark.testkit.*
+import geotrellis.raster.testkit.*
 
 import org.scalatest.GivenWhenThen
 import org.scalatest.funspec.AnyFunSpec

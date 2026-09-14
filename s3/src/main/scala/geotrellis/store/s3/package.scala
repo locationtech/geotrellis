@@ -20,7 +20,7 @@ import geotrellis.raster.CellGrid
 import geotrellis.raster.io.geotiff.GeoTiff
 import geotrellis.raster.render.{Jpg, Png}
 
-import cats.syntax.either._
+import cats.syntax.either.*
 import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.model.{HeadObjectRequest, NoSuchKeyException, RequestPayer}

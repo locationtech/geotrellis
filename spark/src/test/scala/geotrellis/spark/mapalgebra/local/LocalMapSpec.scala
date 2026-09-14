@@ -16,10 +16,10 @@
 
 package geotrellis.spark.mapalgebra.local
 
-import geotrellis.raster._
-import geotrellis.spark._
-import geotrellis.spark.testkit.testfiles._
-import geotrellis.spark.testkit._
+import geotrellis.raster.*
+import geotrellis.spark.*
+import geotrellis.spark.testkit.testfiles.*
+import geotrellis.spark.testkit.*
 
 import java.time.ZonedDateTime
 

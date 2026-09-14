@@ -16,7 +16,7 @@
 
 package geotrellis.raster.mapalgebra.focal
 
-import geotrellis.raster.mapalgebra.focal.Movement._
+import geotrellis.raster.mapalgebra.focal.Movement.*
 
 /**
  * A mask over a cursor. The CursorMask

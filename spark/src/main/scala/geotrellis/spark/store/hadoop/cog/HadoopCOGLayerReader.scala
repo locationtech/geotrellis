@@ -16,21 +16,21 @@
 
 package geotrellis.spark.store.hadoop.cog
 
-import io.circe._
+import io.circe.*
 
-import geotrellis.raster._
+import geotrellis.raster.*
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
-import geotrellis.layer._
-import geotrellis.store._
+import geotrellis.layer.*
+import geotrellis.store.*
 import geotrellis.store.cog.{Extension, ZoomRange}
-import geotrellis.store.hadoop._
-import geotrellis.store.hadoop.util._
+import geotrellis.store.hadoop.*
+import geotrellis.store.hadoop.util.*
 import geotrellis.store.index.Index
-import geotrellis.spark.store.cog._
-import geotrellis.spark.store.hadoop._
+import geotrellis.spark.store.cog.*
+import geotrellis.spark.store.hadoop.*
 import geotrellis.store.util.IORuntimeTransient
 
-import cats.effect._
+import cats.effect.*
 import org.apache.hadoop.fs.Path
 import org.apache.spark.SparkContext
 import java.net.URI

@@ -16,7 +16,7 @@
 
 package geotrellis.raster.io.geotiff
 
-import io.circe._
+import io.circe.*
 
 abstract sealed class TiffType extends Serializable { val code: Char }
 

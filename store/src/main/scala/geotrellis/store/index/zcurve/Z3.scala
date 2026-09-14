@@ -19,7 +19,7 @@ package geotrellis.store.index.zcurve
 import geotrellis.store.index.MergeQueue
 
 class Z3(val z: Long) extends AnyVal {
-  import Z3._
+  import Z3.*
 
   def < (other: Z3) = z < other.z
   def > (other: Z3) = z > other.z

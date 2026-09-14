@@ -16,11 +16,11 @@
 
 package geotrellis.spark.store.file.geotiff
 
-import geotrellis.spark.store.hadoop.geotiff._
+import geotrellis.spark.store.hadoop.geotiff.*
 import geotrellis.util.annotations.experimental
 
 import org.apache.hadoop.conf.Configuration
-import io.circe.syntax._
+import io.circe.syntax.*
 
 import java.io.PrintWriter
 import java.net.URI

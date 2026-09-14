@@ -16,11 +16,11 @@
 
 package geotrellis.store.file
 
-import geotrellis.store._
+import geotrellis.store.*
 
-import io.circe._
-import io.circe.syntax._
-import cats.syntax.either._
+import io.circe.*
+import io.circe.syntax.*
+import cats.syntax.either.*
 
 case class FileLayerHeader(
   keyClass: String,

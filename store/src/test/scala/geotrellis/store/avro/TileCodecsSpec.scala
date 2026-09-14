@@ -17,9 +17,9 @@
 package geotrellis.store.avro
 
 import geotrellis.store.avro.codecs.TileCodecs
-import TileCodecs._
-import geotrellis.raster._
-import geotrellis.store.avro.AvroTools._
+import TileCodecs.*
+import geotrellis.raster.*
+import geotrellis.store.avro.AvroTools.*
 
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.funspec.AnyFunSpec

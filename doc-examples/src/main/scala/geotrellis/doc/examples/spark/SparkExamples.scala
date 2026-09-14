@@ -16,15 +16,15 @@
 
 package geotrellis.doc.examples.spark
 
-import geotrellis.layer._
-import geotrellis.store._
+import geotrellis.layer.*
+import geotrellis.store.*
 
 object SparkExamples {
   def `Using a SpaceTimeKey -> SpatialKey transformation to get summary information about tiles overlapping an area`: Unit = {
-    import geotrellis.raster._
+    import geotrellis.raster.*
     import geotrellis.layer.{SpatialKey, SpaceTimeKey}
-    import geotrellis.spark._
-    import geotrellis.util._
+    import geotrellis.spark.*
+    import geotrellis.util.*
 
     import org.apache.spark.rdd.RDD
 
@@ -42,14 +42,14 @@ object SparkExamples {
   }
 
   def `Tiling an RDD of spatial tiles, stitching and saving off as a single GeoTiff`: Unit = {
-    import geotrellis.raster._
-    import geotrellis.raster.io.geotiff._
-    import geotrellis.raster.resample._
+    import geotrellis.raster.*
+    import geotrellis.raster.io.geotiff.*
+    import geotrellis.raster.resample.*
     import geotrellis.layer.{SpatialKey, SpaceTimeKey, FloatingLayoutScheme}
-    import geotrellis.spark._
-    import geotrellis.spark.store._
+    import geotrellis.spark.*
+    import geotrellis.spark.store.*
     import geotrellis.spark.tiling.Tiler
-    import geotrellis.vector._
+    import geotrellis.vector.*
     import org.apache.spark.HashPartitioner
     import org.apache.spark.rdd.RDD
 
@@ -105,8 +105,8 @@ object SparkExamples {
   def `Applying a threshold and then median filter on multiband imagery in an RDD layer`: Unit = {
 
     import geotrellis.layer.SpaceTimeKey
-    import geotrellis.spark._
-    import geotrellis.raster._
+    import geotrellis.spark.*
+    import geotrellis.raster.*
     import geotrellis.raster.mapalgebra.focal.Square
 
     val imageLayer: MultibandTileLayerRDD[SpaceTimeKey] = ???
@@ -131,13 +131,13 @@ object SparkExamples {
   }
 
   def `Query region, mask by that region, compute max NDVI and save as a GeoTiff`: Unit = {
-    import geotrellis.raster._
-    import geotrellis.raster.io.geotiff._
+    import geotrellis.raster.*
+    import geotrellis.raster.io.geotiff.*
     import geotrellis.layer.{SpatialKey, SpaceTimeKey}
-    import geotrellis.spark._
-    import geotrellis.spark.store._
-    import geotrellis.util._
-    import geotrellis.vector._
+    import geotrellis.spark.*
+    import geotrellis.spark.store.*
+    import geotrellis.util.*
+    import geotrellis.vector.*
     import java.time.{ZonedDateTime, ZoneOffset}
 
     val region: MultiPolygon = ???

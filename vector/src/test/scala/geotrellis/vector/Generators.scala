@@ -16,10 +16,10 @@
 
 package geotrellis.vector.check
 
-import geotrellis.vector._
+import geotrellis.vector.*
 
-import org.scalacheck._
-import Gen._
+import org.scalacheck.*
+import Gen.*
 
 object Generators {
   lazy val genPoint: Gen[Point] =

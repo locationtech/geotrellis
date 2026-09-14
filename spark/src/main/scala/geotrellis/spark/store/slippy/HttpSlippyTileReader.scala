@@ -18,12 +18,12 @@ package geotrellis.spark.store.slippy
 
 import geotrellis.layer.SpatialKey
 
-import org.apache.commons.io.IOUtils._
-import org.apache.spark._
-import org.apache.spark.rdd._
+import org.apache.commons.io.IOUtils.*
+import org.apache.spark.*
+import org.apache.spark.rdd.*
 
-import java.io._
-import java.net._
+import java.io.*
+import java.net.*
 
 class HttpSlippyTileReader[T](pathTemplate: String)(fromBytes: (SpatialKey, Array[Byte]) => T) extends SlippyTileReader[T] {
   import SlippyTileReader.TilePath

@@ -16,18 +16,18 @@
 
 package geotrellis.store.hadoop
 
-import geotrellis.store._
-import geotrellis.store.avro._
-import geotrellis.store.avro.codecs._
+import geotrellis.store.*
+import geotrellis.store.avro.*
+import geotrellis.store.avro.codecs.*
 import geotrellis.store.hadoop.formats.FilterMapFileInputFormat
 
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs._
-import org.apache.hadoop.io._
+import org.apache.hadoop.fs.*
+import org.apache.hadoop.io.*
 import com.github.blemale.scaffeine.{Cache, Scaffeine}
-import _root_.io.circe._
+import _root_.io.circe.*
 
-import scala.collection.immutable._
+import scala.collection.immutable.*
 import scala.reflect.ClassTag
 
 class HadoopValueReader(

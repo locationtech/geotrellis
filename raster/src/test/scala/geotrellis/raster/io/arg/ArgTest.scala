@@ -16,10 +16,10 @@
 
 package geotrellis.raster.io.arg
 
-import geotrellis.raster._
+import geotrellis.raster.*
 import geotrellis.vector.Extent
 
-import geotrellis.raster.testkit._
+import geotrellis.raster.testkit.*
 import org.scalatest.funsuite.AnyFunSuite
 
 class ArgTest extends AnyFunSuite with RasterMatchers {

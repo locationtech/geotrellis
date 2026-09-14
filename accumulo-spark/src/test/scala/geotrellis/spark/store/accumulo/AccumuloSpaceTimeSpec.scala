@@ -16,12 +16,12 @@
 
 package geotrellis.spark.store.accumulo
 
-import geotrellis.layer._
+import geotrellis.layer.*
 import geotrellis.raster.Tile
-import geotrellis.store.accumulo._
-import geotrellis.spark._
-import geotrellis.spark.store._
-import geotrellis.spark.testkit.io._
+import geotrellis.store.accumulo.*
+import geotrellis.spark.*
+import geotrellis.spark.store.*
+import geotrellis.spark.testkit.io.*
 import geotrellis.spark.testkit.testfiles.TestFiles
 import geotrellis.spark.testkit.TestEnvironment
 
@@ -34,13 +34,13 @@ class AccumuloSpaceTimeSpec
     with CoordinateSpaceTimeSpec
     with LayerUpdateSpaceTimeTileSpec {
 
-  lazy val reader    = AccumuloLayerReader(instance)
-  lazy val creader   = AccumuloCollectionLayerReader(instance)
-  lazy val writer    = AccumuloLayerWriter(instance, "tiles", SocketWriteStrategy())
-  lazy val deleter   = AccumuloLayerDeleter(instance)
-  lazy val reindexer = AccumuloLayerReindexer(instance, SocketWriteStrategy())
-  lazy val tiles     = AccumuloValueReader(instance)
-  lazy val sample    = CoordinateSpaceTime
-  lazy val copier    = AccumuloLayerCopier(instance, reader, writer)
+  lazy val reader: AccumuloLayerReader = AccumuloLayerReader(instance)
+  lazy val creader: AccumuloCollectionLayerReader = AccumuloCollectionLayerReader(instance)
+  lazy val writer: AccumuloLayerWriter = AccumuloLayerWriter(instance, "tiles", SocketWriteStrategy())
+  lazy val deleter: AccumuloLayerDeleter = AccumuloLayerDeleter(instance)
+  lazy val reindexer: AccumuloLayerReindexer = AccumuloLayerReindexer(instance, SocketWriteStrategy())
+  lazy val tiles: AccumuloValueReader = AccumuloValueReader(instance)
+  lazy val sample: CoordinateSpaceTime.type = CoordinateSpaceTime
+  lazy val copier: AccumuloLayerCopier = AccumuloLayerCopier(instance, reader, writer)
   lazy val mover     = AccumuloLayerMover(copier, deleter)
 }

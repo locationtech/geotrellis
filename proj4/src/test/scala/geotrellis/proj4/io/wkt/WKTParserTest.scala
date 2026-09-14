@@ -21,7 +21,7 @@ import org.scalatest.funspec.AnyFunSpec
 class WKTParserTest extends AnyFunSpec {
 
   it("Should parse a simple string") {
-    import WKTParser._
+    import WKTParser.*
     val expected = "EPSG"
     parseAll(string, """"EPSG"""") match {
       case Success(n, _) =>
@@ -34,7 +34,7 @@ class WKTParserTest extends AnyFunSpec {
   }
 
   it("Should parse a complex string") {
-    import WKTParser._
+    import WKTParser.*
     val expected = "Barbados 1938 / Barbados National Grid"
     parseAll(string, """"Barbados 1938 / Barbados National Grid"""") match {
       case Success(n, _) =>
@@ -47,7 +47,7 @@ class WKTParserTest extends AnyFunSpec {
   }
 
   it("Should parse a complex string with parens") {
-    import WKTParser._
+    import WKTParser.*
     val expected = "RGR92 (3D deg)"
     parseAll(string, """"RGR92 (3D deg)"""") match {
       case Success(n, _) =>
@@ -60,7 +60,7 @@ class WKTParserTest extends AnyFunSpec {
   }
 
   it("Should parse a comma") {
-    import WKTParser._
+    import WKTParser.*
     val expected = None
     parseAll(comma, """,""") match {
       case Success(n, _) =>
@@ -73,7 +73,7 @@ class WKTParserTest extends AnyFunSpec {
   }
 
   it("Should parse a space and a comma") {
-    import WKTParser._
+    import WKTParser.*
     val expected = None
     parseAll(comma, """, """) match {
       case Success(n, _) =>
@@ -86,7 +86,7 @@ class WKTParserTest extends AnyFunSpec {
   }
 
   it("Should parse a negative double") {
-    import WKTParser._
+    import WKTParser.*
     val expected = -220.3
     parseAll(double, "-220.3") match {
       case Success(n, _) =>
@@ -99,7 +99,7 @@ class WKTParserTest extends AnyFunSpec {
   }
 
   it("Should parse int") {
-    import WKTParser._
+    import WKTParser.*
     val expected = 12
     parseAll(int, "12") match {
       case Success(n, _) =>
@@ -112,7 +112,7 @@ class WKTParserTest extends AnyFunSpec {
   }
 
   it("Should parse a negative int") {
-    import WKTParser._
+    import WKTParser.*
     val expected = -12
     parseAll(int, "-12") match {
       case Success(n, _) =>
@@ -125,7 +125,7 @@ class WKTParserTest extends AnyFunSpec {
   }
 
   it("Should parse a value that is an int") {
-    import WKTParser._
+    import WKTParser.*
     val expected = 12
     parseAll(value, "12") match {
       case Success(n, _) =>
@@ -138,7 +138,7 @@ class WKTParserTest extends AnyFunSpec {
   }
 
   it("Should parse a value that is a double") {
-    import WKTParser._
+    import WKTParser.*
     val expected = 12.123
     parseAll(value, "12.123") match {
       case Success(n, _) =>
@@ -151,7 +151,7 @@ class WKTParserTest extends AnyFunSpec {
   }
 
   it("Should parse a value that is a simple string") {
-    import WKTParser._
+    import WKTParser.*
     val expected = "helloWorld"
     parseAll(value, """"helloWorld"""") match {
       case Success(n, _) =>
@@ -164,7 +164,7 @@ class WKTParserTest extends AnyFunSpec {
   }
 
   it("Should parse a value that is a complex string") {
-    import WKTParser._
+    import WKTParser.*
     val expected = "Barbados 1938 / Barbados National Grid"
     parseAll(value, """"Barbados 1938 / Barbados National Grid"""") match {
       case Success(n, _) =>
@@ -177,7 +177,7 @@ class WKTParserTest extends AnyFunSpec {
   }
 
   it("Should return an Authority object") {
-    import WKTParser._
+    import WKTParser.*
     val expected = Authority("EPSG", "7019")
     parseAll(authority, """AUTHORITY["EPSG","7019"]""") match {
       case Success(n, _) =>
@@ -190,7 +190,7 @@ class WKTParserTest extends AnyFunSpec {
   }
 
   it("Should return an Spheroid object that has an authority") {
-    import WKTParser._
+    import WKTParser.*
     val auth = Authority("EPSG", "7019")
     val expected = Spheroid("GRS 1980", 6378137.0, 298.257222101, Some(auth))
     parseAll(spheroid, """SPHEROID["GRS 1980", 6378137.0, 298.257222101, AUTHORITY["EPSG","7019"]]""") match {
@@ -204,7 +204,7 @@ class WKTParserTest extends AnyFunSpec {
   }
 
   it("Should return an Spheroid object that has no authority") {
-    import WKTParser._
+    import WKTParser.*
     val expected = Spheroid("GRS 1980", 6378137.0, 298.257222101, None)
     parseAll(spheroid, """SPHEROID["GRS 1980", 6378137.0, 298.257222101]""") match {
       case Success(n, _) =>
@@ -217,7 +217,7 @@ class WKTParserTest extends AnyFunSpec {
   }
 
   it("Should return an ToWGS84 object") {
-    import WKTParser._
+    import WKTParser.*
     val expected = ToWgs84(List(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0))
     parseAll(toWgs, """TOWGS84[0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]""") match {
       case Success(n, _) =>
@@ -230,7 +230,7 @@ class WKTParserTest extends AnyFunSpec {
   }
 
   it("Should return an Datum object with toWgs84 and authority") {
-    import WKTParser._
+    import WKTParser.*
     val auth = Authority("EPSG", "7019")
     val spher = Spheroid("GRS 1980", 6378137.0, 298.257222101, Some(auth))
     val authDat = Authority("EPSG", "6140")
@@ -247,7 +247,7 @@ class WKTParserTest extends AnyFunSpec {
   }
 
   it("Should return an Datum object without toWgs84 and with authority") {
-    import WKTParser._
+    import WKTParser.*
     val auth = Authority("EPSG", "7019")
     val spher = Spheroid("GRS 1980", 6378137.0, 298.257222101, Some(auth))
     val authDat = Authority("EPSG", "6140")
@@ -263,7 +263,7 @@ class WKTParserTest extends AnyFunSpec {
   }
 
   it("Should return an Datum object with toWgs84 and without authority") {
-    import WKTParser._
+    import WKTParser.*
     val auth = Authority("EPSG", "7019")
     val spher = Spheroid("GRS 1980", 6378137.0, 298.257222101, Some(auth))
     val toWgs84 = ToWgs84(List(-0.991, 1.9072, 0.5129, 0.0257899075194932, -0.009650098960270402, -0.011659943232342112, 0.0))
@@ -279,7 +279,7 @@ class WKTParserTest extends AnyFunSpec {
   }
 
   it("Should return an PrimeM object with authority") {
-    import WKTParser._
+    import WKTParser.*
     val auth = Authority("EPSG", "8901")
     val expected = PrimeM("Greenwich", 0.0, Some(auth))
     parseAll(primeM, """PRIMEM["Greenwich", 0.0, AUTHORITY["EPSG","8901"]]""") match {
@@ -293,7 +293,7 @@ class WKTParserTest extends AnyFunSpec {
   }
 
   it("Should return an PrimeM object without authority") {
-    import WKTParser._
+    import WKTParser.*
     val auth = Authority("EPSG", "8901")
     val expected = PrimeM("Greenwich", 0.0, None)
     parseAll(primeM, """PRIMEM["Greenwich", 0.0]""") match {
@@ -307,7 +307,7 @@ class WKTParserTest extends AnyFunSpec {
   }
 
   it("Should return TwinAxis object") {
-    import WKTParser._
+    import WKTParser.*
     val first = Axis("Geodetic longitude", "EAST")
     val second = Axis("Geodetic latitude", "NORTH")
     val expected = TwinAxis(first, second)
@@ -322,7 +322,7 @@ class WKTParserTest extends AnyFunSpec {
   }
 
   it("Should return UnitField object") {
-    import WKTParser._
+    import WKTParser.*
     val expected = UnitField("degree", 0.017453292519943295, None)
     parseAll(unitField, """UNIT["degree", 0.017453292519943295]""") match {
       case Success(n, _) =>
@@ -335,7 +335,7 @@ class WKTParserTest extends AnyFunSpec {
   }
 
   it("Should return Geogcs object") {
-    import WKTParser._
+    import WKTParser.*
     val spherAuth = Authority("EPSG", "7019")
     val spher = Spheroid("GRS 1980", 6378137.0, 298.257222101, Some(spherAuth))
     val toWGS = ToWgs84(List(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0))
@@ -360,7 +360,7 @@ class WKTParserTest extends AnyFunSpec {
   }
 
   it("Should return Projection object") {
-    import WKTParser._
+    import WKTParser.*
     val auth = Authority("EPSG", "9802")
     val expected = Projection("Lambert_Conformal_Conic_2SP", Some(auth))
     parseAll(projection, """PROJECTION["Lambert_Conformal_Conic_2SP", AUTHORITY["EPSG","9802"]]""") match {
@@ -374,7 +374,7 @@ class WKTParserTest extends AnyFunSpec {
   }
 
   it("Should return Parameter object") {
-    import WKTParser._
+    import WKTParser.*
     val expected = Parameter("central_meridian", 3.0)
     parseAll(parameter, """PARAMETER["central_meridian", 3.0]""") match {
       case Success(n, _) =>
@@ -387,7 +387,7 @@ class WKTParserTest extends AnyFunSpec {
   }
 
   it("Should return a list of Parameter objects") {
-    import WKTParser._
+    import WKTParser.*
     val param1 = Parameter("central_meridian", 3.0)
     val param2 = Parameter("latitude_of_origin", 42.0)
     val param3 = Parameter("standard_parallel_1", 42.75)
@@ -404,7 +404,7 @@ class WKTParserTest extends AnyFunSpec {
   }
 
   it("Should return a Projcs objects") {
-    import WKTParser._
+    import WKTParser.*
     val toWgs84 = ToWgs84(List(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0))
     val spherAuth = Authority("EPSG", "7019")
     val datumAuth = Authority("EPSG", "6171")
@@ -445,7 +445,7 @@ class WKTParserTest extends AnyFunSpec {
   }
 
   it("Should return VertCS object") {
-    import WKTParser._
+    import WKTParser.*
     val vertAuth = Authority("EPSG", "5621")
     val datumAuth = Authority("EPSG", "5215")
     val vertDatum = VertDatum("European Vertical Reference Frame 2007", 2005, Some(datumAuth))
@@ -463,7 +463,7 @@ class WKTParserTest extends AnyFunSpec {
   }
 
   it("Should return a list of Axis objects") {
-    import WKTParser._
+    import WKTParser.*
     val axis1 = Axis("x", "EAST")
     val axis2 = Axis("y", "NORTH")
     val expected = List(axis1, axis2)
@@ -478,7 +478,7 @@ class WKTParserTest extends AnyFunSpec {
   }
 
   it("Should return a LocalDatum object no authority") {
-    import WKTParser._
+    import WKTParser.*
     val expected = LocalDatum("Unknown", 0, None)
     parseAll(localDatum, """LOCAL_DATUM["Unknown", 0]""") match {
       case Success(n, _) =>
@@ -491,7 +491,7 @@ class WKTParserTest extends AnyFunSpec {
   }
 
   it("Should return a LocalCS object") {
-    import WKTParser._
+    import WKTParser.*
     val datumAuth = Authority("EPSG", "9314")
     val localDatum = LocalDatum("Tombak LNG plant", 0, Some(datumAuth))
     val axis1 = Axis("Plant East", "EAST")
@@ -512,7 +512,7 @@ class WKTParserTest extends AnyFunSpec {
   }
 
   it("Should return a Geoccs object") {
-    import WKTParser._
+    import WKTParser.*
     val spherAuth = Authority("EPSG", "7019")
     val spheroid = Spheroid("GRS 1980", 6378137.0, 298.257222101, Some(spherAuth))
     val toWgs84 = ToWgs84(List(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0))
@@ -537,7 +537,7 @@ class WKTParserTest extends AnyFunSpec {
   }
 
   it("Should return a Compdcs object") {
-    import WKTParser._
+    import WKTParser.*
     val authGeogcs = Authority("EPSG", "6258")
     val authSpher = Authority("EPSG", "7019")
     val authPrimeM = Authority("EPSG", "8901")
@@ -581,7 +581,7 @@ class WKTParserTest extends AnyFunSpec {
   }
 
   it("Should return a Projcs object special one") {
-    import WKTParser._
+    import WKTParser.*
     val authProjcs = Authority("EPSG", "22033")
     val authSpher = Authority("EPSG", "7012")
     val spher = Spheroid("Clarke 1880 (RGS)", 6378249.145, 293.465, Some(authSpher))
@@ -618,7 +618,7 @@ class WKTParserTest extends AnyFunSpec {
   }
 
   it("Should contain NAD27 / Polar Stereographic / CM\\=-98") {
-    import WKT._
+    import WKT.*
     val datSpheroid = Spheroid("Clarke 1866", 6378206.4, 294.978698213901, None)
     val toWgs84 = ToWgs84(List(-9, 151, 185))
     val datum = Datum("North_American_Datum_1927", datSpheroid, Some(toWgs84), None)
@@ -638,7 +638,7 @@ class WKTParserTest extends AnyFunSpec {
   }
 
   it("Should return a contain the Geoccs object") {
-    import WKT._
+    import WKT.*
     val spherAuth = Authority("EPSG", "7019")
     val spheroid = Spheroid("GRS 1980", 6378137.0, 298.257222101, Some(spherAuth))
     val toWgs84 = ToWgs84(List(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0))
@@ -655,7 +655,7 @@ class WKTParserTest extends AnyFunSpec {
   }
 
   it("Should parse NAD83(CSRS98) / New Brunswick Stereo") {
-    import WKT._
+    import WKT.*
     val spherAuth = Authority("EPSG", "7019")
     val datumSpher = Spheroid("GRS 1980", 6378137.0, 298.257222101, Some(spherAuth))
     val toWgs84 = ToWgs84(List(0, 0, 0))
@@ -681,7 +681,7 @@ class WKTParserTest extends AnyFunSpec {
   }
 
   it("Should parse WGS 84 / Pseudo-Mercator with PROJ4 Extension (ProjCS object)") {
-    import WKTParser._
+    import WKTParser.*
 
     val expected = ProjCS(
       "WGS 84 / Pseudo-Mercator",
@@ -720,7 +720,7 @@ class WKTParserTest extends AnyFunSpec {
   }
 
   it("Should parse WGS 84 / Pseudo-Mercator with an unknown Extension (ProjCS object)") {
-    import WKTParser._
+    import WKTParser.*
 
     val expected = ProjCS(
       "WGS 84 / Pseudo-Mercator",

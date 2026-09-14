@@ -16,10 +16,10 @@
 
 package geotrellis.layer.buffer
 
-import geotrellis.raster._
-import geotrellis.raster.buffer._
-import geotrellis.raster.crop._
-import geotrellis.raster.stitch._
+import geotrellis.raster.*
+import geotrellis.raster.buffer.*
+import geotrellis.raster.crop.*
+import geotrellis.raster.stitch.*
 import geotrellis.layer.{SpatialComponent, TileBounds}
 import geotrellis.util.MethodExtensions
 

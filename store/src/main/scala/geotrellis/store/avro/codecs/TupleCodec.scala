@@ -16,8 +16,8 @@
 
 package geotrellis.store.avro.codecs
 
-import geotrellis.store.avro._
-import org.apache.avro._
+import geotrellis.store.avro.*
+import org.apache.avro.*
 import org.apache.avro.generic.GenericRecord
 
 class TupleCodec[A, B](implicit a: AvroRecordCodec[A], b: AvroRecordCodec[B]) extends AvroRecordCodec[(A, B)] {

@@ -16,8 +16,8 @@
 
 package geotrellis.spark.store.hbase
 
-import geotrellis.store._
-import geotrellis.store.hbase._
+import geotrellis.store.*
+import geotrellis.store.hbase.*
 import org.apache.spark.SparkContext
 
 object HBaseLayerMover {

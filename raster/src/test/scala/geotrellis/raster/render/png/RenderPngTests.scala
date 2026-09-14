@@ -16,14 +16,14 @@
 
 package geotrellis.raster.render.png
 
-import geotrellis.raster._
+import geotrellis.raster.*
 import geotrellis.raster.geotiff.GeoTiffRasterSource
 import geotrellis.raster.render.{ColorMap, ColorRamp, Png, RGB, RGBA}
-import geotrellis.raster.testkit._
-import spire.syntax.cfor._
+import geotrellis.raster.testkit.*
+import spire.syntax.cfor.*
 
-import java.io._
-import javax.imageio._
+import java.io.*
+import javax.imageio.*
 
 import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.matchers.should.Matchers

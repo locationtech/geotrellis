@@ -16,9 +16,9 @@
 
 package geotrellis.spark.mask
 
-import geotrellis.layer._
-import geotrellis.raster.mask._
-import geotrellis.util._
+import geotrellis.layer.*
+import geotrellis.raster.mask.*
+import geotrellis.util.*
 
 import org.apache.spark.rdd.RDD
 

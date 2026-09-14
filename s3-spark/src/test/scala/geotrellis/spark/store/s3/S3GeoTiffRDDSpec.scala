@@ -16,17 +16,17 @@
 
 package geotrellis.spark.store.s3
 
-import geotrellis.raster._
-import geotrellis.raster.io.geotiff._
+import geotrellis.raster.*
+import geotrellis.raster.io.geotiff.*
 import geotrellis.raster.testkit.RasterMatchers
-import geotrellis.layer._
-import geotrellis.spark._
+import geotrellis.layer.*
+import geotrellis.spark.*
 import geotrellis.spark.testkit.TestEnvironment
-import geotrellis.vector._
+import geotrellis.vector.*
 
-import spire.syntax.cfor._
+import spire.syntax.cfor.*
 import software.amazon.awssdk.core.sync.RequestBody
-import software.amazon.awssdk.services.s3.model._
+import software.amazon.awssdk.services.s3.model.*
 
 import java.nio.file.{Files, Paths}
 

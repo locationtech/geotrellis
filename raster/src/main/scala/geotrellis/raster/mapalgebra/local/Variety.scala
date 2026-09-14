@@ -16,9 +16,9 @@
 
 package geotrellis.raster.mapalgebra.local
 
-import geotrellis.raster._
+import geotrellis.raster.*
 
-import spire.syntax.cfor._
+import spire.syntax.cfor.*
 
 /**
  * Variety gives the count of unique values at each location in a set of Tiles.

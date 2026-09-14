@@ -16,20 +16,20 @@
 
 package geotrellis.store
 
-import geotrellis.proj4._
+import geotrellis.proj4.*
 import geotrellis.raster.io.geotiff.OverviewStrategy
 import geotrellis.raster.resample.ResampleMethod
-import geotrellis.raster._
-import geotrellis.layer._
-import geotrellis.layer.filter._
-import geotrellis.vector._
+import geotrellis.raster.*
+import geotrellis.layer.*
+import geotrellis.layer.filter.*
+import geotrellis.vector.*
 
-import jp.ne.opt.chronoscala.Imports._
+import jp.ne.opt.chronoscala.Imports.*
 import org.log4s.getLogger
 
 import java.time.ZonedDateTime
 
-case class Layer(id: LayerId, metadata: TileLayerMetadata[_], bandCount: Int) {
+case class Layer(id: LayerId, metadata: TileLayerMetadata[?], bandCount: Int) {
   /** GridExtent of the data pixels in the layer */
   def gridExtent: GridExtent[Long] = metadata.layout.createAlignedGridExtent(metadata.extent)
 }
@@ -72,7 +72,7 @@ class GeoTrellisRasterSource(
   lazy val reader = CollectionLayerReader(attributeStore, dataPath.value)
 
   // read metadata directly instead of searching sourceLayers to avoid unneeded reads
-  lazy val layerMetadata: TileLayerMetadata[_] = reader.attributeStore.readTileLayerMetadataErased(layerId)
+  lazy val layerMetadata: TileLayerMetadata[?] = reader.attributeStore.readTileLayerMetadataErased(layerId)
 
   lazy val gridExtent: GridExtent[Long] = layerMetadata.layout.createAlignedGridExtent(layerMetadata.extent)
 
@@ -256,12 +256,12 @@ object GeoTrellisRasterSource {
     }
   }
 
-  def readIntersecting(reader: CollectionLayerReader[LayerId], layerId: LayerId, metadata: TileLayerMetadata[_], extent: Extent, bands: Seq[Int], time: Option[ZonedDateTime]): Option[Raster[MultibandTile]] = {
+  def readIntersecting(reader: CollectionLayerReader[LayerId], layerId: LayerId, metadata: TileLayerMetadata[?], extent: Extent, bands: Seq[Int], time: Option[ZonedDateTime]): Option[Raster[MultibandTile]] = {
     val tiles = readTiles(reader, layerId, extent, bands, time)
     tiles.sparseStitch(extent)
   }
 
-  def read(reader: CollectionLayerReader[LayerId], layerId: LayerId, metadata: TileLayerMetadata[_], extent: Extent, bands: Seq[Int], time: Option[ZonedDateTime]): Option[Raster[MultibandTile]] = {
+  def read(reader: CollectionLayerReader[LayerId], layerId: LayerId, metadata: TileLayerMetadata[?], extent: Extent, bands: Seq[Int], time: Option[ZonedDateTime]): Option[Raster[MultibandTile]] = {
     val tiles = readTiles(reader, layerId, extent, bands, time)
     metadata.extent.intersection(extent) flatMap { intersectionExtent =>
       tiles.sparseStitch(intersectionExtent).map(_.crop(intersectionExtent))

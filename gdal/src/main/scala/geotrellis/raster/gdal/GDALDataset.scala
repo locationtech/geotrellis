@@ -18,12 +18,12 @@ package geotrellis.raster.gdal
 
 import geotrellis.raster.gdal.config.GDALOptionsConfig
 import geotrellis.raster.gdal.GDALDataset.DatasetType
-import geotrellis.raster._
+import geotrellis.raster.*
 import geotrellis.proj4.{CRS, LatLng}
 import geotrellis.vector.Extent
 
 import com.azavea.gdal.GDALWarp
-import cats.syntax.option._
+import cats.syntax.option.*
 
 case class GDALDataset(token: Long) extends AnyVal {
   def getAllMetadataFlatten: Map[String, String] = getAllMetadataFlatten(GDALDataset.SOURCE)
@@ -53,7 +53,7 @@ case class GDALDataset(token: Long) extends AnyVal {
       )
     })
 
-    (GDALMetadataDomain.ALL ++ arr.map(new String(_, "UTF-8").trim).filter(_.nonEmpty).toList.map(UserDefinedDomain)).distinct
+    (GDALMetadataDomain.ALL ++ arr.map(new String(_, "UTF-8").trim).filter(_.nonEmpty).toList.map(UserDefinedDomain.apply)).distinct
   }
 
   def getMetadata(domains: List[GDALMetadataDomain], band: Int): Map[GDALMetadataDomain, Map[String, String]] =

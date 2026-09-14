@@ -17,11 +17,11 @@
 package geotrellis.spark.costdistance
 
 import geotrellis.proj4.LatLng
-import geotrellis.raster._
-import geotrellis.layer._
-import geotrellis.spark._
+import geotrellis.raster.*
+import geotrellis.layer.*
+import geotrellis.spark.*
 import geotrellis.spark.testkit.TestEnvironment
-import geotrellis.vector._
+import geotrellis.vector.*
 
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.funspec.AnyFunSpec

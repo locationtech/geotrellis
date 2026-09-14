@@ -17,22 +17,22 @@
 package geotrellis.raster.io.geotiff.writer
 
 import geotrellis.proj4.{CRS, LatLng}
-import geotrellis.raster._
-import geotrellis.raster.io.geotiff._
+import geotrellis.raster.*
+import geotrellis.raster.io.geotiff.*
 import geotrellis.raster.io.geotiff.tags.TiffTags
 import geotrellis.raster.io.geotiff.tags.codes.ColorSpace
 import geotrellis.raster.io.geotiff.writer.GeoTiffWriterSpec.tempPath
 import geotrellis.raster.render.{ColorRamps, IndexedColorMap}
-import geotrellis.raster.testkit._
+import geotrellis.raster.testkit.*
 import geotrellis.vector.Extent
 
-import cats.syntax.option._
+import cats.syntax.option.*
 
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.Inspectors
 
-import java.io._
+import java.io.*
 import scala.xml.{Text, XML}
 
 object GeoTiffWriterSpec {

@@ -16,15 +16,15 @@
 
 package geotrellis.spark.store.s3
 
-import geotrellis.spark.store._
-import geotrellis.store.avro._
+import geotrellis.spark.store.*
+import geotrellis.store.avro.*
 import geotrellis.store.avro.codecs.KeyValueRecordCodec
-import geotrellis.store.s3._
+import geotrellis.store.s3.*
 import geotrellis.spark.util.KryoWrapper
 import geotrellis.store.util.IORuntimeTransient
 
-import cats.effect._
-import cats.syntax.either._
+import cats.effect.*
+import cats.syntax.either.*
 import software.amazon.awssdk.services.s3.model.{S3Exception, PutObjectRequest, PutObjectResponse, GetObjectRequest}
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.core.sync.RequestBody
@@ -32,7 +32,7 @@ import org.apache.avro.Schema
 import org.apache.commons.io.IOUtils
 import org.apache.spark.rdd.RDD
 
-import scala.reflect._
+import scala.reflect.*
 
 class S3RDDWriter(
   s3Client: => S3Client = S3ClientProducer.get(),
@@ -72,7 +72,7 @@ class S3RDDWriter(
     val _recordCodec = KeyValueRecordCodec[K, V]
     val kwWriterSchema = KryoWrapper(writerSchema)
 
-    pathsToTiles.foreachPartition { partition: Iterator[(String, Iterable[(K, V)])] =>
+    pathsToTiles.foreachPartition { (partition: Iterator[(String, Iterable[(K, V)])]) =>
       if(partition.nonEmpty) {
         val s3Client  = this.s3Client
         val schema = kwWriterSchema.value.getOrElse(_recordCodec.schema)

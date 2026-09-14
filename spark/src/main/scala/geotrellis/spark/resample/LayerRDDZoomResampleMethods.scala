@@ -16,12 +16,12 @@
 
 package geotrellis.spark.resample
 
-import geotrellis.raster._
-import geotrellis.raster.resample._
-import geotrellis.layer._
-import geotrellis.util._
+import geotrellis.raster.*
+import geotrellis.raster.resample.*
+import geotrellis.layer.*
+import geotrellis.util.*
 import geotrellis.vector.Extent
-import org.apache.spark.rdd._
+import org.apache.spark.rdd.*
 
 abstract class LayerRDDZoomResampleMethods[
   K: SpatialComponent,

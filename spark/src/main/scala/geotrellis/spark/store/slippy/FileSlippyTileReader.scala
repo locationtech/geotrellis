@@ -20,12 +20,12 @@ import geotrellis.layer.SpatialKey
 import geotrellis.util.Filesystem
 
 import org.apache.commons.io.FileUtils
-import org.apache.commons.io.filefilter._
-import org.apache.spark._
-import org.apache.spark.rdd._
+import org.apache.commons.io.filefilter.*
+import org.apache.spark.*
+import org.apache.spark.rdd.*
 
-import java.io._
-import scala.jdk.CollectionConverters._
+import java.io.*
+import scala.jdk.CollectionConverters.*
 
 class FileSlippyTileReader[T](uri: String, extensions: Seq[String] = Seq())(fromBytes: (SpatialKey, Array[Byte]) => T) extends SlippyTileReader[T] {
   import SlippyTileReader.TilePath

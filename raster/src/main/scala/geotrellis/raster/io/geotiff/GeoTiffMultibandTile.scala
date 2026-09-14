@@ -16,9 +16,9 @@
 
 package geotrellis.raster.io.geotiff
 
-import geotrellis.raster._
-import geotrellis.raster.io.geotiff.compression._
-import spire.syntax.cfor._
+import geotrellis.raster.*
+import geotrellis.raster.io.geotiff.compression.*
+import spire.syntax.cfor.*
 import scala.collection.mutable
 
 object GeoTiffMultibandTile {
@@ -1047,7 +1047,7 @@ abstract class GeoTiffMultibandTile(
   def combine(subset: Seq[Int])(f: Seq[Int] => Int): Tile = {
     subset.foreach({ b => require(0 <= b && b < bandCount, "All elements of subset must be present") })
 
-    val fn = { array: Array[Int] =>
+    val fn = { (array: Array[Int]) =>
       val data = subset.map({ i => array(i) })
       f(data)
     }
@@ -1062,7 +1062,7 @@ abstract class GeoTiffMultibandTile(
   def combineDouble(subset: Seq[Int])(f: Seq[Double] => Double): Tile = {
     subset.foreach({ b => require(0 <= b && b < bandCount, "All elements of subset must be present") })
 
-    val fn = { array: Array[Double] =>
+    val fn = { (array: Array[Double]) =>
       val data = subset.map({ i => array(i) })
       f(data)
     }

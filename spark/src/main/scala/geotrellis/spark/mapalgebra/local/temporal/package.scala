@@ -19,14 +19,14 @@ package geotrellis.spark.mapalgebra.local
 import geotrellis.layer.{SpatialComponent, TemporalComponent, SpatialKey, TemporalKey}
 import geotrellis.layer.mapalgebra.local.temporal.LocalTemporalStatistics
 import geotrellis.raster.Tile
-import geotrellis.util._
+import geotrellis.util.*
 
 import org.apache.spark.Partitioner
 import org.apache.spark.rdd.RDD
 
-import jp.ne.opt.chronoscala.Imports._
+import jp.ne.opt.chronoscala.Imports.*
 
-import java.time._
+import java.time.*
 import scala.reflect.ClassTag
 
 
@@ -66,7 +66,7 @@ package object temporal extends Implicits {
       .map { case (_, iter) =>
         val (keys, tiles) = iter.unzip
 
-        val key = keys.min(Ordering.by { key: K => key.getComponent[TemporalKey].time })
+        val key = keys.min(Ordering.by { (key: K) => key.getComponent[TemporalKey].time })
         val tile = reduceOp(tiles)
 
         (key, tile)

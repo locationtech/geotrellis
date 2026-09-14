@@ -18,8 +18,8 @@ package geotrellis.spark.store.slippy
 
 import geotrellis.layer.SpatialKey
 
-import org.apache.spark._
-import org.apache.spark.rdd._
+import org.apache.spark.*
+import org.apache.spark.rdd.*
 
 trait SlippyTileReader[T] extends Serializable {
   def read(zoom: Int)(implicit sc: SparkContext): RDD[(SpatialKey, T)]

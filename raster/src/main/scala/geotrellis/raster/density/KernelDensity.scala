@@ -16,8 +16,8 @@
 
 package geotrellis.raster.density
 
-import geotrellis.vector._
-import geotrellis.raster._
+import geotrellis.vector.*
+import geotrellis.raster.*
 import geotrellis.raster.mapalgebra.focal.Kernel
 
 /**

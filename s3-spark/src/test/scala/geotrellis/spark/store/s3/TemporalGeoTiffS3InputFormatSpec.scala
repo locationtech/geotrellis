@@ -17,19 +17,19 @@
 package geotrellis.spark.store.s3
 
 import geotrellis.proj4.LatLng
-import geotrellis.raster._
-import geotrellis.layer._
-import geotrellis.spark._
-import geotrellis.spark.store.hadoop._
-import geotrellis.spark.ingest._
+import geotrellis.raster.*
+import geotrellis.layer.*
+import geotrellis.spark.*
+import geotrellis.spark.store.hadoop.*
+import geotrellis.spark.ingest.*
 import geotrellis.util.Filesystem
 import geotrellis.spark.testkit.TestEnvironment
 
-import software.amazon.awssdk.services.s3.model._
+import software.amazon.awssdk.services.s3.model.*
 import software.amazon.awssdk.core.sync.RequestBody
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.mapreduce._
-import org.apache.hadoop.mapreduce.task._
+import org.apache.hadoop.mapreduce.*
+import org.apache.hadoop.mapreduce.task.*
 
 import java.time.ZoneOffset
 import java.nio.file.{Files,Paths}

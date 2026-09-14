@@ -16,7 +16,7 @@
 
 package geotrellis.raster.mapalgebra.focal
 
-import geotrellis.raster._
+import geotrellis.raster.*
 
 object Conway {
   def calculation(tile: Tile, n: Neighborhood, bounds: Option[GridBounds[Int]] = None): FocalCalculation[Tile] = {

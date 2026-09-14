@@ -18,7 +18,7 @@ package geotrellis.raster.geotiff
 
 import geotrellis.raster.SourcePath
 
-import cats.syntax.option._
+import cats.syntax.option.*
 import io.lemonlabs.uri.Uri
 import io.lemonlabs.uri.encoding.PercentEncoder
 import io.lemonlabs.uri.encoding.PercentEncoder.PATH_CHARS_TO_ENCODE

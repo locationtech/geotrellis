@@ -19,10 +19,10 @@ package geotrellis.spark.mapalgebra.local
 import org.apache.spark.Partitioner
 
 
-import geotrellis.raster._
+import geotrellis.raster.*
 import geotrellis.raster.mapalgebra.local.Majority
 
-import geotrellis.spark._
+import geotrellis.spark.*
 
 import org.apache.spark.rdd.RDD
 

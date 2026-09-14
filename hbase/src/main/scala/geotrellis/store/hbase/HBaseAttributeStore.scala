@@ -16,19 +16,19 @@
 
 package geotrellis.store.hbase
 
-import geotrellis.store._
+import geotrellis.store.*
 import geotrellis.store.hbase.conf.HBaseConfig
 
-import org.apache.hadoop.hbase._
-import org.apache.hadoop.hbase.client._
+import org.apache.hadoop.hbase.*
+import org.apache.hadoop.hbase.client.*
 import org.apache.hadoop.hbase.filter.{FilterList, RegexStringComparator, RowFilter}
 import org.apache.hadoop.hbase.util.Bytes
-import _root_.io.circe._
-import _root_.io.circe.syntax._
-import _root_.io.circe.parser._
-import cats.syntax.either._
+import _root_.io.circe.*
+import _root_.io.circe.syntax.*
+import _root_.io.circe.parser.*
+import cats.syntax.either.*
 
-import scala.jdk.CollectionConverters._
+import scala.jdk.CollectionConverters.*
 
 object HBaseAttributeStore {
   def apply(instance: HBaseInstance): HBaseAttributeStore =
@@ -130,7 +130,7 @@ class HBaseAttributeStore(val instance: HBaseInstance, val attributeTable: Strin
   def layerIds: Seq[LayerId] = instance.withTableConnectionDo(attributeTableName) { table =>
     val scanner = table.getScanner(new Scan())
     try {
-      scanner.iterator().asScala.map { kv: Result =>
+      scanner.iterator().asScala.map { (kv: Result) =>
         val List(name, zoomStr) = Bytes.toString(kv.getRow).split(hbaseSEP).toList
         LayerId(name, zoomStr.toInt)
       }
@@ -149,7 +149,7 @@ class HBaseAttributeStore(val instance: HBaseInstance, val attributeTable: Strin
     scan.setFilter(filter)
     val scanner = table.getScanner(scan)
     try {
-      scanner.iterator().asScala.map { kv: Result =>
+      scanner.iterator().asScala.map { (kv: Result) =>
         val List(_, zoomStr) = Bytes.toString(kv.getRow).split(hbaseSEP).toList
         zoomStr.toInt
       }

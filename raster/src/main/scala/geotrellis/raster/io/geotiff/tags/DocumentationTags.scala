@@ -16,8 +16,8 @@
 
 package geotrellis.raster.io.geotiff.tags
 
-import io.circe._
-import io.circe.generic.semiauto._
+import io.circe.*
+import io.circe.generic.semiauto.*
 import monocle.macros.Lenses
 
 @Lenses("_")

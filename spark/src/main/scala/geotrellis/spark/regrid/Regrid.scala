@@ -17,15 +17,15 @@
 package geotrellis.spark.regrid
 
 import org.apache.spark.rdd.RDD
-import geotrellis.raster._
-import geotrellis.raster.crop._
-import geotrellis.raster.stitch._
-import geotrellis.layer._
-import geotrellis.spark._
-import geotrellis.util._
-import geotrellis.vector._
+import geotrellis.raster.*
+import geotrellis.raster.crop.*
+import geotrellis.raster.stitch.*
+import geotrellis.layer.*
+import geotrellis.spark.*
+import geotrellis.util.*
+import geotrellis.vector.*
 
-import scala.reflect._
+import scala.reflect.*
 
 object Regrid {
 
@@ -51,7 +51,7 @@ object Regrid {
     if(ld.tileLayout.tileCols == tileCols && ld.tileLayout.tileRows == tileRows) {
       layer
     } else {
-      val ceil = { x: Double => math.ceil(x).toInt }
+      val ceil = { (x: Double) => math.ceil(x).toInt }
 
       val tl = ld.tileLayout
       val oldEx = ld.extent

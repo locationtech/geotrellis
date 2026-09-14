@@ -19,7 +19,7 @@ package geotrellis.vector.interpolation
 import org.apache.commons.math3.analysis.{MultivariateMatrixFunction, MultivariateVectorFunction}
 import org.apache.commons.math3.fitting.leastsquares.LeastSquaresOptimizer.Optimum
 import org.apache.commons.math3.fitting.leastsquares.{LeastSquaresBuilder, LeastSquaresProblem, LevenbergMarquardtOptimizer}
-import spire.syntax.cfor._
+import spire.syntax.cfor.*
 
 /** Computes fitting of the given empirical semivariogram while forcing the nugget value to 0
   * (this is invoked when the normal fitting causes a negative nugget value, which is mathematically pointless in Kriging estimation),

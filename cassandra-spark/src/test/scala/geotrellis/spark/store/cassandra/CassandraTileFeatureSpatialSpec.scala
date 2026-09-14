@@ -17,12 +17,12 @@
 package geotrellis.spark.store.cassandra
 
 import geotrellis.raster.{Tile, TileFeature}
-import geotrellis.layer._
-import geotrellis.store.cassandra._
-import geotrellis.spark._
-import geotrellis.spark.store._
-import geotrellis.spark.testkit.io._
-import geotrellis.spark.testkit.testfiles._
+import geotrellis.layer.*
+import geotrellis.store.cassandra.*
+import geotrellis.spark.*
+import geotrellis.spark.store.*
+import geotrellis.spark.testkit.io.*
+import geotrellis.spark.testkit.testfiles.*
 import geotrellis.spark.testkit.TestEnvironment
 
 class CassandraTileFeatureSpatialSpec
@@ -36,13 +36,13 @@ class CassandraTileFeatureSpatialSpec
   lazy val instance       = BaseCassandraInstance(Seq("127.0.0.1"))
   lazy val attributeStore = CassandraAttributeStore(instance, "geotrellis_tf", "metadata")
 
-  lazy val reader    = CassandraLayerReader(attributeStore)
-  lazy val creader   = CassandraCollectionLayerReader(attributeStore)
-  lazy val writer    = CassandraLayerWriter(attributeStore, "geotrellis_tf", "tiles")
-  lazy val deleter   = CassandraLayerDeleter(attributeStore)
-  lazy val tiles     = CassandraValueReader(attributeStore)
-  lazy val sample    = AllOnesTestFile
-  lazy val copier    = CassandraLayerCopier(attributeStore, reader, writer)
+  lazy val reader: CassandraLayerReader = CassandraLayerReader(attributeStore)
+  lazy val creader: CassandraCollectionLayerReader = CassandraCollectionLayerReader(attributeStore)
+  lazy val writer: CassandraLayerWriter = CassandraLayerWriter(attributeStore, "geotrellis_tf", "tiles")
+  lazy val deleter: CassandraLayerDeleter = CassandraLayerDeleter(attributeStore)
+  lazy val tiles: CassandraValueReader = CassandraValueReader(attributeStore)
+  lazy val sample: AllOnesTestFile.type = AllOnesTestFile
+  lazy val copier: CassandraLayerCopier = CassandraLayerCopier(attributeStore, reader, writer)
   lazy val reindexer = CassandraLayerReindexer(attributeStore, reader, writer, deleter, copier)
   lazy val mover     = CassandraLayerMover(copier, deleter)
 }

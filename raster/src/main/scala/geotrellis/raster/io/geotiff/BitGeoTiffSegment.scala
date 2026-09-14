@@ -16,10 +16,10 @@
 
 package geotrellis.raster.io.geotiff
 
-import geotrellis.raster._
-import geotrellis.raster.io.geotiff.util._
+import geotrellis.raster.*
+import geotrellis.raster.io.geotiff.util.*
 
-import spire.syntax.cfor._
+import spire.syntax.cfor.*
 
 class BitGeoTiffSegment(val bytes: Array[Byte], cols: Int, rows: Int) extends GeoTiffSegment {
   // Notice the inversing of the byte; this is because the endian-ness

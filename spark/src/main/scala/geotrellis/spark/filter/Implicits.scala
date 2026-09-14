@@ -16,10 +16,10 @@
 
 package geotrellis.spark.filter
 
-import geotrellis.layer._
-import geotrellis.util._
+import geotrellis.layer.*
+import geotrellis.util.*
 import cats.Functor
-import org.apache.spark.rdd._
+import org.apache.spark.rdd.*
 
 import scala.reflect.ClassTag
 

@@ -19,7 +19,7 @@ package geotrellis.vector.triangulation
 import geotrellis.vector.mesh.HalfEdgeTable
 
 class TriangleMap(halfEdgeTable: HalfEdgeTable) extends Serializable {
-  import halfEdgeTable._
+  import halfEdgeTable.*
   import  TriangleMap.regularizeIndex
 
   type TriIdx = TriangleMap.TriIdx

@@ -16,10 +16,10 @@
 
 package geotrellis.store.index.zcurve
 
-import geotrellis.layer._
+import geotrellis.layer.*
 
 
-import jp.ne.opt.chronoscala.Imports._
+import jp.ne.opt.chronoscala.Imports.*
 
 import java.time.temporal.ChronoUnit.MILLIS
 import java.time.{ZoneOffset, ZonedDateTime}

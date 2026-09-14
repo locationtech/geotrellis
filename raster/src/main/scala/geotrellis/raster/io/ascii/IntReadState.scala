@@ -16,7 +16,7 @@
 
 package geotrellis.raster.io.ascii
 
-import geotrellis.raster._
+import geotrellis.raster.*
 
 trait IntReadState extends ReadState {
   // must override

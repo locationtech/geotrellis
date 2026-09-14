@@ -20,7 +20,7 @@ import java.nio.ByteBuffer
 import java.nio.file.{Files, Paths}
 
 import scalaj.http.HttpStatusException
-import spire.syntax.cfor._
+import spire.syntax.cfor.*
 
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.funspec.AnyFunSpec

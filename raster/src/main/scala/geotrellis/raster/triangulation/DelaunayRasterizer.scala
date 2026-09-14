@@ -16,10 +16,10 @@
 
 package geotrellis.raster.triangulation
 
-import geotrellis.raster._
-import geotrellis.vector._
+import geotrellis.raster.*
+import geotrellis.vector.*
 import geotrellis.vector.mesh.{HalfEdgeTable, IndexedPointSet}
-import geotrellis.vector.triangulation._
+import geotrellis.vector.triangulation.*
 
 object DelaunayRasterizer {
 
@@ -40,8 +40,8 @@ object DelaunayRasterizer {
     val rows = re.rows
     val Extent(exmin, eymin, exmax, eymax) = re.extent
 
-    import halfEdgeTable._
-    import pointSet._
+    import halfEdgeTable.*
+    import pointSet.*
 
     def rasterizeTriangle(tri: Int): Unit = {
       val e1 = tri

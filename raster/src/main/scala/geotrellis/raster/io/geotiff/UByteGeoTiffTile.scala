@@ -16,8 +16,8 @@
 
 package geotrellis.raster.io.geotiff
 
-import geotrellis.raster._
-import geotrellis.raster.io.geotiff.compression._
+import geotrellis.raster.*
+import geotrellis.raster.io.geotiff.compression.*
 
 class UByteGeoTiffTile(
   val segmentBytes: SegmentBytes,

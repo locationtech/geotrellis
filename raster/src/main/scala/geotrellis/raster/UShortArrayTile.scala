@@ -41,7 +41,7 @@ abstract class UShortArrayTile(val array: Array[Short], cols: Int, rows: Int)
     *
     * @return  The copy
     */
-  def copy = UShortArrayTile(array.clone, cols, rows)
+  def copy: UShortArrayTile = UShortArrayTile(array.clone, cols, rows)
 
   def withNoData(noDataValue: Option[Double]): Tile =
     UShortArrayTile(array, cols, rows, cellType.withNoData(noDataValue))
@@ -63,7 +63,7 @@ abstract class UShortArrayTile(val array: Array[Short], cols: Int, rows: Int)
   */
 class UShortRawArrayTile(arr: Array[Short], val cols: Int, val rows: Int)
     extends UShortArrayTile(arr, cols, rows) {
-  val cellType = UShortCellType
+  val cellType: UShortCellType.type = UShortCellType
 
   /**
     * Fetch the datum at the given index in the array.
@@ -103,7 +103,7 @@ class UShortRawArrayTile(arr: Array[Short], val cols: Int, val rows: Int)
   */
 class UShortConstantNoDataArrayTile(arr: Array[Short], val cols: Int, val rows: Int)
     extends UShortArrayTile(arr, cols, rows) {
-  val cellType = UShortConstantNoDataCellType
+  val cellType: UShortConstantNoDataCellType.type = UShortConstantNoDataCellType
 
   /**
     * Fetch the datum at the given index in the array.

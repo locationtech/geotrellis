@@ -16,7 +16,7 @@
 
 package geotrellis.vector.io.wkb
 
-import geotrellis.vector._
+import geotrellis.vector.*
 import org.locationtech.jts.io.{ByteOrderValues, OutStream, OutputStreamOutStream}
 import org.locationtech.jts.geom.{Coordinate, CoordinateSequence}
 

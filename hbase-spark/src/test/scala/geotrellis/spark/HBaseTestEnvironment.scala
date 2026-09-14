@@ -16,7 +16,7 @@
 
 package geotrellis.spark
 
-import geotrellis.store.hbase._
+import geotrellis.store.hbase.*
 
 import geotrellis.spark.store.kryo.KryoRegistrator
 import geotrellis.spark.testkit.TestEnvironment

@@ -17,7 +17,7 @@
 package geotrellis.store.accumulo.conf
 
 import pureconfig.ConfigSource
-import pureconfig.generic.auto._
+import pureconfig.generic.auto.*
 
 case class AccumuloConfig(catalog: String = "metadata")
 

@@ -18,7 +18,7 @@ package geotrellis.store.file
 
 import geotrellis.store.{LayerId, LayerDeleter, AttributeNotFoundError, LayerDeleteError}
 
-import org.log4s._
+import org.log4s.*
 
 import java.io.File
 

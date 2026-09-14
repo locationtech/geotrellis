@@ -21,17 +21,17 @@ import collection.immutable.Map
 import collection.mutable.ListBuffer
 
 import geotrellis.proj4.CRS
-import geotrellis.raster._
-import geotrellis.raster.io.geotiff.tags._
-import DatumTypes._
-import GeographicCSTypes._
-import EllipsoidTypes._
-import ProjectionTypesMap._
-import CommonPublicValues._
-import GeoKeys._
-import ModelTypes._
-import CoordinateTransformTypes._
-import ProjectedLinearUnits._
+import geotrellis.raster.*
+import geotrellis.raster.io.geotiff.tags.*
+import DatumTypes.*
+import GeographicCSTypes.*
+import EllipsoidTypes.*
+import ProjectionTypesMap.*
+import CommonPublicValues.*
+import GeoKeys.*
+import ModelTypes.*
+import CoordinateTransformTypes.*
+import ProjectedLinearUnits.*
 import AngularUnitTypes.Angular_Degree
 
 case class GeoDirectoryTags(shortTags: Array[(Int, Int, Int, Int)], doubles: Array[Double])
@@ -56,7 +56,7 @@ class GeoTiffWriterLimitationException(message: String) extends RuntimeException
 
 class CoordinateSystemParser(val crs: CRS, val pixelSampleType: Option[PixelSampleType]) {
 
-  import CoordinateSystemParser._
+  import CoordinateSystemParser.*
 
   private val proj4String: String = crs.toProj4String
 

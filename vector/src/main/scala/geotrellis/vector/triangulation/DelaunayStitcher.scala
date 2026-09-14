@@ -25,9 +25,9 @@ final class DelaunayStitcher(
   halfEdgeTable: HalfEdgeTable
 ) extends Serializable {
   val predicates = new TriangulationPredicates(pointSet, halfEdgeTable)
-  import predicates._
-  import pointSet._
-  import halfEdgeTable._
+  import predicates.*
+  import pointSet.*
+  import halfEdgeTable.*
 
   def advance(e0: Int): Int = {
     var e = getNext(e0)

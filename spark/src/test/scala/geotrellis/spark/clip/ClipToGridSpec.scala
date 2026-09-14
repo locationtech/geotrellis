@@ -17,10 +17,10 @@
 package geotrellis.spark.clip
 
 import geotrellis.raster.TileLayout
-import geotrellis.layer._
-import geotrellis.spark.testkit._
-import geotrellis.vector._
-import geotrellis.vector.testkit._
+import geotrellis.layer.*
+import geotrellis.spark.testkit.*
+import geotrellis.vector.*
+import geotrellis.vector.testkit.*
 
 import org.apache.spark.rdd.RDD
 

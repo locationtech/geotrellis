@@ -17,11 +17,11 @@
 package geotrellis.raster
 
 import geotrellis.vector.Extent
-import geotrellis.raster.testkit._
+import geotrellis.raster.testkit.*
 
 import org.scalatest.funspec.AnyFunSpec
 
-import spire.syntax.cfor._
+import spire.syntax.cfor.*
 
 class CompositeTileSpec extends AnyFunSpec with TileBuilders with RasterMatchers with RasterTestFiles {
   describe("CompositeTileSpec wrap") {

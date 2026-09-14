@@ -19,7 +19,7 @@ package geotrellis.spark.util
 import java.nio.ByteBuffer
 
 import org.apache.spark.{SparkConf, SparkEnv}
-import org.apache.spark.serializer.{KryoSerializer => SparkKryoSerializer}
+import org.apache.spark.serializer.{KryoSerializer as SparkKryoSerializer}
 import java.io.InputStream
 import scala.reflect.ClassTag
 

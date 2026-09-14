@@ -16,9 +16,9 @@
 
 package geotrellis.raster.hydrology
 
-import geotrellis.raster._
-import spire.syntax.cfor._
-import scala.collection.mutable._
+import geotrellis.raster.*
+import spire.syntax.cfor.*
+import scala.collection.mutable.*
 
 
 /**

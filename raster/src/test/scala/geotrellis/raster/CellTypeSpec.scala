@@ -172,13 +172,13 @@ class CellTypeSpec extends AnyFunSpec with Matchers with Inspectors {
     }
     abstract class RangeAlgebra[T: Numeric] {
       val alg = implicitly[Numeric[T]]
-      import alg._
+      import alg.*
       val one = alg.one
       val twice =  one + one
     }
 
     case class TestRange[Encoding: Numeric](min: Encoding, middle: Encoding, max: Encoding) extends RangeAlgebra[Encoding]{
-      import alg._
+      import alg.*
       def testPoints = Seq(
         min, min + one, middle - one, middle, middle + one, max - one, max
       )
@@ -201,42 +201,42 @@ class CellTypeSpec extends AnyFunSpec with Matchers with Inspectors {
 
     object UByteDef extends CellDef[Byte, Short] {
       val baseCode = "uint8"
-      def apply(noData: Short) = UByteUserDefinedNoDataCellType(toCellEncoding(noData))
+      def apply(noData: Short): UByteUserDefinedNoDataCellType = UByteUserDefinedNoDataCellType(toCellEncoding(noData))
       val range = TestRange(0.toShort, Byte.MaxValue.toShort, (Byte.MaxValue * 2).toShort)
       def toCellEncoding(noData: Short) = noData.toByte
     }
 
     object ByteDef extends CellDef[Byte, Byte] {
       val baseCode = "int8"
-      def apply(noData: Byte) = ByteUserDefinedNoDataCellType(toCellEncoding(noData))
+      def apply(noData: Byte): ByteUserDefinedNoDataCellType = ByteUserDefinedNoDataCellType(toCellEncoding(noData))
       val range = TestRange(Byte.MinValue, 0, Byte.MaxValue)
       def toCellEncoding(noData: Byte) = noData
     }
 
     object UShortDef extends CellDef[Short, Int] {
       val baseCode = "uint16"
-      def apply(noData: Int) = UShortUserDefinedNoDataCellType(toCellEncoding(noData))
+      def apply(noData: Int): UShortUserDefinedNoDataCellType = UShortUserDefinedNoDataCellType(toCellEncoding(noData))
       val range = TestRange(0, Short.MaxValue, Short.MaxValue * 2)
       def toCellEncoding(noData: Int) = noData.toShort
     }
 
     object ShortDef extends CellDef[Short, Short] {
       val baseCode = "int16"
-      def apply(noData: Short) = ShortUserDefinedNoDataCellType(toCellEncoding(noData))
+      def apply(noData: Short): ShortUserDefinedNoDataCellType = ShortUserDefinedNoDataCellType(toCellEncoding(noData))
       val range = TestRange(Short.MinValue, 0, Short.MaxValue)
       def toCellEncoding(noData: Short) = noData
     }
 
     object IntDef extends CellDef[Int, Int] {
       val baseCode = "int32"
-      def apply(noData: Int) = IntUserDefinedNoDataCellType(toCellEncoding(noData))
+      def apply(noData: Int): IntUserDefinedNoDataCellType = IntUserDefinedNoDataCellType(toCellEncoding(noData))
       val range = TestRange(Int.MinValue, 0, Int.MaxValue)
       def toCellEncoding(noData: Int) = noData
     }
 
     object FloatDef extends CellDef[Float, Double] {
       val baseCode = "float32"
-      def apply(noData: Double) = FloatUserDefinedNoDataCellType(toCellEncoding(noData))
+      def apply(noData: Double): FloatUserDefinedNoDataCellType = FloatUserDefinedNoDataCellType(toCellEncoding(noData))
       val range = new TestRange(Float.MinValue.toDouble, 0, Float.MaxValue.toDouble) {
       }
       def toCellEncoding(noData: Double) = noData.toFloat
@@ -244,7 +244,7 @@ class CellTypeSpec extends AnyFunSpec with Matchers with Inspectors {
 
     object DoubleDef extends CellDef[Double, Double] {
       val baseCode = "float64"
-      def apply(noData: Double) = DoubleUserDefinedNoDataCellType(toCellEncoding(noData))
+      def apply(noData: Double): DoubleUserDefinedNoDataCellType = DoubleUserDefinedNoDataCellType(toCellEncoding(noData))
       val range = new TestRange(Double.MinValue, 0, Double.MaxValue) {
       }
       def toCellEncoding(noData: Double) = noData
@@ -261,7 +261,7 @@ class CellTypeSpec extends AnyFunSpec with Matchers with Inspectors {
         .map(_.withNoData(Some(noData)))
 
       forEvery(userDefinedCelltypes) {
-        case c: UserDefinedNoData[_] => c.noDataValue match {
+        case c: UserDefinedNoData[?] => c.noDataValue match {
           case n: Byte => assert(n === noData.toByte)
           case n: Short => assert(n === noData.toShort)
           case n: Int => assert(n === noData.toInt)

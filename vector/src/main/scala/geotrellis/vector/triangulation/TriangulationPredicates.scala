@@ -19,7 +19,7 @@ package geotrellis.vector.triangulation
 import org.locationtech.jts.geom.Coordinate
 import geotrellis.vector.ShewchuksDeterminant
 import geotrellis.vector.RobustPredicates
-import geotrellis.util.Constants.{DOUBLE_EPSILON => EPSILON}
+import geotrellis.util.Constants.{DOUBLE_EPSILON as EPSILON}
 import geotrellis.vector.mesh.{HalfEdgeTable, IndexedPointSet}
 
 
@@ -27,8 +27,8 @@ final class TriangulationPredicates(
   pointSet: IndexedPointSet,
   halfEdgeTable: HalfEdgeTable
 ) extends Serializable {
-  import pointSet._
-  import halfEdgeTable._
+  import pointSet.*
+  import halfEdgeTable.*
 
   def isCollinear(a: Int, b: Int, c: Int): Boolean =
     math.abs(

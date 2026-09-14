@@ -38,6 +38,6 @@ object HadoopCatalogConfig {
     HadoopCatalogConfig(
       compressionFactor = 1.3, // Assume tiles can be compressed 30% (so, compressionFactor - 1)
       metadataFileName = "metadata.json",
-      layerDataDir = { layerId: LayerId => s"${layerId.name}/${layerId.zoom}" }
+      layerDataDir = { (layerId: LayerId) => s"${layerId.name}/${layerId.zoom}" }
     )
 }

@@ -18,11 +18,11 @@ package geotrellis.spark.mapalgebra.focal
 
 import geotrellis.layer.{SpatialComponent, TileBounds, SpatialKey}
 import geotrellis.vector.Extent
-import geotrellis.raster._
+import geotrellis.raster.*
 import geotrellis.raster.buffer.BufferedTile
-import geotrellis.raster.mapalgebra.focal._
-import geotrellis.spark._
-import geotrellis.util._
+import geotrellis.raster.mapalgebra.focal.*
+import geotrellis.spark.*
+import geotrellis.util.*
 
 import org.apache.spark.rdd.RDD
 import org.apache.spark.Partitioner

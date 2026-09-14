@@ -16,7 +16,7 @@
 
 package geotrellis.spark.store.hadoop.geotiff
 
-import geotrellis.vector._
+import geotrellis.vector.*
 import geotrellis.util.annotations.experimental
 import java.net.URI
 

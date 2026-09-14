@@ -16,13 +16,13 @@
 
 package geotrellis.raster.io.geotiff
 
-import geotrellis.raster._
-import geotrellis.raster.io.geotiff.reader._
+import geotrellis.raster.*
+import geotrellis.raster.io.geotiff.reader.*
 import geotrellis.util.Filesystem
 import geotrellis.vector.Extent
-import geotrellis.proj4._
+import geotrellis.proj4.*
 
-import geotrellis.raster.testkit._
+import geotrellis.raster.testkit.*
 import java.nio.ByteBuffer
 
 import org.scalatest.BeforeAndAfterAll
@@ -165,11 +165,11 @@ class GeoTiffMultibandTileSpec extends AnyFunSpec with Matchers with BeforeAndAf
     it("should work the same on integer-valued GeoTiff tiles as Array tiles") {
       val actual = {
         val tiles = MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-pixel.tif")).tile
-        tiles.combine(List(0,2))({ seq: Seq[Int] => seq.sum })
+        tiles.combine(List(0,2))({ (seq: Seq[Int]) => seq.sum })
       }
       val expected = {
         val tiles = MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-pixel.tif")).tile.toArrayTile()
-        tiles.combine(List(0,2))({ seq: Seq[Int] => seq.sum })
+        tiles.combine(List(0,2))({ (seq: Seq[Int]) => seq.sum })
       }
 
       assertEqual(actual, expected)
@@ -179,7 +179,7 @@ class GeoTiffMultibandTileSpec extends AnyFunSpec with Matchers with BeforeAndAf
       val tiles = MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-pixel.tif")).tile.toArrayTile()
       val band0 = tiles.band(0)
       val band2 = tiles.band(2)
-      val actual = tiles.combine(List(0,2))({ seq: Seq[Int] => seq.sum })
+      val actual = tiles.combine(List(0,2))({ (seq: Seq[Int]) => seq.sum })
       val expected = band0 + band2
 
       assertEqual(actual, expected)
@@ -194,7 +194,7 @@ class GeoTiffMultibandTileSpec extends AnyFunSpec with Matchers with BeforeAndAf
       val tiles = GeoTiffMultibandTile(original)
       val band0 = tiles.band(0).toArrayDouble()
       val band2 = tiles.band(2).toArrayDouble()
-      val actual = tiles.combineDouble(List(0,2))({ seq: Seq[Double] => seq.sum }).toArray()
+      val actual = tiles.combineDouble(List(0,2))({ (seq: Seq[Double]) => seq.sum }).toArray()
       val expected = band0.zip(band2).map({ pair => pair._1 + pair._2 })
 
       (actual.zip(expected)).foreach({ pair =>

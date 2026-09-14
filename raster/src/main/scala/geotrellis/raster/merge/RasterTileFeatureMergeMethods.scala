@@ -16,8 +16,8 @@
 
 package geotrellis.raster.merge
 
-import geotrellis.raster._
-import geotrellis.raster.resample._
+import geotrellis.raster.*
+import geotrellis.raster.resample.*
 import geotrellis.util.MethodExtensions
 import cats.Semigroup
 

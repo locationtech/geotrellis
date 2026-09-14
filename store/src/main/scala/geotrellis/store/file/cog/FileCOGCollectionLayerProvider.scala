@@ -17,7 +17,7 @@
 package geotrellis.store.file.cog
 
 import geotrellis.store.{LayerId, AttributeStore, AttributeStoreProvider}
-import geotrellis.store.cog._
+import geotrellis.store.cog.*
 import geotrellis.store.file.FileAttributeStore
 
 import java.net.URI

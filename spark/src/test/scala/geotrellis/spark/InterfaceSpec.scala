@@ -16,12 +16,12 @@
 
 package geotrellis.spark
 
-import geotrellis.layer._
-import geotrellis.raster._
-import geotrellis.store._
-import geotrellis.spark.store._
+import geotrellis.layer.*
+import geotrellis.raster.*
+import geotrellis.store.*
+import geotrellis.spark.store.*
 
-import org.apache.spark.rdd._
+import org.apache.spark.rdd.*
 
 /**
  * This file provides a specification for raster RDD manipulations we expect to be valid.
@@ -46,7 +46,7 @@ object InterfaceSpec {
      Seq(rdd1, rdd2, rdd3).localAdd
 
 
-    import geotrellis.raster.mapalgebra.local._
+    import geotrellis.raster.mapalgebra.local.*
 
     // we can break it down and be explicit
     rdd1.join(rdd2).mapValues { case (tile1, tile2) => Add(tile1, tile2) }

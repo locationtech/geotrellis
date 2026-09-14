@@ -17,10 +17,10 @@
 package geotrellis.spark.testkit.io
 
 import geotrellis.layer.SpaceTimeKey
-import geotrellis.store.index._
+import geotrellis.store.index.*
 import java.time.ZonedDateTime
 
-import jp.ne.opt.chronoscala.Imports._
+import jp.ne.opt.chronoscala.Imports.*
 
 trait SpaceTimeKeyIndexMethods {
   def keyIndexMethods: Map[String, KeyIndexMethod[SpaceTimeKey]] =

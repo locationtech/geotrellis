@@ -17,10 +17,10 @@
 package geotrellis.raster.io.geotiff
 
 import geotrellis.raster.io.geotiff.compression.Compression
-import geotrellis.raster._
+import geotrellis.raster.*
 import geotrellis.proj4.CRS
 import geotrellis.vector.Extent
-import spire.syntax.cfor._
+import spire.syntax.cfor.*
 
 
 trait GeoTiffBuilder[T <: CellGrid[Int]] extends Serializable {
@@ -81,7 +81,7 @@ trait GeoTiffBuilder[T <: CellGrid[Int]] extends Serializable {
 
 
   def fromSegments(
-    segments: Map[_ <: Product2[Int, Int], T],
+    segments: Map[? <: Product2[Int, Int], T],
     tileExtent: (Int, Int) => Extent,
     crs: CRS,
     options: GeoTiffOptions,
@@ -127,7 +127,7 @@ object GeoTiffBuilder {
       segmentLayout: GeoTiffSegmentLayout,
       cellType: CellType,
       compression: Compression
-    ) = {
+    ): GeoTiffTile = {
       val tileLayout = segmentLayout.tileLayout
       val segmentCount = tileLayout.layoutCols * tileLayout.layoutRows
       val compressor = compression.createCompressor(segmentCount)
@@ -167,7 +167,7 @@ object GeoTiffBuilder {
       crs: CRS,
       tags: Tags,
       options: GeoTiffOptions
-    ) = SinglebandGeoTiff(tile, extent, crs, tags, options)
+    ): SinglebandGeoTiff = SinglebandGeoTiff(tile, extent, crs, tags, options)
   }
 
   implicit val multibandGeoTiffBuilder: GeoTiffBuilder[MultibandTile] = new GeoTiffBuilder[MultibandTile] {
@@ -176,7 +176,7 @@ object GeoTiffBuilder {
       segmentLayout: GeoTiffSegmentLayout,
       cellType: CellType,
       compression: Compression
-    ) = {
+    ): GeoTiffMultibandTile = {
       val buffered = segments.buffered
       val bandCount = buffered.head._2.bandCount
       val tileLayout = segmentLayout.tileLayout
@@ -244,6 +244,6 @@ object GeoTiffBuilder {
       crs: CRS,
       tags: Tags,
       options: GeoTiffOptions
-    ) = MultibandGeoTiff(tile, extent, crs, tags, options)
+    ): MultibandGeoTiff = MultibandGeoTiff(tile, extent, crs, tags, options)
   }
 }

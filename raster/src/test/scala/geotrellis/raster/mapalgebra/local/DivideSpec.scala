@@ -16,9 +16,9 @@
 
 package geotrellis.raster.mapalgebra.local
 
-import geotrellis.raster._
+import geotrellis.raster.*
 
-import geotrellis.raster.testkit._
+import geotrellis.raster.testkit.*
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.funspec.AnyFunSpec
 

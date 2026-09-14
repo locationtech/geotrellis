@@ -16,16 +16,16 @@
 
 package geotrellis.store.accumulo
 
-import geotrellis.layer._
-import geotrellis.store._
-import geotrellis.store.avro._
-import geotrellis.util._
+import geotrellis.layer.*
+import geotrellis.store.*
+import geotrellis.store.avro.*
+import geotrellis.util.*
 
-import org.apache.accumulo.core.data.{Range => AccumuloRange}
+import org.apache.accumulo.core.data.{Range as AccumuloRange}
 import org.apache.hadoop.io.Text
-import _root_.io.circe._
+import _root_.io.circe.*
 
-import scala.reflect._
+import scala.reflect.*
 
 class AccumuloCollectionLayerReader(val attributeStore: AttributeStore)(implicit instance: AccumuloInstance) extends CollectionLayerReader[LayerId] {
 
@@ -33,7 +33,7 @@ class AccumuloCollectionLayerReader(val attributeStore: AttributeStore)(implicit
     K: AvroRecordCodec: Boundable: Decoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: Decoder: Component[*, Bounds[K]]
-  ](id: LayerId, rasterQuery: LayerQuery[K, M], filterIndexOnly: Boolean) = {
+  ](id: LayerId, rasterQuery: LayerQuery[K, M], filterIndexOnly: Boolean): ContextCollection[K, V, M] = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
 
     val LayerAttributes(header, metadata, keyIndex, writerSchema) = try {

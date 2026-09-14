@@ -18,7 +18,7 @@ package geotrellis.raster
 
 import java.util.concurrent.TimeUnit
 
-import org.openjdk.jmh.annotations._
+import org.openjdk.jmh.annotations.*
 
 @BenchmarkMode(Array(Mode.AverageTime))
 @State(Scope.Thread)

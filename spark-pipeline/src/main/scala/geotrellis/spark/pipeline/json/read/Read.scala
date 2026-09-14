@@ -17,7 +17,7 @@
 package geotrellis.spark.pipeline.json.read
 
 import geotrellis.spark.store.hadoop.HadoopGeoTiffRDD
-import geotrellis.spark.pipeline.json._
+import geotrellis.spark.pipeline.json.*
 
 import io.circe.generic.extras.ConfiguredJsonCodec
 

@@ -16,9 +16,9 @@
 
 package geotrellis.raster.mask
 
-import geotrellis.raster._
-import geotrellis.raster.rasterize._
-import geotrellis.vector._
+import geotrellis.raster.*
+import geotrellis.raster.rasterize.*
+import geotrellis.vector.*
 
 
 abstract class TileFeatureMaskMethods[

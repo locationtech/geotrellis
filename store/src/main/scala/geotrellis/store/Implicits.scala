@@ -22,7 +22,7 @@ object Implicits extends Implicits
 
 trait Implicits extends avro.codecs.Implicits with json.Implicits {
   implicit class AttributeStoreOps(attributeStore: AttributeStore) {
-    private [store] def readTileLayerMetadataErased(layerId: LayerId): TileLayerMetadata[_] = {
+    private [store] def readTileLayerMetadataErased(layerId: LayerId): TileLayerMetadata[?] = {
       val header = attributeStore.readHeader[LayerHeader](layerId)
       if(header.keyClass.contains("SpatialKey")) attributeStore.readMetadata[TileLayerMetadata[SpatialKey]](layerId)
       else attributeStore.readMetadata[TileLayerMetadata[SpaceTimeKey]](layerId)

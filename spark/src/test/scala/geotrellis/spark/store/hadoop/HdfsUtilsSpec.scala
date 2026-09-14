@@ -17,7 +17,7 @@
 package geotrellis.spark.store.hadoop
 
 import geotrellis.store.hadoop.util.HdfsUtils
-import geotrellis.spark.testkit._
+import geotrellis.spark.testkit.*
 import geotrellis.util.Filesystem
 import org.apache.hadoop.fs.Path
 

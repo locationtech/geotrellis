@@ -17,9 +17,9 @@
 package geotrellis.spark.store.hadoop.formats
 
 import geotrellis.store.hadoop.formats.BinaryFileInputFormat
-import geotrellis.raster._
-import geotrellis.raster.io.geotiff._
-import geotrellis.vector._
+import geotrellis.raster.*
+import geotrellis.raster.io.geotiff.*
+import geotrellis.vector.*
 import org.apache.hadoop.mapreduce.TaskAttemptContext
 
 @deprecated("MultibandGeoTiffInputFormat is deprecated, use HadoopGeoTiffRDD instead", "1.0.0")

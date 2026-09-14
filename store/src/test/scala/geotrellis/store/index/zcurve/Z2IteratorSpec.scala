@@ -28,7 +28,7 @@ class Z2IteratorSpec extends AnyFunSpec with Matchers {
       val range = Z2Range(min, max)
       val it = new ZdivideIterator(min, max)
 
-      it foreach { z2: Z2 =>
+      it foreach { (z2: Z2) =>
         range.contains(z2)
       }
     }

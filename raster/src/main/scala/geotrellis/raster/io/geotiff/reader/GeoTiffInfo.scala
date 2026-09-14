@@ -16,17 +16,17 @@
 
 package geotrellis.raster.io.geotiff.reader
 
-import geotrellis.vector._
-import geotrellis.raster._
+import geotrellis.vector.*
+import geotrellis.raster.*
 import geotrellis.proj4.CRS
-import geotrellis.raster.io.geotiff._
-import geotrellis.raster.io.geotiff.compression._
-import geotrellis.raster.io.geotiff.tags._
-import geotrellis.raster.io.geotiff.util._
+import geotrellis.raster.io.geotiff.*
+import geotrellis.raster.io.geotiff.compression.*
+import geotrellis.raster.io.geotiff.tags.*
+import geotrellis.raster.io.geotiff.util.*
 import geotrellis.raster.io.geotiff.tags.codes.ColorSpace
 import geotrellis.raster.render.IndexedColorMap
 import geotrellis.util.ByteReader
-import monocle.syntax.apply._
+import monocle.syntax.apply.*
 import java.nio.ByteOrder
 import scala.collection.mutable.ListBuffer
 

@@ -16,12 +16,12 @@
 
 package geotrellis.raster.interpolation
 
-import geotrellis.raster._
-import geotrellis.vector.interpolation._
-import geotrellis.vector._
+import geotrellis.raster.*
+import geotrellis.vector.interpolation.*
+import geotrellis.vector.*
 import geotrellis.vector.io.json.JsonFeatureCollection
 
-import spire.syntax.cfor._
+import spire.syntax.cfor.*
 
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.funspec.AnyFunSpec

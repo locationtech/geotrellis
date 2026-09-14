@@ -16,15 +16,15 @@
 
 package geotrellis.spark.distance
 
-import geotrellis.layer._
-import geotrellis.vector._
-import geotrellis.vector.triangulation._
-import geotrellis.vector.voronoi._
-import geotrellis.raster._
-import geotrellis.raster.distance._
+import geotrellis.layer.*
+import geotrellis.vector.*
+import geotrellis.vector.triangulation.*
+import geotrellis.vector.voronoi.*
+import geotrellis.raster.*
+import geotrellis.raster.distance.*
 import geotrellis.raster.buffer.Direction
-import geotrellis.raster.buffer.Direction._
-import geotrellis.spark._
+import geotrellis.raster.buffer.Direction.*
+import geotrellis.spark.*
 
 import org.locationtech.jts.geom.Coordinate
 import org.apache.spark.SparkContext
@@ -35,7 +35,7 @@ import scala.collection.mutable.{ListBuffer, Set}
 object EuclideanDistance {
 
   private[spark] def voronoiCells(centerStitched: StitchedDelaunay, initialEdge: Int, extent: Extent): Seq[(Polygon, Coordinate)] = {
-    import centerStitched.halfEdgeTable._
+    import centerStitched.halfEdgeTable.*
 
     val queue = ListBuffer[(Int, Int)]((initialEdge, getDest(initialEdge)))
     val visited = Set.empty[Int]
@@ -68,7 +68,7 @@ object EuclideanDistance {
     val stitched = StitchedDelaunay(center, _neighbors, false)
 
     def findBaseEdge(): Int = {
-      import stitched.halfEdgeTable._
+      import stitched.halfEdgeTable.*
 
       var e = 0
       var bestdist = 1.0/0.0

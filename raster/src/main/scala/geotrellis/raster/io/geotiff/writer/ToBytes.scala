@@ -16,7 +16,7 @@
 
 package geotrellis.raster.io.geotiff.writer
 
-import spire.syntax.cfor._
+import spire.syntax.cfor.*
 
 sealed trait ToBytes {
   def apply(s: String): Array[Byte] = s.getBytes :+ 0x00.toByte

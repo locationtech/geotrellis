@@ -16,12 +16,12 @@
 
 package geotrellis.raster.geotiff
 
-import geotrellis.proj4._
-import geotrellis.raster._
+import geotrellis.proj4.*
+import geotrellis.raster.*
 import geotrellis.raster.io.geotiff.GeoTiffTestUtils
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
-import geotrellis.raster.testkit._
-import geotrellis.vector._
+import geotrellis.raster.testkit.*
+import geotrellis.vector.*
 
 import org.scalatest.GivenWhenThen
 import org.scalatest.funspec.AnyFunSpec

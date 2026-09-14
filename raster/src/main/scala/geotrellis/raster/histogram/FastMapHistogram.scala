@@ -17,7 +17,7 @@
 package geotrellis.raster.histogram
 
 import cats.Monoid
-import geotrellis.raster._
+import geotrellis.raster.*
 
 import scala.util.Sorting
 import sys.error
@@ -230,7 +230,7 @@ class FastMapHistogram(_size: Int, _buckets: Array[Int], _counts: Array[Long], _
   /**
     * Return a mutable copy of the present [[FastMapHistogram]].
     */
-  def mutable() = new FastMapHistogram(size, buckets.clone(), counts.clone(), used, total)
+  def mutable(): FastMapHistogram = new FastMapHistogram(size, buckets.clone(), counts.clone(), used, total)
 
   /**
     * Return an integer array containing the values seen by this

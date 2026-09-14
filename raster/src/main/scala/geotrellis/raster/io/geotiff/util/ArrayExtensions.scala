@@ -18,7 +18,7 @@ package geotrellis.raster.io.geotiff.util
 
 import java.nio.{ByteBuffer, ByteOrder}
 
-import spire.syntax.cfor._
+import spire.syntax.cfor.*
 
 trait ArrayExtensions {
   implicit class ArrayUtilities(arr: Array[Byte]) {

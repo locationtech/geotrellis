@@ -23,7 +23,7 @@ import org.locationtech.jts.geom.Envelope
 import org.locationtech.jts.operation.distance.DistanceOp
 
 import scala.collection.mutable
-import scala.jdk.CollectionConverters._
+import scala.jdk.CollectionConverters.*
 
 object SpatialIndex {
   def apply(points: Iterable[(Double, Double)]): SpatialIndex[(Double, Double)] = {

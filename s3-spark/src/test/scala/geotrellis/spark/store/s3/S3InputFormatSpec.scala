@@ -19,18 +19,18 @@ package geotrellis.spark.store.s3
 import geotrellis.proj4.LatLng
 import geotrellis.vector.{Extent, ProjectedExtent}
 
-import software.amazon.awssdk.services.s3.model._
+import software.amazon.awssdk.services.s3.model.*
 import software.amazon.awssdk.core.sync.RequestBody
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.mapreduce.{Job, TaskAttemptContext, InputSplit}
 
-import scala.jdk.CollectionConverters._
+import scala.jdk.CollectionConverters.*
 
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.funspec.AnyFunSpec
 
 class MockS3InputFormat extends S3InputFormat[ProjectedExtent, Array[Byte]] {
-  override def createRecordReader(split: InputSplit, context: TaskAttemptContext) =
+  override def createRecordReader(split: InputSplit, context: TaskAttemptContext): S3RecordReader[ProjectedExtent,Array[Byte]] =
     new S3RecordReader[ProjectedExtent, Array[Byte]](getS3Client(context)) {
       def read(key: String, obj: Array[Byte]) =
         ProjectedExtent(Extent.fromString(key), LatLng) -> obj

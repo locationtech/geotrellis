@@ -16,7 +16,7 @@
 
 package geotrellis.spark.pipeline.json.update
 
-import geotrellis.spark.pipeline.json._
+import geotrellis.spark.pipeline.json.*
 import io.circe.generic.extras.ConfiguredJsonCodec
 
 // TODO: implement node for these PipelineExpr

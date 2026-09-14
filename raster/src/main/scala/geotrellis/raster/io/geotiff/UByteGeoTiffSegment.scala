@@ -16,10 +16,10 @@
 
 package geotrellis.raster.io.geotiff
 
-import geotrellis.raster._
+import geotrellis.raster.*
 
 
-import spire.syntax.cfor._
+import spire.syntax.cfor.*
 
 abstract class UByteGeoTiffSegment(val bytes: Array[Byte]) extends GeoTiffSegment {
   val size: Int = bytes.size

@@ -18,9 +18,9 @@ package geotrellis.store.avro
 
 import java.io.ByteArrayInputStream
 import java.util.zip.{InflaterInputStream, DeflaterOutputStream, Deflater}
-import org.apache.avro.generic._
-import org.apache.avro.io._
-import org.apache.avro._
+import org.apache.avro.generic.*
+import org.apache.avro.io.*
+import org.apache.avro.*
 import org.apache.commons.io.IOUtils
 import org.apache.commons.io.output.ByteArrayOutputStream
 

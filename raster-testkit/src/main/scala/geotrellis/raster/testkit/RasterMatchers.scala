@@ -17,7 +17,7 @@
 package geotrellis.raster.testkit
 
 import geotrellis.proj4.CRS
-import geotrellis.raster._
+import geotrellis.raster.*
 import geotrellis.raster.io.geotiff.GeoTiff
 import geotrellis.raster.render.ascii.AsciiArtEncoder
 import geotrellis.raster.render.png.{PngColorEncoding, RgbaPngEncoding}
@@ -35,7 +35,7 @@ import geotrellis.vector.Extent
 import scala.util.Random
 
 trait RasterMatchers extends Matchers {
-  import RasterMatchers._
+  import RasterMatchers.*
 
   val Eps = 1e-3
 
@@ -206,7 +206,7 @@ trait RasterMatchers extends Matchers {
   //   HavePropertyMatchResult(grid.dimensions == dims, "dimensions", dims, grid.dimensions)
   // }
 
-  def cellType[T<: CellGrid[_]: ClassTag] (ct: CellType) = HavePropertyMatcher[T, CellType] { grid =>
+  def cellType[T<: CellGrid[?]: ClassTag] (ct: CellType) = HavePropertyMatcher[T, CellType] { grid =>
     HavePropertyMatchResult(grid.cellType == ct, "cellType", ct, grid.cellType)
   }
 

@@ -17,13 +17,13 @@
 package geotrellis.spark.filter
 
 import geotrellis.proj4.LatLng
-import geotrellis.vector._
-import geotrellis.layer._
+import geotrellis.vector.*
+import geotrellis.layer.*
 import geotrellis.raster.{FloatConstantNoDataCellType, GridBounds, TileLayout}
 import geotrellis.raster.io.geotiff.SinglebandGeoTiff
-import geotrellis.store._
-import geotrellis.spark._
-import geotrellis.spark.testkit._
+import geotrellis.store.*
+import geotrellis.spark.*
+import geotrellis.spark.testkit.*
 
 import org.scalatest.funspec.AnyFunSpec
 

@@ -17,18 +17,18 @@
 package geotrellis.spark.store.hbase
 
 import geotrellis.store.LayerId
-import geotrellis.store.hbase._
+import geotrellis.store.hbase.*
 import geotrellis.spark.store.LayerWriter
-import geotrellis.store.avro._
-import geotrellis.store.avro.codecs._
+import geotrellis.store.avro.*
+import geotrellis.store.avro.codecs.*
 import geotrellis.spark.util.KryoWrapper
 import org.apache.avro.Schema
-import org.apache.hadoop.hbase.client._
-import org.apache.hadoop.hbase.filter._
+import org.apache.hadoop.hbase.client.*
+import org.apache.hadoop.hbase.filter.*
 import org.apache.hadoop.hbase.{CompareOperator, TableName}
 import org.apache.spark.rdd.RDD
 
-import scala.jdk.CollectionConverters._
+import scala.jdk.CollectionConverters.*
 
 object HBaseRDDWriter {
   def write[K: AvroRecordCodec, V: AvroRecordCodec](
@@ -68,7 +68,7 @@ object HBaseRDDWriter {
     // groupBy will reuse the partitioner on the parent RDD if it is set, which could be typed
     // on a key type that may no longer by valid for the key type of the resulting RDD.
     raster.groupBy({ row => decomposeKey(row._1) }, numPartitions = raster.partitions.length)
-      .foreachPartition { partition: Iterator[(BigInt, Iterable[(K, V)])] =>
+      .foreachPartition { (partition: Iterator[(BigInt, Iterable[(K, V)])]) =>
         if(partition.nonEmpty) {
           instance.withConnectionDo { connection =>
             val mutator = connection.getBufferedMutator(table)

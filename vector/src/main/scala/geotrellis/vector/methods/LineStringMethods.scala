@@ -16,10 +16,10 @@
 
 package geotrellis.vector.methods
 
-import geotrellis.vector._
+import geotrellis.vector.*
 import geotrellis.util.MethodExtensions
 import org.locationtech.jts.geom.Coordinate
-import spire.syntax.cfor._
+import spire.syntax.cfor.*
 
 trait ExtraLineStringMethods extends MethodExtensions[LineString] {
   def closed(): LineString = {

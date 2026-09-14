@@ -22,7 +22,7 @@ package geotrellis.proj4
 import java.util.concurrent.TimeUnit
 
 import org.locationtech.proj4j.CoordinateReferenceSystem
-import org.openjdk.jmh.annotations._
+import org.openjdk.jmh.annotations.*
 
 @BenchmarkMode(Array(Mode.AverageTime))
 @State(Scope.Benchmark)

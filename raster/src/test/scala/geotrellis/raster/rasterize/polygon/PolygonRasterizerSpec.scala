@@ -16,12 +16,12 @@
 
 package geotrellis.raster.rasterize.polygon
 
-import geotrellis.proj4._
-import geotrellis.raster._
-import geotrellis.raster.rasterize._
+import geotrellis.proj4.*
+import geotrellis.raster.*
+import geotrellis.raster.rasterize.*
 import geotrellis.raster.rasterize.Rasterizer.Options
-import geotrellis.raster.testkit._
-import geotrellis.vector._
+import geotrellis.raster.testkit.*
+import geotrellis.vector.*
 import geotrellis.vector.io.wkt.WKT
 
 import org.locationtech.jts.io.WKTReader

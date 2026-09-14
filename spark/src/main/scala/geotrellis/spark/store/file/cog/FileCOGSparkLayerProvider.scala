@@ -16,11 +16,11 @@
 
 package geotrellis.spark.store.file.cog
 
-import geotrellis.store._
+import geotrellis.store.*
 import geotrellis.store.cog.{COGCollectionLayerReader, COGCollectionLayerReaderProvider, COGValueReader}
 import geotrellis.store.file.FileAttributeStore
 import geotrellis.store.file.cog.{FileCOGCollectionLayerReader, FileCOGValueReader}
-import geotrellis.spark.store.cog._
+import geotrellis.spark.store.cog.*
 
 import org.apache.spark.SparkContext
 

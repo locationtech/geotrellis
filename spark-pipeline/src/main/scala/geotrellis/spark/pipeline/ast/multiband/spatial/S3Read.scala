@@ -16,12 +16,12 @@
 
 package geotrellis.spark.pipeline.ast.multiband.spatial
 
-import io.circe.syntax._
+import io.circe.syntax.*
 
-import geotrellis.raster._
+import geotrellis.raster.*
 import geotrellis.spark.pipeline.ast.Input
 import geotrellis.spark.pipeline.json.read
-import geotrellis.vector._
+import geotrellis.vector.*
 
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD

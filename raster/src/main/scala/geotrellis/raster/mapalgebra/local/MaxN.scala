@@ -16,9 +16,9 @@
 
 package geotrellis.raster.mapalgebra.local
 
-import geotrellis.raster._
+import geotrellis.raster.*
 
-import spire.syntax.cfor._
+import spire.syntax.cfor.*
 
 /**
  * Implementation to find the Nth maximum element of a set of rasters for each cell.

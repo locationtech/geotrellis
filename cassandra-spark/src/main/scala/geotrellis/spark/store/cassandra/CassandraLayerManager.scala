@@ -16,15 +16,15 @@
 
 package geotrellis.spark.store.cassandra
 
-import geotrellis.layer._
-import geotrellis.store._
-import geotrellis.store.cassandra._
+import geotrellis.layer.*
+import geotrellis.store.*
+import geotrellis.store.cassandra.*
 import geotrellis.store.avro.AvroRecordCodec
-import geotrellis.store.index._
-import geotrellis.util._
+import geotrellis.store.index.*
+import geotrellis.util.*
 
 import org.apache.spark.SparkContext
-import io.circe._
+import io.circe.*
 
 import scala.reflect.ClassTag
 

@@ -16,16 +16,16 @@
 
 package geotrellis.spark.store.hadoop
 
-import geotrellis.layer._
+import geotrellis.layer.*
 import geotrellis.store.LayerId
 import geotrellis.store.LayerManager
 import geotrellis.store.avro.AvroRecordCodec
-import geotrellis.store.hadoop._
-import geotrellis.store.index._
-import geotrellis.util._
+import geotrellis.store.hadoop.*
+import geotrellis.store.index.*
+import geotrellis.util.*
 
 import org.apache.spark.SparkContext
-import _root_.io.circe._
+import _root_.io.circe.*
 
 import scala.reflect.ClassTag
 

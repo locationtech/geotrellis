@@ -18,12 +18,12 @@ package geotrellis.store.file
 
 import geotrellis.layer.{Boundable, Bounds}
 import geotrellis.store
-import geotrellis.store._
+import geotrellis.store.*
 import geotrellis.store.AttributeStore.Fields
 import geotrellis.store.avro.AvroRecordCodec
 import geotrellis.util.{Component, Filesystem}
 
-import io.circe._
+import io.circe.*
 
 import scala.reflect.ClassTag
 import java.io.File

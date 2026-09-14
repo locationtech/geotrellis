@@ -19,11 +19,11 @@ package geotrellis.raster
 import geotrellis.proj4.{CRS, Transform}
 import geotrellis.raster.reproject.Reproject.Options
 import geotrellis.raster.reproject.ReprojectRasterExtent
-import geotrellis.vector._
+import geotrellis.vector.*
 
 import scala.math.{max, min}
 import spire.math.Integral
-import spire.implicits._
+import spire.implicits.*
 
 /**
   * Represents an abstract grid over geographic extent.
@@ -40,7 +40,7 @@ class GridExtent[@specialized(Int, Long) N: Integral](
   val cols: N,
   val rows: N
 ) extends GridIntegral[N] {
-  import GridExtent._
+  import GridExtent.*
 
   if (cols <= 0) throw GeoAttrsError(s"invalid cols: $cols")
   if (rows <= 0) throw GeoAttrsError(s"invalid rows: $rows")
@@ -360,11 +360,11 @@ class GridExtent[@specialized(Int, Long) N: Integral](
       rows = Integral[N].fromLong(totalRows))
   }
 
-  def canEqual(a: Any) = a.isInstanceOf[GridExtent[_]]
+  def canEqual(a: Any) = a.isInstanceOf[GridExtent[?]]
 
   override def equals(that: Any): Boolean =
     that match {
-      case that: GridExtent[_] =>
+      case that: GridExtent[?] =>
         that.canEqual(this) &&
         that.extent == this.extent &&
         that.cellSize == this.cellSize &&

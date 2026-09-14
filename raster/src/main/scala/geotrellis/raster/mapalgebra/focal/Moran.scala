@@ -16,7 +16,7 @@
 
 package geotrellis.raster.mapalgebra.focal
 
-import geotrellis.raster._
+import geotrellis.raster.*
 import geotrellis.raster.summary.Statistics
 import geotrellis.raster.histogram.FastMapHistogram
 

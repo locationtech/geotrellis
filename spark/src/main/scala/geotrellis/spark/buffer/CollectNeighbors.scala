@@ -18,10 +18,10 @@ package geotrellis.spark.buffer
 
 import geotrellis.layer.{SpatialComponent, SpatialKey}
 import geotrellis.raster
-import geotrellis.raster.buffer.Direction._
-import geotrellis.util._
+import geotrellis.raster.buffer.Direction.*
+import geotrellis.util.*
 
-import org.apache.spark.rdd._
+import org.apache.spark.rdd.*
 
 import scala.reflect.ClassTag
 

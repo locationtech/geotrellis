@@ -18,7 +18,7 @@ package geotrellis.raster
 
 import geotrellis.raster.split.Split
 
-import spire.syntax.cfor._
+import spire.syntax.cfor.*
 
 
 /**

@@ -16,26 +16,26 @@
 
 package geotrellis.spark.pipeline.json
 
-import geotrellis.spark.pipeline.json.read._
-import geotrellis.spark.pipeline.json.write._
-import geotrellis.spark.pipeline.json.reindex._
-import geotrellis.spark.pipeline.json.update._
-import geotrellis.spark.pipeline.json.transform._
+import geotrellis.spark.pipeline.json.read.*
+import geotrellis.spark.pipeline.json.write.*
+import geotrellis.spark.pipeline.json.reindex.*
+import geotrellis.spark.pipeline.json.update.*
+import geotrellis.spark.pipeline.json.transform.*
 import geotrellis.proj4.CRS
-import geotrellis.layer._
-import geotrellis.spark.pipeline._
-import geotrellis.raster._
-import geotrellis.raster.resample._
+import geotrellis.layer.*
+import geotrellis.spark.pipeline.*
+import geotrellis.raster.*
+import geotrellis.raster.resample.*
 
 import _root_.io.circe.generic.extras.Configuration
-import _root_.io.circe._
-import _root_.io.circe.syntax._
-import _root_.io.circe.generic.extras.semiauto._
-import cats.syntax.either._
-import cats.syntax.apply._
-import cats.syntax.bifoldable._
-import cats.instances.option._
-import cats.instances.either._
+import _root_.io.circe.*
+import _root_.io.circe.syntax.*
+import _root_.io.circe.generic.extras.semiauto.*
+import cats.syntax.either.*
+import cats.syntax.apply.*
+import cats.syntax.bifoldable.*
+import cats.instances.option.*
+import cats.instances.either.*
 
 import java.net.URI
 
@@ -81,7 +81,7 @@ trait Implicits {
       case _ => throw new Exception("Can't encode LayoutScheme, consider providing your own circe encoder.")
     }
   implicit val layoutSchemeDecoder: Decoder[LayoutScheme] =
-    Decoder.decodeJson.emap { json: Json =>
+    Decoder.decodeJson.emap { (json: Json) =>
       ((json.hcursor.downField("tileCols").as[Int], json.hcursor.downField("tileRows").as[Int]) mapN {
         (tileCols, tileRows) => FloatingLayoutScheme(tileCols, tileRows)
       } match {
@@ -96,7 +96,7 @@ trait Implicits {
   implicit val layoutSchemeOrLayoutDefinitionEncoder: Encoder[Either[LayoutScheme, LayoutDefinition]] =
     Encoder.instance(_.bifoldMap(_.asJson, _.asJson))
   implicit val layoutSchemeOrLayoutDefinitionDecoder: Decoder[Either[LayoutScheme, LayoutDefinition]] =
-    Decoder.decodeJson.emap { json: Json =>
+    Decoder.decodeJson.emap { (json: Json) =>
       Either.catchNonFatal(layoutDefinitionDecoder.decodeJson(json) match {
         case Right(v) => Right[LayoutScheme, LayoutDefinition](v)
         case Left(_) => layoutSchemeDecoder.decodeJson(json) match {
@@ -138,7 +138,7 @@ trait Implicits {
     }
 
   implicit val cellSizeDecoder: Decoder[CellSize] =
-    Decoder.decodeJsonObject.emap { jso: JsonObject =>
+    Decoder.decodeJsonObject.emap { (jso: JsonObject) =>
       val map = jso.toMap
       val cellSize = ((map.get("width"), map.get("height")) mapN {
         (w, h) => (w.as[Double].toOption, h.as[Double].toOption) mapN {
@@ -165,7 +165,7 @@ trait Implicits {
 
   // TODO: Implement user defined PipelineExpr Encoders and Decoders support
   implicit val pipelineExprEncode: Encoder[PipelineExpr] =
-    Encoder.instance { expr: PipelineExpr =>
+    Encoder.instance { (expr: PipelineExpr) =>
       expr match {
         case e: JsonWrite => e.asJson
         case e: JsonRead => e.asJson

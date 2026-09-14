@@ -17,13 +17,13 @@
 package geotrellis.layer
 
 import geotrellis.raster.{GridBounds, RasterExtent}
-import geotrellis.util._
+import geotrellis.util.*
 
-import _root_.io.circe._
-import _root_.io.circe.syntax._
-import _root_.io.circe.generic.semiauto._
+import _root_.io.circe.*
+import _root_.io.circe.syntax.*
+import _root_.io.circe.generic.semiauto.*
 import cats.Functor
-import cats.syntax.either._
+import cats.syntax.either.*
 
 /** Represents a region of discrete space, bounding it by minimum and maximum points.
  * The bounds maybe [[EmptyBounds]] as result of intersection operation.
@@ -102,7 +102,7 @@ object Bounds {
     }
 
   implicit def boundsDecoder[K: Decoder]: Decoder[Bounds[K]] =
-    Decoder.decodeHCursor.emap { c: HCursor =>
+    Decoder.decodeHCursor.emap { (c: HCursor) =>
       c.as[KeyBounds[K]].leftFlatMap(_ => c.as[EmptyBounds.type]).leftMap(_ => "Bounds[K] expected.")
     }
 
@@ -143,12 +143,12 @@ case object EmptyBounds extends Bounds[Nothing] {
   def intersect[B](other: Bounds[B])(implicit b: Boundable[B]): Bounds[B] =
     EmptyBounds
 
-  def get = throw new NoSuchElementException("EmptyBounds.get")
+  def get: Nothing = throw new NoSuchElementException("EmptyBounds.get")
 
   def setSpatialBounds[B](other: KeyBounds[SpatialKey])(implicit ev: SpatialComponent[B]): Bounds[B] =
     this
 
-  def toOption = None
+  def toOption: None.type = None
 }
 
 /** Represents non-empty region of descrete space.

@@ -16,14 +16,14 @@
 
 package geotrellis.spark.testkit.testfiles
 
-import geotrellis.proj4._
-import geotrellis.raster._
-import geotrellis.layer._
-import geotrellis.spark._
-import geotrellis.spark.testkit._
-import org.apache.spark._
+import geotrellis.proj4.*
+import geotrellis.raster.*
+import geotrellis.layer.*
+import geotrellis.spark.*
+import geotrellis.spark.testkit.*
+import org.apache.spark.*
 import org.apache.spark.rdd.RDD
-import jp.ne.opt.chronoscala.Imports._
+import jp.ne.opt.chronoscala.Imports.*
 import java.time.{ZoneOffset, ZonedDateTime}
 
 object TestTileFeatureFiles {

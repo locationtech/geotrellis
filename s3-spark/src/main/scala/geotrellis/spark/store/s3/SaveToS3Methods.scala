@@ -19,7 +19,7 @@ package geotrellis.spark.store.s3
 import geotrellis.store.util.IORuntimeTransient
 import geotrellis.util.MethodExtensions
 
-import cats.effect._
+import cats.effect.*
 import software.amazon.awssdk.services.s3.model.PutObjectRequest
 import org.apache.spark.rdd.RDD
 

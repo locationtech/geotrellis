@@ -17,7 +17,7 @@
 package geotrellis.raster.io.geotiff
 
 import geotrellis.util.ByteReader
-import geotrellis.raster.io.geotiff.tags._
+import geotrellis.raster.io.geotiff.tags.*
 
 
 /**

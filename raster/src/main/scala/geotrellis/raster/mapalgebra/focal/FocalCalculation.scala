@@ -16,7 +16,7 @@
 
 package geotrellis.raster.mapalgebra.focal
 
-import geotrellis.raster._
+import geotrellis.raster.*
 
 trait Resulting[T] {
   /** Copies original value to result, (focusCol: Int, focusRow: Int, resultCol: Int, rowRow: Int) => Unit */
@@ -196,7 +196,7 @@ trait BitArrayTileResult extends Resulting[Tile] { self: FocalCalculation[Tile] 
     resultTile.set(col, row, r.get(focusCol, focusRow))
   }
 
-  def result = resultTile
+  def result: BitArrayTile = resultTile
 }
 
 /**
@@ -214,7 +214,7 @@ trait ByteArrayTileResult extends Resulting[Tile] { self: FocalCalculation[Tile]
     resultTile.set(col, row, r.get(focusCol, focusRow))
   }
 
-  def result = resultTile
+  def result: ByteArrayTile = resultTile
 }
 
 /**
@@ -232,7 +232,7 @@ trait ShortArrayTileResult extends Resulting[Tile] { self: FocalCalculation[Tile
     resultTile.set(col, row, r.get(focusCol, focusRow))
   }
 
-  def result = resultTile
+  def result: ShortArrayTile = resultTile
 }
 
 /**
@@ -250,7 +250,7 @@ trait IntArrayTileResult extends Resulting[Tile] { self: FocalCalculation[Tile] 
     resultTile.set(col, row, r.get(focusCol, focusRow))
   }
 
-  def result = resultTile
+  def result: IntArrayTile = resultTile
 }
 
 /**
@@ -268,7 +268,7 @@ trait FloatArrayTileResult extends Resulting[Tile] { self: FocalCalculation[Tile
     resultTile.setDouble(col, row, r.getDouble(focusCol, focusRow))
   }
 
-  def result = resultTile
+  def result: FloatArrayTile = resultTile
 }
 
 /**
@@ -286,7 +286,7 @@ trait DoubleArrayTileResult extends Resulting[Tile] { self: FocalCalculation[Til
     resultTile.setDouble(col, row, r.getDouble(focusCol, focusRow))
   }
 
-  def result = resultTile
+  def result: DoubleArrayTile = resultTile
 }
 
 trait ArrayTileResult extends Resulting[Tile] { self: FocalCalculation[Tile] =>
@@ -306,5 +306,5 @@ trait ArrayTileResult extends Resulting[Tile] { self: FocalCalculation[Tile] =>
       }
     }
 
-  def result = resultTile
+  def result: MutableArrayTile = resultTile
 }

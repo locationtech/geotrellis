@@ -16,21 +16,21 @@
 
 package geotrellis.store.cog
 
-import geotrellis.layer._
-import geotrellis.raster.io.geotiff.reader._
+import geotrellis.layer.*
+import geotrellis.raster.io.geotiff.reader.*
 import geotrellis.raster.io.geotiff.tags.TiffTags
 import geotrellis.raster.{CellGrid, RasterExtent}
-import geotrellis.store._
+import geotrellis.store.*
 import geotrellis.store.index.{Index, MergeQueue}
 import geotrellis.store.util.IOUtils
-import geotrellis.util._
+import geotrellis.util.*
 
-import io.circe._
-import io.circe.parser._
-import cats.syntax.either._
-import cats.effect._
+import io.circe.*
+import io.circe.parser.*
+import cats.syntax.either.*
+import cats.effect.*
 
-import scala.reflect._
+import scala.reflect.*
 import java.net.URI
 import java.util.ServiceLoader
 
@@ -162,7 +162,7 @@ object COGCollectionLayerReader {
    * Find instances of [[COGCollectionLayerReaderProvider]] through Java SPI.
    */
   def apply(attributeStore: AttributeStore, collectionReaderUri: URI): COGCollectionLayerReader[LayerId] = {
-    import scala.jdk.CollectionConverters._
+    import scala.jdk.CollectionConverters.*
     ServiceLoader.load(classOf[COGCollectionLayerReaderProvider])
       .iterator().asScala
       .find(_.canProcess(collectionReaderUri))
@@ -216,7 +216,7 @@ object COGCollectionLayerReader {
     else
       baseQueryKeyBounds.flatMap(decomposeBounds)
 
-    IOUtils.parJoin[K, V](ranges.iterator) { index: BigInt =>
+    IOUtils.parJoin[K, V](ranges.iterator) { (index: BigInt) =>
       if (!pathExists(keyPath(index))) Vector()
       else {
         val uri = fullPath(keyPath(index))

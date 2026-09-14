@@ -16,15 +16,15 @@
 
 package geotrellis.spark.store.hbase
 
-import geotrellis.layer._
-import geotrellis.store._
+import geotrellis.layer.*
+import geotrellis.store.*
 import geotrellis.store.avro.AvroRecordCodec
-import geotrellis.store.index._
-import geotrellis.store.hbase._
-import geotrellis.util._
+import geotrellis.store.index.*
+import geotrellis.store.hbase.*
+import geotrellis.util.*
 
 import org.apache.spark.SparkContext
-import io.circe._
+import io.circe.*
 
 import scala.reflect.ClassTag
 

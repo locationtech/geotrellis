@@ -18,8 +18,8 @@ package geotrellis.raster.gdal
 
 import geotrellis.raster.SourcePath
 
-import cats.syntax.option._
-import io.lemonlabs.uri._
+import cats.syntax.option.*
+import io.lemonlabs.uri.*
 import io.lemonlabs.uri.encoding.PercentEncoder
 import io.lemonlabs.uri.encoding.PercentEncoder.PATH_CHARS_TO_ENCODE
 import java.net.MalformedURLException
@@ -99,7 +99,7 @@ object GDALPath {
     compressedFileDelimiter: Option[String] = "!".some,
     percentEncoder: PercentEncoder = PercentEncoder(PATH_CHARS_TO_ENCODE ++ Set('%', '?', '#'))
   ): Option[GDALPath] = {
-    import Schemes._
+    import Schemes.*
 
     // Trying to read something locally on Windows matters
     // because of how file paths on Windows are formatted.

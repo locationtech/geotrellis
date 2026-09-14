@@ -17,10 +17,10 @@
 package geotrellis.spark.partition
 
 import geotrellis.layer.{SpatialComponent, SpatialKey}
-import geotrellis.store.index.zcurve._
-import geotrellis.util._
+import geotrellis.store.index.zcurve.*
+import geotrellis.util.*
 
-import org.apache.spark._
+import org.apache.spark.*
 
 class SpatialPartitioner[K: SpatialComponent](partitions: Int, bits: Int) extends Partitioner {
   def numPartitions: Int = partitions

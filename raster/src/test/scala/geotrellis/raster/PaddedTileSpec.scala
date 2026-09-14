@@ -18,7 +18,7 @@ package geotrellis.raster
 
 import geotrellis.raster.testkit.RasterMatchers
 
-import spire.syntax.cfor._
+import spire.syntax.cfor.*
 
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.funspec.AnyFunSpec

@@ -65,7 +65,7 @@ abstract class DoubleArrayTile(val array: Array[Double], cols: Int, rows: Int)
   */
 final case class DoubleRawArrayTile(arr: Array[Double], val cols: Int, val rows: Int)
     extends DoubleArrayTile(arr, cols, rows) {
-  val cellType = DoubleCellType
+  val cellType: DoubleCellType.type = DoubleCellType
 
   /**
     * Fetch the datum at the given index in the array.
@@ -106,7 +106,7 @@ final case class DoubleRawArrayTile(arr: Array[Double], val cols: Int, val rows:
   */
 final case class DoubleConstantNoDataArrayTile(arr: Array[Double], val cols: Int, val rows: Int)
     extends DoubleArrayTile(arr, cols, rows) {
-  val cellType = DoubleConstantNoDataCellType
+  val cellType: DoubleConstantNoDataCellType.type = DoubleConstantNoDataCellType
 
   /**
     * Fetch the datum at the given index in the array.

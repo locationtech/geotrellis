@@ -16,13 +16,13 @@
 
 package geotrellis.raster.render
 
-import geotrellis.raster._
-import geotrellis.util._
+import geotrellis.raster.*
+import geotrellis.util.*
 
-import spire.algebra._
+import spire.algebra.*
 import spire.math.Sorting
-import spire.std.any._
-import spire.syntax.order._
+import spire.std.any.*
+import spire.syntax.order.*
 
 import scala.specialized
 

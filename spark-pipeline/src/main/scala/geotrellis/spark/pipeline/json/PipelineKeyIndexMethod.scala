@@ -33,5 +33,5 @@ case class PipelineKeyIndexMethod(
     case ("zorder", None)      => ZCurveKeyIndexMethod
     case ("zorder", Some(tr))  => ZCurveKeyIndexMethod.byMilliseconds(tr)
     case _                     => throw new Exception("unsupported keyIndexMethod definition")
-  }): KeyIndexMethod[_]).asInstanceOf[KeyIndexMethod[K]]
+  }): KeyIndexMethod[?]).asInstanceOf[KeyIndexMethod[K]]
 }

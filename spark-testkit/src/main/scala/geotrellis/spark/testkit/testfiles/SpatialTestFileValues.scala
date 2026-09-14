@@ -17,9 +17,9 @@
 package geotrellis.spark.testkit.testfiles
 
 import geotrellis.layer.SpatialKey
-import geotrellis.raster._
+import geotrellis.raster.*
 
-import spire.syntax.cfor._
+import spire.syntax.cfor.*
 
 abstract class TestFileSpatialTiles(tileLayout: TileLayout) {
   final def apply(key: SpatialKey): Tile = {

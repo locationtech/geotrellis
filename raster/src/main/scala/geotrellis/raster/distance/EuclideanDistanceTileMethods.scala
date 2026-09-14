@@ -20,7 +20,7 @@ import org.locationtech.jts.geom.Coordinate
 
 import geotrellis.raster.{RasterExtent, Tile}
 import geotrellis.util.MethodExtensions
-import geotrellis.vector._
+import geotrellis.vector.*
 
 trait EuclideanDistanceTileArrayMethods extends MethodExtensions[Array[Point]] {
   def euclideanDistanceTile(rasterExtent: RasterExtent): Tile = { EuclideanDistanceTile(self, rasterExtent) }

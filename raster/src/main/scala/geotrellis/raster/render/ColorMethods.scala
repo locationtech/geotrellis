@@ -16,12 +16,12 @@
 
 package geotrellis.raster.render
 
-import geotrellis.raster._
+import geotrellis.raster.*
 import geotrellis.util.MethodExtensions
 
 import java.awt.image.BufferedImage
 
-import spire.syntax.cfor._
+import spire.syntax.cfor.*
 
 trait ColorMethods extends MethodExtensions[Tile] {
   def color(colorMap: ColorMap): Tile =

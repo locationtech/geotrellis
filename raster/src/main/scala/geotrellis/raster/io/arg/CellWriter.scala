@@ -18,7 +18,7 @@ package geotrellis.raster.io.arg
 
 import java.io.DataOutputStream
 
-import geotrellis.raster._
+import geotrellis.raster.*
 
 object CellWriter {
   def byType(cellType: CellType): CellWriter = cellType match {

@@ -16,10 +16,10 @@
 
 package geotrellis.spark.store.hadoop
 
-import geotrellis.store._
+import geotrellis.store.*
 import geotrellis.store.hadoop.HadoopCollectionLayerProvider
 import geotrellis.store.hadoop.util.HdfsUtils
-import geotrellis.spark.store._
+import geotrellis.spark.store.*
 import geotrellis.util.UriUtils
 
 import org.apache.hadoop.fs.Path

@@ -16,13 +16,13 @@
 
 package geotrellis.spark.join
 
-import geotrellis.layer._
-import geotrellis.spark.partition._
-import geotrellis.util._
-import geotrellis.vector._
-import org.apache.spark.rdd._
+import geotrellis.layer.*
+import geotrellis.spark.partition.*
+import geotrellis.util.*
+import geotrellis.vector.*
+import org.apache.spark.rdd.*
 
-import scala.reflect._
+import scala.reflect.*
 
 
 object Implicits extends Implicits

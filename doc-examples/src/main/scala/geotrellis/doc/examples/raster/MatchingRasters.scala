@@ -16,7 +16,7 @@
 
 package geotrellis.doc.examples.raster
 
-import geotrellis.raster._
+import geotrellis.raster.*
 import geotrellis.raster.reproject.Reproject
 import geotrellis.vector.Extent
 

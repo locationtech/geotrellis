@@ -17,8 +17,8 @@
 package geotrellis.raster.summary.types
 
 import cats.Monoid
-import cats.syntax.monoid._
-import geotrellis.raster._
+import cats.syntax.monoid.*
+import geotrellis.raster.*
 
 /**
   * Immutable class that computes a derived mean from stored sum and count

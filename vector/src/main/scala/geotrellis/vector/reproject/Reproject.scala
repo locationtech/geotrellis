@@ -16,8 +16,8 @@
 
 package geotrellis.vector.reproject
 
-import geotrellis.proj4._
-import geotrellis.vector._
+import geotrellis.proj4.*
+import geotrellis.vector.*
 
 /** This object contains various overloads for performing reprojections over geometries */
 object Reproject {

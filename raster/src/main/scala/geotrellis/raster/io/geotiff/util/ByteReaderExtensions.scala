@@ -18,7 +18,7 @@ package geotrellis.raster.io.geotiff.util
 
 import geotrellis.util.ByteReader
 
-import spire.syntax.cfor._
+import spire.syntax.cfor.*
 
 trait ByteReaderExtensions {
 

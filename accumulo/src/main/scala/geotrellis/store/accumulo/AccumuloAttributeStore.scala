@@ -16,21 +16,21 @@
 
 package geotrellis.store.accumulo
 
-import geotrellis.store._
+import geotrellis.store.*
 import geotrellis.store.accumulo.conf.AccumuloConfig
 
 import org.apache.accumulo.core.client.{AccumuloClient, BatchWriterConfig}
 import org.apache.accumulo.core.security.Authorizations
-import org.apache.accumulo.core.data._
+import org.apache.accumulo.core.data.*
 import org.apache.accumulo.core.client.IteratorSetting
 import org.apache.accumulo.core.iterators.user.RegExFilter
 import org.apache.hadoop.io.Text
-import io.circe._
-import io.circe.syntax._
-import io.circe.parser._
-import cats.syntax.either._
+import io.circe.*
+import io.circe.syntax.*
+import io.circe.parser.*
+import cats.syntax.either.*
 
-import scala.jdk.CollectionConverters._
+import scala.jdk.CollectionConverters.*
 
 object AccumuloAttributeStore {
   def apply(client: AccumuloClient, attributeTable: String): AccumuloAttributeStore =

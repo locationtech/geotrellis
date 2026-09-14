@@ -17,11 +17,11 @@
 package geotrellis.store.hadoop
 
 import geotrellis.layer.{Boundable, Bounds}
-import geotrellis.store._
-import geotrellis.store.avro._
-import geotrellis.store.hadoop.util._
-import geotrellis.util._
-import io.circe._
+import geotrellis.store.*
+import geotrellis.store.avro.*
+import geotrellis.store.hadoop.util.*
+import geotrellis.util.*
+import io.circe.*
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path

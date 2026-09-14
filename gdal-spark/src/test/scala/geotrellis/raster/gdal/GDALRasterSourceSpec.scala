@@ -16,18 +16,18 @@
 
 package geotrellis.raster.gdal
 
-import geotrellis.layer._
-import geotrellis.raster._
+import geotrellis.layer.*
+import geotrellis.raster.*
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
-import geotrellis.raster.resample._
+import geotrellis.raster.resample.*
 import geotrellis.vector.ProjectedExtent
-import geotrellis.raster.testkit._
+import geotrellis.raster.testkit.*
 
 import org.scalatest.GivenWhenThen
 import org.scalatest.funspec.AnyFunSpec
 
 class GDALRasterSourceSpec extends AnyFunSpec with RasterMatchers with GivenWhenThen {
-  import geotrellis.GDALTestUtils._
+  import geotrellis.GDALTestUtils.*
   val uri = gdalGeoTiffPath("vlm/aspect-tiled.tif")
 
   describe("should perform a tileToLayout of a GeoTiffRasterSource") {

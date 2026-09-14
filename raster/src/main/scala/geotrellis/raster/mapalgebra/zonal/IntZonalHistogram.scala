@@ -16,9 +16,9 @@
 
 package geotrellis.raster.mapalgebra.zonal
 
-import geotrellis.raster._
+import geotrellis.raster.*
 
-import spire.syntax.cfor._
+import spire.syntax.cfor.*
 
 import scala.collection.mutable
 

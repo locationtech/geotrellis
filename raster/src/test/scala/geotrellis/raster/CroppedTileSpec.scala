@@ -16,7 +16,7 @@
 
 package geotrellis.raster
 
-import geotrellis.raster.testkit._
+import geotrellis.raster.testkit.*
 import geotrellis.vector.Extent
 
 import org.scalatest.funspec.AnyFunSpec

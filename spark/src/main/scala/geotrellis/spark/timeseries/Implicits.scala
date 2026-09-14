@@ -17,7 +17,7 @@
 package geotrellis.spark.timeseries
 
 import geotrellis.layer.SpaceTimeKey
-import geotrellis.spark._
+import geotrellis.spark.*
 
 
 

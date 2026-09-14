@@ -16,9 +16,9 @@
 
 package geotrellis.spark.pipeline.ast
 
-import io.circe._
+import io.circe.*
 
-import geotrellis.spark.pipeline.json.write.{Write => JsonWrite}
+import geotrellis.spark.pipeline.json.write.{Write as JsonWrite}
 import geotrellis.raster.CellGrid
 import geotrellis.raster.merge.TileMergeMethods
 import geotrellis.raster.prototype.TilePrototypeMethods

@@ -16,10 +16,10 @@
 
 package geotrellis.raster.matching
 
-import geotrellis.raster._
+import geotrellis.raster.*
 import geotrellis.raster.histogram.Histogram
 import geotrellis.raster.histogram.StreamingHistogram
-import geotrellis.raster.equalization.HistogramEqualization._
+import geotrellis.raster.equalization.HistogramEqualization.*
 
 
 /**

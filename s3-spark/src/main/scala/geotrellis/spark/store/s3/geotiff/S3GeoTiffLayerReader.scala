@@ -19,12 +19,12 @@ package geotrellis.spark.store.s3.geotiff
 import geotrellis.layer.ZoomedLayoutScheme
 import geotrellis.raster.resample.{NearestNeighbor, ResampleMethod}
 import geotrellis.raster.io.geotiff.OverviewStrategy
-import geotrellis.store.util._
+import geotrellis.store.util.*
 import geotrellis.store.s3.S3ClientProducer
 import geotrellis.spark.store.hadoop.geotiff.{AttributeStore, GeoTiffLayerReader, GeoTiffMetadata}
 import geotrellis.util.annotations.experimental
 
-import cats.effect._
+import cats.effect.*
 import software.amazon.awssdk.services.s3.S3Client
 
 /**

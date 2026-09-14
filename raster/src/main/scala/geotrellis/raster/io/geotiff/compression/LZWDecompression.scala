@@ -16,12 +16,12 @@
 
 package geotrellis.raster.io.geotiff.compression
 
-import geotrellis.raster.io.geotiff.tags.codes.CompressionType._
+import geotrellis.raster.io.geotiff.tags.codes.CompressionType.*
 
 
 
 
-import spire.syntax.cfor._
+import spire.syntax.cfor.*
 
 object LZWDecompressor {
   def apply(segmentSizes: Array[Int]): LZWDecompressor =

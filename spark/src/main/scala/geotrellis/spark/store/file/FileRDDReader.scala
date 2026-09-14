@@ -24,7 +24,7 @@ import geotrellis.store.util.{IORuntimeTransient, IOUtils}
 import geotrellis.spark.util.KryoWrapper
 import geotrellis.util.Filesystem
 
-import cats.effect._
+import cats.effect.*
 import org.apache.avro.Schema
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
@@ -55,11 +55,11 @@ object FileRDDReader {
     val kwWriterSchema = KryoWrapper(writerSchema) // Avro Schema is not Serializable
 
     sc.parallelize(bins, bins.size)
-      .mapPartitions { partition: Iterator[Seq[(BigInt, BigInt)]] =>
+      .mapPartitions { (partition: Iterator[Seq[(BigInt, BigInt)]]) =>
         implicit val ioRuntime: unsafe.IORuntime = runtime
 
         partition flatMap { seq =>
-          IOUtils.parJoin[K, V](seq.iterator) { index: BigInt =>
+          IOUtils.parJoin[K, V](seq.iterator) { (index: BigInt) =>
             val path = keyPath(index)
             if (new File(path).exists) {
               val bytes: Array[Byte] = Filesystem.slurp(path)
