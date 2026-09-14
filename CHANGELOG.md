@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - GDAL 3.13 Update [#3606](https://github.com/locationtech/geotrellis/pull/3606)
 - Accumulo 2.1.4 Update [#3612](https://github.com/locationtech/geotrellis/pull/3612/)
 - GeoTiffWriter should write correct ExtraSamples tag [#3613](https://github.com/locationtech/geotrellis/issues/3613)
-- Fixed BigTiff offset overflow ([#3616](https://github.com/locationtech/geotrellis/pull/3616))
+- Fixed BigTiff offset overflow [#3616](https://github.com/locationtech/geotrellis/pull/3616)
 - Clean up the deprecated syntax and Scala 2.12 APIs [#3628](https://github.com/locationtech/geotrellis/pull/3628)
 - Drop JDK17 builds [#3629](https://github.com/locationtech/geotrellis/pull/3629)
 - Accumulo Deprecated APIs removal [#3630](https://github.com/locationtech/geotrellis/pull/3630)
