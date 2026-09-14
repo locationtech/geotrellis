@@ -26,11 +26,11 @@ object Implicits extends Implicits
 
 trait Implicits {
 
-  implicit class withRDDSinglebandMatchingMethods[K, V: * => Tile](
+  implicit class withRDDSinglebandMatchingMethods[K, V: _ => Tile](
     val self: RDD[(K, V)]
   ) extends RDDSinglebandMatchingMethods[K, V]
 
-  implicit class withRDDMultibandMatchingMethods[K, V: * => MultibandTile](
+  implicit class withRDDMultibandMatchingMethods[K, V: _ => MultibandTile](
     val self: RDD[(K, V)]
   ) extends RDDMultibandMatchingMethods[K, V]
 

@@ -42,7 +42,7 @@ import scala.reflect.*
 
 abstract class COGPersistenceSpec[
   K: SpatialComponent: Ordering: Boundable: Encoder: Decoder: ClassTag,
-  V <: CellGrid[Int]: GeoTiffReader: * => TileMergeMethods[V]: * => TilePrototypeMethods[V]: * => TileCropMethods[V]: ClassTag: GeoTiffBuilder
+  V <: CellGrid[Int]: GeoTiffReader: _ => TileMergeMethods[V]: _ => TilePrototypeMethods[V]: _ => TileCropMethods[V]: ClassTag: GeoTiffBuilder
 ] extends AnyFunSpec with Matchers with BeforeAndAfterAll {
 
   type TestReader = COGLayerReader[LayerId]

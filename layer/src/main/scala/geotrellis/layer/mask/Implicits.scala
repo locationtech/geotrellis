@@ -28,7 +28,7 @@ object Implicits extends Implicits
 trait Implicits {
   implicit class withTileCollectionMaskMethods[
     K: SpatialComponent,
-    V: * => TileMaskMethods[V],
-    M: GetComponent[*, LayoutDefinition]
+    V: _ => TileMaskMethods[V],
+    M: GetComponent[_, LayoutDefinition]
   ](val self: Seq[(K, V)] with Metadata[M]) extends TileCollectionMaskMethods[K, V, M]
 }

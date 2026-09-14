@@ -42,8 +42,8 @@ trait Transform[F, T] extends Node[T]
 
 object Transform {
   def perTileReproject[
-    I: Component[*, ProjectedExtent],
-    V <: CellGrid[Int]: * => TileReprojectMethods[V]
+    I: Component[_, ProjectedExtent],
+    V <: CellGrid[Int]: _ => TileReprojectMethods[V]
   ](arg: Reproject)(rdd: RDD[(I, V)]): RDD[(I, V)] = {
     (arg.scheme, arg.maxZoom) match {
       case (Left(layoutScheme: ZoomedLayoutScheme), Some(mz)) =>
@@ -56,7 +56,7 @@ object Transform {
 
   def bufferedReproject[
     K: SpatialComponent: Boundable: ClassTag,
-    V <: CellGrid[Int]: ClassTag: RasterRegionReproject: Stitcher: * => TileReprojectMethods[V]: * => CropMethods[V]: * => TileMergeMethods[V]: * => TilePrototypeMethods[V]
+    V <: CellGrid[Int]: ClassTag: RasterRegionReproject: Stitcher: _ => TileReprojectMethods[V]: _ => CropMethods[V]: _ => TileMergeMethods[V]: _ => TilePrototypeMethods[V]
   ](arg: Reproject)(rdd: RDD[(K, V)] with Metadata[TileLayerMetadata[K]]): RDD[(K, V)] with Metadata[TileLayerMetadata[K]] = {
     (arg.scheme, arg.maxZoom) match {
       case (Left(layoutScheme: ZoomedLayoutScheme), Some(mz)) =>
@@ -73,8 +73,8 @@ object Transform {
 
   def tileToLayout[
     K: Boundable: SpatialComponent: ClassTag,
-    I: Component[*, ProjectedExtent]: * => TilerKeyMethods[I, K],
-    V <: CellGrid[Int]: * => TileReprojectMethods[V]: * => TileMergeMethods[V]: * => TilePrototypeMethods[V]: ClassTag
+    I: Component[_, ProjectedExtent]: _ => TilerKeyMethods[I, K],
+    V <: CellGrid[Int]: _ => TileReprojectMethods[V]: _ => TileMergeMethods[V]: _ => TilePrototypeMethods[V]: ClassTag
   ](arg: TileToLayout)(rdd: RDD[(I, V)]): RDD[(K, V)] with Metadata[TileLayerMetadata[K]] = {
     val md = { // collecting floating metadata allows detecting upsampling
       val (_, md) = rdd.collectMetadata(FloatingLayoutScheme(arg.tileSize.getOrElse(256)))
@@ -84,7 +84,7 @@ object Transform {
   }
 
   def retileToLayoutSpatial[
-    V <: CellGrid[Int]: * => TileReprojectMethods[V]: * => TileMergeMethods[V]: * => TilePrototypeMethods[V]: ClassTag
+    V <: CellGrid[Int]: _ => TileReprojectMethods[V]: _ => TileMergeMethods[V]: _ => TilePrototypeMethods[V]: ClassTag
   ](arg: RetileToLayout)(rdd: RDD[(SpatialKey, V)] with Metadata[TileLayerMetadata[SpatialKey]]): RDD[(SpatialKey, V)] with Metadata[TileLayerMetadata[SpatialKey]] = {
     val md = rdd.metadata
     val mapKeyTransform = md.mapTransform
@@ -103,7 +103,7 @@ object Transform {
   }
 
   def retileToLayoutTemporal[
-    V <: CellGrid[Int]: * => TileReprojectMethods[V]: * => TileMergeMethods[V]: * => TilePrototypeMethods[V]: ClassTag
+    V <: CellGrid[Int]: _ => TileReprojectMethods[V]: _ => TileMergeMethods[V]: _ => TilePrototypeMethods[V]: ClassTag
   ](arg: RetileToLayout)(rdd: RDD[(SpaceTimeKey, V)] with Metadata[TileLayerMetadata[SpaceTimeKey]]): RDD[(SpaceTimeKey, V)] with Metadata[TileLayerMetadata[SpaceTimeKey]] = {
     val md = rdd.metadata
     val mapKeyTransform = md.mapTransform
@@ -123,7 +123,7 @@ object Transform {
 
   def pyramid[
     K: SpatialComponent: AvroRecordCodec: ClassTag,
-    V <: CellGrid[Int]: AvroRecordCodec: ClassTag: * => TileMergeMethods[V]: * => TilePrototypeMethods[V]
+    V <: CellGrid[Int]: AvroRecordCodec: ClassTag: _ => TileMergeMethods[V]: _ => TilePrototypeMethods[V]
   ](arg: JsonPyramid)(rdd: RDD[(K, V)] with Metadata[TileLayerMetadata[K]]): LazyList[(Int, RDD[(K, V)] with Metadata[TileLayerMetadata[K]])] = {
     def pyramid(resampleMethod: ResampleMethod): LazyList[(Int, RDD[(K, V)] with Metadata[TileLayerMetadata[K]])] = {
       require(!rdd.metadata.bounds.isEmpty, "Can not pyramid an empty RDD")

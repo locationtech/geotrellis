@@ -19,7 +19,7 @@ package geotrellis.layer
 import geotrellis.raster.*
 import geotrellis.util.*
 
-abstract class CellGridLayoutCollectionMethods[K: SpatialComponent, V <: CellGrid[Int], M: GetComponent[*, LayoutDefinition]]
+abstract class CellGridLayoutCollectionMethods[K: SpatialComponent, V <: CellGrid[Int], M: GetComponent[_, LayoutDefinition]]
     extends MethodExtensions[Seq[(K, V)] with Metadata[M]] {
   def asRasters(): Seq[(K, Raster[V])] = {
     val layout = self.metadata.getComponent[LayoutDefinition]

@@ -38,8 +38,8 @@ import scala.reflect.ClassTag
 
 case class Pyramid[
     K: SpatialComponent: ClassTag,
-    V <: CellGrid[Int]: ClassTag: * => TilePrototypeMethods[V]: * => TileMergeMethods[V],
-    M: Component[*, LayoutDefinition]: Component[*, Bounds[K]]
+    V <: CellGrid[Int]: ClassTag: _ => TilePrototypeMethods[V]: _ => TileMergeMethods[V],
+    M: Component[_, LayoutDefinition]: Component[_, Bounds[K]]
 ](levels: Map[Int, RDD[(K, V)] with Metadata[M]]) {
   def apply(level: Int): RDD[(K, V)] with Metadata[M] = levels(level)
 
@@ -83,8 +83,8 @@ object Pyramid {
 
   def fromLayerReader[
     K: AvroRecordCodec: Boundable: Encoder: Decoder: ClassTag: SpatialComponent,
-    V <: CellGrid[Int]: * => TilePrototypeMethods[V]: * => TileMergeMethods[V]: AvroRecordCodec: ClassTag,
-    M: Encoder: Decoder: Component[*, Bounds[K]]: Component[*, LayoutDefinition]
+    V <: CellGrid[Int]: _ => TilePrototypeMethods[V]: _ => TileMergeMethods[V]: AvroRecordCodec: ClassTag,
+    M: Encoder: Decoder: Component[_, Bounds[K]]: Component[_, LayoutDefinition]
   ](layerName: String, layerReader: LayerReader[LayerId], maxZoom: Option[Int] = None, minZoom: Option[Int] = None): Pyramid[K, V, M] = {
     val zooms = layerReader.attributeStore.availableZoomLevels(layerName)
 
@@ -111,8 +111,8 @@ object Pyramid {
 
   def fromLayerRDD[
     K: SpatialComponent: ClassTag,
-    V <: CellGrid[Int]: ClassTag: * => TilePrototypeMethods[V]: * => TileMergeMethods[V],
-    M: Component[*, LayoutDefinition]: Component[*, Bounds[K]]
+    V <: CellGrid[Int]: ClassTag: _ => TilePrototypeMethods[V]: _ => TileMergeMethods[V],
+    M: Component[_, LayoutDefinition]: Component[_, Bounds[K]]
   ](rdd: RDD[(K, V)] with Metadata[M],
     thisZoom: Option[Int] = None,
     endZoom: Option[Int] = None,
@@ -155,8 +155,8 @@ object Pyramid {
     */
   def up[
     K: SpatialComponent: ClassTag,
-    V <: CellGrid[Int]: ClassTag: * => TilePrototypeMethods[V]: * => TileMergeMethods[V],
-    M: Component[*, LayoutDefinition]: Component[*, Bounds[K]]
+    V <: CellGrid[Int]: ClassTag: _ => TilePrototypeMethods[V]: _ => TileMergeMethods[V],
+    M: Component[_, LayoutDefinition]: Component[_, Bounds[K]]
   ](rdd: RDD[(K, V)] with Metadata[M],
     layoutScheme: LayoutScheme,
     zoom: Int,
@@ -242,8 +242,8 @@ object Pyramid {
 
   def up[
     K: SpatialComponent: ClassTag,
-    V <: CellGrid[Int]: ClassTag: * => TileMergeMethods[V]: * => TilePrototypeMethods[V],
-    M: Component[*, LayoutDefinition]: Component[*, Bounds[K]]
+    V <: CellGrid[Int]: ClassTag: _ => TileMergeMethods[V]: _ => TilePrototypeMethods[V],
+    M: Component[_, LayoutDefinition]: Component[_, Bounds[K]]
   ](rdd: RDD[(K, V)] with Metadata[M],
     layoutScheme: LayoutScheme,
     zoom: Int
@@ -271,8 +271,8 @@ object Pyramid {
     */
   def levelStream[
     K: SpatialComponent: ClassTag,
-    V <: CellGrid[Int]: ClassTag: * => TileMergeMethods[V]: * => TilePrototypeMethods[V],
-    M: Component[*, LayoutDefinition]: Component[*, Bounds[K]]
+    V <: CellGrid[Int]: ClassTag: _ => TileMergeMethods[V]: _ => TilePrototypeMethods[V],
+    M: Component[_, LayoutDefinition]: Component[_, Bounds[K]]
   ](rdd: RDD[(K, V)] with Metadata[M],
     layoutScheme: LayoutScheme,
     startZoom: Int,
@@ -290,8 +290,8 @@ object Pyramid {
 
   def levelStream[
     K: SpatialComponent: ClassTag,
-    V <: CellGrid[Int]: ClassTag: * => TileMergeMethods[V]: * => TilePrototypeMethods[V],
-    M: Component[*, LayoutDefinition]: Component[*, Bounds[K]]
+    V <: CellGrid[Int]: ClassTag: _ => TileMergeMethods[V]: _ => TilePrototypeMethods[V],
+    M: Component[_, LayoutDefinition]: Component[_, Bounds[K]]
   ](rdd: RDD[(K, V)] with Metadata[M],
     layoutScheme: LayoutScheme,
     startZoom: Int,
@@ -301,8 +301,8 @@ object Pyramid {
 
   def levelStream[
     K: SpatialComponent: ClassTag,
-    V <: CellGrid[Int]: ClassTag: * => TileMergeMethods[V]: * => TilePrototypeMethods[V],
-    M: Component[*, LayoutDefinition]: Component[*, Bounds[K]]
+    V <: CellGrid[Int]: ClassTag: _ => TileMergeMethods[V]: _ => TilePrototypeMethods[V],
+    M: Component[_, LayoutDefinition]: Component[_, Bounds[K]]
   ](rdd: RDD[(K, V)] with Metadata[M],
     layoutScheme: LayoutScheme,
     startZoom: Int,
@@ -312,8 +312,8 @@ object Pyramid {
 
   def levelStream[
     K: SpatialComponent: ClassTag,
-    V <: CellGrid[Int]: ClassTag: * => TileMergeMethods[V]: * => TilePrototypeMethods[V],
-    M: Component[*, LayoutDefinition]: Component[*, Bounds[K]]
+    V <: CellGrid[Int]: ClassTag: _ => TileMergeMethods[V]: _ => TilePrototypeMethods[V],
+    M: Component[_, LayoutDefinition]: Component[_, Bounds[K]]
   ](rdd: RDD[(K, V)] with Metadata[M],
     layoutScheme: LayoutScheme,
     startZoom: Int
@@ -322,8 +322,8 @@ object Pyramid {
 
   def upLevels[
     K: SpatialComponent: ClassTag,
-    V <: CellGrid[Int]: ClassTag: * => TileMergeMethods[V]: * => TilePrototypeMethods[V],
-    M: Component[*, LayoutDefinition]: Component[*, Bounds[K]]
+    V <: CellGrid[Int]: ClassTag: _ => TileMergeMethods[V]: _ => TilePrototypeMethods[V],
+    M: Component[_, LayoutDefinition]: Component[_, Bounds[K]]
   ](rdd: RDD[(K, V)] with Metadata[M],
     layoutScheme: LayoutScheme,
     startZoom: Int,
@@ -347,8 +347,8 @@ object Pyramid {
 
   def upLevels[
     K: SpatialComponent: ClassTag,
-    V <: CellGrid[Int]: ClassTag: * => TileMergeMethods[V]: * => TilePrototypeMethods[V],
-    M: Component[*, LayoutDefinition]: Component[*, Bounds[K]]
+    V <: CellGrid[Int]: ClassTag: _ => TileMergeMethods[V]: _ => TilePrototypeMethods[V],
+    M: Component[_, LayoutDefinition]: Component[_, Bounds[K]]
   ](rdd: RDD[(K, V)] with Metadata[M],
     layoutScheme: LayoutScheme,
     startZoom: Int,
@@ -358,8 +358,8 @@ object Pyramid {
 
   def upLevels[
     K: SpatialComponent: ClassTag,
-    V <: CellGrid[Int]: ClassTag: * => TileMergeMethods[V]: * => TilePrototypeMethods[V],
-    M: Component[*, LayoutDefinition]: Component[*, Bounds[K]]
+    V <: CellGrid[Int]: ClassTag: _ => TileMergeMethods[V]: _ => TilePrototypeMethods[V],
+    M: Component[_, LayoutDefinition]: Component[_, Bounds[K]]
   ](rdd: RDD[(K, V)] with Metadata[M],
     layoutScheme: LayoutScheme,
     startZoom: Int,
@@ -369,8 +369,8 @@ object Pyramid {
 
   def upLevels[
     K: SpatialComponent: ClassTag,
-    V <: CellGrid[Int]: ClassTag: * => TileMergeMethods[V]: * => TilePrototypeMethods[V],
-    M: Component[*, LayoutDefinition]: Component[*, Bounds[K]]
+    V <: CellGrid[Int]: ClassTag: _ => TileMergeMethods[V]: _ => TilePrototypeMethods[V],
+    M: Component[_, LayoutDefinition]: Component[_, Bounds[K]]
   ](rdd: RDD[(K, V)] with Metadata[M],
     layoutScheme: LayoutScheme,
     startZoom: Int

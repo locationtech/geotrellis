@@ -55,7 +55,7 @@ object TileRDDReproject {
     */
   def apply[
     K: SpatialComponent: Boundable: ClassTag,
-    V <: CellGrid[Int]: ClassTag: RasterRegionReproject: * => TileMergeMethods[V]: * => TilePrototypeMethods[V]
+    V <: CellGrid[Int]: ClassTag: RasterRegionReproject: _ => TileMergeMethods[V]: _ => TilePrototypeMethods[V]
   ](
     bufferedTiles: RDD[(K, BufferedTile[V])],
     metadata: TileLayerMetadata[K],
@@ -229,7 +229,7 @@ object TileRDDReproject {
     */
   def apply[
     K: SpatialComponent: Boundable: ClassTag,
-    V <: CellGrid[Int]: ClassTag: RasterRegionReproject: Stitcher: * => CropMethods[V]: * => TileMergeMethods[V]: * => TilePrototypeMethods[V]
+    V <: CellGrid[Int]: ClassTag: RasterRegionReproject: Stitcher: _ => CropMethods[V]: _ => TileMergeMethods[V]: _ => TilePrototypeMethods[V]
   ](
     rdd: RDD[(K, V)] with Metadata[TileLayerMetadata[K]],
     destCrs: CRS,
@@ -310,7 +310,7 @@ object TileRDDReproject {
     */
   def apply[
     K: SpatialComponent: Boundable: ClassTag,
-    V <: CellGrid[Int]: ClassTag: RasterRegionReproject: Stitcher: * => CropMethods[V]: * => TileMergeMethods[V]: * => TilePrototypeMethods[V]
+    V <: CellGrid[Int]: ClassTag: RasterRegionReproject: Stitcher: _ => CropMethods[V]: _ => TileMergeMethods[V]: _ => TilePrototypeMethods[V]
   ](
     rdd: RDD[(K, V)] with Metadata[TileLayerMetadata[K]],
     destCrs: CRS,

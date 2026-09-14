@@ -54,7 +54,7 @@ trait Implicits extends merge.Implicits
   implicit class withTileLayerCollectionMethods[K: SpatialComponent](val self: TileLayerCollection[K])
     extends TileLayerCollectionMethods[K]
 
-  implicit class withCellGridLayoutCollectionMethods[K: SpatialComponent, V <: CellGrid[Int], M: GetComponent[*, LayoutDefinition]](val self: Seq[(K, V)] with Metadata[M])
+  implicit class withCellGridLayoutCollectionMethods[K: SpatialComponent, V <: CellGrid[Int], M: GetComponent[_, LayoutDefinition]](val self: Seq[(K, V)] with Metadata[M])
     extends CellGridLayoutCollectionMethods[K, V, M]
 
   implicit class TileToLayoutOps(val self: RasterSource) {

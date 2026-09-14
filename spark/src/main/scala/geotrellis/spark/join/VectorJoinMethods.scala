@@ -25,8 +25,8 @@ import scala.reflect.*
 
 
 abstract class VectorJoinMethods[
-    L: ClassTag : * => Geometry,
-    R: ClassTag : * => Geometry
+    L: ClassTag : _ => Geometry,
+    R: ClassTag : _ => Geometry
   ] extends MethodExtensions[RDD[L]] {
 
   def vectorJoin(other: RDD[R], pred: (Geometry, Geometry) => Boolean)(implicit sc: SparkContext) =

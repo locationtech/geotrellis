@@ -27,8 +27,8 @@ import geotrellis.util.*
 import org.apache.spark.rdd.RDD
 
 abstract class SpatialTileLayoutRDDStitchMethods[
-  V <: CellGrid[Int]: Stitcher: * => TilePrototypeMethods[V],
-  M: GetComponent[*, LayoutDefinition]
+  V <: CellGrid[Int]: Stitcher: _ => TilePrototypeMethods[V],
+  M: GetComponent[_, LayoutDefinition]
 ] extends MethodExtensions[RDD[(SpatialKey, V)] with Metadata[M]] {
 
   def stitch(): Raster[V] = {

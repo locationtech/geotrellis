@@ -24,7 +24,7 @@ import geotrellis.util.*
 
 import org.apache.spark.rdd.*
 
-class ProjectedExtentComponentReprojectMethods[K: Component[*, ProjectedExtent], V <: CellGrid[Int]: * => TileReprojectMethods[V]](val self: RDD[(K, V)])
+class ProjectedExtentComponentReprojectMethods[K: Component[_, ProjectedExtent], V <: CellGrid[Int]: _ => TileReprojectMethods[V]](val self: RDD[(K, V)])
     extends MethodExtensions[RDD[(K, V)]] {
   import geotrellis.raster.reproject.Reproject.Options
 

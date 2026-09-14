@@ -23,7 +23,7 @@ import org.apache.spark.rdd.RDD
 
 
 
-abstract class RDDMultibandMatchingMethods[K, V: * => MultibandTile] extends MethodExtensions[RDD[(K, V)]] {
+abstract class RDDMultibandMatchingMethods[K, V: _ => MultibandTile] extends MethodExtensions[RDD[(K, V)]] {
 
   /**
     * Given a sequence of target histograms (of the bands of the

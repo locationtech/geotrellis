@@ -32,11 +32,11 @@ import scala.reflect.ClassTag
 object Implicits extends Implicits
 
 trait Implicits {
-  implicit class withProjectedExtentReprojectMethods[K: Component[*, ProjectedExtent], V <: CellGrid[Int]: * => TileReprojectMethods[V]](self: RDD[(K, V)])
+  implicit class withProjectedExtentReprojectMethods[K: Component[_, ProjectedExtent], V <: CellGrid[Int]: _ => TileReprojectMethods[V]](self: RDD[(K, V)])
       extends ProjectedExtentComponentReprojectMethods[K, V](self) { }
 
   implicit class withTileRDDReprojectMethods[
     K: SpatialComponent: Boundable: ClassTag,
-    V <: CellGrid[Int]: ClassTag: RasterRegionReproject: Stitcher: * => TileReprojectMethods[V]: * => CropMethods[V]: * => TileMergeMethods[V]: * => TilePrototypeMethods[V]
+    V <: CellGrid[Int]: ClassTag: RasterRegionReproject: Stitcher: _ => TileReprojectMethods[V]: _ => CropMethods[V]: _ => TileMergeMethods[V]: _ => TilePrototypeMethods[V]
   ](self: RDD[(K, V)] with Metadata[TileLayerMetadata[K]]) extends TileRDDReprojectMethods[K, V](self)
 }
