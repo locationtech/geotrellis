@@ -16,12 +16,12 @@
 
 package geotrellis.raster.summary
 
-import org.openjdk.jmh.annotations.{Mode => JMHMode, _}
-import geotrellis.vector._
-import geotrellis.raster._
-import geotrellis.raster.summary.polygonal._
-import geotrellis.raster.summary.polygonal.visitors._
-import geotrellis.raster.summary.types._
+import org.openjdk.jmh.annotations.{Mode as JMHMode, *}
+import geotrellis.vector.*
+import geotrellis.raster.*
+import geotrellis.raster.summary.polygonal.*
+import geotrellis.raster.summary.polygonal.visitors.*
+import geotrellis.raster.summary.types.*
 import geotrellis.raster.io.geotiff.{MultibandGeoTiff, SinglebandGeoTiff}
 
 @BenchmarkMode(Array(JMHMode.AverageTime))

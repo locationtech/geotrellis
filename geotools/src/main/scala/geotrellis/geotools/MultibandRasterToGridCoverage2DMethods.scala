@@ -16,10 +16,10 @@
 
 package geotrellis.geotools
 
-import geotrellis.raster._
+import geotrellis.raster.*
 import geotrellis.util.MethodExtensions
 
-import org.geotools.coverage.grid._
+import org.geotools.coverage.grid.*
 
 trait MultibandRasterToGridCoverage2DMethods extends MethodExtensions[Raster[MultibandTile]] with ToGridCoverage2DMethods {
   def toGridCoverage2D(): GridCoverage2D =

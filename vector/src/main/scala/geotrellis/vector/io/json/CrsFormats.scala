@@ -16,9 +16,9 @@
 
 package geotrellis.vector.io.json
 
-import io.circe._
-import io.circe.syntax._
-import cats.syntax.either._
+import io.circe.*
+import io.circe.syntax.*
+import cats.syntax.either.*
 import java.net.URI
 
 import geotrellis.proj4.CRS
@@ -45,7 +45,7 @@ trait CrsFormats {
     }
 
   implicit val linkedCRSDecoder: Decoder[LinkedCRS] =
-    Decoder.decodeHCursor.emap { c: HCursor =>
+    Decoder.decodeHCursor.emap { (c: HCursor) =>
       c.downField("type").as[String].flatMap {
         case "link" =>
           val properties = c.downField("properties")
@@ -68,7 +68,7 @@ trait CrsFormats {
     }
 
   implicit val namedCRSDecoder: Decoder[NamedCRS] =
-    Decoder.decodeHCursor.emap { c: HCursor =>
+    Decoder.decodeHCursor.emap { (c: HCursor) =>
       c.downField("type").as[String].flatMap {
         case "name" =>
           val properties = c.downField("properties")
@@ -89,7 +89,7 @@ trait CrsFormats {
     }
 
   implicit val jsonCrsDecoder: Decoder[JsonCRS] = {
-    Decoder.decodeHCursor.emap { c: HCursor =>
+    Decoder.decodeHCursor.emap { (c: HCursor) =>
       c.downField("type").as[String].flatMap {
         case "name" => c.as[NamedCRS]
         case "link" => c.as[LinkedCRS]
@@ -104,7 +104,7 @@ trait CrsFormats {
     }
 
   implicit def withCrsDecoder[T: Decoder]: Decoder[WithCrs[T]] =
-    Decoder.decodeHCursor.emap { c: HCursor =>
+    Decoder.decodeHCursor.emap { (c: HCursor) =>
       (c.as[T], c.downField("crs").as[JsonCRS]) match {
         case (Right(obj), Right(crs)) => Right(WithCrs[T](obj, crs))
         case _ => Left(s"Unable to parse CRS")

@@ -16,13 +16,13 @@
 
 package geotrellis.geotools
 
-import geotrellis.raster._
-import geotrellis.raster.io.geotiff._
-import geotrellis.vector.testkit._
+import geotrellis.raster.*
+import geotrellis.raster.io.geotiff.*
+import geotrellis.vector.testkit.*
 
 import javax.media.jai.iterator.RectIterFactory
-import org.geotools.coverage.grid._
-import org.geotools.gce.geotiff._
+import org.geotools.coverage.grid.*
+import org.geotools.gce.geotiff.*
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.funspec.AnyFunSpec
 

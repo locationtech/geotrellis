@@ -16,9 +16,9 @@
 
 package geotrellis.raster
 
-import geotrellis.vector._
-import geotrellis.raster.resample._
-import geotrellis.proj4._
+import geotrellis.vector.*
+import geotrellis.raster.resample.*
+import geotrellis.proj4.*
 import geotrellis.raster.io.geotiff.OverviewStrategy
 import geotrellis.util.GetComponent
 
@@ -200,7 +200,7 @@ object RasterSource {
     GetComponent(rs => ProjectedExtent(rs.extent, rs.crs))
 
   def apply(path: String): RasterSource = {
-    import scala.jdk.CollectionConverters._
+    import scala.jdk.CollectionConverters.*
 
     ServiceLoader
       .load(classOf[RasterSourceProvider])

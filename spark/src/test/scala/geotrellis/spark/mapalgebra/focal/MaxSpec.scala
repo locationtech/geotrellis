@@ -16,10 +16,10 @@
 
 package geotrellis.spark.mapalgebra.focal
 
-import geotrellis.spark._
-import geotrellis.raster.mapalgebra.focal._
-import geotrellis.raster._
-import geotrellis.spark.testkit._
+import geotrellis.spark.*
+import geotrellis.raster.mapalgebra.focal.*
+import geotrellis.raster.*
+import geotrellis.spark.testkit.*
 
 import org.scalatest.funspec.AnyFunSpec
 

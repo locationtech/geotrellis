@@ -16,25 +16,25 @@
 
 package geotrellis.spark.gdal
 
-import geotrellis.proj4._
-import geotrellis.raster._
-import geotrellis.raster.gdal._
+import geotrellis.proj4.*
+import geotrellis.raster.*
+import geotrellis.raster.gdal.*
 import geotrellis.raster.resample.Bilinear
-import geotrellis.spark._
-import geotrellis.spark.partition._
-import geotrellis.layer._
+import geotrellis.spark.*
+import geotrellis.spark.partition.*
+import geotrellis.layer.*
 import geotrellis.vector.Extent
 
-import geotrellis.spark.testkit._
+import geotrellis.spark.testkit.*
 
-import org.apache.spark.rdd._
-import spire.syntax.cfor._
+import org.apache.spark.rdd.*
+import spire.syntax.cfor.*
 
 import org.scalatest.GivenWhenThen
 import org.scalatest.funspec.AnyFunSpec
 
 class GDALRasterSummarySpec extends AnyFunSpec with TestEnvironment with GivenWhenThen {
-  import geotrellis.GDALTestUtils._
+  import geotrellis.GDALTestUtils.*
 
   describe("Should collect GDALRasterSource RasterSummary correct") {
     it("should collect summary for a raw source") {

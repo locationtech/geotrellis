@@ -17,11 +17,11 @@
 package geotrellis.raster.gdal
 
 import geotrellis.raster.gdal.GDALDataset.DatasetType
-import geotrellis.proj4._
-import geotrellis.raster._
+import geotrellis.proj4.*
+import geotrellis.raster.*
 import geotrellis.raster.io.geotiff.OverviewStrategy
 import geotrellis.raster.resample.ResampleMethod
-import geotrellis.vector._
+import geotrellis.vector.*
 
 class GDALRasterSource(
   val dataPath: GDALPath,

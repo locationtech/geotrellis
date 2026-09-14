@@ -18,9 +18,9 @@ package geotrellis.raster.io.geotiff.compression
 
 import geotrellis.raster.io.geotiff.GeoTiffImageData
 import geotrellis.raster.io.geotiff.reader.MalformedGeoTiffException
-import geotrellis.raster.io.geotiff.tags._
-import geotrellis.raster.io.geotiff.tags.codes.SampleFormat._
-import monocle.syntax.apply._
+import geotrellis.raster.io.geotiff.tags.*
+import geotrellis.raster.io.geotiff.tags.codes.SampleFormat.*
+import monocle.syntax.apply.*
 
 object Predictor {
   val PREDICTOR_NONE = 1

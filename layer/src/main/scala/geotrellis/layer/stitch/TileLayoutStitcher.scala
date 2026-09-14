@@ -16,7 +16,7 @@
 
 package geotrellis.layer.stitch
 
-import geotrellis.raster._
+import geotrellis.raster.*
 import geotrellis.raster.stitch.Stitcher
 
 import scala.collection.mutable

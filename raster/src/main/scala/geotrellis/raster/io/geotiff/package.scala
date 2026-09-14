@@ -16,7 +16,7 @@
 
 package geotrellis.raster.io
 
-import geotrellis.raster.io.geotiff.compression._
+import geotrellis.raster.io.geotiff.compression.*
 
 package object geotiff extends Implicits {
   val DefaultCompression = DeflateCompression

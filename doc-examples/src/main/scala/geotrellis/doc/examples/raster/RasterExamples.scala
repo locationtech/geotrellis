@@ -18,8 +18,8 @@ package geotrellis.doc.examples.raster
 
 object RasterExamples {
   def `Counting points in raster cells (raster to vector operation)`: Unit = {
-    import geotrellis.raster._
-    import geotrellis.vector._
+    import geotrellis.raster.*
+    import geotrellis.vector.*
 
     def countPoints(points: Seq[Point], rasterExtent: RasterExtent): Tile = {
       val (cols, rows) = (rasterExtent.cols, rasterExtent.rows)
@@ -37,8 +37,8 @@ object RasterExamples {
   }
 
   def `Counting polygon features in raster cells (rasterize operation)`: Unit = {
-    import geotrellis.raster._
-    import geotrellis.vector._
+    import geotrellis.raster.*
+    import geotrellis.vector.*
 
     def countPolygon(features: Seq[PolygonFeature[Int]], rasterExtent: RasterExtent): MultibandTile = {
       // Assumes the polygon features have 5 classes

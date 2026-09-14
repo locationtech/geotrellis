@@ -17,7 +17,7 @@
 package geotrellis.raster
 
 import geotrellis.raster.mapalgebra.focal.BufferTileFocalMethods
-import spire.syntax.cfor._
+import spire.syntax.cfor.*
 
 /**
  * When combined with another BufferTile the two tiles will be aligned on (0, 0) pixel of tile center.

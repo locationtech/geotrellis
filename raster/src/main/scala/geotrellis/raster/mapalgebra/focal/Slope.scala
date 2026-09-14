@@ -16,9 +16,9 @@
 
 package geotrellis.raster.mapalgebra.focal
 
-import geotrellis.raster._
+import geotrellis.raster.*
 import geotrellis.raster.mapalgebra.focal.hillshade.{SurfacePoint, SurfacePointCalculation}
-import geotrellis.raster.mapalgebra.focal.Angles._
+import geotrellis.raster.mapalgebra.focal.Angles.*
 
 /**
   * Calculates the slope of each cell in a raster.

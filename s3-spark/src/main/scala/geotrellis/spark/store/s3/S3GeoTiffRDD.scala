@@ -16,16 +16,16 @@
 
 package geotrellis.spark.store.s3
 
-import geotrellis.proj4._
-import geotrellis.raster._
-import geotrellis.layer._
-import geotrellis.store.s3._
-import geotrellis.spark.store._
-import geotrellis.vector._
+import geotrellis.proj4.*
+import geotrellis.raster.*
+import geotrellis.layer.*
+import geotrellis.store.s3.*
+import geotrellis.spark.store.*
+import geotrellis.vector.*
 
 import software.amazon.awssdk.services.s3.S3Client
 
-import org.log4s._
+import org.log4s.*
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.spark.SparkContext

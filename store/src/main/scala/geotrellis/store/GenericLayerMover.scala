@@ -16,11 +16,11 @@
 
 package geotrellis.store
 
-import geotrellis.layer._
-import geotrellis.store.avro._
-import geotrellis.util._
+import geotrellis.layer.*
+import geotrellis.store.avro.*
+import geotrellis.util.*
 
-import _root_.io.circe._
+import _root_.io.circe.*
 
 import scala.reflect.ClassTag
 

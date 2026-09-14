@@ -16,10 +16,10 @@
 
 package geotrellis.spark.store.cassandra
 
-import geotrellis.store._
-import geotrellis.store.cassandra._
+import geotrellis.store.*
+import geotrellis.store.cassandra.*
 import geotrellis.store.cassandra.conf.CassandraConfig
-import geotrellis.spark.store._
+import geotrellis.spark.store.*
 import geotrellis.util.UriUtils
 
 import org.apache.spark.SparkContext

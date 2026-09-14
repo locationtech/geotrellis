@@ -16,7 +16,7 @@
 
 package geotrellis.store.index.zcurve
 
-import geotrellis.layer._
+import geotrellis.layer.*
 
 
 import org.scalatest.matchers.should.Matchers

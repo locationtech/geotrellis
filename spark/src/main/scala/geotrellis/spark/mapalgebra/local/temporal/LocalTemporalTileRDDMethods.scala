@@ -16,15 +16,15 @@
 
 package geotrellis.spark.mapalgebra.local.temporal
 
-import geotrellis.layer._
-import geotrellis.raster._
+import geotrellis.layer.*
+import geotrellis.raster.*
 import geotrellis.layer.mapalgebra.local.temporal.LocalTemporalStatistics
 import geotrellis.util.MethodExtensions
 
 import org.apache.spark.Partitioner
 import org.apache.spark.rdd.RDD
 
-import jp.ne.opt.chronoscala.Imports._
+import jp.ne.opt.chronoscala.Imports.*
 import java.time.ZonedDateTime
 
 import scala.reflect.ClassTag

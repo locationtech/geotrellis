@@ -16,7 +16,7 @@
 
 package geotrellis.raster.io.geotiff
 
-import _root_.io.circe._
+import _root_.io.circe.*
 
 abstract sealed class InterleaveMethod
 

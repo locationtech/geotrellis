@@ -16,7 +16,7 @@
 
 package geotrellis.proj4
 
-import org.locationtech.proj4j._
+import org.locationtech.proj4j.*
 import org.locationtech.proj4j.units.Angle
 
 import org.scalatest.matchers.should.Matchers

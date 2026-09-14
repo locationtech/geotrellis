@@ -21,9 +21,9 @@ import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.layer.SpatialComponent
 import geotrellis.store.LayerId
 import geotrellis.store.Reader
-import geotrellis.store.hadoop._
-import geotrellis.store.hadoop.cog._
-import geotrellis.spark.store.hadoop._
+import geotrellis.store.hadoop.*
+import geotrellis.store.hadoop.cog.*
+import geotrellis.spark.store.hadoop.*
 import geotrellis.util.MethodExtensions
 
 import org.apache.hadoop.fs.Path

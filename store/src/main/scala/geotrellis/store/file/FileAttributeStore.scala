@@ -16,17 +16,17 @@
 
 package geotrellis.store.file
 
-import geotrellis.store._
+import geotrellis.store.*
 import geotrellis.util.Filesystem
 
-import io.circe._
-import io.circe.parser._
-import io.circe.syntax._
-import cats.syntax.either._
+import io.circe.*
+import io.circe.parser.*
+import io.circe.syntax.*
+import cats.syntax.either.*
 import org.apache.commons.io.filefilter.WildcardFileFilter
 
 import scala.util.matching.Regex
-import java.io._
+import java.io.*
 
 /**
  * Stores and retrieves layer attributes from the file system.
@@ -34,7 +34,7 @@ import java.io._
  * @param catalogPath      The directory of the base catalog
  */
 class FileAttributeStore(val catalogPath: String) extends BlobLayerAttributeStore {
-  import FileAttributeStore._
+  import FileAttributeStore.*
 
   val attributeDirectory = new File(catalogPath, "attributes")
   if(!attributeDirectory.exists)

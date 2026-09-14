@@ -16,10 +16,10 @@
 
 package geotrellis.raster.gdal
 
-import geotrellis.proj4._
-import geotrellis.raster._
-import geotrellis.raster.testkit._
-import geotrellis.raster.io.geotiff._
+import geotrellis.proj4.*
+import geotrellis.raster.*
+import geotrellis.raster.testkit.*
+import geotrellis.raster.io.geotiff.*
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.vector.Extent
 

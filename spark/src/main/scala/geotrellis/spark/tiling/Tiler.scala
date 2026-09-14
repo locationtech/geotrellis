@@ -16,9 +16,9 @@
 
 package geotrellis.spark.tiling
 
-import geotrellis.raster.resample._
+import geotrellis.raster.resample.*
 
-import org.apache.spark._
+import org.apache.spark.*
 
 object Tiler {
   case class Options(

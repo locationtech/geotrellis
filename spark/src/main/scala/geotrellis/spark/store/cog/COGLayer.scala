@@ -16,31 +16,31 @@
 
 package geotrellis.spark.store.cog
 
-import geotrellis.vector._
-import geotrellis.layer._
-import geotrellis.raster._
-import geotrellis.raster.crop._
-import geotrellis.raster.io.geotiff._
+import geotrellis.vector.*
+import geotrellis.layer.*
+import geotrellis.raster.*
+import geotrellis.raster.crop.*
+import geotrellis.raster.io.geotiff.*
 import geotrellis.raster.io.geotiff.writer.GeoTiffWriter
 import geotrellis.raster.io.geotiff.compression.Compression
-import geotrellis.raster.merge._
-import geotrellis.raster.prototype._
+import geotrellis.raster.merge.*
+import geotrellis.raster.prototype.*
 import geotrellis.raster.resample.ResampleMethod
 import geotrellis.store.cog.{COGLayerMetadata, ZoomRange}
 import geotrellis.store.index.KeyIndex
 import geotrellis.store.hadoop.SerializableConfiguration
 import geotrellis.store.hadoop.util.HdfsUtils
-import geotrellis.spark._
+import geotrellis.spark.*
 import geotrellis.spark.pyramid.Pyramid
-import geotrellis.spark.util._
-import geotrellis.util._
+import geotrellis.spark.util.*
+import geotrellis.util.*
 
 import org.apache.hadoop.fs.Path
-import org.apache.spark._
-import org.apache.spark.rdd._
-import _root_.io.circe._
+import org.apache.spark.*
+import org.apache.spark.rdd.*
+import _root_.io.circe.*
 
-import scala.reflect._
+import scala.reflect.*
 import java.net.URI
 
 

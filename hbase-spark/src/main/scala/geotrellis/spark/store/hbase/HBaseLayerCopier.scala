@@ -16,14 +16,14 @@
 
 package geotrellis.spark.store.hbase
 
-import geotrellis.layer._
-import geotrellis.store._
-import geotrellis.store.avro._
-import geotrellis.store.hbase._
-import geotrellis.util._
+import geotrellis.layer.*
+import geotrellis.store.*
+import geotrellis.store.avro.*
+import geotrellis.store.hbase.*
+import geotrellis.util.*
 
 import org.apache.spark.SparkContext
-import io.circe._
+import io.circe.*
 
 import scala.reflect.ClassTag
 
@@ -105,7 +105,7 @@ object HBaseLayerCopier {
     apply(
       attributeStore,
       HBaseLayerReader(instance),
-      { layerId: LayerId =>
+      { (layerId: LayerId) =>
         val header = attributeStore.readHeader[HBaseLayerHeader](layerId)
         HBaseLayerWriter(instance, header.tileTable)
       }

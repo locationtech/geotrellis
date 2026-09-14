@@ -16,7 +16,7 @@
 
 package geotrellis.vector.methods
 
-import geotrellis.vector._
+import geotrellis.vector.*
 
 object Implicits extends Implicits
 

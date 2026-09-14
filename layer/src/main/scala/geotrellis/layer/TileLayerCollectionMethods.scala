@@ -16,7 +16,7 @@
 
 package geotrellis.layer
 
-import geotrellis.raster._
+import geotrellis.raster.*
 import geotrellis.util.MethodExtensions
 
 abstract class TileLayerCollectionMethods[K: SpatialComponent] extends MethodExtensions[TileLayerCollection[K]] {

@@ -16,14 +16,14 @@
 
 package geotrellis.spark.render
 
-import geotrellis.layer._
+import geotrellis.layer.*
 import geotrellis.spark.testkit.testfiles.TestFiles
-import geotrellis.spark.store.hadoop._
-import geotrellis.spark.testkit._
+import geotrellis.spark.store.hadoop.*
+import geotrellis.spark.testkit.*
 import geotrellis.store.LayerId
 
-import org.apache.hadoop.fs._
-import org.apache.hadoop.conf._
+import org.apache.hadoop.fs.*
+import org.apache.hadoop.conf.*
 import org.apache.commons.io.IOUtils
 import java.net.URI
 

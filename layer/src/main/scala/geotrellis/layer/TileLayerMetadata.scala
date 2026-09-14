@@ -17,13 +17,13 @@
 package geotrellis.layer
 
 import geotrellis.proj4.CRS
-import geotrellis.raster._
-import geotrellis.util._
+import geotrellis.raster.*
+import geotrellis.util.*
 import geotrellis.vector.Extent
 
 import cats.{Functor, Semigroup}
-import cats.syntax.functor._
-import _root_.io.circe._
+import cats.syntax.functor.*
+import _root_.io.circe.*
 
 /**
  * @param cellType    value type of each cell
@@ -100,7 +100,7 @@ object TileLayerMetadata {
       "crs",
       "bounds")(TileLayerMetadata.apply)
 
-  implicit def toLayoutDefinition(md: TileLayerMetadata[_]): LayoutDefinition =
+  implicit def toLayoutDefinition(md: TileLayerMetadata[?]): LayoutDefinition =
     md.layout
 
   implicit def extentComponent[K]: GetComponent[TileLayerMetadata[K], Extent] =

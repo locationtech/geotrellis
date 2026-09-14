@@ -16,12 +16,12 @@
 
 package geotrellis.raster.summary.polygonal
 
-import geotrellis.raster._
-import geotrellis.vector._
+import geotrellis.raster.*
+import geotrellis.vector.*
 import geotrellis.raster.rasterize.Rasterizer
 import geotrellis.raster.summary.GridVisitor
 import geotrellis.util.{GetComponent, MethodExtensions}
-import spire.syntax.cfor._
+import spire.syntax.cfor.*
 
 object PolygonalSummary {
   final val DefaultOptions =

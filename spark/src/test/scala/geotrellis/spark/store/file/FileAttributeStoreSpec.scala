@@ -17,8 +17,8 @@
 package geotrellis.spark.store.file
 
 import geotrellis.store.file.FileAttributeStore
-import geotrellis.spark.store._
+import geotrellis.spark.store.*
 
 class FileAttributeStoreSpec extends AttributeStoreSpec {
-  lazy val attributeStore = FileAttributeStore(outputLocalPath)
+  lazy val attributeStore: FileAttributeStore = FileAttributeStore(outputLocalPath)
 }

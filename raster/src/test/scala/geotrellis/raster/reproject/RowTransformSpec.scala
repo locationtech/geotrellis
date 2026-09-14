@@ -16,13 +16,13 @@
 
 package geotrellis.raster.reproject
 
-import geotrellis.raster._
-import geotrellis.vector._
-import geotrellis.vector.io.json._
-import geotrellis.raster.testkit._
-import geotrellis.proj4._
-import geotrellis.vector.testkit._
-import geotrellis.raster.io.geotiff._
+import geotrellis.raster.*
+import geotrellis.vector.*
+import geotrellis.vector.io.json.*
+import geotrellis.raster.testkit.*
+import geotrellis.proj4.*
+import geotrellis.vector.testkit.*
+import geotrellis.raster.io.geotiff.*
 
 
 import org.scalatest.funspec.AnyFunSpec

@@ -16,16 +16,16 @@
 
 package geotrellis.raster.render.jpg
 
-import geotrellis.raster._
+import geotrellis.raster.*
 import geotrellis.raster.geotiff.GeoTiffRasterSource
 import geotrellis.raster.render.Jpg
-import geotrellis.raster.testkit._
+import geotrellis.raster.testkit.*
 
-import spire.syntax.cfor._
+import spire.syntax.cfor.*
 
-import java.io._
+import java.io.*
 import java.nio.file.{Files, Paths}
-import javax.imageio._
+import javax.imageio.*
 
 import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.matchers.should.Matchers

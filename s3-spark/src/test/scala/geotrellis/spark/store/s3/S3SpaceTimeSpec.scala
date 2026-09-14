@@ -17,11 +17,11 @@
 package geotrellis.spark.store.s3
 
 import geotrellis.raster.Tile
-import geotrellis.layer._
-import geotrellis.store._
-import geotrellis.store.s3._
-import geotrellis.spark.store._
-import geotrellis.spark.testkit.io._
+import geotrellis.layer.*
+import geotrellis.store.*
+import geotrellis.store.s3.*
+import geotrellis.spark.store.*
+import geotrellis.spark.testkit.io.*
 import geotrellis.spark.testkit.testfiles.TestFiles
 import geotrellis.spark.testkit.TestEnvironment
 
@@ -51,13 +51,13 @@ class S3SpaceTimeSpec
   lazy val rddReader = new S3RDDReader(MockS3Client.instance)
   lazy val rddWriter = new S3RDDWriter(MockS3Client.instance)
 
-  lazy val reader = new S3LayerReader(attributeStore, MockS3Client.instance)
-  lazy val creader = new S3CollectionLayerReader(attributeStore, MockS3Client.instance)
-  lazy val writer = new S3LayerWriter(attributeStore, bucket, prefix, identity, MockS3Client.instance)
-  lazy val deleter = new S3LayerDeleter(attributeStore, MockS3Client.instance)
-  lazy val copier = new S3LayerCopier(attributeStore, bucket, prefix, MockS3Client.instance)
+  lazy val reader: S3LayerReader = new S3LayerReader(attributeStore, MockS3Client.instance)
+  lazy val creader: S3CollectionLayerReader = new S3CollectionLayerReader(attributeStore, MockS3Client.instance)
+  lazy val writer: S3LayerWriter = new S3LayerWriter(attributeStore, bucket, prefix, identity, MockS3Client.instance)
+  lazy val deleter: S3LayerDeleter = new S3LayerDeleter(attributeStore, MockS3Client.instance)
+  lazy val copier: S3LayerCopier = new S3LayerCopier(attributeStore, bucket, prefix, MockS3Client.instance)
   lazy val reindexer = GenericLayerReindexer(attributeStore, reader, writer, deleter, copier)
-  lazy val mover = GenericLayerMover(copier, deleter)
-  lazy val tiles = new S3ValueReader(attributeStore, MockS3Client.instance)
-  lazy val sample =  CoordinateSpaceTime
+  lazy val mover: GenericLayerMover[LayerId] = GenericLayerMover(copier, deleter)
+  lazy val tiles: S3ValueReader = new S3ValueReader(attributeStore, MockS3Client.instance)
+  lazy val sample: CoordinateSpaceTime.type =  CoordinateSpaceTime
 }

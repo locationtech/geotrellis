@@ -16,7 +16,7 @@
 
 package geotrellis.spark.util
 
-import geotrellis.spark.testkit._
+import geotrellis.spark.testkit.*
 
 import org.scalatest.funspec.AnyFunSpec
 

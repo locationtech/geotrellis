@@ -16,7 +16,7 @@
 
 package geotrellis.raster.interpolation
 
-import geotrellis.vector._
+import geotrellis.vector.*
 import geotrellis.util.MethodExtensions
 
 object Implicits extends Implicits

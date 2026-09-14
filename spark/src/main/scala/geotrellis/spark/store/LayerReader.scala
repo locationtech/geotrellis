@@ -16,16 +16,16 @@
 
 package geotrellis.spark.store
 
-import geotrellis.layer._
-import geotrellis.store._
-import geotrellis.store.avro._
-import geotrellis.util._
+import geotrellis.layer.*
+import geotrellis.store.*
+import geotrellis.store.avro.*
+import geotrellis.util.*
 
-import org.apache.spark.rdd._
+import org.apache.spark.rdd.*
 import org.apache.spark.SparkContext
-import io.circe._
+import io.circe.*
 
-import scala.reflect._
+import scala.reflect.*
 import java.util.ServiceLoader
 import java.net.URI
 
@@ -63,7 +63,7 @@ object LayerReader {
    * Find instances of [[LayerReaderProvider]] through Java SPI.
    */
   def apply(attributeStore: AttributeStore, layerReaderUri: URI)(implicit sc: SparkContext): FilteringLayerReader[LayerId] = {
-    import scala.jdk.CollectionConverters._
+    import scala.jdk.CollectionConverters.*
     ServiceLoader.load(classOf[LayerReaderProvider])
       .iterator().asScala
       .find(_.canProcess(layerReaderUri))

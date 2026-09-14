@@ -16,21 +16,21 @@
 
 package geotrellis.spark.store.cassandra
 
-import geotrellis.layer._
-import geotrellis.store._
-import geotrellis.store.avro._
-import geotrellis.store.avro.codecs._
-import geotrellis.store.cassandra._
-import geotrellis.store.index._
-import geotrellis.spark.store._
-import geotrellis.util._
+import geotrellis.layer.*
+import geotrellis.store.*
+import geotrellis.store.avro.*
+import geotrellis.store.avro.codecs.*
+import geotrellis.store.cassandra.*
+import geotrellis.store.index.*
+import geotrellis.spark.store.*
+import geotrellis.util.*
 
-import org.log4s._
+import org.log4s.*
 import org.apache.spark.rdd.RDD
-import io.circe._
+import io.circe.*
 import cats.Semigroup
 
-import scala.reflect._
+import scala.reflect.*
 
 class CassandraLayerWriter(
   val attributeStore: AttributeStore,

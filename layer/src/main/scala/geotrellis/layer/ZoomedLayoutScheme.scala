@@ -16,10 +16,10 @@
 
 package geotrellis.layer
 
-import geotrellis.proj4._
+import geotrellis.proj4.*
 import geotrellis.proj4.util.UTM
-import geotrellis.raster._
-import geotrellis.vector._
+import geotrellis.raster.*
+import geotrellis.vector.*
 import geotrellis.util.Haversine
 
 object ZoomedLayoutScheme {

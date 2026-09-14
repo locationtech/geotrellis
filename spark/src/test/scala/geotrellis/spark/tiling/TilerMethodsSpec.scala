@@ -16,17 +16,17 @@
 
 package geotrellis.spark.tiling
 
-import geotrellis.raster._
-import geotrellis.vector._
-import geotrellis.layer._
+import geotrellis.raster.*
+import geotrellis.vector.*
+import geotrellis.layer.*
 
-import geotrellis.spark._
-import geotrellis.spark.testkit._
+import geotrellis.spark.*
+import geotrellis.spark.testkit.*
 
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.funspec.AnyFunSpec
 
-import org.apache.spark.rdd._
+import org.apache.spark.rdd.*
 
 // Defined here because of serialization
 class IntTilerKeyMethods(val self: Int, extents: List[Extent]) extends TilerKeyMethods[Int, SpatialKey] {

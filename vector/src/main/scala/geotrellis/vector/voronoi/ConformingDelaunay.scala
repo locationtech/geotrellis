@@ -16,12 +16,12 @@
 
 package geotrellis.vector.voronoi
 
-import geotrellis.vector._
+import geotrellis.vector.*
 
-import org.locationtech.jts.{ geom => jts }
+import org.locationtech.jts.{ geom as jts }
 import org.locationtech.jts.triangulate.ConformingDelaunayTriangulationBuilder
 
-import spire.syntax.cfor._
+import spire.syntax.cfor.*
 
 
 object ConformingDelaunay {

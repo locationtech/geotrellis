@@ -17,13 +17,13 @@
 package geotrellis.spark.store
 
 import geotrellis.layer.{Boundable, Bounds}
-import geotrellis.store._
-import geotrellis.store.avro._
-import geotrellis.util._
+import geotrellis.store.*
+import geotrellis.store.avro.*
+import geotrellis.util.*
 
-import io.circe._
+import io.circe.*
 
-import scala.reflect._
+import scala.reflect.*
 
 class GenericLayerCopier(
   val attributeStore: AttributeStore,

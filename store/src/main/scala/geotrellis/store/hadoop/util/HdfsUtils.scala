@@ -16,16 +16,16 @@
 
 package geotrellis.store.hadoop.util
 
-import org.log4s._
+import org.log4s.*
 
 import org.apache.hadoop.io.compress.CompressionCodecFactory
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs._
+import org.apache.hadoop.fs.*
 import org.apache.hadoop.mapreduce.Job
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat
-import org.apache.hadoop.io._
+import org.apache.hadoop.io.*
 
-import java.io._
+import java.io.*
 import java.net.URI
 import java.util.Scanner
 

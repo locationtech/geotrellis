@@ -17,11 +17,11 @@
 package geotrellis.doc.examples.spark
 
 import geotrellis.layer.{SpatialKey, SpaceTimeKey, KeyBounds}
-import geotrellis.spark._
-import geotrellis.store.index._
+import geotrellis.spark.*
+import geotrellis.store.index.*
 
-import _root_.io.circe._
-import _root_.io.circe.syntax._
+import _root_.io.circe.*
+import _root_.io.circe.syntax.*
 
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.funspec.AnyFunSpec

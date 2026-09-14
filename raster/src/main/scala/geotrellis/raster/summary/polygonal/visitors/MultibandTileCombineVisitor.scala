@@ -17,10 +17,10 @@
 package geotrellis.raster.summary.polygonal.visitors
 
 import cats.Monoid
-import cats.syntax.monoid._
-import geotrellis.raster._
+import cats.syntax.monoid.*
+import geotrellis.raster.*
 import geotrellis.raster.summary.GridVisitor
-import spire.syntax.cfor._
+import spire.syntax.cfor.*
 
 import scala.reflect.ClassTag
 

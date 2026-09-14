@@ -17,8 +17,8 @@
 package geotrellis.spark.store.accumulo
 
 import geotrellis.store.accumulo.AccumuloInstance
-import geotrellis.store.avro._
-import geotrellis.store.avro.codecs._
+import geotrellis.store.avro.*
+import geotrellis.store.avro.codecs.*
 import geotrellis.spark.store.LayerWriter
 import geotrellis.spark.util.KryoWrapper
 
@@ -27,7 +27,7 @@ import org.apache.accumulo.core.security.Authorizations
 import org.apache.avro.Schema
 import org.apache.spark.rdd.RDD
 
-import scala.jdk.CollectionConverters._
+import scala.jdk.CollectionConverters.*
 
 object AccumuloRDDWriter {
 

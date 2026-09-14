@@ -16,9 +16,9 @@
 
 package geotrellis.layer.mapalgebra.local
 
-import geotrellis.raster._
-import geotrellis.raster.mapalgebra.local._
-import geotrellis.layer._
+import geotrellis.raster.*
+import geotrellis.raster.mapalgebra.local.*
+import geotrellis.layer.*
 import geotrellis.util.MethodExtensions
 
 

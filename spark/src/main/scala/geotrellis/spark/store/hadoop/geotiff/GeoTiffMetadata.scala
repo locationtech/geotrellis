@@ -17,13 +17,13 @@
 package geotrellis.spark.store.hadoop.geotiff
 
 import geotrellis.proj4.CRS
-import geotrellis.vector._
-import geotrellis.layer._
+import geotrellis.vector.*
+import geotrellis.layer.*
 import geotrellis.util.annotations.experimental
-import geotrellis.spark.{Implicits => SparkImplicits}
+import geotrellis.spark.{Implicits as SparkImplicits}
 
-import _root_.io.circe._
-import _root_.io.circe.generic.semiauto._
+import _root_.io.circe.*
+import _root_.io.circe.generic.semiauto.*
 
 import java.net.URI
 

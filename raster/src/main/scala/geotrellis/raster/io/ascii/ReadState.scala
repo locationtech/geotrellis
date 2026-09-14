@@ -17,9 +17,9 @@
 package geotrellis.raster.io.ascii
 
 
-import geotrellis.raster._
+import geotrellis.raster.*
 
-import spire.syntax.cfor._
+import spire.syntax.cfor.*
 
 trait ReadState {
   val rasterExtent: RasterExtent

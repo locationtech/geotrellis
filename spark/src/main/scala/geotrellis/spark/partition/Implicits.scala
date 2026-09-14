@@ -16,11 +16,11 @@
 
 package geotrellis.spark.partition
 
-import geotrellis.layer._
-import geotrellis.util._
-import org.apache.spark.rdd._
+import geotrellis.layer.*
+import geotrellis.util.*
+import org.apache.spark.rdd.*
 
-import scala.reflect._
+import scala.reflect.*
 
 object Implicits extends Implicits
 

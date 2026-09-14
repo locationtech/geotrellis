@@ -16,10 +16,10 @@
 
 package geotrellis.spark.mapalgebra.local.temporal
 
-import geotrellis.raster._
-import geotrellis.layer._
-import geotrellis.layer.mapalgebra.local.temporal._
-import geotrellis.util._
+import geotrellis.raster.*
+import geotrellis.layer.*
+import geotrellis.layer.mapalgebra.local.temporal.*
+import geotrellis.util.*
 
 import org.apache.spark.rdd.RDD
 
@@ -35,7 +35,7 @@ trait Implicits  {
       extends LocalTemporalTileRDDMethods[K](self)
 
   implicit class TemporalWindow[K: ClassTag: SpatialComponent: TemporalComponent](val self: RDD[(K, Tile)]) extends MethodExtensions[RDD[(K, Tile)]] {
-    import TemporalWindowHelper._
+    import TemporalWindowHelper.*
 
     def average: TemporalWindowState[K] = TemporalWindowState(self, Average)
 

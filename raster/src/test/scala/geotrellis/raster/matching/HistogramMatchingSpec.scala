@@ -16,7 +16,7 @@
 
 package geotrellis.raster.matching
 
-import geotrellis.raster._
+import geotrellis.raster.*
 import geotrellis.raster.histogram.StreamingHistogram
 
 import org.scalatest.matchers.should.Matchers

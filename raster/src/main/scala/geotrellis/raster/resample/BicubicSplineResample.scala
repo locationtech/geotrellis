@@ -16,10 +16,10 @@
 
 package geotrellis.raster.resample
 
-import geotrellis.raster._
+import geotrellis.raster.*
 import geotrellis.vector.Extent
 
-import spire.syntax.cfor._
+import spire.syntax.cfor.*
 
 /**
   * Uses the Akima cubic spline resample.

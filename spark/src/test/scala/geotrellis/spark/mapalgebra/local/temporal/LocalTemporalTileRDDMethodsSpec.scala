@@ -16,14 +16,14 @@
 
 package geotrellis.spark.mapalgebra.local.temporal
 
-import geotrellis.raster._
-import geotrellis.raster.mapalgebra.local._
-import geotrellis.layer._
-import geotrellis.spark._
-import geotrellis.util._
-import geotrellis.spark.testkit._
+import geotrellis.raster.*
+import geotrellis.raster.mapalgebra.local.*
+import geotrellis.layer.*
+import geotrellis.spark.*
+import geotrellis.util.*
+import geotrellis.spark.testkit.*
 
-import jp.ne.opt.chronoscala.Imports._
+import jp.ne.opt.chronoscala.Imports.*
 import java.time.{ZoneOffset, ZonedDateTime}
 
 import org.scalatest.funspec.AnyFunSpec

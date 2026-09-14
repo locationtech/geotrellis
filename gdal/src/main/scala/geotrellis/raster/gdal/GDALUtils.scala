@@ -16,11 +16,11 @@
 
 package geotrellis.raster.gdal
 
-import geotrellis.raster._
-import geotrellis.raster.io.geotiff._
-import geotrellis.raster.resample._
+import geotrellis.raster.*
+import geotrellis.raster.io.geotiff.*
+import geotrellis.raster.resample.*
 
-import org.log4s._
+import org.log4s.*
 
 object GDALUtils {
 

@@ -16,10 +16,10 @@
 
 package geotrellis.spark
 
-import geotrellis.layer._
+import geotrellis.layer.*
 import geotrellis.proj4.CRS
 import geotrellis.raster.Tile
-import geotrellis.util._
+import geotrellis.util.*
 import org.apache.spark.rdd.RDD
 
 package object render {

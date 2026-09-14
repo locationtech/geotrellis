@@ -17,7 +17,7 @@
 package geotrellis.geotools
 
 import geotrellis.proj4.WebMercator
-import geotrellis.vector._
+import geotrellis.vector.*
 
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.funspec.AnyFunSpec
@@ -29,7 +29,7 @@ object FeatureToSimpleFeatureMethodsSpec {
 
 class FeatureToSimpleFeatureMethodsSpec extends AnyFunSpec with Matchers {
 
-  import FeatureToSimpleFeatureMethodsSpec._
+  import FeatureToSimpleFeatureMethodsSpec.*
 
   describe("The .toSimpleFeature Extension Methods") {
 

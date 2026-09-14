@@ -16,9 +16,9 @@
 
 package geotrellis.raster.io.geotiff.compression
 
-import geotrellis.raster._
-import geotrellis.raster.io.geotiff._
-import geotrellis.raster.testkit._
+import geotrellis.raster.*
+import geotrellis.raster.io.geotiff.*
+import geotrellis.raster.testkit.*
 import geotrellis.vector.Extent
 
 import scala.concurrent.duration.Duration
@@ -26,7 +26,7 @@ import scala.concurrent.{Await, ExecutionContext, ExecutionContextExecutor, Futu
 import java.net.URI
 import java.io.File
 import scala.util.Random
-import sys.process._
+import sys.process.*
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.funspec.AnyFunSpec
 

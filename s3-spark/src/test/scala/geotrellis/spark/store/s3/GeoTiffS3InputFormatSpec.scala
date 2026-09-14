@@ -16,13 +16,13 @@
 
 package geotrellis.spark.store.s3
 
-import geotrellis.proj4._
-import geotrellis.raster._
-import geotrellis.vector._
-import geotrellis.spark.store.hadoop._
+import geotrellis.proj4.*
+import geotrellis.raster.*
+import geotrellis.vector.*
+import geotrellis.spark.store.hadoop.*
 import geotrellis.spark.testkit.TestEnvironment
 
-import software.amazon.awssdk.services.s3.model._
+import software.amazon.awssdk.services.s3.model.*
 import software.amazon.awssdk.core.sync.RequestBody
 
 import java.nio.file.{Paths, Files}

@@ -19,14 +19,14 @@ package geotrellis.spark.summary.polygonal
 import java.util.UUID
 
 import cats.Semigroup
-import cats.syntax.semigroup._
+import cats.syntax.semigroup.*
 import geotrellis.layer.{Metadata, SpatialKey, TileLayerMetadata}
-import geotrellis.raster._
+import geotrellis.raster.*
 import geotrellis.raster.rasterize.Rasterizer
 import geotrellis.raster.summary.GridVisitor
-import geotrellis.raster.summary.polygonal._
+import geotrellis.raster.summary.polygonal.*
 import geotrellis.util.MethodExtensions
-import geotrellis.vector._
+import geotrellis.vector.*
 import org.apache.spark.rdd.RDD
 
 import scala.reflect.ClassTag

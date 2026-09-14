@@ -16,7 +16,7 @@
 
 package geotrellis.spark.summary
 
-import geotrellis.raster._
+import geotrellis.raster.*
 import geotrellis.util.MethodExtensions
 
 import org.apache.spark.rdd.RDD

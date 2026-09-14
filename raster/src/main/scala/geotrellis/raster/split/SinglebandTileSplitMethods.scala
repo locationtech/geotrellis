@@ -16,9 +16,9 @@
 
 package geotrellis.raster.split
 
-import geotrellis.raster._
+import geotrellis.raster.*
 
-import spire.syntax.cfor._
+import spire.syntax.cfor.*
 
 import Split.Options
 

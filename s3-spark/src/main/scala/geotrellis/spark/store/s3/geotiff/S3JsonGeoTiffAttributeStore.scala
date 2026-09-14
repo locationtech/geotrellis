@@ -17,15 +17,15 @@
 package geotrellis.spark.store.s3.geotiff
 
 import geotrellis.store.s3.{AmazonS3URI, S3ClientProducer}
-import geotrellis.spark.store.hadoop.geotiff._
+import geotrellis.spark.store.hadoop.geotiff.*
 import geotrellis.util.annotations.experimental
 
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.core.sync.RequestBody
 import software.amazon.awssdk.services.s3.model.{GetObjectRequest, PutObjectRequest}
-import _root_.io.circe.parser._
-import _root_.io.circe.syntax._
-import cats.syntax.either._
+import _root_.io.circe.parser.*
+import _root_.io.circe.syntax.*
+import cats.syntax.either.*
 
 import java.net.URI
 import scala.io.Source

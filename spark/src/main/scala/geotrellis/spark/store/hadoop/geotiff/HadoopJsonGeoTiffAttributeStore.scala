@@ -16,9 +16,9 @@
 
 package geotrellis.spark.store.hadoop.geotiff
 
-import io.circe.parser._
-import io.circe.syntax._
-import cats.syntax.either._
+import io.circe.parser.*
+import io.circe.syntax.*
+import cats.syntax.either.*
 
 import geotrellis.util.annotations.experimental
 

@@ -16,24 +16,24 @@
 
 package geotrellis.spark
 
-import geotrellis.proj4._
-import geotrellis.layer._
-import geotrellis.raster._
-import geotrellis.raster.geotiff._
-import geotrellis.raster.io.geotiff._
-import geotrellis.spark.store.hadoop._
-import geotrellis.store.hadoop._
-import geotrellis.store.cog._
+import geotrellis.proj4.*
+import geotrellis.layer.*
+import geotrellis.raster.*
+import geotrellis.raster.geotiff.*
+import geotrellis.raster.io.geotiff.*
+import geotrellis.spark.store.hadoop.*
+import geotrellis.store.hadoop.*
+import geotrellis.store.cog.*
 import geotrellis.vector.Geometry
 
-import spire.syntax.cfor._
-import cats.implicits._
+import spire.syntax.cfor.*
+import cats.implicits.*
 import org.apache.spark.rdd.RDD
 
-import geotrellis.spark.testkit._
-import geotrellis.raster.testkit._
+import geotrellis.spark.testkit.*
+import geotrellis.raster.testkit.*
 
-import org.scalatest.Inspectors._
+import org.scalatest.Inspectors.*
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.funspec.AnyFunSpec
 

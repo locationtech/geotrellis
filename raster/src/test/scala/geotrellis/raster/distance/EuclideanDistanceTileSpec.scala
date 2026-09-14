@@ -16,9 +16,9 @@
 
 package geotrellis.raster.distance
 
-import geotrellis.raster._
-import geotrellis.raster.testkit._
-import geotrellis.vector._
+import geotrellis.raster.*
+import geotrellis.raster.testkit.*
+import geotrellis.vector.*
 import scala.math.{sqrt, pow}
 
 import org.scalatest.matchers.should.Matchers

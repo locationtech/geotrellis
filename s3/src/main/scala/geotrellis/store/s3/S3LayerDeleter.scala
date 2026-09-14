@@ -16,13 +16,13 @@
 
 package geotrellis.store.s3
 
-import geotrellis.store._
+import geotrellis.store.*
 
-import software.amazon.awssdk.services.s3.model._
+import software.amazon.awssdk.services.s3.model.*
 import software.amazon.awssdk.services.s3.S3Client
-import org.log4s._
+import org.log4s.*
 
-import scala.jdk.CollectionConverters._
+import scala.jdk.CollectionConverters.*
 
 class S3LayerDeleter(
   val attributeStore: AttributeStore,

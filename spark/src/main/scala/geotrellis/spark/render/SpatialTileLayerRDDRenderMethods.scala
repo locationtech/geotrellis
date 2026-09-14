@@ -18,9 +18,9 @@ package geotrellis.spark.render
 
 import geotrellis.proj4.CRS
 import geotrellis.raster.{MultibandTile, Tile}
-import geotrellis.raster.io.geotiff._
-import geotrellis.layer._
-import geotrellis.util._
+import geotrellis.raster.io.geotiff.*
+import geotrellis.layer.*
+import geotrellis.util.*
 import org.apache.spark.rdd.RDD
 
 abstract class SpatialTileLayerRDDRenderMethods[M: GetComponent[*, CRS]: GetComponent[*, LayoutDefinition]] extends MethodExtensions[RDD[(SpatialKey, Tile)] with Metadata[M]] {

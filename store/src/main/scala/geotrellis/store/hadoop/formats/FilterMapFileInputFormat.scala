@@ -17,14 +17,14 @@
 package geotrellis.store.hadoop.formats
 
 import geotrellis.store.index.MergeQueue
-import geotrellis.store.hadoop._
-import org.apache.hadoop.conf._
-import org.apache.hadoop.fs._
-import org.apache.hadoop.io._
-import org.apache.hadoop.mapreduce._
-import org.apache.hadoop.mapreduce.lib.input._
+import geotrellis.store.hadoop.*
+import org.apache.hadoop.conf.*
+import org.apache.hadoop.fs.*
+import org.apache.hadoop.io.*
+import org.apache.hadoop.mapreduce.*
+import org.apache.hadoop.mapreduce.lib.input.*
 
-import scala.jdk.CollectionConverters._
+import scala.jdk.CollectionConverters.*
 
 object FilterMapFileInputFormat {
   // Define some key names for Hadoop configuration

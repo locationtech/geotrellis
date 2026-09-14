@@ -16,11 +16,11 @@
 
 package geotrellis.raster.io.geotiff
 
-import geotrellis.raster.io.geotiff.util._
-import geotrellis.raster._
+import geotrellis.raster.io.geotiff.util.*
+import geotrellis.raster.*
 
 import java.nio.ByteBuffer
-import spire.syntax.cfor._
+import spire.syntax.cfor.*
 
 /**
  * Base trait of GeoTiffSegment

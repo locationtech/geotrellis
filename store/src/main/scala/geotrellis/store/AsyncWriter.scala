@@ -17,10 +17,10 @@
 package geotrellis.store
 
 import geotrellis.store.util.IORuntimeTransient
-import geotrellis.store.util.IOUtils._
+import geotrellis.store.util.IOUtils.*
 
-import cats.effect._
-import cats.syntax.either._
+import cats.effect.*
+import cats.syntax.either.*
 
 import scala.util.{Failure, Success, Try}
 

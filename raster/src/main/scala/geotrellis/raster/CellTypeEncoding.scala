@@ -104,7 +104,7 @@ object CellTypeEncoding {
 
 /** Base trait for encoding CellTypes with fixed or no NoData values. */
 sealed trait FixedNoDataEncoding extends CellTypeEncoding {
-  def unapplySeq(text: String): Option[Seq[_]] = {
+  def unapplySeq(text: String): Option[Seq[?]] = {
     if(text == name) Some(Seq.empty) else None
   }
 }
@@ -121,7 +121,7 @@ sealed trait UserDefinedNoDataEncoding extends CellTypeEncoding { self =>
     if (text.startsWith(name)) {
       val number = text.replace(name, "")
 
-      if(isFloatingPoint) Try(number.toDouble).map(WideDoubleNoData).toOption
+      if(isFloatingPoint) Try(number.toDouble).map(WideDoubleNoData.apply).toOption
       else Try(number.toInt).map(WideIntNoData.apply).toOption
     }
     else None

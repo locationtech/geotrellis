@@ -16,10 +16,10 @@
 
 package geotrellis.raster.mask
 
-import geotrellis.raster.testkit._
-import geotrellis.raster._
+import geotrellis.raster.testkit.*
+import geotrellis.raster.*
 import geotrellis.raster.rasterize.Rasterizer.Options
-import geotrellis.vector._
+import geotrellis.vector.*
 
 import scala.util.Random
 

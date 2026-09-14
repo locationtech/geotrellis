@@ -16,21 +16,21 @@
 
 package geotrellis.raster.reproject
 
-import org.openjdk.jmh.annotations._
+import org.openjdk.jmh.annotations.*
 import org.openjdk.jmh.infra.BenchmarkParams
 
 import geotrellis.bench.init
-import geotrellis.proj4._
-import geotrellis.raster._
+import geotrellis.proj4.*
+import geotrellis.raster.*
 import geotrellis.raster.resample.NearestNeighbor
-import geotrellis.vector._
+import geotrellis.vector.*
 
 import scala.util.Random
 
 @BenchmarkMode(Array(Mode.AverageTime))
 @State(Scope.Thread)
 class RasterizingReprojectBench  {
-  import RasterizingReprojectBench._
+  import RasterizingReprojectBench.*
 
   @Param(Array("32", "64", "128", "256", "512", "1024", "2048", "4096", "8192"))
   var size: Int = _

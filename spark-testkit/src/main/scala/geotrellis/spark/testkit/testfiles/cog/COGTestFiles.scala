@@ -16,15 +16,15 @@
 
 package geotrellis.spark.testkit.testfiles.cog
 
-import geotrellis.proj4._
-import geotrellis.raster._
+import geotrellis.proj4.*
+import geotrellis.raster.*
 import geotrellis.raster.resample.NearestNeighbor
-import geotrellis.layer._
-import geotrellis.spark._
-import geotrellis.spark.store.hadoop._
+import geotrellis.layer.*
+import geotrellis.spark.*
+import geotrellis.spark.store.hadoop.*
 import geotrellis.spark.testkit.TestEnvironment
-import geotrellis.spark.testkit.testfiles._
-import jp.ne.opt.chronoscala.Imports._
+import geotrellis.spark.testkit.testfiles.*
+import jp.ne.opt.chronoscala.Imports.*
 import org.apache.spark.SparkContext
 import org.apache.hadoop.fs.Path
 import java.time.{ZoneOffset, ZonedDateTime}

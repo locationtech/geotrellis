@@ -19,7 +19,7 @@ package geotrellis.raster.render.ascii
 
 import geotrellis.raster.{Tile, isNoData}
 
-import spire.syntax.cfor._
+import spire.syntax.cfor.*
 
 import scala.collection.mutable.ArrayBuffer
 import scala.math.BigDecimal

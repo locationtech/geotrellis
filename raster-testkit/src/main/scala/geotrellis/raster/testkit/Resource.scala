@@ -16,7 +16,7 @@
 
 package geotrellis.raster.testkit
 
-import java.io._
+import java.io.*
 import java.net.{URI, URL}
 
 object Resource {

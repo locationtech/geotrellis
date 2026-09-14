@@ -16,11 +16,11 @@
 
 package geotrellis.layer.mask
 
-import geotrellis.vector._
-import geotrellis.layer._
-import geotrellis.raster.mask._
+import geotrellis.vector.*
+import geotrellis.layer.*
+import geotrellis.raster.mask.*
 import geotrellis.raster.rasterize.Rasterizer
-import geotrellis.util._
+import geotrellis.util.*
 
 
 
@@ -44,7 +44,7 @@ object Mask extends Mask {
 }
 
 trait Mask {
-  import Mask._
+  import Mask.*
   // As done by [[geotrellis.raster.rasterize.polygon.TestLineSet]] in [[geotrellis.raster.rasterize.polygon.PolygonRasterizer]].
   private[geotrellis] def eliminateNotQualified(geom: Option[Geometry]): Option[Geometry] = {
 

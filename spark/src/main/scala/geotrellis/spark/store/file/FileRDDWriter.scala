@@ -42,7 +42,7 @@ object FileRDDWriter {
       // Call groupBy with numPartitions; if called without that argument or a partitioner,
       // groupBy will reuse the partitioner on the parent RDD if it is set, which could be typed
       // on a key type that may no longer by valid for the key type of the resulting RDD.
-      rdd.groupBy({ row: (K, V) => keyPath(row._1) }, numPartitions = rdd.partitions.length)
+      rdd.groupBy({ (row: (K, V)) => keyPath(row._1) }, numPartitions = rdd.partitions.length)
 
     Filesystem.ensureDirectory(rootPath)
     val _recordCodec = KeyValueRecordCodec[K, V]

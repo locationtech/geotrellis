@@ -16,8 +16,8 @@
 
 package geotrellis.geotools
 
-import geotrellis.raster._
-import geotrellis.util._
+import geotrellis.raster.*
+import geotrellis.util.*
 
 import org.geotools.coverage.grid.GridCoverage2D
 

@@ -16,9 +16,9 @@
 
 package geotrellis.spark.store.accumulo
 
-import geotrellis.store._
-import geotrellis.store.accumulo._
-import geotrellis.spark.store._
+import geotrellis.store.*
+import geotrellis.store.accumulo.*
+import geotrellis.spark.store.*
 import org.apache.accumulo.core.client.security.tokens.PasswordToken
 import org.scalatest.BeforeAndAfterAll
 import org.apache.accumulo.minicluster.MiniAccumuloCluster
@@ -44,7 +44,7 @@ class AccumuloAttributeStoreSpec extends AttributeStoreSpec with BeforeAndAfterA
     token = new PasswordToken("")
   )
 
-  lazy val attributeStore = new AccumuloAttributeStore(accumulo.client, "attributes")
+  lazy val attributeStore: AccumuloAttributeStore = new AccumuloAttributeStore(accumulo.client, "attributes")
 
   it("should read the Layer's Header as a LayerHeader and then an as an AccumuloLayerHeader") {
     val header = AccumuloLayerHeader("SpatialKey", "Tile", attributeStore.attributeTable)

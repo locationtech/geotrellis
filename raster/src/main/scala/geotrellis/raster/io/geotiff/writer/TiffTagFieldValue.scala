@@ -16,13 +16,13 @@
 
 package geotrellis.raster.io.geotiff.writer
 
-import geotrellis.raster._
+import geotrellis.raster.*
 import geotrellis.raster.render.IndexedColorMap
-import geotrellis.raster.io.geotiff._
-import geotrellis.raster.io.geotiff.tags.codes._
-import geotrellis.raster.io.geotiff.tags.codes.TagCodes._
-import geotrellis.raster.io.geotiff.tags.codes.TiffFieldType._
-import spire.syntax.cfor._
+import geotrellis.raster.io.geotiff.*
+import geotrellis.raster.io.geotiff.tags.codes.*
+import geotrellis.raster.io.geotiff.tags.codes.TagCodes.*
+import geotrellis.raster.io.geotiff.tags.codes.TiffFieldType.*
+import spire.syntax.cfor.*
 
 import scala.collection.mutable
 import java.nio.ByteOrder
@@ -238,7 +238,7 @@ object TiffTagFieldValue {
           else
             TiffTagFieldValue(TileByteCountsTag, IntsFieldType, segmentByteCountsInt.length, toBytes(segmentByteCountsInt)))
 
-          { offsets: Array[Long] =>
+          { (offsets: Array[Long]) =>
             if (isBigTiff) TiffTagFieldValue(TileOffsetsTag, LongsFieldType, offsets.length, toBytes(offsets))
             else TiffTagFieldValue(TileOffsetsTag, IntsFieldType, offsets.length, toBytes(offsets.map(_.toInt))) }
         case s: Striped =>
@@ -255,7 +255,7 @@ object TiffTagFieldValue {
             TiffTagFieldValue(StripByteCountsTag, LongsFieldType, segmentByteCountsLong.length, toBytes(segmentByteCountsLong))
           else TiffTagFieldValue(StripByteCountsTag, IntsFieldType, segmentByteCountsInt.length, toBytes(segmentByteCountsInt)))
 
-          { offsets: Array[Long] =>
+          { (offsets: Array[Long]) =>
             if (isBigTiff) TiffTagFieldValue(StripOffsetsTag, LongsFieldType, offsets.length, toBytes(offsets))
             else TiffTagFieldValue(StripOffsetsTag, IntsFieldType, offsets.length, toBytes(offsets.map(_.toInt))) }
       }

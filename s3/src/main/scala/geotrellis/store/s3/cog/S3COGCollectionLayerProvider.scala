@@ -16,9 +16,9 @@
 
 package geotrellis.store.s3.cog
 
-import geotrellis.store._
-import geotrellis.store.cog._
-import geotrellis.store.s3._
+import geotrellis.store.*
+import geotrellis.store.cog.*
+import geotrellis.store.s3.*
 
 import java.net.URI
 

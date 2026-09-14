@@ -17,12 +17,12 @@
 package geotrellis.spark.store.hadoop
 
 import geotrellis.proj4.CRS
-import geotrellis.raster._
+import geotrellis.raster.*
 import geotrellis.layer.TemporalProjectedExtent
-import geotrellis.vector._
+import geotrellis.vector.*
 
-import org.apache.spark._
-import org.apache.spark.rdd._
+import org.apache.spark.*
+import org.apache.spark.rdd.*
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.mapreduce.Job
 

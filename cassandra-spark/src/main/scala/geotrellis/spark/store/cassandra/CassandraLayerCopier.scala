@@ -16,14 +16,14 @@
 
 package geotrellis.spark.store.cassandra
 
-import geotrellis.layer._
-import geotrellis.store._
-import geotrellis.store.cassandra._
-import geotrellis.store.avro._
-import geotrellis.util._
+import geotrellis.layer.*
+import geotrellis.store.*
+import geotrellis.store.cassandra.*
+import geotrellis.store.avro.*
+import geotrellis.util.*
 
 import org.apache.spark.SparkContext
-import io.circe._
+import io.circe.*
 
 import scala.reflect.ClassTag
 
@@ -106,7 +106,7 @@ object CassandraLayerCopier {
     apply(
       attributeStore,
       CassandraLayerReader(instance),
-      { layerId: LayerId =>
+      { (layerId: LayerId) =>
         val header = attributeStore.readHeader[CassandraLayerHeader](layerId)
         CassandraLayerWriter(instance, header.keyspace, header.tileTable)
       }

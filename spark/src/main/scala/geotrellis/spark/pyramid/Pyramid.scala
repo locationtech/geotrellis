@@ -16,23 +16,23 @@
 
 package geotrellis.spark.pyramid
 
-import geotrellis.layer._
-import geotrellis.store._
-import geotrellis.store.avro._
+import geotrellis.layer.*
+import geotrellis.store.*
+import geotrellis.store.avro.*
 import geotrellis.store.index.KeyIndexMethod
-import geotrellis.spark._
-import geotrellis.spark.store._
-import geotrellis.raster._
-import geotrellis.raster.merge._
-import geotrellis.raster.resample._
-import geotrellis.raster.prototype._
-import geotrellis.util._
+import geotrellis.spark.*
+import geotrellis.spark.store.*
+import geotrellis.raster.*
+import geotrellis.raster.merge.*
+import geotrellis.raster.resample.*
+import geotrellis.raster.prototype.*
+import geotrellis.util.*
 import geotrellis.vector.Extent
 
 import org.apache.spark.Partitioner
-import org.apache.spark.rdd._
+import org.apache.spark.rdd.*
 import org.apache.spark.storage.StorageLevel
-import _root_.io.circe._
+import _root_.io.circe.*
 
 import scala.reflect.ClassTag
 

@@ -16,8 +16,8 @@
 
 package geotrellis.store.avro
 
-import org.apache.avro.generic._
-import org.apache.avro._
+import org.apache.avro.generic.*
+import org.apache.avro.*
 import scala.annotation.implicitNotFound
 import scala.reflect.ClassTag
 

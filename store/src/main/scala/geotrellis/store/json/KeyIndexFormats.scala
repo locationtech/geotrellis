@@ -16,19 +16,19 @@
 
 package geotrellis.store.json
 
-import geotrellis.layer._
-import geotrellis.store.index._
-import geotrellis.store.index.hilbert._
-import geotrellis.store.index.rowmajor._
-import geotrellis.store.index.zcurve._
+import geotrellis.layer.*
+import geotrellis.store.index.*
+import geotrellis.store.index.hilbert.*
+import geotrellis.store.index.rowmajor.*
+import geotrellis.store.index.zcurve.*
 
-import io.circe._
-import io.circe.syntax._
-import cats.syntax.either._
+import io.circe.*
+import io.circe.syntax.*
+import cats.syntax.either.*
 import com.typesafe.config.ConfigFactory
 
 import scala.collection.mutable
-import scala.reflect._
+import scala.reflect.*
 
 
 case class KeyIndexFormatEntry[K: Encoder: Decoder: ClassTag, T <: KeyIndex[K]: Encoder: Decoder: ClassTag](typeName: String) {
@@ -42,7 +42,7 @@ trait KeyIndexRegistrator {
   def register(keyIndexRegistry: KeyIndexRegistry): Unit
 }
 
-class KeyIndexEncoder[K](entries: Seq[KeyIndexFormatEntry[K, _]]) extends Encoder[KeyIndex[K]] {
+class KeyIndexEncoder[K](entries: Seq[KeyIndexFormatEntry[K, ?]]) extends Encoder[KeyIndex[K]] {
   final def apply(obj: KeyIndex[K]): Json =
     entries.find { entry =>
       entry.indexClassTag.runtimeClass.getCanonicalName == obj.getClass.getCanonicalName
@@ -54,7 +54,7 @@ class KeyIndexEncoder[K](entries: Seq[KeyIndexFormatEntry[K, _]]) extends Encode
     }
 }
 
-class KeyIndexDecoder[K](entries: Seq[KeyIndexFormatEntry[K, _]]) extends Decoder[KeyIndex[K]] {
+class KeyIndexDecoder[K](entries: Seq[KeyIndexFormatEntry[K, ?]]) extends Decoder[KeyIndex[K]] {
   final def apply(c: HCursor): Decoder.Result[KeyIndex[K]] = {
     (c.downField("type").as[String], c.downField("properties").focus) match {
       case (Right(typeName), _) =>
@@ -71,12 +71,12 @@ class KeyIndexDecoder[K](entries: Seq[KeyIndexFormatEntry[K, _]]) extends Decode
 }
 
 class KeyIndexRegistry {
-  private var _entries = mutable.ListBuffer[KeyIndexFormatEntry[_, _]]()
-  def register(entry: KeyIndexFormatEntry[_, _]): Unit = {
+  private var _entries = mutable.ListBuffer[KeyIndexFormatEntry[?, ?]]()
+  def register(entry: KeyIndexFormatEntry[?, ?]): Unit = {
     _entries += entry
   }
 
-  def entries: List[KeyIndexFormatEntry[_, _]] =
+  def entries: List[KeyIndexFormatEntry[?, ?]] =
     _entries.toList
 }
 
@@ -88,7 +88,7 @@ trait KeyIndexFormats {
   object KeyIndexJsonFormatFactory {
     private val REG_SETTING_NAME = "geotrellis.store.index.registrator"
 
-    private lazy val registry: Map[ClassTag[_], List[KeyIndexFormatEntry[_, _]]] = {
+    private lazy val registry: Map[ClassTag[?], List[KeyIndexFormatEntry[?, ?]]] = {
       val entryRegistry = new KeyIndexRegistry
 
       entryRegistry register KeyIndexFormatEntry[SpatialKey, HilbertSpatialKeyIndex](hilbert)
@@ -119,7 +119,7 @@ trait KeyIndexFormats {
     def getKeyIndexEncoder[K: ClassTag](): Encoder[KeyIndex[K]] = {
       for((key, entries) <- registry) {
         if(key == classTag[K]) {
-          return new KeyIndexEncoder[K](entries.map(_.asInstanceOf[KeyIndexFormatEntry[K, _]]))
+          return new KeyIndexEncoder[K](entries.map(_.asInstanceOf[KeyIndexFormatEntry[K, ?]]))
         }
       }
       throw DecodingFailure(s"Cannot deserialize key index for key type ${classTag[K]}. You need to register this key type using the config item $REG_SETTING_NAME", Nil)
@@ -128,7 +128,7 @@ trait KeyIndexFormats {
     def getKeyIndexDecoder[K: ClassTag](): Decoder[KeyIndex[K]] = {
       for((key, entries) <- registry) {
         if(key == classTag[K]) {
-          return new KeyIndexDecoder[K](entries.map(_.asInstanceOf[KeyIndexFormatEntry[K, _]]))
+          return new KeyIndexDecoder[K](entries.map(_.asInstanceOf[KeyIndexFormatEntry[K, ?]]))
         }
       }
       throw DecodingFailure(s"Cannot deserialize key index for key type ${classTag[K]}. You need to register this key type using the config item $REG_SETTING_NAME", Nil)
@@ -151,7 +151,7 @@ trait KeyIndexFormats {
     }
 
   implicit val hilbertSpatialKeyIndexDecoder: Decoder[HilbertSpatialKeyIndex] =
-    Decoder.decodeHCursor.emap { c: HCursor =>
+    Decoder.decodeHCursor.emap { (c: HCursor) =>
       (c.downField("type").as[String], c.downField("properties")) match {
         case (Right(typeName), properties) =>
           if(typeName != hilbert) Left(s"Wrong KeyIndex type: $hilbert expected.")
@@ -182,7 +182,7 @@ trait KeyIndexFormats {
     }
 
   implicit val hilbertSpaceTimeKeyIndexDecoder: Decoder[HilbertSpaceTimeKeyIndex] =
-    Decoder.decodeHCursor.emap { c: HCursor =>
+    Decoder.decodeHCursor.emap { (c: HCursor) =>
       (c.downField("type").as[String], c.downField("properties")) match {
         case (Right(typeName), properties) =>
           if(typeName != hilbert) Left(s"Wrong KeyIndex type: $hilbert expected.")
@@ -211,7 +211,7 @@ trait KeyIndexFormats {
     }
 
   implicit val rowMajorSpatialKeyIndexDecoder: Decoder[RowMajorSpatialKeyIndex] =
-    Decoder.decodeHCursor.emap { c: HCursor =>
+    Decoder.decodeHCursor.emap { (c: HCursor) =>
       (c.downField("type").as[String], c.downField("properties")) match {
         case (Right(typeName), properties) =>
           if(typeName != rowmajor) Left(s"Wrong KeyIndex type: $rowmajor expected.")
@@ -237,7 +237,7 @@ trait KeyIndexFormats {
     }
 
   implicit val zSpatialKeyIndexDecoder: Decoder[ZSpatialKeyIndex] =
-    Decoder.decodeHCursor.emap { c: HCursor =>
+    Decoder.decodeHCursor.emap { (c: HCursor) =>
       (c.downField("type").as[String], c.downField("properties")) match {
         case (Right(typeName), properties) =>
           if(typeName != zorder) Left(s"Wrong KeyIndex type: $zorder expected.")
@@ -263,7 +263,7 @@ trait KeyIndexFormats {
     }
 
   implicit val zSpaceTimeKeyIndexDecoder: Decoder[ZSpaceTimeKeyIndex] =
-    Decoder.decodeHCursor.emap { c: HCursor =>
+    Decoder.decodeHCursor.emap { (c: HCursor) =>
       (c.downField("type").as[String], c.downField("properties")) match {
         case (Right(typeName), properties) =>
           if(typeName != zorder) Left(s"Wrong KeyIndex type: $zorder expected.")

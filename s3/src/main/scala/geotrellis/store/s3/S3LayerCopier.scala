@@ -16,16 +16,16 @@
 
 package geotrellis.store.s3
 
-import geotrellis.layer._
-import geotrellis.store._
+import geotrellis.layer.*
+import geotrellis.store.*
 import geotrellis.store.avro.AvroRecordCodec
-import geotrellis.util._
+import geotrellis.util.*
 
-import software.amazon.awssdk.services.s3.model._
+import software.amazon.awssdk.services.s3.model.*
 import software.amazon.awssdk.services.s3.S3Client
-import _root_.io.circe._
+import _root_.io.circe.*
 
-import scala.jdk.CollectionConverters._
+import scala.jdk.CollectionConverters.*
 import scala.reflect.ClassTag
 
 class S3LayerCopier(

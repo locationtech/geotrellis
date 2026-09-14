@@ -16,23 +16,23 @@
 
 package geotrellis.spark.store.hadoop
 
-import geotrellis.layer._
-import geotrellis.store._
+import geotrellis.layer.*
+import geotrellis.store.*
 import geotrellis.store.hadoop.{HadoopAttributeStore, HadoopLayerHeader}
-import geotrellis.store.avro._
-import geotrellis.store.avro.codecs._
+import geotrellis.store.avro.*
+import geotrellis.store.avro.codecs.*
 import geotrellis.store.index.KeyIndex
-import geotrellis.spark.store._
-import geotrellis.util._
+import geotrellis.spark.store.*
+import geotrellis.util.*
 
-import org.log4s._
+import org.log4s.*
 import org.apache.hadoop.fs.Path
 import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkContext
-import io.circe._
+import io.circe.*
 import cats.Semigroup
 
-import scala.reflect._
+import scala.reflect.*
 
 
 class HadoopLayerWriter(

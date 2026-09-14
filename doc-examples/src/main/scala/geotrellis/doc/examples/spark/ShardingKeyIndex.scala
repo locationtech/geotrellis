@@ -16,18 +16,18 @@
 
 package geotrellis.doc.examples.spark
 
-import geotrellis.layer._
-import geotrellis.spark._
-import geotrellis.spark.store._
-import geotrellis.store._
-import geotrellis.store.json._
-import geotrellis.store.index._
+import geotrellis.layer.*
+import geotrellis.spark.*
+import geotrellis.spark.store.*
+import geotrellis.store.*
+import geotrellis.store.json.*
+import geotrellis.store.index.*
 import scala.reflect.ClassTag
 
-import _root_.io.circe._
-import _root_.io.circe.syntax._
+import _root_.io.circe.*
+import _root_.io.circe.syntax.*
 import _root_.io.circe.generic.JsonCodec
-import cats.syntax.either._
+import cats.syntax.either.*
 
 import scala.reflect.ClassTag
 
@@ -107,7 +107,7 @@ object ShardingKeyIndex {
     }
 
   implicit def shardingKeyIndexDecoder[K: Decoder: ClassTag]: Decoder[ShardingKeyIndex[K]] =
-    Decoder.decodeHCursor.emap { c: HCursor =>
+    Decoder.decodeHCursor.emap { (c: HCursor) =>
       (c.downField("type").as[String], c.downField("properties")) match {
         case (Right(typeName), properties) =>
           if(typeName != sharding) Left(s"Wrong KeyIndex type: $sharding expected.")

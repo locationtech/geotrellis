@@ -16,13 +16,13 @@
 
 package geotrellis.layer
 
-import geotrellis.proj4._
-import geotrellis.raster._
+import geotrellis.proj4.*
+import geotrellis.raster.*
 import geotrellis.raster.testkit.{RasterMatchers, Resource}
-import geotrellis.raster.geotiff._
-import geotrellis.raster.io.geotiff.reader._
-import geotrellis.raster.resample._
-import geotrellis.vector._
+import geotrellis.raster.geotiff.*
+import geotrellis.raster.io.geotiff.reader.*
+import geotrellis.raster.resample.*
+import geotrellis.vector.*
 import geotrellis.raster.io.geotiff.AutoHigherResolution
 
 import cats.data.NonEmptyList

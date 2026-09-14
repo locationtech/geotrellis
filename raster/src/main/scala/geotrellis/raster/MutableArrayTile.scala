@@ -16,7 +16,7 @@
 
 package geotrellis.raster
 
-import spire.syntax.cfor._
+import spire.syntax.cfor.*
 
 
 /**

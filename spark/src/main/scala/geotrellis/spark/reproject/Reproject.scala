@@ -16,8 +16,8 @@
 
 package geotrellis.spark.reproject
 
-import geotrellis.raster.reproject.Reproject.{Options => RasterReprojectOptions}
-import geotrellis.raster.resample._
+import geotrellis.raster.reproject.Reproject.{Options as RasterReprojectOptions}
+import geotrellis.raster.resample.*
 
 object Reproject {
   case class Options(

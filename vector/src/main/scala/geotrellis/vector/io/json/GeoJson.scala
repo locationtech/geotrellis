@@ -16,9 +16,9 @@
 
 package geotrellis.vector.io.json
 
-import io.circe._
-import io.circe.parser.{parse => circeParse}
-import cats.syntax.either._
+import io.circe.*
+import io.circe.parser.{parse as circeParse}
+import cats.syntax.either.*
 
 /** An object whose methods parse string representations as GeoJson */
 object GeoJson {

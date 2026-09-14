@@ -16,7 +16,7 @@
 
 package geotrellis.spark
 
-import geotrellis.raster._
+import geotrellis.raster.*
 import geotrellis.layer.SpatialComponent
 import geotrellis.util.MethodExtensions
 

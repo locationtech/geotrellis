@@ -16,17 +16,17 @@
 
 package geotrellis.shapefile
 
-import geotrellis.vector._
+import geotrellis.vector.*
 import org.geotools.api.feature.simple.SimpleFeature
-import org.geotools.data.simple._
-import org.geotools.data.shapefile._
+import org.geotools.data.simple.*
+import org.geotools.data.shapefile.*
 
 import java.net.URL
 import java.io.File
 import java.nio.charset.Charset
 
 import scala.collection.mutable
-import scala.jdk.CollectionConverters._
+import scala.jdk.CollectionConverters.*
 
 object ShapeFileReader {
   val DEFAULT_CHARSET = Charset.forName("ISO-8859-1")

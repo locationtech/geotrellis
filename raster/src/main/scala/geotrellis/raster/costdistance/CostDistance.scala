@@ -18,7 +18,7 @@ package geotrellis.raster.costdistance
 
 import java.util.PriorityQueue
 
-import geotrellis.raster._
+import geotrellis.raster.*
 
 
 /**

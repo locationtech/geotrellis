@@ -17,7 +17,7 @@
 package geotrellis.raster
 
 import spire.math.Integral
-import spire.implicits._
+import spire.implicits.*
 
 abstract class GridIntegral[N: Integral] extends Grid[N] {
   def size: N = cols * rows

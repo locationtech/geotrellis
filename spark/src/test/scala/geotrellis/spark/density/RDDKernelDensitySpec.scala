@@ -18,15 +18,15 @@ package geotrellis.spark.density
 
 import scala.util.Random
 
-import geotrellis.proj4._
-import geotrellis.raster._
-import geotrellis.raster.mapalgebra.focal._
-import geotrellis.raster.testkit._
-import geotrellis.layer._
-import geotrellis.layer.stitch._
-import geotrellis.spark._
-import geotrellis.vector._
-import geotrellis.spark.testkit._
+import geotrellis.proj4.*
+import geotrellis.raster.*
+import geotrellis.raster.mapalgebra.focal.*
+import geotrellis.raster.testkit.*
+import geotrellis.layer.*
+import geotrellis.layer.stitch.*
+import geotrellis.spark.*
+import geotrellis.vector.*
+import geotrellis.spark.testkit.*
 
 
 import org.scalatest.matchers.should.Matchers

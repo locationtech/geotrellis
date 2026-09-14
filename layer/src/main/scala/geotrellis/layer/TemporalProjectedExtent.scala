@@ -16,9 +16,9 @@
 
 package geotrellis.layer
 
-import geotrellis.proj4._
-import geotrellis.vector._
-import geotrellis.util._
+import geotrellis.proj4.*
+import geotrellis.vector.*
+import geotrellis.util.*
 
 import java.time.{ZoneOffset, ZonedDateTime}
 

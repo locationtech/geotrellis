@@ -16,13 +16,13 @@
 
 package geotrellis.spark.store
 
-import geotrellis.layer._
-import geotrellis.store._
-import geotrellis.store.avro._
-import geotrellis.store.index._
-import geotrellis.util._
+import geotrellis.layer.*
+import geotrellis.store.*
+import geotrellis.store.avro.*
+import geotrellis.store.index.*
+import geotrellis.util.*
 
-import _root_.io.circe._
+import _root_.io.circe.*
 
 import java.time.ZonedDateTime
 import scala.reflect.ClassTag

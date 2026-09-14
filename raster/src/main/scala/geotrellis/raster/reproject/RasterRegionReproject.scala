@@ -16,14 +16,14 @@
 
 package geotrellis.raster.reproject
 
-import geotrellis.raster._
-import geotrellis.raster.resample._
-import geotrellis.raster.merge._
-import geotrellis.vector._
-import geotrellis.proj4._
+import geotrellis.raster.*
+import geotrellis.raster.resample.*
+import geotrellis.raster.merge.*
+import geotrellis.vector.*
+import geotrellis.proj4.*
 
-import spire.syntax.cfor._
-import cats._
+import spire.syntax.cfor.*
+import cats.*
 
 
 trait RasterRegionReproject[T <: CellGrid[Int]] extends Serializable {
@@ -102,7 +102,7 @@ object RasterRegionReproject {
       (locations, result)
     }
 
-    { i: Int =>
+    { (i: Int) =>
       if (i >= 0 && i < destRasterExtent.rows) {
         val scanline = LineString(destRasterExtent.gridToMap(0, i), destRasterExtent.gridToMap(destRasterExtent.cols - 1, i))
         val chunks = (scanline & destRegion).toGeometry() match {

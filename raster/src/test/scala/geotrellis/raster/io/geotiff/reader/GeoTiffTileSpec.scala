@@ -16,10 +16,10 @@
 
 package geotrellis.raster.io.geotiff.reader
 
-import geotrellis.raster._
-import geotrellis.raster.io.geotiff._
-import geotrellis.raster.io.geotiff.compression._
-import geotrellis.raster.testkit._
+import geotrellis.raster.*
+import geotrellis.raster.io.geotiff.*
+import geotrellis.raster.io.geotiff.compression.*
+import geotrellis.raster.testkit.*
 
 import org.scalatest.funspec.AnyFunSpec
 

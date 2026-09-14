@@ -16,8 +16,8 @@
 
 package geotrellis.store.index
 
-import geotrellis.layer._
-import geotrellis.store.index.rowmajor._
+import geotrellis.layer.*
+import geotrellis.store.index.rowmajor.*
 
 private[index] trait RowMajorKeyIndexMethod
 

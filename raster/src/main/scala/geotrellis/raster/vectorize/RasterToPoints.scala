@@ -16,8 +16,8 @@
 
 package geotrellis.raster.vectorize
 
-import geotrellis.raster._
-import geotrellis.vector.{Point, PointFeature, _}
+import geotrellis.raster.*
+import geotrellis.vector.{Point, PointFeature, *}
 
 import scala.collection.mutable.ArrayBuffer
 

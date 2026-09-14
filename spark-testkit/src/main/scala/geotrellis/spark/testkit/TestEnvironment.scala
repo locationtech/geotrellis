@@ -27,7 +27,7 @@ import org.apache.hadoop.conf.Configuration
 import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.serializer.KryoSerializer
-import org.scalatest._
+import org.scalatest.*
 import org.scalatest.BeforeAndAfterAll
 
 import java.io.File

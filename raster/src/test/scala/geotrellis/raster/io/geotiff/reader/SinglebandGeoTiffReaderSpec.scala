@@ -16,11 +16,11 @@
 
 package geotrellis.raster.io.geotiff.reader
 
-import geotrellis.raster._
-import geotrellis.raster.io.geotiff._
-import geotrellis.raster.testkit._
+import geotrellis.raster.*
+import geotrellis.raster.io.geotiff.*
+import geotrellis.raster.testkit.*
 
-import spire.syntax.cfor._
+import spire.syntax.cfor.*
 
 import org.scalatest.funspec.AnyFunSpec
 
@@ -83,7 +83,7 @@ class SinglebandGeoTiffReaderSpec extends AnyFunSpec with RasterMatchers with Ge
     }
 
     it("should be able to collect points from a large sparse compressed geotiff that couldn't fit all into memory") {
-      import geotrellis.vector._
+      import geotrellis.vector.*
       import scala.collection.mutable
 
       val n = "large-sparse-compressed.tif"

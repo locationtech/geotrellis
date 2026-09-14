@@ -17,11 +17,11 @@
 package geotrellis.store.hadoop
 
 import geotrellis.store.{LayerHeader, LayerType, AvroLayerType}
-import geotrellis.store.json.Implicits._
+import geotrellis.store.json.Implicits.*
 
-import io.circe._
-import io.circe.syntax._
-import cats.syntax.either._
+import io.circe.*
+import io.circe.syntax.*
+import cats.syntax.either.*
 
 import java.net.URI
 

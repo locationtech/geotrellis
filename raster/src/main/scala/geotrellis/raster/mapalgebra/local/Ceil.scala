@@ -16,7 +16,7 @@
 
 package geotrellis.raster.mapalgebra.local
 
-import geotrellis.raster._
+import geotrellis.raster.*
 
 /**
  * Operation to get the ceiling of values.
@@ -24,6 +24,6 @@ import geotrellis.raster._
 object Ceil extends Serializable {
   /** Takes the Ceiling of each raster cell value. */
   def apply(r: Tile): Tile = 
-    r.dualMap { z: Int => z }
-              { z: Double => math.ceil(z) } // Note: math.ceil(Double.NaN) == Double.NaN
+    r.dualMap { (z: Int) => z }
+              { (z: Double) => math.ceil(z) } // Note: math.ceil(Double.NaN) == Double.NaN
 }

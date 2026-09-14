@@ -17,10 +17,10 @@
 package geotrellis.raster.geotiff
 
 import geotrellis.vector.Extent
-import geotrellis.raster._
-import geotrellis.raster.reproject._
-import geotrellis.raster.resample._
-import geotrellis.proj4._
+import geotrellis.raster.*
+import geotrellis.raster.reproject.*
+import geotrellis.raster.resample.*
+import geotrellis.proj4.*
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.raster.io.geotiff.{GeoTiff, GeoTiffMultibandTile, MultibandGeoTiff, OverviewStrategy, Tags}
 import geotrellis.util.RangeReader

@@ -16,16 +16,16 @@
 
 package geotrellis.spark.pipeline.ast.untyped
 
-import geotrellis.raster._
+import geotrellis.raster.*
 import geotrellis.layer.{SpatialKey, TemporalProjectedExtent, SpaceTimeKey}
-import geotrellis.spark._
+import geotrellis.spark.*
 import geotrellis.spark.pipeline.ast
-import geotrellis.spark.pipeline.ast._
+import geotrellis.spark.pipeline.ast.*
 import geotrellis.spark.pipeline.json.transform
-import geotrellis.spark.pipeline.json.TransformTypes._
-import geotrellis.spark.pipeline.json._
-import geotrellis.spark.pipeline.json.read._
-import geotrellis.vector._
+import geotrellis.spark.pipeline.json.TransformTypes.*
+import geotrellis.spark.pipeline.json.*
+import geotrellis.spark.pipeline.json.read.*
+import geotrellis.vector.*
 
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
@@ -137,7 +137,7 @@ case class ErasedJsonNode(arg: PipelineExpr) {
   def toErasedNode: ErasedNode = {
     arg.`type` match {
       case _: SinglebandSpatialExprType => {
-        import singleband.spatial._
+        import singleband.spatial.*
         arg match {
           case a: JsonRead => {
             arg.`type` match {
@@ -146,25 +146,25 @@ case class ErasedJsonNode(arg: PipelineExpr) {
             }
           }
           case a: transform.TileToLayout =>
-            ErasedTypedNode.fromTransform { child: Node[RDD[(ProjectedExtent, Tile)]] => TileToLayout(child, a) }
+            ErasedTypedNode.fromTransform { (child: Node[RDD[(ProjectedExtent, Tile)]]) => TileToLayout(child, a) }
           case a: transform.RetileToLayout =>
-            ErasedTypedNode.fromTransform { child: Node[TileLayerRDD[SpatialKey]] => RetileToLayout(child, a) }
+            ErasedTypedNode.fromTransform { (child: Node[TileLayerRDD[SpatialKey]]) => RetileToLayout(child, a) }
           case a: transform.Pyramid =>
-            ErasedTypedNode.fromTransform { child: Node[TileLayerRDD[SpatialKey]] => Pyramid(child, a) }
+            ErasedTypedNode.fromTransform { (child: Node[TileLayerRDD[SpatialKey]]) => Pyramid(child, a) }
           case a: transform.Reproject => {
             arg.`type` match {
               case _: BufferedReprojectType =>
-                ErasedTypedNode.fromTransform { child: Node[TileLayerRDD[SpatialKey]] => BufferedReproject(child, a) }
+                ErasedTypedNode.fromTransform { (child: Node[TileLayerRDD[SpatialKey]]) => BufferedReproject(child, a) }
               case _: PerTileReprojectType =>
-                ErasedTypedNode.fromTransform { child: Node[RDD[(ProjectedExtent, Tile)]] => PerTileReproject(child, a) }
+                ErasedTypedNode.fromTransform { (child: Node[RDD[(ProjectedExtent, Tile)]]) => PerTileReproject(child, a) }
             }
           }
           case a: write.JsonWrite =>
-            ErasedTypedNode.fromWrite { child: Node[LazyList[(Int, TileLayerRDD[SpatialKey])]] => Write(child, a) }
+            ErasedTypedNode.fromWrite { (child: Node[LazyList[(Int, TileLayerRDD[SpatialKey])]]) => Write(child, a) }
         }
       }
       case _: SinglebandTemporalExprType => {
-        import singleband.temporal._
+        import singleband.temporal.*
         arg match {
           case a: JsonRead => {
             arg.`type` match {
@@ -173,25 +173,25 @@ case class ErasedJsonNode(arg: PipelineExpr) {
             }
           }
           case a: transform.TileToLayout =>
-            ErasedTypedNode.fromTransform { child: Node[RDD[(TemporalProjectedExtent, Tile)]] => TileToLayout(child, a) }
+            ErasedTypedNode.fromTransform { (child: Node[RDD[(TemporalProjectedExtent, Tile)]]) => TileToLayout(child, a) }
           case a: transform.RetileToLayout =>
-            ErasedTypedNode.fromTransform { child: Node[TileLayerRDD[SpaceTimeKey]] => RetileToLayout(child, a) }
+            ErasedTypedNode.fromTransform { (child: Node[TileLayerRDD[SpaceTimeKey]]) => RetileToLayout(child, a) }
           case a: transform.Pyramid =>
-            ErasedTypedNode.fromTransform { child: Node[TileLayerRDD[SpaceTimeKey]] => Pyramid(child, a) }
+            ErasedTypedNode.fromTransform { (child: Node[TileLayerRDD[SpaceTimeKey]]) => Pyramid(child, a) }
           case a: transform.Reproject => {
             arg.`type` match {
               case _: BufferedReprojectType =>
-                ErasedTypedNode.fromTransform { child: Node[TileLayerRDD[SpaceTimeKey]] => BufferedReproject(child, a) }
+                ErasedTypedNode.fromTransform { (child: Node[TileLayerRDD[SpaceTimeKey]]) => BufferedReproject(child, a) }
               case _: PerTileReprojectType =>
-                ErasedTypedNode.fromTransform { child: Node[RDD[(TemporalProjectedExtent, Tile)]] => PerTileReproject(child, a) }
+                ErasedTypedNode.fromTransform { (child: Node[RDD[(TemporalProjectedExtent, Tile)]]) => PerTileReproject(child, a) }
             }
           }
           case a: write.JsonWrite =>
-            ErasedTypedNode.fromWrite { child: Node[LazyList[(Int, TileLayerRDD[SpaceTimeKey])]] => Write(child, a) }
+            ErasedTypedNode.fromWrite { (child: Node[LazyList[(Int, TileLayerRDD[SpaceTimeKey])]]) => Write(child, a) }
         }
       }
       case _: MultibandSpatialExprType => {
-        import multiband.spatial._
+        import multiband.spatial.*
         arg match {
           case a: JsonRead => {
             arg.`type` match {
@@ -200,25 +200,25 @@ case class ErasedJsonNode(arg: PipelineExpr) {
             }
           }
           case a: transform.TileToLayout =>
-            ErasedTypedNode.fromTransform { child: Node[RDD[(ProjectedExtent, MultibandTile)]] => TileToLayout(child, a) }
+            ErasedTypedNode.fromTransform { (child: Node[RDD[(ProjectedExtent, MultibandTile)]]) => TileToLayout(child, a) }
           case a: transform.RetileToLayout =>
-            ErasedTypedNode.fromTransform { child: Node[MultibandTileLayerRDD[SpatialKey]] => RetileToLayout(child, a) }
+            ErasedTypedNode.fromTransform { (child: Node[MultibandTileLayerRDD[SpatialKey]]) => RetileToLayout(child, a) }
           case a: transform.Pyramid =>
-            ErasedTypedNode.fromTransform { child: Node[MultibandTileLayerRDD[SpatialKey]] => Pyramid(child, a) }
+            ErasedTypedNode.fromTransform { (child: Node[MultibandTileLayerRDD[SpatialKey]]) => Pyramid(child, a) }
           case a: transform.Reproject => {
             arg.`type` match {
               case _: BufferedReprojectType =>
-                ErasedTypedNode.fromTransform { child: Node[MultibandTileLayerRDD[SpatialKey]] => BufferedReproject(child, a) }
+                ErasedTypedNode.fromTransform { (child: Node[MultibandTileLayerRDD[SpatialKey]]) => BufferedReproject(child, a) }
               case _: PerTileReprojectType =>
-                ErasedTypedNode.fromTransform { child: Node[RDD[(ProjectedExtent, MultibandTile)]] => PerTileReproject(child, a) }
+                ErasedTypedNode.fromTransform { (child: Node[RDD[(ProjectedExtent, MultibandTile)]]) => PerTileReproject(child, a) }
             }
           }
           case a: write.JsonWrite =>
-            ErasedTypedNode.fromWrite { child: Node[LazyList[(Int, MultibandTileLayerRDD[SpatialKey])]] => Write(child, a) }
+            ErasedTypedNode.fromWrite { (child: Node[LazyList[(Int, MultibandTileLayerRDD[SpatialKey])]]) => Write(child, a) }
         }
       }
       case _: MultibandTemporalExprType => {
-        import multiband.temporal._
+        import multiband.temporal.*
         arg match {
           case a: JsonRead => {
             arg.`type` match {
@@ -227,21 +227,21 @@ case class ErasedJsonNode(arg: PipelineExpr) {
             }
           }
           case a: transform.TileToLayout =>
-            ErasedTypedNode.fromTransform { child: Node[RDD[(TemporalProjectedExtent, MultibandTile)]] => TileToLayout(child, a) }
+            ErasedTypedNode.fromTransform { (child: Node[RDD[(TemporalProjectedExtent, MultibandTile)]]) => TileToLayout(child, a) }
           case a: transform.RetileToLayout =>
-            ErasedTypedNode.fromTransform { child: Node[MultibandTileLayerRDD[SpaceTimeKey]] => RetileToLayout(child, a) }
+            ErasedTypedNode.fromTransform { (child: Node[MultibandTileLayerRDD[SpaceTimeKey]]) => RetileToLayout(child, a) }
           case a: transform.Pyramid =>
-            ErasedTypedNode.fromTransform { child: Node[MultibandTileLayerRDD[SpaceTimeKey]] => Pyramid(child, a) }
+            ErasedTypedNode.fromTransform { (child: Node[MultibandTileLayerRDD[SpaceTimeKey]]) => Pyramid(child, a) }
           case a: transform.Reproject => {
             arg.`type` match {
               case _: BufferedReprojectType =>
-                ErasedTypedNode.fromTransform { child: Node[MultibandTileLayerRDD[SpaceTimeKey]] => BufferedReproject(child, a) }
+                ErasedTypedNode.fromTransform { (child: Node[MultibandTileLayerRDD[SpaceTimeKey]]) => BufferedReproject(child, a) }
               case _: PerTileReprojectType =>
-                ErasedTypedNode.fromTransform { child: Node[RDD[(TemporalProjectedExtent, MultibandTile)]] => PerTileReproject(child, a) }
+                ErasedTypedNode.fromTransform { (child: Node[RDD[(TemporalProjectedExtent, MultibandTile)]]) => PerTileReproject(child, a) }
             }
           }
           case a: write.JsonWrite =>
-            ErasedTypedNode.fromWrite { child: Node[LazyList[(Int, MultibandTileLayerRDD[SpaceTimeKey])]] => Write(child, a) }
+            ErasedTypedNode.fromWrite { (child: Node[LazyList[(Int, MultibandTileLayerRDD[SpaceTimeKey])]]) => Write(child, a) }
         }
       }
     }

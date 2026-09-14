@@ -16,19 +16,19 @@
 
 package geotrellis.store.avro
 
-import geotrellis.raster.{io => _, _}
+import geotrellis.raster.{io as _, *}
 import geotrellis.util.MethodExtensions
 
-import cats.syntax.option._
+import cats.syntax.option.*
 import io.circe.Json
-import io.circe.syntax._
-import io.circe.parser._
+import io.circe.syntax.*
+import io.circe.parser.*
 
 import org.scalatest.matchers.should.Matchers
-import Matchers._
+import Matchers.*
 
 trait AvroTools { self: Matchers =>
-  import AvroTools._
+  import AvroTools.*
 
   def roundTrip[T](thing: T)(implicit codec: AvroRecordCodec[T]): Unit = {
     val bytes = AvroEncoder.toBinary(thing)

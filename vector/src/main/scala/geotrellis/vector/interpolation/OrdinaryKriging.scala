@@ -16,9 +16,9 @@
 
 package geotrellis.vector.interpolation
 
-import geotrellis.vector._
-import org.apache.commons.math3.linear._
-import spire.syntax.cfor._
+import geotrellis.vector.*
+import org.apache.commons.math3.linear.*
+import spire.syntax.cfor.*
 
 object OrdinaryKriging {
   def apply(points: Array[PointFeature[Double]], bandwidth: Double, sv: Semivariogram): Kriging = {
@@ -115,7 +115,7 @@ class OrdinaryKriging(points: Array[PointFeature[Double]],
             )
           )
 
-      cfor(0)(_ < distSorted.getRowDimension, _ + 1) { i: Int =>
+      cfor(0)(_ < distSorted.getRowDimension, _ + 1) { (i: Int) =>
         if (distSorted.getEntry(i, 0) == 0)
           localCovVec.setEntry(i, 0, localCovVec.getEntry(i, 0) + sv.nugget)
       }

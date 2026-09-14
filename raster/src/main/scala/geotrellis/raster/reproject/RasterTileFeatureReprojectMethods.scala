@@ -16,8 +16,8 @@
 
 package geotrellis.raster.reproject
 
-import geotrellis.proj4._
-import geotrellis.raster._
+import geotrellis.proj4.*
+import geotrellis.raster.*
 import geotrellis.util.MethodExtensions
 
 

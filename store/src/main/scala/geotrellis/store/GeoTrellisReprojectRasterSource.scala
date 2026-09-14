@@ -16,16 +16,16 @@
 
 package geotrellis.store
 
-import geotrellis.vector._
-import geotrellis.raster._
-import geotrellis.raster.reproject._
-import geotrellis.raster.resample._
-import geotrellis.proj4._
+import geotrellis.vector.*
+import geotrellis.raster.*
+import geotrellis.raster.reproject.*
+import geotrellis.raster.resample.*
+import geotrellis.proj4.*
 import geotrellis.raster.io.geotiff.OverviewStrategy
 
-import org.log4s._
+import org.log4s.*
 
-import scala.io.AnsiColor._
+import scala.io.AnsiColor.*
 import java.time.ZonedDateTime
 
 class GeoTrellisReprojectRasterSource(

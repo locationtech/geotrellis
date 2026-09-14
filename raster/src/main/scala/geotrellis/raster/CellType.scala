@@ -355,7 +355,7 @@ case object UByteConstantNoDataCellType
     extends UByteCells with ConstantNoData[Byte] { val noDataValue = ubyteNODATA }
 case class UByteUserDefinedNoDataCellType(noDataValue: Byte)
     extends UByteCells with UserDefinedNoData[Byte] {
-  override def widenedNoData(implicit ev: Numeric[Byte]) = WideIntNoData(noDataValue)
+  override def widenedNoData(implicit ev: Numeric[Byte]): WideIntNoData = WideIntNoData(noDataValue)
 }
 
 case object ShortCellType
@@ -371,7 +371,7 @@ case object UShortConstantNoDataCellType
     extends UShortCells with ConstantNoData[Short] { val noDataValue = ushortNODATA }
 case class UShortUserDefinedNoDataCellType(noDataValue: Short)
     extends UShortCells with UserDefinedNoData[Short] {
-  override def widenedNoData(implicit ev: Numeric[Short]) = WideIntNoData(noDataValue)
+  override def widenedNoData(implicit ev: Numeric[Short]): WideIntNoData = WideIntNoData(noDataValue)
 }
 
 case object IntCellType
@@ -396,7 +396,7 @@ case class DoubleUserDefinedNoDataCellType(noDataValue: Double)
     extends DoubleCells with UserDefinedNoData[Double]
 
 object CellType {
-  import CellTypeEncoding._
+  import CellTypeEncoding.*
 
   /**
    * Translate a string representing a cell type into a [[CellType]].

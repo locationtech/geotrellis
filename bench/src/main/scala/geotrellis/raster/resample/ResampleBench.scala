@@ -18,8 +18,8 @@ package geotrellis.raster.resample
 
 import geotrellis.proj4.{LatLng, Transform, WebMercator}
 import geotrellis.raster.{Raster, RasterExtent, SinglebandRaster, Tile}
-import org.openjdk.jmh.annotations.{Mode => JMHMode, _}
-import geotrellis.bench._
+import org.openjdk.jmh.annotations.{Mode as JMHMode, *}
+import geotrellis.bench.*
 
 @BenchmarkMode(Array(JMHMode.AverageTime))
 @State(Scope.Thread)

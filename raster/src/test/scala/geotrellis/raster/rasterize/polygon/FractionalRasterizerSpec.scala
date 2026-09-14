@@ -16,9 +16,9 @@
 
 package geotrellis.raster.rasterize.polygon
 
-import geotrellis.raster._
-import geotrellis.raster.rasterize._
-import geotrellis.vector._
+import geotrellis.raster.*
+import geotrellis.raster.rasterize.*
+import geotrellis.vector.*
 
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.funspec.AnyFunSpec

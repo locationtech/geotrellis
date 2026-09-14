@@ -16,7 +16,7 @@
 
 package geotrellis.raster.mask
 
-import geotrellis.raster._
+import geotrellis.raster.*
 import geotrellis.raster.rasterize.Rasterizer.Options
 import geotrellis.util.MethodExtensions
 import geotrellis.vector.Geometry

@@ -16,8 +16,8 @@
 
 package geotrellis.store
 
-import io.circe._
-import io.circe.syntax._
+import io.circe.*
+import io.circe.syntax.*
 
 /** Base trait for layer headers that store location information for a saved layer */
 trait LayerHeader {
@@ -57,7 +57,7 @@ object LayerHeader {
             val format = f
             val keyClass = kc
             val valueClass = vc
-            val layerType = AvroLayerType
+            val layerType: AvroLayerType.type = AvroLayerType
           })
 
         case _ => Left(s"LayerHeader expected, got: ${c.focus}")

@@ -16,13 +16,13 @@
 
 package geotrellis.spark.mask
 
-import geotrellis.vector._
-import geotrellis.layer._
-import geotrellis.raster.mask._
+import geotrellis.vector.*
+import geotrellis.layer.*
+import geotrellis.raster.mask.*
 import geotrellis.layer.mask.Mask
 import geotrellis.layer.mask.Mask.Options
-import geotrellis.spark._
-import geotrellis.util._
+import geotrellis.spark.*
+import geotrellis.util.*
 
 import org.apache.spark.rdd.RDD
 

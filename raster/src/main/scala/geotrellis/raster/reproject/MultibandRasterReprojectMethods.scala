@@ -16,8 +16,8 @@
 
 package geotrellis.raster.reproject
 
-import geotrellis.raster._
-import geotrellis.proj4._
+import geotrellis.raster.*
+import geotrellis.proj4.*
 
 
 trait MultibandRasterReprojectMethods extends RasterReprojectMethods[MultibandRaster] {

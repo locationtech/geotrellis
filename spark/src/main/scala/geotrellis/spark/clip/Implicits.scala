@@ -16,9 +16,9 @@
 
 package geotrellis.spark.clip
 
-import geotrellis.vector._
+import geotrellis.vector.*
 
-import org.apache.spark.rdd._
+import org.apache.spark.rdd.*
 
 trait Implicits {
   implicit class withFeatureClipToGridMethods[G <: Geometry, D](val self: RDD[Feature[G, D]])

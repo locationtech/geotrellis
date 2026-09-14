@@ -18,9 +18,9 @@ package geotrellis.spark.store.file.cog
 
 import geotrellis.store.COGLayerType
 import geotrellis.store.file.{FileLayerHeader, FileAttributeStore}
-import geotrellis.spark.store.cog._
+import geotrellis.spark.store.cog.*
 
 class COGFileAttributeStoreSpec extends COGAttributeStoreSpec {
-  lazy val attributeStore = FileAttributeStore(outputLocalPath)
-  lazy val header = FileLayerHeader("geotrellis.tiling.SpatialKey", "geotrellis.raster.Tile", outputLocalPath, COGLayerType)
+  lazy val attributeStore: FileAttributeStore = FileAttributeStore(outputLocalPath)
+  lazy val header: FileLayerHeader = FileLayerHeader("geotrellis.tiling.SpatialKey", "geotrellis.raster.Tile", outputLocalPath, COGLayerType)
 }

@@ -22,7 +22,7 @@ import geotrellis.raster.io.geotiff.OverviewStrategy
 import geotrellis.store.util.IORuntimeTransient
 import geotrellis.util.annotations.experimental
 
-import cats.effect._
+import cats.effect.*
 import org.apache.hadoop.conf.Configuration
 
 /**

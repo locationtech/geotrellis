@@ -17,7 +17,7 @@
 package geotrellis.store.hbase
 
 import org.apache.hadoop.hbase.{HBaseConfiguration, TableName}
-import org.apache.hadoop.hbase.client._
+import org.apache.hadoop.hbase.client.*
 import org.apache.hadoop.conf.Configuration
 import java.net.URI
 
@@ -25,7 +25,7 @@ import geotrellis.store.hadoop.SerializableConfiguration
 
 object HBaseInstance {
   def apply(uri: URI): HBaseInstance = {
-    import geotrellis.util.UriUtils._
+    import geotrellis.util.UriUtils.*
 
     val zookeeper = uri.getHost
     val port = if (uri.getPort < 0) 2181 else uri.getPort

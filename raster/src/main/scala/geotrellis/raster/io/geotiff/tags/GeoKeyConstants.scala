@@ -16,7 +16,7 @@
 
 package geotrellis.raster.io.geotiff.tags
 
-import CommonPublicValues._
+import CommonPublicValues.*
 
 import scala.collection.immutable.HashMap
 
@@ -1988,8 +1988,8 @@ object GDALEPSGProjectionTypes {
 
 object ProjectionTypesMap {
 
-  import EPSGProjectionTypes._
-  import GDALEPSGProjectionTypes._
+  import EPSGProjectionTypes.*
+  import GDALEPSGProjectionTypes.*
 
   val UserDefinedProjectionType = 32767
 

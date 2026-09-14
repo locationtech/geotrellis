@@ -16,12 +16,12 @@
 
 package geotrellis.layer.stitch
 
-import geotrellis.raster._
+import geotrellis.raster.*
 import geotrellis.raster.stitch.Stitcher
-import geotrellis.layer._
-import geotrellis.raster.prototype._
-import geotrellis.vector._
-import geotrellis.util._
+import geotrellis.layer.*
+import geotrellis.raster.prototype.*
+import geotrellis.vector.*
+import geotrellis.util.*
 
 abstract class SpatialTileLayoutCollectionStitchMethods[
   V <: CellGrid[Int]: Stitcher: * => TilePrototypeMethods[V],

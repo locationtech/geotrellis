@@ -18,14 +18,14 @@ package geotrellis.store.avro.codecs
 
 import java.nio.ByteBuffer
 
-import geotrellis.raster._
-import geotrellis.store.avro._
-import geotrellis.store.avro.codecs.Implicits._
+import geotrellis.raster.*
+import geotrellis.store.avro.*
+import geotrellis.store.avro.codecs.Implicits.*
 
 import org.apache.avro.SchemaBuilder
-import org.apache.avro.generic._
+import org.apache.avro.generic.*
 
-import scala.jdk.CollectionConverters._
+import scala.jdk.CollectionConverters.*
 import scala.util.Try
 
 trait TileCodecs {
@@ -349,7 +349,7 @@ trait TileCodecs {
       rec.put("bands", bands.map(tileUnionCodec.encode).asJavaCollection)
     }
 
-    def decode(rec: GenericRecord) = {
+    def decode(rec: GenericRecord): ArrayMultibandTile = {
       val bands = rec.get("bands")
         .asInstanceOf[java.util.Collection[GenericRecord]]
         .asScala // notice that Avro does not have native support for Short primitive

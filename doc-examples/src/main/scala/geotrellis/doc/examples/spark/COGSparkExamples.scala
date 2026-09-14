@@ -16,23 +16,23 @@
 
 package geotrellis.doc.examples.spark
 
-import geotrellis.layer._
-import geotrellis.store._
+import geotrellis.layer.*
+import geotrellis.store.*
 
 object COGSparkExamples {
   def `Having an RDD[(ProjectedExtent, Tile)] ingest it as a Structured COG layer and query it` = {
-    import geotrellis.raster._
-    import geotrellis.raster.io.geotiff._
-    import geotrellis.raster.resample._
-    import geotrellis.spark._
-    import geotrellis.spark.store._
+    import geotrellis.raster.*
+    import geotrellis.raster.io.geotiff.*
+    import geotrellis.raster.resample.*
+    import geotrellis.spark.*
+    import geotrellis.spark.store.*
     import geotrellis.store.index.ZCurveKeyIndexMethod
-    import geotrellis.layer._
-    import geotrellis.store.file._
-    import geotrellis.store.file.cog._
-    import geotrellis.spark.store.file.cog._
+    import geotrellis.layer.*
+    import geotrellis.store.file.*
+    import geotrellis.store.file.cog.*
+    import geotrellis.spark.store.file.cog.*
     import geotrellis.spark.tiling.Tiler
-    import geotrellis.vector._
+    import geotrellis.vector.*
     import geotrellis.proj4.WebMercator
     import geotrellis.raster.io.geotiff.writer.GeoTiffWriter
 
@@ -140,12 +140,12 @@ object COGSparkExamples {
     // And to get some reference on it as the query result (for instance: URI)
     // Currently unstructured COG layer has only Collections API support
 
-    import geotrellis.raster._
-    import geotrellis.raster.resample._
+    import geotrellis.raster.*
+    import geotrellis.raster.resample.*
     import geotrellis.raster.io.geotiff.Auto
     import geotrellis.layer.ZoomedLayoutScheme
-    import geotrellis.spark._
-    import geotrellis.spark.store.file.geotiff._
+    import geotrellis.spark.*
+    import geotrellis.spark.store.file.geotiff.*
     import geotrellis.proj4.WebMercator
     import java.net.URI
 

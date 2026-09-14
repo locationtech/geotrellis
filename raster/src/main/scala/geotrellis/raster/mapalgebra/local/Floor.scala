@@ -16,7 +16,7 @@
 
 package geotrellis.raster.mapalgebra.local
 
-import geotrellis.raster._
+import geotrellis.raster.*
 
 /**
  * Operation to get the flooring of values.
@@ -24,6 +24,6 @@ import geotrellis.raster._
 object Floor extends Serializable {
   /** Takes the Flooring of each raster cell value. */
   def apply(r: Tile) = 
-    r.dualMap { z: Int => z }
-              { z: Double => math.floor(z) } // math.floor(Double.NaN) == Double.NaN
+    r.dualMap { (z: Int) => z }
+              { (z: Double) => math.floor(z) } // math.floor(Double.NaN) == Double.NaN
 }

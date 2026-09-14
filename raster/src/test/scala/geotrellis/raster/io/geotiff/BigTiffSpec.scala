@@ -19,10 +19,10 @@ package geotrellis.raster.io.geotiff
 import geotrellis.proj4.{CRS, LatLng}
 import geotrellis.raster.io.geotiff.compression.{Decompressor, NoCompressor}
 import geotrellis.raster.{CellType, IntConstantNoDataCellType, TileLayout}
-import geotrellis.util._
+import geotrellis.util.*
 import geotrellis.raster.io.geotiff.tags.TiffTags
 import geotrellis.raster.io.geotiff.writer.GeoTiffWriter
-import geotrellis.raster.testkit._
+import geotrellis.raster.testkit.*
 import geotrellis.vector.Extent
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.funspec.AnyFunSpec
@@ -171,7 +171,7 @@ class BigTiffSpec extends AnyFunSpec with RasterMatchers with BeforeAndAfterAll 
   }
 
   private def firstTileOffsets(tiff: File): Array[Long] = {
-    import sys.process._
+    import sys.process.*
 
     val cmd = Seq("tiffdump", tiff.toString)
     val output = cmd!!

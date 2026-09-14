@@ -17,14 +17,14 @@
 package geotrellis.spark.costdistance
 
 import geotrellis.proj4.LatLng
-import geotrellis.raster._
+import geotrellis.raster.*
 import geotrellis.raster.costdistance.SimpleCostDistance
 import geotrellis.raster.rasterize.Rasterizer
-import geotrellis.layer._
-import geotrellis.spark._
-import geotrellis.vector._
+import geotrellis.layer.*
+import geotrellis.spark.*
+import geotrellis.vector.*
 
-import org.log4s._
+import org.log4s.*
 import org.apache.spark.rdd.RDD
 import org.apache.spark.storage.StorageLevel
 import org.apache.spark.util.AccumulatorV2

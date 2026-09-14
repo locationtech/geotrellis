@@ -16,11 +16,11 @@
 
 package geotrellis.spark.resample
 
-import geotrellis.raster._
-import geotrellis.raster.resample._
-import geotrellis.layer._
-import geotrellis.spark._
-import geotrellis.util._
+import geotrellis.raster.*
+import geotrellis.raster.resample.*
+import geotrellis.layer.*
+import geotrellis.spark.*
+import geotrellis.util.*
 import geotrellis.vector.Extent
 import org.apache.spark.rdd.RDD
 

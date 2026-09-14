@@ -16,7 +16,7 @@
 
 package geotrellis.store.index.hilbert
 
-import geotrellis.layer._
+import geotrellis.layer.*
 import geotrellis.store.index.KeyIndex
 
 import com.google.uzaygezen.core.CompactHilbertCurve
@@ -32,8 +32,8 @@ import com.google.uzaygezen.core.ranges.LongRange
 import com.google.uzaygezen.core.ranges.LongRangeHome
 import com.google.common.base.Functions
 
-import scala.jdk.CollectionConverters._
-import spire.syntax.cfor._
+import scala.jdk.CollectionConverters.*
+import spire.syntax.cfor.*
 
 object HilbertSpaceTimeKeyIndex {
   def apply(minKey: SpaceTimeKey, maxKey: SpaceTimeKey, spatialResolution: Int, temporalResolution: Int): HilbertSpaceTimeKeyIndex =

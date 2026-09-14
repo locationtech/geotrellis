@@ -16,7 +16,7 @@
 
 package geotrellis.raster.sigmoidal
 
-import geotrellis.raster._
+import geotrellis.raster.*
 
 
 object SigmoidalContrast {

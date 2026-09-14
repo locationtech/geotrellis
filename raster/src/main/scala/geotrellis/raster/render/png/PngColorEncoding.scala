@@ -16,7 +16,7 @@
 
 package geotrellis.raster.render.png
 
-import geotrellis.raster.render._
+import geotrellis.raster.render.*
 
 /** Captures the conversion strategies from RGBA color space to PNG pixels. */
 sealed abstract class PngColorEncoding(val n: Byte, val depth: Int) {

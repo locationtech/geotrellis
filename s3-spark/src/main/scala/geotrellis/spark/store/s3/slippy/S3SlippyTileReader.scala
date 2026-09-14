@@ -16,17 +16,17 @@
 
 package geotrellis.spark.store.s3.slippy
 
-import geotrellis.spark.store.slippy._
+import geotrellis.spark.store.slippy.*
 import geotrellis.layer.SpatialKey
-import geotrellis.store.s3._
+import geotrellis.store.s3.*
 
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.model.{GetObjectRequest, ListObjectsV2Request, S3Object}
-import org.apache.spark._
-import org.apache.spark.rdd._
+import org.apache.spark.*
+import org.apache.spark.rdd.*
 import org.apache.commons.io.IOUtils
 
-import scala.jdk.CollectionConverters._
+import scala.jdk.CollectionConverters.*
 import java.io.File
 
 class S3SlippyTileReader[T](

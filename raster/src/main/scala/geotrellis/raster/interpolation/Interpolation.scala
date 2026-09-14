@@ -16,9 +16,9 @@
 
 package geotrellis.raster.interpolation
 
-import geotrellis.raster._
+import geotrellis.raster.*
 import geotrellis.vector.interpolation.Kriging
-import spire.syntax.cfor._
+import spire.syntax.cfor.*
 
 object Interpolation {
 
@@ -31,8 +31,8 @@ object Interpolation {
   def apply(rasterExtent: RasterExtent)(predictor: (Double, Double) => Double): Tile = {
     val result = DoubleArrayTile.empty(rasterExtent.cols, rasterExtent.rows)
 
-    cfor(0)(_ < result.cols, _ + 1) { col: Int =>
-      cfor(0)(_ < result.rows, _ + 1) { row: Int =>
+    cfor(0)(_ < result.cols, _ + 1) { (col: Int) =>
+      cfor(0)(_ < result.rows, _ + 1) { (row: Int) =>
         val (x, y) = rasterExtent.gridToMap(col, row)
         val prediction: Double = predictor(x, y)
         result.setDouble(col, row, prediction)

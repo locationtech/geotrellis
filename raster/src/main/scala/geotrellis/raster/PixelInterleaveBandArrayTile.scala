@@ -16,7 +16,7 @@
 
 package geotrellis.raster
 
-import spire.syntax.cfor._
+import spire.syntax.cfor.*
 
 object PixelInterleaveBandArrayTile {
   def apply(inner: ArrayTile, bandCount: Int, bandIndex: Int): PixelInterleaveBandArrayTile =
@@ -63,9 +63,9 @@ class PixelInterleaveBandArrayTile(inner: ArrayTile, bandCount: Int, bandIndex: 
     tile
   }
 
-  def withNoData(noDataValue: Option[Double]) =
+  def withNoData(noDataValue: Option[Double]): PixelInterleaveBandArrayTile =
     PixelInterleaveBandArrayTile(inner.withNoData(noDataValue).toArrayTile(), bandCount, bandIndex)
 
-  def interpretAs(newCellType: CellType) =
+  def interpretAs(newCellType: CellType): PixelInterleaveBandArrayTile =
     PixelInterleaveBandArrayTile(inner.interpretAs(newCellType).toArrayTile(), bandCount, bandIndex)
 }

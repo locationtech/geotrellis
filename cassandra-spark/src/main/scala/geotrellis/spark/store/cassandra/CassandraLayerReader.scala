@@ -16,18 +16,18 @@
 
 package geotrellis.spark.store.cassandra
 
-import geotrellis.layer._
-import geotrellis.store._
-import geotrellis.store.avro._
-import geotrellis.store.cassandra._
+import geotrellis.layer.*
+import geotrellis.store.*
+import geotrellis.store.avro.*
+import geotrellis.store.cassandra.*
 import geotrellis.spark.ContextRDD
 import geotrellis.spark.store.FilteringLayerReader
-import geotrellis.util._
+import geotrellis.util.*
 
 import org.apache.spark.SparkContext
-import io.circe._
+import io.circe.*
 
-import scala.reflect._
+import scala.reflect.*
 
 class CassandraLayerReader(val attributeStore: AttributeStore, instance: CassandraInstance)(implicit sc: SparkContext)
   extends FilteringLayerReader[LayerId] {
@@ -38,7 +38,7 @@ class CassandraLayerReader(val attributeStore: AttributeStore, instance: Cassand
   K: AvroRecordCodec: Boundable: Decoder: ClassTag,
   V: AvroRecordCodec: ClassTag,
   M: Decoder: Component[*, Bounds[K]]
-  ](id: LayerId, tileQuery: LayerQuery[K, M], numPartitions: Int, filterIndexOnly: Boolean) = {
+  ](id: LayerId, tileQuery: LayerQuery[K, M], numPartitions: Int, filterIndexOnly: Boolean): ContextRDD[K, V, M] = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
 
     val LayerAttributes(header, metadata, keyIndex, writerSchema) = try {

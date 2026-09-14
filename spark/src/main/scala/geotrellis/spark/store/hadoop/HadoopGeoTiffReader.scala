@@ -16,7 +16,7 @@
 
 package geotrellis.spark.store.hadoop
 
-import geotrellis.raster.io.geotiff.reader._
+import geotrellis.raster.io.geotiff.reader.*
 import geotrellis.raster.io.geotiff.{MultibandGeoTiff, SinglebandGeoTiff}
 import geotrellis.vector.Extent
 import geotrellis.store.hadoop.util.HdfsUtils

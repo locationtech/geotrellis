@@ -18,7 +18,7 @@ package geotrellis.raster.io.arg
 
 import java.io.{BufferedOutputStream, DataOutputStream, FileOutputStream}
 
-import geotrellis.raster._
+import geotrellis.raster.*
 import geotrellis.vector.Extent
 
 /**

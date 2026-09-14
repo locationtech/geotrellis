@@ -16,9 +16,9 @@
 
 package geotrellis.geotools
 
-import geotrellis.raster._
-import geotrellis.vector._
-import geotrellis.proj4._
+import geotrellis.raster.*
+import geotrellis.vector.*
+import geotrellis.proj4.*
 
 
 import java.awt.image.DataBuffer
@@ -118,10 +118,10 @@ abstract class RasterToGridCoverage2DSpec[T <: CellGrid[Int]](implicit ev1: Rast
 
 class RasterToGridCoverage2D_IntTileSpec extends RasterToGridCoverage2DSpec[Tile] {
   val cellType = IntCellType
-  val tile = ArrayTile.empty(cellType, 10, 10)
+  val tile: MutableArrayTile = ArrayTile.empty(cellType, 10, 10)
   val extent = Extent(0.1, 0.2, 1.1, 1.2)
-  val crs = Some(ConusAlbers)
-  val nd = None
+  val crs: Some[ConusAlbers.type] = Some(ConusAlbers)
+  val nd: None.type = None
   tile.set(1, 1, 33)
 
   describe("Copying of Data") {
@@ -138,26 +138,26 @@ class RasterToGridCoverage2D_IntTileSpec extends RasterToGridCoverage2DSpec[Tile
 
 class RasterToGridCoverage2D_ConstIntTileSpec extends RasterToGridCoverage2DSpec[Tile] {
   val cellType = IntConstantNoDataCellType
-  val tile = ArrayTile.empty(cellType, 10, 10)
+  val tile: MutableArrayTile = ArrayTile.empty(cellType, 10, 10)
   val extent = Extent(0.1, 0.2, 1.1, 1.2)
-  val crs = Some(ConusAlbers)
-  val nd = Some[Double](NODATA)
+  val crs: Some[ConusAlbers.type] = Some(ConusAlbers)
+  val nd: Some[Double] = Some[Double](NODATA)
 }
 
 class RasterToGridCoverage2D_UdIntTileSpec extends RasterToGridCoverage2DSpec[Tile] {
   val cellType = IntUserDefinedNoDataCellType(42 << 24)
-  val tile = ArrayTile.empty(cellType, 10, 10)
+  val tile: MutableArrayTile = ArrayTile.empty(cellType, 10, 10)
   val extent = Extent(0.1, 0.2, 1.1, 1.2)
-  val crs = Some(ConusAlbers)
-  val nd = Some[Double](42 << 24)
+  val crs: Some[ConusAlbers.type] = Some(ConusAlbers)
+  val nd: Some[Double] = Some[Double](42 << 24)
 }
 
 class RasterToGridCoverage2D_FloatTileSpec extends RasterToGridCoverage2DSpec[Tile] {
   val cellType = FloatCellType
-  val tile = ArrayTile.empty(cellType, 20, 20)
+  val tile: MutableArrayTile = ArrayTile.empty(cellType, 20, 20)
   val extent = Extent(0.1, 0.2, 2.1, 3.2)
-  val crs = Some(LatLng)
-  val nd = None
+  val crs: Some[LatLng.type] = Some(LatLng)
+  val nd: None.type = None
   tile.setDouble(1, 1, 42.0)
 
   describe("Copying of Data") {
@@ -174,26 +174,26 @@ class RasterToGridCoverage2D_FloatTileSpec extends RasterToGridCoverage2DSpec[Ti
 
 class RasterToGridCoverage2D_ConstFloatTileSpec extends RasterToGridCoverage2DSpec[Tile] {
   val cellType = FloatConstantNoDataCellType
-  val tile = ArrayTile.empty(cellType, 20, 20)
+  val tile: MutableArrayTile = ArrayTile.empty(cellType, 20, 20)
   val extent = Extent(0.1, 0.2, 2.1, 3.2)
-  val crs = Some(LatLng)
-  val nd = Some[Double](floatNODATA)
+  val crs: Some[LatLng.type] = Some(LatLng)
+  val nd: Some[Double] = Some[Double](floatNODATA)
 }
 
 class RasterToGridCoverage2D_UdFloatTileSpec extends RasterToGridCoverage2DSpec[Tile] {
   val cellType = FloatUserDefinedNoDataCellType(42)
-  val tile = ArrayTile.empty(cellType, 20, 20)
+  val tile: MutableArrayTile = ArrayTile.empty(cellType, 20, 20)
   val extent = Extent(0.1, 0.2, 2.1, 3.2)
-  val crs = Some(LatLng)
-  val nd = Some[Double](42)
+  val crs: Some[LatLng.type] = Some(LatLng)
+  val nd: Some[Double] = Some[Double](42)
 }
 
 class RasterToGridCoverage2D_DoubleTileSpec extends RasterToGridCoverage2DSpec[Tile] {
   val cellType = DoubleCellType
-  val tile = ArrayTile.empty(cellType, 20, 20)
+  val tile: MutableArrayTile = ArrayTile.empty(cellType, 20, 20)
   val extent = Extent(0.1, 0.2, 2.1, 3.2)
-  val crs = Some(LatLng)
-  val nd = None
+  val crs: Some[LatLng.type] = Some(LatLng)
+  val nd: None.type = None
   tile.setDouble(1, 1, 42.0)
 
   describe("Copying of Data") {
@@ -210,26 +210,26 @@ class RasterToGridCoverage2D_DoubleTileSpec extends RasterToGridCoverage2DSpec[T
 
 class RasterToGridCoverage2D_ConstDoubleTileSpec extends RasterToGridCoverage2DSpec[Tile] {
   val cellType = DoubleConstantNoDataCellType
-  val tile = ArrayTile.empty(cellType, 20, 20)
+  val tile: MutableArrayTile = ArrayTile.empty(cellType, 20, 20)
   val extent = Extent(0.1, 0.2, 2.1, 3.2)
-  val crs = Some(LatLng)
-  val nd = Some[Double](doubleNODATA)
+  val crs: Some[LatLng.type] = Some(LatLng)
+  val nd: Some[Double] = Some[Double](doubleNODATA)
 }
 
 class RasterToGridCoverage2D_UdDoubleTileSpec extends RasterToGridCoverage2DSpec[Tile] {
   val cellType = DoubleUserDefinedNoDataCellType(42)
-  val tile = ArrayTile.empty(cellType, 20, 20)
+  val tile: MutableArrayTile = ArrayTile.empty(cellType, 20, 20)
   val extent = Extent(0.1, 0.2, 2.1, 3.2)
-  val crs = Some(LatLng)
-  val nd = Some[Double](42)
+  val crs: Some[LatLng.type] = Some(LatLng)
+  val nd: Some[Double] = Some[Double](42)
 }
 
 class RasterToGridCoverage2D_ShortTileSpec extends RasterToGridCoverage2DSpec[Tile] {
   val cellType = ShortCellType
-  val tile = ArrayTile.empty(cellType, 40, 40)
+  val tile: MutableArrayTile = ArrayTile.empty(cellType, 40, 40)
   val extent = Extent(0.0, 0.0, 5.0, 5.0)
-  val crs = None
-  val nd = None
+  val crs: None.type = None
+  val nd: None.type = None
   tile.set(1, 1, 107)
 
   describe("Copying of Data") {
@@ -247,26 +247,26 @@ class RasterToGridCoverage2D_ShortTileSpec extends RasterToGridCoverage2DSpec[Ti
 
 class RasterToGridCoverage2D_ConstShortTileSpec extends RasterToGridCoverage2DSpec[Tile] {
   val cellType = ShortConstantNoDataCellType
-  val tile = ArrayTile.empty(cellType, 40, 40)
+  val tile: MutableArrayTile = ArrayTile.empty(cellType, 40, 40)
   val extent = Extent(0.0, 0.0, 5.0, 5.0)
-  val crs = None
-  val nd = Some[Double](shortNODATA)
+  val crs: None.type = None
+  val nd: Some[Double] = Some[Double](shortNODATA)
 }
 
 class RasterToGridCoverage2D_UdShortTileSpec extends RasterToGridCoverage2DSpec[Tile] {
   val cellType = ShortUserDefinedNoDataCellType(42)
-  val tile = ArrayTile.empty(cellType, 40, 40)
+  val tile: MutableArrayTile = ArrayTile.empty(cellType, 40, 40)
   val extent = Extent(0.0, 0.0, 5.0, 5.0)
-  val crs = None
-  val nd = Some[Double](42)
+  val crs: None.type = None
+  val nd: Some[Double] = Some[Double](42)
 }
 
 class RasterToGridCoverage2D_UShortTileSpec extends RasterToGridCoverage2DSpec[Tile] {
   val cellType = UShortCellType
-  val tile = ArrayTile.empty(cellType, 40, 40)
+  val tile: MutableArrayTile = ArrayTile.empty(cellType, 40, 40)
   val extent = Extent(0.0, 0.0, 5.0, 5.0)
-  val crs = None
-  val nd = None
+  val crs: None.type = None
+  val nd: None.type = None
   tile.set(1, 1, 107)
 
   describe("Copying of Data") {
@@ -284,26 +284,26 @@ class RasterToGridCoverage2D_UShortTileSpec extends RasterToGridCoverage2DSpec[T
 
 class RasterToGridCoverage2D_ConstUShortTileSpec extends RasterToGridCoverage2DSpec[Tile] {
   val cellType = UShortConstantNoDataCellType
-  val tile = ArrayTile.empty(cellType, 40, 40)
+  val tile: MutableArrayTile = ArrayTile.empty(cellType, 40, 40)
   val extent = Extent(0.0, 0.0, 5.0, 5.0)
-  val crs = None
-  val nd = Some[Double](ushortNODATA)
+  val crs: None.type = None
+  val nd: Some[Double] = Some[Double](ushortNODATA)
 }
 
 class RasterToGridCoverage2D_UdUShortTileSpec extends RasterToGridCoverage2DSpec[Tile] {
   val cellType = UShortUserDefinedNoDataCellType(42)
-  val tile = ArrayTile.empty(cellType, 40, 40)
+  val tile: MutableArrayTile = ArrayTile.empty(cellType, 40, 40)
   val extent = Extent(0.0, 0.0, 5.0, 5.0)
-  val crs = None
-  val nd = Some[Double](42)
+  val crs: None.type = None
+  val nd: Some[Double] = Some[Double](42)
 }
 
 class RasterToGridCoverage2D_ByteTileSpec extends RasterToGridCoverage2DSpec[Tile] {
   val cellType = ByteCellType
-  val tile = ArrayTile.empty(cellType, 40, 40)
+  val tile: MutableArrayTile = ArrayTile.empty(cellType, 40, 40)
   val extent = Extent(0.0, 0.0, 5.0, 5.0)
-  val crs = None
-  val nd = None
+  val crs: None.type = None
+  val nd: None.type = None
   tile.set(1, 1, 107)
 
   describe("Copying of Data") {
@@ -320,26 +320,26 @@ class RasterToGridCoverage2D_ByteTileSpec extends RasterToGridCoverage2DSpec[Til
 
 class RasterToGridCoverage2D_ConstByteTileSpec extends RasterToGridCoverage2DSpec[Tile] {
   val cellType = ByteConstantNoDataCellType
-  val tile = ArrayTile.empty(cellType, 40, 40)
+  val tile: MutableArrayTile = ArrayTile.empty(cellType, 40, 40)
   val extent = Extent(0.0, 0.0, 5.0, 5.0)
-  val crs = None
-  val nd = Some[Double](byteNODATA)
+  val crs: None.type = None
+  val nd: Some[Double] = Some[Double](byteNODATA)
 }
 
 class RasterToGridCoverage2D_UdByteTileSpec extends RasterToGridCoverage2DSpec[Tile] {
   val cellType = ByteUserDefinedNoDataCellType(42)
-  val tile = ArrayTile.empty(cellType, 40, 40)
+  val tile: MutableArrayTile = ArrayTile.empty(cellType, 40, 40)
   val extent = Extent(0.0, 0.0, 5.0, 5.0)
-  val crs = None
-  val nd = Some[Double](42)
+  val crs: None.type = None
+  val nd: Some[Double] = Some[Double](42)
 }
 
 class RasterToGridCoverage2D_UByteTileSpec extends RasterToGridCoverage2DSpec[Tile] {
   val cellType = UByteCellType
-  val tile = ArrayTile.empty(cellType, 40, 40)
+  val tile: MutableArrayTile = ArrayTile.empty(cellType, 40, 40)
   val extent = Extent(0.0, 0.0, 5.0, 5.0)
-  val crs = None
-  val nd = None
+  val crs: None.type = None
+  val nd: None.type = None
   tile.set(1, 1, 107)
 
   describe("Copying of Data") {
@@ -356,18 +356,18 @@ class RasterToGridCoverage2D_UByteTileSpec extends RasterToGridCoverage2DSpec[Ti
 
 class RasterToGridCoverage2D_ConstUByteTileSpec extends RasterToGridCoverage2DSpec[Tile] {
   val cellType = UByteConstantNoDataCellType
-  val tile = ArrayTile.empty(cellType, 40, 40)
+  val tile: MutableArrayTile = ArrayTile.empty(cellType, 40, 40)
   val extent = Extent(0.0, 0.0, 5.0, 5.0)
-  val crs = None
-  val nd = Some[Double](ubyteNODATA)
+  val crs: None.type = None
+  val nd: Some[Double] = Some[Double](ubyteNODATA)
 }
 
 class RasterToGridCoverage2D_UdUByteTileSpec extends RasterToGridCoverage2DSpec[Tile] {
   val cellType = UByteUserDefinedNoDataCellType(42)
-  val tile = ArrayTile.empty(cellType, 40, 40)
+  val tile: MutableArrayTile = ArrayTile.empty(cellType, 40, 40)
   val extent = Extent(0.0, 0.0, 5.0, 5.0)
-  val crs = None
-  val nd = Some[Double](42)
+  val crs: None.type = None
+  val nd: Some[Double] = Some[Double](42)
 }
 
 class RasterToGridCoverage2D_IntMultibandSpec extends RasterToGridCoverage2DSpec[MultibandTile] {
@@ -377,10 +377,10 @@ class RasterToGridCoverage2D_IntMultibandSpec extends RasterToGridCoverage2DSpec
     ArrayTile.empty(cellType, 512, 512),
     ArrayTile.empty(cellType, 512, 512)
   )
-  val tile = ArrayMultibandTile(bands)
+  val tile: ArrayMultibandTile = ArrayMultibandTile(bands)
   val extent = Extent(0.0, 0.0, 5.0, 5.0)
-  val nd = None
-  val crs = Some(ConusAlbers)
+  val nd: None.type = None
+  val crs: Some[ConusAlbers.type] = Some(ConusAlbers)
   bands(0).set(1, 1, 33); bands(1).set(1, 1, 42); bands(2).set(2, 2, 107)
 
   describe("Copying of Data") {
@@ -402,19 +402,19 @@ class RasterToGridCoverage2D_IntMultibandSpec extends RasterToGridCoverage2DSpec
 class RasterToGridCoverage2D_ConstIntMultibandSpec extends RasterToGridCoverage2DSpec[MultibandTile] {
   val cellType = IntConstantNoDataCellType
   val bands = Array(ArrayTile.empty(cellType, 512, 512))
-  val tile = ArrayMultibandTile(bands)
+  val tile: ArrayMultibandTile = ArrayMultibandTile(bands)
   val extent = Extent(0.0, 0.0, 5.0, 5.0)
-  val nd = Some[Double](NODATA)
-  val crs = Some(ConusAlbers)
+  val nd: Some[Double] = Some[Double](NODATA)
+  val crs: Some[ConusAlbers.type] = Some(ConusAlbers)
 }
 
 class RasterToGridCoverage2D_UdIntMultibandSpec extends RasterToGridCoverage2DSpec[MultibandTile] {
   val cellType = IntUserDefinedNoDataCellType(42)
   val bands = Array(ArrayTile.empty(cellType, 512, 512))
-  val tile = ArrayMultibandTile(bands)
+  val tile: ArrayMultibandTile = ArrayMultibandTile(bands)
   val extent = Extent(0.0, 0.0, 5.0, 5.0)
-  val nd = Some[Double](42)
-  val crs = Some(ConusAlbers)
+  val nd: Some[Double] = Some[Double](42)
+  val crs: Some[ConusAlbers.type] = Some(ConusAlbers)
 }
 
 class RasterToGridCoverage2D_ByteMultibandSpec extends RasterToGridCoverage2DSpec[MultibandTile] {
@@ -424,10 +424,10 @@ class RasterToGridCoverage2D_ByteMultibandSpec extends RasterToGridCoverage2DSpe
     ArrayTile.empty(cellType, 512, 512),
     ArrayTile.empty(cellType, 512, 512)
   )
-  val tile = ArrayMultibandTile(bands)
+  val tile: ArrayMultibandTile = ArrayMultibandTile(bands)
   val extent = Extent(0.0, 0.0, 5.0, 5.0)
-  val crs = Some(LatLng)
-  val nd = None
+  val crs: Some[LatLng.type] = Some(LatLng)
+  val nd: None.type = None
   bands(0).set(1, 1, 33); bands(1).set(1, 1, 42); bands(2).set(2, 2, 107)
 
   describe("Copying of Data") {
@@ -449,10 +449,10 @@ class RasterToGridCoverage2D_ByteMultibandSpec extends RasterToGridCoverage2DSpe
 class RasterToGridCoverage2D_UdByteMultibandSpec extends RasterToGridCoverage2DSpec[MultibandTile] {
   val cellType = ByteUserDefinedNoDataCellType(42)
   val bands = Array(ArrayTile.empty(cellType, 512, 512))
-  val tile = ArrayMultibandTile(bands)
+  val tile: ArrayMultibandTile = ArrayMultibandTile(bands)
   val extent = Extent(0.0, 0.0, 5.0, 5.0)
-  val nd = Some[Double](42)
-  val crs = Some(ConusAlbers)
+  val nd: Some[Double] = Some[Double](42)
+  val crs: Some[ConusAlbers.type] = Some(ConusAlbers)
 }
 
 class RasterToGridCoverage2D_UByteMultibandSpec extends RasterToGridCoverage2DSpec[MultibandTile] {
@@ -462,10 +462,10 @@ class RasterToGridCoverage2D_UByteMultibandSpec extends RasterToGridCoverage2DSp
     ArrayTile.empty(cellType, 512, 512),
     ArrayTile.empty(cellType, 512, 512)
   )
-  val tile = ArrayMultibandTile(bands)
+  val tile: ArrayMultibandTile = ArrayMultibandTile(bands)
   val extent = Extent(0.0, 0.0, 5.0, 5.0)
-  val crs = Some(LatLng)
-  val nd = None
+  val crs: Some[LatLng.type] = Some(LatLng)
+  val nd: None.type = None
   bands(0).set(1, 1, 33); bands(1).set(1, 1, 42); bands(2).set(2, 2, 107)
 
   describe("Copying of Data") {
@@ -487,19 +487,19 @@ class RasterToGridCoverage2D_UByteMultibandSpec extends RasterToGridCoverage2DSp
 class RasterToGridCoverage2D_ConstUByteMultibandSpec extends RasterToGridCoverage2DSpec[MultibandTile] {
   val cellType = UByteConstantNoDataCellType
   val bands = Array(ArrayTile.empty(cellType, 512, 512))
-  val tile = ArrayMultibandTile(bands)
+  val tile: ArrayMultibandTile = ArrayMultibandTile(bands)
   val extent = Extent(0.0, 0.0, 5.0, 5.0)
-  val nd = Some[Double](ubyteNODATA)
-  val crs = Some(ConusAlbers)
+  val nd: Some[Double] = Some[Double](ubyteNODATA)
+  val crs: Some[ConusAlbers.type] = Some(ConusAlbers)
 }
 
 class RasterToGridCoverage2D_UdUByteMultibandSpec extends RasterToGridCoverage2DSpec[MultibandTile] {
   val cellType = UByteUserDefinedNoDataCellType(42)
   val bands = Array(ArrayTile.empty(cellType, 512, 512))
-  val tile = ArrayMultibandTile(bands)
+  val tile: ArrayMultibandTile = ArrayMultibandTile(bands)
   val extent = Extent(0.0, 0.0, 5.0, 5.0)
-  val nd = Some[Double](42)
-  val crs = Some(ConusAlbers)
+  val nd: Some[Double] = Some[Double](42)
+  val crs: Some[ConusAlbers.type] = Some(ConusAlbers)
 }
 
 class RasterToGridCoverage2D_ShortMultibandSpec extends RasterToGridCoverage2DSpec[MultibandTile] {
@@ -509,10 +509,10 @@ class RasterToGridCoverage2D_ShortMultibandSpec extends RasterToGridCoverage2DSp
     ArrayTile.empty(cellType, 512, 512),
     ArrayTile.empty(cellType, 512, 512)
   )
-  val tile = ArrayMultibandTile(bands)
+  val tile: ArrayMultibandTile = ArrayMultibandTile(bands)
   val extent = Extent(0.0, 0.0, 5.0, 5.0)
-  val crs = Some(LatLng)
-  val nd = None
+  val crs: Some[LatLng.type] = Some(LatLng)
+  val nd: None.type = None
   bands(0).set(1, 1, 33); bands(1).set(1, 1, 42); bands(2).set(2, 2, 107)
 
   describe("Copying of Data") {
@@ -534,19 +534,19 @@ class RasterToGridCoverage2D_ShortMultibandSpec extends RasterToGridCoverage2DSp
 class RasterToGridCoverage2D_ConstShortMultibandSpec extends RasterToGridCoverage2DSpec[MultibandTile] {
   val cellType = ShortConstantNoDataCellType
   val bands = Array(ArrayTile.empty(cellType, 512, 512))
-  val tile = ArrayMultibandTile(bands)
+  val tile: ArrayMultibandTile = ArrayMultibandTile(bands)
   val extent = Extent(0.0, 0.0, 5.0, 5.0)
-  val nd = Some[Double](shortNODATA)
-  val crs = Some(ConusAlbers)
+  val nd: Some[Double] = Some[Double](shortNODATA)
+  val crs: Some[ConusAlbers.type] = Some(ConusAlbers)
 }
 
 class RasterToGridCoverage2D_UdShortMultibandSpec extends RasterToGridCoverage2DSpec[MultibandTile] {
   val cellType = ShortUserDefinedNoDataCellType(42)
   val bands = Array(ArrayTile.empty(cellType, 512, 512))
-  val tile = ArrayMultibandTile(bands)
+  val tile: ArrayMultibandTile = ArrayMultibandTile(bands)
   val extent = Extent(0.0, 0.0, 5.0, 5.0)
-  val nd = Some[Double](42)
-  val crs = Some(ConusAlbers)
+  val nd: Some[Double] = Some[Double](42)
+  val crs: Some[ConusAlbers.type] = Some(ConusAlbers)
 }
 
 class RasterToGridCoverage2D_UShortMultibandSpec extends RasterToGridCoverage2DSpec[MultibandTile] {
@@ -556,10 +556,10 @@ class RasterToGridCoverage2D_UShortMultibandSpec extends RasterToGridCoverage2DS
     ArrayTile.empty(cellType, 512, 512),
     ArrayTile.empty(cellType, 512, 512)
   )
-  val tile = ArrayMultibandTile(bands)
+  val tile: ArrayMultibandTile = ArrayMultibandTile(bands)
   val extent = Extent(0.0, 0.0, 5.0, 5.0)
-  val crs = Some(LatLng)
-  val nd = None
+  val crs: Some[LatLng.type] = Some(LatLng)
+  val nd: None.type = None
   bands(0).set(1, 1, 33); bands(1).set(1, 1, 42); bands(2).set(2, 2, 107)
 
   describe("Copying of Data") {
@@ -581,17 +581,17 @@ class RasterToGridCoverage2D_UShortMultibandSpec extends RasterToGridCoverage2DS
 class RasterToGridCoverage2D_ConstUShortMultibandSpec extends RasterToGridCoverage2DSpec[MultibandTile] {
   val cellType = UShortConstantNoDataCellType
   val bands = Array(ArrayTile.empty(cellType, 512, 512))
-  val tile = ArrayMultibandTile(bands)
+  val tile: ArrayMultibandTile = ArrayMultibandTile(bands)
   val extent = Extent(0.0, 0.0, 5.0, 5.0)
-  val nd = Some[Double](ushortNODATA)
-  val crs = Some(ConusAlbers)
+  val nd: Some[Double] = Some[Double](ushortNODATA)
+  val crs: Some[ConusAlbers.type] = Some(ConusAlbers)
 }
 
 class RasterToGridCoverage2D_UdUShortMultibandSpec extends RasterToGridCoverage2DSpec[MultibandTile] {
   val cellType = UShortUserDefinedNoDataCellType(42)
   val bands = Array(ArrayTile.empty(cellType, 512, 512))
-  val tile = ArrayMultibandTile(bands)
+  val tile: ArrayMultibandTile = ArrayMultibandTile(bands)
   val extent = Extent(0.0, 0.0, 5.0, 5.0)
-  val nd = Some[Double](42)
-  val crs = Some(ConusAlbers)
+  val nd: Some[Double] = Some[Double](42)
+  val crs: Some[ConusAlbers.type] = Some(ConusAlbers)
 }

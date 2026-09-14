@@ -16,10 +16,10 @@
 
 package geotrellis.store.avro
 
-import geotrellis.store.avro.codecs.Implicits._
-import geotrellis.proj4._
-import geotrellis.vector._
-import geotrellis.layer._
+import geotrellis.store.avro.codecs.Implicits.*
+import geotrellis.proj4.*
+import geotrellis.vector.*
+import geotrellis.layer.*
 
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.funspec.AnyFunSpec

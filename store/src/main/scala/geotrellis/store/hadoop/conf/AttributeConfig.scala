@@ -17,7 +17,7 @@
 package geotrellis.store.hadoop.conf
 
 import pureconfig.ConfigSource
-import pureconfig.generic.auto._
+import pureconfig.generic.auto.*
 
 case class AttributeCachingConfig(
   expirationMinutes: Int = 60,

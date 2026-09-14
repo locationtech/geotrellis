@@ -18,7 +18,7 @@ package geotrellis.spark.store.file.cog
 
 import geotrellis.store.cog.COGValueReader
 import geotrellis.store.file.cog.FileCOGValueReader
-import geotrellis.spark.store.cog._
+import geotrellis.spark.store.cog.*
 import geotrellis.spark.testkit.TestEnvironment
 
 import org.scalatest.funspec.AnyFunSpec

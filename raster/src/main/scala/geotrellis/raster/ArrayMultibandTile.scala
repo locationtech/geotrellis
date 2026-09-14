@@ -17,7 +17,7 @@
 package geotrellis.raster
 
 
-import spire.syntax.cfor._
+import spire.syntax.cfor.*
 
 
 /**
@@ -441,7 +441,7 @@ class ArrayMultibandTile(_bands: Array[Tile]) extends MultibandTile with MacroMu
     * @param   f  A function from Array[Double] to Double.  The array contains the values of each band at a particular point.
     * @return     The [[Tile]] that results from combining the bands.
     */
-  def combineDouble(f: Array[Double] => Double) = {
+  def combineDouble(f: Array[Double] => Double): MutableArrayTile = {
     val result = ArrayTile.empty(cellType, cols, rows)
     val arr = Array.ofDim[Double](bandCount)
     cfor(0)(_ < rows, _ + 1) { row =>

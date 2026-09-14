@@ -19,10 +19,10 @@ package geotrellis.spark.distance
 import org.locationtech.jts.geom.Coordinate
 import org.apache.spark.rdd.RDD
 
-import geotrellis.raster._
-import geotrellis.layer._
+import geotrellis.raster.*
+import geotrellis.layer.*
 import geotrellis.util.MethodExtensions
-import geotrellis.vector._
+import geotrellis.vector.*
 
 trait EuclideanDistanceRDDMethods extends MethodExtensions[RDD[(SpatialKey, Array[Coordinate])]] {
   def euclideanDistance(layout: LayoutDefinition): RDD[(SpatialKey, Tile)] = { EuclideanDistance(self, layout) }

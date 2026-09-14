@@ -16,14 +16,14 @@
 
 package geotrellis.spark.buffer
 
-import geotrellis.layer._
+import geotrellis.layer.*
 import geotrellis.raster.buffer.BufferSizes
-import geotrellis.raster.crop._
+import geotrellis.raster.crop.*
 import geotrellis.raster.io.geotiff.SinglebandGeoTiff
-import geotrellis.raster.testkit._
+import geotrellis.raster.testkit.*
 import geotrellis.layer.buffer.BufferTiles
-import geotrellis.spark._
-import geotrellis.spark.testkit._
+import geotrellis.spark.*
+import geotrellis.spark.testkit.*
 
 import org.scalatest.funspec.AnyFunSpec
 
@@ -97,7 +97,7 @@ class BufferTilesSpec extends AnyFunSpec with TestEnvironment with RasterMatcher
     it("the lightweight RDD version should work for the whole collection") {
       val bounds = metadata.bounds
 
-      val buffers = BufferTilesRDD(ContextRDD(wholeRdd, metadata), { _: SpatialKey => BufferSizes(2,2,2,2) }).collect()
+      val buffers = BufferTilesRDD(ContextRDD(wholeRdd, metadata), { (_: SpatialKey) => BufferSizes(2,2,2,2) }).collect()
       val tile11 = buffers.find{ case (key, _) => key == SpatialKey(1, 1) }.get._2.tile
       val baseline = originalRaster.crop(98, 98, 201, 201, Crop.Options.DEFAULT)
       assertEqual(baseline.tile, tile11)
@@ -117,7 +117,7 @@ class BufferTilesSpec extends AnyFunSpec with TestEnvironment with RasterMatcher
         holey.update(x * 100, x * 100, blank)
       }
 
-      val buffers = BufferTilesRDD(partialRdd, { _: SpatialKey => BufferSizes(2,2,2,2) }).collect()
+      val buffers = BufferTilesRDD(partialRdd, { (_: SpatialKey) => BufferSizes(2,2,2,2) }).collect()
       val tile11 = buffers.find{ case (key, _) => key == SpatialKey(2, 1) }.get._2.tile
       println(tile11)
       // Holey crop!

@@ -16,7 +16,7 @@
 
 package geotrellis.raster.render
 
-import geotrellis.raster.histogram._
+import geotrellis.raster.histogram.*
 
 /** A ColorRamp represents a sequence of RGBA color values */
 class ColorRamp(val colors: Vector[Int]) extends Serializable {
@@ -206,10 +206,10 @@ object ColorRamp {
   private def getColorSequence(n: Int)(getRanges: (Int => Int) => Array[Int]): Vector[Int] = n match {
     case n if n < 1 => Vector.empty[Int]
     case _ => {
-      val unzipR = { color: Int => RGBA(color).red }
-      val unzipG = { color: Int => RGBA(color).green }
-      val unzipB = { color: Int => RGBA(color).blue }
-      val unzipA = { color: Int => RGBA(color).alpha }
+      val unzipR = { (color: Int) => RGBA(color).red }
+      val unzipG = { (color: Int) => RGBA(color).green }
+      val unzipB = { (color: Int) => RGBA(color).blue }
+      val unzipA = { (color: Int) => RGBA(color).alpha }
       val rs = getRanges(unzipR)
       val gs = getRanges(unzipG)
       val bs = getRanges(unzipB)

@@ -16,7 +16,7 @@
 
 package geotrellis.vector.testkit
 
-import geotrellis.vector._
+import geotrellis.vector.*
 import org.locationtech.jts.geom.Coordinate
 import org.locationtech.jts.geom.util.SineStarFactory
 import org.locationtech.jts.util.GeometricShapeFactory
@@ -104,7 +104,7 @@ object ArcPolygon {
 object SineStar {
   def apply(numArms: Int = 8, armLengthRatio: Double = 0.5): GeometryBuilder[Polygon] =
     new GeometryBuilder[Polygon] {
-      val factory = {
+      val factory: SineStarFactory = {
         val f = new SineStarFactory
         f.setNumArms(numArms)
         f.setArmLengthRatio(armLengthRatio)

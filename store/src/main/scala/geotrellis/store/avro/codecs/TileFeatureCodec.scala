@@ -16,11 +16,11 @@
 
 package geotrellis.store.avro.codecs
 
-import geotrellis.raster._
-import geotrellis.store.avro._
+import geotrellis.raster.*
+import geotrellis.store.avro.*
 
 import org.apache.avro.SchemaBuilder
-import org.apache.avro.generic._
+import org.apache.avro.generic.*
 
 trait TileFeatureCodec {
 

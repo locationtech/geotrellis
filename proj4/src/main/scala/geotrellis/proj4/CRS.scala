@@ -17,7 +17,7 @@
 package geotrellis.proj4
 
 import geotrellis.proj4.io.wkt.{ExtensionProj4, ProjCS, WKT, WKTParser}
-import org.locationtech.proj4j._
+import org.locationtech.proj4j.*
 import org.locationtech.proj4j.util.CRSCache
 
 import scala.util.Try

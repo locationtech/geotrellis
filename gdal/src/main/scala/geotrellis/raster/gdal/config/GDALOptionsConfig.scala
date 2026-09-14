@@ -21,7 +21,7 @@ import geotrellis.raster.gdal.GDALDataset
 import geotrellis.raster.gdal.GDALDataset.DatasetType
 
 import pureconfig.ConfigSource
-import pureconfig.generic.auto._
+import pureconfig.generic.auto.*
 
 import scala.collection.concurrent.TrieMap
 

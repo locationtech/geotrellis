@@ -16,11 +16,11 @@
 
 package geotrellis.spark.store.cassandra
 
-import geotrellis.store._
-import geotrellis.store.avro._
-import geotrellis.store.avro.codecs._
-import geotrellis.store.cassandra._
-import geotrellis.spark.store._
+import geotrellis.store.*
+import geotrellis.store.avro.*
+import geotrellis.store.avro.codecs.*
+import geotrellis.store.cassandra.*
+import geotrellis.spark.store.*
 import geotrellis.spark.util.KryoWrapper
 import geotrellis.store.util.IORuntimeTransient
 
@@ -29,8 +29,8 @@ import com.datastax.oss.driver.api.querybuilder.QueryBuilder
 import com.datastax.oss.driver.api.querybuilder.QueryBuilder.literal
 import com.datastax.oss.driver.api.querybuilder.SchemaBuilder
 import com.datastax.oss.driver.api.core.`type`.DataTypes
-import cats.effect._
-import cats.syntax.either._
+import cats.effect.*
+import cats.syntax.either.*
 import org.apache.avro.Schema
 import org.apache.spark.rdd.RDD
 
@@ -100,7 +100,7 @@ object CassandraRDDWriter {
     // groupBy will reuse the partitioner on the parent RDD if it is set, which could be typed
     // on a key type that may no longer by valid for the key type of the resulting RDD.
       raster.groupBy({ row => decomposeKey(row._1) }, numPartitions = raster.partitions.length)
-        .foreachPartition { partition: Iterator[(BigInt, Iterable[(K, V)])] =>
+        .foreachPartition { (partition: Iterator[(BigInt, Iterable[(K, V)])]) =>
           if(partition.nonEmpty) {
             instance.withSession { session =>
               val readStatement = session.prepare(readQuery)

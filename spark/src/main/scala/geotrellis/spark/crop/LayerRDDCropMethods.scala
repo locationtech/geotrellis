@@ -17,11 +17,11 @@
 package geotrellis.spark.crop
 
 import geotrellis.layer.Metadata
-import geotrellis.raster._
+import geotrellis.raster.*
 import geotrellis.raster.crop.TileCropMethods
 import geotrellis.raster.crop.Crop.Options
-import geotrellis.layer._
-import geotrellis.util._
+import geotrellis.layer.*
+import geotrellis.util.*
 import geotrellis.vector.Extent
 import org.apache.spark.rdd.RDD
 

@@ -16,10 +16,10 @@
 
 package geotrellis.vector
 
-import geotrellis.vector.GeomFactory._
+import geotrellis.vector.GeomFactory.*
 
-import org.locationtech.jts.{geom => jts}
-import spire.syntax.cfor._
+import org.locationtech.jts.{geom as jts}
+import spire.syntax.cfor.*
 
 trait MultiPolygonConstructors {
   lazy val EMPTY = apply(Seq[jts.Polygon]())

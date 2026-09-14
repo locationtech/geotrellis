@@ -16,8 +16,8 @@
 
 package geotrellis.store
 
-import io.circe._
-import cats.syntax.either._
+import io.circe.*
+import cats.syntax.either.*
 
 trait LayerType {
   lazy val name = this.getClass.getName.split("\\$").last.split("\\.").last

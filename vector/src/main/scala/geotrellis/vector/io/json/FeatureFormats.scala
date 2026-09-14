@@ -16,11 +16,11 @@
 
 package geotrellis.vector.io.json
 
-import geotrellis.vector._
+import geotrellis.vector.*
 
-import cats.syntax.either._
-import _root_.io.circe._
-import _root_.io.circe.syntax._
+import cats.syntax.either.*
+import _root_.io.circe.*
+import _root_.io.circe.syntax.*
 import scala.util.{Try, Success, Failure}
 
 /** A trait for providing the Circe json encoders and decoders necessary to serialize [[Feature]] instances */
@@ -78,7 +78,7 @@ trait FeatureFormats {
   }
 
   implicit def featureDecoder[G <: Geometry: Decoder, D: Decoder]: Decoder[Feature[G, D]] =
-    Decoder.decodeJson.emap { json: Json =>
+    Decoder.decodeJson.emap { (json: Json) =>
       Try(readFeatureJson[D, G](json)) match {
         case Success(f) => Right(f)
         case Failure(e) => Left(e.getMessage)
@@ -91,7 +91,7 @@ trait FeatureFormats {
     Encoder.encodeJson.contramap[JsonFeatureCollection] { _.asJson }
 
   implicit lazy val featureCollectionDecoder: Decoder[JsonFeatureCollection] =
-    Decoder.decodeHCursor.emap { c: HCursor =>
+    Decoder.decodeHCursor.emap { (c: HCursor) =>
       (c.downField("type").as[String], c.downField("features").focus) match {
         case (Right("FeatureCollection"), Some(features)) => Right(JsonFeatureCollection(features.asArray.toVector.flatten))
         case _ => Left("FeatureCollection expected")
@@ -102,7 +102,7 @@ trait FeatureFormats {
     Encoder.encodeJson.contramap[JsonFeatureCollectionMap] { _.asJson }
 
   implicit lazy val featureCollectionMapDecoder: Decoder[JsonFeatureCollectionMap] =
-    Decoder.decodeHCursor.emap { c: HCursor =>
+    Decoder.decodeHCursor.emap { (c: HCursor) =>
       (c.downField("type").as[String], c.downField("features").focus) match {
         case (Right("FeatureCollection"), Some(features)) => Right(JsonFeatureCollectionMap(features.asArray.toVector.flatten))
         case _ => Left("FeatureCollection expected")

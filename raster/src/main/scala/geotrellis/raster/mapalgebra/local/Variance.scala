@@ -16,9 +16,9 @@
 
 package geotrellis.raster.mapalgebra.local
 
-import geotrellis.raster._
+import geotrellis.raster.*
 
-import spire.syntax.cfor._
+import spire.syntax.cfor.*
 
 /**
   * Implements the incremental algorithm for computing the variance in one sweep.

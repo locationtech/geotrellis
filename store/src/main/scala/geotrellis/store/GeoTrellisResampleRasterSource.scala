@@ -16,13 +16,13 @@
 
 package geotrellis.store
 
-import geotrellis.vector._
-import geotrellis.proj4._
-import geotrellis.raster._
+import geotrellis.vector.*
+import geotrellis.proj4.*
+import geotrellis.raster.*
 import geotrellis.raster.resample.ResampleMethod
 import geotrellis.raster.io.geotiff.OverviewStrategy
 
-import org.log4s._
+import org.log4s.*
 
 import java.time.ZonedDateTime
 

@@ -16,7 +16,7 @@
 
 package geotrellis.raster.mapalgebra.focal
 
-import geotrellis.raster._
+import geotrellis.raster.*
 
 /**
  * Computes the standard deviation of a neighborhood for a given raster. Returns a raster of DoubleConstantNoDataCellType.

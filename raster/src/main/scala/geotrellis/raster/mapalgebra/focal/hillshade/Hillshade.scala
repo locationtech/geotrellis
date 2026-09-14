@@ -16,11 +16,11 @@
 
 package geotrellis.raster.mapalgebra.focal.hillshade
 
-import geotrellis.raster._
+import geotrellis.raster.*
 import geotrellis.raster.mapalgebra.focal.ShortArrayTileResult
-import geotrellis.raster.mapalgebra.focal.Angles._
+import geotrellis.raster.mapalgebra.focal.Angles.*
 
-import scala.math._
+import scala.math.*
 
 /**
  * Computes Hillshade (shaded relief) from a raster.

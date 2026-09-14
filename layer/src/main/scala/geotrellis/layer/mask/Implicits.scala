@@ -16,10 +16,10 @@
 
 package geotrellis.layer.mask
 
-import geotrellis.layer._
+import geotrellis.layer.*
 import geotrellis.raster.mask.TileMaskMethods
 import geotrellis.layer.Metadata
-import geotrellis.util._
+import geotrellis.util.*
 
 
 

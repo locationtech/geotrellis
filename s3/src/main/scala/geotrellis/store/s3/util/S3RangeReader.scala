@@ -16,11 +16,11 @@
 
 package geotrellis.store.s3.util
 
-import geotrellis.store.s3._
+import geotrellis.store.s3.*
 import geotrellis.util.RangeReader
 
 import software.amazon.awssdk.services.s3.S3Client
-import software.amazon.awssdk.services.s3.model._
+import software.amazon.awssdk.services.s3.model.*
 
 import org.apache.commons.io.IOUtils
 

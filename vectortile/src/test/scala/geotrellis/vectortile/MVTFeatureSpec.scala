@@ -16,7 +16,7 @@
 
 package geotrellis.vectortile
 
-import geotrellis.vector._
+import geotrellis.vector.*
 
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.funspec.AnyFunSpec

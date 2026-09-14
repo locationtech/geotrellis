@@ -16,18 +16,18 @@
 
 package geotrellis.spark
 
-import geotrellis.raster._
-import geotrellis.raster.io.geotiff._
+import geotrellis.raster.*
+import geotrellis.raster.io.geotiff.*
 import geotrellis.vector.io.json.CrsFormats
-import geotrellis.vector._
-import geotrellis.proj4._
-import geotrellis.util._
-import geotrellis.layer._
-import geotrellis.spark.tiling._
-import geotrellis.store.json.{Implicits => StoreCodecs}
+import geotrellis.vector.*
+import geotrellis.proj4.*
+import geotrellis.util.*
+import geotrellis.layer.*
+import geotrellis.spark.tiling.*
+import geotrellis.store.json.{Implicits as StoreCodecs}
 
 import org.apache.spark.{Partitioner, SparkContext}
-import org.apache.spark.rdd._
+import org.apache.spark.rdd.*
 
 import scala.reflect.ClassTag
 

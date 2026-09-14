@@ -16,9 +16,9 @@
 
 package geotrellis.raster.viewshed
 
-import geotrellis.raster._
+import geotrellis.raster.*
 import geotrellis.raster.rasterize.Rasterizer
-import geotrellis.vector._
+import geotrellis.vector.*
 
 import scala.collection.mutable
 

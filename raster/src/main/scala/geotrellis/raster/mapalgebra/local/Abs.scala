@@ -16,7 +16,7 @@
 
 package geotrellis.raster.mapalgebra.local
 
-import geotrellis.raster._
+import geotrellis.raster.*
 
 /**
  * Operation to get the Absolute value
@@ -24,6 +24,6 @@ import geotrellis.raster._
 object Abs extends Serializable {
   /** Takes the Absolute value of each raster cell value. */
   def apply(r: Tile): Tile =
-    r.dualMap { z: Int => if(isNoData(z)) z else z.abs }
-              { z: Double => z.abs }
+    r.dualMap { (z: Int) => if(isNoData(z)) z else z.abs }
+              { (z: Double) => z.abs }
 }

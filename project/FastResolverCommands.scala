@@ -1,5 +1,5 @@
-import sbt._
-import sbt.Keys._
+import sbt.*
+import sbt.Keys.*
 
 /**
   * Commands that run resolution-heavy tasks with the snapshot resolvers swapped out for speed.

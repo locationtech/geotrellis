@@ -16,7 +16,7 @@
 
 package geotrellis.spark
 
-import geotrellis.util._
+import geotrellis.util.*
 
 import scala.util.{Failure, Success}
 import java.time.ZonedDateTime

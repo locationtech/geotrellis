@@ -16,19 +16,19 @@
 
 package geotrellis.raster.rasterize.polygon
 
-import geotrellis.raster._
-import geotrellis.raster.rasterize._
+import geotrellis.raster.*
+import geotrellis.raster.rasterize.*
 import geotrellis.raster.rasterize.Rasterizer.Options
-import geotrellis.vector._
+import geotrellis.vector.*
 
 import org.locationtech.jts.geom.Envelope
 import org.locationtech.jts.index.strtree.STRtree
 
 import spire.math.Fractional
-import spire.syntax.fractional._
-import spire.syntax.cfor._
+import spire.syntax.fractional.*
+import spire.syntax.cfor.*
 
-import scala.jdk.CollectionConverters._
+import scala.jdk.CollectionConverters.*
 import math.{ceil, floor}
 
 
@@ -318,7 +318,7 @@ object PolygonRasterizer {
           )}
       })
 
-    interactions.map { edge: Segment =>
+    interactions.map { (edge: Segment) =>
       val topX = lineAxisIntersection(edge, top)._1
       val bottomX = lineAxisIntersection(edge, bot)._1
       val sortX = if (topX != Double.NegativeInfinity) topX

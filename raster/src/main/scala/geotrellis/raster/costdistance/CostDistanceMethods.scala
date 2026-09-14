@@ -16,7 +16,7 @@
 
 package geotrellis.raster.costdistance
 
-import geotrellis.raster._
+import geotrellis.raster.*
 import geotrellis.util.MethodExtensions
 
 

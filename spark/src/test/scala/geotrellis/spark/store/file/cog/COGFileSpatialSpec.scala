@@ -17,18 +17,18 @@
 package geotrellis.spark.store.file.cog
 
 import geotrellis.vector.Extent
-import geotrellis.layer._
+import geotrellis.layer.*
 import geotrellis.raster.{MultibandTile, Tile}
-import geotrellis.raster.io.geotiff._
-import geotrellis.raster.testkit._
+import geotrellis.raster.io.geotiff.*
+import geotrellis.raster.testkit.*
 import geotrellis.store.LayerId
-import geotrellis.store.file.cog._
-import geotrellis.store.index._
-import geotrellis.spark._
-import geotrellis.spark.store.cog._
-import geotrellis.spark.testkit._
-import geotrellis.spark.testkit.io._
-import geotrellis.spark.testkit.io.cog._
+import geotrellis.store.file.cog.*
+import geotrellis.store.index.*
+import geotrellis.spark.*
+import geotrellis.spark.store.cog.*
+import geotrellis.spark.testkit.*
+import geotrellis.spark.testkit.io.*
+import geotrellis.spark.testkit.io.cog.*
 import geotrellis.spark.testkit.testfiles.cog.COGTestFiles
 
 class COGFileSpatialSpec
@@ -38,16 +38,16 @@ class COGFileSpatialSpec
     with TestEnvironment
     with RasterMatchers
     with COGAllOnesTestTileSpec {
-  lazy val reader = FileCOGLayerReader(outputLocalPath)
-  lazy val creader = FileCOGCollectionLayerReader(outputLocalPath)
-  lazy val writer = FileCOGLayerWriter(outputLocalPath)
+  lazy val reader: FileCOGLayerReader = FileCOGLayerReader(outputLocalPath)
+  lazy val creader: FileCOGCollectionLayerReader = FileCOGCollectionLayerReader(outputLocalPath)
+  lazy val writer: FileCOGLayerWriter = FileCOGLayerWriter(outputLocalPath)
   // TODO: implement and test all layer functions
   // lazy val deleter = FileLayerDeleter(outputLocalPath)
   // lazy val copier = FileLayerCopier(outputLocalPath)
   // lazy val mover  = FileLayerMover(outputLocalPath)
   // lazy val reindexer = FileLayerReindexer(outputLocalPath)
-  lazy val tiles = FileCOGValueReader(outputLocalPath)
-  lazy val sample = AllOnesTestFile // spatialCea
+  lazy val tiles: FileCOGValueReader = FileCOGValueReader(outputLocalPath)
+  lazy val sample: AllOnesTestFile.type = AllOnesTestFile // spatialCea
 
   describe("Filesystem layer names") {
     it("should not throw with bad characters in name") {

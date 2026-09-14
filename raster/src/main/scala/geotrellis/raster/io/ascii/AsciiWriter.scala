@@ -16,10 +16,10 @@
 
 package geotrellis.raster.io
 
-import geotrellis.raster._
+import geotrellis.raster.*
 import geotrellis.vector.Extent
 
-import java.io._
+import java.io.*
 
 import java.util.Locale
 

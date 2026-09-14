@@ -16,13 +16,13 @@
 
 package geotrellis.spark.mask
 
-import geotrellis.vector._
-import geotrellis.raster._
-import geotrellis.raster.testkit._
+import geotrellis.vector.*
+import geotrellis.raster.*
+import geotrellis.raster.testkit.*
 import geotrellis.layer.mask.Mask
-import geotrellis.spark._
-import geotrellis.spark.testkit.testfiles._
-import geotrellis.spark.testkit._
+import geotrellis.spark.*
+import geotrellis.spark.testkit.testfiles.*
+import geotrellis.spark.testkit.*
 
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.funspec.AnyFunSpec

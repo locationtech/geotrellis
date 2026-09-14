@@ -17,11 +17,11 @@
 package geotrellis.geotools
 
 import geotrellis.proj4.LatLng
-import geotrellis.raster._
-import geotrellis.util._
+import geotrellis.raster.*
+import geotrellis.util.*
 
-import org.geotools.coverage.grid._
-import spire.syntax.cfor._
+import org.geotools.coverage.grid.*
+import spire.syntax.cfor.*
 
 trait GridCoverage2DConversionMethods extends MethodExtensions[GridCoverage2D] {
   def toTile(bandIndex: Int): Tile =

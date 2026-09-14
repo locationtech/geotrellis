@@ -16,25 +16,25 @@
 
 package geotrellis.spark.store.s3
 
-import geotrellis.layer._
-import geotrellis.store._
-import geotrellis.store.util._
-import geotrellis.store.avro._
-import geotrellis.store.avro.codecs._
-import geotrellis.store.index._
-import geotrellis.store.s3._
-import geotrellis.spark.store._
-import geotrellis.util._
+import geotrellis.layer.*
+import geotrellis.store.*
+import geotrellis.store.util.*
+import geotrellis.store.avro.*
+import geotrellis.store.avro.codecs.*
+import geotrellis.store.index.*
+import geotrellis.store.s3.*
+import geotrellis.spark.store.*
+import geotrellis.util.*
 
 import software.amazon.awssdk.services.s3.model.PutObjectRequest
 import software.amazon.awssdk.services.s3.S3Client
 import org.apache.spark.rdd.RDD
-import org.log4s._
-import io.circe._
+import org.log4s.*
+import io.circe.*
 import cats.Semigroup
-import cats.effect._
+import cats.effect.*
 
-import scala.reflect._
+import scala.reflect.*
 
 /**
   * Handles writing Raster RDDs and their metadata to S3.

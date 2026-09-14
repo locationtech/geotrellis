@@ -16,13 +16,13 @@
 
 package geotrellis.spark.store.cog
 
-import geotrellis.proj4._
-import geotrellis.vector._
-import geotrellis.layer._
-import geotrellis.raster._
+import geotrellis.proj4.*
+import geotrellis.vector.*
+import geotrellis.layer.*
+import geotrellis.raster.*
 import geotrellis.store
-import geotrellis.store.cog._
-import geotrellis.spark._
+import geotrellis.store.cog.*
+import geotrellis.spark.*
 
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.funspec.AnyFunSpec

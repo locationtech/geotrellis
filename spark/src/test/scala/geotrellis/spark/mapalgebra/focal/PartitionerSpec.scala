@@ -16,15 +16,15 @@
 
 package geotrellis.spark.mapalgebra.focal
 
-import geotrellis.raster._
-import geotrellis.spark._
-import geotrellis.spark.testkit._
-import geotrellis.raster.io.geotiff._
+import geotrellis.raster.*
+import geotrellis.spark.*
+import geotrellis.spark.testkit.*
+import geotrellis.raster.io.geotiff.*
 
-import org.apache.spark._
+import org.apache.spark.*
 
 import org.scalatest.funspec.AnyFunSpec
-import java.io._
+import java.io.*
 
 class PartitionerSpec extends AnyFunSpec with TestEnvironment {
 

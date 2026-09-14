@@ -16,14 +16,14 @@
 
 package geotrellis.layer.buffer
 
-import geotrellis.layer._
+import geotrellis.layer.*
 import geotrellis.raster
-import geotrellis.raster._
-import geotrellis.raster.crop._
-import geotrellis.raster.stitch._
+import geotrellis.raster.*
+import geotrellis.raster.crop.*
+import geotrellis.raster.stitch.*
 import geotrellis.raster.buffer.{BufferedTile, BufferSizes}
-import geotrellis.raster.buffer.Direction._
-import geotrellis.util._
+import geotrellis.raster.buffer.Direction.*
+import geotrellis.util.*
 
 import scala.collection.mutable.ArrayBuffer
 

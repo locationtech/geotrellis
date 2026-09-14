@@ -20,7 +20,7 @@ import geotrellis.raster.{GridBounds, RasterExtent, TileLayout, PixelIsArea, Dim
 import geotrellis.raster.rasterize.Rasterizer
 import geotrellis.vector.{Extent, Geometry}
 
-import spire.syntax.cfor._
+import spire.syntax.cfor.*
 import scala.collection.mutable
 
 /**

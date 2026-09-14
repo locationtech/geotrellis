@@ -16,15 +16,15 @@
 
 package geotrellis.spark.store.hadoop.cog
 
-import geotrellis.layer._
+import geotrellis.layer.*
 import geotrellis.raster.Tile
 import geotrellis.store.{LayerId, InvalidLayerIdError}
-import geotrellis.store.hadoop.cog._
-import geotrellis.store.index._
-import geotrellis.spark.store.cog._
-import geotrellis.spark.testkit._
-import geotrellis.spark.testkit.io._
-import geotrellis.spark.testkit.io.cog._
+import geotrellis.store.hadoop.cog.*
+import geotrellis.store.index.*
+import geotrellis.spark.store.cog.*
+import geotrellis.spark.testkit.*
+import geotrellis.spark.testkit.io.*
+import geotrellis.spark.testkit.io.cog.*
 import geotrellis.spark.testkit.testfiles.cog.COGTestFiles
 
 class COGHadoopSpatialSpec
@@ -34,16 +34,16 @@ class COGHadoopSpatialSpec
     with COGTestFiles
     with COGAllOnesTestTileSpec {
 
-  lazy val reader = HadoopCOGLayerReader(outputLocal)
-  lazy val creader = HadoopCOGCollectionLayerReader(outputLocal)
-  lazy val writer = HadoopCOGLayerWriter(outputLocal)
+  lazy val reader: HadoopCOGLayerReader = HadoopCOGLayerReader(outputLocal)
+  lazy val creader: HadoopCOGCollectionLayerReader = HadoopCOGCollectionLayerReader(outputLocal)
+  lazy val writer: HadoopCOGLayerWriter = HadoopCOGLayerWriter(outputLocal)
   // TODO: implement and test all layer functions
   // lazy val deleter = HadoopLayerDeleter(outputLocal)
   // lazy val copier = HadoopLayerCopier(outputLocal)
   // lazy val mover  = HadoopLayerMover(outputLocal)
   // lazy val reindexer = HadoopLayerReindexer(outputLocal)
-  lazy val tiles = HadoopCOGValueReader(outputLocal)
-  lazy val sample = AllOnesTestFile
+  lazy val tiles: HadoopCOGValueReader = HadoopCOGValueReader(outputLocal)
+  lazy val sample: AllOnesTestFile.type = AllOnesTestFile
 
   describe("HDFS layer names") {
     it("should handle layer names with spaces") {

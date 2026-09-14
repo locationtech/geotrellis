@@ -17,10 +17,10 @@
 package geotrellis.store.avro
 
 import geotrellis.store.avro.codecs.{KeyValueRecordCodec, TileCodecs, KeyCodecs}
-import TileCodecs._
-import KeyCodecs._
-import geotrellis.raster._
-import geotrellis.layer._
+import TileCodecs.*
+import KeyCodecs.*
+import geotrellis.raster.*
+import geotrellis.layer.*
 
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.funspec.AnyFunSpec

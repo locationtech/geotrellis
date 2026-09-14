@@ -16,11 +16,11 @@
 
 package geotrellis.raster.rasterize
 
-import geotrellis.raster._
+import geotrellis.raster.*
 import geotrellis.raster.rasterize.extent.ExtentRasterizer
 import geotrellis.raster.rasterize.polygon.PolygonRasterizer
-import geotrellis.util.Constants.{DOUBLE_EPSILON => EPSILON}
-import geotrellis.vector._
+import geotrellis.util.Constants.{DOUBLE_EPSILON as EPSILON}
+import geotrellis.vector.*
 
 
 

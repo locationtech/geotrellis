@@ -19,7 +19,7 @@ package geotrellis.vectortile
 import geotrellis.vectortile.internal.PBTile
 
 import geotrellis.proj4.{LatLng, WebMercator}
-import geotrellis.vector._
+import geotrellis.vector.*
 import geotrellis.util.annotations.experimental
 
 // --- //

@@ -17,9 +17,9 @@
 package geotrellis.spark.pipeline.ast.untyped
 
 import geotrellis.spark.pipeline.ast.Node
-import geotrellis.spark.pipeline.json._
+import geotrellis.spark.pipeline.json.*
 
-import cats.syntax.either._
+import cats.syntax.either.*
 import io.circe
 import io.circe.parser.decode
 import org.apache.spark.SparkContext

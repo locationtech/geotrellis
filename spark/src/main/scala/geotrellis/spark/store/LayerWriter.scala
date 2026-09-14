@@ -16,21 +16,21 @@
 
 package geotrellis.spark.store
 
-import geotrellis.layer._
-import geotrellis.store._
-import geotrellis.store.avro._
-import geotrellis.store.avro.codecs._
-import geotrellis.store.index._
-import geotrellis.spark._
-import geotrellis.util._
+import geotrellis.layer.*
+import geotrellis.store.*
+import geotrellis.store.avro.*
+import geotrellis.store.avro.codecs.*
+import geotrellis.store.index.*
+import geotrellis.spark.*
+import geotrellis.util.*
 
-import org.apache.avro._
+import org.apache.avro.*
 import org.apache.spark.rdd.RDD
-import _root_.io.circe._
+import _root_.io.circe.*
 import cats.{Id, Monad, Semigroup}
-import cats.syntax.applicative._
-import cats.syntax.flatMap._
-import cats.syntax.functor._
+import cats.syntax.applicative.*
+import cats.syntax.flatMap.*
+import cats.syntax.functor.*
 
 import scala.reflect.ClassTag
 import java.util.ServiceLoader
@@ -182,7 +182,7 @@ object LayerWriter {
    * Find instances of [[LayerWriterProvider]] through Java SPI.
    */
   def apply(attributeStore: AttributeStore, layerWriterUri: URI): LayerWriter[LayerId] = {
-    import scala.jdk.CollectionConverters._
+    import scala.jdk.CollectionConverters.*
     ServiceLoader.load(classOf[LayerWriterProvider])
       .iterator().asScala
       .find(_.canProcess(layerWriterUri))

@@ -16,9 +16,9 @@
 
 package geotrellis.raster.io.ascii
 
-import geotrellis.raster._
+import geotrellis.raster.*
 
-import java.io._
+import java.io.*
 
 final class AsciiReadState(path: String,
                            val rasterExtent: RasterExtent,
@@ -26,7 +26,7 @@ final class AsciiReadState(path: String,
                            val noDataValue: Int) extends IntReadState {
   private var ints: IntArrayTile = null
 
-  def getType = IntConstantNoDataCellType
+  def getType: IntConstantNoDataCellType.type = IntConstantNoDataCellType
 
   def getNoDataValue = noDataValue
 

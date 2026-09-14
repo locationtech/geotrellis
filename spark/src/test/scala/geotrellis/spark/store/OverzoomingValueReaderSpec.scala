@@ -17,14 +17,14 @@
 package geotrellis.spark.store
 
 import geotrellis.proj4.WebMercator
-import geotrellis.layer._
-import geotrellis.store._
-import geotrellis.raster._
-import geotrellis.raster.resample._
-import geotrellis.raster.testkit._
-import geotrellis.store.index.rowmajor._
-import geotrellis.spark._
-import geotrellis.spark.testkit._
+import geotrellis.layer.*
+import geotrellis.store.*
+import geotrellis.raster.*
+import geotrellis.raster.resample.*
+import geotrellis.raster.testkit.*
+import geotrellis.store.index.rowmajor.*
+import geotrellis.spark.*
+import geotrellis.spark.testkit.*
 
 import java.io.File
 import org.apache.commons.io.FileUtils

@@ -18,11 +18,11 @@ package geotrellis.vector.triangulation
 
 import org.locationtech.jts.geom.Coordinate
 import geotrellis.util.Direction
-import geotrellis.util.Direction._
-import geotrellis.vector._
+import geotrellis.util.Direction.*
+import geotrellis.vector.*
 import geotrellis.vector.io.wkt.WKT
 
-import spire.syntax.cfor._
+import spire.syntax.cfor.*
 
 import scala.util.Random
 

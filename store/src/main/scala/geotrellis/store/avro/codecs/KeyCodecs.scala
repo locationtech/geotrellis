@@ -17,9 +17,9 @@
 package geotrellis.store.avro.codecs
 
 import geotrellis.layer.{SpaceTimeKey, SpatialKey}
-import geotrellis.store.avro._
-import org.apache.avro._
-import org.apache.avro.generic._
+import geotrellis.store.avro.*
+import org.apache.avro.*
+import org.apache.avro.generic.*
 
 trait KeyCodecs {
   implicit def spatialKeyAvroFormat: AvroRecordCodec[SpatialKey] = new AvroRecordCodec[SpatialKey] {

@@ -16,11 +16,11 @@
 
 package geotrellis.raster.io.json
 
-import geotrellis.raster.histogram._
+import geotrellis.raster.histogram.*
 
-import io.circe._
-import io.circe.syntax._
-import cats.implicits._
+import io.circe.*
+import io.circe.syntax.*
+import cats.implicits.*
 
 import scala.collection.mutable.ArrayBuffer
 
@@ -33,7 +33,7 @@ trait HistogramJsonFormats {
     }
 
   implicit val histogramIntDecoder: Decoder[Histogram[Int]] =
-    Decoder.decodeJson.emap { json: Json =>
+    Decoder.decodeJson.emap { (json: Json) =>
       val error = "Array of [label, count] pairs expected"
       json.asArray match {
         case Some(pairs) =>
@@ -73,7 +73,7 @@ trait HistogramJsonFormats {
 
 
   implicit val histogramDoubleDecoder: Decoder[Histogram[Double]] =
-    Decoder.decodeHCursor.emap { hcursor: HCursor =>
+    Decoder.decodeHCursor.emap { (hcursor: HCursor) =>
       hcursor.downField("maxBucketCount").as[Int].flatMap { maxBucketCount =>
           val buckets = hcursor.downField("buckets").values.toList.flatten.map(_.as[Vector[Double]])
           val min = hcursor.downField("minimum").as[Double]

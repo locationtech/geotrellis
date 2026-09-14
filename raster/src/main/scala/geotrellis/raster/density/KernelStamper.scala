@@ -16,7 +16,7 @@
 
 package geotrellis.raster.density
 
-import geotrellis.raster._
+import geotrellis.raster.*
 import geotrellis.raster.mapalgebra.focal.Kernel
 
 /**
@@ -187,7 +187,7 @@ case class DoubleKernelStamper(tile: MutableArrayTile, k: Kernel) extends Kernel
     }
   }
 
-  def result = tile
+  def result: MutableArrayTile = tile
 }
 
 /**
@@ -310,5 +310,5 @@ case class IntKernelStamper(tile: MutableArrayTile, k: Kernel) extends KernelSta
     }
   }
 
-  def result = tile
+  def result: MutableArrayTile = tile
 }

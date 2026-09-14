@@ -16,12 +16,12 @@
 
 package geotrellis.raster.io.geotiff.compression
 
-import geotrellis.raster.io.geotiff.reader._
+import geotrellis.raster.io.geotiff.reader.*
 import geotrellis.raster.io.geotiff.tags.{TiffTags, JpegTags, YCbCrTags, ColimetryTags}
 import geotrellis.raster.io.geotiff.tags.codes.ColorSpace
-import geotrellis.raster.io.geotiff.tags.codes.CompressionType._
+import geotrellis.raster.io.geotiff.tags.codes.CompressionType.*
 
-import spire.syntax.cfor._
+import spire.syntax.cfor.*
 
 import java.awt.image.DataBufferByte
 import java.io.ByteArrayInputStream

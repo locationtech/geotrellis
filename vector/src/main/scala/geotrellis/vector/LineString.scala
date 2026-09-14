@@ -16,8 +16,8 @@
 
 package geotrellis.vector
 
-import org.locationtech.jts.{geom => jts}
-import spire.syntax.cfor._
+import org.locationtech.jts.{geom as jts}
+import spire.syntax.cfor.*
 
 trait LineStringConstructors {
 

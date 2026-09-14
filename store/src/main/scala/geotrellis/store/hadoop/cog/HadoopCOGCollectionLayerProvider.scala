@@ -57,7 +57,7 @@ class HadoopCOGCollectionLayerProvider extends AttributeStoreProvider with COGVa
     new HadoopCOGValueReader(store, conf)
   }
 
-  def collectionLayerReader(uri: URI, store: AttributeStore) = {
+  def collectionLayerReader(uri: URI, store: AttributeStore): HadoopCOGCollectionLayerReader = {
     val _uri = HdfsUtils.trim(uri)
     val path = new Path(_uri)
     val conf = new Configuration()

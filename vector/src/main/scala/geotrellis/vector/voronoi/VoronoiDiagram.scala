@@ -17,14 +17,14 @@
 package geotrellis.vector.voronoi
 
 import org.locationtech.jts.geom.Coordinate
-import org.apache.commons.math3.linear._
-import geotrellis.vector._
+import org.apache.commons.math3.linear.*
+import geotrellis.vector.*
 import geotrellis.vector.mesh.HalfEdgeTable
-import geotrellis.vector.triangulation._
+import geotrellis.vector.triangulation.*
 
 import scala.collection.mutable.ListBuffer
 import scala.math.{abs, sqrt}
-import spire.syntax.cfor._
+import spire.syntax.cfor.*
 
 object VoronoiDiagram {
 
@@ -67,7 +67,7 @@ object VoronoiDiagram {
   private final val EPSILON = 1e-10
 
   private def cellBoundsNew(het: HalfEdgeTable, verts: Int => Coordinate, extent: Extent)(incidentEdge: Int): ListBuffer[CellBound] = {
-    import het._
+    import het.*
 
     var e = incidentEdge
     val origin = V2(verts(getDest(e)))
@@ -201,7 +201,7 @@ object VoronoiDiagram {
  * <geotrellis_home>/docs/vector/voronoi.md for more information.
  */
 class VoronoiDiagram(val dt: DelaunayTriangulation, val extent: Extent) extends Serializable {
-  import VoronoiDiagram._
+  import VoronoiDiagram.*
 
   val pointSet = dt.pointSet
   // private val boundEs = collection.mutable.Set.empty[Int]
@@ -234,7 +234,7 @@ class VoronoiDiagram(val dt: DelaunayTriangulation, val extent: Extent) extends 
    * corresponding polygonal regions.
    */
   def voronoiCellsWithPoints(): Seq[(Polygon, Coordinate)] = {
-    dt.liveVertices.toSeq.flatMap{ i: Int =>
+    dt.liveVertices.toSeq.flatMap{ (i: Int) =>
       voronoiCell(i) match {
         case None => None
         case Some(poly) => Some(poly, dt.pointSet.getCoordinate(i))

@@ -2,16 +2,16 @@ package geotrellis.doc.examples.spark
 
 object PolygonalSummaryExamples {
   def `Performing a polygonal sum from an RDD of Polygons to GeoTiffs on S3`: Unit = {
-    import geotrellis.raster._
-    import geotrellis.raster.summary.polygonal._
+    import geotrellis.raster.*
+    import geotrellis.raster.summary.polygonal.*
     import geotrellis.raster.summary.polygonal.visitors.SumVisitor
     import geotrellis.raster.summary.types.SumValue
     import geotrellis.layer.SpatialKey
-    import geotrellis.spark._
-    import geotrellis.store._
-    import geotrellis.store.file._
+    import geotrellis.spark.*
+    import geotrellis.store.*
+    import geotrellis.store.file.*
     import geotrellis.spark.store.file.cog.FileCOGLayerReader
-    import geotrellis.spark.summary.polygonal._
+    import geotrellis.spark.summary.polygonal.*
     import geotrellis.vector.{Feature, Geometry}
 
 

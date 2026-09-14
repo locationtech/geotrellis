@@ -16,10 +16,10 @@
 
 package geotrellis.raster.resample
 
-import geotrellis.raster._
+import geotrellis.raster.*
 import geotrellis.vector.Extent
 
-import spire.syntax.cfor._
+import spire.syntax.cfor.*
 
 /**
   * All classes inheriting from this class uses the resample as follows:

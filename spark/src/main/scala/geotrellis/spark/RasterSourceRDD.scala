@@ -16,16 +16,16 @@
 
 package geotrellis.spark
 
-import geotrellis.spark.partition._
-import geotrellis.raster._
+import geotrellis.spark.partition.*
+import geotrellis.raster.*
 import geotrellis.raster.io.geotiff.OverviewStrategy
 import geotrellis.raster.resample.NearestNeighbor
-import geotrellis.layer._
+import geotrellis.layer.*
 import geotrellis.vector.Geometry
-import geotrellis.util._
-import org.apache.spark.rdd._
+import geotrellis.util.*
+import org.apache.spark.rdd.*
 import org.apache.spark.{Partitioner, SparkContext}
-import cats.syntax.option._
+import cats.syntax.option.*
 
 import scala.collection.mutable.ArrayBuilder
 import scala.reflect.ClassTag
@@ -349,7 +349,7 @@ object RasterSourceRDD {
   private def partition[T: ClassTag](
     chunks: Iterable[T],
     maxPartitionSize: Long
-  )(chunkSize: T => Long = { c: T => 1L }): Array[Array[T]] = {
+  )(chunkSize: T => Long = { (c: T) => 1L }): Array[Array[T]] = {
     if (chunks.isEmpty) {
       Array[Array[T]]()
     } else {

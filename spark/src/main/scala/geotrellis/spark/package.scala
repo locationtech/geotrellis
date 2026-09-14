@@ -18,7 +18,7 @@ package geotrellis
 
 import geotrellis.layer.{Metadata, TileLayerMetadata}
 import geotrellis.raster.{Raster, Tile, MultibandTile}
-import org.apache.spark.rdd._
+import org.apache.spark.rdd.*
 
 package object spark extends Implicits {
   /** GeoTiff Layer */

@@ -17,9 +17,9 @@
 package geotrellis.spark.store.s3
 
 import software.amazon.awssdk.services.s3.S3Client
-import software.amazon.awssdk.services.s3.model._
+import software.amazon.awssdk.services.s3.model.*
 
-import scala.jdk.CollectionConverters._
+import scala.jdk.CollectionConverters.*
 
 object S3TestUtils {
   def cleanBucket(client: S3Client, bucket: String) = {

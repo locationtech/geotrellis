@@ -18,10 +18,10 @@ package geotrellis.vector
 
 import geotrellis.proj4.{CRS, Transform}
 
-import org.locationtech.jts.{geom => jts}
-import cats.syntax.either._
-import _root_.io.circe._
-import _root_.io.circe.syntax._
+import org.locationtech.jts.{geom as jts}
+import cats.syntax.either.*
+import _root_.io.circe.*
+import _root_.io.circe.syntax.*
 import _root_.io.circe.generic.JsonCodec
 
 case class ExtentRangeError(msg: String) extends Exception(msg)

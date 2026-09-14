@@ -17,7 +17,7 @@
 package geotrellis
 
 
-import org.locationtech.jts.{geom => jts}
+import org.locationtech.jts.{geom as jts}
 
 package object vector extends SeqMethods
     with reproject.Implicits

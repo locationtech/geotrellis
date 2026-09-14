@@ -16,19 +16,19 @@
 
 package geotrellis.store.accumulo
 
-import geotrellis.layer._
+import geotrellis.layer.*
 import geotrellis.store.avro.codecs.KeyValueRecordCodec
 import geotrellis.store.avro.{AvroEncoder, AvroRecordCodec}
 import geotrellis.store.util.IORuntimeTransient
-import org.apache.accumulo.core.data.{Range => AccumuloRange}
+import org.apache.accumulo.core.data.{Range as AccumuloRange}
 import org.apache.accumulo.core.security.Authorizations
 import org.apache.avro.Schema
 import org.apache.hadoop.io.Text
 
-import cats.effect._
-import cats.syntax.either._
+import cats.effect.*
+import cats.syntax.either.*
 
-import scala.jdk.CollectionConverters._
+import scala.jdk.CollectionConverters.*
 import scala.reflect.ClassTag
 
 object AccumuloCollectionReader {
@@ -52,7 +52,7 @@ object AccumuloCollectionReader {
 
     val range: fs2.Stream[IO, AccumuloRange] = fs2.Stream.fromIterator[IO](ranges, chunkSize = 1)
 
-    val read = { range: AccumuloRange => fs2.Stream eval IO.blocking {
+    val read = { (range: AccumuloRange) => fs2.Stream eval IO.blocking {
       val scanner = instance.client.createScanner(table, new Authorizations())
       scanner.setRange(range)
       scanner.fetchColumnFamily(columnFamily)
@@ -60,7 +60,7 @@ object AccumuloCollectionReader {
         scanner
           .iterator.asScala
           .map({ entry => AvroEncoder.fromBinary(writerSchema.getOrElse(codec.schema), entry.getValue.get)(codec) })
-          .flatMap({ pairs: Vector[(K, V)] =>
+          .flatMap({ (pairs: Vector[(K, V)]) =>
             if (filterIndexOnly) pairs
             else pairs.filter { pair => includeKey(pair._1) }
           }).toVector

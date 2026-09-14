@@ -16,11 +16,11 @@
 
 package geotrellis.geotools
 
-import geotrellis.vector._
+import geotrellis.vector.*
 import org.geotools.api.feature.simple.SimpleFeature
 
-import scala.collection._
-import scala.jdk.CollectionConverters._
+import scala.collection.*
+import scala.jdk.CollectionConverters.*
 import scala.reflect.ClassTag
 
 object SimpleFeatureToFeature {

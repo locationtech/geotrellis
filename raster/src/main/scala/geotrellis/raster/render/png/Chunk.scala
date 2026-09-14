@@ -21,7 +21,7 @@ import java.io.DataOutputStream
 import java.util.zip.CRC32
 import java.util.zip.CheckedOutputStream
 
-import Util._
+import Util.*
 
 final class Chunk(chunkType:Int) {
   val baos = new ByteArrayOutputStream()

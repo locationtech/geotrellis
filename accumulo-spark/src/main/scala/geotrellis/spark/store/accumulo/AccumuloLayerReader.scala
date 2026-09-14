@@ -16,20 +16,20 @@
 
 package geotrellis.spark.store.accumulo
 
-import geotrellis.layer._
-import geotrellis.store._
-import geotrellis.store.accumulo._
-import geotrellis.store.avro._
+import geotrellis.layer.*
+import geotrellis.store.*
+import geotrellis.store.accumulo.*
+import geotrellis.store.avro.*
 import geotrellis.spark.ContextRDD
 import geotrellis.spark.store.FilteringLayerReader
-import geotrellis.util._
+import geotrellis.util.*
 
 import org.apache.hadoop.io.Text
 import org.apache.spark.SparkContext
-import org.apache.accumulo.core.data.{Range => AccumuloRange}
-import io.circe._
+import org.apache.accumulo.core.data.{Range as AccumuloRange}
+import io.circe.*
 
-import scala.reflect._
+import scala.reflect.*
 
 class AccumuloLayerReader(val attributeStore: AttributeStore)(implicit sc: SparkContext, instance: AccumuloInstance)
     extends FilteringLayerReader[LayerId] {
@@ -40,7 +40,7 @@ class AccumuloLayerReader(val attributeStore: AttributeStore)(implicit sc: Spark
     K: AvroRecordCodec: Boundable: Decoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: Decoder: Component[*, Bounds[K]]
-  ](id: LayerId, tileQuery: LayerQuery[K, M], numPartitions: Int, filterIndexOnly: Boolean) = {
+  ](id: LayerId, tileQuery: LayerQuery[K, M], numPartitions: Int, filterIndexOnly: Boolean): ContextRDD[K, V, M] = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
 
     val LayerAttributes(header, metadata, keyIndex, writerSchema) = try {

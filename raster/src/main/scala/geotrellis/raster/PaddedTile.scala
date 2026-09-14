@@ -16,7 +16,7 @@
 
 package geotrellis.raster
 
-import spire.syntax.cfor._
+import spire.syntax.cfor.*
 
 case class PaddedTile(chunk: Tile, colOffset: Int, rowOffset: Int, cols: Int, rows: Int) extends Tile {
   private val chunkBounds = GridBounds(

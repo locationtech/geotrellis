@@ -19,7 +19,7 @@ package geotrellis.raster.io.geotiff
 trait Float32GeoTiffSegmentCollection extends GeoTiffSegmentCollection {
   type T = Float32GeoTiffSegment
 
-  val bandType = Float32BandType
+  val bandType: Float32BandType.type = Float32BandType
   def noDataValue: Option[Float]
 
   lazy val decompressGeoTiffSegment = noDataValue match {

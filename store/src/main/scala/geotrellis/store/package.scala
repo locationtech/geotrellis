@@ -68,7 +68,7 @@ package object store extends Implicits {
   class HeaderMatchError[T <: Product](layerId: LayerId, headerl: T, headerr: T)
     extends LayerIOError(s"Layer $layerId Header data ($headerl) not matches ($headerr)")
 
-  class LayerOutOfKeyBoundsError(layerId: LayerId, bounds: KeyBounds[_])
+  class LayerOutOfKeyBoundsError(layerId: LayerId, bounds: KeyBounds[?])
     extends LayerIOError(s"Updating rdd is out of the key index space for $layerId: $bounds. You must reindex this layer with large enough key bounds for this update.")
 
   class LayerEmptyBoundsError(layerId: LayerId)

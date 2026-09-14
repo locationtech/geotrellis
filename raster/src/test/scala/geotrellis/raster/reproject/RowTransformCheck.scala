@@ -16,14 +16,14 @@
 
 package geotrellis.raster.reproject
 
-import geotrellis.proj4._
-import geotrellis.raster._
-import geotrellis.vector._
+import geotrellis.proj4.*
+import geotrellis.raster.*
+import geotrellis.vector.*
 
-import org.scalacheck._
-import Prop._
-import Gen._
-import Arbitrary._
+import org.scalacheck.*
+import Prop.*
+import Gen.*
+import Arbitrary.*
 
 
 trait RowTransformCheck { self: Properties =>

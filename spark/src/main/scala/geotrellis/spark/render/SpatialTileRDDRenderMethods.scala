@@ -17,10 +17,10 @@
 package geotrellis.spark.render
 
 import geotrellis.raster.Tile
-import geotrellis.raster.render._
-import geotrellis.layer._
-import geotrellis.spark._
-import geotrellis.util._
+import geotrellis.raster.render.*
+import geotrellis.layer.*
+import geotrellis.spark.*
+import geotrellis.util.*
 
 import org.apache.spark.rdd.RDD
 

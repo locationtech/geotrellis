@@ -18,7 +18,7 @@ package geotrellis.layer.mapalgebra.local
 
 import geotrellis.raster.mapalgebra.local.Max
 import geotrellis.raster.{DI, Tile}
-import geotrellis.layer._
+import geotrellis.layer.*
 import geotrellis.util.MethodExtensions
 
 trait MaxTileCollectionMethods[K] extends MethodExtensions[Seq[(K, Tile)]] {

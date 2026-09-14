@@ -16,7 +16,7 @@
 
 package geotrellis.raster.mapalgebra.focal.hillshade
 
-import geotrellis.raster._
+import geotrellis.raster.*
 
 object Implicits extends Implicits
 

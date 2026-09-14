@@ -16,9 +16,9 @@
 
 package geotrellis.spark.store.hadoop
 
-import geotrellis.store._
-import geotrellis.store.hadoop._
-import geotrellis.spark.store._
+import geotrellis.store.*
+import geotrellis.store.hadoop.*
+import geotrellis.spark.store.*
 
 import org.apache.spark.SparkContext
 import org.apache.hadoop.fs.Path

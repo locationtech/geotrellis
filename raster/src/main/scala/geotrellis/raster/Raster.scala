@@ -16,7 +16,7 @@
 
 package geotrellis.raster
 
-import geotrellis.vector._
+import geotrellis.vector.*
 
 
 /**

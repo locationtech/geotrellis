@@ -17,7 +17,7 @@
 package geotrellis.raster.testkit
 
 import geotrellis.vector.Extent
-import geotrellis.raster._
+import geotrellis.raster.*
 
 trait TileBuilders {
   val nd = NODATA

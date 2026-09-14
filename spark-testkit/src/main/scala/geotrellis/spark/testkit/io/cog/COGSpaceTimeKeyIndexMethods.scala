@@ -17,9 +17,9 @@
 package geotrellis.spark.testkit.io.cog
 
 import geotrellis.layer.SpaceTimeKey
-import geotrellis.store.index._
+import geotrellis.store.index.*
 
-import jp.ne.opt.chronoscala.Imports._
+import jp.ne.opt.chronoscala.Imports.*
 
 import java.time.ZonedDateTime
 

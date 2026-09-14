@@ -16,12 +16,12 @@
 
 package geotrellis.raster.resample
 
-import geotrellis.raster._
+import geotrellis.raster.*
 import geotrellis.vector.Extent
 
 import org.apache.commons.math3.analysis.function.Sin
 
-import spire.syntax.cfor._
+import spire.syntax.cfor.*
 
 /**
   * Implemented exactly as in:

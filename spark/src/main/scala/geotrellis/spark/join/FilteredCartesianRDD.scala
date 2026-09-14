@@ -21,7 +21,7 @@
   */
 package geotrellis.spark.join
 
-import org.apache.spark._
+import org.apache.spark.*
 import org.apache.spark.rdd.RDD
 
 import scala.reflect.ClassTag
@@ -106,7 +106,7 @@ sealed class FilteredCartesianRDD[T: ClassTag, U: ClassTag, V: ClassTag](
     else Iterator.empty
   }
 
-  override def getDependencies: Seq[Dependency[_]] = List(
+  override def getDependencies: Seq[Dependency[?]] = List(
     new NarrowDependency(rdd1) {
       def getParents(id: Int): Seq[Int] = List(id / numPartitionsInRdd2)
     },

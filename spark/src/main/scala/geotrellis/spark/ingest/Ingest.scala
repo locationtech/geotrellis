@@ -16,19 +16,19 @@
 
 package geotrellis.spark.ingest
 
-import geotrellis.proj4._
-import geotrellis.raster._
+import geotrellis.proj4.*
+import geotrellis.raster.*
 import geotrellis.raster.resample.{ResampleMethod, NearestNeighbor}
-import geotrellis.raster.reproject.Reproject.{Options => RasterReprojectOptions}
-import geotrellis.layer._
-import geotrellis.spark._
+import geotrellis.raster.reproject.Reproject.{Options as RasterReprojectOptions}
+import geotrellis.layer.*
+import geotrellis.spark.*
 import geotrellis.spark.pyramid.Pyramid
-import geotrellis.spark.tiling._
-import geotrellis.vector._
-import geotrellis.util._
+import geotrellis.spark.tiling.*
+import geotrellis.vector.*
+import geotrellis.util.*
 
 import org.apache.spark.Partitioner
-import org.apache.spark.rdd._
+import org.apache.spark.rdd.*
 import org.apache.spark.storage.StorageLevel
 
 import scala.reflect.ClassTag

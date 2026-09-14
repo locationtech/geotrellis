@@ -16,7 +16,7 @@
 
 package geotrellis.raster.mapalgebra.local
 
-import geotrellis.raster._
+import geotrellis.raster.*
 import geotrellis.util.MethodExtensions
 
 
@@ -28,27 +28,27 @@ object IfCell extends Serializable {
    * Maps all cells matching `cond` to Int `trueValue`.
    */
   def apply(r: Tile, cond: Int => Boolean, trueValue: Int): Tile =
-    r.dualMap {z: Int => if (cond(z)) trueValue else z }
-              {z: Double => if (cond(d2i(z))) i2d(trueValue) else z}
+    r.dualMap {(z: Int) => if (cond(z)) trueValue else z }
+              {(z: Double) => if (cond(d2i(z))) i2d(trueValue) else z}
 
   /**
    * Maps all cells matching `cond` to Double `trueValue`.
    */
   def apply(r: Tile, cond: Double => Boolean, trueValue: Double): Tile =
-    r.dualMap {z: Int => if (cond(i2d(z))) d2i(trueValue) else z}
-              {z: Double => if (cond(z)) trueValue else z}
+    r.dualMap {(z: Int) => if (cond(i2d(z))) d2i(trueValue) else z}
+              {(z: Double) => if (cond(z)) trueValue else z}
 
   /** Set all values of output raster to one value or another based on whether a
    * condition is true or false.  */
   def apply(r: Tile, cond: Int => Boolean, trueValue: Int, falseValue: Int): Tile =
-    r.dualMap {z: Int => if (cond(z)) trueValue else falseValue}
-              {z: Double => if (cond(d2i(z))) i2d(trueValue) else i2d(falseValue)}
+    r.dualMap {(z: Int) => if (cond(z)) trueValue else falseValue}
+              {(z: Double) => if (cond(d2i(z))) i2d(trueValue) else i2d(falseValue)}
 
   /** Set all values of output raster to one value or another based on whether a
    * condition is true or false for Double values.  */
   def apply(r: Tile, cond: Double => Boolean, trueValue: Double, falseValue: Double): Tile =
-    r.dualMap {z: Int => if (cond(i2d(z))) d2i(trueValue) else d2i(falseValue) }
-              {z: Double => if (cond(z)) trueValue else falseValue }
+    r.dualMap {(z: Int) => if (cond(i2d(z))) d2i(trueValue) else d2i(falseValue) }
+              {(z: Double) => if (cond(z)) trueValue else falseValue }
 
   /** Given a condition over two rasters, set the value of each cell in the output
    * to a specified value if the condition is true given the corresponding values in

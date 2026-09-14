@@ -16,7 +16,7 @@
 
 package geotrellis.layer
 
-import geotrellis.raster._
+import geotrellis.raster.*
 import geotrellis.vector.Extent
 
 import org.scalatest.matchers.should.Matchers

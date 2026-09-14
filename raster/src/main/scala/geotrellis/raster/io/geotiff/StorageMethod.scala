@@ -16,9 +16,9 @@
 
 package geotrellis.raster.io.geotiff
 
-import io.circe._
-import io.circe.syntax._
-import cats.syntax.either._
+import io.circe.*
+import io.circe.syntax.*
+import cats.syntax.either.*
 
 abstract sealed class StorageMethod extends Serializable
 

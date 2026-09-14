@@ -16,14 +16,14 @@
 
 package geotrellis.raster
 
-import geotrellis.raster.geotiff._
+import geotrellis.raster.geotiff.*
 import geotrellis.raster.io.geotiff.{AutoHigherResolution, GeoTiffTestUtils}
 import geotrellis.proj4.{CRS, LatLng, WebMercator}
 import geotrellis.vector.Extent
 import geotrellis.raster.testkit.RasterMatchers
 import cats.data.NonEmptyList
-import cats.syntax.apply._
-import cats.instances.option._
+import cats.syntax.apply.*
+import cats.instances.option.*
 import geotrellis.raster.resample.NearestNeighbor
 
 import org.scalatest.funspec.AnyFunSpec

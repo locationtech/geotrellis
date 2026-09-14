@@ -16,10 +16,10 @@
 
 package geotrellis.raster.io.json
 
-import io.circe._
-import cats.syntax.either._
+import io.circe.*
+import cats.syntax.either.*
 
-import geotrellis.raster._
+import geotrellis.raster.*
 
 object Implicits extends Implicits
 

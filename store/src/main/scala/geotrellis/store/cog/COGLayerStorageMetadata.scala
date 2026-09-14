@@ -16,14 +16,14 @@
 
 package geotrellis.store.cog
 
-import geotrellis.store.index._
-import geotrellis.layer._
+import geotrellis.store.index.*
+import geotrellis.layer.*
 
-import io.circe._
-import io.circe.syntax._
-import cats.syntax.either._
+import io.circe.*
+import io.circe.syntax.*
+import cats.syntax.either.*
 
-import scala.reflect._
+import scala.reflect.*
 
 case class COGLayerStorageMetadata[K](metadata: COGLayerMetadata[K], keyIndexes: Map[ZoomRange, KeyIndex[K]]) {
   def combine(other: COGLayerStorageMetadata[K])(implicit ev: Boundable[K]): COGLayerStorageMetadata[K] =
@@ -39,7 +39,7 @@ object COGLayerStorageMetadata {
       )
     }
   implicit def cogLayerStorageMetadataDecoder[K: SpatialComponent: Decoder: ClassTag]: Decoder[COGLayerStorageMetadata[K]] =
-    Decoder.decodeHCursor.emap { c: HCursor =>
+    Decoder.decodeHCursor.emap { (c: HCursor) =>
       (c.downField("metadata").as[COGLayerMetadata[K]],
         c.downField("keyIndexes").as[Vector[(ZoomRange, KeyIndex[K])]].map(_.toMap)) match {
         case (Right(md), Right(ki)) => Right(COGLayerStorageMetadata(md, ki))

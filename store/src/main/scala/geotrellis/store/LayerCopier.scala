@@ -16,11 +16,11 @@
 
 package geotrellis.store
 
-import geotrellis.layer._
+import geotrellis.layer.*
 import geotrellis.store.avro.AvroRecordCodec
-import geotrellis.util._
+import geotrellis.util.*
 
-import io.circe._
+import io.circe.*
 
 import scala.reflect.ClassTag
 

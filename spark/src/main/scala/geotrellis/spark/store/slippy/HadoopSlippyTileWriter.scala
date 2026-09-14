@@ -17,10 +17,10 @@
 package geotrellis.spark.store.slippy
 
 import geotrellis.layer.SpatialKey
-import geotrellis.spark.store.hadoop._
+import geotrellis.spark.store.hadoop.*
 
-import org.apache.spark._
-import org.apache.spark.rdd._
+import org.apache.spark.*
+import org.apache.spark.rdd.*
 import org.apache.hadoop.fs.Path
 
 import java.io.File
@@ -31,7 +31,7 @@ class HadoopSlippyTileWriter[T](uri: String, extension: String)(getBytes: (Spati
     val lUri = uri
     val lExtension = extension
     val scheme = new Path(System.getProperty("user.dir")).getFileSystem(sc.hadoopConfiguration).getScheme
-    val keyToPath = { key: SpatialKey => new File(lUri, s"$lZoom/${key.col}/${key.row}.${lExtension}").getPath }
+    val keyToPath = { (key: SpatialKey) => new File(lUri, s"$lZoom/${key.col}/${key.row}.${lExtension}").getPath }
     rdd.setupSaveToHadoop(keyToPath)(getBytes)
   }
 }

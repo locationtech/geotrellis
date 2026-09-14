@@ -16,10 +16,10 @@
 
 package geotrellis.vector
 
-import org.scalatest._
-import matchers._
+import org.scalatest.*
+import matchers.*
 
-import geotrellis.vector._
+import geotrellis.vector.*
 
 package object testkit {
   object GeometryMatcher {

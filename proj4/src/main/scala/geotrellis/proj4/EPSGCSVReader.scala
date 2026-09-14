@@ -50,7 +50,7 @@ object EPSGCSVReader {
 
 class EPSGCSVReader {
 
-  import CSVFileConstants._
+  import CSVFileConstants.*
 
   def getPrimeMeridianValues(code: Int): Option[Map[String, String]] =
     getValues("prime_meridian.csv", code, PrimeMeridianCode)

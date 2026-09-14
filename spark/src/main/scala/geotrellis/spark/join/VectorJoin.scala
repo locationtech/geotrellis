@@ -16,13 +16,13 @@
 
 package geotrellis.spark.join
 
-import geotrellis.vector._
+import geotrellis.vector.*
 
-import org.apache.spark._
-import org.apache.spark.rdd._
+import org.apache.spark.*
+import org.apache.spark.rdd.*
 import org.locationtech.jts.geom.Envelope
 
-import scala.reflect._
+import scala.reflect.*
 
 
 object VectorJoin {

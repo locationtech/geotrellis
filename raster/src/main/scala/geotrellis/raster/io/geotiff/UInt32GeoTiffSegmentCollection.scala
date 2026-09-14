@@ -19,7 +19,7 @@ package geotrellis.raster.io.geotiff
 trait UInt32GeoTiffSegmentCollection extends GeoTiffSegmentCollection {
   type T = UInt32GeoTiffSegment
 
-  val bandType = UInt32BandType
+  val bandType: UInt32BandType.type = UInt32BandType
 
   lazy val decompressGeoTiffSegment =
     (i: Int, bytes: Array[Byte]) => new UInt32GeoTiffSegment(decompressor.decompress(bytes, i))

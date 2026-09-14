@@ -16,14 +16,14 @@
 
 package geotrellis.store.cassandra
 
-import geotrellis.store._
+import geotrellis.store.*
 
-import org.log4s._
+import org.log4s.*
 
 import com.datastax.oss.driver.api.querybuilder.QueryBuilder
 import com.datastax.oss.driver.api.querybuilder.QueryBuilder.literal
 
-import scala.jdk.CollectionConverters._
+import scala.jdk.CollectionConverters.*
 
 class CassandraLayerDeleter(val attributeStore: AttributeStore, instance: CassandraInstance) extends LayerDeleter[LayerId] {
   @transient private[this] lazy val logger = getLogger

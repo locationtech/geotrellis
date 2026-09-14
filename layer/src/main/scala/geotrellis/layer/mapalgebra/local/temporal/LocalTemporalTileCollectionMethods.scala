@@ -18,8 +18,8 @@ package geotrellis.layer.mapalgebra.local.temporal
 
 import java.time.ZonedDateTime
 
-import geotrellis.raster._
-import geotrellis.layer._
+import geotrellis.raster.*
+import geotrellis.layer.*
 import geotrellis.util.MethodExtensions
 
 abstract class LocalTemporalTileCollectionMethods[K: SpatialComponent: TemporalComponent](val self: Seq[(K, Tile)])

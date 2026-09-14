@@ -66,7 +66,7 @@ abstract class IntArrayTile(val array: Array[Int], cols: Int, rows: Int)
   */
 final case class IntRawArrayTile(arr: Array[Int], val cols: Int, val rows: Int)
     extends IntArrayTile(arr, cols, rows) {
-  val cellType = IntCellType
+  val cellType: IntCellType.type = IntCellType
 
   /**
     * Fetch the datum at the given index in the array.
@@ -106,7 +106,7 @@ final case class IntRawArrayTile(arr: Array[Int], val cols: Int, val rows: Int)
   */
 final case class IntConstantNoDataArrayTile(arr: Array[Int], val cols: Int, val rows: Int)
     extends IntArrayTile(arr, cols, rows) {
-  val cellType = IntConstantNoDataCellType
+  val cellType: IntConstantNoDataCellType.type = IntConstantNoDataCellType
 
   /**
     * Fetch the datum at the given index in the array.

@@ -16,12 +16,12 @@
 
 package geotrellis.spark.knn
 
-import geotrellis.vector._
+import geotrellis.vector.*
 
 import org.apache.spark.rdd.RDD
 
 import java.util.PriorityQueue
-import scala.jdk.CollectionConverters._
+import scala.jdk.CollectionConverters.*
 
 class BoundedPriorityQueue[A: Ordering](val maxSize: Int) extends Serializable{
   val pq = new PriorityQueue[A](maxSize, implicitly[Ordering[A]].reverse)

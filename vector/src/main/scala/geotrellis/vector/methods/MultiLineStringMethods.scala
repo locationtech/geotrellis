@@ -16,7 +16,7 @@
 
 package geotrellis.vector.methods
 
-import geotrellis.vector._
+import geotrellis.vector.*
 import geotrellis.util.MethodExtensions
 
 trait ExtraMultiLineStringMethods extends MethodExtensions[MultiLineString] {

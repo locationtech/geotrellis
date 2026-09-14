@@ -21,14 +21,14 @@ object LandsatMultibandRDDExample {
     `Generate an RDD of multiband tiles from landsat on S3`
 
   def `Generate an RDD of multiband tiles from landsat on S3`: Unit = {
-    import geotrellis.raster._
-    import geotrellis.spark._
-    import geotrellis.spark.store.s3._
-    import geotrellis.vector._
+    import geotrellis.raster.*
+    import geotrellis.spark.*
+    import geotrellis.spark.store.s3.*
+    import geotrellis.vector.*
 
     import software.amazon.awssdk.services.s3.S3Client
     import org.apache.spark.SparkContext
-    import org.apache.spark.rdd._
+    import org.apache.spark.rdd.*
 
     import java.net.URI
     import scala.math.BigDecimal.RoundingMode

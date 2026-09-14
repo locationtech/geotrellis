@@ -16,20 +16,20 @@
 
 package geotrellis.spark.store.file.cog
 
-import geotrellis.layer._
-import geotrellis.raster._
+import geotrellis.layer.*
+import geotrellis.raster.*
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
-import geotrellis.raster.io.geotiff._
+import geotrellis.raster.io.geotiff.*
 import geotrellis.store.LayerId
 import geotrellis.store.{AttributeStore, COGLayerType}
-import geotrellis.store.cog._
+import geotrellis.store.cog.*
 import geotrellis.store.cog.vrt.VRT
 import geotrellis.store.cog.vrt.VRT.IndexedSimpleSource
 import geotrellis.store.file.{FileAttributeStore, FileLayerHeader, KeyPathGenerator}
-import geotrellis.store.index._
-import geotrellis.spark.store.cog._
+import geotrellis.store.index.*
+import geotrellis.spark.store.cog.*
 import geotrellis.util.{Filesystem, RangeReader}
-import _root_.io.circe._
+import _root_.io.circe.*
 import java.io.File
 
 import scala.reflect.{ClassTag, classTag}

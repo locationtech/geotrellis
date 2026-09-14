@@ -16,13 +16,13 @@
 
 package geotrellis.store
 
-import geotrellis.layer._
-import geotrellis.store.avro._
-import geotrellis.util._
+import geotrellis.layer.*
+import geotrellis.store.avro.*
+import geotrellis.util.*
 
-import io.circe._
+import io.circe.*
 
-import scala.reflect._
+import scala.reflect.*
 import java.net.URI
 import java.util.ServiceLoader
 
@@ -69,7 +69,7 @@ abstract class CollectionLayerReader[ID] { self =>
 
 object CollectionLayerReader {
   def apply(attributeStore: AttributeStore, collectionReaderUri: URI): CollectionLayerReader[LayerId] = {
-    import scala.jdk.CollectionConverters._
+    import scala.jdk.CollectionConverters.*
     ServiceLoader.load(classOf[CollectionLayerReaderProvider])
       .iterator().asScala
       .find(_.canProcess(collectionReaderUri))

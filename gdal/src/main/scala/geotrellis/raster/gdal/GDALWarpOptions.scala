@@ -18,15 +18,15 @@ package geotrellis.raster.gdal
 
 import geotrellis.raster.gdal.GDALDataset.DatasetType
 import geotrellis.raster.{ConvertTargetCellType, TargetCellType}
-import geotrellis.raster._
-import geotrellis.raster.resample._
+import geotrellis.raster.*
+import geotrellis.raster.resample.*
 import geotrellis.raster.io.geotiff.OverviewStrategy
 import geotrellis.proj4.CRS
 import geotrellis.vector.Extent
 
 import cats.Monad
-import cats.instances.option._
-import cats.syntax.option._
+import cats.instances.option.*
+import cats.syntax.option.*
 
 
 /**

@@ -16,11 +16,11 @@
 
 package geotrellis.layer.stitch
 
-import geotrellis.raster._
-import geotrellis.raster.prototype._
-import geotrellis.raster.stitch._
-import geotrellis.layer._
-import geotrellis.util._
+import geotrellis.raster.*
+import geotrellis.raster.prototype.*
+import geotrellis.raster.stitch.*
+import geotrellis.layer.*
+import geotrellis.util.*
 
 object Implicits extends Implicits
 

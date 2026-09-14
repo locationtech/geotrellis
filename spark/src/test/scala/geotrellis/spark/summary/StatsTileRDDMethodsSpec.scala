@@ -16,13 +16,13 @@
 
 package geotrellis.spark.summary
 
-import geotrellis.layer._
-import geotrellis.spark._
-import geotrellis.spark.testkit.testfiles._
-import geotrellis.spark.testkit._
+import geotrellis.layer.*
+import geotrellis.spark.*
+import geotrellis.spark.testkit.testfiles.*
+import geotrellis.spark.testkit.*
 
-import geotrellis.raster._
-import geotrellis.raster.io.geotiff._
+import geotrellis.raster.*
+import geotrellis.raster.io.geotiff.*
 
 
 import org.scalatest.funspec.AnyFunSpec

@@ -16,7 +16,7 @@
 
 package geotrellis.geotools
 
-import org.geotools.data.shapefile._
+import org.geotools.data.shapefile.*
 
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.funspec.AnyFunSpec

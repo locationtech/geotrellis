@@ -16,15 +16,15 @@
 
 package geotrellis.spark.testkit
 
-import org.scalatest._
-import geotrellis.raster._
-import geotrellis.proj4._
+import org.scalatest.*
+import geotrellis.raster.*
+import geotrellis.proj4.*
 import geotrellis.layer.{SpatialKey, Bounds, LayoutDefinition}
 import geotrellis.raster.testkit.RasterMatchers
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.funspec.AnyFunSpec
 
-import matchers._
+import matchers.*
 
 trait LayoutRasterMatchers { self: Matchers with AnyFunSpec with RasterMatchers =>
   def containKey(key: SpatialKey) = Matcher[Bounds[SpatialKey]] { bounds =>

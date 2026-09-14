@@ -85,7 +85,7 @@ object WKTParser extends RegexParsers {
     case _  ~ name ~ _ ~ authority ~ _ => Projection(name, authority)
   }
 
-  def parameterList: Parser[List[Parameter]] = ((parameter ~ comma.?)*) ^^ (_.map(_._1))
+  def parameterList: Parser[List[Parameter]] = (parameter ~ comma.?).* ^^ (_.map(_._1))
 
   def projcs: Parser[ProjCS] = """PROJCS[""" ~ string ~ comma ~ geogcs ~ comma ~ projection ~ comma.? ~ parameterList.? ~ comma.? ~ unitField ~ comma.? ~ twinAxis.? ~ comma.? ~ extension.? ~ comma.? ~ authority.? ~ """]""" map {
     case _  ~ name ~  _ ~ geogcs ~ _ ~ projection ~ _ ~ params ~ _  ~ unitField ~ _ ~ twin ~ _ ~ extension ~ _ ~ authority ~ _ => ProjCS(name, geogcs, projection, params, unitField, twin, extension, authority)

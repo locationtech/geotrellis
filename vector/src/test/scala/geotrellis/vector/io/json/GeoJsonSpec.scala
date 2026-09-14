@@ -16,12 +16,12 @@
 
 package geotrellis.vector.io.json
 
-import io.circe._
-import io.circe.generic._
-import io.circe.syntax._
+import io.circe.*
+import io.circe.generic.*
+import io.circe.syntax.*
 
-import geotrellis.vector._
-import geotrellis.vector.testkit._
+import geotrellis.vector.*
+import geotrellis.vector.testkit.*
 
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.flatspec.AnyFlatSpec

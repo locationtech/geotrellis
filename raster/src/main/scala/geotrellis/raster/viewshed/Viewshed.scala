@@ -16,8 +16,8 @@
 
 package geotrellis.raster.viewshed
 
-import geotrellis.raster._
-import spire.syntax.cfor._
+import geotrellis.raster.*
+import spire.syntax.cfor.*
 
 /**
   * Created by jchien on 4/24/14.

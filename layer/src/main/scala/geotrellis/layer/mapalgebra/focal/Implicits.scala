@@ -16,7 +16,7 @@
 
 package geotrellis.layer.mapalgebra.focal
 
-import geotrellis.layer._
+import geotrellis.layer.*
 
 object Implicits extends Implicits
 

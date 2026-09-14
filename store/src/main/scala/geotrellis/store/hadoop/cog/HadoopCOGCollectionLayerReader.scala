@@ -16,18 +16,18 @@
 
 package geotrellis.store.hadoop.cog
 
-import geotrellis.layer._
-import geotrellis.raster._
+import geotrellis.layer.*
+import geotrellis.raster.*
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
-import geotrellis.store._
-import geotrellis.store.util._
+import geotrellis.store.*
+import geotrellis.store.util.*
 import geotrellis.store.cog.{COGCollectionLayerReader, Extension, ZoomRange}
 import geotrellis.store.hadoop.{HadoopAttributeStore, SerializableConfiguration}
-import geotrellis.store.hadoop.util._
+import geotrellis.store.hadoop.util.*
 import geotrellis.store.index.Index
 
-import cats.effect._
-import _root_.io.circe._
+import cats.effect.*
+import _root_.io.circe.*
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 

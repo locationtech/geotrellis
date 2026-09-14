@@ -21,7 +21,7 @@ import geotrellis.raster.Dimensions
 trait BitGeoTiffSegmentCollection extends GeoTiffSegmentCollection { self: GeoTiffSegmentLayoutTransform =>
   type T = BitGeoTiffSegment
 
-  val bandType = BitBandType
+  val bandType: BitBandType.type = BitBandType
 
   lazy val decompressGeoTiffSegment = { (i: Int, bytes: Array[Byte]) =>
     val Dimensions(_, segmentRows) = getSegmentDimensions(i)

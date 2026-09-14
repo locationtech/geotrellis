@@ -17,14 +17,14 @@
 package geotrellis.store
 
 import geotrellis.store.cog.ZoomRange
-import geotrellis.store.index._
+import geotrellis.store.index.*
 
 import org.apache.avro.Schema
-import io.circe._
-import io.circe.syntax._
-import cats.syntax.either._
+import io.circe.*
+import io.circe.syntax.*
+import cats.syntax.either.*
 
-import scala.reflect._
+import scala.reflect.*
 import java.net.URI
 import java.util.ServiceLoader
 
@@ -94,7 +94,7 @@ object AttributeStore {
    * This method uses instances of [[AttributeServiceProvider]] loaded through Java SPI.
    */
   def apply(uri: URI): AttributeStore = {
-    import scala.jdk.CollectionConverters._
+    import scala.jdk.CollectionConverters.*
 
     ServiceLoader.load(classOf[AttributeStoreProvider])
       .iterator().asScala
@@ -122,7 +122,7 @@ trait LayerAttributeStore extends Serializable {
 
 
 trait BlobLayerAttributeStore extends AttributeStore {
-  import AttributeStore._
+  import AttributeStore.*
 
   def readHeader[H: Decoder](id: LayerId): H =
     cacheRead[Json](id, Fields.metadataBlob).hcursor.downField(Fields.header).as[H].valueOr(throw _)
@@ -195,7 +195,7 @@ trait BlobLayerAttributeStore extends AttributeStore {
 }
 
 trait DiscreteLayerAttributeStore extends AttributeStore {
-  import AttributeStore._
+  import AttributeStore.*
 
   def readKeyIndexes[K: ClassTag](id: LayerId): Map[ZoomRange, KeyIndex[K]] =
     throw new AvroLayerAttributeError("keyIndexes", id)

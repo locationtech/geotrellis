@@ -16,27 +16,27 @@
 
 package geotrellis.raster.io.geotiff.reader
 
-import geotrellis.raster.io.geotiff.tags._
-import CommonPublicValues._
-import GeoKeys._
-import ModelTypes._
-import MapSystems._
-import ProjectedLinearUnits._
-import GeographicCSTypes._
-import EPSGProjectionTypes._
-import GDALEPSGProjectionTypes._
-import ProjectionTypesMap._
-import PrimeMeridianTypes._
-import AngularUnitTypes._
-import DatumTypes._
-import EllipsoidTypes._
-import CoordinateTransformTypes._
+import geotrellis.raster.io.geotiff.tags.*
+import CommonPublicValues.*
+import GeoKeys.*
+import ModelTypes.*
+import MapSystems.*
+import ProjectedLinearUnits.*
+import GeographicCSTypes.*
+import EPSGProjectionTypes.*
+import GDALEPSGProjectionTypes.*
+import ProjectionTypesMap.*
+import PrimeMeridianTypes.*
+import AngularUnitTypes.*
+import DatumTypes.*
+import EllipsoidTypes.*
+import CoordinateTransformTypes.*
 
 import geotrellis.proj4.EPSGCSVReader
-import geotrellis.proj4.CSVFileConstants._
+import geotrellis.proj4.CSVFileConstants.*
 
 
-import monocle.syntax.apply._
+import monocle.syntax.apply.*
 
 case class GeoTiffCSParameters(
   var model: Int = UserDefinedCPV,

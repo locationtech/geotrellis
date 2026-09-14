@@ -18,7 +18,7 @@ package geotrellis.raster
 
 import geotrellis.raster.ArrayTileSpec.{BiasedAdd, CountData}
 import geotrellis.raster.mapalgebra.local.{Add, LocalTileBinaryOp}
-import geotrellis.raster.testkit._
+import geotrellis.raster.testkit.*
 
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.funspec.AnyFunSpec
@@ -121,7 +121,7 @@ class ArrayTileSpec extends AnyFunSpec with Matchers with RasterMatchers with Ti
     it("should interpretAs for DoubleCells") {
       checkFloatInterpretAs(
         sourceTile,
-        DoubleUserDefinedNoDataCellType,
+        DoubleUserDefinedNoDataCellType.apply,
         DoubleConstantNoDataCellType)
     }
 
@@ -135,7 +135,7 @@ class ArrayTileSpec extends AnyFunSpec with Matchers with RasterMatchers with Ti
     it("should interpretAs for IntCells") {
       checkIntInterpretAs(
         sourceTile.convert(IntCellType),
-        IntUserDefinedNoDataCellType,
+        IntUserDefinedNoDataCellType.apply,
         IntConstantNoDataCellType)
     }
 

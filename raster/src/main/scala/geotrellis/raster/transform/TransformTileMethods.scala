@@ -16,8 +16,8 @@
 
 package geotrellis.raster.transform
 
-import geotrellis.raster._
-import spire.syntax.cfor._
+import geotrellis.raster.*
+import spire.syntax.cfor.*
 
 trait TransformTileMethods extends TransformMethods[Tile] {
   /**

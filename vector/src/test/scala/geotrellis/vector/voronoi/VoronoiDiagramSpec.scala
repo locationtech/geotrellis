@@ -20,8 +20,8 @@ import org.locationtech.jts.geom.Coordinate
 
 // import geotrellis.raster._
 // import geotrellis.raster.rasterize._
-import geotrellis.vector._
-import geotrellis.vector.triangulation._
+import geotrellis.vector.*
+import geotrellis.vector.triangulation.*
 
 
 import org.scalatest.matchers.should.Matchers
@@ -52,7 +52,7 @@ class VoronoiDiagramSpec extends AnyFunSpec with Matchers {
     it("should have valid polygons entirely covered by the extent") {
       val extent = Extent(-2.25, -3, 1, 3)
       val pts = Array((0.0,-2.0), (0.0,0.0), (0.0,1.0), (-0.5,2.0), (0.5,2.0)).map{ case (x ,y) => new Coordinate(x, y) }
-      implicit val trans = { i: Int => Point(pts(i)) }
+      implicit val trans = { (i: Int) => Point(pts(i)) }
       val voronoi = VoronoiDiagram(pts, extent)
 
       def validCoveredPolygon(poly: Polygon) = {
@@ -66,7 +66,7 @@ class VoronoiDiagramSpec extends AnyFunSpec with Matchers {
     it("should work for linear input set") {
       val extent = Extent(-2.25, -3, 1, 3)
       val pts = Array((0.0,-2.0), (0.0,-1.0), (0.0,0.0), (0.0,1.0), (0.0,2.0)).map{ case (x ,y) => new Coordinate(x, y) }
-      implicit val trans = { i: Int => Point(pts(i)) }
+      implicit val trans = { (i: Int) => Point(pts(i)) }
       val voronoi = VoronoiDiagram(pts, extent)
 
       def validCoveredPolygon(poly: Polygon) = {
@@ -81,7 +81,7 @@ class VoronoiDiagramSpec extends AnyFunSpec with Matchers {
     it("should work when some cells don't intersect the extent") {
       val extent = Extent(-2.25, 0, 1, 6)
       val pts = Array((0.0,-2.0), (0.0,-1.0), (0.0,0.0), (0.0,1.0), (0.0,2.0)).map{ case (x ,y) => new Coordinate(x, y) }
-      implicit val trans = { i: Int => Point(pts(i)) }
+      implicit val trans = { (i: Int) => Point(pts(i)) }
       val voronoi = VoronoiDiagram(pts, extent)
 
       def validCoveredPolygon(poly: Polygon) = {

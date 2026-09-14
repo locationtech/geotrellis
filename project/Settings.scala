@@ -56,6 +56,8 @@ object Settings {
     Test / fork := true
   )
 
+  lazy val kindProjectorPlugin = addCompilerPlugin("org.typelevel" % "kind-projector" % "0.13.4" cross CrossVersion.full)
+
   val commonScalacOptions = Seq(
     "-deprecation",
     "-unchecked",
@@ -69,7 +71,12 @@ object Settings {
     "-feature",
     // "-Yrangepos",            // required by SemanticDB compiler plugin
     // "-Ywarn-unused-import",  // required by `RemoveUnused` rule
-    "-target:jvm-1.8"
+    "-target:jvm-1.8",
+    "-Xsource:3",
+    "-P:kind-projector:underscore-placeholders",
+    // Scala 3 no longer includes enclosing package prefixes in the implicit scope.
+    // Until that is refactored, silence them; -Xsource:3 makes them fatal errors by default.
+    "-Wconf:msg=found in a package prefix:s"
   )
 
   lazy val commonSettings = Seq(
@@ -105,7 +112,7 @@ object Settings {
       Path.userHome / ".sbt" / ".credentials"
     ).filter(_.asFile.canRead).map(Credentials(_)),
 
-    addCompilerPlugin("org.typelevel" % "kind-projector" % "0.13.4" cross CrossVersion.full),
+    kindProjectorPlugin,
     addCompilerPlugin("org.scalameta" % "semanticdb-scalac" % "4.17.0" cross CrossVersion.full),
 
     libraryDependencies ++= (CrossVersion.partialVersion(scalaVersion.value) match {
@@ -219,11 +226,11 @@ object Settings {
     ),
     console / initialCommands :=
       """
-      import geotrellis.proj4._
-      import geotrellis.vector._
-      import geotrellis.raster._
-      import geotrellis.layer._
-      import geotrellis.store.accumulo._
+      import geotrellis.proj4.*
+      import geotrellis.vector.*
+      import geotrellis.raster.*
+      import geotrellis.layer.*
+      import geotrellis.store.accumulo.*
       """
   ) ++ commonSettings ++ forkInTests
 
@@ -244,13 +251,13 @@ object Settings {
     ),
     console / initialCommands :=
       """
-      import geotrellis.raster._
-      import geotrellis.vector._
-      import geotrellis.proj4._
-      import geotrellis.layer._
-      import geotrellis.store.accumulo._
-      import geotrellis.spark._
-      import geotrellis.spark.store.accumulo._
+      import geotrellis.raster.*
+      import geotrellis.vector.*
+      import geotrellis.proj4.*
+      import geotrellis.layer.*
+      import geotrellis.store.accumulo.*
+      import geotrellis.spark.*
+      import geotrellis.spark.store.accumulo.*
       """
   ) ++ commonSettings ++ java17SparkSettings ++ forkInTests
 
@@ -275,12 +282,12 @@ object Settings {
     )),
     console / initialCommands :=
       """
-      import geotrellis.proj4._
-      import geotrellis.vector._
-      import geotrellis.layer._
-      import geotrellis.raster._
-      import geotrellis.store.util._
-      import geotrellis.store.cassandra._
+      import geotrellis.proj4.*
+      import geotrellis.vector.*
+      import geotrellis.layer.*
+      import geotrellis.raster.*
+      import geotrellis.store.util.*
+      import geotrellis.store.cassandra.*
       """
   ) ++ commonSettings ++ noForkInTests
 
@@ -302,14 +309,14 @@ object Settings {
     ),
     console / initialCommands :=
       """
-      import geotrellis.raster._
-      import geotrellis.vector._
-      import geotrellis.proj4._
-      import geotrellis.layer._
-      import geotrellis.store.cassandra._
-      import geotrellis.spark._
-      import geotrellis.spark.util._
-      import geotrellis.spark.store.cassandra._
+      import geotrellis.raster.*
+      import geotrellis.vector.*
+      import geotrellis.proj4.*
+      import geotrellis.layer.*
+      import geotrellis.store.cassandra.*
+      import geotrellis.spark.*
+      import geotrellis.spark.util.*
+      import geotrellis.spark.store.cassandra.*
       """
   ) ++ commonSettings ++ java17SparkSettings ++ noForkInTests
 
@@ -317,6 +324,7 @@ object Settings {
   lazy val `doc-examples` = Seq(
     name := "geotrellis-doc-examples",
     scalacOptions ++= commonScalacOptions,
+    kindProjectorPlugin,
     libraryDependencies ++= Seq(
       apacheSpark("core").value,
       scalatest % Test,
@@ -342,13 +350,13 @@ object Settings {
     ) ++ worksWithDependencies,
     console / initialCommands :=
       """
-      import geotrellis.geotools._
-      import geotrellis.raster._
-      import geotrellis.vector._
-      import org.locationtech.jts.{geom => jts}
-      import org.geotools.coverage.grid._
-      import org.geotools.coverage.grid.io._
-      import org.geotools.gce.geotiff._
+      import geotrellis.geotools.*
+      import geotrellis.raster.*
+      import geotrellis.vector.*
+      import org.locationtech.jts.{geom as jts}
+      import org.geotools.coverage.grid.*
+      import org.geotools.coverage.grid.io.*
+      import org.geotools.gce.geotiff.*
       """,
     Test / testOptions += Tests.Setup { () => Unzip.geoTiffTestFiles() }
   ) ++ commonSettings ++ noForkInTests
@@ -364,12 +372,12 @@ object Settings {
     ),
     console / initialCommands :=
       """
-      import geotrellis.raster._
-      import geotrellis.vector._
-      import geotrellis.proj4._
-      import geotrellis.layer._
-      import geotrellis.store.util._
-      import geotrellis.store.hbase._
+      import geotrellis.raster.*
+      import geotrellis.vector.*
+      import geotrellis.proj4.*
+      import geotrellis.layer.*
+      import geotrellis.store.util.*
+      import geotrellis.store.hbase.*
       """
   ) ++ commonSettings ++ noForkInTests
 
@@ -386,14 +394,14 @@ object Settings {
     ),
     console / initialCommands :=
       """
-      import geotrellis.raster._
-      import geotrellis.vector._
-      import geotrellis.proj4._
-      import geotrellis.layer._
-      import geotrellis.store.util._
-      import geotrellis.spark._
-      import geotrellis.spark.store.hbase._
-      import geotrellis.store.hbase._
+      import geotrellis.raster.*
+      import geotrellis.vector.*
+      import geotrellis.proj4.*
+      import geotrellis.layer.*
+      import geotrellis.store.util.*
+      import geotrellis.spark.*
+      import geotrellis.spark.store.hbase.*
+      import geotrellis.store.hbase.*
       """
   ) ++ commonSettings ++ java17SparkSettings ++ noForkInTests
 
@@ -444,11 +452,11 @@ object Settings {
     Compile / sourceGenerators += (Compile / sourceManaged).map(Boilerplate.genRaster).taskValue,
     console / initialCommands :=
       """
-      import geotrellis.raster._
-      import geotrellis.raster.resample._
-      import geotrellis.vector._
-      import geotrellis.raster.io.geotiff._
-      import geotrellis.raster.render._
+      import geotrellis.raster.*
+      import geotrellis.raster.resample.*
+      import geotrellis.vector.*
+      import geotrellis.raster.io.geotiff.*
+      import geotrellis.raster.render.*
       """,
     Test / testOptions += Tests.Setup { () =>
       val testArchive = "raster/data/geotiff-test-files.zip"
@@ -475,11 +483,11 @@ object Settings {
     ),
     console / initialCommands :=
       """
-      import geotrellis.raster._
-      import geotrellis.vector._
-      import geotrellis.proj4._
-      import geotrellis.layer._
-      import geotrellis.store.s3._
+      import geotrellis.raster.*
+      import geotrellis.vector.*
+      import geotrellis.proj4.*
+      import geotrellis.layer.*
+      import geotrellis.store.s3.*
       """
   ) ++ noForkInTests ++ commonSettings
 
@@ -496,14 +504,14 @@ object Settings {
     ),
     console / initialCommands :=
       """
-      import geotrellis.raster._
-      import geotrellis.vector._
-      import geotrellis.proj4._
-      import geotrellis.layer._
-      import geotrellis.store.s3._
-      import geotrellis.store.util._
-      import geotrellis.spark._
-      import geotrellis.spark.store.s3._
+      import geotrellis.raster.*
+      import geotrellis.vector.*
+      import geotrellis.proj4.*
+      import geotrellis.layer.*
+      import geotrellis.store.s3.*
+      import geotrellis.store.util.*
+      import geotrellis.spark.*
+      import geotrellis.spark.store.s3.*
       """
   ) ++ commonSettings ++ java17SparkSettings ++ noForkInTests
 
@@ -535,12 +543,12 @@ object Settings {
     Test / testOptions += Tests.Argument("-oD"),
     console / initialCommands :=
       """
-      import geotrellis.raster._
-      import geotrellis.vector._
-      import geotrellis.proj4._
-      import geotrellis.layer._
-      import geotrellis.spark._
-      import geotrellis.spark.util._
+      import geotrellis.raster.*
+      import geotrellis.vector.*
+      import geotrellis.proj4.*
+      import geotrellis.layer.*
+      import geotrellis.spark.*
+      import geotrellis.spark.util.*
       """
   ) ++ commonSettings ++ java17SparkSettings ++ noForkInTests
 
@@ -627,7 +635,8 @@ object Settings {
     ),
     Compile / PB.protoSources:= Seq(file("vectortile/data")),
     Compile / PB.targets := Seq(
-      scalapb.gen(flatPackage = true, grpc = false) -> (Compile / sourceManaged).value
+      // scala3Sources emits `?` wildcards, required once kind-projector claims `_`
+      scalapb.gen(flatPackage = true, grpc = false, scala3Sources = true) -> (Compile / sourceManaged).value
     )
   ) ++ commonSettings
 
@@ -642,10 +651,10 @@ object Settings {
     ),
     console / initialCommands :=
       """
-      import geotrellis.raster._
-      import geotrellis.vector._
-      import geotrellis.proj4._
-      import geotrellis.layer._
+      import geotrellis.raster.*
+      import geotrellis.vector.*
+      import geotrellis.proj4.*
+      import geotrellis.layer.*
       """
   ) ++ commonSettings
 

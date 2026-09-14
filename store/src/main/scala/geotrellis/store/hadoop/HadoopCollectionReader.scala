@@ -16,18 +16,18 @@
 
 package geotrellis.store.hadoop
 
-import geotrellis.layer._
-import geotrellis.store.avro._
-import geotrellis.store.avro.codecs._
+import geotrellis.layer.*
+import geotrellis.store.avro.*
+import geotrellis.store.avro.codecs.*
 import geotrellis.store.hadoop.formats.FilterMapFileInputFormat
 import geotrellis.store.util.IOUtils
 
-import cats.effect._
+import cats.effect.*
 import com.github.blemale.scaffeine.{Cache, Scaffeine}
 import org.apache.avro.Schema
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
-import org.apache.hadoop.io._
+import org.apache.hadoop.io.*
 
 class HadoopCollectionReader(maxOpenFiles: Int) extends Serializable {
 
@@ -61,7 +61,7 @@ class HadoopCollectionReader(maxOpenFiles: Int) extends Serializable {
     val pathRanges: Vector[(Path, BigInt, BigInt)] =
       FilterMapFileInputFormat.layerRanges(path, conf)
 
-    IOUtils.parJoin[K, V](indexRanges){ index: BigInt =>
+    IOUtils.parJoin[K, V](indexRanges){ (index: BigInt) =>
       val valueWritable = pathRanges
         .find(row => predicate(row, index))
         .map { case (p, _, _) =>

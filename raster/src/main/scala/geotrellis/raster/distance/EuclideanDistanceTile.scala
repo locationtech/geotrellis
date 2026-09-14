@@ -18,10 +18,10 @@ package geotrellis.raster.distance
 
 import org.locationtech.jts.geom.Coordinate
 
-import geotrellis.raster._
+import geotrellis.raster.*
 import geotrellis.raster.rasterize.polygon.PolygonRasterizer
-import geotrellis.vector._
-import geotrellis.vector.voronoi._
+import geotrellis.vector.*
+import geotrellis.vector.voronoi.*
 
 import scala.math.sqrt
 

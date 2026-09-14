@@ -16,8 +16,8 @@
 
 package geotrellis.spark.store.accumulo
 
-import geotrellis.store._
-import geotrellis.store.accumulo._
+import geotrellis.store.*
+import geotrellis.store.accumulo.*
 
 import org.apache.spark.SparkContext
 

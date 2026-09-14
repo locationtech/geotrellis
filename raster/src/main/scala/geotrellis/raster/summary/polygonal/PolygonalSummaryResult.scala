@@ -17,7 +17,7 @@
 package geotrellis.raster.summary.polygonal
 
 import cats.{Monad, Semigroup}
-import cats.syntax.semigroup._
+import cats.syntax.semigroup.*
 
 import scala.annotation.tailrec
 import scala.reflect.ClassTag

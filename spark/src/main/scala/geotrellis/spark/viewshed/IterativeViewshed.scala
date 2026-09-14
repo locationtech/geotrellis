@@ -16,16 +16,16 @@
 
 package geotrellis.spark.viewshed
 
-import geotrellis.raster._
+import geotrellis.raster.*
 import geotrellis.raster.viewshed.R2Viewshed
-import geotrellis.raster.viewshed.R2Viewshed._
-import geotrellis.layer._
-import geotrellis.spark._
-import geotrellis.spark.costdistance.IterativeCostDistance._
-import geotrellis.vector._
+import geotrellis.raster.viewshed.R2Viewshed.*
+import geotrellis.layer.*
+import geotrellis.spark.*
+import geotrellis.spark.costdistance.IterativeCostDistance.*
+import geotrellis.vector.*
 
-import org.locationtech.jts.{geom => jts}
-import org.log4s._
+import org.locationtech.jts.{geom as jts}
+import org.log4s.*
 import org.apache.spark.rdd.RDD
 import org.apache.spark.storage.StorageLevel
 import org.apache.spark.util.AccumulatorV2

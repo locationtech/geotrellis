@@ -17,14 +17,14 @@
 package geotrellis.raster.mapalgebra.focal
 
 
-import scala.math._
+import scala.math.*
 
 object Angles {
   @inline final def radians(d:Double) = d * Pi / 180.0
   @inline final def degrees(r:Double) = r * 180.0 / Pi
 }
 
-import Angles._
+import Angles.*
 
 /**
  * A definition of the shape and size

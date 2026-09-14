@@ -16,8 +16,8 @@
 
 package geotrellis.spark.partition
 
-import org.apache.spark._
-import org.apache.spark.rdd._
+import org.apache.spark.*
+import org.apache.spark.rdd.*
 
 
 
@@ -31,18 +31,18 @@ class ReorderedSpaceRDD[K, V](rdd: RDD[(K, V)], part: SpacePartitioner[K]) exten
   val sourcePart = {
     val msg =  s"ReorderedSpaceRDD requires that $rdd has a SpacePartitioner[K] with same indexing"
     require(rdd.partitioner.isDefined, msg)
-    require(rdd.partitioner.get.isInstanceOf[SpacePartitioner[_]], msg)
+    require(rdd.partitioner.get.isInstanceOf[SpacePartitioner[?]], msg)
     require(rdd.partitioner.get.asInstanceOf[SpacePartitioner[K]].hasSameIndex(part), msg)
     rdd.partitioner.get.asInstanceOf[SpacePartitioner[K]]
   }
 
-  override val partitioner = Some(part)
+  override val partitioner: Some[SpacePartitioner[K]] = Some(part)
 
   private def getSourcePartitionId(targetPartitionId: Int): Option[Int] = {
     sourcePart.regionIndex(part.regions(targetPartitionId))
   }
 
-  override def getDependencies: Seq[Dependency[_]] = {
+  override def getDependencies: Seq[Dependency[?]] = {
     List(new ReorderedDependency(rdd, { i => getSourcePartitionId(i) }))
   }
 

@@ -17,10 +17,10 @@
 package geotrellis.store.avro.codecs
 
 import geotrellis.store.avro.AvroRecordCodec
-import org.apache.avro._
+import org.apache.avro.*
 import org.apache.avro.generic.GenericRecord
 
-import scala.jdk.CollectionConverters._
+import scala.jdk.CollectionConverters.*
 
 class KeyValueRecordCodec[K, V](implicit a: AvroRecordCodec[K], b: AvroRecordCodec[V]) extends AvroRecordCodec[Vector[(K, V)]] {
   val pairCodec = new TupleCodec[K,V]

@@ -16,18 +16,18 @@
 
 package geotrellis.spark.reproject
 
-import geotrellis.raster._
-import geotrellis.raster.io.geotiff._
-import geotrellis.raster.resample._
-import geotrellis.raster.reproject.Reproject.{Options => RasterReprojectOptions}
-import geotrellis.layer._
-import geotrellis.spark._
+import geotrellis.raster.*
+import geotrellis.raster.io.geotiff.*
+import geotrellis.raster.resample.*
+import geotrellis.raster.reproject.Reproject.{Options as RasterReprojectOptions}
+import geotrellis.layer.*
+import geotrellis.spark.*
 import geotrellis.spark.reproject.Reproject.Options
-import geotrellis.spark.testkit._
-import geotrellis.vector._
-import geotrellis.proj4._
-import spire.syntax.cfor._
-import org.apache.spark._
+import geotrellis.spark.testkit.*
+import geotrellis.vector.*
+import geotrellis.proj4.*
+import spire.syntax.cfor.*
+import org.apache.spark.*
 import org.scalatest.funspec.AnyFunSpec
 
 class TileRDDReprojectSpec extends AnyFunSpec with TestEnvironment {

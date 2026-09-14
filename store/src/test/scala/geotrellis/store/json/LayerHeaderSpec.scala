@@ -16,13 +16,13 @@
 
 package geotrellis.store.json
 
-import geotrellis.store._
+import geotrellis.store.*
 import geotrellis.store.hadoop.HadoopLayerHeader
 import geotrellis.store.file.FileLayerHeader
 
-import io.circe._
-import io.circe.syntax._
-import cats.syntax.either._
+import io.circe.*
+import io.circe.syntax.*
+import cats.syntax.either.*
 
 import java.net.URI
 

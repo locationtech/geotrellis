@@ -16,7 +16,7 @@
 
 package geotrellis.store.cassandra
 
-import geotrellis.layer._
+import geotrellis.layer.*
 import geotrellis.store.util.IOUtils
 import geotrellis.store.avro.codecs.KeyValueRecordCodec
 import geotrellis.store.avro.{AvroEncoder, AvroRecordCodec}
@@ -24,7 +24,7 @@ import geotrellis.store.index.MergeQueue
 import geotrellis.store.LayerId
 import geotrellis.store.util.IORuntimeTransient
 
-import cats.effect._
+import cats.effect.*
 import org.apache.avro.Schema
 import com.datastax.oss.driver.api.querybuilder.QueryBuilder
 import com.datastax.oss.driver.api.querybuilder.QueryBuilder.literal
@@ -67,7 +67,7 @@ object CassandraCollectionReader {
     instance.withSessionDo { session =>
       val statement = session.prepare(query)
 
-      IOUtils.parJoinIO[K, V](ranges.iterator) { index: BigInt =>
+      IOUtils.parJoinIO[K, V](ranges.iterator) { (index: BigInt) =>
         session.executeF[IO](statement.bind(index.asJava)).map { row =>
           if (row.nonEmpty) {
             val bytes = row.one().getByteBuffer("value").array()

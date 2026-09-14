@@ -16,10 +16,10 @@
 
 package geotrellis.raster.mapalgebra.focal
 
-import geotrellis.raster._
-import geotrellis.raster.mapalgebra.focal.Angles._
+import geotrellis.raster.*
+import geotrellis.raster.mapalgebra.focal.Angles.*
 
-import scala.math._
+import scala.math.*
 
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.funspec.AnyFunSpec

@@ -16,7 +16,7 @@
 
 package geotrellis.spark.viewshed
 
-import geotrellis.layer._
+import geotrellis.layer.*
 import geotrellis.raster.Tile
 import org.apache.spark.rdd.RDD
 

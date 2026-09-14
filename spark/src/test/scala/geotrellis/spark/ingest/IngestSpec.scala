@@ -16,12 +16,12 @@
 
 package geotrellis.spark.ingest
 
-import geotrellis.vector._
-import geotrellis.layer._
-import geotrellis.spark._
-import geotrellis.spark.store.hadoop._
-import geotrellis.proj4._
-import geotrellis.spark.testkit._
+import geotrellis.vector.*
+import geotrellis.layer.*
+import geotrellis.spark.*
+import geotrellis.spark.store.hadoop.*
+import geotrellis.proj4.*
+import geotrellis.spark.testkit.*
 
 import org.apache.hadoop.fs.Path
 

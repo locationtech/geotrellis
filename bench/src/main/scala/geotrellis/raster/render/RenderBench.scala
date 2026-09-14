@@ -16,9 +16,9 @@
 
 package geotrellis.raster.render
 
-import org.openjdk.jmh.annotations._
+import org.openjdk.jmh.annotations.*
 import geotrellis.raster.{IntArrayTile, Tile}
-import geotrellis.raster.render.png._
+import geotrellis.raster.render.png.*
 
 @BenchmarkMode(Array(Mode.AverageTime))
 @State(Scope.Thread)

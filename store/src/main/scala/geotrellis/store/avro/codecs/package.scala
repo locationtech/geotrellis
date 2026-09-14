@@ -19,7 +19,7 @@ package geotrellis.store.avro
 import org.apache.avro.Schema
 import org.apache.avro.SchemaBuilder.FieldAssembler
 
-import scala.jdk.CollectionConverters._
+import scala.jdk.CollectionConverters.*
 
 package object codecs {
   private[codecs] def injectFields(from: Schema, to: FieldAssembler[Schema]): FieldAssembler[Schema] = {

@@ -37,7 +37,7 @@ abstract class UByteArrayTile(val array: Array[Byte], cols: Int, rows: Int)
     *
     * @return  The copy
     */
-  def copy = UByteArrayTile(array.clone, cols, rows, cellType)
+  def copy: UByteArrayTile = UByteArrayTile(array.clone, cols, rows, cellType)
 
   def withNoData(noDataValue: Option[Double]): Tile =
     UByteArrayTile(array, cols, rows, cellType.withNoData(noDataValue))
@@ -59,7 +59,7 @@ abstract class UByteArrayTile(val array: Array[Byte], cols: Int, rows: Int)
   */
 final case class UByteRawArrayTile(arr: Array[Byte], val cols: Int, val rows: Int)
     extends UByteArrayTile(arr, cols, rows) {
-  val cellType = UByteCellType
+  val cellType: UByteCellType.type = UByteCellType
   def apply(i: Int): Int = arr(i) & 0xFF
   def applyDouble(i: Int): Double = (arr(i) & 0xFF).toDouble
   def update(i: Int, z: Int): Unit = { arr(i) = z.toByte }
@@ -71,7 +71,7 @@ final case class UByteRawArrayTile(arr: Array[Byte], val cols: Int, val rows: In
   */
 final case class UByteConstantNoDataArrayTile(arr: Array[Byte], val cols: Int, val rows: Int)
     extends UByteArrayTile(arr, cols, rows) {
-  val cellType = UByteConstantNoDataCellType
+  val cellType: UByteConstantNoDataCellType.type = UByteConstantNoDataCellType
 
   /**
     * Fetch the datum at the given index in the array.

@@ -16,11 +16,11 @@
 
 package geotrellis.spark
 
-import geotrellis.proj4._
+import geotrellis.proj4.*
 import geotrellis.raster.{DoubleCellType, IntCellType, Tile}
 import geotrellis.raster.testkit.{RasterMatchers, TileBuilders}
 import geotrellis.spark.util.KryoSerializer
-import geotrellis.spark.testkit._
+import geotrellis.spark.testkit.*
 
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.funsuite.AnyFunSuite

@@ -16,13 +16,13 @@
 
 package geotrellis.raster.render.jpg
 
-import geotrellis.raster._
+import geotrellis.raster.*
 
 import java.io.{File, ByteArrayOutputStream}
 import java.nio.file.Files
-import javax.imageio._
-import javax.imageio.plugins.jpeg._
-import javax.imageio.stream._
+import javax.imageio.*
+import javax.imageio.plugins.jpeg.*
+import javax.imageio.stream.*
 import java.awt.image.BufferedImage
 import java.util.Locale
 

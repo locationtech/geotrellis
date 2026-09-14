@@ -16,11 +16,11 @@
 
 package geotrellis.vector.io.json
 
-import io.circe._
-import io.circe.syntax._
-import cats.syntax.either._
+import io.circe.*
+import io.circe.syntax.*
+import cats.syntax.either.*
 
-import geotrellis.vector._
+import geotrellis.vector.*
 
 /** A trait that implements Circe Encoders and Decoders for Geometry objects.
   * @note Import or extend this object directly to use them with default circe (un)marshaller
@@ -72,7 +72,7 @@ trait GeometryFormats {
     }
 
   implicit lazy val pointDecoder: Decoder[Point] =
-    Decoder.decodeJson.emap { json: Json =>
+    Decoder.decodeJson.emap { (json: Json) =>
       val c = json.hcursor
       c.downField("type").as[String].flatMap {
         case "Point" => c.downField("coordinates").focus.map(readPointCoords).toRight("Point geometry expected")
@@ -90,7 +90,7 @@ trait GeometryFormats {
     }
 
   implicit lazy val lineDecoder: Decoder[LineString] =
-    Decoder.decodeJson.emap { json: Json =>
+    Decoder.decodeJson.emap { (json: Json) =>
       val c = json.hcursor
       c.downField("type").as[String].flatMap {
         case "LineString" => c.downField("coordinates").focus.map(readLineCoords).toRight("LineString geometry expected")
@@ -108,7 +108,7 @@ trait GeometryFormats {
     }
 
   implicit lazy val polygonDecoder: Decoder[Polygon] =
-    Decoder.decodeJson.emap { json: Json =>
+    Decoder.decodeJson.emap { (json: Json) =>
       val c = json.hcursor
       c.downField("type").as[String].flatMap {
         case "Polygon" => c.downField("coordinates").focus.map(readPolygonCoords).toRight("Polygon geometry expected")
@@ -126,7 +126,7 @@ trait GeometryFormats {
     }
 
   implicit lazy val multiPointDecoder: Decoder[MultiPoint] =
-    Decoder.decodeJson.emap { json: Json =>
+    Decoder.decodeJson.emap { (json: Json) =>
       val c = json.hcursor
       c.downField("type").as[String].flatMap {
         case "MultiPoint" => c.downField("coordinates").focus.map(json => MultiPoint(json.asArray.toVector.flatten.map(readPointCoords))).toRight("MultiPoint geometry expected")
@@ -144,7 +144,7 @@ trait GeometryFormats {
     }
 
   implicit lazy val multiLineStringDecoder: Decoder[MultiLineString] =
-    Decoder.decodeJson.emap { json: Json =>
+    Decoder.decodeJson.emap { (json: Json) =>
       val c = json.hcursor
       c.downField("type").as[String].flatMap {
         case "MultiLineString" => c.downField("coordinates").focus.map(json => MultiLineString(json.asArray.toVector.flatten.map(readLineCoords))).toRight("MultiLineString geometry expected")
@@ -163,7 +163,7 @@ trait GeometryFormats {
     }
 
   implicit lazy val multiPolygonDecoder: Decoder[MultiPolygon] =
-    Decoder.decodeJson.emap { json: Json =>
+    Decoder.decodeJson.emap { (json: Json) =>
       val c = json.hcursor
       c.downField("type").as[String].flatMap {
         case "MultiPolygon" => c.downField("coordinates").focus.map(json => MultiPolygon(json.asArray.toVector.flatten.map(readPolygonCoords))).toRight("MultiPolygon geometry expected")
@@ -190,7 +190,7 @@ trait GeometryFormats {
     }
 
   implicit lazy val geometryCollectionDecoder: Decoder[GeometryCollection] =
-    Decoder.decodeJson.emap { json: Json =>
+    Decoder.decodeJson.emap { (json: Json) =>
       val c = json.hcursor
       c.downField("type").as[String].flatMap {
         case "GeometryCollection" => c.downField("geometries").focus.map(json => GeometryCollection(json.asArray.toVector.flatten.flatMap(j => geometryDecoder(j.hcursor).toOption))).toRight("MultiPolygon geometry expected")
@@ -212,7 +212,7 @@ trait GeometryFormats {
     }
 
   implicit lazy val geometryDecoder: Decoder[Geometry] =
-    Decoder.decodeJson.emap { json: Json =>
+    Decoder.decodeJson.emap { (json: Json) =>
       val c = json.hcursor
       c.downField("type").as[String].flatMap {
         case "Feature" => geometryDecoder(unwrapFeature(json).hcursor)

@@ -16,12 +16,12 @@
 
 package geotrellis.layer.mapalgebra.focal
 
-import geotrellis.layer._
-import geotrellis.vector._
-import geotrellis.raster._
+import geotrellis.layer.*
+import geotrellis.vector.*
+import geotrellis.raster.*
 import geotrellis.raster.buffer.BufferedTile
-import geotrellis.raster.mapalgebra.focal._
-import geotrellis.util._
+import geotrellis.raster.mapalgebra.focal.*
+import geotrellis.util.*
 
 
 object CollectionFocalOperation {

@@ -16,15 +16,15 @@
 
 package geotrellis.vector.interpolation
 
-import geotrellis.vector._
-import spire.syntax.cfor._
+import geotrellis.vector.*
+import spire.syntax.cfor.*
 
 object InterpolationVector {
 
   def apply(pointArr: Array[Point])(predictor: (Double, Double) => (Double, Double)): Array[(Double, Double)] = {
     val result = Array.ofDim[(Double, Double)](pointArr.length)
 
-    cfor(0)(_ < pointArr.length, _ + 1) { i: Int =>
+    cfor(0)(_ < pointArr.length, _ + 1) { (i: Int) =>
       result(i) = predictor(pointArr(i).x, pointArr(i).y)
     }
     result

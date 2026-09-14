@@ -16,14 +16,14 @@
 
 package geotrellis.spark.timeseries
 
-import geotrellis.raster._
+import geotrellis.raster.*
 import geotrellis.layer.SpaceTimeKey
 import geotrellis.layer.mask.Mask
-import geotrellis.spark._
+import geotrellis.spark.*
 import geotrellis.util.annotations.experimental
-import geotrellis.vector._
+import geotrellis.vector.*
 
-import org.apache.spark.rdd._
+import org.apache.spark.rdd.*
 
 import scala.reflect.ClassTag
 

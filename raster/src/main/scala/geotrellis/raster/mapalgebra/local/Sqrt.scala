@@ -16,7 +16,7 @@
 
 package geotrellis.raster.mapalgebra.local
 
-import geotrellis.raster._
+import geotrellis.raster.*
 
 /**
  * Operation for taking a square root.
@@ -24,6 +24,6 @@ import geotrellis.raster._
 object Sqrt extends Serializable {
   /** Take the square root each value in a raster. */
   def apply(r: Tile) = 
-    r.dualMap { z: Int => if(isNoData(z) || z < 0) NODATA else math.sqrt(z).toInt }
-              { z: Double =>math.sqrt(z) }
+    r.dualMap { (z: Int) => if(isNoData(z) || z < 0) NODATA else math.sqrt(z).toInt }
+              { (z: Double) =>math.sqrt(z) }
 }

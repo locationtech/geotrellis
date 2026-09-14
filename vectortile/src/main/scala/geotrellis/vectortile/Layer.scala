@@ -16,13 +16,13 @@
 
 package geotrellis.vectortile
 
-import geotrellis.vectortile.internal._
-import geotrellis.vectortile.internal.PBTile._
+import geotrellis.vectortile.internal.*
+import geotrellis.vectortile.internal.PBTile.*
 import geotrellis.vectortile.internal.PBTile.PBGeomType.{LINESTRING, POINT, POLYGON}
 
 import geotrellis.util.annotations.experimental
 import geotrellis.proj4.{LatLng, WebMercator}
-import geotrellis.vector._
+import geotrellis.vector.*
 
 import scala.collection.mutable.ListBuffer
 

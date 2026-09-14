@@ -18,7 +18,7 @@ package geotrellis.raster.mapalgebra.focal
 
 import geotrellis.vector.{Extent, Point}
 
-import org.apache.commons.math3.analysis.interpolation._
+import org.apache.commons.math3.analysis.interpolation.*
 
 import squants.space.{LengthUnit, Feet, Meters}
 

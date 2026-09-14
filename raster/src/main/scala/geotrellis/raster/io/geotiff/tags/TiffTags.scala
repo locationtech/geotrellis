@@ -16,26 +16,26 @@
 
 package geotrellis.raster.io.geotiff.tags
 
-import io.circe._
-import io.circe.generic.semiauto._
+import io.circe.*
+import io.circe.generic.semiauto.*
 import geotrellis.proj4.{CRS, LatLng}
 import geotrellis.vector.Extent
-import geotrellis.raster._
-import geotrellis.raster.io.geotiff._
+import geotrellis.raster.*
+import geotrellis.raster.io.geotiff.*
 import geotrellis.raster.io.geotiff.reader.{MalformedGeoTiffException, GeoTiffCSParser}
-import geotrellis.raster.io.geotiff.tags._
-import geotrellis.raster.io.geotiff.tags.codes._
-import geotrellis.raster.io.geotiff.util._
+import geotrellis.raster.io.geotiff.tags.*
+import geotrellis.raster.io.geotiff.tags.codes.*
+import geotrellis.raster.io.geotiff.util.*
 import geotrellis.util.{ByteReader, Filesystem}
 import java.nio.{ByteBuffer, ByteOrder}
-import ModelTypes._
+import ModelTypes.*
 import monocle.macros.Lenses
-import monocle.syntax.apply._
+import monocle.syntax.apply.*
 import ProjectionTypesMap.UserDefinedProjectionType
-import spire.syntax.cfor._
-import TagCodes._
-import TiffFieldType._
-import xml._
+import spire.syntax.cfor.*
+import TagCodes.*
+import TiffFieldType.*
+import xml.*
 
 @Lenses("_")
 case class TiffTags(

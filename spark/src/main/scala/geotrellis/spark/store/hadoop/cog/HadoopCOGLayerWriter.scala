@@ -17,23 +17,23 @@
 package geotrellis.spark.store.hadoop.cog
 
 import geotrellis.layer.SpatialComponent
-import geotrellis.raster._
+import geotrellis.raster.*
 import geotrellis.raster.io.geotiff.GeoTiff
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.raster.io.geotiff.writer.GeoTiffWriter
-import geotrellis.store._
-import geotrellis.store.cog.{COGLayerStorageMetadata, ZoomRange, _}
+import geotrellis.store.*
+import geotrellis.store.cog.{COGLayerStorageMetadata, ZoomRange, *}
 import geotrellis.store.cog.vrt.VRT
 import geotrellis.store.cog.vrt.VRT.IndexedSimpleSource
 import geotrellis.store.hadoop.{HadoopAttributeStore, HadoopLayerHeader, SerializableConfiguration}
 import geotrellis.store.hadoop.util.HdfsUtils
-import geotrellis.store.index._
-import geotrellis.spark.store.cog._
-import geotrellis.spark.store.hadoop._
+import geotrellis.store.index.*
+import geotrellis.spark.store.cog.*
+import geotrellis.spark.store.hadoop.*
 import geotrellis.util.RangeReader
 import org.apache.hadoop.fs.Path
 import org.apache.spark.SparkContext
-import _root_.io.circe._
+import _root_.io.circe.*
 
 import scala.reflect.{ClassTag, classTag}
 import java.net.URI

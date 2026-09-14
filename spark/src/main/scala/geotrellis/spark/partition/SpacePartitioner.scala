@@ -16,13 +16,13 @@
 
 package geotrellis.spark.partition
 
-import geotrellis.layer._
-import geotrellis.spark._
-import geotrellis.util._
-import org.apache.spark._
+import geotrellis.layer.*
+import geotrellis.spark.*
+import geotrellis.util.*
+import org.apache.spark.*
 import org.apache.spark.rdd.{RDD, ShuffledRDD}
 
-import scala.reflect._
+import scala.reflect.*
 
 case class SpacePartitioner[K: Boundable: ClassTag](bounds: Bounds[K])
   (implicit val index: PartitionerIndex[K]) extends Partitioner {

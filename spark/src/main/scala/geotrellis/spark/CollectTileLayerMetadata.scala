@@ -18,15 +18,15 @@ package geotrellis.spark
 
 
 import geotrellis.proj4.CRS
-import geotrellis.raster._
-import geotrellis.layer._
-import geotrellis.spark.tiling._
-import geotrellis.spark.tiling._
-import geotrellis.util._
+import geotrellis.raster.*
+import geotrellis.layer.*
+import geotrellis.spark.tiling.*
+import geotrellis.spark.tiling.*
+import geotrellis.util.*
 import geotrellis.vector.{Extent, ProjectedExtent}
 
 
-import org.apache.spark.rdd._
+import org.apache.spark.rdd.*
 
 object CollectTileLayerMetadata {
   private def collectMetadata[

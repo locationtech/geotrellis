@@ -20,7 +20,7 @@ import geotrellis.store.LayerId
 import geotrellis.store.AttributeStore
 import geotrellis.store.hadoop.cog.HadoopCOGCollectionLayerProvider
 import geotrellis.store.hadoop.util.HdfsUtils
-import geotrellis.spark.store.cog._
+import geotrellis.spark.store.cog.*
 
 import org.apache.hadoop.fs.Path
 import org.apache.spark.SparkContext

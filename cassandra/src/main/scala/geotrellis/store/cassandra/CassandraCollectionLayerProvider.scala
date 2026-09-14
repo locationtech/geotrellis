@@ -16,7 +16,7 @@
 
 package geotrellis.store.cassandra
 
-import geotrellis.store._
+import geotrellis.store.*
 import geotrellis.store.cassandra.conf.CassandraConfig
 import geotrellis.util.UriUtils
 

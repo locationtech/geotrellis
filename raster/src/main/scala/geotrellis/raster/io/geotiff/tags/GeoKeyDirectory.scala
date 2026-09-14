@@ -16,12 +16,12 @@
 
 package geotrellis.raster.io.geotiff.tags
 
-import ProjectionTypesMap._
+import ProjectionTypesMap.*
 import geotrellis.raster.io.geotiff.reader.MalformedGeoTiffException
 
 import monocle.macros.Lenses
-import io.circe._
-import io.circe.generic.semiauto._
+import io.circe.*
+import io.circe.generic.semiauto.*
 
 import scala.collection.immutable.HashMap
 

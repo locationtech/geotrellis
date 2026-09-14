@@ -16,8 +16,8 @@
 
 package geotrellis.layer
 
-import geotrellis.raster._
-import geotrellis.util._
+import geotrellis.raster.*
+import geotrellis.util.*
 
 /** Reads tiles by key from a [[RasterSource]] as keyed by a [[LayoutDefinition]]
   * @note It is required that the [[RasterSource]] is pixel aligned with the [[LayoutDefinition]]
@@ -192,9 +192,9 @@ object LayoutTileSource {
     new LayoutTileSource(source, layout, tileKeyTransform)
 
   private def requireGridAligned(a: GridExtent[Long], b: GridExtent[Long]): Unit = {
-    import org.scalactic._
-    import TripleEquals._
-    import Tolerance._
+    import org.scalactic.*
+    import TripleEquals.*
+    import Tolerance.*
 
     val epsX: Double = math.min(a.cellwidth, b.cellwidth) * 0.01
     val epsY: Double = math.min(a.cellheight, b.cellheight) * 0.01

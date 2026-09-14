@@ -16,10 +16,10 @@
 
 package geotrellis.spark.resample
 
-import geotrellis.raster._
-import geotrellis.raster.resample._
-import geotrellis.layer._
-import org.apache.spark.rdd._
+import geotrellis.raster.*
+import geotrellis.raster.resample.*
+import geotrellis.layer.*
+import org.apache.spark.rdd.*
 
 object Implicits extends Implicits
 

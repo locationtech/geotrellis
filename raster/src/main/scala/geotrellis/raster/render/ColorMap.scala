@@ -17,9 +17,9 @@
 package geotrellis.raster.render
 
 import geotrellis.raster.histogram.Histogram
-import spire.syntax.cfor._
-import spire.std.any._
-import _root_.io.circe._
+import spire.syntax.cfor.*
+import spire.std.any.*
+import _root_.io.circe.*
 import geotrellis.raster.{ArrayTile, IntCellType, Tile, d2i, i2d, isNoData}
 
 import scala.util.Try

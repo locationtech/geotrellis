@@ -16,11 +16,11 @@
 
 package geotrellis.raster.rasterize.polygon
 
-import geotrellis.raster._
-import geotrellis.raster.rasterize._
-import geotrellis.vector._
+import geotrellis.raster.*
+import geotrellis.raster.rasterize.*
+import geotrellis.vector.*
 
-import spire.syntax.cfor._
+import spire.syntax.cfor.*
 
 import scala.collection.mutable
 import scala.math.{min, max, ceil, floor, abs}

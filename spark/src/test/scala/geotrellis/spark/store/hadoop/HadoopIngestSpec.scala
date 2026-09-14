@@ -17,12 +17,12 @@
 package geotrellis.spark.store.hadoop
 
 import geotrellis.proj4.LatLng
-import geotrellis.layer._
-import geotrellis.spark._
-import geotrellis.spark.ingest._
-import geotrellis.spark.testkit.testfiles._
-import geotrellis.vector._
-import geotrellis.spark.testkit._
+import geotrellis.layer.*
+import geotrellis.spark.*
+import geotrellis.spark.ingest.*
+import geotrellis.spark.testkit.testfiles.*
+import geotrellis.vector.*
+import geotrellis.spark.testkit.*
 
 import org.apache.hadoop.fs.Path
 

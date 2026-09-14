@@ -16,8 +16,8 @@
 
 package geotrellis.raster.crop
 
-import geotrellis.vector._
-import geotrellis.raster._
+import geotrellis.vector.*
+import geotrellis.raster.*
 import geotrellis.raster.io.geotiff.GeoTiffMultibandTile
 
 

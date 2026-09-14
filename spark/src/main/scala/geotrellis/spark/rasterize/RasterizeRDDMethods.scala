@@ -16,13 +16,13 @@
 
 package geotrellis.spark.rasterize
 
-import geotrellis.raster._
-import geotrellis.raster.rasterize._
-import geotrellis.layer._
+import geotrellis.raster.*
+import geotrellis.raster.rasterize.*
+import geotrellis.layer.*
 import geotrellis.util.MethodExtensions
 import geotrellis.vector.{Feature, Geometry}
-import org.apache.spark._
-import org.apache.spark.rdd._
+import org.apache.spark.*
+import org.apache.spark.rdd.*
 
 /**
   * Extension methods for invoking the rasterizer on RDD of Geometry objects.

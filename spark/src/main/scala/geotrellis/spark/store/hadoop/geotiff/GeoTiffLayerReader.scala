@@ -16,13 +16,13 @@
 
 package geotrellis.spark.store.hadoop.geotiff
 
-import geotrellis.raster.io.geotiff._
+import geotrellis.raster.io.geotiff.*
 import geotrellis.raster.{CellGrid, Raster, RasterExtent}
 import geotrellis.raster.resample.{RasterResampleMethods, ResampleMethod}
 import geotrellis.layer.{SpatialKey, ZoomedLayoutScheme}
 import geotrellis.vector.{Extent, ProjectedExtent}
 import geotrellis.raster.crop.Crop
-import geotrellis.raster.reproject.Reproject.{Options => ReprojectOptions}
+import geotrellis.raster.reproject.Reproject.{Options as ReprojectOptions}
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.raster.reproject.RasterReprojectMethods
 import geotrellis.raster.merge.RasterMergeMethods
@@ -30,8 +30,8 @@ import geotrellis.util.RangeReader
 import geotrellis.util.annotations.experimental
 import geotrellis.store.LayerId
 
-import cats.effect._
-import cats.syntax.either._
+import cats.effect.*
+import cats.syntax.either.*
 
 import scala.reflect.ClassTag
 

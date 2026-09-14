@@ -18,7 +18,7 @@ package geotrellis.layer.mapalgebra.local
 
 import geotrellis.raster.Tile
 import geotrellis.raster.mapalgebra.local.Pow
-import geotrellis.layer._
+import geotrellis.layer.*
 import geotrellis.util.MethodExtensions
 
 trait PowTileCollectionMethods[K] extends MethodExtensions[Seq[(K, Tile)]] {

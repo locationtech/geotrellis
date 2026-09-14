@@ -16,7 +16,7 @@
 
 package geotrellis.raster.render.png
 
-import geotrellis.raster._
+import geotrellis.raster.*
 
 import java.io.ByteArrayOutputStream
 import java.io.DataOutputStream
@@ -28,7 +28,7 @@ import java.util.zip.Deflater
 import java.util.zip.DeflaterOutputStream
 
 
-import Util._
+import Util.*
 
 case class PngEncoder(settings: Settings) {
   // magic numbers from the PNG spec

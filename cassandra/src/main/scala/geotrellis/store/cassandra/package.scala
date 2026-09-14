@@ -16,9 +16,9 @@
 
 package geotrellis.store
 
-import geotrellis.store.util._
+import geotrellis.store.util.*
 import cats.effect.Async
-import cats.syntax.functor._
+import cats.syntax.functor.*
 import com.datastax.oss.driver.api.core.CqlSession
 import com.datastax.oss.driver.api.core.cql.{AsyncResultSet, Statement}
 
@@ -31,7 +31,7 @@ package object cassandra extends Serializable {
 
   implicit class CqlSessionOps(val self: CqlSession) extends AnyVal {
     def closeF[F[_]: Async]: F[Unit] = Async[F].liftCompletableFuture(self.closeAsync().toCompletableFuture).void
-    def executeF[F[_]: Async](statement: Statement[_]): F[AsyncResultSet] = Async[F].liftCompletableFuture(self.executeAsync(statement).toCompletableFuture)
+    def executeF[F[_]: Async](statement: Statement[?]): F[AsyncResultSet] = Async[F].liftCompletableFuture(self.executeAsync(statement).toCompletableFuture)
   }
 
   implicit class AsyncResultSetOps(val self: AsyncResultSet) extends AnyVal {

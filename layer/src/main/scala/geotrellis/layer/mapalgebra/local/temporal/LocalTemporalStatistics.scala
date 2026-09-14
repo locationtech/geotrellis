@@ -18,16 +18,16 @@ package geotrellis.layer.mapalgebra.local.temporal
 
 import geotrellis.raster.Tile
 import geotrellis.layer.{SpatialComponent, SpatialKey, TemporalComponent, TemporalKey}
-import geotrellis.util._
+import geotrellis.util.*
 
-import java.time._
-import java.time.temporal.ChronoUnit._
-import jp.ne.opt.chronoscala.Imports._
+import java.time.*
+import java.time.temporal.ChronoUnit.*
+import jp.ne.opt.chronoscala.Imports.*
 
 
 
 object LocalTemporalStatistics {
-  import TemporalWindowHelper._
+  import TemporalWindowHelper.*
 
   def temporalMin[K: SpatialComponent: TemporalComponent](
     seq: Seq[(K, Tile)],
@@ -93,7 +93,7 @@ object LocalTemporalStatistics {
       .map { case (_, iter) =>
         val (keys, tiles) = iter.unzip
 
-        val key = keys.min(Ordering.by { key: K => key.getComponent[TemporalKey].time })
+        val key = keys.min(Ordering.by { (key: K) => key.getComponent[TemporalKey].time })
         val tile = reduceOp(tiles)
 
         (key, tile)

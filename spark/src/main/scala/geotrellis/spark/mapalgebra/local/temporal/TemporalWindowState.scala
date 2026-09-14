@@ -16,9 +16,9 @@
 
 package geotrellis.spark.mapalgebra.local.temporal
 
-import geotrellis.raster._
-import geotrellis.layer._
-import geotrellis.layer.mapalgebra.local.temporal._
+import geotrellis.raster.*
+import geotrellis.layer.*
+import geotrellis.layer.mapalgebra.local.temporal.*
 
 import org.apache.spark.Partitioner
 import org.apache.spark.rdd.RDD
@@ -39,7 +39,7 @@ case class TemporalWindowState[K](
     _sc: SpatialComponent[K],
     _tc: TemporalComponent[K]) {
 
-  import TemporalWindowHelper._
+  import TemporalWindowHelper.*
 
   private lazy val state =
     if (windowSize.isEmpty && unit.isEmpty) 0

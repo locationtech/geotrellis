@@ -16,7 +16,7 @@
 
 package geotrellis.spark.util
 
-import org.log4s._
+import org.log4s.*
 import org.apache.hadoop.conf.Configuration
 import org.apache.spark.SparkConf
 import org.apache.spark.SparkContext

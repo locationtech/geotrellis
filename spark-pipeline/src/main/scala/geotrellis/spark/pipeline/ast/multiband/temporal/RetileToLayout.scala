@@ -16,11 +16,11 @@
 
 package geotrellis.spark.pipeline.ast.multiband.temporal
 
-import io.circe.syntax._
-import geotrellis.raster._
+import io.circe.syntax.*
+import geotrellis.raster.*
 import geotrellis.layer.SpaceTimeKey
-import geotrellis.spark._
-import geotrellis.spark.pipeline.ast._
+import geotrellis.spark.*
+import geotrellis.spark.pipeline.ast.*
 import geotrellis.spark.pipeline.json.transform
 import org.apache.spark.SparkContext
 

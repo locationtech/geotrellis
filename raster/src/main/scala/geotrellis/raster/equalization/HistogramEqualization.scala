@@ -16,7 +16,7 @@
 
 package geotrellis.raster.equalization
 
-import geotrellis.raster._
+import geotrellis.raster.*
 import geotrellis.raster.histogram.Histogram
 import geotrellis.raster.histogram.StreamingHistogram
 

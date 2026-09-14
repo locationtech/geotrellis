@@ -16,10 +16,10 @@
 
 package geotrellis.spark
 
-import geotrellis.raster._
-import geotrellis.layer._
-import geotrellis.util._
-import org.apache.spark.rdd._
+import geotrellis.raster.*
+import geotrellis.layer.*
+import geotrellis.util.*
+import org.apache.spark.rdd.*
 
 import scala.reflect.ClassTag
 

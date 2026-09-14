@@ -18,10 +18,10 @@ package geotrellis.raster.io.geotiff
 
 import geotrellis.raster.CellSize
 
-import cats.syntax.foldable._
-import cats.syntax.option._
-import cats.instances.list._
-import cats.instances.either._
+import cats.syntax.foldable.*
+import cats.syntax.option.*
+import cats.instances.list.*
+import cats.instances.either.*
 import org.log4s.getLogger
 
 /**

@@ -16,12 +16,12 @@
 
 package geotrellis.spark.join
 
-import geotrellis.layer._
-import geotrellis.spark.partition._
-import org.apache.spark.rdd._
-import geotrellis.util._
+import geotrellis.layer.*
+import geotrellis.spark.partition.*
+import org.apache.spark.rdd.*
+import geotrellis.util.*
 
-import scala.reflect._
+import scala.reflect.*
 
 abstract class SpatialJoinMethods[
   K: Boundable: PartitionerIndex: ClassTag,

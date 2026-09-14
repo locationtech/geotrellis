@@ -16,8 +16,8 @@
 
 package geotrellis.store.index
 
-import geotrellis.layer._
-import geotrellis.store.index.zcurve._
+import geotrellis.layer.*
+import geotrellis.store.index.zcurve.*
 
 private[index] trait ZCurveKeyIndexMethod
 
@@ -30,7 +30,7 @@ object ZCurveKeyIndexMethod extends ZCurveKeyIndexMethod {
 
   def byMilliseconds(millis: Long): KeyIndexMethod[SpaceTimeKey] =
     new KeyIndexMethod[SpaceTimeKey] {
-      def createIndex(keyBounds: KeyBounds[SpaceTimeKey]) = ZSpaceTimeKeyIndex.byMilliseconds(keyBounds, millis)
+      def createIndex(keyBounds: KeyBounds[SpaceTimeKey]): ZSpaceTimeKeyIndex = ZSpaceTimeKeyIndex.byMilliseconds(keyBounds, millis)
     }
 
   def bySecond(): KeyIndexMethod[SpaceTimeKey] =

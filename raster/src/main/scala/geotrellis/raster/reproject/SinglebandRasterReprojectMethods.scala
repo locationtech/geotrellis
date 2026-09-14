@@ -16,11 +16,11 @@
 
 package geotrellis.raster.reproject
 
-import geotrellis.raster._
-import geotrellis.raster.resample._
-import geotrellis.proj4._
+import geotrellis.raster.*
+import geotrellis.raster.resample.*
+import geotrellis.proj4.*
 
-import spire.syntax.cfor._
+import spire.syntax.cfor.*
 
 trait SinglebandRasterReprojectMethods extends RasterReprojectMethods[SinglebandRaster] {
   import Reproject.Options

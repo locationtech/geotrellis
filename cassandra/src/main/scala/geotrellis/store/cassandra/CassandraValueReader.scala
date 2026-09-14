@@ -16,18 +16,18 @@
 
 package geotrellis.store.cassandra
 
-import geotrellis.layer._
-import geotrellis.raster._
-import geotrellis.raster.resample._
-import geotrellis.store._
+import geotrellis.layer.*
+import geotrellis.raster.*
+import geotrellis.raster.resample.*
+import geotrellis.store.*
 import geotrellis.store.avro.codecs.KeyValueRecordCodec
 import geotrellis.store.avro.{AvroEncoder, AvroRecordCodec}
 
 import com.datastax.oss.driver.api.querybuilder.QueryBuilder
 import com.datastax.oss.driver.api.querybuilder.QueryBuilder.literal
-import _root_.io.circe._
+import _root_.io.circe.*
 
-import scala.jdk.CollectionConverters._
+import scala.jdk.CollectionConverters.*
 import scala.reflect.ClassTag
 import java.math.BigInteger
 
@@ -59,7 +59,7 @@ class CassandraValueReader(
       val tiles = row.asScala.map { entry =>
           AvroEncoder.fromBinary(writerSchema, entry.getByteBuffer("value").array())(codec)
         }
-        .flatMap { pairs: Vector[(K, V)] =>
+        .flatMap { (pairs: Vector[(K, V)]) =>
           pairs.filter(pair => pair._1 == key)
         }
         .toVector

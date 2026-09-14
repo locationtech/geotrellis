@@ -20,12 +20,12 @@ import geotrellis.store.cassandra.conf.CassandraConfig
 import com.datastax.oss.driver.api.core.CqlSession
 import com.datastax.oss.driver.api.querybuilder.SchemaBuilder
 
-import scala.jdk.CollectionConverters._
+import scala.jdk.CollectionConverters.*
 import java.net.{InetSocketAddress, URI}
 
 object CassandraInstance {
   def apply(uri: URI): CassandraInstance = {
-    import geotrellis.util.UriUtils._
+    import geotrellis.util.UriUtils.*
 
     val zookeeper = uri.getHost
     val (user, pass) = getUserInfo(uri)

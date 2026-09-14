@@ -17,8 +17,8 @@
 package geotrellis.raster.mapalgebra.focal
 
 import geotrellis.vector.Extent
-import geotrellis.raster._
-import geotrellis.raster.testkit._
+import geotrellis.raster.*
+import geotrellis.raster.testkit.*
 
 import org.scalatest.funspec.AnyFunSpec
 

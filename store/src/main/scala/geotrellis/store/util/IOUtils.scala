@@ -16,20 +16,20 @@
 
 package geotrellis.store.util
 
-import cats.effect._
-import cats.effect.syntax.temporal._
-import cats.syntax.either._
-import cats.syntax.applicativeError._
+import cats.effect.*
+import cats.effect.syntax.temporal.*
+import cats.syntax.either.*
+import cats.syntax.applicativeError.*
 import cats.ApplicativeError
 
-import scala.concurrent.duration._
+import scala.concurrent.duration.*
 import scala.util.Random
 
 object IOUtils {
   /**
     * Implement non-blocking Exponential Backoff on a Task.
     */
-  implicit class IOBackoff[A, F[_]: ApplicativeError[*[_], Throwable]: Temporal](ioa: F[A]) {
+  implicit class IOBackoff[A, F[_]: ApplicativeError[_[_], Throwable]: Temporal](ioa: F[A]) {
     /**
       * @param  p  returns true for exceptions that trigger a backoff and retry
       * @return
@@ -40,7 +40,7 @@ object IOUtils {
         val timeout = base * Random.nextInt(math.pow(2, count).toInt) // .extInt is [), implying -1
         val actualDelay = FiniteDuration(timeout.toMillis, MILLISECONDS)
 
-        ioa.handleErrorWith { error: Throwable =>
+        ioa.handleErrorWith { (error: Throwable) =>
           if(p(error)) help(count + 1).andWait(actualDelay)
           else error.raiseError
         }

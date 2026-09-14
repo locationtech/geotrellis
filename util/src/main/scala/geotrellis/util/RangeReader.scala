@@ -16,7 +16,7 @@
 
 package geotrellis.util
 
-import scala.jdk.CollectionConverters._
+import scala.jdk.CollectionConverters.*
 import java.net.URI
 import java.util.ServiceLoader
 

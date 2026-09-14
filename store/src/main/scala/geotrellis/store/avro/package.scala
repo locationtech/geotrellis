@@ -16,9 +16,9 @@
 
 package geotrellis.store
 
-import geotrellis.util._
-import org.apache.avro._
-import org.apache.avro.generic._
+import geotrellis.util.*
+import org.apache.avro.*
+import org.apache.avro.generic.*
 
 package object avro {
   implicit class withGenericRecordMethods(val self: GenericRecord) extends MethodExtensions[GenericRecord] {

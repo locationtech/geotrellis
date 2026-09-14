@@ -16,13 +16,13 @@
 
 package geotrellis.store.file
 
-import geotrellis.layer._
-import geotrellis.store._
+import geotrellis.layer.*
+import geotrellis.store.*
 import geotrellis.store.AttributeStore.Fields
 import geotrellis.store.avro.AvroRecordCodec
 import geotrellis.util.{Component, Filesystem}
 
-import _root_.io.circe._
+import _root_.io.circe.*
 
 import scala.reflect.ClassTag
 import java.io.File

@@ -16,9 +16,9 @@
 
 package geotrellis.util
 
-import java.io._
+import java.io.*
 import java.nio.channels.FileChannel
-import java.nio.channels.FileChannel.MapMode._
+import java.nio.channels.FileChannel.MapMode.*
 
 /**
  * This class extends [[RangeReader]] by reading chunks from a given local path. This

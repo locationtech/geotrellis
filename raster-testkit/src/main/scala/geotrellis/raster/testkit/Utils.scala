@@ -37,7 +37,7 @@ object Utils {
 
   /** A dirty reflection function to modify object vals */
   def modifyField(obj: AnyRef, name: String, value: Any): Unit = {
-    def impl(clazz: Class[_]): Unit = {
+    def impl(clazz: Class[?]): Unit = {
       Try(clazz.getDeclaredField(name)).toOption match {
         case Some(field) =>
           field.setAccessible(true)

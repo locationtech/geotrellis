@@ -16,13 +16,13 @@
 
 package geotrellis.spark.store.hbase
 
-import geotrellis.store._
-import geotrellis.store.hbase._
-import org.log4s._
-import org.apache.hadoop.hbase.client._
+import geotrellis.store.*
+import geotrellis.store.hbase.*
+import org.log4s.*
+import org.apache.hadoop.hbase.client.*
 import org.apache.hadoop.hbase.filter.PrefixFilter
 
-import scala.jdk.CollectionConverters._
+import scala.jdk.CollectionConverters.*
 
 class HBaseLayerDeleter(val attributeStore: AttributeStore, instance: HBaseInstance) extends LayerDeleter[LayerId] {
   @transient private[this] lazy val logger = getLogger

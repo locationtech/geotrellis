@@ -16,10 +16,10 @@
 
 package geotrellis.raster.mapalgebra.local
 
-import geotrellis.raster._
+import geotrellis.raster.*
 import geotrellis.util.MethodExtensions
 
-import spire.syntax.cfor._
+import spire.syntax.cfor.*
 import scala.collection.mutable
 
 

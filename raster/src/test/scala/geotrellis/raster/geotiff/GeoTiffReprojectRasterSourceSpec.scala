@@ -16,12 +16,12 @@
 
 package geotrellis.raster.geotiff
 
-import geotrellis.raster._
+import geotrellis.raster.*
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
-import geotrellis.raster.resample._
-import geotrellis.raster.reproject._
+import geotrellis.raster.resample.*
+import geotrellis.raster.reproject.*
 import geotrellis.raster.testkit.RasterMatchers
-import geotrellis.proj4._
+import geotrellis.proj4.*
 
 import java.io.File
 

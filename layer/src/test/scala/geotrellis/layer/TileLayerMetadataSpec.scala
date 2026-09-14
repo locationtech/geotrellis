@@ -16,10 +16,10 @@
 
 package geotrellis.layer
 
-import geotrellis.raster._
-import geotrellis.proj4._
-import geotrellis.vector._
-import _root_.io.circe.syntax._
+import geotrellis.raster.*
+import geotrellis.proj4.*
+import geotrellis.vector.*
+import _root_.io.circe.syntax.*
 import _root_.io.circe.parser.decode
 
 import org.scalatest.matchers.should.Matchers

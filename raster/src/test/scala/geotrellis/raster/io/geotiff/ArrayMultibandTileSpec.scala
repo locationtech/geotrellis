@@ -16,7 +16,7 @@
 
 package geotrellis.raster.io.geotiff
 
-import geotrellis.raster._
+import geotrellis.raster.*
 
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.funspec.AnyFunSpec
@@ -38,7 +38,7 @@ class ArrayMultibandTileSpec extends AnyFunSpec with Matchers {
   describe("ArrayMultibandTile subset combine methods") {
 
     it("should work correctly on integer-valued tiles") {
-      val actual = mbt1.combine(List(0,1))({ seq: Seq[Int] => seq.sum }).toArray()
+      val actual = mbt1.combine(List(0,1))({ (seq: Seq[Int]) => seq.sum }).toArray()
       val expected = mbt1.band(2).toArray()
 
       (actual.zip(expected)).foreach({ pair =>
@@ -47,7 +47,7 @@ class ArrayMultibandTileSpec extends AnyFunSpec with Matchers {
     }
 
     it("should work correctly on double-valued tiles") {
-      val actual = mbt2.combineDouble(List(0,1))({ seq: Seq[Double] => seq.sum + 1.0 }).toArray()
+      val actual = mbt2.combineDouble(List(0,1))({ (seq: Seq[Double]) => seq.sum + 1.0 }).toArray()
       val expected = mbt2.band(2).toArray()
 
       (actual.zip(expected)).foreach({ pair =>

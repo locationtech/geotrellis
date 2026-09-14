@@ -17,12 +17,12 @@
 package geotrellis.spark.store.s3
 
 import geotrellis.store.s3.S3ClientProducer
-import geotrellis.store.hadoop._
+import geotrellis.store.hadoop.*
 
-import org.log4s._
+import org.log4s.*
 
 import software.amazon.awssdk.core.checksums.{RequestChecksumCalculation, ResponseChecksumValidation}
-import software.amazon.awssdk.regions._
+import software.amazon.awssdk.regions.*
 import software.amazon.awssdk.services.s3.model.{ListObjectsV2Request, S3Object}
 import software.amazon.awssdk.services.s3.S3Client
 
@@ -30,7 +30,7 @@ import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.mapreduce.{InputFormat, Job, JobContext}
 
 import scala.util.matching.Regex
-import scala.jdk.CollectionConverters._
+import scala.jdk.CollectionConverters.*
 
 /** Reads keys from s3n URL using AWS Java SDK.
   * The number of keys per InputSplits are controlled by S3 pagination.
@@ -41,7 +41,7 @@ import scala.jdk.CollectionConverters._
   *   - InstanceProfileCredentialsProvider
   */
 abstract class S3InputFormat[K, V] extends InputFormat[K,V] {
-  import S3InputFormat._
+  import S3InputFormat.*
   @transient private[this] lazy val logger = getLogger
 
   def getS3Client(context: JobContext): S3Client =

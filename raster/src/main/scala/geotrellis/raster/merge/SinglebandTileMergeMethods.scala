@@ -16,11 +16,11 @@
 
 package geotrellis.raster.merge
 
-import geotrellis.raster._
+import geotrellis.raster.*
 import geotrellis.raster.resample.{Resample, ResampleMethod}
 import geotrellis.vector.Extent
 
-import spire.syntax.cfor._
+import spire.syntax.cfor.*
 
 /**
   * Trait containing extension methods for doing merge operations on

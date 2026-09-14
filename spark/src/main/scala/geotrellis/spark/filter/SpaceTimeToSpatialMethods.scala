@@ -16,12 +16,12 @@
 
 package geotrellis.spark.filter
 
-import geotrellis.layer._
-import geotrellis.spark._
-import geotrellis.util._
+import geotrellis.layer.*
+import geotrellis.spark.*
+import geotrellis.util.*
 import cats.Functor
 import org.apache.spark.Partitioner
-import org.apache.spark.rdd._
+import org.apache.spark.rdd.*
 import java.time.ZonedDateTime
 
 import scala.reflect.ClassTag

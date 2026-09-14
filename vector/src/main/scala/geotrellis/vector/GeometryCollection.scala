@@ -16,9 +16,9 @@
 
 package geotrellis.vector
 
-import geotrellis.vector.GeomFactory._
+import geotrellis.vector.GeomFactory.*
 
-import org.locationtech.jts.{geom => jts}
+import org.locationtech.jts.{geom as jts}
 
 
 trait GeometryCollectionConstructors {

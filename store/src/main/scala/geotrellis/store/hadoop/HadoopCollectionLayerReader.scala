@@ -16,15 +16,15 @@
 
 package geotrellis.store.hadoop
 
-import geotrellis.layer._
+import geotrellis.layer.*
 import geotrellis.layer.{ContextCollection, Metadata}
-import geotrellis.store._
+import geotrellis.store.*
 import geotrellis.store.util.IORuntimeTransient
-import geotrellis.store.avro._
-import geotrellis.util._
+import geotrellis.store.avro.*
+import geotrellis.util.*
 
-import cats.effect._
-import io.circe._
+import cats.effect.*
+import io.circe.*
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 

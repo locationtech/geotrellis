@@ -16,7 +16,7 @@
 
 package geotrellis.raster.crop
 
-import geotrellis.raster._
+import geotrellis.raster.*
 
 
 object Implicits extends Implicits

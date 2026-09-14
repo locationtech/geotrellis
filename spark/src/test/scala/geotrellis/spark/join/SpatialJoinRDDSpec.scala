@@ -16,10 +16,10 @@
 
 package geotrellis.spark.join
 
-import geotrellis.layer._
-import geotrellis.spark._
-import geotrellis.spark.partition._
-import geotrellis.spark.testkit._
+import geotrellis.layer.*
+import geotrellis.spark.*
+import geotrellis.spark.partition.*
+import geotrellis.spark.testkit.*
 
 import org.apache.spark.Partitioner
 import org.apache.spark.rdd.{PairRDDFunctions, RDD}
@@ -29,7 +29,7 @@ import org.scalatest.funspec.AnyFunSpec
 
 class SpatialJoinRDDSpec extends AnyFunSpec with Matchers with TestEnvironment {
   // Import the PartitionerIndex that we will be using for the tests.
-  import geotrellis.spark.partition.TestImplicits._
+  import geotrellis.spark.partition.TestImplicits.*
 
   val bounds1 = KeyBounds(SpatialKey(0,0), SpatialKey(10,10))
   val part1 = SpacePartitioner(bounds1)
@@ -65,7 +65,7 @@ class SpatialJoinRDDSpec extends AnyFunSpec with Matchers with TestEnvironment {
    val rddEmpty = sc.emptyRDD[(SpatialKey, Int)]
    val prEmpty = ContextRDD(rddEmpty, SpacePartitioner[SpatialKey](EmptyBounds))
 
-  def maxPartitionSize(rdd: RDD[_]): Int = {
+  def maxPartitionSize(rdd: RDD[?]): Int = {
     rdd.mapPartitions(it => Iterator(it.size)).collect().max
   }
 

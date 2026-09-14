@@ -16,9 +16,9 @@
 
 package geotrellis.raster.viewshed
 
-import geotrellis.raster._
-import geotrellis.raster.testkit._
-import geotrellis.raster.viewshed.R2Viewshed._
+import geotrellis.raster.*
+import geotrellis.raster.testkit.*
+import geotrellis.raster.viewshed.R2Viewshed.*
 
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.funspec.AnyFunSpec
@@ -41,7 +41,7 @@ class R2ViewshedSpec extends AnyFunSpec with Matchers with RasterMatchers with R
         2, -3, 0,
         FromSouth,
         rays,
-        { bundle: Bundle =>
+        { (bundle: Bundle) =>
           bundle.foreach({ case (_, list) =>
             list.foreach({ case Ray(theta, alpha) =>
               all += 1
@@ -80,7 +80,7 @@ class R2ViewshedSpec extends AnyFunSpec with Matchers with RasterMatchers with R
         -3, 2, 0,
         FromWest,
         rays,
-        { bundle: Bundle =>
+        { (bundle: Bundle) =>
           bundle.foreach({ case (_, list) =>
             list.foreach({ case Ray(theta, alpha) =>
               all += 1
@@ -119,7 +119,7 @@ class R2ViewshedSpec extends AnyFunSpec with Matchers with RasterMatchers with R
         2, 7, 0,
         FromNorth,
         rays,
-        { bundle: Bundle =>
+        { (bundle: Bundle) =>
           bundle.foreach({ case (_, list) =>
             list.foreach({ case Ray(theta, alpha) =>
               all += 1
@@ -158,7 +158,7 @@ class R2ViewshedSpec extends AnyFunSpec with Matchers with RasterMatchers with R
         7, 2, 0,
         FromEast,
         rays,
-        { bundle: Bundle =>
+        { (bundle: Bundle) =>
           bundle.foreach({ case (_, list) =>
             list.foreach({ case Ray(theta, alpha) =>
               all += 1

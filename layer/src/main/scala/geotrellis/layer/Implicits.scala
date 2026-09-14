@@ -17,7 +17,7 @@
 package geotrellis.layer
 
 import geotrellis.raster.{CellGrid, RasterSource, ResampleMethod}
-import geotrellis.util._
+import geotrellis.util.*
 import java.time.Instant
 
 import geotrellis.raster.io.geotiff.OverviewStrategy

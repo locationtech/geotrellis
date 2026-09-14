@@ -16,14 +16,14 @@
 
 package geotrellis.spark.summary.polygonal
 
-import geotrellis.spark._
-import geotrellis.spark.testkit._
+import geotrellis.spark.*
+import geotrellis.spark.testkit.*
 import geotrellis.spark.testkit.testfiles.TestFiles
-import geotrellis.raster.summary.polygonal._
-import geotrellis.raster._
+import geotrellis.raster.summary.polygonal.*
+import geotrellis.raster.*
 import geotrellis.raster.summary.polygonal.visitors.SumVisitor
 import geotrellis.raster.summary.types.SumValue
-import geotrellis.vector._
+import geotrellis.vector.*
 
 import org.scalatest.funspec.AnyFunSpec
 

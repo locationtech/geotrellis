@@ -16,7 +16,7 @@
 
 package geotrellis.geotools
 
-import geotrellis.vector._
+import geotrellis.vector.*
 import geotrellis.proj4.CRS
 import org.geotools.api.feature.simple.SimpleFeature
 import org.geotools.feature.simple.{SimpleFeatureBuilder, SimpleFeatureTypeBuilder}

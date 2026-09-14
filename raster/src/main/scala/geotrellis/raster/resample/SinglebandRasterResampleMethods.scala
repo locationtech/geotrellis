@@ -16,9 +16,9 @@
 
 package geotrellis.raster.resample
 
-import geotrellis.raster._
+import geotrellis.raster.*
 
-import spire.syntax.cfor._
+import spire.syntax.cfor.*
 
 trait SinglebandRasterResampleMethods extends RasterResampleMethods[SinglebandRaster] {
   def resample(target: RasterExtent, method: ResampleMethod): SinglebandRaster = {

@@ -16,9 +16,9 @@
 
 package geotrellis.spark.store.hbase
 
-import geotrellis.store._
-import geotrellis.store.hbase._
-import geotrellis.spark.store._
+import geotrellis.store.*
+import geotrellis.store.hbase.*
+import geotrellis.spark.store.*
 import geotrellis.util.UriUtils
 
 import org.apache.spark.SparkContext

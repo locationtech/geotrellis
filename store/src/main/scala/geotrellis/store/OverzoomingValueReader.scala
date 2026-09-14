@@ -20,9 +20,9 @@ import geotrellis.layer.{SpatialComponent, SpatialKey, TileLayerMetadata, Zoomed
 import geotrellis.raster.resample.{ResampleMethod, TileResampleMethods}
 import geotrellis.raster.{CellGrid, RasterExtent}
 import geotrellis.store.avro.AvroRecordCodec
-import geotrellis.util._
+import geotrellis.util.*
 
-import io.circe._
+import io.circe.*
 
 import scala.reflect.ClassTag
 

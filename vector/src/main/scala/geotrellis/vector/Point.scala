@@ -16,8 +16,8 @@
 
 package geotrellis.vector
 
-import geotrellis.vector.GeomFactory._
-import org.locationtech.jts.{geom => jts}
+import geotrellis.vector.GeomFactory.*
+import org.locationtech.jts.{geom as jts}
 
 trait PointConstructors {
   def apply(x: Double, y: Double): jts.Point =

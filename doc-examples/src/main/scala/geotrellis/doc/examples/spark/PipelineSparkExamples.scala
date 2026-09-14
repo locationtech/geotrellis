@@ -19,15 +19,15 @@ package geotrellis.doc.examples.spark
 
 object PipelineSparkExamples {
   def `JSON example` = {
-    import geotrellis.layer._
-    import geotrellis.spark._
-    import geotrellis.spark.pipeline._
-    import geotrellis.spark.pipeline.ast._
+    import geotrellis.layer.*
+    import geotrellis.spark.*
+    import geotrellis.spark.pipeline.*
+    import geotrellis.spark.pipeline.ast.*
     import geotrellis.spark.pipeline.ast.untyped.ErasedNode
 
     import org.apache.spark.SparkContext
 
-    import scala.util._
+    import scala.util.*
 
     implicit val sc: SparkContext = ???
 
@@ -114,19 +114,19 @@ object PipelineSparkExamples {
 
   def `Scala AST example` = {
     // the same example as above but written via Scala DSL
-    import geotrellis.layer._
-    import geotrellis.spark._
-    import geotrellis.spark.pipeline._
-    import geotrellis.spark.pipeline.json._
-    import geotrellis.spark.pipeline.json.read._
-    import geotrellis.spark.pipeline.json.transform._
-    import geotrellis.spark.pipeline.json.write._
-    import geotrellis.spark.pipeline.ast._
+    import geotrellis.layer.*
+    import geotrellis.spark.*
+    import geotrellis.spark.pipeline.*
+    import geotrellis.spark.pipeline.json.*
+    import geotrellis.spark.pipeline.json.read.*
+    import geotrellis.spark.pipeline.json.transform.*
+    import geotrellis.spark.pipeline.json.write.*
+    import geotrellis.spark.pipeline.ast.*
     import geotrellis.spark.pipeline.ast.untyped.ErasedNode
 
     import org.apache.spark.SparkContext
 
-    import scala.util._
+    import scala.util.*
 
     implicit val sc: SparkContext = ???
 

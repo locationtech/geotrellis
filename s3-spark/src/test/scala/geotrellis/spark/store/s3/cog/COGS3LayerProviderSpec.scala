@@ -16,11 +16,11 @@
 
 package geotrellis.spark.store.s3.cog
 
-import geotrellis.store.cog._
-import geotrellis.store.s3._
-import geotrellis.store.s3.cog._
-import geotrellis.spark.store.s3._
-import geotrellis.spark.store.cog._
+import geotrellis.store.cog.*
+import geotrellis.store.s3.*
+import geotrellis.store.s3.cog.*
+import geotrellis.spark.store.s3.*
+import geotrellis.spark.store.cog.*
 import geotrellis.spark.testkit.TestEnvironment
 
 import org.scalatest.funspec.AnyFunSpec

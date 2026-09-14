@@ -16,18 +16,18 @@
 
 package geotrellis.store.s3
 
-import geotrellis.raster._
-import geotrellis.raster.resample._
-import geotrellis.layer._
-import geotrellis.store._
-import geotrellis.store.avro._
+import geotrellis.raster.*
+import geotrellis.raster.resample.*
+import geotrellis.layer.*
+import geotrellis.store.*
+import geotrellis.store.avro.*
 import geotrellis.store.avro.codecs.KeyValueRecordCodec
-import geotrellis.store.index._
+import geotrellis.store.index.*
 
 import software.amazon.awssdk.services.s3.model.{S3Exception, GetObjectRequest}
 import software.amazon.awssdk.services.s3.S3Client
 import org.apache.commons.io.IOUtils
-import _root_.io.circe._
+import _root_.io.circe.*
 
 import scala.reflect.ClassTag
 

@@ -16,7 +16,7 @@
 
 package geotrellis.vectortile
 
-import geotrellis.vector._
+import geotrellis.vector.*
 
 /**
   * A case class that conforms to the Mapbox Vector Tile 2.0 specification

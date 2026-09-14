@@ -17,7 +17,7 @@
 package geotrellis.spark.tiling
 
 import geotrellis.layer.SpatialKey
-import geotrellis.vector._
+import geotrellis.vector.*
 import geotrellis.util.MethodExtensions
 
 trait TilerKeyMethods[K1, K2] extends MethodExtensions[K1] {

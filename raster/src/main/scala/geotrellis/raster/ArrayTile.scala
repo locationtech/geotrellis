@@ -16,7 +16,7 @@
 
 package geotrellis.raster
 
-import spire.syntax.cfor._
+import spire.syntax.cfor.*
 
 /**
   * [[ArrayTile]] provides access and update to the grid data of a

@@ -16,12 +16,12 @@
 
 package geotrellis.raster.geotiff
 
-import geotrellis.raster._
+import geotrellis.raster.*
 import geotrellis.raster.io.geotiff.{AutoHigherResolution, GeoTiffTestUtils}
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
-import geotrellis.raster.resample._
-import geotrellis.raster.testkit._
-import geotrellis.vector._
+import geotrellis.raster.resample.*
+import geotrellis.raster.testkit.*
+import geotrellis.vector.*
 import geotrellis.proj4.WebMercator
 
 import org.scalatest.GivenWhenThen

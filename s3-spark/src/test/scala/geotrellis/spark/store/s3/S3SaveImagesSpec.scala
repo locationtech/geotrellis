@@ -16,15 +16,15 @@
 
 package geotrellis.spark.render
 
-import geotrellis.layer._
-import geotrellis.store._
-import geotrellis.store.s3._
+import geotrellis.layer.*
+import geotrellis.store.*
+import geotrellis.store.s3.*
 import geotrellis.spark.testkit.TestEnvironment
 import geotrellis.spark.testkit.testfiles.TestFiles
-import geotrellis.spark.store.s3._
+import geotrellis.spark.store.s3.*
 import geotrellis.spark.store.s3.SaveToS3
 
-import software.amazon.awssdk.services.s3.model._
+import software.amazon.awssdk.services.s3.model.*
 
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.funspec.AnyFunSpec

@@ -16,7 +16,7 @@
 
 package geotrellis.vector
 
-import scala.reflect._
+import scala.reflect.*
 
 private[vector] trait GeometryResultMethods extends Serializable {
   /** Returns this result as an option, unless this is NoResult, in which case it returns None */

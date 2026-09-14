@@ -21,7 +21,7 @@ import geotrellis.raster.GridBounds
 import geotrellis.raster.io.geotiff.reader.GeoTiffInfo
 import geotrellis.raster.io.geotiff.GeoTiffSegmentLayoutTransform
 
-import org.log4s._
+import org.log4s.*
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 

@@ -17,13 +17,13 @@
 package geotrellis.vector.check.jts
 
 import geotrellis.vector.GeomFactory
-import org.locationtech.jts.geom._
+import org.locationtech.jts.geom.*
 
-import org.scalacheck._
-import Prop._
+import org.scalacheck.*
+import Prop.*
 
 object PointCheck extends Properties("Point") {
-  import Generators._
+  import Generators.*
 
   property("getEnvelope") = forAll { (p: Point) =>
     p.getEnvelope match {

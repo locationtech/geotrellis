@@ -19,26 +19,26 @@ package geotrellis.spark.testkit.io.cog
 import geotrellis.raster.{CellGrid, MultibandTile}
 import geotrellis.raster.crop.TileCropMethods
 import geotrellis.raster.merge.TileMergeMethods
-import geotrellis.raster.resample._
+import geotrellis.raster.resample.*
 import geotrellis.raster.io.geotiff.compression.NoCompression
-import geotrellis.raster.io.geotiff._
+import geotrellis.raster.io.geotiff.*
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.raster.prototype.TilePrototypeMethods
-import geotrellis.layer._
-import geotrellis.store._
+import geotrellis.layer.*
+import geotrellis.store.*
 import geotrellis.store.cog.{COGCollectionLayerReader, COGValueReader}
-import geotrellis.store.index._
-import geotrellis.spark.store.cog._
-import geotrellis.spark.testkit.io._
+import geotrellis.store.index.*
+import geotrellis.spark.store.cog.*
+import geotrellis.spark.testkit.io.*
 import geotrellis.spark.testkit.testfiles.cog.COGTestFiles
-import _root_.io.circe._
+import _root_.io.circe.*
 import org.apache.spark.rdd.RDD
 
-import org.scalatest._
+import org.scalatest.*
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.funspec.AnyFunSpec
 
-import scala.reflect._
+import scala.reflect.*
 
 abstract class COGPersistenceSpec[
   K: SpatialComponent: Ordering: Boundable: Encoder: Decoder: ClassTag,

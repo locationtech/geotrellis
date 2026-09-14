@@ -16,15 +16,15 @@
 
 package geotrellis.store.file
 
-import geotrellis.layer._
-import geotrellis.store._
-import geotrellis.store.util._
+import geotrellis.layer.*
+import geotrellis.store.*
+import geotrellis.store.util.*
 import geotrellis.store.avro.AvroRecordCodec
 import geotrellis.store.index.Index
-import geotrellis.util._
+import geotrellis.util.*
 
 import io.circe.Decoder
-import cats.effect._
+import cats.effect.*
 
 import scala.reflect.ClassTag
 
@@ -48,7 +48,7 @@ class FileCollectionLayerReader(
     K: AvroRecordCodec: Boundable: Decoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: Decoder: Component[*, Bounds[K]]
-  ](id: LayerId, rasterQuery: LayerQuery[K, M], filterIndexOnly: Boolean) = {
+  ](id: LayerId, rasterQuery: LayerQuery[K, M], filterIndexOnly: Boolean): ContextCollection[K, V, M] = {
     if(!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
 
     val LayerAttributes(header, metadata, keyIndex, writerSchema) = try {

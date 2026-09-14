@@ -17,7 +17,7 @@
 package geotrellis.raster
 
 
-import spire.syntax.cfor._
+import spire.syntax.cfor.*
 
 /**
   * [DelayedConversionTile]] represents a tile that wraps an inner tile,
@@ -290,7 +290,7 @@ class DelayedConversionMultibandTile(inner: MultibandTile, override val targetCe
     * @param   f  A function from Array[Double] to Double.  The array contains the values of each band at a particular point.
     * @return     The [[Tile]] that results from combining the bands. This will be an [[ArrayTile]] that has the target [[CellType]].
     */
-  def combineDouble(f: Array[Double] => Double) = {
+  def combineDouble(f: Array[Double] => Double): MutableArrayTile = {
     val result = ArrayTile.empty(targetCellType, cols, rows)
     val arr = Array.ofDim[Double](bandCount)
     cfor(0)(_ < rows, _ + 1) { row =>

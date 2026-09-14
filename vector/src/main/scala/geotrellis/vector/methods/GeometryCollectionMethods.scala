@@ -16,10 +16,10 @@
 
 package geotrellis.vector.methods
 
-import geotrellis.vector._
+import geotrellis.vector.*
 import geotrellis.util.MethodExtensions
-import scala.reflect._
-import spire.syntax.cfor._
+import scala.reflect.*
+import spire.syntax.cfor.*
 
 trait ExtraGeometryCollectionMethods extends MethodExtensions[GeometryCollection] {
   def getAll[G <: Geometry : ClassTag]: Seq[G] = {

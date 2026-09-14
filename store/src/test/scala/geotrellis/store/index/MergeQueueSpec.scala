@@ -19,11 +19,11 @@ package geotrellis.store.index
 import java.time.{ZoneId, ZonedDateTime}
 
 import geotrellis.proj4.LatLng
-import geotrellis.raster._
-import geotrellis.layer._
-import geotrellis.store._
+import geotrellis.raster.*
+import geotrellis.layer.*
+import geotrellis.store.*
 import geotrellis.store.index.zcurve.ZSpaceTimeKeyIndex
-import geotrellis.vector._
+import geotrellis.vector.*
 
 import org.scalatest.funspec.AnyFunSpec
 

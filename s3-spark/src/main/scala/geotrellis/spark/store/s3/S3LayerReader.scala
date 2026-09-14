@@ -16,21 +16,21 @@
 
 package geotrellis.spark.store.s3
 
-import geotrellis.layer._
-import geotrellis.store._
-import geotrellis.store.util._
-import geotrellis.store.avro._
-import geotrellis.store.index._
-import geotrellis.store.s3._
-import geotrellis.spark._
-import geotrellis.spark.store._
-import geotrellis.util._
+import geotrellis.layer.*
+import geotrellis.store.*
+import geotrellis.store.util.*
+import geotrellis.store.avro.*
+import geotrellis.store.index.*
+import geotrellis.store.s3.*
+import geotrellis.spark.*
+import geotrellis.spark.store.*
+import geotrellis.util.*
 
 import org.apache.spark.SparkContext
 import software.amazon.awssdk.services.s3.S3Client
-import software.amazon.awssdk.services.s3.model._
-import io.circe._
-import cats.effect._
+import software.amazon.awssdk.services.s3.model.*
+import io.circe.*
+import cats.effect.*
 
 import scala.reflect.ClassTag
 
@@ -57,7 +57,7 @@ class S3LayerReader(
     K: AvroRecordCodec: Boundable: Decoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: Decoder: Component[*, Bounds[K]]
-  ](id: LayerId, tileQuery: LayerQuery[K, M], numPartitions: Int, filterIndexOnly: Boolean) = {
+  ](id: LayerId, tileQuery: LayerQuery[K, M], numPartitions: Int, filterIndexOnly: Boolean): ContextRDD[K, V, M] = {
     if(!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
 
     val LayerAttributes(header, metadata, keyIndex, writerSchema) = try {

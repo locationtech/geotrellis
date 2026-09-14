@@ -16,18 +16,18 @@
 
 package geotrellis.spark.store.file.cog
 
-import geotrellis.layer._
-import geotrellis.raster._
+import geotrellis.layer.*
+import geotrellis.raster.*
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
-import geotrellis.store._
-import geotrellis.store.util._
+import geotrellis.store.*
+import geotrellis.store.util.*
 import geotrellis.store.cog.{Extension, ZoomRange}
 import geotrellis.store.file.{FileAttributeStore, FileLayerHeader, KeyPathGenerator}
-import geotrellis.spark.store.cog._
+import geotrellis.spark.store.cog.*
 
-import cats.effect._
+import cats.effect.*
 import org.apache.spark.SparkContext
-import _root_.io.circe._
+import _root_.io.circe.*
 
 import java.net.URI
 import java.io.File

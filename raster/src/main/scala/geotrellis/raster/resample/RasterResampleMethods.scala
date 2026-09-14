@@ -16,11 +16,11 @@
 
 package geotrellis.raster.resample
 
-import geotrellis.raster._
+import geotrellis.raster.*
 import geotrellis.util.MethodExtensions
 
 
-trait RasterResampleMethods[+T <: Raster[_]] extends MethodExtensions[T] {
+trait RasterResampleMethods[+T <: Raster[?]] extends MethodExtensions[T] {
   def resample(target: RasterExtent, method: ResampleMethod): T
 
   def resample(target: RasterExtent): T =

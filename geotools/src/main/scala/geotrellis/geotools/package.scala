@@ -16,9 +16,9 @@
 
 package geotrellis
 
-import geotrellis.raster._
+import geotrellis.raster.*
 import geotrellis.util.MethodExtensions
-import geotrellis.vector._
+import geotrellis.vector.*
 
 import org.geotools.api.feature.simple.SimpleFeature
 import org.geotools.coverage.grid.GridCoverage2D

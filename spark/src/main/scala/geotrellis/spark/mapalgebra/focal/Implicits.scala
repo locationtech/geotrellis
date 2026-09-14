@@ -16,8 +16,8 @@
 
 package geotrellis.spark.mapalgebra.focal
 
-import geotrellis.layer._
-import geotrellis.spark._
+import geotrellis.layer.*
+import geotrellis.spark.*
 
 import reflect.ClassTag
 

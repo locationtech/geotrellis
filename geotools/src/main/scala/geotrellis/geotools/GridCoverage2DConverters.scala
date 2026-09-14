@@ -17,24 +17,24 @@
 package geotrellis.geotools
 
 import geotrellis.proj4.CRS
-import geotrellis.raster._
-import geotrellis.raster.io.geotiff.util._
+import geotrellis.raster.*
+import geotrellis.raster.io.geotiff.util.*
 import geotrellis.vector.Extent
 import it.geosolutions.imageio.utilities.ImageIOUtilities
 import org.geotools.coverage.Category
 import org.geotools.coverage.GridSampleDimension
-import org.geotools.coverage.grid._
-import org.geotools.referencing.{CRS => GeoToolsCRS}
+import org.geotools.coverage.grid.*
+import org.geotools.referencing.{CRS as GeoToolsCRS}
 import org.geotools.coverage.util.CoverageUtilities
 import org.geotools.util.NumberRange
 import org.geotools.geometry.jts.ReferencedEnvelope
-import org.geotools.api.coverage._
+import org.geotools.api.coverage.*
 import org.geotools.api.referencing.crs.CoordinateReferenceSystem
-import spire.syntax.cfor._
+import spire.syntax.cfor.*
 
 import java.awt.Color
-import java.awt.image.{Raster => AwtRaster, _}
-import scala.jdk.CollectionConverters._
+import java.awt.image.{Raster as AwtRaster, *}
+import scala.jdk.CollectionConverters.*
 
 /**
   * Houses methods that aide the translate between GridCoverage2D and

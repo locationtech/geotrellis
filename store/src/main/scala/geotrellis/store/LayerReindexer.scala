@@ -19,9 +19,9 @@ package geotrellis.store
 import geotrellis.layer.{Bounds, Boundable}
 import geotrellis.store.avro.AvroRecordCodec
 import geotrellis.store.index.{KeyIndex, KeyIndexMethod}
-import geotrellis.util._
+import geotrellis.util.*
 
-import io.circe._
+import io.circe.*
 
 import scala.reflect.ClassTag
 

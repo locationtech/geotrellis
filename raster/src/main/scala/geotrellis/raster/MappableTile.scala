@@ -16,7 +16,7 @@
 
 package geotrellis.raster
 
-import geotrellis.macros._
+import geotrellis.macros.*
 
 /**
   *  The [[MappableTile]] trait.

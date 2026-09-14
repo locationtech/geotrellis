@@ -16,8 +16,8 @@
 
 package geotrellis.vector.io.json
 
-import io.circe._
-import io.circe.syntax._
+import io.circe.*
+import io.circe.syntax.*
 
 import scala.collection.mutable
 
@@ -46,7 +46,7 @@ object Style {
     )
 
   implicit lazy val styleDecoder: Decoder[Style] =
-    Decoder.decodeHCursor.emap { c: HCursor =>
+    Decoder.decodeHCursor.emap { (c: HCursor) =>
       val strokeColor =
         c.downField("stroke").as[String] match {
           case Right(v) => Some(v)

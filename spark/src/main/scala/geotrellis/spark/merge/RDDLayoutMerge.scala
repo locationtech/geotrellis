@@ -16,12 +16,12 @@
 
 package geotrellis.spark.merge
 
-import geotrellis.raster._
-import geotrellis.raster.merge._
-import geotrellis.raster.prototype._
-import geotrellis.layer._
-import geotrellis.spark._
-import geotrellis.util._
+import geotrellis.raster.*
+import geotrellis.raster.merge.*
+import geotrellis.raster.prototype.*
+import geotrellis.layer.*
+import geotrellis.spark.*
+import geotrellis.util.*
 import geotrellis.vector.Extent
 import org.apache.spark.rdd.RDD
 

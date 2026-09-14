@@ -17,9 +17,9 @@
 package geotrellis.spark.store.s3
 
 import geotrellis.store.s3.util.S3RangeReader
-import geotrellis.util._
+import geotrellis.util.*
 
-import org.log4s._
+import org.log4s.*
 import software.amazon.awssdk.services.s3.model.GetObjectRequest
 import software.amazon.awssdk.services.s3.S3Client
 import org.apache.hadoop.mapreduce.{InputSplit, TaskAttemptContext, RecordReader}

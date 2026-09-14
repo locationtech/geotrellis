@@ -17,12 +17,12 @@
 package geotrellis.spark.store.cog.vrt
 
 import geotrellis.store.cog.vrt.VRT
-import geotrellis.store.cog.vrt.VRT._
-import geotrellis.util._
+import geotrellis.store.cog.vrt.VRT.*
+import geotrellis.util.*
 
 import org.apache.spark.util.CollectionAccumulator
 
-import scala.jdk.CollectionConverters._
+import scala.jdk.CollectionConverters.*
 
 
 object Implicits extends Implicits

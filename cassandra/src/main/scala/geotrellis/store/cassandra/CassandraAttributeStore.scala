@@ -16,18 +16,18 @@
 
 package geotrellis.store.cassandra
 
-import geotrellis.store._
+import geotrellis.store.*
 import geotrellis.store.cassandra.conf.CassandraConfig
 import com.datastax.oss.driver.api.querybuilder.QueryBuilder
 import com.datastax.oss.driver.api.querybuilder.QueryBuilder.literal
 import com.datastax.oss.driver.api.querybuilder.SchemaBuilder
 import com.datastax.oss.driver.api.core.`type`.DataTypes
-import io.circe._
-import io.circe.syntax._
-import io.circe.parser._
-import cats.syntax.either._
+import io.circe.*
+import io.circe.syntax.*
+import io.circe.parser.*
+import cats.syntax.either.*
 
-import scala.jdk.CollectionConverters._
+import scala.jdk.CollectionConverters.*
 
 object CassandraAttributeStore {
   def apply(instance: CassandraInstance, attributeKeyspace: String, attributeTable: String): CassandraAttributeStore =

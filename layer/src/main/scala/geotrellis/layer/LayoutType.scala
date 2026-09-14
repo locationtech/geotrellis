@@ -46,7 +46,7 @@ case class GlobalLayout(tileSize: Int, zoom: Int, threshold: Double)  extends La
 
 /** @see [[geotrellis.layer.FloatingLayoutScheme]] */
 case class LocalLayout(tileCols: Int, tileRows: Int) extends LayoutType {
-  def layoutDefinitionWithZoom(crs: CRS, extent: Extent, cellSize: CellSize) = {
+  def layoutDefinitionWithZoom(crs: CRS, extent: Extent, cellSize: CellSize): (LayoutDefinition, None.type) = {
     val scheme = new FloatingLayoutScheme(tileCols, tileRows)
     scheme.levelFor(extent, cellSize).layout -> None
   }

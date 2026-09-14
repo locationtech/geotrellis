@@ -16,7 +16,7 @@
 
 package geotrellis.raster.mapalgebra.focal
 
-import geotrellis.raster._
+import geotrellis.raster.*
 
 import scala.math.{min, max}
 
@@ -33,7 +33,7 @@ object Movement {
   val NoMovement = new Movement { val isVertical = false }
 }
 
-import Movement._
+import Movement.*
 
 
 object Cursor {

@@ -17,7 +17,7 @@
 package geotrellis.spark.store.hbase
 
 import geotrellis.store.LayerId
-import geotrellis.store.hbase._
+import geotrellis.store.hbase.*
 import geotrellis.layer.{Boundable, KeyBounds}
 import geotrellis.store.avro.{AvroEncoder, AvroRecordCodec}
 import geotrellis.store.avro.codecs.KeyValueRecordCodec

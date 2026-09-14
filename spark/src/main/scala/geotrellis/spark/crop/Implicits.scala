@@ -16,10 +16,10 @@
 
 package geotrellis.spark.crop
 
-import geotrellis.raster._
+import geotrellis.raster.*
 import geotrellis.raster.crop.TileCropMethods
-import geotrellis.layer._
-import geotrellis.util._
+import geotrellis.layer.*
+import geotrellis.util.*
 import geotrellis.vector.Extent
 import org.apache.spark.rdd.RDD
 

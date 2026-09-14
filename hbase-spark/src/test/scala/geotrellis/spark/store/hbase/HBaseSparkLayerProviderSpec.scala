@@ -16,10 +16,10 @@
 
 package geotrellis.spark.store.hbase
 
-import geotrellis.store._
-import geotrellis.store.hbase._
-import geotrellis.spark.store._
-import geotrellis.spark.store._
+import geotrellis.store.*
+import geotrellis.store.hbase.*
+import geotrellis.spark.store.*
+import geotrellis.spark.store.*
 import geotrellis.spark.HBaseTestEnvironment
 
 import org.scalatest.funspec.AnyFunSpec

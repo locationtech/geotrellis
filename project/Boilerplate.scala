@@ -88,7 +88,7 @@ object Boilerplate {
     def filename(root: File) = root / "geotrellis" / "macros" / s"${typeString}TileCombiners.scala"
     override def range = 3 to maxArity
     def content(tv: TemplateVals) = {
-      import tv._
+      import tv.*
 
       val args = typedSeq(typeString)
       val vals = typedVals("Int")
@@ -115,7 +115,7 @@ object Boilerplate {
     def filename(root: File) = root / "geotrellis" / "macros" / "MacroCombinableMultibandTile.scala"
     override def range = 3 to maxArity
     def content(tv: TemplateVals) = {
-      import tv._
+      import tv.*
 
       block"""
          |package geotrellis.macros
@@ -131,7 +131,7 @@ object Boilerplate {
     def filename(root: File) = root / "geotrellis" / "macros" / "MultibandTileMacros.scala"
     override def range = 3 to maxArity
     def content(tv: TemplateVals) = {
-      import tv._
+      import tv.*
 
       val argsInt    = typedSeq("Int")
       val valsInt    = typedVals("Int")
@@ -154,7 +154,7 @@ object Boilerplate {
          |import scala.language.experimental.macros
          |object MultibandTileMacros {
         -  def intCombine${arity}_impl[T, MBT <: MacroCombinableMultibandTile[T]](c: Context)(${exprSeqInt})(f: ${exprFArgsInt}): c.Expr[T] = {
-        -    import c.universe._
+        -    import c.universe.*
         -    val self = c.Expr[MacroCombinableMultibandTile[T]](c.prefix.tree)
         -    val tree =
         -    q\"\"\"$$self.combineIntTileCombiner(new geotrellis.macros.IntTileCombiner${arity} {
@@ -164,7 +164,7 @@ object Boilerplate {
         -    new InlineUtil[c.type](c).inlineAndReset[T](tree)
         -  }
         -  def doubleCombine${arity}_impl[T, MBT <: MacroCombinableMultibandTile[T]](c: Context)(${exprSeqInt})(f: ${exprFArgsDouble}): c.Expr[T] = {
-        -    import c.universe._
+        -    import c.universe.*
         -    val self = c.Expr[MacroCombinableMultibandTile[T]](c.prefix.tree)
         -    val tree =
         -    q\"\"\"$$self.combineDoubleTileCombiner(new geotrellis.macros.DoubleTileCombiner${arity} {
@@ -182,7 +182,7 @@ object Boilerplate {
     def filename(root: File) = root / "geotrellis" / "macros" / "MacroCombineFunctions.scala"
     override def range = 3 to maxArity
     def content(tv: TemplateVals) = {
-      import tv._
+      import tv.*
 
       val argsInt    = typedSeq("Int")
       val argsDouble = typedSeq("Double")
@@ -208,7 +208,7 @@ object Boilerplate {
     def filename(root: File) = root / "geotrellis" / "raster" / "MacroMultibandCombiners.scala"
     override def range = 3 to maxArity
     def content(tv: TemplateVals) = {
-      import tv._
+      import tv.*
 
       val bandVals = (0 until arity) map { i => s"val band$i = band(combiner.b$i)" } mkString "; "
       val bandIntArgs = (0 until arity) map { i => s"band$i.get(col, row)" } mkString ", "
@@ -216,8 +216,8 @@ object Boilerplate {
 
       block"""
          |package geotrellis.raster
-         |import geotrellis.macros._
-         |import spire.syntax.cfor._
+         |import geotrellis.macros.*
+         |import spire.syntax.cfor.*
          |trait MacroMultibandCombiners { self: MultibandTile =>
         -  def combineIntTileCombiner(combiner: IntTileCombiner${arity}): Tile = {
         -    ${bandVals}
@@ -250,7 +250,7 @@ object GenMacroSegmentCombiner extends Template {
     def filename(root: File) = root / "geotrellis" / "raster" / "SegmentCombiner.scala"
     override def range = 3 to maxArity
     def content(tv: TemplateVals) = {
-      import tv._
+      import tv.*
 
       val sArgs = (1 to arity) map { i => s"s$i: GeoTiffSegment, i$i: Int" } mkString ", "
       val zsVals = (1 to arity) map { i => s"val z$i = s$i.getInt(i$i)" } mkString "; "
@@ -258,10 +258,10 @@ object GenMacroSegmentCombiner extends Template {
 
       block"""
          |package geotrellis.raster
-         |import geotrellis.macros._
-         |import geotrellis.raster.io.geotiff._
-         |import geotrellis.raster.io.geotiff.compression._
-         |import spire.syntax.cfor._
+         |import geotrellis.macros.*
+         |import geotrellis.raster.io.geotiff.*
+         |import geotrellis.raster.io.geotiff.compression.*
+         |import spire.syntax.cfor.*
          | /** This trait is how subclasses define the necessary pieces that allow
          | * us to abstract over each of the combine functions */
          | abstract class SegmentCombiner(bandCount: Int) {
@@ -314,7 +314,7 @@ object GenMacroSegmentCombiner extends Template {
     def filename(root: File) = root / "geotrellis" / "raster" / "MacroGeotiffMultibandCombiners.scala"
     override def range = 3 to maxArity
     def content(tv: TemplateVals) = {
-      import tv._
+      import tv.*
 
       val argsInt = typedSeq("Int")
       val tupArgs = (0 until arity) map { i => "GeoTiffSegment, Int" } mkString ", "
@@ -338,10 +338,10 @@ object GenMacroSegmentCombiner extends Template {
 
       block"""
          |package geotrellis.raster
-         |import geotrellis.macros._
-         |import geotrellis.raster.io.geotiff._
-         |import geotrellis.raster.io.geotiff.compression._
-         |import spire.syntax.cfor._
+         |import geotrellis.macros.*
+         |import geotrellis.raster.io.geotiff.*
+         |import geotrellis.raster.io.geotiff.compression.*
+         |import spire.syntax.cfor.*
          |trait MacroGeotiffMultibandCombiners {
          |  def cellType: CellType
          |  def getSegment(i: Int): GeoTiffSegment

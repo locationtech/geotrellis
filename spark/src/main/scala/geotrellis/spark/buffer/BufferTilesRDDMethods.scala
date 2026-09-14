@@ -16,11 +16,11 @@
 
 package geotrellis.spark.buffer
 
-import geotrellis.layer._
-import geotrellis.raster._
+import geotrellis.layer.*
+import geotrellis.raster.*
 import geotrellis.raster.buffer.{BufferSizes, BufferedTile}
-import geotrellis.raster.crop._
-import geotrellis.raster.stitch._
+import geotrellis.raster.crop.*
+import geotrellis.raster.stitch.*
 import geotrellis.util.MethodExtensions
 
 import org.apache.spark.rdd.RDD

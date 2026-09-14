@@ -16,11 +16,11 @@
 
 package geotrellis.raster.gdal
 
-import geotrellis.proj4._
-import geotrellis.raster._
-import geotrellis.raster.resample._
+import geotrellis.proj4.*
+import geotrellis.raster.*
+import geotrellis.raster.resample.*
 import geotrellis.raster.reproject.{Reproject, ReprojectRasterExtent}
-import geotrellis.raster.testkit._
+import geotrellis.raster.testkit.*
 
 import org.scalatest.GivenWhenThen
 import org.scalatest.funspec.AnyFunSpec

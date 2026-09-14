@@ -17,14 +17,14 @@
 package geotrellis.spark.store.hadoop.geotiff
 
 import geotrellis.vector.ProjectedExtent
-import geotrellis.layer._
+import geotrellis.layer.*
 import geotrellis.proj4.{CRS, WebMercator}
 import geotrellis.util.annotations.experimental
 import org.locationtech.jts.index.strtree.STRtree
 
 import scala.collection.mutable
-import scala.jdk.CollectionConverters._
-import java.io._
+import scala.jdk.CollectionConverters.*
+import java.io.*
 
 /**
   * @define experimental <span class="badge badge-red" style="float: right;">EXPERIMENTAL</span>@experimental

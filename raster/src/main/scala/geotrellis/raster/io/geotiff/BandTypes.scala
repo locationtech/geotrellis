@@ -16,12 +16,12 @@
 
 package geotrellis.raster.io.geotiff
 
-import geotrellis.raster._
+import geotrellis.raster.*
 
-import _root_.io.circe._
-import _root_.io.circe.syntax._
-import cats.syntax.either._
-import geotrellis.raster.io.geotiff.tags.codes.SampleFormat._
+import _root_.io.circe.*
+import _root_.io.circe.syntax.*
+import cats.syntax.either.*
+import geotrellis.raster.io.geotiff.tags.codes.SampleFormat.*
 
 sealed abstract trait BandType extends Serializable {
   def bytesPerSample: Int = (bitsPerSample + 7) / 8

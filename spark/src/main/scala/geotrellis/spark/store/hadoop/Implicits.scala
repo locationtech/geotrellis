@@ -20,17 +20,17 @@ import geotrellis.layer.SpatialComponent
 import geotrellis.raster.CellGrid
 import geotrellis.raster.io.geotiff.GeoTiff
 import geotrellis.raster.render.{Jpg, Png}
-import geotrellis.raster.resample._
-import geotrellis.store._
-import geotrellis.store.avro._
-import geotrellis.store.hadoop._
+import geotrellis.raster.resample.*
+import geotrellis.store.*
+import geotrellis.store.avro.*
+import geotrellis.store.hadoop.*
 import geotrellis.util.MethodExtensions
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
-import org.apache.spark._
-import org.apache.spark.rdd._
-import _root_.io.circe._
+import org.apache.spark.*
+import org.apache.spark.rdd.*
+import _root_.io.circe.*
 
 import scala.reflect.ClassTag
 

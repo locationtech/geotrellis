@@ -17,7 +17,7 @@
 package geotrellis.vectortile
 
 import geotrellis.vectortile.internal.PBTile.PBValue
-import geotrellis.vector._
+import geotrellis.vector.*
 
 import scala.annotation.tailrec
 import scala.collection.mutable.ListBuffer

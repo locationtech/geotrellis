@@ -16,10 +16,10 @@
 
 package geotrellis.spark.merge
 
-import geotrellis.raster.merge._
+import geotrellis.raster.merge.*
 
-import org.apache.spark._
-import org.apache.spark.rdd._
+import org.apache.spark.*
+import org.apache.spark.rdd.*
 
 import scala.reflect.ClassTag
 

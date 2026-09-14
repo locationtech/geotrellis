@@ -16,11 +16,11 @@
 
 package geotrellis.raster.mapalgebra.zonal
 
-import geotrellis.raster._
+import geotrellis.raster.*
 
 import scala.collection.mutable
 
-import spire.syntax.cfor._
+import spire.syntax.cfor.*
 
 /**
  * Given a raster and a raster representing it's zones, sets all pixels

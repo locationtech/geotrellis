@@ -17,7 +17,7 @@
 package geotrellis.store.avro.codecs
 
 import geotrellis.proj4.CRS
-import geotrellis.store.avro.{AvroRecordCodec, _}
+import geotrellis.store.avro.{AvroRecordCodec, *}
 import org.apache.avro.generic.GenericRecord
 import org.apache.avro.util.Utf8
 import org.apache.avro.{Schema, SchemaBuilder}

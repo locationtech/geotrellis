@@ -19,7 +19,7 @@ package geotrellis.raster.mapalgebra.focal
 
 import scala.collection.mutable.Set
 
-import Movement._
+import Movement.*
 
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.funspec.AnyFunSpec

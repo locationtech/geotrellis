@@ -16,13 +16,13 @@
 
 package geotrellis.spark.store.file
 
-import geotrellis.layer._
+import geotrellis.layer.*
 import geotrellis.raster.Tile
 import geotrellis.layer.TileLayerMetadata
-import geotrellis.store.file._
-import geotrellis.spark.store._
-import geotrellis.spark.testkit._
-import geotrellis.spark.testkit.io._
+import geotrellis.store.file.*
+import geotrellis.spark.store.*
+import geotrellis.spark.testkit.*
+import geotrellis.spark.testkit.io.*
 import geotrellis.spark.testkit.testfiles.TestFiles
 
 
@@ -33,13 +33,13 @@ class FileSpaceTimeSpec
     with TestFiles
     with CoordinateSpaceTimeSpec
     with LayerUpdateSpaceTimeTileSpec {
-  lazy val reader = FileLayerReader(outputLocalPath)
-  lazy val creader = FileCollectionLayerReader(outputLocalPath)
-  lazy val writer = FileLayerWriter(outputLocalPath)
-  lazy val deleter = FileLayerDeleter(outputLocalPath)
+  lazy val reader: FileLayerReader = FileLayerReader(outputLocalPath)
+  lazy val creader: FileCollectionLayerReader = FileCollectionLayerReader(outputLocalPath)
+  lazy val writer: FileLayerWriter = FileLayerWriter(outputLocalPath)
+  lazy val deleter: FileLayerDeleter = FileLayerDeleter(outputLocalPath)
   lazy val copier = FileLayerCopier(outputLocalPath)
   lazy val mover  = FileLayerMover(outputLocalPath)
   lazy val reindexer = FileLayerReindexer(outputLocalPath)
-  lazy val tiles = FileValueReader(outputLocalPath)
-  lazy val sample =  CoordinateSpaceTime
+  lazy val tiles: FileValueReader = FileValueReader(outputLocalPath)
+  lazy val sample: CoordinateSpaceTime.type =  CoordinateSpaceTime
 }

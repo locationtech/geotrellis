@@ -17,8 +17,8 @@
 package geotrellis.vector.triangulation
 
 import org.apache.commons.math3.linear.{MatrixUtils, RealMatrix}
-import spire.syntax.cfor._
-import geotrellis.vector._
+import spire.syntax.cfor.*
+import geotrellis.vector.*
 import geotrellis.vector.io.wkt.WKT
 import geotrellis.vector.mesh.{CompleteIndexedPointSet, HalfEdge, HalfEdgeTable}
 
@@ -62,8 +62,8 @@ case class DelaunayTriangulation(
   val triangleMap = new TriangleMap(halfEdgeTable)
 
   val predicates = new TriangulationPredicates(pointSet, halfEdgeTable)
-  import halfEdgeTable._
-  import predicates._
+  import halfEdgeTable.*
+  import predicates.*
 
   private val stitcher = new DelaunayStitcher(pointSet, halfEdgeTable)
 
@@ -71,7 +71,7 @@ case class DelaunayTriangulation(
 
     // TODO: rewrite this around ArrayBuffer to avoid Cons allocation
     def distinctPoints(lst: List[Int]): List[Int] = {
-      import pointSet._
+      import pointSet.*
       @tailrec def dpInternal(l: List[Int], acc: List[Int]): List[Int] = {
         l match {
           case Nil => acc
@@ -98,7 +98,7 @@ case class DelaunayTriangulation(
 
     // only required during triangulation construction
     val sortedVs: Array[Int] = {
-      import pointSet._
+      import pointSet.*
       val s =
         (0 until pointSet.length).toList.sortWith {
           (i1, i2) => {
@@ -405,7 +405,7 @@ case class DelaunayTriangulation(
 
   private def retriangulateBoundaryPoint(vi: Int): (HalfEdge[Int, Int], Int, Map[(Int, Int, Int), HalfEdge[Int, Int]]) = {
 
-    val c2p = { i: Int => Point(pointSet.getCoordinate(i)) }
+    val c2p = { (i: Int) => Point(pointSet.getCoordinate(i)) }
     val tris = Map.empty[(Int, Int, Int), HalfEdge[Int, Int]]
 
     // Find the ends of the bounding path
@@ -718,7 +718,7 @@ case class DelaunayTriangulation(
     var pq = PriorityQueue.empty[(Double, Int, RealMatrix, Map[(Int, Int, Int), HalfEdge[Int, Int]], Option[Int])](
       Ordering.by((_: (Double, Int, RealMatrix, Map[(Int, Int, Int), HalfEdge[Int, Int]], Option[Int]))._1).reverse
     )
-    allVertices().foreach { vi: Int => pq.enqueue(constructPQEntry(vi)) }
+    allVertices().foreach { (vi: Int) => pq.enqueue(constructPQEntry(vi)) }
 
     // iterate
     cfor(0)(i => i < nRemove && pq.nonEmpty, _ + 1) { i =>
