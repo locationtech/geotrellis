@@ -25,7 +25,7 @@ import org.apache.spark.rdd.*
 import scala.reflect.ClassTag
 
 
-class TileRDDMergeMethods[K: ClassTag, V: ClassTag: * => TileMergeMethods[V]](val self: RDD[(K, V)]) extends MethodExtensions[RDD[(K, V)]] {
+class TileRDDMergeMethods[K: ClassTag, V: ClassTag: _ => TileMergeMethods[V]](val self: RDD[(K, V)]) extends MethodExtensions[RDD[(K, V)]] {
   def merge(other: RDD[(K, V)]): RDD[(K, V)] =
     TileRDDMerge(self, other)
 

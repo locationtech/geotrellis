@@ -31,25 +31,25 @@ trait LayerManager[ID] {
   def copy[
     K: AvroRecordCodec: Boundable: Encoder: Decoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: Encoder: Decoder: Component[*, Bounds[K]]
+    M: Encoder: Decoder: Component[_, Bounds[K]]
   ](from: ID, to: ID): Unit
 
   def move[
     K: AvroRecordCodec: Boundable: Encoder: Decoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: Encoder: Decoder: Component[*, Bounds[K]]
+    M: Encoder: Decoder: Component[_, Bounds[K]]
   ](from: ID, to: ID): Unit
 
   def reindex[
     K: AvroRecordCodec: Boundable: Encoder: Decoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: Encoder: Decoder: Component[*, Bounds[K]]
+    M: Encoder: Decoder: Component[_, Bounds[K]]
   ](id: ID, keyIndexMethod: KeyIndexMethod[K]): Unit
 
   def reindex[
     K: AvroRecordCodec: Boundable: Encoder: Decoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: Encoder: Decoder: Component[*, Bounds[K]]
+    M: Encoder: Decoder: Component[_, Bounds[K]]
   ](id: ID, keyIndex: KeyIndex[K]): Unit
 
 }

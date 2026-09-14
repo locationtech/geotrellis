@@ -28,6 +28,6 @@ trait LayerMover[ID] {
   def move[
     K: AvroRecordCodec: Boundable: Encoder: Decoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: Encoder: Decoder: Component[*, Bounds[K]]
+    M: Encoder: Decoder: Component[_, Bounds[K]]
   ](from: ID, to: ID): Unit
 }

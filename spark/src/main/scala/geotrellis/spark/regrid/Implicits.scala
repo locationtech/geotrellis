@@ -29,7 +29,7 @@ object Implicits extends Implicits
 trait Implicits {
   implicit class withRegridMethods[
     K: SpatialComponent: ClassTag,
-    V: ClassTag: Stitcher: * => CropMethods[V],
-    M: Component[*, LayoutDefinition]: Component[*, Bounds[K]]
+    V: ClassTag: Stitcher: _ => CropMethods[V],
+    M: Component[_, LayoutDefinition]: Component[_, Bounds[K]]
   ](self: RDD[(K, V)] with Metadata[M]) extends RegridMethods[K, V, M](self)
 }

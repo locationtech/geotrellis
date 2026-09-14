@@ -30,7 +30,7 @@ trait Implicits {
   implicit class withTileLayerRDDFilterMethods[
     K: Boundable,
     V,
-    M: Component[*, Bounds[K]]
+    M: Component[_, Bounds[K]]
   ](val self: RDD[(K, V)] with Metadata[M])
       extends TileLayerRDDFilterMethods[K, V, M]
 

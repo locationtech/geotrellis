@@ -25,7 +25,7 @@ import geotrellis.util.MethodExtensions
   * A class providing extension methods for merging rasters.
   */
 abstract class RasterMergeMethods[
-  T <: CellGrid[Int]: * => TileMergeMethods[T]
+  T <: CellGrid[Int]: _ => TileMergeMethods[T]
 ](val self: Raster[T]) extends MethodExtensions[Raster[T]] {
 
   /**

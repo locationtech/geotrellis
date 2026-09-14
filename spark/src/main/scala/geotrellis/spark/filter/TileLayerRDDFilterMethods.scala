@@ -22,7 +22,7 @@ import geotrellis.spark.*
 import geotrellis.util.*
 import org.apache.spark.rdd.*
 
-abstract class TileLayerRDDFilterMethods[K: Boundable, V, M: Component[*, Bounds[K]]] extends MethodExtensions[RDD[(K, V)] with Metadata[M]] {
+abstract class TileLayerRDDFilterMethods[K: Boundable, V, M: Component[_, Bounds[K]]] extends MethodExtensions[RDD[(K, V)] with Metadata[M]] {
   /**
     * A method that takes a sequence of [[KeyBounds]] objects and
     * returns a [[TileLayerRDD]] in-which all keys in the original RDD

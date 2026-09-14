@@ -36,8 +36,8 @@ trait Output[T] extends Node[T]
 object Output {
   def write[
     K: SpatialComponent : AvroRecordCodec : Encoder : ClassTag,
-    V <: CellGrid[Int] : AvroRecordCodec : ClassTag: * => TileMergeMethods[V]: * => TilePrototypeMethods[V],
-    M: Component[*, LayoutDefinition]: Component[*, Bounds[K]]: Encoder : GetComponent[*, Bounds[K]]
+    V <: CellGrid[Int] : AvroRecordCodec : ClassTag: _ => TileMergeMethods[V]: _ => TilePrototypeMethods[V],
+    M: Component[_, LayoutDefinition]: Component[_, Bounds[K]]: Encoder : GetComponent[_, Bounds[K]]
   ](arg: JsonWrite)(tuples: LazyList[(Int, RDD[(K, V)] with Metadata[M])]): LazyList[(Int, RDD[(K, V)] with Metadata[M])] = {
     lazy val writer = LayerWriter(arg.uri)
     tuples.foreach { tuple =>

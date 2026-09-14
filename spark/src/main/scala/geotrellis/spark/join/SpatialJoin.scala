@@ -29,9 +29,9 @@ object SpatialJoin {
   def leftOuterJoin[
     K: Boundable: PartitionerIndex: ClassTag,
     V: ClassTag,
-    M: GetComponent[*, Bounds[K]],
+    M: GetComponent[_, Bounds[K]],
     W: ClassTag,
-    M1: GetComponent[*, Bounds[K]]
+    M1: GetComponent[_, Bounds[K]]
   ](
     left: RDD[(K, V)] with Metadata[M],
     right: RDD[(K, W)] with Metadata[M1]
@@ -55,9 +55,9 @@ object SpatialJoin {
   def join[
     K: Boundable: PartitionerIndex: ClassTag,
     V: ClassTag,
-    M: GetComponent[*, Bounds[K]],
+    M: GetComponent[_, Bounds[K]],
     W: ClassTag,
-    M1: GetComponent[*, Bounds[K]]
+    M1: GetComponent[_, Bounds[K]]
   ](
     left: RDD[(K, V)] with Metadata[M],
     right: RDD[(K, W)] with Metadata[M1]

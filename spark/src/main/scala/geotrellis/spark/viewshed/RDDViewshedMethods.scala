@@ -27,7 +27,7 @@ import org.apache.spark.SparkContext
 import scala.reflect.ClassTag
 
 
-abstract class RDDViewshedMethods[K: * => SpatialKey: ClassTag, V: * => Tile]
+abstract class RDDViewshedMethods[K: _ => SpatialKey: ClassTag, V: _ => Tile]
     extends MethodExtensions[RDD[(K, V)] with Metadata[TileLayerMetadata[K]]] {
 
   def viewshed(

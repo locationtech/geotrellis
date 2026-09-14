@@ -31,12 +31,12 @@ trait Implicits {
   implicit class withSpatialJoinMethods[
     K: Boundable: PartitionerIndex: ClassTag,
     V: ClassTag,
-    M: GetComponent[*, Bounds[K]]
+    M: GetComponent[_, Bounds[K]]
   ](val self: RDD[(K, V)] with Metadata[M])
     extends SpatialJoinMethods[K, V, M]
 
   implicit class withVectorJoinMethods[
-    L: ClassTag : * => Geometry,
-    R: ClassTag : * => Geometry
+    L: ClassTag : _ => Geometry,
+    R: ClassTag : _ => Geometry
   ](val self: RDD[L]) extends VectorJoinMethods[L, R]
 }

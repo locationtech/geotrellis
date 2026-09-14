@@ -27,7 +27,7 @@ import org.apache.spark.rdd.*
 
 import scala.reflect.ClassTag
 
-class TilerMethods[K, V <: CellGrid[Int]: ClassTag: * => TileMergeMethods[V]: * => TilePrototypeMethods[V]](val self: RDD[(K, V)]) extends MethodExtensions[RDD[(K, V)]] {
+class TilerMethods[K, V <: CellGrid[Int]: ClassTag: _ => TileMergeMethods[V]: _ => TilePrototypeMethods[V]](val self: RDD[(K, V)]) extends MethodExtensions[RDD[(K, V)]] {
   import Tiler.Options
 
   def cutTiles[K2: SpatialComponent: ClassTag](cellType: CellType, layoutDefinition: LayoutDefinition, resampleMethod: ResampleMethod)

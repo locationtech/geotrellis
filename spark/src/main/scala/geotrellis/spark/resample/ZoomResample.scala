@@ -62,7 +62,7 @@ object ZoomResample {
     */
   def apply[
     K: SpatialComponent,
-    V: * => TileResampleMethods[V]
+    V: _ => TileResampleMethods[V]
   ](
     rdd: RDD[(K, V)] with Metadata[TileLayerMetadata[K]],
     sourceZoom: Int,

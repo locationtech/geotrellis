@@ -27,8 +27,8 @@ import org.apache.spark.rdd.RDD
 
 abstract class LayerRDDCropMethods[
     K: SpatialComponent,
-    V <: CellGrid[Int]: * => TileCropMethods[V],
-    M: Component[*, Bounds[K]]: GetComponent[*, Extent]: GetComponent[*, LayoutDefinition]
+    V <: CellGrid[Int]: _ => TileCropMethods[V],
+    M: Component[_, Bounds[K]]: GetComponent[_, Extent]: GetComponent[_, LayoutDefinition]
   ] extends MethodExtensions[RDD[(K, V)] with Metadata[M]] {
   def crop(extent: Extent, options: Options): RDD[(K, V)] with Metadata[M] =
     Crop(self, extent, options)

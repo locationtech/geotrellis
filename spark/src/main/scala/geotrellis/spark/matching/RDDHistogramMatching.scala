@@ -24,12 +24,12 @@ import org.apache.spark.rdd.RDD
 
 object RDDHistogramMatching {
 
-  private def computeHistogram[K, V: * => Tile](rdd: RDD[(K, V)]): StreamingHistogram =
+  private def computeHistogram[K, V: _ => Tile](rdd: RDD[(K, V)]): StreamingHistogram =
     rdd
       .map({ case (_, v) => StreamingHistogram.fromTile(v, 1<<8) })
       .reduce(_ + _)
 
-  private def computeHistograms[K, V: * => MultibandTile](
+  private def computeHistograms[K, V: _ => MultibandTile](
     rdd: RDD[(K, V)],
     bandCount: Int
   ): Seq[StreamingHistogram] =
@@ -49,7 +49,7 @@ object RDDHistogramMatching {
     * @param  targetHistogram  The histogram that the tiles should be matched to
     * @return                  An RDD key-tile pairs where the histograms have been matched
     */
-  def singleband[T1 <: AnyVal, T2 <: AnyVal, K, V: * => Tile](
+  def singleband[T1 <: AnyVal, T2 <: AnyVal, K, V: _ => Tile](
     rdd: RDD[(K, V)],
     sourceHistogram: Histogram[T1],
     targetHistogram: Histogram[T2]
@@ -66,7 +66,7 @@ object RDDHistogramMatching {
     * @param  targetHistogram  The histogram that the tiles should be matched to
     * @return                  An RDD key-tile pairs where the histograms have been matched
     */
-  def singleband[T <: AnyVal, K, V: * => Tile](
+  def singleband[T <: AnyVal, K, V: _ => Tile](
     rdd: RDD[(K, V)],
     targetHistogram: Histogram[T]
   ): RDD[(K, Tile)] = {
@@ -87,7 +87,7 @@ object RDDHistogramMatching {
     * @param  targetHistograms  The histograms that the bands of the the tiles should be matched to
     * @return                   An RDD key-MultibandTile pairs where the bands of the histograms have been matched
     */
-  def multiband[T1 <: AnyVal, T2 <: AnyVal, K, V: * => MultibandTile](
+  def multiband[T1 <: AnyVal, T2 <: AnyVal, K, V: _ => MultibandTile](
     rdd: RDD[(K, V)],
     sourceHistograms: Seq[Histogram[T1]],
     targetHistograms: Seq[Histogram[T2]]
@@ -106,7 +106,7 @@ object RDDHistogramMatching {
     * @param  targetHistograms  The histograms that the bands of the the tiles should be matched to
     * @return                   An RDD key-MultibandTile pairs where the bands of the histograms have been matched
     */
-  def multiband[T <: AnyVal, K, V: * => MultibandTile](
+  def multiband[T <: AnyVal, K, V: _ => MultibandTile](
     rdd: RDD[(K, V)],
     targetHistograms: Seq[Histogram[T]]
   ): RDD[(K, MultibandTile)] = {

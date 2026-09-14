@@ -27,12 +27,12 @@ import scala.reflect.ClassTag
 object Implicits extends Implicits
 
 trait Implicits {
-  implicit class withTileRDDMergeMethods[K: ClassTag, V <: CellGrid[Int]: ClassTag: * => TileMergeMethods[V]](self: RDD[(K, V)])
+  implicit class withTileRDDMergeMethods[K: ClassTag, V <: CellGrid[Int]: ClassTag: _ => TileMergeMethods[V]](self: RDD[(K, V)])
     extends TileRDDMergeMethods[K, V](self)
 
   implicit class withRDDLayoutMergeMethods[
     K: SpatialComponent: ClassTag,
-    V <: CellGrid[Int]: ClassTag: * => TileMergeMethods[V]: * => TilePrototypeMethods[V],
-    M: * => LayoutDefinition
+    V <: CellGrid[Int]: ClassTag: _ => TileMergeMethods[V]: _ => TilePrototypeMethods[V],
+    M: _ => LayoutDefinition
   ](self: RDD[(K, V)] with Metadata[M]) extends RDDLayoutMergeMethods[K, V, M](self)
 }

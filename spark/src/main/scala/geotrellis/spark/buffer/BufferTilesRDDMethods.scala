@@ -31,7 +31,7 @@ import scala.reflect.ClassTag
 
 class BufferTilesRDDMethods[
   K: SpatialComponent: ClassTag,
-  V <: CellGrid[Int]: Stitcher: ClassTag: * => CropMethods[V]
+  V <: CellGrid[Int]: Stitcher: ClassTag: _ => CropMethods[V]
 ](val self: RDD[(K, V)]) extends MethodExtensions[RDD[(K, V)]] {
   def bufferTiles(bufferSize: Int): RDD[(K, BufferedTile[V])] =
     BufferTilesRDD(self, bufferSize)

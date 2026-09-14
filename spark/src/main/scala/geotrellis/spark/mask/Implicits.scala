@@ -30,7 +30,7 @@ object Implicits extends Implicits
 trait Implicits {
   implicit class withTileRDDMaskMethods[
     K: SpatialComponent: ClassTag,
-    V: * => TileMaskMethods[V],
-    M: GetComponent[*, LayoutDefinition]
+    V: _ => TileMaskMethods[V],
+    M: GetComponent[_, LayoutDefinition]
   ](val self: RDD[(K, V)] with Metadata[M]) extends TileRDDMaskMethods[K, V, M]
 }

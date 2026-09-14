@@ -24,7 +24,7 @@ import org.apache.spark.rdd.*
 import scala.reflect.ClassTag
 
 object TileRDDMerge {
-  def apply[K: ClassTag, V: ClassTag: * => TileMergeMethods[V]](rdd: RDD[(K, V)], other: RDD[(K, V)]): RDD[(K, V)] = {
+  def apply[K: ClassTag, V: ClassTag: _ => TileMergeMethods[V]](rdd: RDD[(K, V)], other: RDD[(K, V)]): RDD[(K, V)] = {
     rdd
       .cogroup(other)
       .map { case (key, (myTiles, otherTiles)) =>
@@ -40,7 +40,7 @@ object TileRDDMerge {
       }
   }
 
-  def apply[K: ClassTag, V: ClassTag: * => TileMergeMethods[V]](rdd: RDD[(K, V)], partitioner: Option[Partitioner]): RDD[(K, V)] = {
+  def apply[K: ClassTag, V: ClassTag: _ => TileMergeMethods[V]](rdd: RDD[(K, V)], partitioner: Option[Partitioner]): RDD[(K, V)] = {
     partitioner match {
       case Some(p) =>
         rdd.reduceByKey(p, _ merge _)

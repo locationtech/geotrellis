@@ -27,7 +27,7 @@ import org.apache.spark.rdd.RDD
 object Split {
   /** Splits an RDD of tiles into tiles of size (tileCols x tileRows), and updates the ProjectedExtent component of the keys.
     */
- def apply[K: Component[*, ProjectedExtent], V <: CellGrid[Int]: * => SplitMethods[V]](rdd: RDD[(K, V)], tileCols: Int, tileRows: Int): RDD[(K, V)] =
+ def apply[K: Component[_, ProjectedExtent], V <: CellGrid[Int]: _ => SplitMethods[V]](rdd: RDD[(K, V)], tileCols: Int, tileRows: Int): RDD[(K, V)] =
     rdd
       .flatMap { case (key, tile) =>
         val splitLayout =

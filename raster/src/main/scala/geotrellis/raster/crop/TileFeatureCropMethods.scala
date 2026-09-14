@@ -21,7 +21,7 @@ import geotrellis.vector.*
 
 
 abstract class TileFeatureCropMethods[
-  T <: CellGrid[Int]: * => TileCropMethods[T],
+  T <: CellGrid[Int]: _ => TileCropMethods[T],
   D
 ](val self: TileFeature[T, D]) extends TileCropMethods[TileFeature[T, D]] {
   import Crop.Options

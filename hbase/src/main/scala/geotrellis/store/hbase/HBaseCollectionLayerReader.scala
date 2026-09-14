@@ -33,7 +33,7 @@ class HBaseCollectionLayerReader(
   def read[
     K: AvroRecordCodec: Boundable: Decoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: Decoder: Component[*, Bounds[K]]
+    M: Decoder: Component[_, Bounds[K]]
   ](id: LayerId, rasterQuery: LayerQuery[K, M], filterIndexOnly: Boolean): ContextCollection[K, V, M] = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
 

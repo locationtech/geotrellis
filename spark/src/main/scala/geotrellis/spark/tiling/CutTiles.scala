@@ -32,9 +32,9 @@ object CutTiles {
   @transient private[this] lazy val logger = getLogger
 
   def apply[
-    K1: * => TilerKeyMethods[K1, K2],
+    K1: _ => TilerKeyMethods[K1, K2],
     K2: SpatialComponent: ClassTag,
-    V <: CellGrid[Int]: ClassTag: * => TileMergeMethods[V]: * => TilePrototypeMethods[V]
+    V <: CellGrid[Int]: ClassTag: _ => TileMergeMethods[V]: _ => TilePrototypeMethods[V]
   ] (
     rdd: RDD[(K1, V)],
     cellType: CellType,
