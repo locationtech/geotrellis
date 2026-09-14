@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Accumulo Deprecated APIs removal [#3630](https://github.com/locationtech/geotrellis/pull/3630)
 - GeoTools 35.1 update [#3611](https://github.com/locationtech/geotrellis/pull/3611)
 - Scala3 syntax usage [#3631](https://github.com/locationtech/geotrellis/pull/3631)
+- Kind Projector underscore syntax adoption [#3632](https://github.com/locationtech/geotrellis/pull/3632)
 
 ## [3.8.1] - 2026-06-22
 
