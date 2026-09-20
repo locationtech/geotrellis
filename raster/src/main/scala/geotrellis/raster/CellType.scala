@@ -508,7 +508,7 @@ object CellType {
   }
 
   /** Enumeration of pre-defined cell types without a `NoData` value. */
-  val noNoDataCellTypes = Seq(
+  val noNoDataCellTypes: Seq[DataType with NoDataHandling with Product] = Seq(
     BitCellType,
     ByteCellType,
     UByteCellType,
@@ -520,7 +520,7 @@ object CellType {
   )
 
   /** Enumeration of pre-defined cell types with a default `NoData` value. */
-  val constantNoDataCellTypes = Seq(
+  val constantNoDataCellTypes: Seq[DataType with ConstantNoData[?] with Product] = Seq(
     ByteConstantNoDataCellType,
     UByteConstantNoDataCellType,
     ShortConstantNoDataCellType,
@@ -531,5 +531,6 @@ object CellType {
   )
 
   /** Enumeration of all pre-defined cell types. */
-  val celltypes: Seq[DataType with NoDataHandling with Product] = noNoDataCellTypes ++ constantNoDataCellTypes
+  val celltypes: Seq[DataType with NoDataHandling with Product] =
+    noNoDataCellTypes ++ constantNoDataCellTypes
 }

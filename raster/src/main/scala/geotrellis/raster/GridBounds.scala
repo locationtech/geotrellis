@@ -19,6 +19,8 @@ package geotrellis.raster
 import _root_.io.circe.*
 import _root_.io.circe.generic.semiauto.*
 
+import geotrellis.util.conversions.ConversionLiftSpire.*
+
 import scala.collection.mutable
 import spire.math.*
 import spire.implicits.*
@@ -261,10 +263,24 @@ case class GridBounds[@specialized(Int, Long) N: Integral](
   * The companion object for the [[GridBounds]] type.
   */
   object GridBounds {
-    implicit val gridBoundsIntEncoder: Encoder[GridBounds[Int]] = deriveEncoder
-    implicit val gridBoundsIntDecoder: Decoder[GridBounds[Int]] = deriveDecoder
-    implicit val gridBoundsLongEncoder: Encoder[GridBounds[Long]] = deriveEncoder
-    implicit val gridBoundsLongDecoder: Decoder[GridBounds[Long]] = deriveDecoder
+    // Written out rather than derived: `GridBounds[N: Integral]` has a second (implicit)
+    // parameter list, so Scala 3 cannot summon a `Mirror` for it.
+    implicit val gridBoundsIntEncoder: Encoder[GridBounds[Int]] =
+      Encoder.forProduct4("colMin", "rowMin", "colMax", "rowMax") { (gb: GridBounds[Int]) =>
+        (gb.colMin, gb.rowMin, gb.colMax, gb.rowMax)
+      }
+    implicit val gridBoundsIntDecoder: Decoder[GridBounds[Int]] =
+      Decoder.forProduct4("colMin", "rowMin", "colMax", "rowMax") {
+        (colMin: Int, rowMin: Int, colMax: Int, rowMax: Int) => GridBounds(colMin, rowMin, colMax, rowMax)
+      }
+    implicit val gridBoundsLongEncoder: Encoder[GridBounds[Long]] =
+      Encoder.forProduct4("colMin", "rowMin", "colMax", "rowMax") { (gb: GridBounds[Long]) =>
+        (gb.colMin, gb.rowMin, gb.colMax, gb.rowMax)
+      }
+    implicit val gridBoundsLongDecoder: Decoder[GridBounds[Long]] =
+      Decoder.forProduct4("colMin", "rowMin", "colMax", "rowMax") {
+        (colMin: Long, rowMin: Long, colMax: Long, rowMax: Long) => GridBounds(colMin, rowMin, colMax, rowMax)
+      }
 
     /**
       * Given a [[Grid]], produce the corresponding [[GridBounds]].

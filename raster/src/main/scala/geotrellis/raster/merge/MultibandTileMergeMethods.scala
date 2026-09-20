@@ -19,6 +19,7 @@ package geotrellis.raster.merge
 import geotrellis.raster.resample.ResampleMethod
 import geotrellis.raster.{ArrayMultibandTile, Tile, MultibandTile}
 import geotrellis.vector.Extent
+import geotrellis.raster.merge.Implicits.withSinglebandMergeMethods
 
 /**
   * A trait containing extension methods related to MultibandTile

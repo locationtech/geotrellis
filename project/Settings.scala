@@ -504,12 +504,12 @@ object Settings {
         Unzip(testArchive, "raster/data")
       }
     }
-  ) ++ commonSettings
+  ) ++ commonSettings ++ crossScala3
 
   lazy val `raster-testkit` = Seq(
     name := "geotrellis-raster-testkit",
     libraryDependencies += scalatest
-  ) ++ commonSettings
+  ) ++ commonSettings ++ crossScala3
 
   lazy val s3 = Seq(
     name := "geotrellis-s3",

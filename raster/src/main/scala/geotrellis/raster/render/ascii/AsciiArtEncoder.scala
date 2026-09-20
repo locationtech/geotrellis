@@ -18,6 +18,7 @@ package geotrellis.raster.render.ascii
 
 import geotrellis.raster.Tile
 import geotrellis.raster.render.{ColorMap, ColorRamp}
+import geotrellis.raster.summary.Implicits.withSinglebandSummaryMethods
 import spire.syntax.cfor.cfor
 
 /**

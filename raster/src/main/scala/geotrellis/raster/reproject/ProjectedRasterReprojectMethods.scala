@@ -20,6 +20,7 @@ import geotrellis.raster.*
 import geotrellis.raster.resample.*
 import geotrellis.proj4.*
 import geotrellis.util.MethodExtensions
+import geotrellis.util.conversions.ConversionLift.*
 
 
 

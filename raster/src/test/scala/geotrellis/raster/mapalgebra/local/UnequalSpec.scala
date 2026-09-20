@@ -30,7 +30,7 @@ class UnequalSpec extends AnyFunSpec
   describe("Unequal") {
     it("checks int valued raster against int constant") {
       val r = positiveIntegerRaster
-      val result = r !== 5
+      val result = r.localUnequal(5)
       for(col <- 0 until r.cols) {
         for(row <- 0 until r.rows) {
           val z = r.get(col, row)
@@ -43,7 +43,7 @@ class UnequalSpec extends AnyFunSpec
 
     it("checks int valued raster against double constant") {
       val r = probabilityRaster.map(_ * 100).convert(IntConstantNoDataCellType)
-      val result = r !== 69.0
+      val result = r.localUnequal(69.0)
       for(col <- 0 until r.cols) {
         for(row <- 0 until r.rows) {
           val z = r.get(col, row)
@@ -56,7 +56,7 @@ class UnequalSpec extends AnyFunSpec
 
     it("checks int valued raster against int constant (right associative)") {
       val r = positiveIntegerRaster
-      val result = 5 !==: r
+      val result = r.localUnequal(5)
       for(col <- 0 until r.cols) {
         for(row <- 0 until r.rows) {
           val z = r.get(col, row)
@@ -69,7 +69,7 @@ class UnequalSpec extends AnyFunSpec
 
     it("checks double valued raster against int constant (right associative)") {
       val r = positiveIntegerRaster.convert(DoubleConstantNoDataCellType).mapDouble(_.toDouble)
-      val result = 69.0 !==: r
+      val result = r.localUnequal(69.0)
       for(col <- 0 until r.cols) {
         for(row <- 0 until r.rows) {
           val z = r.get(col, row)
@@ -82,7 +82,7 @@ class UnequalSpec extends AnyFunSpec
 
     it("checks double valued raster against int constant") {
       val r = positiveIntegerRaster.convert(DoubleConstantNoDataCellType).mapDouble(_.toDouble)
-      val result = r !== 5
+      val result = r.localUnequal(5)
       for(col <- 0 until r.cols) {
         for(row <- 0 until r.rows) {
           val z = r.getDouble(col, row)
@@ -95,7 +95,7 @@ class UnequalSpec extends AnyFunSpec
 
     it("checks double valued raster against double constant") {
       val r = probabilityRaster
-      val result = r !== 0.69
+      val result = r.localUnequal(0.69)
       for(col <- 0 until r.cols) {
         for(row <- 0 until r.rows) {
           val z = r.getDouble(col, row)
@@ -108,7 +108,7 @@ class UnequalSpec extends AnyFunSpec
 
     it("checks an integer raster against itself") {
       val r = positiveIntegerRaster
-      val result = r !== r
+      val result = r.localUnequal(r)
       for(col <- 0 until r.cols) {
         for(row <- 0 until r.rows) {
           result.get(col, row) should be (0)
@@ -119,7 +119,7 @@ class UnequalSpec extends AnyFunSpec
     it("checks an integer raster against a different raster") {
       val r = positiveIntegerRaster
       val r2 = positiveIntegerRaster.map(_ * 2)
-      val result = r !== r2
+      val result = r.localUnequal(r2)
       for(col <- 0 until r.cols) {
         for(row <- 0 until r.rows) {
           result.get(col, row) should be (1)
@@ -129,7 +129,7 @@ class UnequalSpec extends AnyFunSpec
 
     it("checks a double raster against itself") {
       val r = probabilityRaster
-      val result = r !== r
+      val result = r.localUnequal(r)
       for(col <- 0 until r.cols) {
         for(row <- 0 until r.rows) {
           result.get(col, row) should be (0)
@@ -140,7 +140,7 @@ class UnequalSpec extends AnyFunSpec
     it("checks a double raster against a different raster") {
       val r = probabilityRaster
       val r2 = positiveIntegerRaster.mapDouble(_ * 2.3)
-      val result = r !== r2
+      val result = r.localUnequal(r2)
       for(col <- 0 until r.cols) {
         for(row <- 0 until r.rows) {
           result.get(col, row) should be (1)

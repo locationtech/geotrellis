@@ -17,6 +17,7 @@
 package geotrellis.raster.prototype
 
 import geotrellis.raster.*
+import geotrellis.util.conversions.ConversionLift.*
 import cats.Monoid
 
 abstract class TileFeaturePrototypeMethods[

@@ -16,7 +16,8 @@
 
 package geotrellis.raster
 
-import _root_.io.circe.generic.JsonCodec
+import _root_.io.circe.Codec
+import _root_.io.circe.generic.semiauto.deriveCodec
 import geotrellis.vector.Extent
 
 
@@ -24,6 +25,8 @@ import geotrellis.vector.Extent
   * The companion object associated with the [[TileLayout]] type.
   */
 object TileLayout {
+  implicit val codecForTileLayout: Codec.AsObject[TileLayout] = deriveCodec[TileLayout]
+
 
   /**
     * Produce a new [[TileLayout]] with the given number of columns
@@ -46,7 +49,6 @@ object TileLayout {
  * @param tileCols   number of pixel columns in each tile, East to West
  * @param tileRows   number of pixel rows in each tile, North to South
  */
-@JsonCodec
 case class TileLayout(layoutCols: Int, layoutRows: Int, tileCols: Int, tileRows: Int) {
 
   require(

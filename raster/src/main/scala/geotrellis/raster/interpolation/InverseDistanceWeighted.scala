@@ -18,6 +18,7 @@ package geotrellis.raster.interpolation
 
 import geotrellis.raster.*
 import geotrellis.vector.*
+import geotrellis.util.conversions.ConversionLift.*
 import spire.syntax.cfor.*
 
 object InverseDistanceWeighted {

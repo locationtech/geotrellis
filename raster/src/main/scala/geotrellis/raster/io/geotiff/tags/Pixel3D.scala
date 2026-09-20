@@ -16,9 +16,12 @@
 
 package geotrellis.raster.io.geotiff.tags
 
-import io.circe.generic.JsonCodec
+import io.circe.Codec
+import io.circe.generic.semiauto.deriveCodec
 
 object Pixel3D {
+  implicit val codecForPixel3D: Codec.AsObject[Pixel3D] = deriveCodec[Pixel3D]
+
 
   def fromArray(v: Array[Double]): Pixel3D =
     if (v.size == 3) Pixel3D(v(0), v(1), v(2))
@@ -28,5 +31,4 @@ object Pixel3D {
 
 }
 
-@JsonCodec
 case class Pixel3D(x: Double, y: Double, z: Double)

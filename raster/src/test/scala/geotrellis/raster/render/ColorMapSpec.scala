@@ -38,7 +38,7 @@ class ColorMapSpec extends AnyFunSpec with Matchers with TileBuilders {
           1236 -> 1236
         ).withNoDataColor(8675309)
 
-      colorMap.colors shouldBe (Array(123, 1234, 1235, 1236))
+      colorMap.colors shouldBe (Vector(123, 1234, 1235, 1236))
       colorMap.options.noDataColor shouldBe (8675309)
     }
 
@@ -50,7 +50,7 @@ class ColorMapSpec extends AnyFunSpec with Matchers with TileBuilders {
           45.342 -> 1235,
           1236.13 -> 1236
         ).withNoDataColor(8675309)
-      colorMap.colors shouldBe (Array(1235, 123, 1236, 1234))
+      colorMap.colors shouldBe (Vector(1235, 123, 1236, 1234))
       colorMap.options.noDataColor shouldBe (8675309)
     }
   }

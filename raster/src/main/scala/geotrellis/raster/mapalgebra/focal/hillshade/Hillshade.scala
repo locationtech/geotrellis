@@ -40,9 +40,8 @@ import scala.math.*
  */
 object Hillshade {
   def apply(tile: Tile, n: Neighborhood, bounds: Option[GridBounds[Int]], cs: CellSize, az: Double, al: Double, z: Double, target: TargetCell = TargetCell.All): Tile = {
-    new SurfacePointCalculation[Tile](tile, n, bounds, cs, target) with
-      ShortArrayTileResult
-    {
+    new SurfacePointCalculation[Tile](tile, n, bounds, cs, target)
+      with ShortArrayTileResult {
       val azimuth = radians(90.0 - az)
       val zenith = radians(90.0 - al)
       val zFactor = z

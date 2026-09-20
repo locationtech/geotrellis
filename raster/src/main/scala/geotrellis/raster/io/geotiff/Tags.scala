@@ -16,13 +16,13 @@
 
 package geotrellis.raster.io.geotiff
 
-import io.circe.generic.JsonCodec
+import io.circe.Codec
+import io.circe.generic.semiauto.deriveCodec
 
 /** Tags are user data that the GeoTiff is tagged with.
   * While GDAL calls the data "metadata", we call them tags.
   * See the "Metadata" section here: http://www.gdal.org/gdal_datamodel.html
   */
-@JsonCodec
 case class Tags(headTags: Map[String, String], bandTags: List[Map[String, String]]) {
   def bandCount = bandTags.size
 
@@ -64,6 +64,8 @@ case class Tags(headTags: Map[String, String], bandTags: List[Map[String, String
 }
 
 object Tags {
+  implicit val codecForTags: Codec.AsObject[Tags] = deriveCodec[Tags]
+
   def empty: Tags = Tags(Map(), List())
 
   final val AREA_OR_POINT = "AREA_OR_POINT"

@@ -17,6 +17,7 @@
 package geotrellis.raster.split
 
 import geotrellis.raster.*
+import geotrellis.util.conversions.ConversionLift.*
 
 abstract class TileFeatureSplitMethods[
   T <: CellGrid[Int]: _ => SplitMethods[T],

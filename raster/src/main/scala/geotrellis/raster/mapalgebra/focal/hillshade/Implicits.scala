@@ -17,6 +17,7 @@
 package geotrellis.raster.mapalgebra.focal.hillshade
 
 import geotrellis.raster.*
+import geotrellis.util.conversions.ConversionLift.*
 
 object Implicits extends Implicits
 

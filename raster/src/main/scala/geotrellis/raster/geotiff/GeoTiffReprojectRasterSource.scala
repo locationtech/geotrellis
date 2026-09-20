@@ -24,6 +24,7 @@ import geotrellis.proj4.*
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.raster.io.geotiff.{GeoTiff, GeoTiffMultibandTile, MultibandGeoTiff, OverviewStrategy, Tags}
 import geotrellis.util.RangeReader
+import geotrellis.vector.reproject.Implicits.ReprojectExtent
 
 class GeoTiffReprojectRasterSource(
   val dataPath: GeoTiffPath,

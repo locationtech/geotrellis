@@ -18,7 +18,8 @@ package geotrellis.raster
 
 import geotrellis.vector.Extent
 
-import _root_.io.circe.generic.JsonCodec
+import _root_.io.circe.Codec
+import _root_.io.circe.generic.semiauto.deriveCodec
 
 import scala.math.Ordering
 
@@ -28,7 +29,6 @@ import scala.math.Ordering
   * @param  width   The width of a cell
   * @param  height  The height of a cell
   */
-@JsonCodec
 case class CellSize(width: Double, height: Double) {
   def resolution: Double = math.sqrt(width * height)
 }
@@ -37,6 +37,8 @@ case class CellSize(width: Double, height: Double) {
   * The companion object for the [[CellSize]] type.
   */
 object CellSize {
+  implicit val codecForCellSize: Codec.AsObject[CellSize] = deriveCodec[CellSize]
+
 
   /**
     * Create a new [[CellSize]] from an extent, a number of columns,

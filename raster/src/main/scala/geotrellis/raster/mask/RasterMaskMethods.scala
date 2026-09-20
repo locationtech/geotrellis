@@ -20,6 +20,7 @@ import geotrellis.raster.*
 import geotrellis.raster.rasterize.Rasterizer.Options
 import geotrellis.util.MethodExtensions
 import geotrellis.vector.Geometry
+import geotrellis.util.conversions.ConversionLift.*
 
 /**
   * A trait containing extension methods related to masking of a

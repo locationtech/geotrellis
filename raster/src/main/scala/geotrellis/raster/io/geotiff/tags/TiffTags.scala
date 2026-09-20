@@ -533,7 +533,7 @@ object TiffTags {
   }
 
   def read(byteReader: ByteReader, tagsStartPosition: Long)(implicit ttos: TiffTagOffsetSize): TiffTags = {
-    val tagCount =
+    val tagCount: Long =
       ttos match {
         case IntTiffTagOffsetSize =>
           byteReader.position(tagsStartPosition.toInt)

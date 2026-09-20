@@ -28,7 +28,7 @@ trait HistogramJsonFormats {
   implicit val histogramIntEncoder: Encoder[Histogram[Int]] =
     Encoder.encodeJson.contramap[Histogram[Int]] { h =>
       val pairs = ArrayBuffer[Json]()
-      h.foreach { (value, count) => pairs += Vector(value, count).asJson }
+      h.foreach { (value, count) => pairs += Vector[Long](value.toLong, count).asJson }
       Json.fromValues(pairs)
     }
 
