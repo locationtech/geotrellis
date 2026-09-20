@@ -56,19 +56,37 @@ object Settings {
     Test / fork := true
   )
 
+  /** Opts a module into the Scala 3 cross-build */
+  lazy val crossScala3 = Seq(
+    crossScalaVersions := crossScala2And3
+  )
+
   lazy val kindProjectorPlugin = addCompilerPlugin("org.typelevel" % "kind-projector" % "0.13.4" cross CrossVersion.full)
+
+  val scala213 = "2.13.18"
+  val scala3   = "3.3.7"
+
+  /** Modules that have not been ported to Scala 3 yet stay on this. */
+  val crossScala2Only = Seq(scala213)
+  /** Modules that cross-compile. */
+  val crossScala2And3 = Seq(scala213, scala3)
+
+  def isScala3(version: String): Boolean =
+    CrossVersion.partialVersion(version).exists(_._1 == 3)
 
   val commonScalacOptions = Seq(
     "-deprecation",
     "-unchecked",
     "-feature",
     "-language:implicitConversions",
-    "-language:reflectiveCalls",
     "-language:higherKinds",
     "-language:postfixOps",
-    "-language:existentials",
+    "-language:existentials"
+  )
+
+  val scala2ScalacOptions = Seq(
+    "-language:reflectiveCalls",
     "-language:experimental.macros",
-    "-feature",
     // "-Yrangepos",            // required by SemanticDB compiler plugin
     // "-Ywarn-unused-import",  // required by `RemoveUnused` rule
     "-target:jvm-1.8",
@@ -79,12 +97,22 @@ object Settings {
     "-Wconf:msg=found in a package prefix:s"
   )
 
+  val scala3ScalacOptions = Seq(
+    "-release:8",
+    "-source:3.3",
+    "-Ykind-projector:underscores"
+  )
+
+  def scalacOptionsFor(version: String): Seq[String] =
+    commonScalacOptions ++ (if (isScala3(version)) scala3ScalacOptions else scala2ScalacOptions)
+
   lazy val commonSettings = Seq(
     description := "geographic data processing library for high performance applications",
     licenses := Seq("Apache-2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0.html")),
     homepage := Some(url("https://geotrellis.io")),
     scmInfo := Some(ScmInfo(url("https://github.com/locationtech/geotrellis"), "scm:git:git@github.com:locationtech/geotrellis.git")),
-    scalacOptions ++= commonScalacOptions,
+    scalacOptions ++= scalacOptionsFor(scalaVersion.value),
+    crossScalaVersions := crossScala2Only,
     publishMavenStyle := true,
     Test / publishArtifact := false,
     pomIncludeRepository := { _ => false },
@@ -112,24 +140,31 @@ object Settings {
       Path.userHome / ".sbt" / ".credentials"
     ).filter(_.asFile.canRead).map(Credentials(_)),
 
-    kindProjectorPlugin,
-    addCompilerPlugin("org.scalameta" % "semanticdb-scalac" % "4.17.0" cross CrossVersion.full),
-
+    // kind-projector and semanticdb-scalac are Scala 2 compiler plugins; Scala 3 has both built in
+    // (`-Ykind-projector:underscores` and `-Xsemanticdb`).
     libraryDependencies ++= (CrossVersion.partialVersion(scalaVersion.value) match {
-      case Some((2, 13)) => Nil
+      case Some((3, _))  => Nil
+      case Some((2, 13)) => Seq(
+        compilerPlugin("org.typelevel" % "kind-projector" % "0.13.4" cross CrossVersion.full),
+        compilerPlugin("org.scalameta" % "semanticdb-scalac" % "4.17.0" cross CrossVersion.full)
+      )
       case Some((2, 12)) => Seq(
+        compilerPlugin("org.typelevel" % "kind-projector" % "0.13.4" cross CrossVersion.full),
+        compilerPlugin("org.scalameta" % "semanticdb-scalac" % "4.17.0" cross CrossVersion.full),
         compilerPlugin("org.scalamacros" % "paradise" % "2.1.1" cross CrossVersion.full),
         "org.scala-lang.modules" %% "scala-collection-compat" % "2.14.0"
       )
-        case x => sys.error(s"Encountered unsupported Scala version ${x.getOrElse("undefined")}")
+      case x => sys.error(s"Encountered unsupported Scala version ${x.getOrElse("undefined")}")
     }),
     Compile / scalacOptions ++= (CrossVersion.partialVersion(scalaVersion.value) match {
+        case Some((3, _))  => Nil
         case Some((2, 13)) => Seq("-Ymacro-annotations") // replaces paradise in 2.13
         case Some((2, 12)) => Seq("-Ypartial-unification") // required by Cats
         case x => sys.error(s"Encountered unsupported Scala version ${x.getOrElse("undefined")}")
     }),
 
-    libraryDependencies += scalaReflect(scalaVersion.value),
+    // scala-reflect does not exist for Scala 3
+    libraryDependencies ++= (if (isScala3(scalaVersion.value)) Nil else Seq(scalaReflect(scalaVersion.value))),
 
     pomExtra := (
       <developers>
@@ -323,7 +358,7 @@ object Settings {
 
   lazy val `doc-examples` = Seq(
     name := "geotrellis-doc-examples",
-    scalacOptions ++= commonScalacOptions,
+    scalacOptions ++= scalacOptionsFor(scalaVersion.value),
     kindProjectorPlugin,
     libraryDependencies ++= Seq(
       apacheSpark("core").value,
@@ -407,9 +442,13 @@ object Settings {
 
   lazy val macros = Seq(
     name := "geotrellis-macros",
-    Compile / sourceGenerators += (Compile / sourceManaged).map(Boilerplate.genMacro).taskValue,
-    libraryDependencies += spireMacro
-  ) ++ commonSettings
+    Compile / sourceGenerators += Def.task {
+      Boilerplate.genMacro((Compile / sourceManaged).value, scalaVersion.value)
+    }.taskValue,
+    // spire-macros supplies `InlineUtil`, used only by the Scala 2 whitebox macros.
+    libraryDependencies ++= (if (isScala3(scalaVersion.value)) Nil else Seq(spireMacro)),
+    libraryDependencies += scalatest % Test
+  ) ++ commonSettings ++ crossScala3
 
   lazy val mdoc = Seq(
     name := "geotrellis-mdoc",
@@ -431,7 +470,7 @@ object Settings {
     ),
     // https://github.com/sbt/sbt/issues/4609
     Test / fork := true
-  ) ++ commonSettings
+  ) ++ commonSettings ++ crossScala3
 
   lazy val raster = Seq(
     name := "geotrellis-raster",
@@ -596,13 +635,14 @@ object Settings {
 
   lazy val util = Seq(
     name := "geotrellis-util",
+    // `scalaj-http` is not published for Scala 3; `HttpRangeReader` uses `HttpURLConnection`
+    // directly, which keeps the JDK 8 bytecode target (`java.net.http` needs 11+).
     libraryDependencies ++= Seq(
       log4s,
-      scalaj,
       spire,
       scalatest % Test
     )
-  ) ++ commonSettings
+  ) ++ commonSettings ++ crossScala3
 
   lazy val vector = Seq(
     name := "geotrellis-vector",

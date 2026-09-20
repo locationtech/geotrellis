@@ -25,7 +25,7 @@ class StyleSpec extends AnyFunSpec with Matchers {
   describe("Styling geometries") {
     it("should style the geometry from a user defines style and read it back in") {
       val p = """{ "type": "Polygon", "coordinates": [ [ [-76.97021484375, 40.17887331434696], [-74.02587890625, 39.842286020743394],
-	           [-73.4326171875, 41.713930073371294], [-76.79443359375, 41.94314874732696],
+                   [-73.4326171875, 41.713930073371294], [-76.79443359375, 41.94314874732696],
                    [-76.97021484375, 40.17887331434696] ] ] }""".parseGeoJson[Polygon]()
 
       val geoJson =

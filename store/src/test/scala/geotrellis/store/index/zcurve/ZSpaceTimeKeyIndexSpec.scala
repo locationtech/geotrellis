@@ -63,7 +63,7 @@ class ZSpaceTimeKeyIndexSpec extends AnyFunSpec with Matchers {
                                   SpaceTimeKey(1,1, y2k.plus(1, MILLIS))
                                  )
      for(i <- 0 to 6){
-	zst.toIndex(idx(i)) should be (zst.toIndex(idx(i+1)) - 1)
+        zst.toIndex(idx(i)) should be (zst.toIndex(idx(i+1)) - 1)
      }
      zst.toIndex(idx(6)) should be (zst.toIndex(idx(7)) - 1)
     }

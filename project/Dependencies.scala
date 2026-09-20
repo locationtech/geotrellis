@@ -18,7 +18,7 @@ import sbt.*
 
 object Version {
   val geotools    = "35.1"
-  val spire       = "0.17.0"
+  val spire       = "0.18.0" // 0.18.x is the first release cross-published for Scala 3
   val accumulo    = "2.1.4"
   val cassandra   = "4.19.3"
   val hbase       = "2.6.6"

@@ -20,32 +20,6 @@ import spire.macros.InlineUtil
 
 import scala.reflect.macros.whitebox.Context
 
-trait MacroIterableTile {
-  def foreachIntVisitor(visitor: IntTileVisitor): Unit
-  def foreachDoubleVisitor(visitor: DoubleTileVisitor): Unit
-}
-
-trait MacroMappableTile[T] {
-  def mapIntMapper(mapper: IntTileMapper): T
-  def mapDoubleMapper(mapper: DoubleTileMapper): T
-}
-
-trait IntTileMapper {
-  def apply(col: Int, row: Int, z: Int): Int
-}
-
-trait DoubleTileMapper {
-  def apply(col: Int, row: Int, z: Double): Double
-}
-
-trait IntTileVisitor {
-  def apply(col: Int, row: Int, z: Int): Unit
-}
-
-trait DoubleTileVisitor {
-  def apply(col: Int, row: Int, z: Double): Unit
-}
-
 object TileMacros {
   def intMap_impl[T <: MacroMappableTile[T]](c: Context)(f: c.Expr[(Int, Int, Int) => Int]): c.Expr[T] = {
     import c.universe.*

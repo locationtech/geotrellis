@@ -49,7 +49,7 @@ class IterativeViewshedSpec extends AnyFunSpec with Matchers with TestEnvironmen
         maxDistance = Double.PositiveInfinity,
         curvature = false,
         operator = Or,
-	scatter = false
+        scatter = false
       )
       var actual = 0 ; viewshed.collect().foreach({ case (_, v) => v.foreach({ z => if (isData(z)) actual += z }) })
       val expected = 15*15
@@ -74,7 +74,7 @@ class IterativeViewshedSpec extends AnyFunSpec with Matchers with TestEnvironmen
         maxDistance = Double.PositiveInfinity,
         curvature = false,
         operator = Or,
-	scatter = false
+        scatter = false
       )
       var actual = 0 ; viewshed.collect().foreach({ case (_, v) => v.foreach({ z => if (isData(z)) actual += z }) })
       val expected = 171
@@ -99,7 +99,7 @@ class IterativeViewshedSpec extends AnyFunSpec with Matchers with TestEnvironmen
         maxDistance = Double.PositiveInfinity,
         curvature = false,
         operator = Or,
-	scatter = false
+        scatter = false
       )
       val viewshedYesScatter = IterativeViewshed(rdd, List(point),
         maxDistance = Double.PositiveInfinity,
@@ -132,7 +132,7 @@ class IterativeViewshedSpec extends AnyFunSpec with Matchers with TestEnvironmen
         maxDistance = Double.PositiveInfinity,
         curvature = false,
         operator = Or,
-	scatter = false
+        scatter = false
       )
       val ND = NODATA
       val expected: Array[Int] = Array(
@@ -169,7 +169,7 @@ class IterativeViewshedSpec extends AnyFunSpec with Matchers with TestEnvironmen
         maxDistance = Double.PositiveInfinity,
         curvature = false,
         operator = Or,
-	scatter = false
+        scatter = false
       )
       val expected = 15 * 15 * 1
       var actual: Int = 0
@@ -206,7 +206,7 @@ class IterativeViewshedSpec extends AnyFunSpec with Matchers with TestEnvironmen
         maxDistance = Double.PositiveInfinity,
         curvature = false,
         operator = Or,
-	scatter = false
+        scatter = false
       )
       var actual: Int = 0
       viewshed.collect().foreach({ case (k, v) => actual += v.get(2, 2) })
