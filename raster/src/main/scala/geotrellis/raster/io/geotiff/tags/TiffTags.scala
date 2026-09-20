@@ -29,15 +29,13 @@ import geotrellis.raster.io.geotiff.util.*
 import geotrellis.util.{ByteReader, Filesystem}
 import java.nio.{ByteBuffer, ByteOrder}
 import ModelTypes.*
-import monocle.macros.Lenses
-import monocle.syntax.apply.*
+import monocle.syntax.all.*
 import ProjectionTypesMap.UserDefinedProjectionType
 import spire.syntax.cfor.*
 import TagCodes.*
 import TiffFieldType.*
 import xml.*
 
-@Lenses("_")
 case class TiffTags(
   metadataTags: MetadataTags = MetadataTags(),
   basicTags: BasicTags = BasicTags(),
@@ -58,43 +56,29 @@ case class TiffTags(
 
   def segmentOffsets: Array[Long] =
     if (this.hasStripStorage())
-      (this &|->
-        TiffTags._basicTags ^|->
-        BasicTags._stripOffsets get).get
+      (this.focus(_.basicTags.stripOffsets).get).get
     else
-      (this &|->
-        TiffTags._tileTags ^|->
-        TileTags._tileOffsets get).get
+      (this.focus(_.tileTags.tileOffsets).get).get
 
   def segmentByteCounts: Array[Long] =
     if (this.hasStripStorage())
-      (this &|->
-        TiffTags._basicTags ^|->
-        BasicTags._stripByteCounts get).get
+      (this.focus(_.basicTags.stripByteCounts).get).get
     else
-      (this &|->
-        TiffTags._tileTags ^|->
-        TileTags._tileByteCounts get).get
+      (this.focus(_.tileTags.tileByteCounts).get).get
 
 
   def storageMethod: StorageMethod =
     if(hasStripStorage()) {
       val rowsPerStrip: Int =
-        (this
-          &|-> TiffTags._basicTags
-          ^|-> BasicTags._rowsPerStrip get).toInt
+        (this.focus(_.basicTags.rowsPerStrip).get).toInt
 
       Striped(rowsPerStrip)
     } else {
       val blockCols =
-        (this
-          &|-> TiffTags._tileTags
-          ^|-> TileTags._tileWidth get).get.toInt
+        (this.focus(_.tileTags.tileWidth).get).get.toInt
 
       val blockRows =
-        (this
-          &|-> TiffTags._tileTags
-          ^|-> TileTags._tileLength get).get.toInt
+        (this.focus(_.tileTags.tileLength).get).get.toInt
 
       Tiled(blockCols, blockRows)
     }
@@ -106,19 +90,13 @@ case class TiffTags(
     CellSize(this.extent.width / this.cols, this.extent.height / this.rows)
 
   def compression =
-    (this
-      &|-> TiffTags._basicTags
-      ^|-> BasicTags._compression get)
+    (this.focus(_.basicTags.compression).get)
 
   def hasStripStorage(): Boolean =
-    (this
-      &|-> TiffTags._tileTags
-      ^|-> TileTags._tileWidth get).isEmpty
+    (this.focus(_.tileTags.tileWidth).get).isEmpty
 
   def interleaveMethod(): InterleaveMethod =
-    (this
-      &|-> TiffTags._nonBasicTags
-      ^|-> NonBasicTags._planarConfiguration get) match {
+    (this.focus(_.nonBasicTags.planarConfiguration).get) match {
       case Some(PlanarConfigurations.PixelInterleave) =>
         PixelInterleave
       case Some(PlanarConfigurations.BandInterleave) =>
@@ -134,13 +112,9 @@ case class TiffTags(
 
   def rowsInStrip(index: Int): Option[Long] =
     if (hasStripStorage()) {
-      (this &|->
-        TiffTags._basicTags ^|->
-        BasicTags._stripByteCounts get) match {
+      (this.focus(_.basicTags.stripByteCounts).get) match {
         case Some(stripByteCounts) => {
-          val rowsPerStrip = (this &|->
-            TiffTags._basicTags ^|->
-            BasicTags._rowsPerStrip get)
+          val rowsPerStrip = (this.focus(_.basicTags.rowsPerStrip).get)
           val imageLength = rows
           val numberOfStrips = stripByteCounts.size
           val rest = imageLength % rowsPerStrip
@@ -164,9 +138,7 @@ case class TiffTags(
     if (hasStripStorage())
       rowsInStrip(index).get.toInt
     else
-      (this &|->
-        TiffTags._tileTags ^|->
-        TileTags._tileLength get).get.toInt
+      (this.focus(_.tileTags.tileLength).get).get.toInt
 
   def bitsPerPixel(): Int =
     bitsPerSample * bandCount
@@ -175,9 +147,7 @@ case class TiffTags(
     (this.bitsPerPixel() + 7) / 8
 
   def bitsPerSample: Int =
-    (this
-      &|-> TiffTags._basicTags
-      ^|-> BasicTags._bitsPerSample get)
+    (this.focus(_.basicTags.bitsPerSample).get)
 
   def imageSegmentByteSize(index: Int): Long =
     {(imageSegmentBitsSize(index) + 7) / 8 }
@@ -202,12 +172,8 @@ case class TiffTags(
       // We don't need the same check for 1 bit rasters as above,
       // because according the the TIFF 6.0 Spec, "TileWidth must be a multiple of 16".
       (
-        (this &|->
-          TiffTags._tileTags ^|->
-          TileTags._tileWidth get),
-        (this &|->
-          TiffTags._tileTags ^|->
-          TileTags._tileLength get)
+        (this.focus(_.tileTags.tileWidth).get),
+        (this.focus(_.tileTags.tileLength).get)
       ) match {
         case (Some(tileWidth), Some(tileHeight)) =>
           (bitsPerPixel() * tileWidth * tileHeight) / bandCount
@@ -218,16 +184,13 @@ case class TiffTags(
 
   def rowSize: Int =
     if (hasStripStorage()) cols
-    else (this &|-> TiffTags._tileTags ^|-> TileTags._tileWidth get).get.toInt
+    else (this.focus(_.tileTags.tileWidth).get).get.toInt
 
-  def cols = (this &|-> TiffTags._basicTags ^|-> BasicTags._imageWidth get)
-  def rows = (this &|-> TiffTags._basicTags ^|-> BasicTags._imageLength get)
+  def cols = (this.focus(_.basicTags.imageWidth).get)
+  def rows = (this.focus(_.basicTags.imageLength).get)
 
   def extent: Extent =
-    (this
-      &|-> TiffTags._geoTiffTags
-      ^|-> GeoTiffTags._modelTransformation get
-    ) match {
+    this.focus(_.geoTiffTags.modelTransformation).get match {
       case Some(trans) =>
         assert(trans.size == 4 && trans(0).size == 4, "Malformed model transformation matrix (must be a 4 x 4 matrix)")
 
@@ -241,17 +204,11 @@ case class TiffTags(
           Pixel3D.fromArray(transformed)
         }
       case _ =>
-        (this
-          &|-> TiffTags._geoTiffTags
-          ^|-> GeoTiffTags._modelTiePoints get
-        ) match {
+        this.focus(_.geoTiffTags.modelTiePoints).get match {
           case Some(tiePoints) if (!tiePoints.isEmpty) =>
             tiePointsModelSpace(
               tiePoints,
-              (this
-                &|-> TiffTags._geoTiffTags
-                ^|-> GeoTiffTags._modelPixelScale get
-              )
+              this.focus(_.geoTiffTags.modelPixelScale).get
             )
           case _ =>
             Extent(0, 0, cols, rows)
@@ -260,17 +217,13 @@ case class TiffTags(
 
   def bandType: BandType = {
     val sampleFormat =
-      (this
-        &|-> TiffTags._dataSampleFormatTags
-        ^|-> DataSampleFormatTags._sampleFormat get)
+      (this.focus(_.dataSampleFormatTags.sampleFormat).get)
 
     BandType(bitsPerSample, sampleFormat)
   }
 
   def noDataValue =
-    (this
-      &|-> TiffTags._geoTiffTags
-      ^|-> GeoTiffTags._gdalInternalNoData get)
+    (this.focus(_.geoTiffTags.gdalInternalNoData).get)
 
   def cellType: CellType = (bandType, noDataValue) match {
     case (BitBandType, _) =>
@@ -459,27 +412,21 @@ case class TiffTags(
 
   def pixelSampleType(): Option[PixelSampleType] =
     geoTiffTags.geoKeyDirectory.flatMap { dir =>
-      (dir
-        &|-> GeoKeyDirectory._configKeys
-        ^|-> ConfigKeys._gtRasterType get) match {
+      (dir.focus(_.configKeys.gtRasterType).get) match {
         case Some(1) => Some(PixelIsArea)
         case Some(2) => Some(PixelIsPoint)
         case _       => None
       }
     }
 
-  def setGDALNoData(input: String) = (this &|-> TiffTags._geoTiffTags
-    ^|-> GeoTiffTags._gdalInternalNoData set (parseGDALNoDataString(input)))
+  def setGDALNoData(input: String) = (this.focus(_.geoTiffTags.gdalInternalNoData).replace(parseGDALNoDataString(input)))
 
   private lazy val geoTiffCSTags: Option[GeoTiffCSParser] =
     geoTiffTags.geoKeyDirectory.map(GeoTiffCSParser(_))
 
   def tags: Tags = {
     var (headTags, bandTags) =
-      (this &|->
-        TiffTags._geoTiffTags ^|->
-        GeoTiffTags._metadata get
-      ) match {
+      this.focus(_.geoTiffTags.metadata).get match {
         case Some(str) => {
           val xml = XML.loadString(str.trim)
           val (metadataXML, bandsMetadataXML) =
@@ -517,9 +464,7 @@ case class TiffTags(
     // Account for special metadata that should be included as tags
 
     // Date time tag
-    this &|->
-      TiffTags._metadataTags ^|->
-      MetadataTags._dateTime get match {
+    this.focus(_.metadataTags.dateTime).get match {
         case Some(dateTime) =>
           headTags = headTags + ((Tags.TIFFTAG_DATETIME, dateTime))
         case None =>
@@ -541,24 +486,18 @@ case class TiffTags(
     ns.map(s => ((s \ "@name").text -> s.text)).toMap
 
   def bandCount: Int =
-    this &|->
-      TiffTags._basicTags ^|->
-      BasicTags._samplesPerPixel get
+    this.focus(_.basicTags.samplesPerPixel).get
 
   def segmentCount: Int =
     if (hasStripStorage()) {
-      (this
-        &|-> TiffTags._basicTags
-        ^|-> BasicTags._stripByteCounts get) match {
+      (this.focus(_.basicTags.stripByteCounts).get) match {
         case Some(stripByteCounts) =>
           stripByteCounts.size
         case None =>
           throw new MalformedGeoTiffException("No StripByteCount information.")
       }
     } else {
-      (this
-        &|-> TiffTags._tileTags
-        ^|-> TileTags._tileOffsets get) match {
+      (this.focus(_.tileTags.tileOffsets).get) match {
         case Some(tileOffsets) =>
           tileOffsets.size
         case None =>
@@ -643,13 +582,9 @@ object TiffTags {
     // If it's undefined GDAL interprets the entire TIFF as a single strip
     if(tiffTags.hasStripStorage()) {
         val rowsPerStrip =
-          (tiffTags
-            &|-> TiffTags._basicTags
-            ^|-> BasicTags._rowsPerStrip get).toInt
+          (tiffTags.focus(_.basicTags.rowsPerStrip).get).toInt
         if (rowsPerStrip < 0) {
-          (tiffTags
-            &|-> TiffTags._basicTags
-            ^|-> BasicTags._rowsPerStrip set(tiffTags.rows))
+          (tiffTags.focus(_.basicTags.rowsPerStrip).replace(tiffTags.rows))
         } else tiffTags
     } else tiffTags
   }
@@ -709,9 +644,7 @@ object TiffTags {
 
     byteReader.position(oldPos)
 
-    (tiffTags &|->
-      TiffTags._geoTiffTags ^|->
-      GeoTiffTags._modelPixelScale set(Some(scaleX, scaleY, scaleZ)))
+    (tiffTags.focus(_.geoTiffTags.modelPixelScale).replace(Some(scaleX, scaleY, scaleZ)))
   }
 
   private def readModelTiePointsTag(byteReader: ByteReader, tiffTags: TiffTags, tagMetadata: TiffTagMetadata)(implicit ttos: TiffTagOffsetSize) = {
@@ -741,9 +674,7 @@ object TiffTags {
 
     byteReader.position(oldPos)
 
-    (tiffTags &|->
-      TiffTags._geoTiffTags ^|->
-      GeoTiffTags._modelTiePoints set(Some(points)))
+    (tiffTags.focus(_.geoTiffTags.modelTiePoints).replace(Some(points)))
   }
 
   private def readGeoKeyDirectoryTag(byteReader: ByteReader, tiffTags: TiffTags, tagMetadata: TiffTagMetadata)(implicit ttos: TiffTagOffsetSize) = {
@@ -765,9 +696,7 @@ object TiffTags {
 
     byteReader.position(oldPos)
 
-    (tiffTags &|->
-      TiffTags._geoTiffTags ^|->
-      GeoTiffTags._geoKeyDirectory set(Some(geoKeyDirectory)))
+    (tiffTags.focus(_.geoTiffTags.geoKeyDirectory).replace(Some(geoKeyDirectory)))
   }
 
   private def readBytesTag(byteReader: ByteReader, tiffTags: TiffTags, tagMetadata: TiffTagMetadata)(implicit ttos: TiffTagOffsetSize) = {
@@ -775,15 +704,9 @@ object TiffTags {
     val bytes = byteReader.getByteArray(offset = tagMetadata.offset, length = tagMetadata.length)
 
     tagMetadata.tag match {
-      case DotRangeTag => tiffTags &|->
-        TiffTags._cmykTags ^|->
-        CmykTags._dotRange set(Some(bytes.map(_.toInt)))
-      case ExtraSamplesTag => tiffTags &|->
-        TiffTags._nonBasicTags ^|->
-        NonBasicTags._extraSamples set(Some(bytes.map(_.toInt)))
-      case tag => tiffTags &|->
-        TiffTags._nonStandardizedTags ^|->
-        NonStandardizedTags._longsMap modify(_ + (tag -> bytes.map(_.toLong)))
+      case DotRangeTag => tiffTags.focus(_.cmykTags.dotRange).replace(Some(bytes.map(_.toInt)))
+      case ExtraSamplesTag => tiffTags.focus(_.nonBasicTags.extraSamples).replace(Some(bytes.map(_.toInt)))
+      case tag => tiffTags.focus(_.nonStandardizedTags.longsMap).modify(_ + (tag -> bytes.map(_.toLong)))
     }
   }
 
@@ -794,41 +717,19 @@ object TiffTags {
       byteReader.getString(offset = tagMetadata.offset, length = tagMetadata.length).substring(0, (tagMetadata.length - 1).toInt)
 
     tagMetadata.tag match {
-      case DateTimeTag => tiffTags &|->
-        TiffTags._metadataTags ^|->
-        MetadataTags._dateTime set(Some(string))
-      case ImageDescTag => tiffTags &|->
-        TiffTags._metadataTags ^|->
-        MetadataTags._imageDesc set(Some(string))
-      case MakerTag => tiffTags &|->
-        TiffTags._metadataTags ^|->
-        MetadataTags._maker set(Some(string))
-      case ModelTag => tiffTags &|->
-        TiffTags._metadataTags ^|->
-        MetadataTags._model set(Some(string))
-      case SoftwareTag => tiffTags &|->
-        TiffTags._metadataTags ^|->
-        MetadataTags._software set(Some(string))
-      case ArtistTag => tiffTags &|->
-        TiffTags._metadataTags ^|->
-        MetadataTags._artist set(Some(string))
-      case HostComputerTag => tiffTags &|->
-        TiffTags._metadataTags ^|->
-        MetadataTags._hostComputer set(Some(string))
-      case CopyrightTag => tiffTags &|->
-        TiffTags._metadataTags ^|->
-        MetadataTags._copyright set(Some(string))
-      case AsciisTag => tiffTags &|->
-        TiffTags._geoTiffTags ^|->
-        GeoTiffTags._asciis set(Some(string))
-      case MetadataTag => tiffTags &|->
-        TiffTags._geoTiffTags ^|->
-        GeoTiffTags._metadata set(Some(string))
+      case DateTimeTag => tiffTags.focus(_.metadataTags.dateTime).replace(Some(string))
+      case ImageDescTag => tiffTags.focus(_.metadataTags.imageDesc).replace(Some(string))
+      case MakerTag => tiffTags.focus(_.metadataTags.maker).replace(Some(string))
+      case ModelTag => tiffTags.focus(_.metadataTags.model).replace(Some(string))
+      case SoftwareTag => tiffTags.focus(_.metadataTags.software).replace(Some(string))
+      case ArtistTag => tiffTags.focus(_.metadataTags.artist).replace(Some(string))
+      case HostComputerTag => tiffTags.focus(_.metadataTags.hostComputer).replace(Some(string))
+      case CopyrightTag => tiffTags.focus(_.metadataTags.copyright).replace(Some(string))
+      case AsciisTag => tiffTags.focus(_.geoTiffTags.asciis).replace(Some(string))
+      case MetadataTag => tiffTags.focus(_.geoTiffTags.metadata).replace(Some(string))
       case GDALInternalNoDataTag =>
         tiffTags.setGDALNoData(string)
-      case tag => tiffTags &|->
-        TiffTags._nonStandardizedTags ^|->
-        NonStandardizedTags._asciisMap modify(_ + (tag -> string))
+      case tag => tiffTags.focus(_.nonStandardizedTags.asciisMap).modify(_ + (tag -> string))
     }
   }
 
@@ -837,140 +738,57 @@ object TiffTags {
       length = tagMetadata.length)
 
     tagMetadata.tag match {
-      case SubfileTypeTag => tiffTags &|->
-        TiffTags._nonBasicTags ^|->
-        NonBasicTags._subfileType set(Some(shorts(0)))
-      case ImageWidthTag => tiffTags &|->
-        TiffTags._basicTags ^|->
-        BasicTags._imageWidth set(shorts(0))
-      case ImageLengthTag => tiffTags &|->
-        TiffTags._basicTags ^|->
-        BasicTags._imageLength set(shorts(0))
-      case CompressionTag => tiffTags &|->
-        TiffTags._basicTags ^|->
-        BasicTags._compression set(shorts(0))
-      case PhotometricInterpTag => tiffTags &|->
-        TiffTags._basicTags ^|->
-        BasicTags._photometricInterp set(shorts(0))
-      case ThresholdingTag => tiffTags &|->
-        TiffTags._nonBasicTags ^|->
-        NonBasicTags._thresholding set(shorts(0))
-      case CellWidthTag => tiffTags &|->
-        TiffTags._nonBasicTags ^|->
-        NonBasicTags._cellWidth set(Some(shorts(0)))
-      case CellLengthTag => tiffTags &|->
-        TiffTags._nonBasicTags ^|->
-        NonBasicTags._cellLength set(Some(shorts(0)))
-      case FillOrderTag => tiffTags &|->
-        TiffTags._nonBasicTags ^|->
-        NonBasicTags._fillOrder set((shorts(0)))
-      case OrientationTag => tiffTags &|->
-        TiffTags._nonBasicTags ^|->
-        NonBasicTags._orientation set(shorts(0))
-      case SamplesPerPixelTag => tiffTags &|->
-        TiffTags._basicTags ^|->
-        BasicTags._samplesPerPixel set(shorts(0))
-      case RowsPerStripTag => tiffTags &|->
-        TiffTags._basicTags ^|->
-        BasicTags._rowsPerStrip set(shorts(0))
-      case PlanarConfigurationTag => tiffTags &|->
-        TiffTags._nonBasicTags ^|->
-        NonBasicTags._planarConfiguration set(Some(shorts(0)))
-      case GrayResponseUnitTag => tiffTags &|->
-        TiffTags._nonBasicTags ^|->
-        NonBasicTags._grayResponseUnit set(Some(shorts(0)))
-      case ResolutionUnitTag => tiffTags &|->
-        TiffTags._basicTags ^|->
-        BasicTags._resolutionUnit set(Some(shorts(0)))
-      case PredictorTag => tiffTags &|->
-        TiffTags._nonBasicTags ^|->
-        NonBasicTags._predictor set(Some(shorts(0)))
-      case TileWidthTag => tiffTags &|->
-        TiffTags._tileTags ^|->
-        TileTags._tileWidth set(Some(shorts(0)))
-      case TileLengthTag => tiffTags &|->
-        TiffTags._tileTags ^|->
-        TileTags._tileLength set(Some(shorts(0)))
-      case InkSetTag => tiffTags &|->
-        TiffTags._cmykTags ^|->
-        CmykTags._inkSet set(Some(shorts(0)))
-      case NumberOfInksTag => tiffTags &|->
-        TiffTags._cmykTags ^|->
-        CmykTags._numberOfInks set(Some(shorts(0)))
-      case JpegProcTag => tiffTags &|->
-        TiffTags._jpegTags ^|->
-        JpegTags._jpegProc set(Some(shorts(0)))
-      case JpegInterchangeFormatTag => tiffTags &|->
-        TiffTags._jpegTags ^|->
-        JpegTags._jpegInterchangeFormat set(Some(shorts(0)))
-      case JpegInterchangeFormatLengthTag => tiffTags &|->
-        TiffTags._jpegTags ^|->
-        JpegTags._jpegInterchangeFormatLength set(Some(shorts(0)))
-      case JpegRestartIntervalTag => tiffTags &|->
-        TiffTags._jpegTags ^|->
-        JpegTags._jpegRestartInterval set(Some(shorts(0)))
-      case YCbCrPositioningTag => tiffTags &|->
-        TiffTags._yCbCrTags ^|->
-        YCbCrTags._yCbCrPositioning set(Some(shorts(0)))
-      case BitsPerSampleTag => tiffTags &|->
-        TiffTags._basicTags ^|->
-        BasicTags._bitsPerSample set(shorts(0))
-      case StripOffsetsTag => tiffTags &|->
-        TiffTags._basicTags ^|->
-        BasicTags._stripOffsets set(Some(shorts.map(_.toLong)))
-      case StripByteCountsTag => tiffTags &|->
-        TiffTags._basicTags ^|->
-        BasicTags._stripByteCounts set(Some(shorts.map(_.toLong)))
-      case MinSampleValueTag => tiffTags &|->
-        TiffTags._dataSampleFormatTags ^|->
-        DataSampleFormatTags._minSampleValue set(Some(shorts.map(_.toLong)))
-      case MaxSampleValueTag => tiffTags &|->
-        TiffTags._dataSampleFormatTags ^|->
-        DataSampleFormatTags._maxSampleValue set(Some(shorts.map(_.toLong)))
-      case GrayResponseCurveTag => tiffTags &|->
-        TiffTags._nonBasicTags ^|->
-        NonBasicTags._grayResponseCurve set(Some(shorts))
-      case PageNumberTag => tiffTags &|->
-        TiffTags._documentationTags ^|->
-        DocumentationTags._pageNumber set(Some(shorts))
-      case TransferFunctionTag => tiffTags &|->
-        TiffTags._colimetryTags ^|->
-        ColimetryTags._transferFunction set(Some(shorts))
+      case SubfileTypeTag => tiffTags.focus(_.nonBasicTags.subfileType).replace(Some(shorts(0)))
+      case ImageWidthTag => tiffTags.focus(_.basicTags.imageWidth).replace(shorts(0))
+      case ImageLengthTag => tiffTags.focus(_.basicTags.imageLength).replace(shorts(0))
+      case CompressionTag => tiffTags.focus(_.basicTags.compression).replace(shorts(0))
+      case PhotometricInterpTag => tiffTags.focus(_.basicTags.photometricInterp).replace(shorts(0))
+      case ThresholdingTag => tiffTags.focus(_.nonBasicTags.thresholding).replace(shorts(0))
+      case CellWidthTag => tiffTags.focus(_.nonBasicTags.cellWidth).replace(Some(shorts(0)))
+      case CellLengthTag => tiffTags.focus(_.nonBasicTags.cellLength).replace(Some(shorts(0)))
+      case FillOrderTag => tiffTags.focus(_.nonBasicTags.fillOrder).replace((shorts(0)))
+      case OrientationTag => tiffTags.focus(_.nonBasicTags.orientation).replace(shorts(0))
+      case SamplesPerPixelTag => tiffTags.focus(_.basicTags.samplesPerPixel).replace(shorts(0))
+      case RowsPerStripTag => tiffTags.focus(_.basicTags.rowsPerStrip).replace(shorts(0))
+      case PlanarConfigurationTag => tiffTags.focus(_.nonBasicTags.planarConfiguration).replace(Some(shorts(0)))
+      case GrayResponseUnitTag => tiffTags.focus(_.nonBasicTags.grayResponseUnit).replace(Some(shorts(0)))
+      case ResolutionUnitTag => tiffTags.focus(_.basicTags.resolutionUnit).replace(Some(shorts(0)))
+      case PredictorTag => tiffTags.focus(_.nonBasicTags.predictor).replace(Some(shorts(0)))
+      case TileWidthTag => tiffTags.focus(_.tileTags.tileWidth).replace(Some(shorts(0)))
+      case TileLengthTag => tiffTags.focus(_.tileTags.tileLength).replace(Some(shorts(0)))
+      case InkSetTag => tiffTags.focus(_.cmykTags.inkSet).replace(Some(shorts(0)))
+      case NumberOfInksTag => tiffTags.focus(_.cmykTags.numberOfInks).replace(Some(shorts(0)))
+      case JpegProcTag => tiffTags.focus(_.jpegTags.jpegProc).replace(Some(shorts(0)))
+      case JpegInterchangeFormatTag => tiffTags.focus(_.jpegTags.jpegInterchangeFormat).replace(Some(shorts(0)))
+      case JpegInterchangeFormatLengthTag =>
+        tiffTags.focus(_.jpegTags.jpegInterchangeFormatLength).replace(Some(shorts(0)))
+      case JpegRestartIntervalTag => tiffTags.focus(_.jpegTags.jpegRestartInterval).replace(Some(shorts(0)))
+      case YCbCrPositioningTag => tiffTags.focus(_.yCbCrTags.yCbCrPositioning).replace(Some(shorts(0)))
+      case BitsPerSampleTag => tiffTags.focus(_.basicTags.bitsPerSample).replace(shorts(0))
+      case StripOffsetsTag => tiffTags.focus(_.basicTags.stripOffsets).replace(Some(shorts.map(_.toLong)))
+      case StripByteCountsTag => tiffTags.focus(_.basicTags.stripByteCounts).replace(Some(shorts.map(_.toLong)))
+      case MinSampleValueTag =>
+        tiffTags.focus(_.dataSampleFormatTags.minSampleValue).replace(Some(shorts.map(_.toLong)))
+      case MaxSampleValueTag =>
+        tiffTags.focus(_.dataSampleFormatTags.maxSampleValue).replace(Some(shorts.map(_.toLong)))
+      case GrayResponseCurveTag => tiffTags.focus(_.nonBasicTags.grayResponseCurve).replace(Some(shorts))
+      case PageNumberTag => tiffTags.focus(_.documentationTags.pageNumber).replace(Some(shorts))
+      case TransferFunctionTag => tiffTags.focus(_.colimetryTags.transferFunction).replace(Some(shorts))
       case ColorMapTag => setColorMap(byteReader, tiffTags, shorts)
-      case HalftoneHintsTag => tiffTags &|->
-        TiffTags._nonBasicTags ^|->
-        NonBasicTags._halftoneHints set(Some(shorts))
-      case TileByteCountsTag => tiffTags &|->
-        TiffTags._tileTags ^|->
-        TileTags._tileByteCounts set(Some(shorts.map(_.toLong)))
-      case DotRangeTag => tiffTags &|->
-        TiffTags._cmykTags ^|->
-        CmykTags._dotRange set(Some(shorts))
-      case SampleFormatTag => tiffTags &|->
-        TiffTags._dataSampleFormatTags ^|->
-        DataSampleFormatTags._sampleFormat set(shorts(0))
-      case TransferRangeTag => tiffTags &|->
-        TiffTags._colimetryTags ^|->
-        ColimetryTags._transferRange set(Some(shorts))
-      case JpegLosslessPredictorsTag => tiffTags &|->
-        TiffTags._jpegTags ^|->
-        JpegTags._jpegLosslessPredictors set(Some(shorts))
-      case JpegPointTransformsTag => tiffTags &|->
-        TiffTags._jpegTags ^|->
-        JpegTags._jpegPointTransforms set(Some(shorts))
-      case ExtraSamplesTag => tiffTags &|->
-        TiffTags._nonBasicTags ^|->
-        NonBasicTags._extraSamples set(Some(shorts))
-      case tag => tiffTags &|->
-        TiffTags._nonStandardizedTags ^|->
-        NonStandardizedTags._longsMap modify(_ + (tag -> shorts.map(_.toLong)))
+      case HalftoneHintsTag => tiffTags.focus(_.nonBasicTags.halftoneHints).replace(Some(shorts))
+      case TileByteCountsTag => tiffTags.focus(_.tileTags.tileByteCounts).replace(Some(shorts.map(_.toLong)))
+      case DotRangeTag => tiffTags.focus(_.cmykTags.dotRange).replace(Some(shorts))
+      case SampleFormatTag => tiffTags.focus(_.dataSampleFormatTags.sampleFormat).replace(shorts(0))
+      case TransferRangeTag => tiffTags.focus(_.colimetryTags.transferRange).replace(Some(shorts))
+      case JpegLosslessPredictorsTag => tiffTags.focus(_.jpegTags.jpegLosslessPredictors).replace(Some(shorts))
+      case JpegPointTransformsTag => tiffTags.focus(_.jpegTags.jpegPointTransforms).replace(Some(shorts))
+      case ExtraSamplesTag => tiffTags.focus(_.nonBasicTags.extraSamples).replace(Some(shorts))
+      case tag => tiffTags.focus(_.nonStandardizedTags.longsMap).modify(_ + (tag -> shorts.map(_.toLong)))
     }
   }
 
   private def setColorMap(byteReader: ByteReader, tiffTags: TiffTags, shorts: Array[Int])(implicit ttos: TiffTagOffsetSize): TiffTags =
-    if ((tiffTags &|->
-      TiffTags._basicTags ^|->
-      BasicTags._photometricInterp get) == 3) {
+    if ((tiffTags.focus(_.basicTags.photometricInterp).get) == 3) {
       // In GDAL world, `divider` ends up being the same as `bitsPerSample`
       // but theoretically it's valid to have color tables that are smaller
       val divider = shorts.length / 3
@@ -984,9 +802,7 @@ object TiffTags {
         )
       }
 
-      (tiffTags &|->
-        TiffTags._basicTags ^|->
-        BasicTags._colorMap set arr.toSeq)
+      tiffTags.focus(_.basicTags.colorMap).replace(arr.toSeq)
     } else throw new MalformedGeoTiffException(
       "Colormap without Photometric Interpetation = 3."
     )
@@ -995,69 +811,28 @@ object TiffTags {
     val ints = byteReader.getIntArray(offset = tagMetadata.offset, length = tagMetadata.length)
 
     tagMetadata.tag match {
-      case NewSubfileTypeTag => tiffTags &|->
-        TiffTags._nonBasicTags ^|->
-        NonBasicTags._newSubfileType set(Some(ints(0)))
-      case ImageWidthTag => tiffTags &|->
-        TiffTags._basicTags ^|->
-        BasicTags._imageWidth set(ints(0).toInt)
-      case ImageLengthTag => tiffTags &|->
-        TiffTags._basicTags ^|->
-        BasicTags._imageLength set(ints(0).toInt)
-      case T4OptionsTag => tiffTags &|->
-        TiffTags._nonBasicTags ^|->
-        NonBasicTags._t4Options set(ints(0).toInt)
-      case T6OptionsTag => tiffTags &|->
-        TiffTags._nonBasicTags ^|->
-        NonBasicTags._t6Options set(Some(ints(0).toInt))
-      case TileWidthTag => tiffTags &|->
-        TiffTags._tileTags ^|->
-        TileTags._tileWidth set(Some(ints(0)))
-      case TileLengthTag => tiffTags &|->
-        TiffTags._tileTags ^|->
-        TileTags._tileLength set(Some(ints(0)))
-      case JpegInterchangeFormatTag => tiffTags &|->
-        TiffTags._jpegTags ^|->
-        JpegTags._jpegInterchangeFormat set(Some(ints(0)))
-      case JpegInterchangeFormatLengthTag => tiffTags &|->
-        TiffTags._jpegTags ^|->
-        JpegTags._jpegInterchangeFormatLength set(Some(ints(0)))
-      case RowsPerStripTag => tiffTags &|->
-        TiffTags._basicTags ^|->
-        BasicTags._rowsPerStrip set(ints(0))
-      case StripOffsetsTag => tiffTags &|->
-        TiffTags._basicTags ^|->
-        BasicTags._stripOffsets set(Some(ints))
-      case StripByteCountsTag => tiffTags &|->
-        TiffTags._basicTags ^|->
-        BasicTags._stripByteCounts set(Some(ints))
-      case FreeOffsetsTag => tiffTags &|->
-        TiffTags._nonBasicTags ^|->
-        NonBasicTags._freeOffsets set(Some(ints))
-      case FreeByteCountsTag => tiffTags &|->
-        TiffTags._nonBasicTags ^|->
-        NonBasicTags._freeByteCounts set(Some(ints))
-      case TileOffsetsTag => tiffTags &|->
-        TiffTags._tileTags ^|->
-        TileTags._tileOffsets set(Some(ints))
-      case TileByteCountsTag => tiffTags &|->
-        TiffTags._tileTags ^|->
-        TileTags._tileByteCounts set(Some(ints))
-      case JpegQTablesTag => tiffTags &|->
-        TiffTags._jpegTags ^|->
-        JpegTags._jpegQTables set(Some(ints))
-      case JpegDCTablesTag => tiffTags &|->
-        TiffTags._jpegTags ^|->
-        JpegTags._jpegDCTables set(Some(ints))
-      case JpegACTablesTag => tiffTags &|->
-        TiffTags._jpegTags ^|->
-        JpegTags._jpegACTables set(Some(ints))
-      case ReferenceBlackWhiteTag => tiffTags &|->
-        TiffTags._colimetryTags ^|->
-        ColimetryTags._referenceBlackWhite set(Some(ints))
-      case tag => tiffTags &|->
-        TiffTags._nonStandardizedTags ^|->
-        NonStandardizedTags._longsMap modify(_ + (tag -> ints.map(_.toLong)))
+      case NewSubfileTypeTag => tiffTags.focus(_.nonBasicTags.newSubfileType).replace(Some(ints(0)))
+      case ImageWidthTag => tiffTags.focus(_.basicTags.imageWidth).replace(ints(0).toInt)
+      case ImageLengthTag => tiffTags.focus(_.basicTags.imageLength).replace(ints(0).toInt)
+      case T4OptionsTag => tiffTags.focus(_.nonBasicTags.t4Options).replace(ints(0).toInt)
+      case T6OptionsTag => tiffTags.focus(_.nonBasicTags.t6Options).replace(Some(ints(0).toInt))
+      case TileWidthTag => tiffTags.focus(_.tileTags.tileWidth).replace(Some(ints(0)))
+      case TileLengthTag => tiffTags.focus(_.tileTags.tileLength).replace(Some(ints(0)))
+      case JpegInterchangeFormatTag => tiffTags.focus(_.jpegTags.jpegInterchangeFormat).replace(Some(ints(0)))
+      case JpegInterchangeFormatLengthTag =>
+        tiffTags.focus(_.jpegTags.jpegInterchangeFormatLength).replace(Some(ints(0)))
+      case RowsPerStripTag => tiffTags.focus(_.basicTags.rowsPerStrip).replace(ints(0))
+      case StripOffsetsTag => tiffTags.focus(_.basicTags.stripOffsets).replace(Some(ints))
+      case StripByteCountsTag => tiffTags.focus(_.basicTags.stripByteCounts).replace(Some(ints))
+      case FreeOffsetsTag => tiffTags.focus(_.nonBasicTags.freeOffsets).replace(Some(ints))
+      case FreeByteCountsTag => tiffTags.focus(_.nonBasicTags.freeByteCounts).replace(Some(ints))
+      case TileOffsetsTag => tiffTags.focus(_.tileTags.tileOffsets).replace(Some(ints))
+      case TileByteCountsTag => tiffTags.focus(_.tileTags.tileByteCounts).replace(Some(ints))
+      case JpegQTablesTag => tiffTags.focus(_.jpegTags.jpegQTables).replace(Some(ints))
+      case JpegDCTablesTag => tiffTags.focus(_.jpegTags.jpegDCTables).replace(Some(ints))
+      case JpegACTablesTag => tiffTags.focus(_.jpegTags.jpegACTables).replace(Some(ints))
+      case ReferenceBlackWhiteTag => tiffTags.focus(_.colimetryTags.referenceBlackWhite).replace(Some(ints))
+      case tag => tiffTags.focus(_.nonStandardizedTags.longsMap).modify(_ + (tag -> ints.map(_.toLong)))
     }
   }
 
@@ -1065,18 +840,10 @@ object TiffTags {
     val longs = byteReader.getLongArray(offset = tagMetadata.offset, length = tagMetadata.length)
 
     tagMetadata.tag match {
-      case StripOffsetsTag => tiffTags &|->
-        TiffTags._basicTags ^|->
-        BasicTags._stripOffsets set(Some(longs))
-      case StripByteCountsTag => tiffTags &|->
-        TiffTags._basicTags ^|->
-        BasicTags._stripByteCounts set(Some(longs))
-      case TileOffsetsTag => tiffTags &|->
-        TiffTags._tileTags ^|->
-        TileTags._tileOffsets set(Some(longs))
-      case TileByteCountsTag => tiffTags &|->
-        TiffTags._tileTags ^|->
-        TileTags._tileByteCounts set(Some(longs))
+      case StripOffsetsTag => tiffTags.focus(_.basicTags.stripOffsets).replace(Some(longs))
+      case StripByteCountsTag => tiffTags.focus(_.basicTags.stripByteCounts).replace(Some(longs))
+      case TileOffsetsTag => tiffTags.focus(_.tileTags.tileOffsets).replace(Some(longs))
+      case TileByteCountsTag => tiffTags.focus(_.tileTags.tileByteCounts).replace(Some(longs))
     }
   }
 
@@ -1085,30 +852,14 @@ object TiffTags {
       length = tagMetadata.length)
 
     tagMetadata.tag match {
-      case XResolutionTag => tiffTags &|->
-        TiffTags._basicTags ^|->
-        BasicTags._xResolution set(Some(fractionals(0)))
-      case YResolutionTag => tiffTags &|->
-        TiffTags._basicTags ^|->
-        BasicTags._yResolution set(Some(fractionals(0)))
-      case XPositionTag => tiffTags &|->
-        TiffTags._documentationTags ^|->
-        DocumentationTags._xPositions set(Some(fractionals))
-      case YPositionTag => tiffTags &|->
-        TiffTags._documentationTags ^|->
-        DocumentationTags._yPositions set(Some(fractionals))
-      case WhitePointTag => tiffTags &|->
-        TiffTags._colimetryTags ^|->
-        ColimetryTags._whitePoints set(Some(fractionals))
-      case PrimaryChromaticitiesTag => tiffTags &|->
-        TiffTags._colimetryTags ^|->
-        ColimetryTags._primaryChromaticities set(Some(fractionals))
-      case YCbCrCoefficientsTag => tiffTags &|->
-        TiffTags._yCbCrTags ^|->
-        YCbCrTags._yCbCrCoefficients set(Some(fractionals))
-      case tag => tiffTags &|->
-        TiffTags._nonStandardizedTags ^|->
-        NonStandardizedTags._fractionalsMap modify(
+      case XResolutionTag => tiffTags.focus(_.basicTags.xResolution).replace(Some(fractionals(0)))
+      case YResolutionTag => tiffTags.focus(_.basicTags.yResolution).replace(Some(fractionals(0)))
+      case XPositionTag => tiffTags.focus(_.documentationTags.xPositions).replace(Some(fractionals))
+      case YPositionTag => tiffTags.focus(_.documentationTags.yPositions).replace(Some(fractionals))
+      case WhitePointTag => tiffTags.focus(_.colimetryTags.whitePoints).replace(Some(fractionals))
+      case PrimaryChromaticitiesTag => tiffTags.focus(_.colimetryTags.primaryChromaticities).replace(Some(fractionals))
+      case YCbCrCoefficientsTag => tiffTags.focus(_.yCbCrTags.yCbCrCoefficients).replace(Some(fractionals))
+      case tag => tiffTags.focus(_.nonStandardizedTags.fractionalsMap).modify(
           _ + (tag -> fractionals)
         )
     }
@@ -1117,46 +868,34 @@ object TiffTags {
   private def readSignedBytesTag(byteReader: ByteReader, tiffTags: TiffTags, tagMetadata: TiffTagMetadata)(implicit ttos: TiffTagOffsetSize) = {
     val bytes = byteReader.getSignedByteArray(offset = tagMetadata.offset, length = tagMetadata.length)
 
-    (tiffTags &|->
-      TiffTags._nonStandardizedTags ^|->
-      NonStandardizedTags._longsMap modify(_ + (tagMetadata.tag -> bytes.map(_.toLong))))
+    (tiffTags.focus(_.nonStandardizedTags.longsMap).modify(_ + (tagMetadata.tag -> bytes.map(_.toLong))))
   }
 
   private def readUndefinedTag(byteReader: ByteReader, tiffTags: TiffTags, tagMetadata: TiffTagMetadata)(implicit ttos: TiffTagOffsetSize) = {
     val bytes = byteReader.getSignedByteArray(offset = tagMetadata.offset, length = tagMetadata.length)
 
     tagMetadata.tag match {
-      case JpegTablesTag => tiffTags &|->
-        TiffTags._jpegTags ^|->
-        JpegTags._jpegTables set(Some(bytes))
-      case tag => tiffTags &|->
-        TiffTags._nonStandardizedTags ^|->
-        NonStandardizedTags._undefinedMap modify(_ + (tag -> bytes))
+      case JpegTablesTag => tiffTags.focus(_.jpegTags.jpegTables).replace(Some(bytes))
+      case tag => tiffTags.focus(_.nonStandardizedTags.undefinedMap).modify(_ + (tag -> bytes))
     }
   }
 
   private def readSignedShortsTag(byteReader: ByteReader, tiffTags: TiffTags, tagMetadata: TiffTagMetadata)(implicit ttos: TiffTagOffsetSize) = {
     val shorts = byteReader.getSignedShortArray(offset = tagMetadata.offset, length = tagMetadata.length)
 
-    (tiffTags &|->
-      TiffTags._nonStandardizedTags ^|->
-      NonStandardizedTags._longsMap modify(_ + (tagMetadata.tag -> shorts.map(_.toLong))))
+    (tiffTags.focus(_.nonStandardizedTags.longsMap).modify(_ + (tagMetadata.tag -> shorts.map(_.toLong))))
   }
 
   private def readSignedIntsTag(byteReader: ByteReader, tiffTags: TiffTags, tagMetadata: TiffTagMetadata)(implicit ttos: TiffTagOffsetSize) = {
     val ints = byteReader.getSignedIntArray(offset = tagMetadata.offset, length = tagMetadata.offset)
 
-    (tiffTags &|->
-      TiffTags._nonStandardizedTags ^|->
-      NonStandardizedTags._longsMap modify(_ + (tagMetadata.tag -> ints.map(_.toLong))))
+    (tiffTags.focus(_.nonStandardizedTags.longsMap).modify(_ + (tagMetadata.tag -> ints.map(_.toLong))))
   }
 
   private def readSignedFractionalsTag(byteReader: ByteReader, tiffTags: TiffTags, tagMetadata: TiffTagMetadata)(implicit ttos: TiffTagOffsetSize) = {
     val fractionals = byteReader.getSignedFractionalArray(tagMetadata.offset, length = tagMetadata.length)
 
-    (tiffTags &|->
-      TiffTags._nonStandardizedTags ^|->
-      NonStandardizedTags._fractionalsMap modify(
+    (tiffTags.focus(_.nonStandardizedTags.fractionalsMap).modify(
         _ + (tagMetadata.tag -> fractionals.map(x => (x._1.toLong, x._2.toLong)))
       ))
   }
@@ -1164,9 +903,7 @@ object TiffTags {
   private def readFloatsTag(byteReader: ByteReader, tiffTags: TiffTags, tagMetadata: TiffTagMetadata)(implicit ttos: TiffTagOffsetSize) = {
     val floats = byteReader.getFloatArray(offset = tagMetadata.offset, length = tagMetadata.length)
 
-    (tiffTags &|->
-      TiffTags._nonStandardizedTags ^|->
-      NonStandardizedTags._doublesMap modify(
+    (tiffTags.focus(_.nonStandardizedTags.doublesMap).modify(
         _ + (tagMetadata.tag -> floats.map(_.toDouble))
       ))
   }
@@ -1186,16 +923,10 @@ object TiffTags {
             Array(doubles(12), doubles(13), doubles(14), doubles(15))
           )
 
-          (tiffTags &|->
-            TiffTags._geoTiffTags ^|->
-            GeoTiffTags._modelTransformation set(Some(matrix)))
+          (tiffTags.focus(_.geoTiffTags.modelTransformation).replace(Some(matrix)))
         }
-      case DoublesTag => tiffTags &|->
-        TiffTags._geoTiffTags ^|->
-        GeoTiffTags._doubles set(Some(doubles))
-      case tag => tiffTags &|->
-        TiffTags._nonStandardizedTags ^|->
-        NonStandardizedTags._doublesMap modify(_ + (tag -> doubles))
+      case DoublesTag => tiffTags.focus(_.geoTiffTags.doubles).replace(Some(doubles))
+      case tag => tiffTags.focus(_.nonStandardizedTags.doublesMap).modify(_ + (tag -> doubles))
     }
   }
 

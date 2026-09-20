@@ -20,7 +20,7 @@ import geotrellis.util.*
 import geotrellis.raster.io.geotiff.tags.*
 
 import org.log4s.*
-import monocle.syntax.apply.*
+import monocle.syntax.all.*
 
 /**
   * LazySegmentBytes represents a lazy GeoTiff segments reader
@@ -47,23 +47,15 @@ class LazySegmentBytes(
 
   val (segmentOffsets, segmentByteCounts) =
     if (tiffTags.hasStripStorage()) {
-      val stripOffsets = tiffTags &|->
-        TiffTags._basicTags ^|->
-        BasicTags._stripOffsets get
+      val stripOffsets = tiffTags.focus(_.basicTags.stripOffsets).get
 
-      val stripByteCounts = tiffTags &|->
-        TiffTags._basicTags ^|->
-        BasicTags._stripByteCounts get
+      val stripByteCounts = tiffTags.focus(_.basicTags.stripByteCounts).get
 
       (stripOffsets.get, stripByteCounts.get)
     } else {
-      val tileOffsets = tiffTags &|->
-        TiffTags._tileTags ^|->
-        TileTags._tileOffsets get
+      val tileOffsets = tiffTags.focus(_.tileTags.tileOffsets).get
 
-      val tileByteCounts = tiffTags &|->
-        TiffTags._tileTags ^|->
-        TileTags._tileByteCounts get
+      val tileByteCounts = tiffTags.focus(_.tileTags.tileByteCounts).get
 
       (tileOffsets.get, tileByteCounts.get)
     }

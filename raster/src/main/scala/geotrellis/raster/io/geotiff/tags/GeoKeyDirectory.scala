@@ -19,7 +19,6 @@ package geotrellis.raster.io.geotiff.tags
 import ProjectionTypesMap.*
 import geotrellis.raster.io.geotiff.reader.MalformedGeoTiffException
 
-import monocle.macros.Lenses
 import io.circe.*
 import io.circe.generic.semiauto.*
 
@@ -86,7 +85,6 @@ object CommonPublicValues {
 
 }
 
-@Lenses("_")
 case class ConfigKeys(
   gtModelType: Int = -1,
   gtRasterType: Option[Int] = None,
@@ -98,7 +96,6 @@ object ConfigKeys {
   implicit val configKeysDecoder: Decoder[ConfigKeys] = deriveDecoder[ConfigKeys]
 }
 
-@Lenses("_")
 case class GeogCSParameterKeys(
   geogType: Option[Int] = None,
   geogCitation: Option[Array[String]] = None,
@@ -121,7 +118,6 @@ object GeogCSParameterKeys {
   implicit val geogCSParameterKeysDecoder: Decoder[GeogCSParameterKeys] = deriveDecoder[GeogCSParameterKeys]
 }
 
-@Lenses("_")
 case class ProjectedCSParameterKeys(
   projectedCSType: Int = UserDefinedProjectionType,
   pcsCitation: Option[Array[String]] = None,
@@ -150,7 +146,6 @@ object ProjectedCSParameterKeys {
   implicit val projectedCSParameterKeysEncoder: Encoder[ProjectedCSParameterKeys] = deriveEncoder[ProjectedCSParameterKeys]
 }
 
-@Lenses("_")
 case class ProjectedFalsings(
   projFalseEasting: Option[Double] = None,
   projFalseNorthing: Option[Double] = None,
@@ -165,7 +160,6 @@ object ProjectedFalsings {
   implicit val projectedFalsingsEncoder: Encoder[ProjectedFalsings] = deriveEncoder[ProjectedFalsings]
 }
 
-@Lenses("_")
 case class VerticalCSKeys(
   verticalCSType: Option[Int] = None,
   verticalCitation: Option[Array[String]] = None,
@@ -178,7 +172,6 @@ object VerticalCSKeys {
   implicit val verticalCSKeysEncoder: Encoder[VerticalCSKeys] = deriveEncoder[VerticalCSKeys]
 }
 
-@Lenses("_")
 case class NonStandardizedKeys(
   shortMap: HashMap[Int, Int] = HashMap[Int, Int](),
   doublesMap: HashMap[Int, Array[Double]] = HashMap[Int, Array[Double]](),
@@ -190,7 +183,6 @@ object NonStandardizedKeys {
   implicit val nonStandardizedKeysEncoder: Encoder[NonStandardizedKeys] = deriveEncoder[NonStandardizedKeys]
 }
 
-@Lenses("_")
 case class GeoKeyDirectory(
   count: Int,
   configKeys: ConfigKeys = ConfigKeys(),

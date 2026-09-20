@@ -16,11 +16,9 @@
 
 package geotrellis.raster.io.geotiff.tags
 
-import monocle.macros.Lenses
 import io.circe.*
 import io.circe.generic.semiauto.*
 
-@Lenses("_")
 case class TileTags(
   tileWidth: Option[Long] = None,
   tileLength: Option[Long] = None,

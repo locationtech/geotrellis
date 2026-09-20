@@ -16,13 +16,11 @@
 
 package geotrellis.raster.io.geotiff.tags
 
-import monocle.macros.Lenses
 import io.circe.*
 import io.circe.generic.semiauto.*
 
 import scala.collection.immutable.HashMap
 
-@Lenses("_")
 case class NonStandardizedTags(
   asciisMap: HashMap[Int, String] = HashMap[Int, String](),
   longsMap: HashMap[Int, Array[Long]] = HashMap[Int, Array[Long]](),

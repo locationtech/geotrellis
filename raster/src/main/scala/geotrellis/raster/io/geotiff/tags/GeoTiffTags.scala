@@ -16,11 +16,9 @@
 
 package geotrellis.raster.io.geotiff.tags
 
-import monocle.macros.Lenses
 import io.circe.*
 import io.circe.generic.semiauto.*
 
-@Lenses("_")
 case class GeoTiffTags(
   modelTiePoints: Option[Array[(Pixel3D, Pixel3D)]] = None,
   modelTransformation: Option[Array[Array[Double]]] = None,

@@ -40,7 +40,7 @@ object Dependencies {
   }
 
   def monocle(module: String) = Def.setting {
-    "com.github.julien-truffaut" %% s"monocle-$module" % "2.1.0"
+    "dev.optics" %% s"monocle-$module" % "3.3.0"
   }
 
   def cats(module: String) = Def.setting {
