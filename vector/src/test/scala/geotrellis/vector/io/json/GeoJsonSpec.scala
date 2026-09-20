@@ -17,7 +17,7 @@
 package geotrellis.vector.io.json
 
 import io.circe.*
-import io.circe.generic.*
+import io.circe.generic.semiauto.deriveCodec
 import io.circe.syntax.*
 
 import geotrellis.vector.*
@@ -59,8 +59,8 @@ class GeoJsonSpec extends AnyFlatSpec with Matchers {
   }
 
   it should "parse string to points" in {
-    @JsonCodec
     case class DataBox(data: Int)
+    implicit val codecForDataBox: Codec.AsObject[DataBox] = deriveCodec[DataBox]
 
     val json = """{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[2674010.3642432094,264342.94293908775]},"properties":{ "data" : 291 }},{"type":"Feature","geometry":{"type":"Point","coordinates":[2714118.684319839,263231.3878492862]},"properties": { "data": 1273 }}]}"""
 
@@ -79,8 +79,8 @@ class GeoJsonSpec extends AnyFlatSpec with Matchers {
   }
 
   it should "parse string to point features and back again" in {
-    @JsonCodec
     case class DataBox(data: Int)
+    implicit val codecForDataBox: Codec.AsObject[DataBox] = deriveCodec[DataBox]
     val json="""{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[2674010.3642432094,264342.94293908775]},"properties":{"data":291}},{"type":"Feature","geometry":{"type":"Point","coordinates":[2714118.684319839,263231.3878492862]},"properties":{"data":1273}}]}"""
 
     val points = json.parseGeoJson[JsonFeatureCollection]().getAllPointFeatures[DataBox]().sortBy(_.data.data).toSeq
@@ -109,8 +109,8 @@ class GeoJsonSpec extends AnyFlatSpec with Matchers {
   }
 
   it should "parse from string with custom data without fuss" in {
-    @JsonCodec
     case class SomeData(name: String, value: Double)
+    implicit val codecForSomeData: Codec.AsObject[SomeData] = deriveCodec[SomeData]
 
     val jsonFeature =
       """{
@@ -138,8 +138,8 @@ class GeoJsonSpec extends AnyFlatSpec with Matchers {
   }
 
   it should "parse geojson with IDs on custom data" in {
-    @JsonCodec
     case class DataBox(data: Int)
+    implicit val codecForDataBox: Codec.AsObject[DataBox] = deriveCodec[DataBox]
     val json = """{
                  |  "type":"FeatureCollection",
                  |  "features":[
@@ -155,8 +155,8 @@ class GeoJsonSpec extends AnyFlatSpec with Matchers {
   }
 
   it should "throw an exception in case we expect features with IDs and recieve features without IDs" in {
-    @JsonCodec
     case class DataBox(data: Int)
+    implicit val codecForDataBox: Codec.AsObject[DataBox] = deriveCodec[DataBox]
     val json = """{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[2674010.3642432094,264342.94293908775]},"properties":{ "data" : 291 }},{"type":"Feature","geometry":{"type":"Point","coordinates":[2714118.684319839,263231.3878492862]},"properties": { "data": 1273 }}]}"""
 
     intercept[DecodingFailure] {
@@ -181,8 +181,8 @@ class GeoJsonSpec extends AnyFlatSpec with Matchers {
   // TODO: tear this test out and burn the code it tests
   it should "extract geometries in GeoJson from different Features, Geometries or Collections" in  {
 
-    @JsonCodec
     case class SomeData(name: String, value: Double)
+    implicit val codecForSomeData: Codec.AsObject[SomeData] = deriveCodec[SomeData]
 
     val point1 = Point(0,0)
     val line1 = LineString(point1, Point(0,5), Point(5,5), Point(5,0), Point(0,0))

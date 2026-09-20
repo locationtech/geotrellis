@@ -318,7 +318,7 @@ object IterativeViewshed {
 
     // Repeatedly map over the RDD of viewshed tiles until all rays
     // have reached the periphery of the layer.
-    do {
+    while ({
       val _changes: Map[SpatialKey, Seq[(Int, From, mutable.ArrayBuffer[Ray])]] =
         rays.value
           .map({ case (k, list) =>
@@ -395,8 +395,8 @@ object IterativeViewshed {
       }).persist(StorageLevel.MEMORY_AND_DISK_SER)
       sheds.count()
       oldSheds.unpersist()
-
-    } while (rays.value.nonEmpty)
+      rays.value.nonEmpty
+    }) ()
 
     // Return the computed viewshed layer
     val metadata = TileLayerMetadata(IntConstantNoDataCellType, md.layout, md.extent, md.crs, md.bounds)

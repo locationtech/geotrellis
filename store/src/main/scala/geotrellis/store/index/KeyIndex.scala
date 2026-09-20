@@ -61,7 +61,7 @@ object KeyIndex {
       var roomLeft = _roomLeft
       var remainder = range
       var taken = BigInt(0)
-      do {
+      while ({
         taken = take(remainder, roomLeft)
         if (taken == roomLeft) {
           breaks = breaks :+ (remainder._1 + taken - 1)
@@ -71,7 +71,8 @@ object KeyIndex {
           roomLeft -= taken
           remainder = (0,-1)
         }
-      } while (len(remainder) > 0)
+        len(remainder) > 0
+      }) ()
         (breaks, roomLeft)
     }._1.take(count) // we need to drop the break that falls on the end of the last range
 

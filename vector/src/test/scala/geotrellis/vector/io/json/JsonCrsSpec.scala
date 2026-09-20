@@ -42,7 +42,7 @@ class JsonCrsSpec extends AnyFlatSpec with Matchers with GeoJsonSupport {
           |  }
           |}""".stripMargin.parseJson
 
-    WithCrs(line, crs).asJson should be (body)
+    WithCrs[LineString](line, crs).asJson should be (body)
     line.withCrs(crs).asJson should be (body)
     body.as[WithCrs[LineString]].valueOr(throw _) should equal (WithCrs(line, crs))
   }
@@ -68,7 +68,7 @@ class JsonCrsSpec extends AnyFlatSpec with Matchers with GeoJsonSupport {
 
     val gc = GeometryCollection(List(point, line))
 
-    WithCrs(gc, crs).asJson should equal (body)
+    WithCrs[GeometryCollection](gc, crs).asJson should equal (body)
     body.as[WithCrs[GeometryCollection]].valueOr(throw _) should equal (WithCrs(gc, crs))
   }
 
@@ -91,7 +91,7 @@ class JsonCrsSpec extends AnyFlatSpec with Matchers with GeoJsonSupport {
         |  }
         |}""".stripMargin.parseJson
 
-    f.withCrs(crs).asJson should equal (body)
+    (f.withCrs(crs): WithCrs[PointFeature[String]]).asJson should equal (body)
     body.as[WithCrs[PointFeature[String]]].valueOr(throw _) should equal (WithCrs(f, crs))
   }
 

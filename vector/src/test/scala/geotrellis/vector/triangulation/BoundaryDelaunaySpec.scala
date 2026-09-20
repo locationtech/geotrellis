@@ -85,31 +85,35 @@ class BoundaryDelaunaySpec extends AnyFunSpec with Matchers {
 
       var validCW = true
       var e = bdt.boundary
-      do {
+      while ({
         var f = e
-        do {
+        while ({
           if (rotCWSrc(f) != e)
             validCW = !isLeftOf(f, getDest(rotCWSrc(f)))
 
           f = rotCWSrc(f)
-        } while (validCW && f != e)
+          validCW && f != e
+        }) ()
 
         e = getNext(e)
-      } while (validCW && e != bdt.boundary)
+        validCW && e != bdt.boundary
+      }) ()
 
       var validCCW = true
       e = bdt.boundary
-      do {
+      while ({
         var f = getFlip(e)
-        do {
+        while ({
           if (rotCCWSrc(f) != getFlip(e))
             validCCW = !isRightOf(f, getDest(rotCCWSrc(f)))
 
           f = rotCCWSrc(f)
-        } while (validCCW && f != getFlip(e))
+          validCCW && f != getFlip(e)
+        }) ()
 
         e = getNext(e)
-      } while (validCCW && e != bdt.boundary)
+        validCCW && e != bdt.boundary
+      }) ()
 
       (validCW && validCCW) should be (true)
     }

@@ -52,10 +52,11 @@ object EuclideanDistance {
         if (poly isDefined) {
           result += ((poly.get, centerStitched.indexToCoord(here)))
           var e = getFlip(incoming)
-          do {
+          while ({
             queue += ((e, getDest(e)))
             e = rotCWSrc(e)
-          } while (e != getFlip(incoming))
+            e != getFlip(incoming)
+          }) ()
         }
       }
     }
@@ -73,7 +74,7 @@ object EuclideanDistance {
       var e = 0
       var bestdist = 1.0/0.0
       var best = -1
-      do {
+      while ({
         while (getDest(e) == -1 && e < maxEdgeIndex())
           e += 1
         val dist = re.extent.distance(Point(stitched.indexToCoord(getDest(e))))
@@ -82,7 +83,8 @@ object EuclideanDistance {
           bestdist = dist
         }
         e += 1
-      } while (bestdist > 0 && e < maxEdgeIndex())
+        bestdist > 0 && e < maxEdgeIndex()
+      }) ()
 
       best
     }

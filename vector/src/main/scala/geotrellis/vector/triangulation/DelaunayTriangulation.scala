@@ -230,21 +230,23 @@ case class DelaunayTriangulation(
       return true
 
     var e = boundary()
-    do {
+    while ({
       bounds += e
       e = getNext(e)
-    } while (e != boundary())
+      e != boundary()
+    }) ()
 
     triangleMap.getTriangles().forall{ case (_, e) =>
       var f = e
       var ok = true
-      do {
+      while ({
         if (!bounds.contains(getFlip(f))) {
           val v = getDest(getNext(getFlip(f)))
           ok = ok && isRightOf(f, v)
         }
         f = getNext(f)
-      } while (f != e)
+        f != e
+      }) ()
       ok
     }
   }
@@ -263,10 +265,11 @@ case class DelaunayTriangulation(
     val bounds = Set.empty[Int]
 
     var e = bound
-    do {
+    while ({
       bounds += e
       e = getNext(e)
-    } while (e != bound)
+      e != bound
+    }) ()
 
     triangleMap.getTriangles().filter { case ((a, b, c), _) =>
       (lo <= a && a <= hi) &&
@@ -275,13 +278,14 @@ case class DelaunayTriangulation(
     }.forall{ case (_, e) =>
       var f = e
       var ok = true
-      do {
+      while ({
         if (!bounds.contains(getFlip(f))) {
           val v = getDest(getNext(getFlip(f)))
           ok = ok && isRightOf(f, v)
         }
         f = getNext(f)
-      } while (f != e)
+        f != e
+      }) ()
       ok
     }
   }
@@ -306,14 +310,15 @@ case class DelaunayTriangulation(
     var last = b0
 
     var e = rotCWSrc(e0)
-    do {
+    while ({
       val b = HalfEdge[Int, Int](getDest(rotCCWSrc(e)), getDest(e))
       b.face = Some(rotCWDest(e))
       last.next = b
       b.flip.next = last.flip
       last = b
       e = rotCWSrc(e)
-    } while (e != e0)
+      e != e0
+    }) ()
     last.next = b0
     b0.flip.next = last.flip
 
@@ -326,11 +331,12 @@ case class DelaunayTriangulation(
 
     var n = 0
     var e = inner
-    do {
+    while ({
       n += 1
       bps += Point(pointSet.getCoordinate(e.vert))
       e = e.next
-    } while (e != inner)
+      e != inner
+    }) ()
 
     if (n == 3) {
       tris += TriangleMap.regularizeIndex(inner.src(), inner.vert, inner.next.vert) -> inner
@@ -387,10 +393,11 @@ case class DelaunayTriangulation(
   private def allSatisfy(a: HalfEdge[Int, Int], b: HalfEdge[Int, Int], f: HalfEdge[Int, Int] => Boolean): Boolean = {
     var e = a
     var result = true
-    do {
+    while ({
       result = result && f(e)
       e = e.next
-    } while (result && e != b)
+      result && e != b
+    }) ()
     result
   }
 
@@ -479,18 +486,20 @@ case class DelaunayTriangulation(
     var e = e0
     val toKill = Set.empty[Int]
     val pts = collection.mutable.ListBuffer.empty[Point]
-    do {
+    while ({
       triangleMap -= ((getSrc(getFlip(e)), getDest(getFlip(e)), getDest(getNext(getFlip(e)))))
       e = rotCWSrc(e)
-    } while (e != e0)
-    do {
+      e != e0
+    }) ()
+    while ({
       Point(pointSet.getCoordinate(getDest(e))) +=: pts
       setNext(getPrev(getFlip(e)), getNext(e))
       val b = getFlip(getNext(e))
       setIncidentEdge(getDest(e), b)
       toKill += e
       e = rotCWSrc(e)
-    } while (e != e0)
+      e != e0
+    }) ()
     val region = LineString(pts)
 
     toKill.foreach{ e => {
@@ -525,7 +534,7 @@ case class DelaunayTriangulation(
 
       var b = h
 
-      do {
+      while ({
         assert (getSrc(newtri) == b.src() && getDest(newtri) == b.vert)
         b.flip.face match {
           case Some(opp) =>
@@ -543,7 +552,8 @@ case class DelaunayTriangulation(
 
         newtri = getNext(newtri)
         b = b.next
-      } while (b != h)
+        b != h
+      }) ()
     }}
 
     if (edges.nonEmpty) {
@@ -559,10 +569,11 @@ case class DelaunayTriangulation(
   def deletePoint(vi: Int) = {
     val boundvs = Set.empty[Int]
     var e = boundary()
-    do {
+    while ({
       boundvs += getDest(e)
       e = getNext(e)
-    } while (e != boundary())
+      e != boundary()
+    }) ()
 
     val (tris, bnd) =
       if (boundvs.contains(vi)) {
@@ -588,10 +599,11 @@ case class DelaunayTriangulation(
     var result = true
 
     var e = boundary()
-    do {
+    while ({
       edges += (getSrc(e) -> getDest(e)) -> e
       e = getNext(e)
-    } while (e != boundary())
+      e != boundary()
+    }) ()
 
     val triverts = Set.empty[Int]
     triangleMap.triangleVertices.foreach { case (i, j, k) =>
@@ -609,7 +621,7 @@ case class DelaunayTriangulation(
         result = false
       }
 
-      do {
+      while ({
         triedges += t
         edges.get(getSrc(t) -> getDest(t)) match {
           case None =>
@@ -630,7 +642,8 @@ case class DelaunayTriangulation(
         }
         i += 1
         t = getNext(t)
-      } while (t != t0)
+        t != t0
+      }) ()
       if (i != 3) {
         println(s"Edge [${getSrc(t0)} -> ${getDest(t0)}] does not participate in triangle ${(i1, i2, i3)}! (loop of length $i)")
       }

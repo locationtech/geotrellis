@@ -156,9 +156,10 @@ object HdfsUtils {
   def tmpPath(base: Path, prefix: String, conf: Configuration) = {
     val fs = base.getFileSystem(conf)
     var path: Path = null
-    do {
+    while ({
       path = new Path(base, s"$prefix-${createRandomString(10)}")
-    } while ( fs.exists(path) )
+      fs.exists(path)
+    }) ()
     path
   }
 

@@ -52,7 +52,7 @@ object QuadricError {
       Array[Double](0, 0, 0, 0)
     ))
 
-    do {
+    while ({
       val pa = trans(e.src())
       val pb = trans(e.vert)
 
@@ -69,7 +69,8 @@ object QuadricError {
 
       accum = accum.add(plane.outerProduct(plane))
       e = e.next
-    } while (e.src() != end)
+      e.src() != end
+    }) ()
 
     accum
   }

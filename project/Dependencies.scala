@@ -69,6 +69,8 @@ object Dependencies {
   def scalaReflect(version: String) = "org.scala-lang" % "scala-reflect" % version
 
   val pureconfig          = "com.github.pureconfig"      %% "pureconfig"               % "0.17.8"
+  // pureconfig's aggregate and `-generic` artifacts have no Scala 3 build; core does.
+  val pureconfigCore      = "com.github.pureconfig"      %% "pureconfig-core"          % "0.17.10"
   val log4s               = "org.log4s"                  %% "log4s"                    % "1.10.0"
   val scalatest           = "org.scalatest"              %% "scalatest"                % "3.2.20"
   val scalacheck          = "org.scalacheck"             %% "scalacheck"               % "1.19.0"
@@ -138,8 +140,6 @@ object Dependencies {
 
   val gdalBindings        = "org.gdal"                     % "gdal"                    % Version.gdal
   val gdalWarp            = "com.azavea.geotrellis"        % "gdal-warp-bindings"      % Version.gdalWarp
-
-  val shapeless           = "com.chuusai"  %% "shapeless" % "2.3.13"
 
   // aligned with the GeoTools version
   val unitApi             = "javax.measure" % "unit-api"  % "2.2"

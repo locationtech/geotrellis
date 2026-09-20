@@ -16,7 +16,8 @@
 
 package geotrellis.vector.io.json
 
-import io.circe.generic.*
+import io.circe.Codec
+import io.circe.generic.semiauto.deriveCodec
 import io.circe.syntax.*
 import cats.syntax.either.*
 import geotrellis.vector.*
@@ -171,8 +172,8 @@ class FeatureFormatsSpec extends AnyFlatSpec with Matchers with GeoJsonSupport {
   }
 
   it should "be able to handle Feature with custom data" in {
-    @JsonCodec
     case class SomeData(name: String, value: Double)
+    implicit val codecForSomeData: Codec.AsObject[SomeData] = deriveCodec[SomeData]
 
     val f = PointFeature(Point(1,44), SomeData("Bob", 32.2))
 

@@ -44,8 +44,7 @@ class KrigingVectorSpec extends AnyFunSpec with Matchers {
     it("should return correct prediction vector values") {
       val testPointFeatures = Array(PointFeature(Point(659000, 586000), 3.0488))
       val testPoints: Array[Point] =
-        Array.tabulate(testPointFeatures.length)
-        { i => testPointFeatures(i).geom }
+        Array.tabulate(testPointFeatures.length) { i => testPointFeatures(i).geom }
       val krigingVal: Array[(Double, Double)] =
         new SimpleKriging(points, 5000, sv)
           .predict(testPoints)
@@ -71,8 +70,7 @@ class KrigingVectorSpec extends AnyFunSpec with Matchers {
         PointFeature(Point(659000, 586000), 3.0461)
       }
       val testPoints: Array[Point] =
-        Array.tabulate(testPointFeatures.length)
-        { i => testPointFeatures(i).geom }
+        Array.tabulate(testPointFeatures.length) { i => testPointFeatures(i).geom }
       val krigingVal: Array[(Double, Double)] =
         new OrdinaryKriging(points, 5000, sv)
           .predict(testPoints)

@@ -395,15 +395,12 @@ object NonLinearSemivariogram {
     val varianceValue: Array[Double] = es.variance
     val start: Array[Double] = Array.fill(3)(0)
     start(0) =
-      dist.foldLeft(dist(0))
-      { case (maxM, e) => math.max(maxM, e) }
+      dist.foldLeft(dist(0)) { case (maxM, e) => math.max(maxM, e) }
     val Z: Array[Double] =
-      Array.tabulate(pts.length)
-      {i => pts(i).data}
+      Array.tabulate(pts.length) {i => pts(i).data}
     start(1) = math.pow(stdev(Z), 2)
     start(2) =
-      math.max(0, varianceValue.foldLeft(dist(0))
-                { case (minM, e) => math.min(minM, e) })
+      math.max(0, varianceValue.foldLeft(dist(0)) { case (minM, e) => math.min(minM, e) })
     Semivariogram.fit(es, model, start)
   }
 }

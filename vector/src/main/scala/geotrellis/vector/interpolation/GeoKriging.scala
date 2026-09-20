@@ -89,15 +89,13 @@ class GeoKriging(points: Array[PointFeature[Double]],
     val unitCol: RealMatrix = MatrixUtils.createColumnRealMatrix(Array.fill(n)(1))
 
     val attrMatrix =
-      MatrixUtils.createRealMatrix(Array.tabulate(n)
-      { i => Array(1.0) ++ attrFunc(points(i).geom.x, points(i).geom.y) })
+      MatrixUtils.createRealMatrix(Array.tabulate(n) { i => Array(1.0) ++ attrFunc(points(i).geom.x, points(i).geom.y) })
     val attrSize: Int = attrMatrix.getColumnDimension - 1
 
     val scale: RealMatrix =
       new LUDecomposition(
         MatrixUtils.createRealDiagonalMatrix(
-          Array.tabulate(attrSize+1)
-          { i => absArray(attrMatrix.getColumn(i)).max }
+          Array.tabulate(attrSize+1) { i => absArray(attrMatrix.getColumn(i)).max }
         )
       ).getSolver.getInverse
 

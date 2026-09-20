@@ -439,7 +439,7 @@ object Rasterizer {
     val (tDeltaX, tDeltaY) = (re.cellwidth / math.abs(dx), re.cellheight / math.abs(dy))
 
     // var i=0
-    do {
+    while ({
       // i += 1
       f(cellX, cellY)
       if (math.abs(tMaxX - tMaxY) < EPSILON) {
@@ -474,7 +474,8 @@ object Rasterizer {
           cellY += stepY
         }
       }
-    } while (/*i < 10000 && */(cellX != finalX || cellY != finalY))
+      /*i < 10000 && */(cellX != finalX || cellY != finalY)
+    }) ()
 
     // if (i == 10000)
     //   throw new RuntimeException(s"Non-terminating loop in exact line rasterizer: ($x0, $y0) - ($x1, $y1) in $re")

@@ -186,7 +186,7 @@ object IterativeCostDistance {
 
     // Repeatedly map over the RDD of cost tiles until no more changes
     // occur on the periphery of any tile.
-    do {
+    while ({
       val _changes: Map[SpatialKey, Seq[SimpleCostDistance.Cost]] =
         accumulator.value
           .groupBy(_._1)
@@ -253,7 +253,8 @@ object IterativeCostDistance {
 
       costs.count()
       previous.unpersist()
-    } while (accumulator.value.nonEmpty)
+      accumulator.value.nonEmpty
+    }) ()
 
     // Construct return value and return it
     val metadata = TileLayerMetadata(DoubleCellType, md.layout, md.extent, md.crs, md.bounds)

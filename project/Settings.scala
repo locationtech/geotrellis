@@ -648,8 +648,7 @@ object Settings {
     name := "geotrellis-vector",
     libraryDependencies ++= Seq(
       jts,
-      shapeless,
-      pureconfig,
+      pureconfigCore,
       circe("core").value,
       circe("generic").value,
       circe("parser").value,
@@ -658,12 +657,12 @@ object Settings {
       scalatest % Test,
       scalacheck % Test
     )
-  ) ++ commonSettings
+  ) ++ commonSettings ++ crossScala3
 
   lazy val `vector-testkit` = Seq(
     name := "geotrellis-vector-testkit",
     libraryDependencies += scalatest
-  ) ++ commonSettings
+  ) ++ commonSettings ++ crossScala3
 
   lazy val vectortile = Seq(
     name := "geotrellis-vectortile",
@@ -701,6 +700,11 @@ object Settings {
   lazy val store = Seq(
     name := "geotrellis-store",
     libraryDependencies ++= Seq(
+      // TEMPORARY: `store` used to get pureconfig transitively from `vector`, which now pulls only
+      // `pureconfig-core` (the aggregate artifact has no Scala 3 build). Declared here to keep the
+      // 2.13 build green; when `store` is cross-built this becomes `pureconfigCore` plus a
+      // hand-written ConfigReader, as was done for `vector`'s JtsConfig.
+      pureconfig,
       hadoopClient % Provided,
       apacheIO,
       scaffeine,
@@ -718,6 +722,9 @@ object Settings {
   lazy val gdal = Seq(
     name := "geotrellis-gdal",
     libraryDependencies ++= Seq(
+      // TEMPORARY: see the note on `store`. `gdal` depends on `raster`, not `store`, so it does
+      // not inherit the explicit declaration from there.
+      pureconfig,
       gdalWarp,
       scalatest % Test,
       gdalBindings % Test
