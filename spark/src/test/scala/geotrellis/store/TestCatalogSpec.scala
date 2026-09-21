@@ -23,6 +23,7 @@ import geotrellis.raster.{MultibandTile, Tile}
 import org.scalatest.funspec.AnyFunSpec
 
 import java.io.File
+import geotrellis.util.identityComponent
 
 class TestCatalogSpec extends AnyFunSpec with CatalogTestEnvironment {
   val absMultibandOutputPath = s"file://${TestCatalog.multibandOutputPath}"

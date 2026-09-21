@@ -19,6 +19,7 @@ package geotrellis.spark.store.file.cog
 import geotrellis.store.COGLayerType
 import geotrellis.store.file.{FileLayerHeader, FileAttributeStore}
 import geotrellis.spark.store.cog.*
+import geotrellis.util.identityComponent
 
 class COGFileAttributeStoreSpec extends COGAttributeStoreSpec {
   lazy val attributeStore: FileAttributeStore = FileAttributeStore(outputLocalPath)

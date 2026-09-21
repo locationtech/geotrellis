@@ -32,6 +32,7 @@ import geotrellis.util.*
 import _root_.io.github.chronoscala.Imports.*
 
 import java.time.{ZoneOffset, ZonedDateTime}
+import geotrellis.util.identityComponent
 
 
 trait LayerUpdateSpaceTimeTileSpec

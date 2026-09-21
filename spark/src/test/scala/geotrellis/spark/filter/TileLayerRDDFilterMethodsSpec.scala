@@ -26,6 +26,8 @@ import geotrellis.spark.*
 import geotrellis.spark.testkit.*
 
 import org.scalatest.funspec.AnyFunSpec
+import geotrellis.util.identityComponent
+import geotrellis.raster.Implicits.withSinglebandRasterResampleMethods
 
 class TileLayerRDDFilterMethodsSpec extends AnyFunSpec with TestEnvironment {
 

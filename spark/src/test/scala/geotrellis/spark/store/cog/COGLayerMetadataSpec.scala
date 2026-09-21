@@ -26,6 +26,7 @@ import geotrellis.spark.*
 
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.funspec.AnyFunSpec
+import geotrellis.util.identityComponent
 
 class COGLayerMetadataSpec extends AnyFunSpec with Matchers {
   def generateLCMetadata(maxZoom: Int = 13, minZoom: Int = 0): COGLayerMetadata[SpatialKey] = {

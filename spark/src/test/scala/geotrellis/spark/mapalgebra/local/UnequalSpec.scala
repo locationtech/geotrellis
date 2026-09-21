@@ -21,6 +21,7 @@ import geotrellis.spark.testkit.testfiles.*
 import geotrellis.spark.testkit.*
 
 import org.scalatest.funspec.AnyFunSpec
+import geotrellis.util.identityComponent
 
 class UnequalSpec extends AnyFunSpec with TestEnvironment with TestFiles {
 
@@ -32,7 +33,7 @@ class UnequalSpec extends AnyFunSpec with TestEnvironment with TestFiles {
     val twosST = AllTwosSpaceTime
 
     it("should check unEqual between an integer and a raster") {
-      val res = inc !== 1
+      val res = inc.localUnequal(1)
 
       rasterShouldBe(
         res,
@@ -43,7 +44,7 @@ class UnequalSpec extends AnyFunSpec with TestEnvironment with TestFiles {
     }
 
     it("should check unEqual between an integer and a spacetime raster") {
-      val res1 = onesST !== 1
+      val res1 = onesST.localUnequal(1)
 
       rasterShouldBe(
         res1,
@@ -51,7 +52,7 @@ class UnequalSpec extends AnyFunSpec with TestEnvironment with TestFiles {
         210
       )
 
-      val res2 = twosST !== 1
+      val res2 = twosST.localUnequal(1)
       rasterShouldBe(
         res2,
         1,
@@ -63,7 +64,7 @@ class UnequalSpec extends AnyFunSpec with TestEnvironment with TestFiles {
     }
 
     it("should check unEqual between a double and a raster") {
-      val res = inc !== 1.0
+      val res = inc.localUnequal(1.0)
 
       rasterShouldBe(
         res,
@@ -74,7 +75,7 @@ class UnequalSpec extends AnyFunSpec with TestEnvironment with TestFiles {
     }
 
     it("should check unEqual between an double and a spacetime raster") {
-      val res1 = onesST !== 1.0
+      val res1 = onesST.localUnequal(1.0)
 
       rasterShouldBe(
         res1,
@@ -82,7 +83,7 @@ class UnequalSpec extends AnyFunSpec with TestEnvironment with TestFiles {
         210
       )
 
-      val res2 = twosST !== 1
+      val res2 = twosST.localUnequal(1)
       rasterShouldBe(
         res2,
         1,
@@ -94,7 +95,7 @@ class UnequalSpec extends AnyFunSpec with TestEnvironment with TestFiles {
     }
 
     it("should check unEqual between a raster and an integer") {
-      val res = 1 !==: inc
+      val res = inc.localUnequal(1)
 
       rasterShouldBe(
         res,
@@ -105,7 +106,7 @@ class UnequalSpec extends AnyFunSpec with TestEnvironment with TestFiles {
     }
 
     it("should check unEqual between an spacetime raster and an integer") {
-      val res1 = 1 !==: onesST
+      val res1 = onesST.localUnequal(1)
 
       rasterShouldBe(
         res1,
@@ -113,7 +114,7 @@ class UnequalSpec extends AnyFunSpec with TestEnvironment with TestFiles {
         210
       )
 
-      val res2 = twosST !== 1
+      val res2 = twosST.localUnequal(1)
       rasterShouldBe(
         res2,
         1,
@@ -125,7 +126,7 @@ class UnequalSpec extends AnyFunSpec with TestEnvironment with TestFiles {
     }
 
     it("should check unEqual between a raster and a double") {
-      val res = 1.0 !==: inc
+      val res = inc.localUnequal(1.0)
 
       rasterShouldBe(
         res,
@@ -136,7 +137,7 @@ class UnequalSpec extends AnyFunSpec with TestEnvironment with TestFiles {
     }
 
     it("should check unEqual between a spacetime raster and a double") {
-      val res1 = 1.0 !==: onesST
+      val res1 = onesST.localUnequal(1.0)
 
       rasterShouldBe(
         res1,
@@ -144,7 +145,7 @@ class UnequalSpec extends AnyFunSpec with TestEnvironment with TestFiles {
         210
       )
 
-      val res2 = twosST !== 1
+      val res2 = twosST.localUnequal(1)
       rasterShouldBe(
         res2,
         1,
@@ -156,7 +157,7 @@ class UnequalSpec extends AnyFunSpec with TestEnvironment with TestFiles {
     }
 
     it("should check unEqual between two rasters") {
-      val res = inc !== ones
+      val res = inc.localUnequal(ones)
 
       rasterShouldBe(
         res,
@@ -167,7 +168,7 @@ class UnequalSpec extends AnyFunSpec with TestEnvironment with TestFiles {
     }
 
     it("should check unEqual between two spacetime rasters") {
-      val res1 = onesST !== onesST
+      val res1 = onesST.localUnequal(onesST)
 
       rasterShouldBe(
         res1,
@@ -175,7 +176,7 @@ class UnequalSpec extends AnyFunSpec with TestEnvironment with TestFiles {
         210
       )
 
-      val res2 = onesST !== twosST
+      val res2 = onesST.localUnequal(twosST)
       rasterShouldBe(
         res2,
         1,

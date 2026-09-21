@@ -29,6 +29,7 @@ import org.apache.spark.rdd.*
 import org.scalatest.GivenWhenThen
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.Inspectors.*
+import geotrellis.util.identityComponent
 
 class RasterRegionSpec extends AnyFunSpec with TestEnvironment with RasterMatchers with LayoutRasterMatchers with GivenWhenThen {
   it("reads RDD of raster refs") {

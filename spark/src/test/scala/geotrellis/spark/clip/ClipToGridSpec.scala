@@ -25,6 +25,7 @@ import geotrellis.vector.testkit.*
 import org.apache.spark.rdd.RDD
 
 import org.scalatest.funspec.AnyFunSpec
+import geotrellis.util.identityComponent
 
 class ClipToGridSpec extends AnyFunSpec with TestEnvironment {
   describe("ClipToGrid") {

@@ -30,6 +30,7 @@ import geotrellis.raster.testkit.*
 import org.scalatest.GivenWhenThen
 import org.scalatest.funspec.AnyFunSpec
 import java.time.{ZoneOffset, ZonedDateTime}
+import geotrellis.util.identityComponent
 
 class RasterSummarySpec extends AnyFunSpec with TestEnvironment with RasterMatchers with GivenWhenThen {
 

@@ -25,6 +25,7 @@ import geotrellis.spark.testkit.*
 import geotrellis.vector.Extent
 
 import org.scalatest.funspec.AnyFunSpec
+import geotrellis.util.identityComponent
 
 class RDDStitchMethodsSpec extends AnyFunSpec with TileBuilders with TileLayerRDDBuilders with TestEnvironment {
 

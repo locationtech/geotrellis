@@ -24,6 +24,7 @@ import geotrellis.spark.testkit.*
 import java.time.ZonedDateTime
 
 import org.scalatest.funspec.AnyFunSpec
+import geotrellis.util.identityComponent
 
 class LocalMapSpec extends AnyFunSpec with TestEnvironment with TestFiles {
 

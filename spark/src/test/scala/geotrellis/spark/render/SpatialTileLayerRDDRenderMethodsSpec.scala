@@ -24,6 +24,7 @@ import geotrellis.spark.testkit.*
 import geotrellis.spark.testkit.*
 
 import org.scalatest.funspec.AnyFunSpec
+import geotrellis.util.identityComponent
 
 class SpatialTileLayerRDDRenderMethodsSpec extends AnyFunSpec with TestEnvironment with TileBuilders with RasterMatchers with TileLayerRDDBuilders {
 

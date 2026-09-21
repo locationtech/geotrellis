@@ -28,6 +28,7 @@ import geotrellis.vector.Extent
 
 import org.scalatest.GivenWhenThen
 import org.scalatest.funspec.AnyFunSpec
+import geotrellis.util.identityComponent
 
 class GeoTrellisRasterSourceSpec extends AnyFunSpec with RasterMatchers with GivenWhenThen with CatalogTestEnvironment {
   val layerId = LayerId("landsat", 0)

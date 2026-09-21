@@ -21,6 +21,7 @@ import geotrellis.spark.testkit.testfiles.*
 import geotrellis.spark.testkit.*
 
 import org.scalatest.funspec.AnyFunSpec
+import geotrellis.util.identityComponent
 
 class IfCellSpec extends AnyFunSpec with TestEnvironment with TestFiles {
 

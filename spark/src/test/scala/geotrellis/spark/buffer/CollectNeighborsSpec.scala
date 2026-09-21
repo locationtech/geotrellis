@@ -23,6 +23,7 @@ import geotrellis.spark.*
 import geotrellis.spark.testkit.*
 
 import org.scalatest.funspec.AnyFunSpec
+import geotrellis.util.identityComponent
 
 class CollectNeighborsSpec extends AnyFunSpec with TestEnvironment {
 

@@ -22,6 +22,7 @@ import geotrellis.store.*
 import geotrellis.spark.store.*
 
 import org.apache.spark.rdd.*
+import geotrellis.util.identityComponent
 
 /**
  * This file provides a specification for raster RDD manipulations we expect to be valid.

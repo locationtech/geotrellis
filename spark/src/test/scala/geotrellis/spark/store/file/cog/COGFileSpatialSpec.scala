@@ -30,6 +30,15 @@ import geotrellis.spark.testkit.*
 import geotrellis.spark.testkit.io.*
 import geotrellis.spark.testkit.io.cog.*
 import geotrellis.spark.testkit.testfiles.cog.COGTestFiles
+import geotrellis.util.identityComponent
+import geotrellis.raster.Implicits.withSinglebandMergeMethods
+import geotrellis.raster.Implicits.withMultibandTileCropMethods
+import geotrellis.raster.prototype.Implicits.withSinglebandTilePrototypeMethods
+import geotrellis.spark.stitch.Implicits.withSpatialTileLayoutRDDMethods
+import geotrellis.raster.crop.Implicits.withSinglebandTileCropMethods
+import geotrellis.raster.prototype.Implicits.withMultibandTilePrototypeMethods
+import geotrellis.raster.crop.Implicits.withMultibandTileRasterCropMethods
+import org.apache.spark.rdd.RDD
 
 class COGFileSpatialSpec
   extends COGPersistenceSpec[SpatialKey, Tile]
@@ -47,7 +56,7 @@ class COGFileSpatialSpec
   // lazy val mover  = FileLayerMover(outputLocalPath)
   // lazy val reindexer = FileLayerReindexer(outputLocalPath)
   lazy val tiles: FileCOGValueReader = FileCOGValueReader(outputLocalPath)
-  lazy val sample: AllOnesTestFile.type = AllOnesTestFile // spatialCea
+  lazy val sample: RDD[(SpatialKey, Tile)] with Metadata[TileLayerMetadata[SpatialKey]] = AllOnesTestFile // spatialCea
 
   describe("Filesystem layer names") {
     it("should not throw with bad characters in name") {
@@ -65,7 +74,7 @@ class COGFileSpatialSpec
       val reader = FileCOGLayerReader("spark/src/test/resources/cog-layer")
       val layer = reader.read[SpatialKey, MultibandTile](LayerId("stitch-layer", 11))
       val ext = Extent(14990677.113, 6143014.652, 15068031.386, 6198584.372)
-      val actual = layer.stitch().crop(ext).tile
+      val actual = withSpatialTileLayoutRDDMethods(layer).stitch().crop(ext).tile
       val expected = GeoTiff.readMultiband("spark/src/test/resources/cog-layer/stitched.tiff").crop(ext).tile.toArrayTile()
       assertEqual(actual.tile, expected)
     }

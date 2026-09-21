@@ -29,6 +29,7 @@ import java.time.{ZoneOffset, ZonedDateTime}
 
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.funspec.AnyFunSpec
+import geotrellis.util.identityComponent
 
 class PyramidSpec extends AnyFunSpec with Matchers with TestEnvironment {
 

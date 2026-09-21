@@ -25,6 +25,7 @@ import org.apache.spark.*
 
 import org.scalatest.funspec.AnyFunSpec
 import java.io.*
+import geotrellis.util.identityComponent
 
 class PartitionerSpec extends AnyFunSpec with TestEnvironment {
 

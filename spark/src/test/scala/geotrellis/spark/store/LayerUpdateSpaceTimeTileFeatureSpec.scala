@@ -29,6 +29,7 @@ import geotrellis.spark.testkit.*
 import geotrellis.spark.testkit.io.*
 
 import java.time.{ZoneOffset, ZonedDateTime}
+import geotrellis.util.identityComponent
 
 
 trait LayerUpdateSpaceTimeTileFeatureSpec

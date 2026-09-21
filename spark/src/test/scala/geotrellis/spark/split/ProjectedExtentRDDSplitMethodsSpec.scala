@@ -26,6 +26,7 @@ import geotrellis.spark.testkit.*
 import org.apache.spark.rdd.RDD
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.funspec.AnyFunSpec
+import geotrellis.util.identityComponent
 
 class ProjectedExtentRDDSplitMethodsSpec extends AnyFunSpec with Matchers with TestEnvironment with TileBuilders {
 

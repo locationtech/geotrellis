@@ -22,6 +22,7 @@ import geotrellis.layer.*
 import geotrellis.store.*
 import geotrellis.spark.testkit.io.*
 import geotrellis.spark.testkit.io.cog.*
+import geotrellis.util.identityComponent
 
 trait COGAllOnesTestTileSpec { self: COGPersistenceSpec[SpatialKey, Tile] =>
 

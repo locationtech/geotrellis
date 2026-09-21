@@ -17,6 +17,7 @@
 package geotrellis.spark.store.slippy
 
 import org.scalatest.funspec.AnyFunSpec
+import geotrellis.util.identityComponent
 
 class HttpSlippyTileReaderSpec extends AnyFunSpec {
 

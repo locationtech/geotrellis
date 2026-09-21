@@ -18,6 +18,7 @@ package geotrellis.spark.partition
 
 import geotrellis.layer.{SpatialKey, KeyBounds}
 import geotrellis.store.index.zcurve.*
+import geotrellis.util.identityComponent
 
 object TestImplicits {
   implicit object TestPartitioner extends PartitionerIndex[SpatialKey] {

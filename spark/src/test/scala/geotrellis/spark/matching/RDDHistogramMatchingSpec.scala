@@ -24,6 +24,7 @@ import geotrellis.raster.histogram.StreamingHistogram
 
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.funspec.AnyFunSpec
+import geotrellis.util.identityComponent
 
 class RDDHistogramMatchingSpec extends AnyFunSpec with Matchers with TestEnvironment {
 

@@ -26,6 +26,7 @@ import geotrellis.raster.io.geotiff.*
 
 
 import org.scalatest.funspec.AnyFunSpec
+import geotrellis.util.identityComponent
 
 
 class StatsTileRDDMethodsSpec extends AnyFunSpec with TestEnvironment with TestFiles {

@@ -26,6 +26,11 @@ import geotrellis.spark.*
 import geotrellis.spark.testkit.*
 
 import org.scalatest.funspec.AnyFunSpec
+import geotrellis.util.identityComponent
+import geotrellis.raster.Implicits.withSinglebandRasterResampleMethods
+import geotrellis.raster.crop.Implicits.withSinglebandTileCropMethods
+import geotrellis.raster.crop.Implicits.withSinglebandTileRasterCropMethods
+import geotrellis.raster.prototype.Implicits.withSinglebandTilePrototypeMethods
 
 object BufferTilesSpec {
   def generateBufferSizes(bounds: Bounds[SpatialKey])(key: SpatialKey) = {

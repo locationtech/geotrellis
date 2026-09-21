@@ -23,6 +23,7 @@ import geotrellis.spark.testkit.io.*
 import geotrellis.spark.testkit.io.cog.*
 
 import java.time.{ZoneOffset, ZonedDateTime}
+import geotrellis.util.identityComponent
 
 
 trait COGCoordinateSpaceTimeSpec { self: COGPersistenceSpec[SpaceTimeKey, Tile] =>

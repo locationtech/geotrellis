@@ -27,6 +27,7 @@ import org.scalatest.matchers.should.Matchers
 import org.scalatest.funspec.AnyFunSpec
 
 import org.apache.spark.rdd.*
+import geotrellis.util.identityComponent
 
 // Defined here because of serialization
 class IntTilerKeyMethods(val self: Int, extents: List[Extent]) extends TilerKeyMethods[Int, SpatialKey] {

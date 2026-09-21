@@ -25,6 +25,7 @@ import java.io.IOException
 
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.funspec.AnyFunSpec
+import geotrellis.util.identityComponent
 
 class HdfsUtilsSpec extends AnyFunSpec with Matchers with TestEnvironment {
   describe("HdfsUtils") {

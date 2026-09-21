@@ -24,6 +24,7 @@ import geotrellis.spark.store.hadoop.*
 
 
 import java.net.URI
+import geotrellis.util.identityComponent
 
 
 class COGHadoopAttributeStoreSpec extends COGAttributeStoreSpec {

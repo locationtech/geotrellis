@@ -36,6 +36,7 @@ import geotrellis.raster.testkit.*
 import org.scalatest.Inspectors.*
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.funspec.AnyFunSpec
+import geotrellis.util.identityComponent
 
 class RasterSourceRDDSpec extends AnyFunSpec with TestEnvironment with RasterMatchers with BeforeAndAfterAll {
 

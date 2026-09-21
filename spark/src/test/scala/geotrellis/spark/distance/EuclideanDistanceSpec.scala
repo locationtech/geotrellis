@@ -38,6 +38,7 @@ import scala.math.{Pi, atan, cos, max, pow, sin}
 
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.funspec.AnyFunSpec
+import geotrellis.util.identityComponent
 
 
 class EuclideanDistanceSpec extends AnyFunSpec with TestEnvironment with Matchers with RasterMatchers {

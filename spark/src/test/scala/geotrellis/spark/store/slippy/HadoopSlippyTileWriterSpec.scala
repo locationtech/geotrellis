@@ -28,6 +28,7 @@ import org.scalatest.matchers.should.Matchers
 import org.scalatest.funspec.AnyFunSpec
 
 import java.io.File
+import geotrellis.util.identityComponent
 
 class HadoopSlippyTileWriterSpec extends AnyFunSpec with Matchers with TestEnvironment with TestFiles {
 

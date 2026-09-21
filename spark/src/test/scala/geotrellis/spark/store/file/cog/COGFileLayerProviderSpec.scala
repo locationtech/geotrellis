@@ -22,6 +22,7 @@ import geotrellis.spark.store.cog.*
 import geotrellis.spark.testkit.TestEnvironment
 
 import org.scalatest.funspec.AnyFunSpec
+import geotrellis.util.identityComponent
 
 class FileCOGLayerProviderSpec extends AnyFunSpec with TestEnvironment {
   val uri = new java.net.URI("file:/tmp/catalog")

@@ -27,6 +27,7 @@ import _root_.io.github.chronoscala.Imports.*
 import java.time.{ZoneOffset, ZonedDateTime}
 
 import org.scalatest.funspec.AnyFunSpec
+import geotrellis.util.identityComponent
 
 class LocalTemporalSpec extends AnyFunSpec with TestEnvironment {
 
@@ -91,7 +92,7 @@ class LocalTemporalSpec extends AnyFunSpec with TestEnvironment {
     }
 
     it("should work with min for a 9 year period where the window is 3 years.") {
-      val dates = (1 until 10).map(i => ZonedDateTime.of(i, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC))
+      val dates = (Range(1, 10)).map(i => ZonedDateTime.of(i, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC))
       val rasterRDD: TileLayerRDD[SpaceTimeKey] = createIncreasingTemporalTileLayerRDD(dates)
 
       val start = ZonedDateTime.of(1, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC)

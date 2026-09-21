@@ -22,6 +22,7 @@ import geotrellis.spark.testkit.*
 
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.funspec.AnyFunSpec
+import geotrellis.util.identityComponent
 
 class RDDSigmoidalContrastSpec extends AnyFunSpec with Matchers with TestEnvironment {
 
@@ -32,8 +33,8 @@ class RDDSigmoidalContrastSpec extends AnyFunSpec with Matchers with TestEnviron
       val a = Double.MinValue
       val b = 0
       val c = Double.MaxValue
-      val data1 = List(a, a+x)
-      val data2 = List(b, c-x, c)
+      val data1 = List[Double](a, a+x)
+      val data2 = List[Double](b, c-x, c)
 
       val tile1: Tile = DoubleArrayTile(data1.map(_.toDouble).toArray, 1, 2)
       val tile2: Tile = DoubleArrayTile(data2.map(_.toDouble).toArray, 1, 3)
@@ -51,8 +52,8 @@ class RDDSigmoidalContrastSpec extends AnyFunSpec with Matchers with TestEnviron
       val a = 0
       val b = 1<<15
       val c = (1<<16)-1
-      val data1 = List(a, a+x).map(_.toShort)
-      val data2 = List(b, c-x, c).map(_.toShort)
+      val data1 = List[Double](a, a+x).map(_.toShort)
+      val data2 = List[Double](b, c-x, c).map(_.toShort)
 
       val tile1: Tile = UShortArrayTile(data1.toArray, 1, 2, UShortCellType)
       val tile2: Tile = UShortArrayTile(data2.toArray, 1, 3, UShortCellType)
@@ -71,8 +72,8 @@ class RDDSigmoidalContrastSpec extends AnyFunSpec with Matchers with TestEnviron
       val a = -(1<<15)
       val b = 0
       val c = (1<<15)-1
-      val data1 = List(a, a+x).map(_.toShort)
-      val data2 = List(b, c-x, c).map(_.toShort)
+      val data1 = List[Double](a, a+x).map(_.toShort)
+      val data2 = List[Double](b, c-x, c).map(_.toShort)
 
       val tile1: Tile = ShortArrayTile(data1.toArray, 1, 2, ShortCellType)
       val tile2: Tile = ShortArrayTile(data2.toArray, 1, 3, ShortCellType)
@@ -92,7 +93,7 @@ class RDDSigmoidalContrastSpec extends AnyFunSpec with Matchers with TestEnviron
       val b = 0
       val c = (1<<15)-1
       val data1 = List(a, a+x, b).map(_.toShort)
-      val data2 = List(b, c-x, c).map(_.toShort)
+      val data2 = List[Double](b, c-x, c).map(_.toShort)
 
       val tile1: MultibandTile = ArrayMultibandTile(
         ShortArrayTile(data1.toArray, 1, 3, ShortCellType),

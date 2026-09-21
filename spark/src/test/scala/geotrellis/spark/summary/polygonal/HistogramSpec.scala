@@ -27,6 +27,7 @@ import geotrellis.spark.testkit.*
 import org.scalatest.funspec.AnyFunSpec
 
 import collection.immutable.HashMap
+import geotrellis.util.identityComponent
 
 class HistogramSpec extends AnyFunSpec with TestEnvironment with TestFiles {
   describe("Histogram Zonal Summary Operation") {
@@ -75,8 +76,8 @@ class HistogramSpec extends AnyFunSpec with TestEnvironment with TestFiles {
       // We use FastMapHistogram for this test because StreamingHistogram can shuffle bucket
       //  bounds and counts based on the order in which dissimilar elements are added. This addition is
       //  non-deterministic for our RDD polygonal summaries.
-      val histogram = modHundred.polygonalSummaryValue(totalExtent.toPolygon(), FastMapHistogramVisitor).toOption.get
-      val expected = modHundred.stitch().polygonalSummary(totalExtent.toPolygon(), FastMapHistogramVisitor).toOption.get
+      val histogram = modHundred.polygonalSummaryValue[FastMapHistogram](totalExtent.toPolygon(), FastMapHistogramVisitor).toOption.get
+      val expected = modHundred.stitch().polygonalSummary[FastMapHistogram](totalExtent.toPolygon(), FastMapHistogramVisitor).toOption.get
 
       histogram.totalCount() should be (expected.totalCount())
       histogram.foreachValue(v => histogram.itemCount(v) should be (expected.itemCount(v)))
@@ -94,11 +95,11 @@ class HistogramSpec extends AnyFunSpec with TestEnvironment with TestFiles {
     //  bounds and counts based on the order in which dissimilar elements are added. This addition is
     //  non-deterministic for our RDD polygonal summaries.
     it("should get correct histogram over whole raster extent for a MultibandTileRDD") {
-      val histogram = multiModHundred.polygonalSummaryValue(
+      val histogram = multiModHundred.polygonalSummaryValue[Array[FastMapHistogram]](
         totalExtent.toPolygon(),
         FastMapHistogramVisitor
       ).toOption.get.head
-      val expected = multiModHundred.stitch().polygonalSummary(
+      val expected = multiModHundred.stitch().polygonalSummary[Array[FastMapHistogram]](
         totalExtent.toPolygon(),
         FastMapHistogramVisitor
       ).toOption.get.head
@@ -116,18 +117,18 @@ class HistogramSpec extends AnyFunSpec with TestEnvironment with TestFiles {
     }
 
     it("should get correct histogram over a quarter of the extent") {
-      val histogram = inc.polygonalSummaryValue(
+      val histogram = inc.polygonalSummaryValue[StreamingHistogram](
         quarterExtent.toPolygon(),
         StreamingHistogramVisitor).toOption.get
-      val expected = inc.stitch().polygonalSummary(quarterExtent.toPolygon(), StreamingHistogramVisitor).toOption.get
+      val expected = inc.stitch().polygonalSummary[StreamingHistogram](quarterExtent.toPolygon(), StreamingHistogramVisitor).toOption.get
 
       histogram.minMaxValues() should be (expected.minMaxValues())
       histogram.itemCount(1) should be (expected.itemCount(1))
     }
 
     it("should get correct histogram over a quarter of the extent for a MultibandTileRDD") {
-      val histogram = multi.polygonalSummaryValue(quarterExtent.toPolygon(), StreamingHistogramVisitor).toOption.get
-      val expected = multi.stitch().polygonalSummary(quarterExtent.toPolygon(), StreamingHistogramVisitor).toOption.get
+      val histogram = multi.polygonalSummaryValue[Array[StreamingHistogram]](quarterExtent.toPolygon(), StreamingHistogramVisitor).toOption.get
+      val expected = multi.stitch().polygonalSummary[Array[StreamingHistogram]](quarterExtent.toPolygon(), StreamingHistogramVisitor).toOption.get
 
       histogram.size should be (expected.size)
 
@@ -138,16 +139,16 @@ class HistogramSpec extends AnyFunSpec with TestEnvironment with TestFiles {
     }
 
     it("should get correct histogram over half of the extent in diamond shape") {
-      val histogram = ones.polygonalSummaryValue(diamondPoly, StreamingHistogramVisitor).toOption.get
-      val expected = ones.stitch().polygonalSummary(diamondPoly, StreamingHistogramVisitor).toOption.get
+      val histogram = ones.polygonalSummaryValue[StreamingHistogram](diamondPoly, StreamingHistogramVisitor).toOption.get
+      val expected = ones.stitch().polygonalSummary[StreamingHistogram](diamondPoly, StreamingHistogramVisitor).toOption.get
 
       histogram.minMaxValues() should be (expected.minMaxValues())
       histogram.itemCount(1) should be (expected.itemCount(1))
     }
 
     it("should get correct histogram over half of the extent in diamond shape for a MultibandTileRDD") {
-      val histogram = multi.polygonalSummaryValue(diamondPoly, StreamingHistogramVisitor).toOption.get
-      val expected = multi.stitch().polygonalSummary(diamondPoly, StreamingHistogramVisitor).toOption.get
+      val histogram = multi.polygonalSummaryValue[Array[StreamingHistogram]](diamondPoly, StreamingHistogramVisitor).toOption.get
+      val expected = multi.stitch().polygonalSummary[Array[StreamingHistogram]](diamondPoly, StreamingHistogramVisitor).toOption.get
 
       histogram.size should be (expected.size)
 
@@ -158,16 +159,16 @@ class HistogramSpec extends AnyFunSpec with TestEnvironment with TestFiles {
     }
 
     it("should get correct histogram over polygon with hole") {
-      val histogram = ones.polygonalSummaryValue(polyWithHole, StreamingHistogramVisitor).toOption.get
-      val expected = ones.stitch().polygonalSummary(polyWithHole, StreamingHistogramVisitor).toOption.get
+      val histogram = ones.polygonalSummaryValue[StreamingHistogram](polyWithHole, StreamingHistogramVisitor).toOption.get
+      val expected = ones.stitch().polygonalSummary[StreamingHistogram](polyWithHole, StreamingHistogramVisitor).toOption.get
 
       histogram.minMaxValues() should be (expected.minMaxValues())
       histogram.itemCount(1) should be (expected.itemCount(1))
     }
 
     it("should get correct histogram over polygon with hole for a MultibandTileRDD") {
-      val histogram = multi.polygonalSummaryValue(polyWithHole, StreamingHistogramVisitor).toOption.get
-      val expected = multi.stitch().polygonalSummary(polyWithHole, StreamingHistogramVisitor).toOption.get
+      val histogram = multi.polygonalSummaryValue[Array[StreamingHistogram]](polyWithHole, StreamingHistogramVisitor).toOption.get
+      val expected = multi.stitch().polygonalSummary[Array[StreamingHistogram]](polyWithHole, StreamingHistogramVisitor).toOption.get
 
       histogram.size should be (expected.size)
 
@@ -189,7 +190,7 @@ class HistogramSpec extends AnyFunSpec with TestEnvironment with TestFiles {
     val totalExtent = modHundred.metadata.extent
 
     it("should get correct histogram over whole raster extent") {
-      val histogram = modHundred.polygonalSummaryValue(totalExtent.toPolygon(), FastMapHistogramVisitor).toOption.get
+      val histogram = modHundred.polygonalSummaryValue[FastMapHistogram](totalExtent.toPolygon(), FastMapHistogramVisitor).toOption.get
 
       var map = HashMap[Int, Int]()
 
@@ -203,7 +204,7 @@ class HistogramSpec extends AnyFunSpec with TestEnvironment with TestFiles {
     }
 
     it("should get correct histogram over whole raster extent for MultibandTiles") {
-      val histogram = multiModHundred.polygonalSummaryValue(totalExtent.toPolygon(), FastMapHistogramVisitor).toOption.get.head
+      val histogram = multiModHundred.polygonalSummaryValue[Array[FastMapHistogram]](totalExtent.toPolygon(), FastMapHistogramVisitor).toOption.get.head
 
       var map = HashMap[Int, Int]()
 
@@ -227,8 +228,8 @@ class HistogramSpec extends AnyFunSpec with TestEnvironment with TestFiles {
         totalExtent.ymin + yd / 2
       )
 
-      val histogram = ones.polygonalSummaryValue(quarterExtent.toPolygon(), StreamingHistogramVisitor).toOption.get
-      val expected = ones.stitch().polygonalSummary(quarterExtent.toPolygon(), StreamingHistogramVisitor).toOption.get
+      val histogram = ones.polygonalSummaryValue[StreamingHistogram](quarterExtent.toPolygon(), StreamingHistogramVisitor).toOption.get
+      val expected = ones.stitch().polygonalSummary[StreamingHistogram](quarterExtent.toPolygon(), StreamingHistogramVisitor).toOption.get
 
       histogram.minMaxValues() should be (expected.minMaxValues())
       histogram.itemCount(1) should be (expected.itemCount(1))
@@ -245,8 +246,8 @@ class HistogramSpec extends AnyFunSpec with TestEnvironment with TestFiles {
         totalExtent.ymin + yd / 2
       )
 
-      val histogram = multi.polygonalSummaryValue(quarterExtent.toPolygon(), StreamingHistogramVisitor).toOption.get
-      val expected = multi.stitch().polygonalSummary(quarterExtent.toPolygon(), StreamingHistogramVisitor).toOption.get
+      val histogram = multi.polygonalSummaryValue[Array[StreamingHistogram]](quarterExtent.toPolygon(), StreamingHistogramVisitor).toOption.get
+      val expected = multi.stitch().polygonalSummary[Array[StreamingHistogram]](quarterExtent.toPolygon(), StreamingHistogramVisitor).toOption.get
 
       histogram.size should be (expected.size)
 
@@ -268,8 +269,8 @@ class HistogramSpec extends AnyFunSpec with TestEnvironment with TestFiles {
 
       val poly = Polygon(LineString(Array(p1, p2, p3, p4, p1)))
 
-      val histogram = ones.polygonalSummaryValue(poly, StreamingHistogramVisitor).toOption.get
-      val expected = ones.stitch().polygonalSummary(poly, StreamingHistogramVisitor).toOption.get
+      val histogram = ones.polygonalSummaryValue[StreamingHistogram](poly, StreamingHistogramVisitor).toOption.get
+      val expected = ones.stitch().polygonalSummary[StreamingHistogram](poly, StreamingHistogramVisitor).toOption.get
 
       histogram.minMaxValues() should be (expected.minMaxValues())
       histogram.itemCount(1) should be (expected.itemCount(1))
@@ -286,8 +287,8 @@ class HistogramSpec extends AnyFunSpec with TestEnvironment with TestFiles {
 
       val poly = Polygon(LineString(Array(p1, p2, p3, p4, p1)))
 
-      val histogram = multi.polygonalSummaryValue(poly, StreamingHistogramVisitor).toOption.get
-      val expected = multi.stitch().polygonalSummary(poly, StreamingHistogramVisitor).toOption.get
+      val histogram = multi.polygonalSummaryValue[Array[StreamingHistogram]](poly, StreamingHistogramVisitor).toOption.get
+      val expected = multi.stitch().polygonalSummary[Array[StreamingHistogram]](poly, StreamingHistogramVisitor).toOption.get
 
       histogram.size should be (expected.size)
 
@@ -319,8 +320,8 @@ class HistogramSpec extends AnyFunSpec with TestEnvironment with TestFiles {
       val interior = LineString(Array(pi1, pi2, pi3, pi4, pi1))
       val poly = Polygon(exterior, interior)
 
-      val histogram = ones.polygonalSummaryValue(poly, StreamingHistogramVisitor).toOption.get
-      val expected = ones.stitch().polygonalSummary(poly, StreamingHistogramVisitor).toOption.get
+      val histogram = ones.polygonalSummaryValue[StreamingHistogram](poly, StreamingHistogramVisitor).toOption.get
+      val expected = ones.stitch().polygonalSummary[StreamingHistogram](poly, StreamingHistogramVisitor).toOption.get
 
       histogram.minMaxValues() should be (expected.minMaxValues())
       histogram.itemCount(1) should be (expected.itemCount(1))
@@ -348,8 +349,8 @@ class HistogramSpec extends AnyFunSpec with TestEnvironment with TestFiles {
       val interior = LineString(Array(pi1, pi2, pi3, pi4, pi1))
       val poly = Polygon(exterior, interior)
 
-      val histogram = multi.polygonalSummaryValue(poly, StreamingHistogramVisitor).toOption.get
-      val expected = multi.stitch().polygonalSummary(poly, StreamingHistogramVisitor).toOption.get
+      val histogram = multi.polygonalSummaryValue[Array[StreamingHistogram]](poly, StreamingHistogramVisitor).toOption.get
+      val expected = multi.stitch().polygonalSummary[Array[StreamingHistogram]](poly, StreamingHistogramVisitor).toOption.get
 
       histogram.size should be (expected.size)
 

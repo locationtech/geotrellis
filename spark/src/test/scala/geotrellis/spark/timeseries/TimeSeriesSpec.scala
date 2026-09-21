@@ -25,6 +25,7 @@ import geotrellis.vector.*
 
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.funspec.AnyFunSpec
+import geotrellis.util.identityComponent
 
 object TimeSeriesSpecFunctions {
 

@@ -24,6 +24,7 @@ import org.apache.spark.rdd.*
 
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.funspec.AnyFunSpec
+import geotrellis.util.identityComponent
 
 class VectorJoinRDDSpec extends AnyFunSpec with Matchers with TestEnvironment {
 

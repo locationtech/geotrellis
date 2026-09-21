@@ -19,6 +19,7 @@ package geotrellis.spark.util
 import geotrellis.spark.testkit.*
 
 import org.scalatest.funspec.AnyFunSpec
+import geotrellis.util.identityComponent
 
 class OptimusPrime(val prime: Int) extends Function1[Int, Int] {
   def apply(x: Int): Int = prime + x

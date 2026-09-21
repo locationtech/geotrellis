@@ -22,10 +22,13 @@ import geotrellis.spark.*
 import geotrellis.spark.testkit.testfiles.*
 import geotrellis.spark.testkit.*
 
-import _root_.io.circe.generic.JsonCodec
+import _root_.io.circe.Codec
+import _root_.io.circe.generic.semiauto.deriveCodec
 
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.funspec.AnyFunSpec
+import geotrellis.util.identityComponent
+import geotrellis.raster.io.json.Implicits.*
 
 abstract class AttributeStoreSpec extends AnyFunSpec with Matchers with TestEnvironment with TestFiles {
 
@@ -69,8 +72,10 @@ abstract class AttributeStoreSpec extends AnyFunSpec with Matchers with TestEnvi
 
   it("should save and load a random RootJsonReadable object") {
     val layerId = LayerId("test", 3)
-    @JsonCodec
     case class Foo(x: Int, y: String)
+    object Foo {
+      implicit val codecForFoo: Codec.AsObject[Foo] = deriveCodec[Foo]
+    }
 
     val foo = Foo(1, "thing")
 
