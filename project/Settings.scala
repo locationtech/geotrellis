@@ -309,7 +309,7 @@ object Settings {
   lazy val cassandra = Seq(
     name := "geotrellis-cassandra",
     libraryDependencies ++= Seq(
-      pureconfig,
+      pureconfigCore,
       cassandraDriverCore,
       cassandraDriverQueryBuilder
     ) map (_ excludeAll(
@@ -326,7 +326,7 @@ object Settings {
       import geotrellis.store.util.*
       import geotrellis.store.cassandra.*
       """
-  ) ++ commonSettings ++ noForkInTests
+  ) ++ commonSettings ++ noForkInTests ++ crossScala3
 
   lazy val `cassandra-spark` = Seq(
     name := "geotrellis-cassandra-spark",

@@ -16,8 +16,7 @@
 
 package geotrellis.store.cassandra.conf
 
-import pureconfig.ConfigSource
-import pureconfig.generic.auto.*
+import pureconfig.{ConfigReader, ConfigSource}
 
 case class CassandraConfig(
   port: Int = 9042,
@@ -33,6 +32,19 @@ case class CassandraConfig(
 }
 
 object CassandraConfig {
+  implicit val cassandraConfigReader: ConfigReader[CassandraConfig] =
+    ConfigReader.forProduct5[CassandraConfig, Option[Int], Option[String], Option[String], Option[String], Option[Int]](
+      "port", "catalog", "keyspace", "replication-strategy", "replication-factor"
+    ) { (port, catalog, keyspace, replicationStrategy, replicationFactor) =>
+      CassandraConfig(
+        port.getOrElse(9042),
+        catalog.getOrElse("metadata"),
+        keyspace.getOrElse("geotrellis"),
+        replicationStrategy.getOrElse("SimpleStrategy"),
+        replicationFactor.getOrElse(1)
+      )
+    }
+
   lazy val conf: CassandraConfig = ConfigSource.default.at("geotrellis.cassandra").loadOrThrow[CassandraConfig]
   implicit def cassandraConfigToClass(obj: CassandraConfig.type): CassandraConfig = conf
 }
