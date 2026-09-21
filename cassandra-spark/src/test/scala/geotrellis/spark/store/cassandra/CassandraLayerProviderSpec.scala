@@ -22,6 +22,7 @@ import geotrellis.spark.store.*
 import geotrellis.spark.CassandraTestEnvironment
 
 import org.scalatest.funspec.AnyFunSpec
+import geotrellis.util.identityComponent
 
 class CassandraLayerProviderSpec extends AnyFunSpec with CassandraTestEnvironment {
   val uri = new java.net.URI("cassandra://127.0.0.1/geotrellis?attributes=attributes&layers=tiles")

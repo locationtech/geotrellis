@@ -19,6 +19,7 @@ package geotrellis.spark.store.cassandra
 import geotrellis.store.cassandra.*
 import geotrellis.spark.CassandraTestEnvironment
 import geotrellis.spark.store.AttributeStoreSpec
+import geotrellis.util.identityComponent
 
 class CassandraAttributeStoreSpec extends AttributeStoreSpec with CassandraTestEnvironment {
   lazy val instance       = BaseCassandraInstance(Seq("127.0.0.1"))

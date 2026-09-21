@@ -358,7 +358,7 @@ object Settings {
       import geotrellis.spark.util.*
       import geotrellis.spark.store.cassandra.*
       """
-  ) ++ commonSettings ++ java17SparkSettings ++ noForkInTests
+  ) ++ commonSettings ++ java17SparkSettings ++ noForkInTests ++ crossScala3
 
 
   lazy val `doc-examples` = Seq(
