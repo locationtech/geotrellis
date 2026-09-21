@@ -562,7 +562,7 @@ object Settings {
     ).map(_ excludeAll(excludedDependencies: _*)),
     libraryDependencies ++= Seq(scalatest % Test) ++ worksWithDependencies,
     Test / fork := false
-  ) ++ commonSettings
+  ) ++ commonSettings ++ crossScala3
 
   lazy val spark = Seq(
     name := "geotrellis-spark",
