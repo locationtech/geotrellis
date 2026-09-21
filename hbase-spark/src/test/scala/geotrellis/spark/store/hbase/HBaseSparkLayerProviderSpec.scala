@@ -23,6 +23,7 @@ import geotrellis.spark.store.*
 import geotrellis.spark.HBaseTestEnvironment
 
 import org.scalatest.funspec.AnyFunSpec
+import geotrellis.util.identityComponent
 
 class HBaseSparkLayerProviderSpec extends AnyFunSpec with HBaseTestEnvironment {
   val uri = new java.net.URI("hbase://localhost?master=localhost&attributes=attributes&layers=tiles")

@@ -444,7 +444,7 @@ object Settings {
       import geotrellis.spark.store.hbase.*
       import geotrellis.store.hbase.*
       """
-  ) ++ commonSettings ++ java17SparkSettings ++ noForkInTests
+  ) ++ commonSettings ++ java17SparkSettings ++ noForkInTests ++ crossScala3
 
   lazy val macros = Seq(
     name := "geotrellis-macros",
