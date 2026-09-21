@@ -307,7 +307,7 @@ object Settings {
     jmhExtraOptions := Some("-jvmArgsAppend -Xmx8G")
     //jmhExtraOptions := Some("-jvmArgsAppend -Xmx8G -prof jmh.extras.JFR")
     //jmhExtraOptions := Some("-jvmArgsAppend -prof geotrellis.bench.GeotrellisFlightRecordingProfiler")
-  ) ++ commonSettings
+  ) ++ commonSettings ++ crossScala3
 
   lazy val cassandra = Seq(
     name := "geotrellis-cassandra",
