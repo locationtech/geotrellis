@@ -197,6 +197,6 @@ addCommandAlias(
   "testScala3",
   s"++${Settings.scala3}; " + List(
     "macros", "util", "proj4", "vector", "vector-testkit", "raster", "raster-testkit",
-    "shapefile", "vectortile", "geotools", "gdal"
+    "shapefile", "vectortile", "geotools", "gdal", "layer"
   ).map(_ + "/test").mkString("; ")
 )

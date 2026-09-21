@@ -21,6 +21,7 @@ import geotrellis.raster.io.geotiff.reader.GeoTiffInfo
 import geotrellis.vector.Extent
 import geotrellis.proj4.*
 import geotrellis.util.*
+import geotrellis.vector.ReprojectExtent
 
 import org.locationtech.proj4j.UnsupportedParameterException
 

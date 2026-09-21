@@ -21,6 +21,7 @@ import geotrellis.layer.*
 import geotrellis.raster.mask.*
 import geotrellis.raster.rasterize.Rasterizer
 import geotrellis.util.*
+import geotrellis.util.conversions.ConversionLift.*
 
 
 

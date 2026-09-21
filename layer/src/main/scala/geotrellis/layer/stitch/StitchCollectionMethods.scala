@@ -22,6 +22,7 @@ import geotrellis.layer.*
 import geotrellis.raster.prototype.*
 import geotrellis.vector.*
 import geotrellis.util.*
+import geotrellis.util.conversions.ConversionLift.*
 
 abstract class SpatialTileLayoutCollectionStitchMethods[
   V <: CellGrid[Int]: Stitcher: _ => TilePrototypeMethods[V],

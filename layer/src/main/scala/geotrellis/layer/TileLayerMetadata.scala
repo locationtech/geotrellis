@@ -98,7 +98,7 @@ object TileLayerMetadata {
       "layoutDefinition",
       "extent",
       "crs",
-      "bounds")(TileLayerMetadata.apply)
+      "bounds")(TileLayerMetadata.apply[K])
 
   implicit def toLayoutDefinition(md: TileLayerMetadata[?]): LayoutDefinition =
     md.layout

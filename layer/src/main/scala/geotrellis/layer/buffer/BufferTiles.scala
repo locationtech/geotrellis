@@ -24,6 +24,7 @@ import geotrellis.raster.stitch.*
 import geotrellis.raster.buffer.{BufferedTile, BufferSizes}
 import geotrellis.raster.buffer.Direction.*
 import geotrellis.util.*
+import geotrellis.util.conversions.ConversionLift.*
 
 import scala.collection.mutable.ArrayBuffer
 

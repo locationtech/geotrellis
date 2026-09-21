@@ -45,8 +45,6 @@ case class GDALOptionsConfig(options: Map[String, String] = Map.empty, acceptabl
 }
 
 object GDALOptionsConfig extends Serializable {
-  // Written out rather than derived: pureconfig's aggregate and `-generic` artifacts have no
-  // Scala 3 build. Key names mirror what the default ProductHint produced (kebab-case).
   implicit val gdalOptionsConfigReader: ConfigReader[GDALOptionsConfig] =
     ConfigReader.forProduct3[GDALOptionsConfig, Option[Map[String, String]], Option[List[String]], Option[Int]](
       "options", "acceptable-datasets", "number-of-attempts"

@@ -18,9 +18,12 @@ package geotrellis.layer
 
 import java.time.{ZoneOffset, ZonedDateTime}
 
-import _root_.io.circe.generic.JsonCodec
+import _root_.io.circe.Codec
+import _root_.io.circe.generic.semiauto.deriveCodec
 
 object TemporalKey {
+  implicit val codecForTemporalKey: Codec.AsObject[TemporalKey] = deriveCodec[TemporalKey]
+
   def apply(dateTime: ZonedDateTime): TemporalKey =
     TemporalKey(dateTime.toInstant.toEpochMilli)
 
@@ -36,7 +39,6 @@ object TemporalKey {
 }
 
 /** A TemporalKey designates the temporal positioning of a layer's tile. */
-@JsonCodec
 case class TemporalKey(instant: Long) {
   def time: ZonedDateTime = ZonedDateTime.ofInstant(instant, ZoneOffset.UTC)
 }

@@ -695,7 +695,7 @@ object Settings {
       import geotrellis.proj4.*
       import geotrellis.layer.*
       """
-  ) ++ commonSettings
+  ) ++ commonSettings ++ crossScala3
 
   lazy val store = Seq(
     name := "geotrellis-store",

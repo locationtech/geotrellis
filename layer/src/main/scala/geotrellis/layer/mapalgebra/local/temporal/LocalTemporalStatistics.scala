@@ -19,6 +19,7 @@ package geotrellis.layer.mapalgebra.local.temporal
 import geotrellis.raster.Tile
 import geotrellis.layer.{SpatialComponent, SpatialKey, TemporalComponent, TemporalKey}
 import geotrellis.util.*
+import geotrellis.raster.Implicits.withTileSeqLocalMethods
 
 import java.time.*
 import java.time.temporal.ChronoUnit.*
