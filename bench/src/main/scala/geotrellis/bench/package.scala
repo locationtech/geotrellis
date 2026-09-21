@@ -16,7 +16,7 @@
 
 package geotrellis
 
-import geotrellis.raster.io.geotiff.SinglebandGeoTiff
+import geotrellis.raster.io.geotiff.{MultibandGeoTiff, SinglebandGeoTiff}
 import scala.reflect.ClassTag
 
 package object bench {
@@ -27,6 +27,21 @@ package object bench {
     data
   }
 
-  def readSinglebandGeoTiff(name: String) =
-    SinglebandGeoTiff(getClass.getResource("/" + name).getPath)
+  def resourceBytes(name: String): Array[Byte] = {
+    val is = getClass.getResourceAsStream("/" + name)
+    require(is != null, s"benchmark resource not found on the classpath: /$name")
+    try {
+      val out = new java.io.ByteArrayOutputStream()
+      val buf = new Array[Byte](8192)
+      var n = is.read(buf)
+      while (n >= 0) { out.write(buf, 0, n); n = is.read(buf) }
+      out.toByteArray
+    } finally is.close()
+  }
+
+  def readSinglebandGeoTiff(name: String): SinglebandGeoTiff =
+    SinglebandGeoTiff(resourceBytes(name))
+
+  def readMultibandGeoTiff(name: String): MultibandGeoTiff =
+    MultibandGeoTiff(resourceBytes(name))
 }

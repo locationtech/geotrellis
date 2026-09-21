@@ -22,7 +22,7 @@ import geotrellis.raster.*
 import geotrellis.raster.summary.polygonal.*
 import geotrellis.raster.summary.polygonal.visitors.*
 import geotrellis.raster.summary.types.*
-import geotrellis.raster.io.geotiff.{MultibandGeoTiff, SinglebandGeoTiff}
+import geotrellis.bench.{readMultibandGeoTiff, readSinglebandGeoTiff}
 
 @BenchmarkMode(Array(JMHMode.AverageTime))
 @State(Scope.Thread)
@@ -32,15 +32,14 @@ class PolygonalSummaryBench {
 
   var multibandRaster: Raster[MultibandTile] = _
   var multibandGeom: Geometry = _
-  val geotiffPath = "/Users/andrew/src/geotrellis/bench/src/main/resources"
 
   @Setup(Level.Trial)
   def setup(): Unit = {
-    val geotiff = SinglebandGeoTiff(s"${geotiffPath}/singleband.tif")
+    val geotiff = readSinglebandGeoTiff("singleband.tif")
     raster = Raster(geotiff.tile.toArrayTile(), geotiff.extent)
     geom  = geotiff.extent.toPolygon()
 
-    val multibandGeoTiff = MultibandGeoTiff(s"${geotiffPath}/multiband.tif")
+    val multibandGeoTiff = readMultibandGeoTiff("multiband.tif")
     multibandRaster = Raster(multibandGeoTiff.tile.toArrayTile(), multibandGeoTiff.extent)
     multibandGeom  = multibandGeoTiff.extent.toPolygon()
   }
