@@ -22,6 +22,7 @@ import geotrellis.spark.store.*
 import geotrellis.spark.AccumuloTestEnvironment
 
 import org.scalatest.funspec.AnyFunSpec
+import geotrellis.util.identityComponent
 
 class AccumuloLayerProviderSpec extends AnyFunSpec with AccumuloTestEnvironment {
   lazy val uri = new java.net.URI(s"accumulo://root:@${miniAccumuloCluster.getZooKeepers}/${miniAccumuloCluster.getInstanceName}?attributes=attributes&layers=tiles")

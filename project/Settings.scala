@@ -298,7 +298,7 @@ object Settings {
       import geotrellis.spark.*
       import geotrellis.spark.store.accumulo.*
       """
-  ) ++ commonSettings ++ java17SparkSettings ++ forkInTests
+  ) ++ commonSettings ++ java17SparkSettings ++ forkInTests ++ crossScala3
 
   lazy val bench = Seq(
     libraryDependencies += sl4jnop,

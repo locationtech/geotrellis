@@ -24,6 +24,9 @@ import geotrellis.spark.store.*
 import geotrellis.spark.testkit.io.*
 import geotrellis.spark.testkit.testfiles.TestTileFeatureFiles
 import geotrellis.spark.testkit.TestEnvironment
+import org.apache.spark.rdd.RDD
+import geotrellis.util.identityComponent
+import geotrellis.store.avro.codecs.Implicits.*
 
 class AccumuloTileFeatureSpatialSpec
   extends PersistenceSpec[SpatialKey, TileFeature[Tile, Tile], TileLayerMetadata[SpatialKey]]
@@ -39,7 +42,7 @@ class AccumuloTileFeatureSpatialSpec
   lazy val deleter: AccumuloLayerDeleter = AccumuloLayerDeleter(instance)
   lazy val reindexer: AccumuloLayerReindexer = AccumuloLayerReindexer(instance, SocketWriteStrategy())
   lazy val tiles: AccumuloValueReader = AccumuloValueReader(instance)
-  lazy val sample: AllOnesTestFile.type = AllOnesTestFile
+  lazy val sample: RDD[(SpatialKey, TileFeature[Tile, Tile])] with Metadata[TileLayerMetadata[SpatialKey]] = AllOnesTestFile
   lazy val copier: AccumuloLayerCopier = AccumuloLayerCopier(instance, reader, writer)
   lazy val mover     = AccumuloLayerMover(copier, deleter)
 }
