@@ -604,7 +604,6 @@ object Settings {
   lazy val `spark-pipeline` = Seq(
     name := "geotrellis-spark-pipeline",
     libraryDependencies ++= Seq(
-      circe("generic-extras").value,
       hadoopClient % Provided,
       apacheSpark("core").value % Provided,
       apacheSpark("sql").value % Test,

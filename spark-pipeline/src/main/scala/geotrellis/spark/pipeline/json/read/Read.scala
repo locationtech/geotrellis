@@ -19,9 +19,10 @@ package geotrellis.spark.pipeline.json.read
 import geotrellis.spark.store.hadoop.HadoopGeoTiffRDD
 import geotrellis.spark.pipeline.json.*
 
-import io.circe.generic.extras.ConfiguredJsonCodec
 
 import java.net.URI
+import io.circe.{Decoder, Encoder}
+import geotrellis.spark.pipeline.json.CodecUtils.orDefault
 
 trait Read extends PipelineExpr {
   val uri: String
@@ -34,7 +35,6 @@ trait Read extends PipelineExpr {
   def getTag = tag.getOrElse("default")
 }
 
-@ConfiguredJsonCodec
 case class JsonRead(
   uri: String,
   crs: Option[String] = None,
@@ -49,3 +49,29 @@ case class JsonRead(
   `type`: PipelineExprType
 ) extends Read
 
+object JsonRead {
+  implicit val jsonReadEncoder: Encoder[JsonRead] =
+    Encoder.forProduct11(
+      "uri", "crs", "tag", "max_tile_size", "partitions", "partition_bytes",
+      "chunk_size", "delimiter", "time_tag", "time_format", "type"
+    ) { r =>
+      (r.uri, r.crs, r.tag, r.maxTileSize, r.partitions, r.partitionBytes,
+       r.chunkSize, r.delimiter, r.timeTag, r.timeFormat, r.`type`)
+    }
+
+  implicit val jsonReadDecoder: Decoder[JsonRead] = Decoder.instance { c =>
+    for {
+      uri <- c.get[String]("uri")
+      crs <- orDefault[Option[String]](c, "crs", None)
+      tag <- orDefault[Option[String]](c, "tag", None)
+      mts <- orDefault[Option[Int]](c, "max_tile_size", None)
+      prt <- orDefault[Option[Int]](c, "partitions", None)
+      pby <- orDefault[Option[Long]](c, "partition_bytes", None)
+      chs <- orDefault[Option[Int]](c, "chunk_size", None)
+      dlm <- orDefault[Option[String]](c, "delimiter", None)
+      tt  <- orDefault[String](c, "time_tag", HadoopGeoTiffRDD.GEOTIFF_TIME_TAG_DEFAULT)
+      tf  <- orDefault[String](c, "time_format", HadoopGeoTiffRDD.GEOTIFF_TIME_FORMAT_DEFAULT)
+      tpe <- c.get[PipelineExprType]("type")
+    } yield JsonRead(uri, crs, tag, mts, prt, pby, chs, dlm, tt, tf, tpe)
+  }
+}
