@@ -63,6 +63,18 @@ object Settings {
 
   val crossScala2And3 = Seq(scala213, scala3)
 
+  /**
+   * MiMa baseline for a module. Resolves to an empty set when no baseline exists for the
+   * current Scala version, which is how Scala 3 is skipped until the first cross-published
+   * release sets `Version.previousVersionScala3`.
+   */
+  def mimaPrevious(artifact: String): Def.Initialize[Set[ModuleID]] = Def.setting {
+    val baseline =
+      if (isScala3(scalaVersion.value)) Version.previousVersionScala3
+      else Some(Version.previousVersion)
+    baseline.map(v => "org.locationtech.geotrellis" %% artifact % v).toSet
+  }
+
   def isScala3(version: String): Boolean =
     CrossVersion.partialVersion(version).exists(_._1 == 3)
 
@@ -484,9 +496,7 @@ object Settings {
       scalatest % Test,
       scalacheck % Test
     ),
-    mimaPreviousArtifacts := Set(
-      "org.locationtech.geotrellis" %% "geotrellis-raster" % Version.previousVersion
-    ),
+    mimaPreviousArtifacts := mimaPrevious("geotrellis-raster").value,
     Compile / sourceGenerators += (Compile / sourceManaged).map(Boilerplate.genRaster).taskValue,
     console / initialCommands :=
       """
@@ -518,9 +528,7 @@ object Settings {
       scalatest % Test
     ),
     // no Scala 3 artifact of the previous release to compare against
-    mimaPreviousArtifacts := (if (isScala3(scalaVersion.value)) Set.empty else Set(
-      "org.locationtech.geotrellis" %% "geotrellis-s3" % Version.previousVersion
-    )),
+    mimaPreviousArtifacts := mimaPrevious("geotrellis-s3").value,
     console / initialCommands :=
       """
       import geotrellis.raster.*
@@ -540,9 +548,7 @@ object Settings {
       scalatest % Test
     ),
     // no Scala 3 artifact of the previous release to compare against
-    mimaPreviousArtifacts := (if (isScala3(scalaVersion.value)) Set.empty else Set(
-      "org.locationtech.geotrellis" %% "geotrellis-s3" % Version.previousVersion
-    )),
+    mimaPreviousArtifacts := mimaPrevious("geotrellis-s3-spark").value,
     console / initialCommands :=
       """
       import geotrellis.raster.*
@@ -579,9 +585,7 @@ object Settings {
       scalatest % Test
     ) ++ sparkCompatDependencies.value,
     // no Scala 3 artifact of the previous release to compare against
-    mimaPreviousArtifacts := (if (isScala3(scalaVersion.value)) Set.empty else Set(
-      "org.locationtech.geotrellis" %% "geotrellis-spark" % Version.previousVersion
-    )),
+    mimaPreviousArtifacts := mimaPrevious("geotrellis-spark").value,
     Test / testOptions += Tests.Argument("-oD"),
     console / initialCommands :=
       """

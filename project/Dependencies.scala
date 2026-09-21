@@ -26,7 +26,22 @@ object Version {
   val gdal        = "3.12.0"
   val gdalWarp    = "3.13.0"
 
-  val previousVersion = "3.6.0"
+  /**
+    * MiMa baseline for Scala 2. Bump this at every release.
+    *
+    * The next release is intentionally binary-breaking against 3.8.1 (`geotrellis-raster`
+    * alone reports 316 incompatibilities, from the `GeoTiffOptions` change and the monocle 3.3
+    * upgrade), so `mimaReportBinaryIssues` is not wired into CI and currently fails if run.
+    * Bumping this after that release is cut is what makes the check meaningful again.
+    *
+    * Note 3.6.0 was 2.12-only and never resolved on the 2.13 axis, so the check had been
+    * silently broken before this.
+    */
+  val previousVersion = "3.8.1"
+
+  /** No Scala 3 artifacts have been published yet, so there is nothing to compare against.
+    * Set this to the first cross-published release to switch Scala 3 checks on. */
+  val previousVersionScala3: Option[String] = None
 }
 import sbt.Keys.*
 
