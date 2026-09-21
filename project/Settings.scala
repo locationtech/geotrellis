@@ -517,13 +517,14 @@ object Settings {
   lazy val s3 = Seq(
     name := "geotrellis-s3",
     libraryDependencies ++= Seq(
-      pureconfig,
+      pureconfigCore,
       awsSdkS3 excludeAll ExclusionRule("com.fasterxml.jackson.core"),
       scalatest % Test
     ),
-    mimaPreviousArtifacts := Set(
+    // no Scala 3 artifact of the previous release to compare against
+    mimaPreviousArtifacts := (if (isScala3(scalaVersion.value)) Set.empty else Set(
       "org.locationtech.geotrellis" %% "geotrellis-s3" % Version.previousVersion
-    ),
+    )),
     console / initialCommands :=
       """
       import geotrellis.raster.*
@@ -532,7 +533,7 @@ object Settings {
       import geotrellis.layer.*
       import geotrellis.store.s3.*
       """
-  ) ++ noForkInTests ++ commonSettings
+  ) ++ noForkInTests ++ commonSettings ++ crossScala3
 
   lazy val `s3-spark` = Seq(
     name := "geotrellis-s3-spark",
