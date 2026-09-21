@@ -39,12 +39,12 @@ package object pipeline extends json.Implicits with ast.untyped.Implicits {
     def prettyPrint: String = that.asJson.asJson.printWith(pipelineJsonPrinter)
   }
 
-  implicit class withGetCRS[T <: { def crs: String }](o: T) {
-    def getCRS = Try(CRS.fromName(o.crs)) getOrElse CRS.fromString(o.crs)
+  implicit class withGetCRS(o: json.transform.Reproject) {
+    def getCRS: CRS = Try(CRS.fromName(o.crs)) getOrElse CRS.fromString(o.crs)
   }
 
-  implicit class withGetOptionCRS[T <: { def crs: Option[String] }](o: T) {
-    def getCRS = o.crs.map(c => Try(CRS.fromName(c)) getOrElse CRS.fromString(c))
+  implicit class withGetOptionCRS(o: json.read.Read) {
+    def getCRS: Option[CRS] = o.crs.map(c => Try(CRS.fromName(c)) getOrElse CRS.fromString(c))
   }
 
   implicit val jsonDeepMergeMonoid: Monoid[Json] = new Monoid[Json] {

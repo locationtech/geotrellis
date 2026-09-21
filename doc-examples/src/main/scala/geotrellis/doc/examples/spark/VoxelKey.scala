@@ -20,7 +20,6 @@ import geotrellis.layer.*
 import geotrellis.store.*
 import geotrellis.spark.*
 import geotrellis.spark.store.*
-import geotrellis.store.*
 import geotrellis.store.json.*
 import geotrellis.store.index.*
 import geotrellis.store.index.zcurve.*

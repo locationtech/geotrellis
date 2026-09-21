@@ -26,10 +26,9 @@ import scala.reflect.ClassTag
 
 import _root_.io.circe.*
 import _root_.io.circe.syntax.*
-import _root_.io.circe.generic.JsonCodec
 import cats.syntax.either.*
 
-import scala.reflect.ClassTag
+import geotrellis.util.identityComponent
 
 // --- //
 
@@ -79,7 +78,7 @@ class ShardingKeyIndex[K](val inner: KeyIndex[K], val shardCount: Int) extends K
     inner
       .indexRanges(keyRange)
       .flatMap({ case (i1, i2) =>
-        for (s <- 0 until shardCount) yield {
+        for (s <- Range(0, shardCount)) yield {
           (prefixWithShard(i1, s.toLong), prefixWithShard(i2, s.toLong))
         }
       })

@@ -25,6 +25,7 @@ import geotrellis.spark.pipeline.ast.*
 import geotrellis.spark.pipeline.json.transform
 
 import org.apache.spark.SparkContext
+import geotrellis.util.identityComponent
 
 case class BufferedReproject(
   node: Node[TileLayerRDD[SpatialKey]],

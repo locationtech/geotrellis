@@ -364,14 +364,16 @@ object Settings {
   lazy val `doc-examples` = Seq(
     name := "geotrellis-doc-examples",
     scalacOptions ++= scalacOptionsFor(scalaVersion.value),
-    kindProjectorPlugin,
+    // kind-projector is a Scala 2 compiler plugin; Scala 3 has -Ykind-projector built in
+    libraryDependencies ++= (if (isScala3(scalaVersion.value)) Nil
+                             else Seq(compilerPlugin("org.typelevel" % "kind-projector" % "0.13.4" cross CrossVersion.full))),
     libraryDependencies ++= Seq(
       apacheSpark("core").value,
       scalatest % Test,
       apacheSpark("sql").value % Test
     ),
     libraryDependencySchemes += "org.scala-lang.modules" %% "scala-xml" % VersionScheme.Always
-  )
+  ) ++ crossScala3
 
   lazy val geotools = Seq(
     name := "geotrellis-geotools",
@@ -462,7 +464,7 @@ object Settings {
     mdocOut := new File("website/docs"),
     mdocVariables := Map("VERSION" -> (ThisBuild / version).value),
     libraryDependencySchemes += "org.scala-lang.modules" %% "scala-xml" % VersionScheme.Always
-  )
+  ) ++ crossScala3
 
   lazy val proj4 = Seq(
     name := "geotrellis-proj4",
@@ -604,6 +606,7 @@ object Settings {
   lazy val `spark-pipeline` = Seq(
     name := "geotrellis-spark-pipeline",
     libraryDependencies ++= Seq(
+      izumiReflect,
       hadoopClient % Provided,
       apacheSpark("core").value % Provided,
       apacheSpark("sql").value % Test,
@@ -630,7 +633,7 @@ object Settings {
       case "META-INF/ECLIPSEF.RSA" | "META-INF/ECLIPSEF.SF" => MergeStrategy.discard
       case _ => MergeStrategy.first
     }
-  ) ++ commonSettings ++ java17SparkSettings
+  ) ++ commonSettings ++ java17SparkSettings ++ crossScala3
 
   lazy val `spark-testkit` = Seq(
     name := "geotrellis-spark-testkit",

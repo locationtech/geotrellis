@@ -30,8 +30,8 @@ import geotrellis.vector.*
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
-import scala.reflect.runtime.universe.{TypeTag, typeTag}
-import scala.reflect.runtime.universe.Type
+import izumi.reflect.Tag
+import izumi.reflect.macrortti.LightTypeTag
 import scala.util.Try
 
 /**
@@ -50,8 +50,8 @@ trait ErasedNode extends (Any => Any) {
   def apply(): Any = apply(RealWorld.instance)
 
   /** Get the typed node without its computation. */
-  def node[T: TypeTag]: Node[T] = {
-    val thatTpe = typeTag[T].tpe
+  def node[T: Tag]: Node[T] = {
+    val thatTpe = Tag[T].tag
     if(thatTpe =:= rangeTpe) apply().asInstanceOf[Node[T]]
     else throw new Exception(s"Cannot cast ErasedNode to $thatTpe " +
       s"since it cannot be cast to $rangeTpe")
@@ -61,16 +61,16 @@ trait ErasedNode extends (Any => Any) {
   def unsafeEval(implicit sc: SparkContext): Any = apply().asInstanceOf[Node[Any]].eval
 
   /** Compute the result of the node and cast to type T. */
-  def eval[T: TypeTag](implicit sc: SparkContext): T = {
-    val thatTpe = typeTag[T].tpe
+  def eval[T: Tag](implicit sc: SparkContext): T = {
+    val thatTpe = Tag[T].tag
     if(thatTpe =:= rangeTpe) unsafeEval.asInstanceOf[T]
     else throw new Exception(s"Cannot cast ErasedNode evaluation result to $thatTpe " +
       s"since it cannot be cast to $rangeTpe")
   }
 
-  def domainTpe: Type
+  def domainTpe: LightTypeTag
 
-  def rangeTpe: Type
+  def rangeTpe: LightTypeTag
 
   def domain: String = domainTpe.toString
 
@@ -96,21 +96,21 @@ trait ErasedNode extends (Any => Any) {
 }
 
 case class ErasedNodeComposition(f: ErasedNode, g: ErasedNode) extends ErasedNode {
-  val domainTpe: Type = g.domainTpe
+  val domainTpe: LightTypeTag = g.domainTpe
 
-  val rangeTpe: Type = f.rangeTpe
+  val rangeTpe: LightTypeTag = f.rangeTpe
 
   def maybeApply(x: Any): Option[Node[Any]] = g.maybeApply(x) flatMap f.maybeApply
 }
 
-case class ErasedTypedNode[Domain: TypeTag, Range: TypeTag](constructor: Node[Domain] => Node[Range]) extends ErasedNode {
-  def domainTag: TypeTag[Domain] = typeTag[Domain]
+case class ErasedTypedNode[Domain: Tag, Range: Tag](constructor: Node[Domain] => Node[Range]) extends ErasedNode {
+  def domainTag: Tag[Domain] = Tag[Domain]
 
-  def rangeTag: TypeTag[Range] = typeTag[Range]
+  def rangeTag: Tag[Range] = Tag[Range]
 
-  def domainTpe: Type = domainTag.tpe
+  def domainTpe: LightTypeTag = domainTag.tag
 
-  def rangeTpe: Type = rangeTag.tpe
+  def rangeTpe: LightTypeTag = rangeTag.tag
 
   def maybeApply(x: Any): Option[Node[Any]] =
     Try { x.asInstanceOf[Node[Domain]] }
@@ -121,13 +121,13 @@ case class ErasedTypedNode[Domain: TypeTag, Range: TypeTag](constructor: Node[Do
 
 /** Helper functions to convert typed nodes into erased typed nodes */
 object ErasedTypedNode {
-  def fromRead[Range: TypeTag](node: Input[Range]) =
+  def fromRead[Range: Tag](node: Input[Range]) =
     ErasedTypedNode[RealWorld, Range](_ => node)
 
-  def fromWrite[Range: TypeTag](constructor: Node[Range] => Output[Range]) =
+  def fromWrite[Range: Tag](constructor: Node[Range] => Output[Range]) =
     ErasedTypedNode[Range, Range](constructor)
 
-  def fromTransform[Domain: TypeTag, Range: TypeTag](constructor: Node[Domain] => ast.Transform[Domain, Range]) =
+  def fromTransform[Domain: Tag, Range: Tag](constructor: Node[Domain] => ast.Transform[Domain, Range]) =
     ErasedTypedNode[Domain, Range](constructor)
 }
 

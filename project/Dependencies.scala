@@ -131,6 +131,9 @@ object Dependencies {
 
   val scalaArm            = "com.jsuereth"                %% "scala-arm"               % "2.0"
 
+  // cross-published runtime type tags; `scala.reflect.runtime.universe.TypeTag` has no Scala 3 equivalent
+  val izumiReflect        = "dev.zio"                     %% "izumi-reflect"           % "2.3.9"
+
   val kryoSerializers     = "de.javakaffee"                % "kryo-serializers"        % "0.38"
   val kryoShaded          = "com.esotericsoftware"         % "kryo-shaded"             % "3.0.3"
 

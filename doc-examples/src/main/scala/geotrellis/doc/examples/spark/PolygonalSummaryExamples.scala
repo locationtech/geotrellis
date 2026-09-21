@@ -1,5 +1,7 @@
 package geotrellis.doc.examples.spark
 
+import geotrellis.util.identityComponent
+
 object PolygonalSummaryExamples {
   def `Performing a polygonal sum from an RDD of Polygons to GeoTiffs on S3`: Unit = {
     import geotrellis.raster.*

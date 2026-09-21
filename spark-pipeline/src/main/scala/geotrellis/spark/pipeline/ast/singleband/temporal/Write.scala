@@ -24,6 +24,11 @@ import geotrellis.spark.pipeline.ast.*
 import geotrellis.spark.pipeline.json.write
 
 import org.apache.spark.SparkContext
+import geotrellis.store.Implicits.spaceTimeKeyAvroFormat
+import geotrellis.store.avro.codecs.Implicits.*
+import geotrellis.raster.merge.Implicits.withSinglebandMergeMethods
+import geotrellis.raster.prototype.Implicits.withSinglebandTilePrototypeMethods
+import geotrellis.raster.crop.Implicits.withSinglebandTileCropMethods
 
 case class Write(
   node: Node[LazyList[(Int,TileLayerRDD[SpaceTimeKey])]],
