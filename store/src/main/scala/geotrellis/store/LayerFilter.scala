@@ -20,6 +20,7 @@ import geotrellis.proj4.*
 import geotrellis.layer.*
 import geotrellis.vector.*
 import geotrellis.util.*
+import geotrellis.util.conversions.ConversionLift.*
 
 import scala.annotation.implicitNotFound
 import java.time.ZonedDateTime

@@ -16,9 +16,4 @@
 
 package geotrellis.util.conversions
 
-/**
- * Scala 2 applies implicit `A => B` values as implicit conversions on its own, so there is
- * nothing to lift. This object exists so the import in shared sources resolves on both Scala
- * versions; see the Scala 3 counterpart in `src/main/scala-3`.
- */
 object ConversionLift

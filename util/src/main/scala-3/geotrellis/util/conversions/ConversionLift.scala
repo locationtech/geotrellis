@@ -16,11 +16,6 @@
 
 package geotrellis.util.conversions
 
-/**
- * Scala 3 only applies `scala.Conversion` instances as implicit conversions; an implicit value
- * of type `A => B` is no longer used for that. The `: _ =>` context bounds throughout GeoTrellis
- * desugar to exactly such a value, so lift them back into `Conversion`.
- */
 object ConversionLift {
   implicit def liftFunctionToConversion[A, B](implicit f: A => B): Conversion[A, B] =
     new Conversion[A, B] { def apply(a: A): B = f(a) }

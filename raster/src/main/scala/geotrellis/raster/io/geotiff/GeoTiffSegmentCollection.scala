@@ -27,8 +27,6 @@ trait GeoTiffSegmentCollection {
 
   val bandType: BandType
 
-  // `def`, not `val`: the nine implementors use `lazy val`, and Scala 3 forbids a lazy value
-  // overriding a strict one. Declaring it abstract as `def` keeps their laziness legal.
   def decompressGeoTiffSegment: (Int, Array[Byte]) => T
 
   // Cached last segment

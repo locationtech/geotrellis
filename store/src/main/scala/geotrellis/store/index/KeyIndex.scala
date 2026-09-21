@@ -73,7 +73,7 @@ object KeyIndex {
         }
         len(remainder) > 0
       }) ()
-        (breaks, roomLeft)
+      (breaks, roomLeft)
     }._1.take(count) // we need to drop the break that falls on the end of the last range
 
   }

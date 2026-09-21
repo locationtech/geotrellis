@@ -18,11 +18,6 @@ package geotrellis.util.conversions
 
 import spire.math.Integral
 
-/**
- * spire ships the coercion functions (`ConvertableTo[A].fromInt` and friends) but no
- * `scala.Conversion` instances, so on Scala 3 an `Int` no longer widens to an `N: Integral`
- * the way it did on 2.13. This supplies that conversion.
- */
 object ConversionLiftSpire {
   implicit def widenIntToIntegral[N](implicit ev: Integral[N]): Conversion[Int, N] =
     new Conversion[Int, N] { def apply(i: Int): N = ev.fromInt(i) }

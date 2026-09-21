@@ -23,6 +23,7 @@ import geotrellis.raster.*
 import geotrellis.layer.*
 import geotrellis.layer.filter.*
 import geotrellis.vector.*
+import geotrellis.util.identityComponent
 
 import _root_.io.github.chronoscala.Imports.*
 import org.log4s.getLogger

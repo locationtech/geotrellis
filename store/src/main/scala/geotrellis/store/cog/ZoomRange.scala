@@ -16,9 +16,9 @@
 
 package geotrellis.store.cog
 
-import io.circe.generic.JsonCodec
+import io.circe.Codec
+import io.circe.generic.semiauto.deriveCodec
 
-@JsonCodec
 case class ZoomRange(minZoom: Int, maxZoom: Int) {
   def isSingleZoom: Boolean = minZoom == maxZoom
 
@@ -29,5 +29,7 @@ case class ZoomRange(minZoom: Int, maxZoom: Int) {
 }
 
 object ZoomRange {
+  implicit val codecForZoomRange: Codec.AsObject[ZoomRange] = deriveCodec[ZoomRange]
+
   implicit def ordering[A <: ZoomRange]: Ordering[A] = Ordering.by(_.maxZoom)
 }

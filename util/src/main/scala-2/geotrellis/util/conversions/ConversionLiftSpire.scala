@@ -16,8 +16,4 @@
 
 package geotrellis.util.conversions
 
-/**
- * Scala 2 counterpart of the Scala 3 spire widening conversions; nothing to do here, since
- * spire's numeric widening already applies implicitly on 2.13.
- */
 object ConversionLiftSpire

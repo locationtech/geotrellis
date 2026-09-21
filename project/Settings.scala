@@ -254,6 +254,7 @@ object Settings {
   lazy val accumulo = Seq(
     name := "geotrellis-accumulo",
     libraryDependencies ++= Seq(
+      pureconfig,
       accumuloCore
         exclude("org.jboss.netty", "netty")
         exclude("org.apache.hadoop", "hadoop-client"),
@@ -308,6 +309,7 @@ object Settings {
   lazy val cassandra = Seq(
     name := "geotrellis-cassandra",
     libraryDependencies ++= Seq(
+      pureconfig,
       cassandraDriverCore,
       cassandraDriverQueryBuilder
     ) map (_ excludeAll(
@@ -399,6 +401,7 @@ object Settings {
   lazy val hbase = Seq(
     name := "geotrellis-hbase",
     libraryDependencies ++= Seq(
+      pureconfig,
       hbaseMapReduce
         exclude("javax.servlet", "servlet-api")
         exclude("org.mortbay.jetty", "servlet-api-2.5")
@@ -514,6 +517,7 @@ object Settings {
   lazy val s3 = Seq(
     name := "geotrellis-s3",
     libraryDependencies ++= Seq(
+      pureconfig,
       awsSdkS3 excludeAll ExclusionRule("com.fasterxml.jackson.core"),
       scalatest % Test
     ),
@@ -700,11 +704,7 @@ object Settings {
   lazy val store = Seq(
     name := "geotrellis-store",
     libraryDependencies ++= Seq(
-      // TEMPORARY: `store` used to get pureconfig transitively from `vector`, which now pulls only
-      // `pureconfig-core` (the aggregate artifact has no Scala 3 build). Declared here to keep the
-      // 2.13 build green; when `store` is cross-built this becomes `pureconfigCore` plus a
-      // hand-written ConfigReader, as was done for `vector`'s JtsConfig.
-      pureconfig,
+      pureconfigCore,
       hadoopClient % Provided,
       apacheIO,
       scaffeine,
@@ -717,7 +717,7 @@ object Settings {
       cats("effect").value,
       scalatest % Test
     )
-  ) ++ commonSettings
+  ) ++ commonSettings ++ crossScala3
 
   lazy val gdal = Seq(
     name := "geotrellis-gdal",

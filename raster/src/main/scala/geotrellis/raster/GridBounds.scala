@@ -263,8 +263,6 @@ case class GridBounds[@specialized(Int, Long) N: Integral](
   * The companion object for the [[GridBounds]] type.
   */
   object GridBounds {
-    // Written out rather than derived: `GridBounds[N: Integral]` has a second (implicit)
-    // parameter list, so Scala 3 cannot summon a `Mirror` for it.
     implicit val gridBoundsIntEncoder: Encoder[GridBounds[Int]] =
       Encoder.forProduct4("colMin", "rowMin", "colMax", "rowMax") { (gb: GridBounds[Int]) =>
         (gb.colMin, gb.rowMin, gb.colMax, gb.rowMax)

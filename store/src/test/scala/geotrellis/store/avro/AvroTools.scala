@@ -18,6 +18,7 @@ package geotrellis.store.avro
 
 import geotrellis.raster.{io as _, *}
 import geotrellis.util.MethodExtensions
+import geotrellis.util.conversions.ConversionLift.*
 
 import cats.syntax.option.*
 import io.circe.Json

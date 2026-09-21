@@ -394,6 +394,15 @@ object COGLayerMetadata {
     )
   }
 
-  implicit def cogLayerMetadataEncoder[K: SpatialComponent: Encoder: ClassTag]: Encoder[COGLayerMetadata[K]] = deriveEncoder
-  implicit def cogLayerMetadataDecoder[K: SpatialComponent: Decoder: ClassTag]: Decoder[COGLayerMetadata[K]] = deriveDecoder
+  implicit def cogLayerMetadataEncoder[K: SpatialComponent: Encoder: ClassTag]: Encoder[COGLayerMetadata[K]] =
+    Encoder.forProduct5("cellType", "zoomRangeInfos", "layoutScheme", "extent", "crs") { (md: COGLayerMetadata[K]) =>
+      (md.cellType, md.zoomRangeInfos, md.layoutScheme, md.extent, md.crs)
+    }
+
+  implicit def cogLayerMetadataDecoder[K: SpatialComponent: Decoder: ClassTag]: Decoder[COGLayerMetadata[K]] =
+    Decoder.forProduct5("cellType", "zoomRangeInfos", "layoutScheme", "extent", "crs") {
+      (cellType: CellType, zoomRangeInfos: Vector[(ZoomRange, KeyBounds[K])],
+       layoutScheme: ZoomedLayoutScheme, extent: Extent, crs: CRS) =>
+        COGLayerMetadata[K](cellType, zoomRangeInfos, layoutScheme, extent, crs)
+    }
 }
