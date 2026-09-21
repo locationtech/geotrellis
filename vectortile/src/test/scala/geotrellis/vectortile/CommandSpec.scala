@@ -41,7 +41,7 @@ class CommandSpec extends AnyFunSpec with Matchers {
     it("commands/uncommands should form an isomorphism") {
       val ns: Array[Int] = Array(9,4,4,18,6,4,5,4,15)
 
-      uncommands(commands(ns.toIndexedSeq)) shouldBe ns
+      uncommands(commands(ns.toIndexedSeq)) shouldBe ns.toSeq
     }
 
     it("polygon parse") {

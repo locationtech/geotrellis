@@ -394,7 +394,7 @@ object Settings {
       import org.geotools.gce.geotiff.*
       """,
     Test / testOptions += Tests.Setup { () => Unzip.geoTiffTestFiles() }
-  ) ++ commonSettings ++ noForkInTests
+  ) ++ commonSettings ++ noForkInTests ++ crossScala3
 
   lazy val hbase = Seq(
     name := "geotrellis-hbase",
@@ -677,7 +677,7 @@ object Settings {
       // scala3Sources emits `?` wildcards, required once kind-projector claims `_`
       scalapb.gen(flatPackage = true, grpc = false, scala3Sources = true) -> (Compile / sourceManaged).value
     )
-  ) ++ commonSettings
+  ) ++ commonSettings ++ crossScala3
 
   lazy val layer = Seq(
     name := "geotrellis-layer",
@@ -722,9 +722,7 @@ object Settings {
   lazy val gdal = Seq(
     name := "geotrellis-gdal",
     libraryDependencies ++= Seq(
-      // TEMPORARY: see the note on `store`. `gdal` depends on `raster`, not `store`, so it does
-      // not inherit the explicit declaration from there.
-      pureconfig,
+      pureconfigCore,
       gdalWarp,
       scalatest % Test,
       gdalBindings % Test
@@ -733,7 +731,7 @@ object Settings {
     Test / parallelExecution := false,
     Test / testOptions += Tests.Argument("-oDF"),
     // javaOptions ++= Seq("-Djava.library.path=/usr/lib:/usr/local/lib")
-  ) ++ commonSettings
+  ) ++ commonSettings ++ crossScala3
 
   lazy val `gdal-spark` = Seq(
     name := "geotrellis-gdal-spark",

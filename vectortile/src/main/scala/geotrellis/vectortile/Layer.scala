@@ -309,7 +309,7 @@ object StrictLayer {
      */
     tags
       .grouped(2)
-      .map({ case Vector(k, v) => keys(k) -> protoVal(vals(v)) })
+      .map({ case Seq(k, v) => keys(k) -> protoVal(vals(v)) })
       .toMap
   }
 

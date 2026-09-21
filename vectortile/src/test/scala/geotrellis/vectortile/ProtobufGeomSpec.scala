@@ -17,7 +17,7 @@
 package geotrellis.vectortile
 
 import geotrellis.vector.*
-import geotrellis.vectortile.internal.{Command, ProtobufGeom}
+import geotrellis.vectortile.internal.*
 
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.funspec.AnyFunSpec
