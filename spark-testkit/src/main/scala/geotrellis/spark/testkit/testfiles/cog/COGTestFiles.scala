@@ -28,6 +28,7 @@ import _root_.io.github.chronoscala.Imports.*
 import org.apache.spark.SparkContext
 import org.apache.hadoop.fs.Path
 import java.time.{ZoneOffset, ZonedDateTime}
+import geotrellis.util.identityComponent
 
 trait COGTestFiles { self: TestEnvironment =>
   lazy val (zoomLevelCea, spatialCea): (Int, TileLayerRDD[SpatialKey]) = {

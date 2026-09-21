@@ -640,7 +640,7 @@ object Settings {
       apacheSpark("sql").value % Provided,
       scalatest
     )
-  ) ++ commonSettings ++ java17SparkSettings
+  ) ++ commonSettings ++ java17SparkSettings ++ crossScala3
 
   lazy val util = Seq(
     name := "geotrellis-util",

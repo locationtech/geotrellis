@@ -32,6 +32,26 @@ trait TileLayerRDDMatchers extends RasterMatchers {
    * a. if every tile has a min/max value set to those passed in,
    * b. if number of tiles == count
    */
+  /**
+   * Scala 2 reached these by applying `rddToTile` while resolving the overload. Scala 3 will not
+   * do that when the function argument also needs adapting, so name the RDD cases explicitly.
+   */
+  def rasterShouldBe(rdd: RDD[(SpatialKey, Tile)], f: (Int, Int) => Double): Unit =
+    rasterShouldBe(rddToTile(rdd), f)
+
+  def rasterShouldBe(rdd: RDD[(SpatialKey, Tile)], f: (Tile, Int, Int) => Double): Unit =
+    rasterShouldBe(rddToTile(rdd), f)
+
+  /**
+   * Scala 2 widened an `Int`-returning literal to the `Double` overload; Scala 3 will not do that
+   * while it is still choosing an overload. `DummyImplicit` keeps these from clashing after erasure.
+   */
+  def rasterShouldBe(rdd: RDD[(SpatialKey, Tile)], f: (Int, Int) => Int)(implicit d: DummyImplicit): Unit =
+    rasterShouldBe(rddToTile(rdd), (col: Int, row: Int) => f(col, row).toDouble)
+
+  def rasterShouldBe(rdd: RDD[(SpatialKey, Tile)], f: (Tile, Int, Int) => Int)(implicit d: DummyImplicit): Unit =
+    rasterShouldBe(rddToTile(rdd), (tile: Tile, col: Int, row: Int) => f(tile, col, row).toDouble)
+
   def rasterShouldBe[K](rdd: RDD[(K, Tile)], minMax: (Int, Int)): Unit = {
     val res = rdd.map(_._2.findMinMax).collect()
     withClue(s"Actual MinMax: ${res.toSeq}; expecting: ${minMax}") {
