@@ -64,8 +64,8 @@ object AccumuloCollectionReader {
             if (filterIndexOnly) pairs
             else pairs.filter { pair => includeKey(pair._1) }
           }).toVector
-        scanner.close()
-        result
+      scanner.close()
+      result
       }
     }
 

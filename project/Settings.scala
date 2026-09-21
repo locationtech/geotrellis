@@ -254,7 +254,7 @@ object Settings {
   lazy val accumulo = Seq(
     name := "geotrellis-accumulo",
     libraryDependencies ++= Seq(
-      pureconfig,
+      pureconfigCore,
       accumuloCore
         exclude("org.jboss.netty", "netty")
         exclude("org.apache.hadoop", "hadoop-client"),
@@ -268,7 +268,7 @@ object Settings {
       import geotrellis.layer.*
       import geotrellis.store.accumulo.*
       """
-  ) ++ commonSettings ++ forkInTests
+  ) ++ commonSettings ++ forkInTests ++ crossScala3
 
   lazy val `accumulo-spark` = Seq(
     name := "geotrellis-accumulo-spark",
