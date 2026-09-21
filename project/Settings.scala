@@ -752,5 +752,5 @@ object Settings {
     Test / parallelExecution := false,
     Test / testOptions += Tests.Argument("-oDF"),
     // javaOptions ++= Seq("-Djava.library.path=/usr/lib:/usr/local/lib")
-  ) ++ commonSettings ++ java17SparkSettings
+  ) ++ commonSettings ++ java17SparkSettings ++ crossScala3
 }

@@ -17,6 +17,7 @@
 package geotrellis
 
 import java.io.File
+import geotrellis.util.identityComponent
 
 object GDALTestUtils {
   def gdalGeoTiffPath(name: String): String = {
