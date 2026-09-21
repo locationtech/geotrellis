@@ -401,7 +401,7 @@ object Settings {
   lazy val hbase = Seq(
     name := "geotrellis-hbase",
     libraryDependencies ++= Seq(
-      pureconfig,
+      pureconfigCore,
       hbaseMapReduce
         exclude("javax.servlet", "servlet-api")
         exclude("org.mortbay.jetty", "servlet-api-2.5")
@@ -417,7 +417,7 @@ object Settings {
       import geotrellis.store.util.*
       import geotrellis.store.hbase.*
       """
-  ) ++ commonSettings ++ noForkInTests
+  ) ++ commonSettings ++ noForkInTests ++ crossScala3
 
   lazy val `hbase-spark` = Seq(
     name := "geotrellis-hbase-spark",
