@@ -23,7 +23,7 @@ import geotrellis.layer.*
 import geotrellis.spark.*
 import org.apache.spark.*
 import org.apache.spark.rdd.RDD
-import jp.ne.opt.chronoscala.Imports.*
+import _root_.io.github.chronoscala.Imports.*
 import java.time.ZonedDateTime
 
 import scala.collection.mutable

@@ -22,7 +22,7 @@ import geotrellis.util.*
 
 import java.time.*
 import java.time.temporal.ChronoUnit.*
-import jp.ne.opt.chronoscala.Imports.*
+import _root_.io.github.chronoscala.Imports.*
 
 
 

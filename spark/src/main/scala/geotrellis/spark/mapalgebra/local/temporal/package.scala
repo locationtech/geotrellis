@@ -24,7 +24,7 @@ import geotrellis.util.*
 import org.apache.spark.Partitioner
 import org.apache.spark.rdd.RDD
 
-import jp.ne.opt.chronoscala.Imports.*
+import _root_.io.github.chronoscala.Imports.*
 
 import java.time.*
 import scala.reflect.ClassTag

@@ -84,7 +84,7 @@ object Dependencies {
   val apacheIO            = "commons-io"                  % "commons-io"               % "2.22.0"
   val apacheLang3         = "org.apache.commons"          % "commons-lang3"            % "3.20.0"
   val apacheMath          = "org.apache.commons"          % "commons-math3"            % "3.6.1"
-  val chronoscala         = "jp.ne.opt"                  %% "chronoscala"              % "1.0.0"
+  val chronoscala         = "io.github.chronoscala"      %% "chronoscala"              % "2.1.0"
   val awsSdkS3            = "software.amazon.awssdk"      % "s3"                       % "2.46.15"
   val hadoopClient        = "org.apache.hadoop"           % "hadoop-client"            % Version.hadoop
   val avro                = "org.apache.avro"             % "avro"                     % "1.11.5" // aligned with the Spark version // 1.12.0 causes test issues; 1.13.0-SNAPSHOT works

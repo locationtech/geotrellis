@@ -19,7 +19,7 @@ package geotrellis.store.index.zcurve
 import geotrellis.layer.*
 
 
-import jp.ne.opt.chronoscala.Imports.*
+import _root_.io.github.chronoscala.Imports.*
 
 import java.time.temporal.ChronoUnit.MILLIS
 import java.time.{ZoneOffset, ZonedDateTime}

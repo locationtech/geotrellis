@@ -24,7 +24,7 @@ import geotrellis.layer.*
 import geotrellis.layer.filter.*
 import geotrellis.vector.*
 
-import jp.ne.opt.chronoscala.Imports.*
+import _root_.io.github.chronoscala.Imports.*
 import org.log4s.getLogger
 
 import java.time.ZonedDateTime

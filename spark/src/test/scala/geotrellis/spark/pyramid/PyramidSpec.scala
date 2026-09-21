@@ -23,7 +23,7 @@ import geotrellis.raster.*
 import geotrellis.vector.*
 import geotrellis.spark.testkit.*
 
-import jp.ne.opt.chronoscala.Imports.*
+import _root_.io.github.chronoscala.Imports.*
 
 import java.time.{ZoneOffset, ZonedDateTime}
 

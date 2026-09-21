@@ -23,7 +23,7 @@ import geotrellis.spark.*
 import geotrellis.util.*
 import geotrellis.spark.testkit.*
 
-import jp.ne.opt.chronoscala.Imports.*
+import _root_.io.github.chronoscala.Imports.*
 import java.time.{ZoneOffset, ZonedDateTime}
 
 import org.scalatest.funspec.AnyFunSpec
