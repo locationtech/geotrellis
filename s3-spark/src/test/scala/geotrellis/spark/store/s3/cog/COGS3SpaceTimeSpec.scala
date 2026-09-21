@@ -25,6 +25,11 @@ import geotrellis.spark.store.s3.*
 import geotrellis.spark.testkit.TestEnvironment
 import geotrellis.spark.testkit.io.cog.*
 import geotrellis.spark.testkit.testfiles.cog.*
+import geotrellis.util.identityComponent
+import geotrellis.raster.Implicits.withSinglebandMergeMethods
+import geotrellis.raster.Implicits.withSinglebandTilePrototypeMethods
+import geotrellis.raster.crop.Implicits.withSinglebandTileCropMethods
+import org.apache.spark.rdd.RDD
 
 class COGS3SpaceTimeSpec
   extends COGPersistenceSpec[SpaceTimeKey, Tile]
@@ -53,5 +58,5 @@ class COGS3SpaceTimeSpec
   // lazy val reindexer = GenericLayerReindexer[S3LayerHeader](attributeStore, reader, writer, deleter, copier)
   // lazy val mover = GenericLayerMover(copier, deleter)
   lazy val tiles: S3COGValueReader = new S3COGValueReader(attributeStore, MockS3Client.instance)
-  lazy val sample: CoordinateSpaceTime.type = CoordinateSpaceTime
+  lazy val sample: RDD[(SpaceTimeKey, Tile)] with Metadata[TileLayerMetadata[SpaceTimeKey]] = CoordinateSpaceTime
 }

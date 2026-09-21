@@ -26,6 +26,7 @@ import geotrellis.spark.testkit.testfiles.TestFiles
 import geotrellis.spark.testkit.TestEnvironment
 
 import org.scalatest.BeforeAndAfterAll
+import org.apache.spark.rdd.RDD
 
 class S3SpaceTimeSpec
   extends PersistenceSpec[SpaceTimeKey, Tile, TileLayerMetadata[SpaceTimeKey]]
@@ -59,5 +60,5 @@ class S3SpaceTimeSpec
   lazy val reindexer = GenericLayerReindexer(attributeStore, reader, writer, deleter, copier)
   lazy val mover: GenericLayerMover[LayerId] = GenericLayerMover(copier, deleter)
   lazy val tiles: S3ValueReader = new S3ValueReader(attributeStore, MockS3Client.instance)
-  lazy val sample: CoordinateSpaceTime.type =  CoordinateSpaceTime
+  lazy val sample: RDD[(SpaceTimeKey, Tile)] with Metadata[TileLayerMetadata[SpaceTimeKey]] =  CoordinateSpaceTime
 }

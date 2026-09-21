@@ -198,6 +198,6 @@ addCommandAlias(
   s"++${Settings.scala3}; " + List(
     "macros", "util", "proj4", "vector", "vector-testkit",
     "shapefile", "vectortile", "geotools",
-    "raster", "raster-testkit", "gdal", "layer", "store", "s3", "accumulo", "cassandra", "hbase", "spark", "spark-testkit"
+    "raster", "raster-testkit", "gdal", "layer", "store", "s3", "accumulo", "cassandra", "hbase", "spark", "spark-testkit", "s3-spark"
   ).map(_ + "/test").mkString("; ")
 )

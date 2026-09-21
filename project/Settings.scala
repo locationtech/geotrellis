@@ -546,9 +546,10 @@ object Settings {
       apacheSpark("sql").value % Test,
       scalatest % Test
     ),
-    mimaPreviousArtifacts := Set(
+    // no Scala 3 artifact of the previous release to compare against
+    mimaPreviousArtifacts := (if (isScala3(scalaVersion.value)) Set.empty else Set(
       "org.locationtech.geotrellis" %% "geotrellis-s3" % Version.previousVersion
-    ),
+    )),
     console / initialCommands :=
       """
       import geotrellis.raster.*
@@ -560,7 +561,7 @@ object Settings {
       import geotrellis.spark.*
       import geotrellis.spark.store.s3.*
       """
-  ) ++ commonSettings ++ java17SparkSettings ++ noForkInTests
+  ) ++ commonSettings ++ java17SparkSettings ++ noForkInTests ++ crossScala3
 
   lazy val shapefile = Seq(
     name := "geotrellis-shapefile",
