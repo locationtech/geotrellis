@@ -45,3 +45,18 @@ services:
     volumes:
       - ./../:/usr/local/src
     network_mode: host
+
+  test-scala3-jdk21:
+    image: daunnc/osgeo-gdal-jdk21:3.13.3
+    working_dir: /usr/local/src
+    command: sbt testScala3
+    environment:
+      - CI
+    depends_on:
+      - nginx
+      - minio
+      - cassandra
+      - hbase
+    volumes:
+      - ./../:/usr/local/src
+    network_mode: host

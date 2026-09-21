@@ -191,3 +191,11 @@ lazy val `gdal-spark` = project
   .dependsOn(gdal, spark, `spark-testkit` % Test)
   .settings(publish / skip := true) // at this point we need this project only for tests
   .settings(Settings.`gdal-spark`)
+
+// modules that cross-build to Scala 3; keep in sync with `++ Settings.crossScala3`
+addCommandAlias(
+  "testScala3",
+  s"++${Settings.scala3}; " + List(
+    "macros", "util", "proj4", "vector", "vector-testkit", "raster", "raster-testkit"
+  ).map(_ + "/test").mkString("; ")
+)
