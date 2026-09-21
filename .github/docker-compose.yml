@@ -49,9 +49,10 @@ services:
   test-scala3-jdk21:
     image: daunnc/osgeo-gdal-jdk21:3.13.3
     working_dir: /usr/local/src
-    command: sbt testScala3
+    command: sbt ++$SCALA_VERSION test
     environment:
       - CI
+      - SCALA_VERSION
     depends_on:
       - nginx
       - minio

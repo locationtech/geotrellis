@@ -56,19 +56,11 @@ object Settings {
     Test / fork := true
   )
 
-  /** Opts a module into the Scala 3 cross-build */
-  lazy val crossScala3 = Seq(
-    crossScalaVersions := crossScala2And3
-  )
-
   lazy val kindProjectorPlugin = addCompilerPlugin("org.typelevel" % "kind-projector" % "0.13.4" cross CrossVersion.full)
 
   val scala213 = "2.13.18"
   val scala3   = "3.3.7"
 
-  /** Modules that have not been ported to Scala 3 yet stay on this. */
-  val crossScala2Only = Seq(scala213)
-  /** Modules that cross-compile. */
   val crossScala2And3 = Seq(scala213, scala3)
 
   def isScala3(version: String): Boolean =
@@ -112,7 +104,6 @@ object Settings {
     homepage := Some(url("https://geotrellis.io")),
     scmInfo := Some(ScmInfo(url("https://github.com/locationtech/geotrellis"), "scm:git:git@github.com:locationtech/geotrellis.git")),
     scalacOptions ++= scalacOptionsFor(scalaVersion.value),
-    crossScalaVersions := crossScala2Only,
     publishMavenStyle := true,
     Test / publishArtifact := false,
     pomIncludeRepository := { _ => false },
@@ -271,7 +262,7 @@ object Settings {
       import geotrellis.layer.*
       import geotrellis.store.accumulo.*
       """
-  ) ++ commonSettings ++ forkInTests ++ crossScala3
+  ) ++ commonSettings ++ forkInTests
 
   lazy val `accumulo-spark` = Seq(
     name := "geotrellis-accumulo-spark",
@@ -298,7 +289,7 @@ object Settings {
       import geotrellis.spark.*
       import geotrellis.spark.store.accumulo.*
       """
-  ) ++ commonSettings ++ java17SparkSettings ++ forkInTests ++ crossScala3
+  ) ++ commonSettings ++ java17SparkSettings ++ forkInTests
 
   lazy val bench = Seq(
     libraryDependencies += sl4jnop,
@@ -307,7 +298,7 @@ object Settings {
     jmhExtraOptions := Some("-jvmArgsAppend -Xmx8G")
     //jmhExtraOptions := Some("-jvmArgsAppend -Xmx8G -prof jmh.extras.JFR")
     //jmhExtraOptions := Some("-jvmArgsAppend -prof geotrellis.bench.GeotrellisFlightRecordingProfiler")
-  ) ++ commonSettings ++ crossScala3
+  ) ++ commonSettings
 
   lazy val cassandra = Seq(
     name := "geotrellis-cassandra",
@@ -329,7 +320,7 @@ object Settings {
       import geotrellis.store.util.*
       import geotrellis.store.cassandra.*
       """
-  ) ++ commonSettings ++ noForkInTests ++ crossScala3
+  ) ++ commonSettings ++ noForkInTests
 
   lazy val `cassandra-spark` = Seq(
     name := "geotrellis-cassandra-spark",
@@ -358,7 +349,7 @@ object Settings {
       import geotrellis.spark.util.*
       import geotrellis.spark.store.cassandra.*
       """
-  ) ++ commonSettings ++ java17SparkSettings ++ noForkInTests ++ crossScala3
+  ) ++ commonSettings ++ java17SparkSettings ++ noForkInTests
 
 
   lazy val `doc-examples` = Seq(
@@ -373,7 +364,7 @@ object Settings {
       apacheSpark("sql").value % Test
     ),
     libraryDependencySchemes += "org.scala-lang.modules" %% "scala-xml" % VersionScheme.Always
-  ) ++ crossScala3
+  )
 
   lazy val geotools = Seq(
     name := "geotrellis-geotools",
@@ -401,7 +392,7 @@ object Settings {
       import org.geotools.gce.geotiff.*
       """,
     Test / testOptions += Tests.Setup { () => Unzip.geoTiffTestFiles() }
-  ) ++ commonSettings ++ noForkInTests ++ crossScala3
+  ) ++ commonSettings ++ noForkInTests
 
   lazy val hbase = Seq(
     name := "geotrellis-hbase",
@@ -422,7 +413,7 @@ object Settings {
       import geotrellis.store.util.*
       import geotrellis.store.hbase.*
       """
-  ) ++ commonSettings ++ noForkInTests ++ crossScala3
+  ) ++ commonSettings ++ noForkInTests
 
   lazy val `hbase-spark` = Seq(
     name := "geotrellis-hbase-spark",
@@ -446,7 +437,7 @@ object Settings {
       import geotrellis.spark.store.hbase.*
       import geotrellis.store.hbase.*
       """
-  ) ++ commonSettings ++ java17SparkSettings ++ noForkInTests ++ crossScala3
+  ) ++ commonSettings ++ java17SparkSettings ++ noForkInTests
 
   lazy val macros = Seq(
     name := "geotrellis-macros",
@@ -456,7 +447,7 @@ object Settings {
     // spire-macros supplies `InlineUtil`, used only by the Scala 2 whitebox macros.
     libraryDependencies ++= (if (isScala3(scalaVersion.value)) Nil else Seq(spireMacro)),
     libraryDependencies += scalatest % Test
-  ) ++ commonSettings ++ crossScala3
+  ) ++ commonSettings
 
   lazy val mdoc = Seq(
     name := "geotrellis-mdoc",
@@ -464,7 +455,7 @@ object Settings {
     mdocOut := new File("website/docs"),
     mdocVariables := Map("VERSION" -> (ThisBuild / version).value),
     libraryDependencySchemes += "org.scala-lang.modules" %% "scala-xml" % VersionScheme.Always
-  ) ++ crossScala3
+  )
 
   lazy val proj4 = Seq(
     name := "geotrellis-proj4",
@@ -478,7 +469,7 @@ object Settings {
     ),
     // https://github.com/sbt/sbt/issues/4609
     Test / fork := true
-  ) ++ commonSettings ++ crossScala3
+  ) ++ commonSettings
 
   lazy val raster = Seq(
     name := "geotrellis-raster",
@@ -512,12 +503,12 @@ object Settings {
         Unzip(testArchive, "raster/data")
       }
     }
-  ) ++ commonSettings ++ crossScala3
+  ) ++ commonSettings
 
   lazy val `raster-testkit` = Seq(
     name := "geotrellis-raster-testkit",
     libraryDependencies += scalatest
-  ) ++ commonSettings ++ crossScala3
+  ) ++ commonSettings
 
   lazy val s3 = Seq(
     name := "geotrellis-s3",
@@ -538,7 +529,7 @@ object Settings {
       import geotrellis.layer.*
       import geotrellis.store.s3.*
       """
-  ) ++ noForkInTests ++ commonSettings ++ crossScala3
+  ) ++ noForkInTests ++ commonSettings
 
   lazy val `s3-spark` = Seq(
     name := "geotrellis-s3-spark",
@@ -563,7 +554,7 @@ object Settings {
       import geotrellis.spark.*
       import geotrellis.spark.store.s3.*
       """
-  ) ++ commonSettings ++ java17SparkSettings ++ noForkInTests ++ crossScala3
+  ) ++ commonSettings ++ java17SparkSettings ++ noForkInTests
 
   lazy val shapefile = Seq(
     name := "geotrellis-shapefile",
@@ -573,7 +564,7 @@ object Settings {
     ).map(_ excludeAll(excludedDependencies: _*)),
     libraryDependencies ++= Seq(scalatest % Test) ++ worksWithDependencies,
     Test / fork := false
-  ) ++ commonSettings ++ crossScala3
+  ) ++ commonSettings
 
   lazy val spark = Seq(
     name := "geotrellis-spark",
@@ -601,7 +592,7 @@ object Settings {
       import geotrellis.spark.*
       import geotrellis.spark.util.*
       """
-  ) ++ commonSettings ++ java17SparkSettings ++ noForkInTests ++ crossScala3
+  ) ++ commonSettings ++ java17SparkSettings ++ noForkInTests
 
   lazy val `spark-pipeline` = Seq(
     name := "geotrellis-spark-pipeline",
@@ -633,7 +624,7 @@ object Settings {
       case "META-INF/ECLIPSEF.RSA" | "META-INF/ECLIPSEF.SF" => MergeStrategy.discard
       case _ => MergeStrategy.first
     }
-  ) ++ commonSettings ++ java17SparkSettings ++ crossScala3
+  ) ++ commonSettings ++ java17SparkSettings
 
   lazy val `spark-testkit` = Seq(
     name := "geotrellis-spark-testkit",
@@ -643,7 +634,7 @@ object Settings {
       apacheSpark("sql").value % Provided,
       scalatest
     )
-  ) ++ commonSettings ++ java17SparkSettings ++ crossScala3
+  ) ++ commonSettings ++ java17SparkSettings
 
   lazy val util = Seq(
     name := "geotrellis-util",
@@ -654,7 +645,7 @@ object Settings {
       spire,
       scalatest % Test
     )
-  ) ++ commonSettings ++ crossScala3
+  ) ++ commonSettings
 
   lazy val vector = Seq(
     name := "geotrellis-vector",
@@ -669,12 +660,12 @@ object Settings {
       scalatest % Test,
       scalacheck % Test
     )
-  ) ++ commonSettings ++ crossScala3
+  ) ++ commonSettings
 
   lazy val `vector-testkit` = Seq(
     name := "geotrellis-vector-testkit",
     libraryDependencies += scalatest
-  ) ++ commonSettings ++ crossScala3
+  ) ++ commonSettings
 
   lazy val vectortile = Seq(
     name := "geotrellis-vectortile",
@@ -689,7 +680,7 @@ object Settings {
       // scala3Sources emits `?` wildcards, required once kind-projector claims `_`
       scalapb.gen(flatPackage = true, grpc = false, scala3Sources = true) -> (Compile / sourceManaged).value
     )
-  ) ++ commonSettings ++ crossScala3
+  ) ++ commonSettings
 
   lazy val layer = Seq(
     name := "geotrellis-layer",
@@ -707,7 +698,7 @@ object Settings {
       import geotrellis.proj4.*
       import geotrellis.layer.*
       """
-  ) ++ commonSettings ++ crossScala3
+  ) ++ commonSettings
 
   lazy val store = Seq(
     name := "geotrellis-store",
@@ -725,7 +716,7 @@ object Settings {
       cats("effect").value,
       scalatest % Test
     )
-  ) ++ commonSettings ++ crossScala3
+  ) ++ commonSettings
 
   lazy val gdal = Seq(
     name := "geotrellis-gdal",
@@ -739,7 +730,7 @@ object Settings {
     Test / parallelExecution := false,
     Test / testOptions += Tests.Argument("-oDF"),
     // javaOptions ++= Seq("-Djava.library.path=/usr/lib:/usr/local/lib")
-  ) ++ commonSettings ++ crossScala3
+  ) ++ commonSettings
 
   lazy val `gdal-spark` = Seq(
     name := "geotrellis-gdal-spark",
@@ -754,5 +745,5 @@ object Settings {
     Test / parallelExecution := false,
     Test / testOptions += Tests.Argument("-oDF"),
     // javaOptions ++= Seq("-Djava.library.path=/usr/lib:/usr/local/lib")
-  ) ++ commonSettings ++ java17SparkSettings ++ crossScala3
+  ) ++ commonSettings ++ java17SparkSettings
 }

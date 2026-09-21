@@ -3,8 +3,7 @@ import sbt.Keys.*
 ThisBuild / versionScheme := Some("semver-spec")
 ThisBuild / scalaVersion := Settings.scala213
 ThisBuild / organization := "org.locationtech.geotrellis"
-// per-module default
-ThisBuild / crossScalaVersions := Settings.crossScala2Only
+ThisBuild / crossScalaVersions := Settings.crossScala2And3
 
 lazy val root = Project("geotrellis", file("."))
   .aggregate(
@@ -192,12 +191,3 @@ lazy val `gdal-spark` = project
   .settings(publish / skip := true) // at this point we need this project only for tests
   .settings(Settings.`gdal-spark`)
 
-// modules that cross-build to Scala 3; keep in sync with `++ Settings.crossScala3`
-addCommandAlias(
-  "testScala3",
-  s"++${Settings.scala3}; " + List(
-    "macros", "util", "proj4", "vector", "vector-testkit",
-    "shapefile", "vectortile", "geotools",
-    "raster", "raster-testkit", "gdal", "layer", "store", "s3", "accumulo", "cassandra", "hbase", "spark", "spark-testkit", "s3-spark", "accumulo-spark", "cassandra-spark", "gdal-spark", "hbase-spark", "spark-pipeline"
-  ).map(_ + "/test").mkString("; ")
-)
