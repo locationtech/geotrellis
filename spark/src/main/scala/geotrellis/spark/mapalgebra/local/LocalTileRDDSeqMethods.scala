@@ -25,11 +25,12 @@ import org.apache.spark.Partitioner
 import org.apache.spark.rdd.RDD
 
 import scala.reflect.*
+import geotrellis.util.conversions.ConversionLift.*
 
 
 abstract class LocalTileRDDSeqMethods[K: ClassTag] extends MethodExtensions[Iterable[RDD[(K, Tile)]]] {
   private def r(f: Iterable[Tile] => (Tile), partitioner: Option[Partitioner]): RDD[(K, Tile)] =
-    self match {
+    self.toSeq match {
       case Seq() => sys.error("raster rdd operations can't be applied to empty seq!")
       case Seq(rdd) => rdd
       case _ => self.head.combineValues(self.tail, partitioner)(f)

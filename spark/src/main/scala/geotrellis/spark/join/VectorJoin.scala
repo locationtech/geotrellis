@@ -23,6 +23,7 @@ import org.apache.spark.rdd.*
 import org.locationtech.jts.geom.Envelope
 
 import scala.reflect.*
+import geotrellis.util.conversions.ConversionLift.*
 
 
 object VectorJoin {

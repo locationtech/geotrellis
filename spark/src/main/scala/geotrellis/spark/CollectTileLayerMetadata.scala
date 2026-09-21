@@ -27,6 +27,7 @@ import geotrellis.vector.{Extent, ProjectedExtent}
 
 
 import org.apache.spark.rdd.*
+import geotrellis.util.conversions.ConversionLift.*
 
 object CollectTileLayerMetadata {
   private def collectMetadata[

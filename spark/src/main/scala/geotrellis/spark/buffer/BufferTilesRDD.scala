@@ -31,6 +31,7 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.Partitioner
 
 import scala.reflect.ClassTag
+import geotrellis.util.conversions.ConversionLift.*
 
 
 object BufferTilesRDD extends BufferTiles {

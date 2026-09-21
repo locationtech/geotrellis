@@ -22,6 +22,7 @@ import org.apache.spark.*
 import org.apache.spark.rdd.*
 
 import scala.reflect.ClassTag
+import geotrellis.util.conversions.ConversionLift.*
 
 object TileRDDMerge {
   def apply[K: ClassTag, V: ClassTag: _ => TileMergeMethods[V]](rdd: RDD[(K, V)], other: RDD[(K, V)]): RDD[(K, V)] = {

@@ -23,6 +23,8 @@ import geotrellis.spark.*
 import geotrellis.util.*
 
 import org.apache.spark.rdd.RDD
+import geotrellis.util.conversions.ConversionLift.*
+import geotrellis.raster.render.Implicits.withSinglebandRenderMethods
 
 trait SpatialTileRDDRenderMethods extends MethodExtensions[RDD[(SpatialKey, Tile)]] {
   def color(colorMap: ColorMap): RDD[(SpatialKey, Tile)] =

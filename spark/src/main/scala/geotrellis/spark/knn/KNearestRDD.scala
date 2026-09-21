@@ -22,6 +22,7 @@ import org.apache.spark.rdd.RDD
 
 import java.util.PriorityQueue
 import scala.jdk.CollectionConverters.*
+import geotrellis.util.conversions.ConversionLift.*
 
 class BoundedPriorityQueue[A: Ordering](val maxSize: Int) extends Serializable{
   val pq = new PriorityQueue[A](maxSize, implicitly[Ordering[A]].reverse)
@@ -84,14 +85,14 @@ object KNearestRDD {
    * coerced into Extents.
    */
   def kNearest[T](rdd: RDD[T], ex: Extent, k: Int)(f: T => Geometry): Seq[T] = {
-    implicit val ord = new Ord[T](ex, f)
+    implicit val ord: Ord[T] = new Ord[T](ex, f)
 
     rdd.takeOrdered(k).toIndexedSeq
   }
 
   def kNearest[G, H](rdd: RDD[G], centers: Iterable[H], k: Int)(g: G => Geometry, h: H => Geometry): Seq[Seq[G]] = {
     var zero: Iterable[BoundedPriorityQueue[G]] = centers.map { center =>
-      implicit val ord = new Ord[G](h(center), g)
+      implicit val ord: Ord[G] = new Ord[G](h(center), g)
       BoundedPriorityQueue[G](k)
     }
     def zipWith[A, T](l: List[A], r: List[A])(f: (A, A) => T): List[T] = {

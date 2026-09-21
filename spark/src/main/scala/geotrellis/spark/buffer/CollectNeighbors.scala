@@ -24,6 +24,7 @@ import geotrellis.util.*
 import org.apache.spark.rdd.*
 
 import scala.reflect.ClassTag
+import geotrellis.util.conversions.ConversionLift.*
 
 
 object CollectNeighbors {

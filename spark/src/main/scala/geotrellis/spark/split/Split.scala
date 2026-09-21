@@ -23,6 +23,7 @@ import geotrellis.vector.ProjectedExtent
 import geotrellis.util.*
 
 import org.apache.spark.rdd.RDD
+import geotrellis.util.conversions.ConversionLift.*
 
 object Split {
   /** Splits an RDD of tiles into tiles of size (tileCols x tileRows), and updates the ProjectedExtent component of the keys.

@@ -32,6 +32,7 @@ import org.apache.spark.util.AccumulatorV2
 
 import scala.collection.mutable
 import scala.reflect.ClassTag
+import geotrellis.util.conversions.ConversionLift.*
 
 /**
   * @param x:           x-coordinate (in the units used by the layer)

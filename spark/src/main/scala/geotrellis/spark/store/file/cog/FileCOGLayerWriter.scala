@@ -33,6 +33,7 @@ import _root_.io.circe.*
 import java.io.File
 
 import scala.reflect.{ClassTag, classTag}
+import geotrellis.util.conversions.ConversionLift.*
 
 class FileCOGLayerWriter(
   val attributeStore: AttributeStore,
@@ -82,7 +83,7 @@ class FileCOGLayerWriter(
           case Some(_) if !uriExists(path) =>
             cog.write(path, true)
             // collect VRT metadata
-            (0 until cog.bandCount)
+            (Range(0, cog.bandCount))
               .map { b =>
                 val idx = Index.encode(keyIndex.toIndex(key), maxWidth)
                 (idx.toLong, vrt.simpleSource(s"$idx.$Extension", b + 1, cog.cols, cog.rows, cog.extent))
@@ -94,7 +95,7 @@ class FileCOGLayerWriter(
             val merged = merge(cog, old)
             merged.write(path, true)
             // collect VRT metadata
-            (0 until merged.bandCount)
+            (Range(0, merged.bandCount))
               .map { b =>
                 val idx = Index.encode(keyIndex.toIndex(key), maxWidth)
                 (idx.toLong, vrt.simpleSource(s"$idx.$Extension", b + 1, merged.cols, merged.rows, merged.extent))
@@ -104,7 +105,7 @@ class FileCOGLayerWriter(
           case _ =>
             cog.write(path, true)
             // collect VRT metadata
-            (0 until cog.bandCount)
+            (Range(0, cog.bandCount))
               .map { b =>
                 val idx = Index.encode(keyIndex.toIndex(key), maxWidth)
                 (idx.toLong, vrt.simpleSource(s"$idx.$Extension", b + 1, cog.cols, cog.rows, cog.extent))

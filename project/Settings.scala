@@ -233,7 +233,10 @@ object Settings {
   )
 
   lazy val sparkCompatDependencies = Def.setting { CrossVersion.partialVersion(scalaVersion.value) match {
-    case Some((2, 13)) => Seq("org.scala-lang.modules" %% "scala-parallel-collections" % "1.0.3") // spark uses it as a par collections compat
+    // spark uses it as a par collections compat; on Scala 3 take the 2.13 artifact so that it
+    // dedupes with the copy Spark's own 2.13 jars pull in, rather than sitting next to it.
+    case Some((3, _))  => Seq(Dependencies.for3Use2_13("org.scala-lang.modules" %% "scala-parallel-collections" % "1.0.3").value)
+    case Some((2, 13)) => Seq("org.scala-lang.modules" %% "scala-parallel-collections" % "1.0.3")
     case Some((2, 12)) => Nil
     case x => sys.error(s"Encountered unsupported Scala version ${x.getOrElse("undefined")}")
   } }
@@ -581,9 +584,10 @@ object Settings {
       apacheSpark("sql").value % Test,
       scalatest % Test
     ) ++ sparkCompatDependencies.value,
-    mimaPreviousArtifacts := Set(
+    // no Scala 3 artifact of the previous release to compare against
+    mimaPreviousArtifacts := (if (isScala3(scalaVersion.value)) Set.empty else Set(
       "org.locationtech.geotrellis" %% "geotrellis-spark" % Version.previousVersion
-    ),
+    )),
     Test / testOptions += Tests.Argument("-oD"),
     console / initialCommands :=
       """
@@ -594,7 +598,7 @@ object Settings {
       import geotrellis.spark.*
       import geotrellis.spark.util.*
       """
-  ) ++ commonSettings ++ java17SparkSettings ++ noForkInTests
+  ) ++ commonSettings ++ java17SparkSettings ++ noForkInTests ++ crossScala3
 
   lazy val `spark-pipeline` = Seq(
     name := "geotrellis-spark-pipeline",

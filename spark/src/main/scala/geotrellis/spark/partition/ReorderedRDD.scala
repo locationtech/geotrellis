@@ -21,7 +21,15 @@ import org.apache.spark.rdd.*
 
 
 
-case class ReorderedPartition(index: Int, parentPartition: Option[Partition]) extends Partition
+case class ReorderedPartition(index: Int, parentPartition: Option[Partition]) extends PartitionBase with Partition {
+  // Spark's `Partition` implements `equals` via `super.equals`, which Scala 3 cannot mix in.
+  // Spell out the structural equality the case class would otherwise synthesise.
+  override def equals(other: Any): Boolean = other match {
+    case that: ReorderedPartition => index == that.index && parentPartition == that.parentPartition
+    case _ => false
+  }
+  override def hashCode(): Int = (index, parentPartition).##
+}
 
 class ReorderedDependency[T](rdd: RDD[T], f: Int => Option[Int]) extends NarrowDependency[T](rdd) {
   def getParents(partitionId: Int): List[Int] = f(partitionId).toList

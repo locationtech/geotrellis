@@ -27,6 +27,7 @@ import org.log4s.*
 import org.apache.spark.rdd.*
 
 import scala.reflect.ClassTag
+import geotrellis.util.conversions.ConversionLift.*
 
 object CutTiles {
   @transient private[this] lazy val logger = getLogger
@@ -55,8 +56,8 @@ object CutTiles {
           .map  { spatialComponent =>
             val outKey = inKey.translate(spatialComponent)
             logger.debug(s"Merge $inKey into $outKey of (${tileCols}, ${tileRows}) cells")
-            val newTile = tile.prototype(cellType, tileCols, tileRows)
-            (outKey, newTile.merge(
+            val newTile = (tile: TilePrototypeMethods[V]).prototype(cellType, tileCols, tileRows)
+            (outKey, (newTile: TileMergeMethods[V]).merge(
                mapTransform.keyToExtent(outKey.getComponent[SpatialKey]),
                extent,
                tile,

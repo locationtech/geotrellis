@@ -62,8 +62,22 @@ object Dependencies {
     "co.fs2" %% s"fs2-$module" % "3.13.0"
   }
 
+  /** Spark has no Scala 3 build, so Scala 3 consumes the Scala 2.13 artifacts. */
+  def for3Use2_13(module: ModuleID) = Def.setting {
+    if (CrossVersion.partialVersion(scalaVersion.value).exists(_._1 == 3)) module.cross(CrossVersion.for3Use2_13)
+    else module
+  }
+
   def apacheSpark(module: String) = Def.setting {
-    "org.apache.spark"  %% s"spark-$module" % "4.0.3"
+    val dep = for3Use2_13("org.apache.spark" %% s"spark-$module" % "4.0.3").value
+    // Spark's 2.13 jars pull the _2.13 builds of these, while the pure Scala 3 modules
+    // (proj4, store) bring the _3 builds. They are the same classes, so keep one copy.
+    if (CrossVersion.partialVersion(scalaVersion.value).exists(_._1 == 3))
+      dep.excludeAll(
+        ExclusionRule("org.scala-lang.modules", "scala-xml_2.13"),
+        ExclusionRule("org.scala-lang.modules", "scala-parser-combinators_2.13")
+      )
+    else dep
   }
 
   def scalaReflect(version: String) = "org.scala-lang" % "scala-reflect" % version

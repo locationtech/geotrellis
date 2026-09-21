@@ -1,6 +1,7 @@
 package geotrellis.spark.join
 
 import org.apache.spark.Partition
+import geotrellis.spark.partition.PartitionBase
 import org.apache.spark.internal.Logging
 import org.apache.spark.rdd.RDD
 
@@ -14,11 +15,15 @@ private[join] class CartesianPartition(
   @transient private val rdd2: RDD[?],
   s1Index: Int,
   s2Index: Int
-) extends Partition {
+) extends PartitionBase with Partition {
 
   var s1 = rdd1.partitions(s1Index)
   var s2 = rdd2.partitions(s2Index)
   override val index: Int = idx
+
+  // Spark's `Partition` implements `equals` via `super.equals`, which Scala 3 cannot mix in;
+  // `super.equals` is `AnyRef.equals`, so spell out reference equality.
+  override def hashCode(): Int = index
 
   @throws(classOf[IOException])
   private def writeObject(oos: ObjectOutputStream): Unit = CartesianPartition.tryOrIOException {

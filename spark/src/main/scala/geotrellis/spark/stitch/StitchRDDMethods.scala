@@ -25,6 +25,7 @@ import geotrellis.vector.*
 import geotrellis.spark.*
 import geotrellis.util.*
 import org.apache.spark.rdd.RDD
+import geotrellis.util.conversions.ConversionLift.*
 
 abstract class SpatialTileLayoutRDDStitchMethods[
   V <: CellGrid[Int]: Stitcher: _ => TilePrototypeMethods[V],

@@ -25,6 +25,7 @@ import org.apache.spark.{HashPartitioner, Partitioner}
 import org.apache.spark.rdd.*
 
 import spire.syntax.cfor.*
+import geotrellis.util.conversions.ConversionLift.*
 
 
 object RasterizeRDD {
@@ -268,7 +269,8 @@ object RasterizeRDD {
       val (left, leftPriority) = pair1
       val (right, rightPriority) = pair2
       mergePriority(left, leftPriority, right, rightPriority)
-        (left, leftPriority): (MutableArrayTile, MutableArrayTile)
+      val merged: (MutableArrayTile, MutableArrayTile) = (left, leftPriority)
+      merged
     }
 
     val tiles: RDD[(SpatialKey, MutableArrayTile)] =

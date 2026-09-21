@@ -20,6 +20,7 @@ import geotrellis.raster.*
 import geotrellis.raster.matching.HistogramMatching
 
 import org.apache.spark.rdd.RDD
+import geotrellis.util.conversions.ConversionLift.*
 
 
 object RDDHistogramMatching {

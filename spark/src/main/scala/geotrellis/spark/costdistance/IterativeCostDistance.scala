@@ -30,6 +30,7 @@ import org.apache.spark.storage.StorageLevel
 import org.apache.spark.util.AccumulatorV2
 
 import scala.collection.mutable
+import geotrellis.util.conversions.ConversionLift.*
 
 /**
   * This Spark-enabled implementation of the standard cost-distance

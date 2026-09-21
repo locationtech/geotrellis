@@ -18,6 +18,7 @@ package geotrellis.spark.reproject
 
 import geotrellis.raster.reproject.Reproject.{Options as RasterReprojectOptions}
 import geotrellis.raster.resample.*
+import geotrellis.util.conversions.ConversionLift.*
 
 object Reproject {
   case class Options(

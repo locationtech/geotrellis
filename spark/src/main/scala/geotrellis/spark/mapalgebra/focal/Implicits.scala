@@ -25,6 +25,6 @@ object Implicits extends Implicits
 
 trait Implicits  {
   implicit class withFocalTileRDDMethods[K](val self: TileLayerRDD[K])
-    (implicit val keyClassTag: ClassTag[K], implicit val _sc: SpatialComponent[K])
+    (implicit val keyClassTag: ClassTag[K], val _sc: SpatialComponent[K])
       extends FocalTileLayerRDDMethods[K]
 }

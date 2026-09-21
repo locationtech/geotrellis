@@ -23,6 +23,7 @@ import geotrellis.spark.*
 import geotrellis.util.*
 import geotrellis.vector.Extent
 import org.apache.spark.rdd.RDD
+import geotrellis.util.conversions.ConversionLift.*
 
 object ZoomResample {
   private def gridBoundsAtZoom(sourceZoom: Int, spatialKey: SpatialKey, targetZoom: Int): TileBounds = {

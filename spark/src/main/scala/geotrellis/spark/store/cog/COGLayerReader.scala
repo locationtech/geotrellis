@@ -40,10 +40,12 @@ import java.net.URI
 import java.util.ServiceLoader
 
 import scala.reflect.*
+import geotrellis.util.conversions.ConversionLift.*
+import geotrellis.raster.crop.Implicits.withMultibandTileCropMethods
 
 abstract class COGLayerReader[ID] extends Serializable {
 
-  implicit val ioRuntime: unsafe.IORuntime
+  implicit def ioRuntime: unsafe.IORuntime
 
   val attributeStore: AttributeStore
 

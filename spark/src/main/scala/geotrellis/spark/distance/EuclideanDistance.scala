@@ -31,6 +31,9 @@ import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
 import scala.collection.mutable.{ListBuffer, Set}
+import geotrellis.util.conversions.ConversionLift.*
+import geotrellis.spark.buffer.Implicits.withCollectNeighborsMethodsWrapper
+import geotrellis.util.identityComponent
 
 object EuclideanDistance {
 
@@ -148,7 +151,7 @@ object EuclideanDistance {
           }}
         }, preservesPartitioning = true)
 
-    borders
+    withCollectNeighborsMethodsWrapper(borders)
       .collectNeighbors()
       .mapPartitions({ partition =>
         partition.map { case (key, neighbors) =>

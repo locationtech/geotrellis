@@ -23,6 +23,7 @@ import geotrellis.vector.*
 import geotrellis.util.*
 
 import org.apache.spark.rdd.*
+import geotrellis.util.conversions.ConversionLift.*
 
 
 object ProjectedExtentComponentReproject {

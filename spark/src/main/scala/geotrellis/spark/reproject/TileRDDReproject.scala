@@ -36,6 +36,7 @@ import org.apache.spark.rdd.*
 import org.apache.spark.*
 
 import scala.reflect.ClassTag
+import geotrellis.util.conversions.ConversionLift.*
 
 object TileRDDReproject {
   import Reproject.Options
@@ -204,7 +205,7 @@ object TileRDDReproject {
       rrp.regionReprojectMutable(raster, crs, destCrs, destRaster, destRegion, rasterReprojectOptions.method, rasterReprojectOptions.errorThreshold).tile
     }
 
-    def mergeCombiners(reproj1: V, reproj2: V) = reproj1.merge(reproj2)
+    def mergeCombiners(reproj1: V, reproj2: V) = (reproj1: TileMergeMethods[V]).merge(reproj2)
 
     val tiled: RDD[(K, V)] =
       targetPartitioner match {
