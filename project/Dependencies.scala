@@ -46,14 +46,6 @@ object Version {
 import sbt.Keys.*
 
 object Dependencies {
-  private def ver(for212: String, for213: String) = Def.setting {
-    CrossVersion.partialVersion(scalaVersion.value) match {
-      case Some((2, 12)) => for212
-      case Some((2, 13)) => for213
-      case _ => sys.error("not good")
-    }
-  }
-
   def monocle(module: String) = Def.setting {
     "dev.optics" %% s"monocle-$module" % "3.3.0"
   }
