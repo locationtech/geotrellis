@@ -23,6 +23,10 @@ import geotrellis.spark.store.*
 import geotrellis.spark.testkit.*
 import geotrellis.spark.testkit.io.*
 import geotrellis.spark.testkit.testfiles.TestFiles
+import geotrellis.util.identityComponent
+import geotrellis.store.Implicits.spaceTimeKeyAvroFormat
+import geotrellis.store.avro.codecs.Implicits.*
+import org.apache.spark.rdd.RDD
 
 class HadoopSpaceTimeSpec
   extends PersistenceSpec[SpaceTimeKey, Tile, TileLayerMetadata[SpaceTimeKey]]
@@ -39,5 +43,5 @@ class HadoopSpaceTimeSpec
   lazy val mover: HadoopLayerMover = HadoopLayerMover(outputLocal)
   lazy val reindexer = HadoopLayerReindexer(outputLocal)
   lazy val tiles: HadoopValueReader = HadoopValueReader(outputLocal)
-  lazy val sample: CoordinateSpaceTime.type =  CoordinateSpaceTime
+  lazy val sample: RDD[(SpaceTimeKey, Tile)] with Metadata[TileLayerMetadata[SpaceTimeKey]] = CoordinateSpaceTime
 }

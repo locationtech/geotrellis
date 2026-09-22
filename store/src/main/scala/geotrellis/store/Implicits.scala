@@ -17,6 +17,7 @@
 package geotrellis.store
 
 import geotrellis.layer.{SpaceTimeKey, SpatialKey, TileLayerMetadata}
+import geotrellis.util.identityComponent
 
 object Implicits extends Implicits
 

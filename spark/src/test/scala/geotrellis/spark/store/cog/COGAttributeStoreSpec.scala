@@ -25,12 +25,19 @@ import geotrellis.spark.testkit.*
 
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.funspec.AnyFunSpec
+import geotrellis.util.identityComponent
+import geotrellis.raster.Tile
+import geotrellis.raster.merge.Implicits.withSinglebandMergeMethods
+import geotrellis.raster.prototype.Implicits.withSinglebandTilePrototypeMethods
+import geotrellis.raster.crop.Implicits.withSinglebandTileCropMethods
 
 abstract class COGAttributeStoreSpec extends AnyFunSpec with Matchers with TestEnvironment with COGTestFiles {
   def attributeStore: AttributeStore
   def header: LayerHeader
 
-  val cogLayer = COGLayer.fromLayerRDD(spatialCea, zoomLevelCea)
+  implicit val spatialKeyOrdering: Ordering[SpatialKey] = SpatialKey.ordering[SpatialKey]
+
+  val cogLayer = COGLayer.fromLayerRDD[SpatialKey, Tile](spatialCea, zoomLevelCea)
   val keyIndexes = cogLayer.metadata.zoomRangeInfos.map { case (z, b) => z -> ZCurveKeyIndexMethod.createIndex(b) }.toMap
   val storageMetadata = COGLayerStorageMetadata(cogLayer.metadata, keyIndexes)
 

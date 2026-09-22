@@ -1,9 +1,9 @@
 import sbt.Keys.*
 
 ThisBuild / versionScheme := Some("semver-spec")
-ThisBuild / scalaVersion := "2.13.18"
+ThisBuild / scalaVersion := Settings.scala213
 ThisBuild / organization := "org.locationtech.geotrellis"
-ThisBuild / crossScalaVersions := List("2.13.18")
+ThisBuild / crossScalaVersions := Settings.crossScala2And3
 
 lazy val root = Project("geotrellis", file("."))
   .aggregate(
@@ -190,3 +190,4 @@ lazy val `gdal-spark` = project
   .dependsOn(gdal, spark, `spark-testkit` % Test)
   .settings(publish / skip := true) // at this point we need this project only for tests
   .settings(Settings.`gdal-spark`)
+

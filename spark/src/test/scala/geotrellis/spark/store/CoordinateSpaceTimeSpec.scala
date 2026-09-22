@@ -22,6 +22,7 @@ import geotrellis.store.*
 import geotrellis.spark.testkit.io.*
 
 import java.time.{ZoneOffset, ZonedDateTime}
+import geotrellis.util.identityComponent
 
 
 trait CoordinateSpaceTimeSpec { self: PersistenceSpec[SpaceTimeKey, Tile, TileLayerMetadata[SpaceTimeKey]] =>

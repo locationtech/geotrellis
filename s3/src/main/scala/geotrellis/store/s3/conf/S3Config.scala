@@ -17,13 +17,15 @@
 package geotrellis.store.s3.conf
 
 import pureconfig.{ConfigReader, ConfigSource}
-import pureconfig.generic.auto.*
 import software.amazon.awssdk.services.s3.model.RequestPayer
 
 case class S3Config(requestPayer: Option[RequestPayer] = None)
 
 object S3Config {
   implicit val requestPayerReader: ConfigReader[RequestPayer] = ConfigReader[String].map(RequestPayer.fromValue)
+
+  implicit val s3ConfigReader: ConfigReader[S3Config] =
+    ConfigReader.forProduct1[S3Config, Option[RequestPayer]]("request-payer")(S3Config.apply)
 
   lazy val conf: S3Config = ConfigSource.default.at("geotrellis.s3").loadOrThrow[S3Config]
   implicit def s3ConfigToClass(obj: S3Config.type): S3Config = conf

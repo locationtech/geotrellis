@@ -20,6 +20,7 @@ import geotrellis.layer.mapalgebra.focal.CollectionFocalOperation
 import geotrellis.raster.DoubleConstantNoDataCellType
 import geotrellis.raster.mapalgebra.focal.hillshade.Hillshade
 import geotrellis.raster.mapalgebra.focal.{Square, TargetCell}
+import geotrellis.layer.Implicits.WithContextCollectionWrapper
 
 trait HillshadeTileLayerCollectionMethods[K] extends CollectionFocalOperation[K] {
   /** Calculates the hillshade of each cell in a raster.

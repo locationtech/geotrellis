@@ -27,6 +27,7 @@ import geotrellis.store.index.ZCurveKeyIndexMethod
 import org.apache.spark.SparkContext
 
 import java.io.File
+import geotrellis.util.identityComponent
 
 object TestCatalog {
   def resourcesPath(path: String): String = s"${new File("").getAbsolutePath}/spark/src/test/resources/$path"

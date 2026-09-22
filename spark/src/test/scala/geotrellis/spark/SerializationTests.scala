@@ -26,6 +26,7 @@ import org.scalatest.matchers.should.Matchers
 import org.scalatest.funsuite.AnyFunSuite
 
 import java.io.{ByteArrayInputStream, ByteArrayOutputStream, ObjectInputStream, ObjectOutputStream}
+import geotrellis.util.identityComponent
 
 class SerializationTests extends AnyFunSuite with Matchers with RasterMatchers with TileBuilders {
   test("Serializing CRS's") {

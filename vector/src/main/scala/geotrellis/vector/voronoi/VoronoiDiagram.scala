@@ -72,7 +72,7 @@ object VoronoiDiagram {
     var e = incidentEdge
     val origin = V2(verts(getDest(e)))
     val l = collection.mutable.ListBuffer.empty[CellBound]
-    do {
+    while ({
       val vplus = V2(verts(getSrc(rotCCWDest(e)))) - origin
       val v = V2(verts(getSrc(e))) - origin
       val vminus = V2(verts(getSrc(rotCWDest(e)))) - origin
@@ -114,7 +114,8 @@ object VoronoiDiagram {
       }
 
       e = rotCCWDest(e)
-    } while (e != incidentEdge)
+      e != incidentEdge
+    }) ()
     l
   }
 

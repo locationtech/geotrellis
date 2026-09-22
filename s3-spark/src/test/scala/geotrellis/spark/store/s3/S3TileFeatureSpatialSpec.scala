@@ -24,6 +24,8 @@ import geotrellis.spark.store.*
 import geotrellis.spark.testkit.io.*
 import geotrellis.spark.testkit.testfiles.TestTileFeatureFiles
 import geotrellis.spark.testkit.TestEnvironment
+import geotrellis.util.identityComponent
+import org.apache.spark.rdd.RDD
 
 class S3TileFeatureSpatialSpec
   extends PersistenceSpec[SpatialKey, TileFeature[Tile, Tile], TileLayerMetadata[SpatialKey]]
@@ -54,5 +56,5 @@ class S3TileFeatureSpatialSpec
   lazy val reindexer = GenericLayerReindexer(attributeStore, reader, writer, deleter, copier)
   lazy val mover: GenericLayerMover[LayerId] = GenericLayerMover(copier, deleter)
   lazy val tiles: S3ValueReader = new S3ValueReader(attributeStore, MockS3Client.instance)
-  lazy val sample: AllOnesTestFile.type = AllOnesTestFile
+  lazy val sample: RDD[(SpatialKey, TileFeature[Tile, Tile])] with Metadata[TileLayerMetadata[SpatialKey]] = AllOnesTestFile
 }

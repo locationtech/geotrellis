@@ -27,6 +27,7 @@ import org.apache.spark.SparkConf
 import org.scalatest.Suite
 
 import java.nio.file.Files
+import geotrellis.util.identityComponent
 
 trait AccumuloTestEnvironment extends TestEnvironment { self: Suite =>
   override def setKryoRegistrator(conf: SparkConf): Unit =

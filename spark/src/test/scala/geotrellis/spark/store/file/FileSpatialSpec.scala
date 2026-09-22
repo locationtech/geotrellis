@@ -25,6 +25,8 @@ import geotrellis.spark.store.*
 import geotrellis.spark.testkit.*
 import geotrellis.spark.testkit.io.*
 import geotrellis.spark.testkit.testfiles.TestFiles
+import geotrellis.util.identityComponent
+import org.apache.spark.rdd.RDD
 
 class FileSpatialSpec
     extends PersistenceSpec[SpatialKey, Tile, TileLayerMetadata[SpatialKey]]
@@ -40,7 +42,7 @@ class FileSpatialSpec
   lazy val mover  = FileLayerMover(outputLocalPath)
   lazy val reindexer = FileLayerReindexer(outputLocalPath)
   lazy val tiles: FileValueReader = FileValueReader(outputLocalPath)
-  lazy val sample: AllOnesTestFile.type = AllOnesTestFile
+  lazy val sample: RDD[(SpatialKey, Tile)] with Metadata[TileLayerMetadata[SpatialKey]] = AllOnesTestFile
 
   describe("Filesystem layer names") {
     it("should not throw with bad characters in name") {

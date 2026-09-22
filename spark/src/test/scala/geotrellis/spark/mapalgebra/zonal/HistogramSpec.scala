@@ -26,6 +26,7 @@ import geotrellis.spark.testkit.*
 import org.scalatest.funspec.AnyFunSpec
 
 import collection.*
+import geotrellis.util.identityComponent
 
 class HistogramSpec extends AnyFunSpec with TestEnvironment with TestFiles {
 

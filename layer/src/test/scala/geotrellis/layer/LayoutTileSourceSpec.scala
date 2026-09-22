@@ -24,6 +24,7 @@ import geotrellis.raster.io.geotiff.reader.*
 import geotrellis.raster.resample.*
 import geotrellis.vector.*
 import geotrellis.raster.io.geotiff.AutoHigherResolution
+import geotrellis.util.identityComponent
 
 import cats.data.NonEmptyList
 
@@ -138,7 +139,7 @@ class LayoutTileSourceSpec extends AnyFunSpec with RasterMatchers {
 
 
         result.bands.foreach { band =>
-          (1 until band.rows).foreach { r =>
+          Range(1, band.rows).foreach { r =>
             band.getDouble(band.cols - 1, r) shouldNot be(0d)
           }
         }

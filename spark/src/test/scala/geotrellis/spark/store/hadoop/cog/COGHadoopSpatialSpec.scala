@@ -26,6 +26,12 @@ import geotrellis.spark.testkit.*
 import geotrellis.spark.testkit.io.*
 import geotrellis.spark.testkit.io.cog.*
 import geotrellis.spark.testkit.testfiles.cog.COGTestFiles
+import geotrellis.util.identityComponent
+import geotrellis.raster.Implicits.withSinglebandMergeMethods
+import geotrellis.raster.prototype.Implicits.withSinglebandTilePrototypeMethods
+import geotrellis.spark.stitch.Implicits.withSpatialTileLayoutRDDMethods
+import geotrellis.raster.crop.Implicits.withSinglebandTileCropMethods
+import org.apache.spark.rdd.RDD
 
 class COGHadoopSpatialSpec
   extends COGPersistenceSpec[SpatialKey, Tile]
@@ -43,7 +49,7 @@ class COGHadoopSpatialSpec
   // lazy val mover  = HadoopLayerMover(outputLocal)
   // lazy val reindexer = HadoopLayerReindexer(outputLocal)
   lazy val tiles: HadoopCOGValueReader = HadoopCOGValueReader(outputLocal)
-  lazy val sample: AllOnesTestFile.type = AllOnesTestFile
+  lazy val sample: RDD[(SpatialKey, Tile)] with Metadata[TileLayerMetadata[SpatialKey]] = AllOnesTestFile
 
   describe("HDFS layer names") {
     it("should handle layer names with spaces") {

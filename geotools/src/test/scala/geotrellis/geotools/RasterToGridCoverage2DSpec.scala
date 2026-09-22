@@ -19,6 +19,7 @@ package geotrellis.geotools
 import geotrellis.raster.*
 import geotrellis.vector.*
 import geotrellis.proj4.*
+import geotrellis.util.conversions.ConversionLift.*
 
 
 import java.awt.image.DataBuffer

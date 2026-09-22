@@ -23,6 +23,9 @@ import geotrellis.raster.*
 import geotrellis.raster.Neighborhoods.Square
 
 import org.scalatest.funspec.AnyFunSpec
+import geotrellis.util.identityComponent
+import geotrellis.layer.Implicits.withFocalTileLayerCollectionMethods
+import geotrellis.layer.Implicits.withSpatialTileLayoutCollectionMethods
 
 class ModeSpec extends AnyFunSpec with TestEnvironment {
 

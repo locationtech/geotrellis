@@ -19,6 +19,7 @@ package geotrellis.raster.mask
 import geotrellis.raster.*
 import geotrellis.raster.rasterize.*
 import geotrellis.vector.*
+import geotrellis.util.conversions.ConversionLift.*
 
 
 abstract class TileFeatureMaskMethods[

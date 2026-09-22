@@ -24,6 +24,9 @@ import geotrellis.spark.store.*
 import geotrellis.spark.testkit.io.*
 import geotrellis.spark.testkit.testfiles.TestFiles
 import geotrellis.spark.testkit.TestEnvironment
+import org.apache.spark.rdd.RDD
+import geotrellis.store.avro.codecs.Implicits.*
+import geotrellis.util.identityComponent
 
 class CassandraSpaceTimeSpec
   extends PersistenceSpec[SpaceTimeKey, Tile, TileLayerMetadata[SpaceTimeKey]]
@@ -42,7 +45,7 @@ class CassandraSpaceTimeSpec
   lazy val writer: CassandraLayerWriter = CassandraLayerWriter(attributeStore, "geotrellis", "tiles")
   lazy val deleter: CassandraLayerDeleter = CassandraLayerDeleter(attributeStore)
   lazy val tiles: CassandraValueReader = CassandraValueReader(attributeStore)
-  lazy val sample: CoordinateSpaceTime.type = CoordinateSpaceTime
+  lazy val sample: RDD[(SpaceTimeKey, Tile)] with Metadata[TileLayerMetadata[SpaceTimeKey]] = CoordinateSpaceTime
   lazy val copier: CassandraLayerCopier = CassandraLayerCopier(attributeStore, reader, writer)
   lazy val reindexer = CassandraLayerReindexer(attributeStore, reader, writer, deleter, copier)
   lazy val mover     = CassandraLayerMover(copier, deleter)

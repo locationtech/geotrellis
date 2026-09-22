@@ -22,6 +22,7 @@ import geotrellis.store.*
 import geotrellis.spark.testkit.io.*
 
 import java.time.{ZoneOffset, ZonedDateTime}
+import geotrellis.util.identityComponent
 
 trait CoordinateSpaceTimeTileFeatureSpec { self: PersistenceSpec[SpaceTimeKey, TileFeature[Tile, Tile], TileLayerMetadata[SpaceTimeKey]] =>
   val dates = Vector( // all the dates in the layer

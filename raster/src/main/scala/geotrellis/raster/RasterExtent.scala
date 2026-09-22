@@ -19,13 +19,17 @@ package geotrellis.raster
 import geotrellis.vector.Extent
 import scala.math.ceil
 
-import _root_.io.circe.generic.JsonCodec
+import _root_.io.circe.Codec
+import _root_.io.circe.generic.semiauto.deriveCodec
 
 /**
   * [[GeoAttrsError]] exception.
   */
-@JsonCodec
 case class GeoAttrsError(msg: String) extends Exception(msg)
+
+object GeoAttrsError {
+  implicit val codecForGeoAttrsError: Codec.AsObject[GeoAttrsError] = deriveCodec[GeoAttrsError]
+}
 
 /**
   * [[RasterExtent]] objects represent the geographic extent
@@ -69,7 +73,6 @@ case class GeoAttrsError(msg: String) extends Exception(msg)
   * RasterExtent.
   */
 
-@JsonCodec
 case class RasterExtent(
   override val extent: Extent,
   override val cellwidth: Double,
@@ -139,6 +142,8 @@ case class RasterExtent(
   * The companion object for the [[RasterExtent]] type.
   */
 object RasterExtent {
+  implicit val codecForRasterExtent: Codec.AsObject[RasterExtent] = deriveCodec[RasterExtent]
+
   /**
     * Create a new [[RasterExtent]] from an Extent, a column, and a
     * row.

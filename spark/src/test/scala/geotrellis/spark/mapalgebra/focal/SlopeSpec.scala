@@ -25,6 +25,7 @@ import geotrellis.spark.testkit.*
 
 import org.scalatest.funspec.AnyFunSpec
 import java.io.*
+import geotrellis.util.identityComponent
 
 class SlopeSpec extends AnyFunSpec with TestEnvironment {
 

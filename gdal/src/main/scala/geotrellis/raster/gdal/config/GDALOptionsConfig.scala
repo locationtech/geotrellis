@@ -20,8 +20,7 @@ import com.azavea.gdal.GDALWarp
 import geotrellis.raster.gdal.GDALDataset
 import geotrellis.raster.gdal.GDALDataset.DatasetType
 
-import pureconfig.ConfigSource
-import pureconfig.generic.auto.*
+import pureconfig.{ConfigReader, ConfigSource}
 
 import scala.collection.concurrent.TrieMap
 
@@ -46,6 +45,17 @@ case class GDALOptionsConfig(options: Map[String, String] = Map.empty, acceptabl
 }
 
 object GDALOptionsConfig extends Serializable {
+  implicit val gdalOptionsConfigReader: ConfigReader[GDALOptionsConfig] =
+    ConfigReader.forProduct3[GDALOptionsConfig, Option[Map[String, String]], Option[List[String]], Option[Int]](
+      "options", "acceptable-datasets", "number-of-attempts"
+    ) { (options, acceptableDatasets, numberOfAttempts) =>
+      GDALOptionsConfig(
+        options.getOrElse(Map.empty),
+        acceptableDatasets.getOrElse(List("SOURCE", "WARPED")),
+        numberOfAttempts.getOrElse(1 << 20)
+      )
+    }
+
   private val optionsRegistry = TrieMap[String, String]()
 
   def registerOption(key: String, value: String): Unit = optionsRegistry += (key -> value)

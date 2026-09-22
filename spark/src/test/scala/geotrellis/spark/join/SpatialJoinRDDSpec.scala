@@ -26,6 +26,7 @@ import org.apache.spark.rdd.{PairRDDFunctions, RDD}
 
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.funspec.AnyFunSpec
+import geotrellis.util.identityComponent
 
 class SpatialJoinRDDSpec extends AnyFunSpec with Matchers with TestEnvironment {
   // Import the PartitionerIndex that we will be using for the tests.

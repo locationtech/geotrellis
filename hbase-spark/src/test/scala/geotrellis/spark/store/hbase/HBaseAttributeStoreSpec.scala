@@ -19,6 +19,7 @@ package geotrellis.spark.store.hbase
 import geotrellis.store.hbase.*
 import geotrellis.spark.store.AttributeStoreSpec
 import geotrellis.spark.HBaseTestEnvironment
+import geotrellis.util.identityComponent
 
 class HBaseAttributeStoreSpec extends AttributeStoreSpec with HBaseTestEnvironment {
   lazy val instance       = HBaseInstance(Seq("localhost"), "localhost")

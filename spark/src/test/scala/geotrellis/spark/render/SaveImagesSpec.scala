@@ -28,6 +28,7 @@ import org.apache.commons.io.IOUtils
 import java.net.URI
 
 import org.scalatest.funspec.AnyFunSpec
+import geotrellis.util.identityComponent
 
 class SaveImagesSpec extends AnyFunSpec with TestEnvironment {
   lazy val sample = TestFiles.generateSpatial("all-ones")

@@ -9,17 +9,25 @@ on:
 
 jobs:
   build:
-    name: Build and Test
+    name: Build and Test (Scala ${{ matrix.scala }})
     strategy:
+      fail-fast: false
       matrix:
-        os: [ubuntu-latest]
-        scala: ["2.13.16"]
-        java: [21]
+        include:
+          - os: ubuntu-latest
+            java: 21
+            scala: "2.13.18"
+            service: test-jdk21
+          - os: ubuntu-latest
+            java: 21
+            scala: "3.3.7"
+            service: test-scala3-jdk21
     runs-on: ${{ matrix.os }}
   
     env:
       SCALA_VERSION:  ${{ matrix.scala }}
       JAVA_VERSION:  ${{ matrix.java }}
+      SERVICE:  ${{ matrix.service }}
     
     steps:
       - uses: actions/checkout@v4
@@ -33,7 +41,7 @@ jobs:
 
       - name: run tests
         run: |
-          docker compose -f .github/docker-compose.yml up "test-jdk${JAVA_VERSION}" --abort-on-container-exit --exit-code-from "test-jdk${JAVA_VERSION}"
+          docker compose -f .github/docker-compose.yml up "${SERVICE}" --abort-on-container-exit --exit-code-from "${SERVICE}"
 
   publish:
     name: Publish Artifacts

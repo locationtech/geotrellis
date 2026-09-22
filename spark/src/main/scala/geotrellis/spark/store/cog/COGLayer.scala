@@ -42,6 +42,7 @@ import _root_.io.circe.*
 
 import scala.reflect.*
 import java.net.URI
+import geotrellis.util.conversions.ConversionLift.*
 
 
 case class COGLayer[K, T <: CellGrid[Int]](
@@ -292,8 +293,8 @@ object COGLayer {
     // TODO Can we use tile.crop(Seq[GridBounds]) here?
     // Can we rely on method dispatch to pickup GeoTiffTile implementation?
     val tiles: Seq[(SpatialKey, V)] = for {
-      layoutRow <- 0 until layout.layoutRows
-      layoutCol <- 0 until layout.layoutCols
+      layoutRow <- Range(0, layout.layoutRows)
+      layoutCol <- Range(0, layout.layoutCols)
       segmentBounds = GridBounds(
         colMin = layoutCol * segmentCols,
         rowMin = layoutRow * segmentRows,
@@ -304,9 +305,9 @@ object COGLayer {
        * Otherwise this access pattern, individual crops, may result in a lot of repeated IO.
        */
       val key = SpatialKey(layoutCol, layoutRow)
-      val left = previous.tile.crop(segmentBounds)
-      val right = update.tile.crop(segmentBounds)
-      (key, left.merge(right))
+      val left = (previous.tile: CropMethods[V]).crop(segmentBounds)
+      val right = (update.tile: CropMethods[V]).crop(segmentBounds)
+      (key, (left: TileMergeMethods[V]).merge(right))
     }
 
     // NEXT rebuild overviews

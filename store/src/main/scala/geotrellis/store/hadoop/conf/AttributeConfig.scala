@@ -16,8 +16,7 @@
 
 package geotrellis.store.hadoop.conf
 
-import pureconfig.ConfigSource
-import pureconfig.generic.auto.*
+import pureconfig.{ConfigReader, ConfigSource}
 
 case class AttributeCachingConfig(
   expirationMinutes: Int = 60,
@@ -27,7 +26,21 @@ case class AttributeCachingConfig(
 
 case class AttributeConfig(caching: AttributeCachingConfig = AttributeCachingConfig())
 
+object AttributeCachingConfig {
+  implicit val attributeCachingConfigReader: ConfigReader[AttributeCachingConfig] =
+    ConfigReader.forProduct3[AttributeCachingConfig, Option[Int], Option[Int], Option[Boolean]](
+      "expiration-minutes", "max-size", "enabled"
+    ) { (expirationMinutes, maxSize, enabled) =>
+      AttributeCachingConfig(expirationMinutes.getOrElse(60), maxSize.getOrElse(1000), enabled.getOrElse(true))
+    }
+}
+
 object AttributeConfig {
+  implicit val attributeConfigReader: ConfigReader[AttributeConfig] =
+    ConfigReader.forProduct1[AttributeConfig, Option[AttributeCachingConfig]]("caching") { caching =>
+      AttributeConfig(caching.getOrElse(AttributeCachingConfig()))
+    }
+
   lazy val conf: AttributeConfig = ConfigSource.default.at("geotrellis.attribute").loadOrThrow[AttributeConfig]
   implicit def attributeConfigToClass(obj: AttributeConfig.type): AttributeConfig = conf
 }

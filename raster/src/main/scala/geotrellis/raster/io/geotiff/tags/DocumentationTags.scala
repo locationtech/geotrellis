@@ -18,9 +18,7 @@ package geotrellis.raster.io.geotiff.tags
 
 import io.circe.*
 import io.circe.generic.semiauto.*
-import monocle.macros.Lenses
 
-@Lenses("_")
 case class DocumentationTags(
   documentName: Option[String] = None,
   pageName: Option[String] = None,

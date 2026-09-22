@@ -69,10 +69,10 @@ object FlowDirection {
         (128,  (c + 1, r - 1)  )
       )
     // remove invalid neighbours and produce map of drop-values
-      map.filter { case(_, (col, row)) =>
-        0 <= col && col < ncols &&
-        0 <= row && row < nrows &&
-        isData(raster.get(col, row))
+    map.filter { case(_, (col, row)) =>
+      0 <= col && col < ncols &&
+      0 <= row && row < nrows &&
+      isData(raster.get(col, row))
     }.map { case (k, v) => k -> (center - raster.get(v._1, v._2)) / distances(k) }
   }
 

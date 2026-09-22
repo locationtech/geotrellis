@@ -18,7 +18,6 @@ package geotrellis.store.index.hilbert
 
 import geotrellis.layer.SpaceTimeKey
 
-import jp.ne.opt.chronoscala.Imports.*
 
 import java.time.temporal.ChronoUnit.MILLIS
 import java.time.{ZoneOffset, ZonedDateTime}

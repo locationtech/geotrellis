@@ -22,11 +22,13 @@ import org.locationtech.jts.{geom as jts}
 import cats.syntax.either.*
 import _root_.io.circe.*
 import _root_.io.circe.syntax.*
-import _root_.io.circe.generic.JsonCodec
+import _root_.io.circe.generic.semiauto.deriveCodec
 
 case class ExtentRangeError(msg: String) extends Exception(msg)
 
 object Extent {
+  implicit val codecForExtent: Codec.AsObject[Extent] = deriveCodec[Extent]
+
   val listEncoder: Encoder[Extent] =
     Encoder.instance { extent => List(extent.xmin, extent.ymin, extent.xmax, extent.ymax).asJson }
 
@@ -63,7 +65,6 @@ object Extent {
   * @param extent The Extent which is projected
   * @param crs    The CRS projection of this extent
   */
-@JsonCodec
 case class ProjectedExtent(extent: Extent, crs: CRS) {
   def reproject(dest: CRS): Extent =
     extent.reproject(crs, dest)
@@ -74,6 +75,8 @@ case class ProjectedExtent(extent: Extent, crs: CRS) {
 
 /** ProjectedExtent companion object */
 object ProjectedExtent {
+  implicit val codecForProjectedExtent: Codec.AsObject[ProjectedExtent] = deriveCodec[ProjectedExtent]
+
   implicit def fromTupleA(tup: (Extent, CRS)): ProjectedExtent = ProjectedExtent(tup._1, tup._2)
   implicit def fromTupleB(tup: (CRS, Extent)): ProjectedExtent = ProjectedExtent(tup._2, tup._1)
 }
@@ -85,7 +88,6 @@ object ProjectedExtent {
   * @param xmax The maximum x coordinate
   * @param ymax The maximum y coordinate
   */
-@JsonCodec
 case class Extent(
   xmin: Double, ymin: Double,
   xmax: Double, ymax: Double
@@ -135,15 +137,15 @@ case class Extent(
   def interiorIntersects(other: Extent): Boolean =
     !(other.xmax <= xmin ||
       other.xmin >= xmax) &&
-  !(other.ymax <= ymin ||
-    other.ymin >= ymax)
+    !(other.ymax <= ymin ||
+      other.ymin >= ymax)
 
   /** Predicate for whether this extent intersects another */
   def intersects(other: Extent): Boolean =
     !(other.xmax < xmin ||
       other.xmin > xmax) &&
-  !(other.ymax < ymin ||
-    other.ymin > ymax)
+    !(other.ymax < ymin ||
+      other.ymin > ymax)
 
   /** Predicate for whether this extent intersects another */
   def intersects(p: jts.Point): Boolean =
@@ -158,9 +160,9 @@ case class Extent(
     if(xmin == 0 && xmax == 0 && ymin == 0 && ymax == 0) false
     else
       other.xmin >= xmin &&
-    other.ymin >= ymin &&
-    other.xmax <= xmax &&
-    other.ymax <= ymax
+        other.ymin >= ymin &&
+        other.xmax <= xmax &&
+        other.ymax <= ymax
   }
 
   /** Tests if the given point lies in or on the envelope.

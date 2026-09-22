@@ -20,6 +20,7 @@ import geotrellis.proj4.{LatLng, Transform, WebMercator}
 import geotrellis.raster.{Raster, RasterExtent, SinglebandRaster, Tile}
 import org.openjdk.jmh.annotations.{Mode as JMHMode, *}
 import geotrellis.bench.*
+import geotrellis.raster.reproject.Implicits.withSinglebandRasterReprojectMethods
 
 @BenchmarkMode(Array(JMHMode.AverageTime))
 @State(Scope.Thread)

@@ -25,6 +25,7 @@ import geotrellis.spark.*
 import org.apache.spark.rdd.RDD
 
 import scala.reflect.*
+import geotrellis.util.conversions.ConversionLift.*
 
 
 object RDDHistogramEqualization {

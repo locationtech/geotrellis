@@ -24,6 +24,7 @@ import geotrellis.spark.*
 import geotrellis.util.*
 import geotrellis.vector.Extent
 import org.apache.spark.rdd.*
+import geotrellis.util.conversions.ConversionLift.*
 
 object Crop {
   def apply[

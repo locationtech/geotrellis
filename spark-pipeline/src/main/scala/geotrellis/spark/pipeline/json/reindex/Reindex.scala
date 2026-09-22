@@ -17,7 +17,8 @@
 package geotrellis.spark.pipeline.json.reindex
 
 import geotrellis.spark.pipeline.json.*
-import io.circe.generic.extras.ConfiguredJsonCodec
+import io.circe.{Decoder, Encoder}
+import geotrellis.spark.pipeline.json.CodecUtils.orDefault
 
 // TODO: implement node for these PipelineExpr
 trait Reindex extends PipelineExpr {
@@ -27,7 +28,6 @@ trait Reindex extends PipelineExpr {
   val keyIndexMethod: PipelineKeyIndexMethod
 }
 
-@ConfiguredJsonCodec
 case class JsonReindex(
   name: String,
   profile: String,
@@ -35,3 +35,20 @@ case class JsonReindex(
   keyIndexMethod: PipelineKeyIndexMethod,
   `type`: PipelineExprType
 ) extends Reindex
+
+object JsonReindex {
+  implicit val jsonReindexEncoder: Encoder[JsonReindex] =
+    Encoder.forProduct5("name", "profile", "uri", "key_index_method", "type") { r =>
+      (r.name, r.profile, r.uri, r.keyIndexMethod, r.`type`)
+    }
+
+  implicit val jsonReindexDecoder: Decoder[JsonReindex] = Decoder.instance { c =>
+    for {
+      name <- c.get[String]("name")
+      prof <- c.get[String]("profile")
+      uri  <- c.get[String]("uri")
+      kim  <- c.get[PipelineKeyIndexMethod]("key_index_method")
+      tpe  <- c.get[PipelineExprType]("type")
+    } yield JsonReindex(name, prof, uri, kim, tpe)
+  }
+}

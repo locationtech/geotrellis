@@ -16,12 +16,16 @@
 
 package geotrellis.raster.io.geotiff.tags
 
-import io.circe.generic.JsonCodec
+import io.circe.Codec
+import io.circe.generic.semiauto.deriveCodec
 
-@JsonCodec
 case class TiffTagMetadata(
   tag: Int,
   fieldType: Int,
   length: Long,
   offset: Long
 )
+
+object TiffTagMetadata {
+  implicit val codecForTiffTagMetadata: Codec.AsObject[TiffTagMetadata] = deriveCodec[TiffTagMetadata]
+}

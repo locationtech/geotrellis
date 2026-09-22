@@ -31,6 +31,7 @@ import geotrellis.spark.testkit.io.cog.*
 import geotrellis.util.*
 
 import java.time.*
+import geotrellis.util.identityComponent
 
 
 trait COGLayerUpdateSpaceTimeTileSpec

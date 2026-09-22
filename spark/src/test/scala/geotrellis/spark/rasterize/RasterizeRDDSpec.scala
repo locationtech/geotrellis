@@ -33,6 +33,7 @@ import org.apache.spark.*
 
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.funspec.AnyFunSpec
+import geotrellis.util.identityComponent
 
 class RasterizeRDDSpec extends AnyFunSpec with Matchers with TestEnvironment {
 
@@ -59,8 +60,8 @@ class RasterizeRDDSpec extends AnyFunSpec with Matchers with TestEnvironment {
     // this method tests that map-side combine works correctly.
     val expected: Tile = {
       for {
-        tileCol <- 0 until 3
-        tileRow <- 0 until 3
+        tileCol <- Range(0, 3)
+        tileRow <- Range(0, 3)
       } yield {
         val sk = SpatialKey(tileCol, tileRow)
         val keyExtent = ld.mapTransform(sk)
@@ -87,8 +88,8 @@ class RasterizeRDDSpec extends AnyFunSpec with Matchers with TestEnvironment {
 
     val expected: Tile = {
       for {
-        tileCol <- 0 until 3
-        tileRow <- 0 until 3
+        tileCol <- Range(0, 3)
+        tileRow <- Range(0, 3)
       } yield {
         val sk = SpatialKey(tileCol, tileRow)
         val keyExtent = ld.mapTransform(sk)

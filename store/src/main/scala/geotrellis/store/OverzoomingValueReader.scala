@@ -21,6 +21,7 @@ import geotrellis.raster.resample.{ResampleMethod, TileResampleMethods}
 import geotrellis.raster.{CellGrid, RasterExtent}
 import geotrellis.store.avro.AvroRecordCodec
 import geotrellis.util.*
+import geotrellis.util.conversions.ConversionLift.*
 
 import io.circe.*
 

@@ -27,6 +27,7 @@ import geotrellis.vector.*
 
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
+import geotrellis.util.identityComponent
 
 case class TileToLayout(
   node: Node[RDD[(ProjectedExtent, MultibandTile)]],

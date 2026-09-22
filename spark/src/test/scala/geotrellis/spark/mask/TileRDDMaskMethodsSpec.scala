@@ -28,6 +28,7 @@ import org.scalatest.matchers.should.Matchers
 import org.scalatest.funspec.AnyFunSpec
 
 import scala.util.Random
+import geotrellis.util.identityComponent
 
 class TileRDDMaskMethodsSpec extends AnyFunSpec with Matchers with TestEnvironment with TestFiles with TileLayerRDDBuilders with RasterMatchers {
 

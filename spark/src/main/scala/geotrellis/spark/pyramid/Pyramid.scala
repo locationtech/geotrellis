@@ -35,6 +35,7 @@ import org.apache.spark.storage.StorageLevel
 import _root_.io.circe.*
 
 import scala.reflect.ClassTag
+import geotrellis.util.conversions.ConversionLift.*
 
 case class Pyramid[
     K: SpatialComponent: ClassTag,
@@ -218,8 +219,8 @@ object Pyramid {
 
           // Resample the tile on the map side of the pyramid step.
           // This helps with shuffle size.
-          val resampled = tile.prototype(sourceLayout.tileCols / 2, sourceLayout.tileRows / 2)
-          resampled.merge(extent, extent, tile, resampleMethod)
+          val resampled = (tile: TilePrototypeMethods[V]).prototype(sourceLayout.tileCols / 2, sourceLayout.tileRows / 2)
+          (resampled: TileMergeMethods[V]).merge(extent, extent, tile, resampleMethod)
 
           (key.setComponent(newSpatialKey), Raster(resampled, extent))
         }
@@ -228,10 +229,10 @@ object Pyramid {
         .fold(transformedRdd.combineByKey(createTiles, mergeTiles1, mergeTiles2))(transformedRdd.combineByKey(createTiles _, mergeTiles1 _, mergeTiles2 _, _))
         .mapPartitions ( partition => partition.map { case (newKey: K, seq: Seq[Raster[V]]) =>
            val newExtent = newKey.getComponent[SpatialKey].extent(nextLayout)
-           val newTile = seq.head.tile.prototype(nextLayout.tileLayout.tileCols, nextLayout.tileLayout.tileRows)
+           val newTile = (seq.head.tile: TilePrototypeMethods[V]).prototype(nextLayout.tileLayout.tileCols, nextLayout.tileLayout.tileRows)
 
            for (raster <- seq) {
-             newTile.merge(newExtent, raster.extent, raster.tile, NearestNeighbor)
+             (newTile: TileMergeMethods[V]).merge(newExtent, raster.extent, raster.tile, NearestNeighbor)
            }
            (newKey, newTile: V)
         },  preservesPartitioning = true)

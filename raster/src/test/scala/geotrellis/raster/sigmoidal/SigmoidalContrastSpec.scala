@@ -27,7 +27,7 @@ class SigmoidalContrastSpec extends AnyFunSpec with Matchers {
     it("should work on floating-point rasters") {
       val x = Double.MaxValue / 2.0
       val a = Double.MinValue
-      val b = 0
+      val b = 0.0
       val c = Double.MaxValue
       val data = List(a, a+x, b, c-x, c)
       val tile = DoubleArrayTile(data.map(_.toDouble).toArray, 1, 5).sigmoidal(0.5, 10)

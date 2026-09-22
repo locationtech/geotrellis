@@ -26,6 +26,11 @@ import geotrellis.spark.testkit.TestEnvironment
 import geotrellis.spark.testkit.io.*
 import geotrellis.spark.testkit.io.cog.*
 import geotrellis.spark.testkit.testfiles.cog.*
+import geotrellis.util.identityComponent
+import geotrellis.raster.Implicits.withSinglebandMergeMethods
+import geotrellis.raster.prototype.Implicits.withSinglebandTilePrototypeMethods
+import geotrellis.raster.crop.Implicits.withSinglebandTileCropMethods
+import org.apache.spark.rdd.RDD
 
 class COGS3SpatialSpec
   extends COGPersistenceSpec[SpatialKey, Tile]
@@ -53,5 +58,5 @@ class COGS3SpatialSpec
   // lazy val reindexer = GenericLayerReindexer[S3LayerHeader](attributeStore, reader, writer, deleter, copier)
   // lazy val mover = GenericLayerMover(copier, deleter)
   lazy val tiles: S3COGValueReader = new S3COGValueReader(attributeStore, MockS3Client.instance)
-  lazy val sample: AllOnesTestFile.type = AllOnesTestFile
+  lazy val sample: RDD[(SpatialKey, Tile)] with Metadata[TileLayerMetadata[SpatialKey]] = AllOnesTestFile
 }

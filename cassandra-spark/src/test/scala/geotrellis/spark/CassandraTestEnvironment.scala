@@ -23,6 +23,7 @@ import geotrellis.spark.testkit.TestEnvironment
 import org.apache.spark.SparkConf
 
 import org.scalatest.Suite
+import geotrellis.util.identityComponent
 
 trait CassandraTestEnvironment extends TestEnvironment { self: Suite =>
   override def setKryoRegistrator(conf: SparkConf): Unit =

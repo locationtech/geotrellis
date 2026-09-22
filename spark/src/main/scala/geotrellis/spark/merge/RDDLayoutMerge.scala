@@ -26,6 +26,7 @@ import geotrellis.vector.Extent
 import org.apache.spark.rdd.RDD
 
 import scala.reflect.ClassTag
+import geotrellis.util.conversions.ConversionLift.*
 
 object RDDLayoutMerge {
   /** Merges an RDD with metadata that contains a layout definition into another. */
@@ -46,8 +47,8 @@ object RDDLayoutMerge {
             .coordsIter
             .map { case (col, row) =>
               val outKey = k.setComponent(SpatialKey(col, row))
-              val newTile = tile.prototype(thisLayout.tileCols, thisLayout.tileRows)
-              val merged = newTile.merge(outKey.getComponent[SpatialKey].extent(thisLayout), extent, tile)
+              val newTile = (tile: TilePrototypeMethods[V]).prototype(thisLayout.tileCols, thisLayout.tileRows)
+              val merged = (newTile: TileMergeMethods[V]).merge(outKey.getComponent[SpatialKey].extent(thisLayout), extent, tile)
               (outKey, merged)
             }
         }

@@ -17,7 +17,8 @@
 package geotrellis.spark.pipeline.json.update
 
 import geotrellis.spark.pipeline.json.*
-import io.circe.generic.extras.ConfiguredJsonCodec
+import io.circe.{Decoder, Encoder}
+import geotrellis.spark.pipeline.json.CodecUtils.orDefault
 
 // TODO: implement node for these PipelineExpr
 trait Update extends PipelineExpr {
@@ -28,7 +29,6 @@ trait Update extends PipelineExpr {
   val maxZoom: Option[Int]
 }
 
-@ConfiguredJsonCodec
 case class JsonUpdate(
   name: String,
   profile: String,
@@ -37,3 +37,21 @@ case class JsonUpdate(
   maxZoom: Option[Int] = None,
   `type`: PipelineExprType
 ) extends Update
+
+object JsonUpdate {
+  implicit val jsonUpdateEncoder: Encoder[JsonUpdate] =
+    Encoder.forProduct6("name", "profile", "uri", "pyramid", "max_zoom", "type") { u =>
+      (u.name, u.profile, u.uri, u.pyramid, u.maxZoom, u.`type`)
+    }
+
+  implicit val jsonUpdateDecoder: Decoder[JsonUpdate] = Decoder.instance { c =>
+    for {
+      name <- c.get[String]("name")
+      prof <- c.get[String]("profile")
+      uri  <- c.get[String]("uri")
+      pyr  <- c.get[Boolean]("pyramid")
+      mz   <- orDefault[Option[Int]](c, "max_zoom", None)
+      tpe  <- c.get[PipelineExprType]("type")
+    } yield JsonUpdate(name, prof, uri, pyr, mz, tpe)
+  }
+}

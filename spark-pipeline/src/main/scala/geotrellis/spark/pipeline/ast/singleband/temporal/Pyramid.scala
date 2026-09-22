@@ -24,6 +24,8 @@ import geotrellis.spark.pipeline.ast.*
 import geotrellis.spark.pipeline.json.transform
 
 import org.apache.spark.SparkContext
+import geotrellis.store.Implicits.spaceTimeKeyAvroFormat
+import geotrellis.store.avro.codecs.Implicits.*
 
 case class Pyramid(
   node: Node[TileLayerRDD[SpaceTimeKey]],

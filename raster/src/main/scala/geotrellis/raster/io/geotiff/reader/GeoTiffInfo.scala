@@ -26,7 +26,7 @@ import geotrellis.raster.io.geotiff.util.*
 import geotrellis.raster.io.geotiff.tags.codes.ColorSpace
 import geotrellis.raster.render.IndexedColorMap
 import geotrellis.util.ByteReader
-import monocle.syntax.apply.*
+import monocle.syntax.all.*
 import java.nio.ByteOrder
 import scala.collection.mutable.ListBuffer
 
@@ -190,21 +190,15 @@ object GeoTiffInfo {
         val storageMethod: StorageMethod =
           if(tiffTags.hasStripStorage()) {
             val rowsPerStrip: Int =
-              (tiffTags
-                &|-> TiffTags._basicTags
-                ^|-> BasicTags._rowsPerStrip get).toInt
+              (tiffTags.focus(_.basicTags.rowsPerStrip).get).toInt
 
             Striped(rowsPerStrip)
           } else {
             val blockCols =
-              (tiffTags
-                &|-> TiffTags._tileTags
-                ^|-> TileTags._tileWidth get).get.toInt
+              (tiffTags.focus(_.tileTags.tileWidth).get).get.toInt
 
             val blockRows =
-              (tiffTags
-                &|-> TiffTags._tileTags
-                ^|-> TileTags._tileLength get).get.toInt
+              (tiffTags.focus(_.tileTags.tileLength).get).get.toInt
 
             Tiled(blockCols, blockRows)
           }
@@ -223,14 +217,10 @@ object GeoTiffInfo {
             ArraySegmentBytes(byteReader, tiffTags)
 
         val noDataValue =
-          (tiffTags
-            &|-> TiffTags._geoTiffTags
-            ^|-> GeoTiffTags._gdalInternalNoData get)
+          (tiffTags.focus(_.geoTiffTags.gdalInternalNoData).get)
 
         val subfileType =
-          (tiffTags
-            &|-> TiffTags._nonBasicTags ^|->
-            NonBasicTags._newSubfileType get).flatMap(code => NewSubfileType.fromCode(code))
+          (tiffTags.focus(_.nonBasicTags.newSubfileType).get).flatMap(code => NewSubfileType.fromCode(code))
 
         // If the GeoTiff is coming is as uncompressed, leave it as uncompressed.
         // If it's any sort of compression, move forward with ZLib compression.

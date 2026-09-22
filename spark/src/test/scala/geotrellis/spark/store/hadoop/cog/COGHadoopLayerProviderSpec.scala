@@ -22,6 +22,7 @@ import geotrellis.spark.store.cog.*
 import geotrellis.spark.testkit.TestEnvironment
 
 import org.scalatest.funspec.AnyFunSpec
+import geotrellis.util.identityComponent
 
 class COGHadoopLayerProviderSpec extends AnyFunSpec with TestEnvironment {
   val uri = new java.net.URI("hdfs+file:/tmp/catalog")

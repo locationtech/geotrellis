@@ -27,6 +27,7 @@ import geotrellis.store.s3.AmazonS3URI
 import org.apache.hadoop.fs.Path
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
+import geotrellis.spark.pipeline.withGetOptionCRS
 
 trait Input[T] extends Node[T]
 

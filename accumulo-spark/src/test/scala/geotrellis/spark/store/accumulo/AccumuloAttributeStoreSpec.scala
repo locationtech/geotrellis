@@ -24,6 +24,7 @@ import org.scalatest.BeforeAndAfterAll
 import org.apache.accumulo.minicluster.MiniAccumuloCluster
 
 import java.nio.file.Files
+import geotrellis.util.identityComponent
 
 class AccumuloAttributeStoreSpec extends AttributeStoreSpec with BeforeAndAfterAll {
   var miniAccumuloCluster: MiniAccumuloCluster = _

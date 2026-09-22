@@ -34,6 +34,8 @@ import cats.effect.*
 import cats.syntax.either.*
 
 import scala.reflect.ClassTag
+import geotrellis.util.conversions.ConversionLift.*
+import geotrellis.vector.reproject.Implicits.ReprojectExtent
 
 /**
   * @define experimental <span class="badge badge-red" style="float: right;">EXPERIMENTAL</span>@experimental
@@ -44,7 +46,7 @@ import scala.reflect.ClassTag
   val resampleMethod: ResampleMethod
   val strategy: OverviewStrategy
 
-  implicit val ioRuntime: unsafe.IORuntime
+  implicit def ioRuntime: unsafe.IORuntime
 
   @experimental def read[V <: CellGrid[Int]: GeoTiffReader: ClassTag]
     (layerId: LayerId)
@@ -73,11 +75,15 @@ import scala.reflect.ClassTag
           .extent
           .intersection(reprojectedKeyExtent)
           .map { ext =>
-            tiff
-              .getClosestOverview(layout.cellSize, strategy)
-              .crop(ext, Crop.Options(clamp = false))
-              .raster
-              .reproject(tiff.crs, layoutScheme.crs, ReprojectOptions(targetCellSize = Some(layout.cellSize)))
+            val cropped: Raster[V] =
+              tiff
+                .getClosestOverview(layout.cellSize, strategy)
+                .crop(ext, Crop.Options(clamp = false))
+                .raster
+            val reprojected: Raster[V] =
+              (cropped: RasterReprojectMethods[Raster[V]])
+                .reproject(tiff.crs, layoutScheme.crs, ReprojectOptions(targetCellSize = Some(layout.cellSize)))
+            (reprojected: RasterResampleMethods[Raster[V]])
               .resample(RasterExtent(keyExtent, layoutScheme.tileSize, layoutScheme.tileSize))
           }
       }
@@ -85,7 +91,7 @@ import scala.reflect.ClassTag
 
     (index flatMap readRecord)
       .compile
-      .toVector.map(_.flatten.reduce(_ merge _))
+      .toVector.map(_.flatten.reduce((a, b) => (a: RasterMergeMethods[V]).merge(b)))
       .attempt
       .unsafeRunSync()
       .valueOr(throw _)
@@ -106,9 +112,10 @@ import scala.reflect.ClassTag
     val readRecord: GeoTiffMetadata => fs2.Stream[IO, Raster[V]] = { md =>
       fs2.Stream eval IO {
         val tiff = GeoTiffReader[V].read(RangeReader(md.uri), streaming = true)
-        tiff
-          .crop(tiff.extent, layout.cellSize)
-          .reproject(tiff.crs, layoutScheme.crs)
+        val cropped: Raster[V] = tiff.crop(tiff.extent, layout.cellSize)
+        val reprojected: Raster[V] =
+          (cropped: RasterReprojectMethods[Raster[V]]).reproject(tiff.crs, layoutScheme.crs)
+        (reprojected: RasterResampleMethods[Raster[V]])
           .resample(layoutScheme.tileSize, layoutScheme.tileSize)
       }
     }

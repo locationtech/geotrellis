@@ -20,7 +20,7 @@ import geotrellis.raster.io.geotiff.GeoTiffImageData
 import geotrellis.raster.io.geotiff.reader.MalformedGeoTiffException
 import geotrellis.raster.io.geotiff.tags.*
 import geotrellis.raster.io.geotiff.tags.codes.SampleFormat.*
-import monocle.syntax.apply.*
+import monocle.syntax.all.*
 
 object Predictor {
   val PREDICTOR_NONE = 1
@@ -36,10 +36,7 @@ object Predictor {
   }
 
   def apply(tiffTags: TiffTags): Predictor = {
-    (tiffTags
-      &|-> TiffTags._nonBasicTags
-      ^|-> NonBasicTags._predictor get
-    ) match {
+    tiffTags.focus(_.nonBasicTags.predictor).get match {
       case None | Some(PREDICTOR_NONE) =>
         new Predictor {
           val code: Int = PREDICTOR_NONE

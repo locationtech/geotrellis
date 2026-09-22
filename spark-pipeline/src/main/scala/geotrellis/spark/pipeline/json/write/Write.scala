@@ -18,8 +18,9 @@ package geotrellis.spark.pipeline.json.write
 
 import geotrellis.layer.{LayoutDefinition, LayoutScheme}
 import geotrellis.spark.pipeline.json.*
+import io.circe.{Decoder, Encoder}
+import geotrellis.spark.pipeline.json.CodecUtils.orDefault
 
-import io.circe.generic.extras.ConfiguredJsonCodec
 
 trait Write extends PipelineExpr {
   val name: String
@@ -29,7 +30,6 @@ trait Write extends PipelineExpr {
   val scheme: Either[LayoutScheme, LayoutDefinition]
 }
 
-@ConfiguredJsonCodec
 case class JsonWrite(
   name: String,
   uri: String,
@@ -38,3 +38,21 @@ case class JsonWrite(
   profile: Option[String] = None,
   `type`: PipelineExprType
 ) extends Write
+
+object JsonWrite {
+  implicit val jsonWriteEncoder: Encoder[JsonWrite] =
+    Encoder.forProduct6("name", "uri", "key_index_method", "scheme", "profile", "type") { w =>
+      (w.name, w.uri, w.keyIndexMethod, w.scheme, w.profile, w.`type`)
+    }
+
+  implicit val jsonWriteDecoder: Decoder[JsonWrite] = Decoder.instance { c =>
+    for {
+      name <- c.get[String]("name")
+      uri  <- c.get[String]("uri")
+      kim  <- c.get[PipelineKeyIndexMethod]("key_index_method")
+      sch  <- c.get[Either[LayoutScheme, LayoutDefinition]]("scheme")
+      prof <- orDefault[Option[String]](c, "profile", None)
+      tpe  <- c.get[PipelineExprType]("type")
+    } yield JsonWrite(name, uri, kim, sch, prof, tpe)
+  }
+}

@@ -25,6 +25,9 @@ import geotrellis.spark.store.*
 import geotrellis.spark.store.*
 import geotrellis.spark.testkit.io.*
 import geotrellis.spark.testkit.testfiles.TestTileFeatureFiles
+import org.apache.spark.rdd.RDD
+import geotrellis.store.avro.codecs.Implicits.*
+import geotrellis.util.identityComponent
 
 class HBaseTileFeatureSpaceTimeSpec
   extends PersistenceSpec[SpaceTimeKey, TileFeature[Tile, Tile], TileLayerMetadata[SpaceTimeKey]]
@@ -51,7 +54,7 @@ class HBaseTileFeatureSpaceTimeSpec
   lazy val writer: HBaseLayerWriter = HBaseLayerWriter(attributeStore, "tiles")
   lazy val deleter: HBaseLayerDeleter = HBaseLayerDeleter(attributeStore)
   lazy val tiles: HBaseValueReader = HBaseValueReader(attributeStore)
-  lazy val sample: CoordinateSpaceTime.type = CoordinateSpaceTime
+  lazy val sample: RDD[(SpaceTimeKey, TileFeature[Tile, Tile])] with Metadata[TileLayerMetadata[SpaceTimeKey]] = CoordinateSpaceTime
   lazy val copier: HBaseLayerCopier = HBaseLayerCopier(attributeStore, reader, writer)
   lazy val reindexer = HBaseLayerReindexer(attributeStore, reader, writer, deleter, copier)
   lazy val mover     = HBaseLayerMover(copier, deleter)

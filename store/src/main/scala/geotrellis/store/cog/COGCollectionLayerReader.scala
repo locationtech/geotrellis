@@ -24,6 +24,7 @@ import geotrellis.store.*
 import geotrellis.store.index.{Index, MergeQueue}
 import geotrellis.store.util.IOUtils
 import geotrellis.util.*
+import geotrellis.util.conversions.ConversionLift.*
 
 import io.circe.*
 import io.circe.parser.*
@@ -35,7 +36,7 @@ import java.net.URI
 import java.util.ServiceLoader
 
 abstract class COGCollectionLayerReader[ID] { self =>
-  implicit val ioRuntime: unsafe.IORuntime
+  implicit def ioRuntime: unsafe.IORuntime
   val attributeStore: AttributeStore
 
   def read[

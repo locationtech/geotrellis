@@ -19,12 +19,21 @@ object Boilerplate {
     }
   }
 
-  val templatesMacro: Seq[Template] = Seq(
+  /** Templates that are identical on every Scala version (plain traits, no macros). */
+  val templatesMacroShared: Seq[Template] = Seq(
     GenIntTileCombinersFunctions,
     GenDoubleTileCombinersFunctions,
-    GenMacroCombinableMultibandTile,
+    GenMacroCombinableMultibandTile)
+
+  /** `scala.reflect` whitebox macros and the `= macro` trait that dispatches to them. */
+  val templatesMacro2: Seq[Template] = Seq(
     GenMultibandTileMacros,
     GenMacroCombineFunctions)
+
+  /** `scala.quoted` macros and the `inline def` trait that splices them. */
+  val templatesMacro3: Seq[Template] = Seq(
+    GenMultibandTileMacros3,
+    GenMacroCombineFunctions3)
 
   val templatesRaster: Seq[Template] = Seq(
     GenMacroMultibandCombiners,
@@ -41,7 +50,11 @@ object Boilerplate {
     tgtFile
   }
 
-  def genMacro(dir: File) = gen(dir, templatesMacro)
+  private def isScala3(scalaVersion: String) = scalaVersion.startsWith("3.")
+
+  def genMacro(dir: File, scalaVersion: String) =
+    gen(dir, templatesMacroShared ++ (if (isScala3(scalaVersion)) templatesMacro3 else templatesMacro2))
+
   def genRaster(dir: File) = gen(dir, templatesRaster)
 
   val maxArity = 10
@@ -199,6 +212,73 @@ object Boilerplate {
         -    macro MultibandTileMacros.intCombine${arity}_impl[T, MBT]
         -  def combineDouble(${argsInt})(f: ${seqFDouble}): T =
         -    macro MultibandTileMacros.doubleCombine${arity}_impl[T, MBT]
+         |}
+      """
+    }
+  }
+
+  object GenMultibandTileMacros3 extends Template {
+    def filename(root: File) = root / "geotrellis" / "macros" / "MultibandTileMacros.scala"
+    override def range = 3 to maxArity
+    def content(tv: TemplateVals) = {
+      import tv.*
+
+      val argsInt    = typedSeq("Int")
+      val argsDouble = typedSeq("Double")
+      // The impl parameters are named `e$i`, not `b$i`: the quote below declares `val b$i`,
+      // which would shadow an identically named splice.
+      val exprSeq    = (0 until arity) map { i => s"e$i: Expr[Int]" } mkString ", "
+
+      def exprFunc(ts: String) = s"Expr[(${namedSeq(ts)}) => $ts]"
+
+      val quoted = (0 until arity) map { i => s"val b$i = $$e$i" } mkString "; "
+
+      block"""
+         |package geotrellis.macros
+         |import scala.quoted.*
+         |object MultibandTileMacros {
+        -  def intCombine${arity}_impl[T: Type](self: Expr[MacroCombinableMultibandTile[T]], ${exprSeq}, f: ${exprFunc("Int")})(using Quotes): Expr[T] =
+        -    '{ $$self.combineIntTileCombiner(new IntTileCombiner${arity} {
+        -       ${quoted}
+        -       def apply(${argsInt}): Int = $$f(${seq})
+        -    }) }
+        -  def doubleCombine${arity}_impl[T: Type](self: Expr[MacroCombinableMultibandTile[T]], ${exprSeq}, f: ${exprFunc("Double")})(using Quotes): Expr[T] =
+        -    '{ $$self.combineDoubleTileCombiner(new DoubleTileCombiner${arity} {
+        -       ${quoted}
+        -       def apply(${argsDouble}): Double = $$f(${seq})
+        -    }) }
+         |}
+      """
+    }
+  }
+
+  object GenMacroCombineFunctions3 extends Template {
+    def filename(root: File) = root / "geotrellis" / "macros" / "MacroCombineFunctions.scala"
+    override def range = 3 to maxArity
+    def content(tv: TemplateVals) = {
+      import tv.*
+
+      val argsInt = typedSeq("Int")
+
+      def seqFunc(ts: String) = s"(${namedSeq(ts)}) => $ts"
+
+      // `f` is an `inline` parameter so the inliner beta-reduces `$f(b0, ...)` in the expansion,
+      // which is what spire's `InlineUtil.inlineAndReset` does for the Scala 2 build.
+      val quotedArgs = (0 until arity) map { i => s"'b$i" } mkString ", "
+
+      // `this` is only statically a `MacroCombineFunctions`; the Scala 2 macro reached the real
+      // receiver through `c.prefix`. Ascribing here keeps the quote's type out of the F-bounded
+      // `MBT`, which otherwise sends dotty into an infinite `TypeOps.AvoidMap` loop.
+      val receiver = "'{ MacroCombineFunctions.this.asInstanceOf[MacroCombinableMultibandTile[T]] }"
+
+      block"""
+         |package geotrellis.macros
+         |import scala.quoted.*
+         |trait MacroCombineFunctions[T, MBT <: MacroCombinableMultibandTile[T]] {
+        -  inline def combine(${argsInt})(inline f: ${seqFunc("Int")}): T =
+        -    $${ MultibandTileMacros.intCombine${arity}_impl[T](${receiver}, ${quotedArgs}, 'f) }
+        -  inline def combineDouble(${argsInt})(inline f: ${seqFunc("Double")}): T =
+        -    $${ MultibandTileMacros.doubleCombine${arity}_impl[T](${receiver}, ${quotedArgs}, 'f) }
          |}
       """
     }

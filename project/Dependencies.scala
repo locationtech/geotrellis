@@ -18,7 +18,7 @@ import sbt.*
 
 object Version {
   val geotools    = "35.1"
-  val spire       = "0.17.0"
+  val spire       = "0.18.0" // 0.18.x is the first release cross-published for Scala 3
   val accumulo    = "2.1.4"
   val cassandra   = "4.19.3"
   val hbase       = "2.6.6"
@@ -26,21 +26,28 @@ object Version {
   val gdal        = "3.12.0"
   val gdalWarp    = "3.13.0"
 
-  val previousVersion = "3.6.0"
+  /**
+    * MiMa baseline for Scala 2. Bump this at every release.
+    *
+    * The next release is intentionally binary-breaking against 3.8.1 (`geotrellis-raster`
+    * alone reports 316 incompatibilities, from the `GeoTiffOptions` change and the monocle 3.3
+    * upgrade), so `mimaReportBinaryIssues` is not wired into CI and currently fails if run.
+    * Bumping this after that release is cut is what makes the check meaningful again.
+    *
+    * Note 3.6.0 was 2.12-only and never resolved on the 2.13 axis, so the check had been
+    * silently broken before this.
+    */
+  val previousVersion = "3.8.1"
+
+  /** No Scala 3 artifacts have been published yet, so there is nothing to compare against.
+    * Set this to the first cross-published release to switch Scala 3 checks on. */
+  val previousVersionScala3: Option[String] = None
 }
 import sbt.Keys.*
 
 object Dependencies {
-  private def ver(for212: String, for213: String) = Def.setting {
-    CrossVersion.partialVersion(scalaVersion.value) match {
-      case Some((2, 12)) => for212
-      case Some((2, 13)) => for213
-      case _ => sys.error("not good")
-    }
-  }
-
   def monocle(module: String) = Def.setting {
-    "com.github.julien-truffaut" %% s"monocle-$module" % "2.1.0"
+    "dev.optics" %% s"monocle-$module" % "3.3.0"
   }
 
   def cats(module: String) = Def.setting {
@@ -62,13 +69,29 @@ object Dependencies {
     "co.fs2" %% s"fs2-$module" % "3.13.0"
   }
 
+  /** Spark has no Scala 3 build, so Scala 3 consumes the Scala 2.13 artifacts. */
+  def for3Use2_13(module: ModuleID) = Def.setting {
+    if (CrossVersion.partialVersion(scalaVersion.value).exists(_._1 == 3)) module.cross(CrossVersion.for3Use2_13)
+    else module
+  }
+
   def apacheSpark(module: String) = Def.setting {
-    "org.apache.spark"  %% s"spark-$module" % "4.0.3"
+    val dep = for3Use2_13("org.apache.spark" %% s"spark-$module" % "4.0.3").value
+    // Spark's 2.13 jars pull the _2.13 builds of these, while the pure Scala 3 modules
+    // (proj4, store) bring the _3 builds. They are the same classes, so keep one copy.
+    if (CrossVersion.partialVersion(scalaVersion.value).exists(_._1 == 3))
+      dep.excludeAll(
+        ExclusionRule("org.scala-lang.modules", "scala-xml_2.13"),
+        ExclusionRule("org.scala-lang.modules", "scala-parser-combinators_2.13")
+      )
+    else dep
   }
 
   def scalaReflect(version: String) = "org.scala-lang" % "scala-reflect" % version
 
   val pureconfig          = "com.github.pureconfig"      %% "pureconfig"               % "0.17.8"
+  // pureconfig's aggregate and `-generic` artifacts have no Scala 3 build; core does.
+  val pureconfigCore      = "com.github.pureconfig"      %% "pureconfig-core"          % "0.17.10"
   val log4s               = "org.log4s"                  %% "log4s"                    % "1.10.0"
   val scalatest           = "org.scalatest"              %% "scalatest"                % "3.2.20"
   val scalacheck          = "org.scalacheck"             %% "scalacheck"               % "1.19.0"
@@ -82,7 +105,9 @@ object Dependencies {
   val apacheIO            = "commons-io"                  % "commons-io"               % "2.22.0"
   val apacheLang3         = "org.apache.commons"          % "commons-lang3"            % "3.20.0"
   val apacheMath          = "org.apache.commons"          % "commons-math3"            % "3.6.1"
-  val chronoscala         = "jp.ne.opt"                  %% "chronoscala"              % "1.0.0"
+  // 2.0.10 is the newest release built against Scala 3.3.x; 2.0.13 targets 3.5.1 and 2.1.0
+  // targets 3.6.4, whose TASTy the 3.3 LTS compiler cannot read.
+  val chronoscala         = "io.github.chronoscala"      %% "chronoscala"              % "2.0.10"
   val awsSdkS3            = "software.amazon.awssdk"      % "s3"                       % "2.46.15"
   val hadoopClient        = "org.apache.hadoop"           % "hadoop-client"            % Version.hadoop
   val avro                = "org.apache.avro"             % "avro"                     % "1.11.5" // aligned with the Spark version // 1.12.0 causes test issues; 1.13.0-SNAPSHOT works
@@ -113,6 +138,9 @@ object Dependencies {
 
   val scalaArm            = "com.jsuereth"                %% "scala-arm"               % "2.0"
 
+  // cross-published runtime type tags; `scala.reflect.runtime.universe.TypeTag` has no Scala 3 equivalent
+  val izumiReflect        = "dev.zio"                     %% "izumi-reflect"           % "2.3.9"
+
   val kryoSerializers     = "de.javakaffee"                % "kryo-serializers"        % "0.38"
   val kryoShaded          = "com.esotericsoftware"         % "kryo-shaded"             % "3.0.3"
 
@@ -138,8 +166,6 @@ object Dependencies {
 
   val gdalBindings        = "org.gdal"                     % "gdal"                    % Version.gdal
   val gdalWarp            = "com.azavea.geotrellis"        % "gdal-warp-bindings"      % Version.gdalWarp
-
-  val shapeless           = "com.chuusai"  %% "shapeless" % "2.3.13"
 
   // aligned with the GeoTools version
   val unitApi             = "javax.measure" % "unit-api"  % "2.2"

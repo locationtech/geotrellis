@@ -16,6 +16,8 @@
 
 package geotrellis.doc.examples
 
+import geotrellis.util.identityComponent
+
 object LandsatMultibandRDDExample {
   def main(args: Array[String]): Unit =
     `Generate an RDD of multiband tiles from landsat on S3`

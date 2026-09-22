@@ -58,7 +58,7 @@ class LayoutTileSource[K: SpatialComponent](
   }
 
   def read(key: K): Option[MultibandTile] =
-    read(key, 0 until source.bandCount)
+    read(key, Range(0, source.bandCount))
 
   /** Read tile according to key.
     * If tile area intersects source partially the non-intersecting pixels will be filled with NODATA.
@@ -140,7 +140,7 @@ class LayoutTileSource[K: SpatialComponent](
     }
 
   def readAll(keys: Iterator[K]): Iterator[(K, MultibandTile)] =
-    readAll(keys, 0 until source.bandCount)
+    readAll(keys, Range(0, source.bandCount))
 
   /** Read all available tiles */
   def readAll(): Iterator[(K, MultibandTile)] =

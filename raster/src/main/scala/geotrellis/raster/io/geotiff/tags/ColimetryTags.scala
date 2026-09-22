@@ -16,11 +16,9 @@
 
 package geotrellis.raster.io.geotiff.tags
 
-import monocle.macros.Lenses
 import io.circe.*
 import io.circe.generic.semiauto.*
 
-@Lenses("_")
 case class ColimetryTags(
   whitePoints: Option[Array[(Long, Long)]] = None,
   primaryChromaticities: Option[Array[(Long, Long)]] = None,

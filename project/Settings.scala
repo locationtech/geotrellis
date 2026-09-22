@@ -58,17 +58,39 @@ object Settings {
 
   lazy val kindProjectorPlugin = addCompilerPlugin("org.typelevel" % "kind-projector" % "0.13.4" cross CrossVersion.full)
 
+  val scala213 = "2.13.18"
+  val scala3   = "3.3.7"
+
+  val crossScala2And3 = Seq(scala213, scala3)
+
+  /**
+   * MiMa baseline for a module. Resolves to an empty set when no baseline exists for the
+   * current Scala version, which is how Scala 3 is skipped until the first cross-published
+   * release sets `Version.previousVersionScala3`.
+   */
+  def mimaPrevious(artifact: String): Def.Initialize[Set[ModuleID]] = Def.setting {
+    val baseline =
+      if (isScala3(scalaVersion.value)) Version.previousVersionScala3
+      else Some(Version.previousVersion)
+    baseline.map(v => "org.locationtech.geotrellis" %% artifact % v).toSet
+  }
+
+  def isScala3(version: String): Boolean =
+    CrossVersion.partialVersion(version).exists(_._1 == 3)
+
   val commonScalacOptions = Seq(
     "-deprecation",
     "-unchecked",
     "-feature",
     "-language:implicitConversions",
-    "-language:reflectiveCalls",
     "-language:higherKinds",
     "-language:postfixOps",
-    "-language:existentials",
+    "-language:existentials"
+  )
+
+  val scala2ScalacOptions = Seq(
+    "-language:reflectiveCalls",
     "-language:experimental.macros",
-    "-feature",
     // "-Yrangepos",            // required by SemanticDB compiler plugin
     // "-Ywarn-unused-import",  // required by `RemoveUnused` rule
     "-target:jvm-1.8",
@@ -79,12 +101,21 @@ object Settings {
     "-Wconf:msg=found in a package prefix:s"
   )
 
+  val scala3ScalacOptions = Seq(
+    "-release:8",
+    "-source:3.3",
+    "-Ykind-projector:underscores"
+  )
+
+  def scalacOptionsFor(version: String): Seq[String] =
+    commonScalacOptions ++ (if (isScala3(version)) scala3ScalacOptions else scala2ScalacOptions)
+
   lazy val commonSettings = Seq(
     description := "geographic data processing library for high performance applications",
     licenses := Seq("Apache-2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0.html")),
     homepage := Some(url("https://geotrellis.io")),
     scmInfo := Some(ScmInfo(url("https://github.com/locationtech/geotrellis"), "scm:git:git@github.com:locationtech/geotrellis.git")),
-    scalacOptions ++= commonScalacOptions,
+    scalacOptions ++= scalacOptionsFor(scalaVersion.value),
     publishMavenStyle := true,
     Test / publishArtifact := false,
     pomIncludeRepository := { _ => false },
@@ -112,24 +143,31 @@ object Settings {
       Path.userHome / ".sbt" / ".credentials"
     ).filter(_.asFile.canRead).map(Credentials(_)),
 
-    kindProjectorPlugin,
-    addCompilerPlugin("org.scalameta" % "semanticdb-scalac" % "4.17.0" cross CrossVersion.full),
-
+    // kind-projector and semanticdb-scalac are Scala 2 compiler plugins; Scala 3 has both built in
+    // (`-Ykind-projector:underscores` and `-Xsemanticdb`).
     libraryDependencies ++= (CrossVersion.partialVersion(scalaVersion.value) match {
-      case Some((2, 13)) => Nil
+      case Some((3, _))  => Nil
+      case Some((2, 13)) => Seq(
+        compilerPlugin("org.typelevel" % "kind-projector" % "0.13.4" cross CrossVersion.full),
+        compilerPlugin("org.scalameta" % "semanticdb-scalac" % "4.17.0" cross CrossVersion.full)
+      )
       case Some((2, 12)) => Seq(
+        compilerPlugin("org.typelevel" % "kind-projector" % "0.13.4" cross CrossVersion.full),
+        compilerPlugin("org.scalameta" % "semanticdb-scalac" % "4.17.0" cross CrossVersion.full),
         compilerPlugin("org.scalamacros" % "paradise" % "2.1.1" cross CrossVersion.full),
         "org.scala-lang.modules" %% "scala-collection-compat" % "2.14.0"
       )
-        case x => sys.error(s"Encountered unsupported Scala version ${x.getOrElse("undefined")}")
+      case x => sys.error(s"Encountered unsupported Scala version ${x.getOrElse("undefined")}")
     }),
     Compile / scalacOptions ++= (CrossVersion.partialVersion(scalaVersion.value) match {
+        case Some((3, _))  => Nil
         case Some((2, 13)) => Seq("-Ymacro-annotations") // replaces paradise in 2.13
         case Some((2, 12)) => Seq("-Ypartial-unification") // required by Cats
         case x => sys.error(s"Encountered unsupported Scala version ${x.getOrElse("undefined")}")
     }),
 
-    libraryDependencies += scalaReflect(scalaVersion.value),
+    // scala-reflect does not exist for Scala 3
+    libraryDependencies ++= (if (isScala3(scalaVersion.value)) Nil else Seq(scalaReflect(scalaVersion.value))),
 
     pomExtra := (
       <developers>
@@ -198,7 +236,10 @@ object Settings {
   )
 
   lazy val sparkCompatDependencies = Def.setting { CrossVersion.partialVersion(scalaVersion.value) match {
-    case Some((2, 13)) => Seq("org.scala-lang.modules" %% "scala-parallel-collections" % "1.0.3") // spark uses it as a par collections compat
+    // spark uses it as a par collections compat; on Scala 3 take the 2.13 artifact so that it
+    // dedupes with the copy Spark's own 2.13 jars pull in, rather than sitting next to it.
+    case Some((3, _))  => Seq(Dependencies.for3Use2_13("org.scala-lang.modules" %% "scala-parallel-collections" % "1.0.3").value)
+    case Some((2, 13)) => Seq("org.scala-lang.modules" %% "scala-parallel-collections" % "1.0.3")
     case Some((2, 12)) => Nil
     case x => sys.error(s"Encountered unsupported Scala version ${x.getOrElse("undefined")}")
   } }
@@ -219,6 +260,7 @@ object Settings {
   lazy val accumulo = Seq(
     name := "geotrellis-accumulo",
     libraryDependencies ++= Seq(
+      pureconfigCore,
       accumuloCore
         exclude("org.jboss.netty", "netty")
         exclude("org.apache.hadoop", "hadoop-client"),
@@ -273,6 +315,7 @@ object Settings {
   lazy val cassandra = Seq(
     name := "geotrellis-cassandra",
     libraryDependencies ++= Seq(
+      pureconfigCore,
       cassandraDriverCore,
       cassandraDriverQueryBuilder
     ) map (_ excludeAll(
@@ -323,8 +366,10 @@ object Settings {
 
   lazy val `doc-examples` = Seq(
     name := "geotrellis-doc-examples",
-    scalacOptions ++= commonScalacOptions,
-    kindProjectorPlugin,
+    scalacOptions ++= scalacOptionsFor(scalaVersion.value),
+    // kind-projector is a Scala 2 compiler plugin; Scala 3 has -Ykind-projector built in
+    libraryDependencies ++= (if (isScala3(scalaVersion.value)) Nil
+                             else Seq(compilerPlugin("org.typelevel" % "kind-projector" % "0.13.4" cross CrossVersion.full))),
     libraryDependencies ++= Seq(
       apacheSpark("core").value,
       scalatest % Test,
@@ -364,6 +409,7 @@ object Settings {
   lazy val hbase = Seq(
     name := "geotrellis-hbase",
     libraryDependencies ++= Seq(
+      pureconfigCore,
       hbaseMapReduce
         exclude("javax.servlet", "servlet-api")
         exclude("org.mortbay.jetty", "servlet-api-2.5")
@@ -407,8 +453,12 @@ object Settings {
 
   lazy val macros = Seq(
     name := "geotrellis-macros",
-    Compile / sourceGenerators += (Compile / sourceManaged).map(Boilerplate.genMacro).taskValue,
-    libraryDependencies += spireMacro
+    Compile / sourceGenerators += Def.task {
+      Boilerplate.genMacro((Compile / sourceManaged).value, scalaVersion.value)
+    }.taskValue,
+    // spire-macros supplies `InlineUtil`, used only by the Scala 2 whitebox macros.
+    libraryDependencies ++= (if (isScala3(scalaVersion.value)) Nil else Seq(spireMacro)),
+    libraryDependencies += scalatest % Test
   ) ++ commonSettings
 
   lazy val mdoc = Seq(
@@ -446,9 +496,7 @@ object Settings {
       scalatest % Test,
       scalacheck % Test
     ),
-    mimaPreviousArtifacts := Set(
-      "org.locationtech.geotrellis" %% "geotrellis-raster" % Version.previousVersion
-    ),
+    mimaPreviousArtifacts := mimaPrevious("geotrellis-raster").value,
     Compile / sourceGenerators += (Compile / sourceManaged).map(Boilerplate.genRaster).taskValue,
     console / initialCommands :=
       """
@@ -475,12 +523,12 @@ object Settings {
   lazy val s3 = Seq(
     name := "geotrellis-s3",
     libraryDependencies ++= Seq(
+      pureconfigCore,
       awsSdkS3 excludeAll ExclusionRule("com.fasterxml.jackson.core"),
       scalatest % Test
     ),
-    mimaPreviousArtifacts := Set(
-      "org.locationtech.geotrellis" %% "geotrellis-s3" % Version.previousVersion
-    ),
+    // no Scala 3 artifact of the previous release to compare against
+    mimaPreviousArtifacts := mimaPrevious("geotrellis-s3").value,
     console / initialCommands :=
       """
       import geotrellis.raster.*
@@ -499,9 +547,8 @@ object Settings {
       apacheSpark("sql").value % Test,
       scalatest % Test
     ),
-    mimaPreviousArtifacts := Set(
-      "org.locationtech.geotrellis" %% "geotrellis-s3" % Version.previousVersion
-    ),
+    // no Scala 3 artifact of the previous release to compare against
+    mimaPreviousArtifacts := mimaPrevious("geotrellis-s3-spark").value,
     console / initialCommands :=
       """
       import geotrellis.raster.*
@@ -537,9 +584,8 @@ object Settings {
       apacheSpark("sql").value % Test,
       scalatest % Test
     ) ++ sparkCompatDependencies.value,
-    mimaPreviousArtifacts := Set(
-      "org.locationtech.geotrellis" %% "geotrellis-spark" % Version.previousVersion
-    ),
+    // no Scala 3 artifact of the previous release to compare against
+    mimaPreviousArtifacts := mimaPrevious("geotrellis-spark").value,
     Test / testOptions += Tests.Argument("-oD"),
     console / initialCommands :=
       """
@@ -555,7 +601,7 @@ object Settings {
   lazy val `spark-pipeline` = Seq(
     name := "geotrellis-spark-pipeline",
     libraryDependencies ++= Seq(
-      circe("generic-extras").value,
+      izumiReflect,
       hadoopClient % Provided,
       apacheSpark("core").value % Provided,
       apacheSpark("sql").value % Test,
@@ -596,9 +642,10 @@ object Settings {
 
   lazy val util = Seq(
     name := "geotrellis-util",
+    // `scalaj-http` is not published for Scala 3; `HttpRangeReader` uses `HttpURLConnection`
+    // directly, which keeps the JDK 8 bytecode target (`java.net.http` needs 11+).
     libraryDependencies ++= Seq(
       log4s,
-      scalaj,
       spire,
       scalatest % Test
     )
@@ -608,8 +655,7 @@ object Settings {
     name := "geotrellis-vector",
     libraryDependencies ++= Seq(
       jts,
-      shapeless,
-      pureconfig,
+      pureconfigCore,
       circe("core").value,
       circe("generic").value,
       circe("parser").value,
@@ -661,6 +707,7 @@ object Settings {
   lazy val store = Seq(
     name := "geotrellis-store",
     libraryDependencies ++= Seq(
+      pureconfigCore,
       hadoopClient % Provided,
       apacheIO,
       scaffeine,
@@ -678,6 +725,7 @@ object Settings {
   lazy val gdal = Seq(
     name := "geotrellis-gdal",
     libraryDependencies ++= Seq(
+      pureconfigCore,
       gdalWarp,
       scalatest % Test,
       gdalBindings % Test

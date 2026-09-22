@@ -21,6 +21,7 @@ import geotrellis.spark.testkit.TestEnvironment
 import org.scalatest.Suite
 
 import java.io.File
+import geotrellis.util.identityComponent
 
 trait CatalogTestEnvironment extends TestEnvironment { self: Suite =>
   override def beforeAll() = {

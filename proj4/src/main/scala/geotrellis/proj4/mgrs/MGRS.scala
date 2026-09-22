@@ -156,7 +156,7 @@ object MGRS {
     // hemisphere, this is the only time we use the letter So even
     // if the Zone letter isn't exactly correct it should indicate
     // the hemisphere correctly
-    val y = if (zoneLetter < 'N') { utmNorthing - 10000000.0 } else utmNorthing
+    val y: Double = if (zoneLetter < 'N') { utmNorthing - 10000000.0 } else utmNorthing
 
     // There are 60 zones with zone 1 being at West -180 to -174
     val longOrigin = (zoneNumber - 1) * 6 - 180 + 3 // +3 puts origin in middle of zone
@@ -376,7 +376,6 @@ object MGRS {
 
     ((easting.toInt, northing.toInt, zoneNumber, zoneLetter), accuracyBonus)
   }
-
 
   /**
    * Given the first letter from a two-letter MGRS 100k zone, and given the

@@ -27,6 +27,7 @@ import geotrellis.util.*
 import org.apache.spark.rdd.RDD
 
 import scala.reflect.ClassTag
+import geotrellis.util.conversions.ConversionLift.*
 
 
 object MaskRDD extends Mask {

@@ -22,16 +22,11 @@ import geotrellis.macros.*
 class KernelCursor(r: Tile, kernel: Kernel, analysisArea: GridBounds[Int])
     extends Cursor(r, analysisArea, kernel.extent)
     with MacroIterableTile
+    with KernelCursorWeightedForeach
     with Serializable {
   private val ktileArr = kernel.tile.toArray()
   private val ktileArrDouble = kernel.tile.toArrayDouble()
   private val kcols = kernel.tile.cols
-
-  def foreachWithWeight(f: (Int, Int, Int) => Unit): Unit =
-    macro TileMacros.intForeach_impl
-
-  def foreachWithWeightDouble(f: (Int, Int, Double) => Unit): Unit =
-    macro TileMacros.doubleForeach_impl
 
   def foreachIntVisitor(f: IntTileVisitor): Unit = {
     var y = rowmin

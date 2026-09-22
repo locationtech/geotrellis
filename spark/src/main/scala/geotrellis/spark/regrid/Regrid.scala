@@ -26,6 +26,7 @@ import geotrellis.util.*
 import geotrellis.vector.*
 
 import scala.reflect.*
+import geotrellis.util.conversions.ConversionLift.*
 
 object Regrid {
 

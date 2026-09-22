@@ -16,12 +16,14 @@
 
 package geotrellis.store.hbase.conf
 
-import pureconfig.ConfigSource
-import pureconfig.generic.auto.*
+import pureconfig.{ConfigReader, ConfigSource}
 
 case class HBaseConfig(catalog: String)
 
 object HBaseConfig {
+  implicit val hbaseConfigReader: ConfigReader[HBaseConfig] =
+    ConfigReader.forProduct1[HBaseConfig, String]("catalog")(HBaseConfig.apply)
+
   lazy val conf: HBaseConfig = ConfigSource.default.at("geotrellis.hbase").loadOrThrow[HBaseConfig]
   implicit def hbaseConfigToClass(obj: HBaseConfig.type): HBaseConfig = conf
 }

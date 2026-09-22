@@ -19,6 +19,7 @@ package geotrellis.raster.reproject
 import geotrellis.proj4.*
 import geotrellis.raster.*
 import geotrellis.util.MethodExtensions
+import geotrellis.util.conversions.ConversionLift.*
 
 
 abstract class RasterTileFeatureReprojectMethods[

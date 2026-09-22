@@ -27,6 +27,7 @@ import geotrellis.raster.*
 import org.scalatest.funspec.AnyFunSpec
 import org.apache.spark.rdd.RDD
 import spire.syntax.cfor.*
+import geotrellis.util.identityComponent
 
 class PercentageSpec extends AnyFunSpec with TestEnvironment with TestFiles {
 

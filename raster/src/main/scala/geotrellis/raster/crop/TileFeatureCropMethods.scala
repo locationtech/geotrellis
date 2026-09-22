@@ -18,6 +18,7 @@ package geotrellis.raster.crop
 
 import geotrellis.raster.*
 import geotrellis.vector.*
+import geotrellis.util.conversions.ConversionLift.*
 
 
 abstract class TileFeatureCropMethods[

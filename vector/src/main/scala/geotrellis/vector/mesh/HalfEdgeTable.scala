@@ -313,39 +313,43 @@ class HalfEdgeTable(_size: Int) extends Serializable {
     val e0 = getFlip(edgeIncidentTo(vi))
     var e = e0
 
-    do {
+    while ({
       nbhd += getDest(e)
       e = rotCWSrc(e)
-    } while (e != e0)
+      e != e0
+    }) ()
 
     nbhd.toSeq
   }
 
   def onBoundary(vi: Int, boundary: Int): Boolean = {
     var e = boundary
-    do {
+    while ({
       if (getDest(e) == vi)
         return true
       e = getNext(e)
-    } while (e != boundary)
+      e != boundary
+    }) ()
     return false
   }
 
   def foreachInLoop(e0: Int)(f: Int => Unit): Unit = {
     var e = e0
-    do {
+    while ({
       f(e)
       e = getNext(e)
-    } while (e != e0)
+      e != e0
+    }) ()
   }
 
   def mapOverLoop[T](e0: Int)(f: Int => T): Seq[T] = {
     var e = e0
     val accum = collection.mutable.ListBuffer.empty[T]
-    do {
+    while ({
       accum += f(e)
       e = getNext(e)
-    } while (e != e0)
+      e != e0
+    }) ()
     accum.toSeq
   }
 
@@ -402,7 +406,7 @@ class HalfEdgeTable(_size: Int) extends Serializable {
     println("Press '?<CR>' for help")
 
     def repl() = {
-      do {
+      while ({
         println(s"Current edge ($e): [${getSrc(e)} -> ${getDest(e)}]\nDestination @ ${trans(getDest(e))}")
 
         scala.io.StdIn.readLine("> ") match {
@@ -415,7 +419,8 @@ class HalfEdgeTable(_size: Int) extends Serializable {
               case Some((_, fn)) => e = fn(e)
             }
         }
-      } while(continue)
+        continue
+      }) ()
     }
 
     repl()
@@ -503,10 +508,11 @@ class HalfEdgeTable(_size: Int) extends Serializable {
   }
   def registerFace(e: Int) = {
     var f = e
-    do {
+    while ({
       setIncidentEdge(getDest(f), f)
       f = getNext(f)
-    } while (f != e)
+      f != e
+    }) ()
   }
 
   def allVertices() = edgeAt.keys

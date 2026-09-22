@@ -17,6 +17,7 @@
 package geotrellis.raster.transform
 
 import geotrellis.raster.MultibandTile
+import geotrellis.raster.transform.Implicits.withTileTransformMethods
 
 
 abstract class MultibandTileTransformMethods extends TransformMethods[MultibandTile] {

@@ -16,11 +16,9 @@
 
 package geotrellis.raster.io.geotiff.tags
 
-import monocle.macros.Lenses
 import io.circe.*
 import io.circe.generic.semiauto.*
 
-@Lenses("_")
 case class BasicTags(
   bitsPerSample: Int = 1, // This is written as an array per sample, but libtiff only takes one value, and so do we.
   colorMap: Seq[(Short, Short, Short)] = Seq(),

@@ -16,10 +16,9 @@
 
 package geotrellis.store.index.zcurve
 
-import geotrellis.layer.*
+import geotrellis.layer.{KeyBounds, SpaceTimeKey}
 
 
-import jp.ne.opt.chronoscala.Imports.*
 
 import java.time.temporal.ChronoUnit.MILLIS
 import java.time.{ZoneOffset, ZonedDateTime}
@@ -63,7 +62,7 @@ class ZSpaceTimeKeyIndexSpec extends AnyFunSpec with Matchers {
                                   SpaceTimeKey(1,1, y2k.plus(1, MILLIS))
                                  )
      for(i <- 0 to 6){
-	zst.toIndex(idx(i)) should be (zst.toIndex(idx(i+1)) - 1)
+        zst.toIndex(idx(i)) should be (zst.toIndex(idx(i+1)) - 1)
      }
      zst.toIndex(idx(6)) should be (zst.toIndex(idx(7)) - 1)
     }
@@ -74,45 +73,45 @@ class ZSpaceTimeKeyIndexSpec extends AnyFunSpec with Matchers {
       //all sub cubes in a 2x2x2
       var idx = zst.indexRanges((SpaceTimeKey(0,0,y2k), SpaceTimeKey(1,1,y2k.plus(1, MILLIS))))
       idx.length should be (1)
-      (idx(0)._2 - idx(0)._1) should be (7)
+      idx(0)._2 - idx(0)._1 should be (7)
 
       //sub cubes along x
       idx = zst.indexRanges((SpaceTimeKey(0,0,y2k), SpaceTimeKey(1,0,y2k.plus(1, MILLIS))))
       idx.length should be (2)
-      (idx(0)._2 - idx(0)._1) should be (1)
-      (idx(1)._2 - idx(1)._1) should be (1)
+      idx(0)._2 - idx(0)._1 should be (1)
+      idx(1)._2 - idx(1)._1 should be (1)
 
       //next sub cubes along x
       idx = zst.indexRanges((SpaceTimeKey(0,1,y2k), SpaceTimeKey(1,1,y2k.plus(1, MILLIS))))
       idx.length should be (2)
-      (idx(0)._2 - idx(0)._1) should be (1)
-      (idx(1)._2 - idx(1)._1) should be (1)
+      idx(0)._2 - idx(0)._1 should be (1)
+      idx(1)._2 - idx(1)._1 should be (1)
 
       //sub cubes along y
       idx = zst.indexRanges((SpaceTimeKey(0,0,y2k), SpaceTimeKey(0,1,y2k.plus(1, MILLIS))))
       idx.length should be (4)
-      (idx(0)._2 - idx(0)._1) should be (0)
-      (idx(1)._2 - idx(1)._1) should be (0)
-      (idx(2)._2 - idx(2)._1) should be (0)
-      (idx(3)._2 - idx(3)._1) should be (0)
+      idx(0)._2 - idx(0)._1 should be (0)
+      idx(1)._2 - idx(1)._1 should be (0)
+      idx(2)._2 - idx(2)._1 should be (0)
+      idx(3)._2 - idx(3)._1 should be (0)
 
       //next sub cubes along y
       idx = zst.indexRanges((SpaceTimeKey(1,0,y2k), SpaceTimeKey(1,1,y2k.plus(1, MILLIS))))
       idx.length should be (4)
-      (idx(0)._2 - idx(0)._1) should be (0)
-      (idx(1)._2 - idx(1)._1) should be (0)
-      (idx(2)._2 - idx(2)._1) should be (0)
-      (idx(3)._2 - idx(3)._1) should be (0)
+      idx(0)._2 - idx(0)._1 should be (0)
+      idx(1)._2 - idx(1)._1 should be (0)
+      idx(2)._2 - idx(2)._1 should be (0)
+      idx(3)._2 - idx(3)._1 should be (0)
 
       //sub cubes along z
       idx = zst.indexRanges( (SpaceTimeKey(0,0,y2k.plus(1, MILLIS)), SpaceTimeKey(1,1,y2k.plus(1, MILLIS))))
       idx.length should be (1)
-      (idx(0)._2 - idx(0)._1) should be (3)
+      idx(0)._2 - idx(0)._1 should be (3)
 
       //sub cubes along z
       idx = zst.indexRanges((SpaceTimeKey(0,0,y2k), SpaceTimeKey(1,1,y2k)))
       idx.length should be (1)
-      (idx(0)._2 - idx(0)._1) should be (3)
+      idx(0)._2 - idx(0)._1 should be (3)
     }
 
     it("generates indexes by month") {
@@ -125,9 +124,9 @@ class ZSpaceTimeKeyIndexSpec extends AnyFunSpec with Matchers {
           zst.toIndex(SpaceTimeKey(row,col,y2k.plusMonths(t)))
         }
 
-        keys.distinct.size should be (upperBound * upperBound * upperBound)
-        keys.min should be (zst.toIndex(SpaceTimeKey(0,0,y2k)))
-        keys.max should be (zst.toIndex(SpaceTimeKey(upperBound-1, upperBound-1, y2k.plusMonths(upperBound-1))))
+      keys.distinct.size should be (upperBound * upperBound * upperBound)
+      keys.min should be (zst.toIndex(SpaceTimeKey(0,0,y2k)))
+      keys.max should be (zst.toIndex(SpaceTimeKey(upperBound-1, upperBound-1, y2k.plusMonths(upperBound-1))))
     }
   }
 }

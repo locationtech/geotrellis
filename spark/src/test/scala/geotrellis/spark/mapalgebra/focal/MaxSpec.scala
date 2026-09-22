@@ -22,6 +22,9 @@ import geotrellis.raster.*
 import geotrellis.spark.testkit.*
 
 import org.scalatest.funspec.AnyFunSpec
+import geotrellis.util.identityComponent
+import geotrellis.layer.Implicits.withFocalTileLayerCollectionMethods
+import geotrellis.layer.Implicits.withSpatialTileLayoutCollectionMethods
 
 class MaxSpec extends AnyFunSpec with TestEnvironment {
 

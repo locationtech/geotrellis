@@ -29,7 +29,7 @@ import geotrellis.raster.summary.types.{MaxValue, MinValue}
 import geotrellis.raster.testkit.*
 import geotrellis.vector.{Extent, Point}
 
-import monocle.syntax.apply.*
+import monocle.syntax.all.*
 import spire.syntax.cfor.*
 
 import org.scalatest.{BeforeAndAfterAll, Inspectors}
@@ -172,41 +172,32 @@ class GeoTiffReaderSpec extends AnyFunSpec with Matchers with BeforeAndAfterAll 
 
       tiffTags.compression should equal (1)
 
-      (tiffTags &|-> TiffTags._basicTags ^|->
-        BasicTags._photometricInterp get) should equal (1)
+      (tiffTags.focus(_.basicTags.photometricInterp).get) should equal (1)
 
-      (tiffTags &|-> TiffTags._basicTags ^|->
-        BasicTags._stripOffsets get) match {
+      (tiffTags.focus(_.basicTags.stripOffsets).get) match {
         case Some(stripOffsets) => stripOffsets.size should equal (1350)
         case None => fail()
       }
 
-      (tiffTags &|-> TiffTags._basicTags ^|->
-        BasicTags._samplesPerPixel get) should equal (1)
+      (tiffTags.focus(_.basicTags.samplesPerPixel).get) should equal (1)
 
-      (tiffTags &|-> TiffTags._basicTags ^|->
-        BasicTags._rowsPerStrip get) should equal (1L)
+      (tiffTags.focus(_.basicTags.rowsPerStrip).get) should equal (1L)
 
-      (tiffTags &|-> TiffTags._basicTags ^|->
-        BasicTags._stripByteCounts get) match {
+      (tiffTags.focus(_.basicTags.stripByteCounts).get) match {
         case Some(stripByteCounts) => stripByteCounts.size should equal (1350)
         case None => fail()
       }
 
-      (tiffTags &|-> TiffTags._nonBasicTags ^|->
-        NonBasicTags._planarConfiguration get) match {
+      (tiffTags.focus(_.nonBasicTags.planarConfiguration).get) match {
         case Some(planarConfiguration) => planarConfiguration should equal (1)
         case None => fail()
       }
 
       val sampleFormat =
-        (tiffTags
-          &|-> TiffTags._dataSampleFormatTags
-          ^|-> DataSampleFormatTags._sampleFormat get)
+        (tiffTags.focus(_.dataSampleFormatTags.sampleFormat).get)
       sampleFormat should be (3)
 
-      (tiffTags &|-> TiffTags._geoTiffTags
-        ^|-> GeoTiffTags._modelPixelScale get) match {
+      (tiffTags.focus(_.geoTiffTags.modelPixelScale).get) match {
         case Some(modelPixelScales) => {
           modelPixelScales._1 should equal (10.0)
           modelPixelScales._2 should equal (10.0)
@@ -215,8 +206,7 @@ class GeoTiffReaderSpec extends AnyFunSpec with Matchers with BeforeAndAfterAll 
         case None => fail()
       }
 
-      (tiffTags &|-> TiffTags._geoTiffTags
-        ^|-> GeoTiffTags._modelTiePoints get) match {
+      (tiffTags.focus(_.geoTiffTags.modelTiePoints).get) match {
         case Some(modelTiePoints) => {
           modelTiePoints.size should equal (1)
           val (p1, p2) = modelTiePoints(0)
@@ -230,8 +220,7 @@ class GeoTiffReaderSpec extends AnyFunSpec with Matchers with BeforeAndAfterAll 
         case None => fail()
       }
 
-      (tiffTags &|-> TiffTags._geoTiffTags
-        ^|-> GeoTiffTags._gdalInternalNoData get) match {
+      (tiffTags.focus(_.geoTiffTags.gdalInternalNoData).get) match {
         case Some(gdalInternalNoData) => gdalInternalNoData should equal (-9999.0)
         case None => fail()
       }

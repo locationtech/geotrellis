@@ -110,8 +110,7 @@ class OrdinaryKriging(points: Array[PointFeature[Double]],
           .scalarMultiply(sv.sill)
           .subtract(
             MatrixUtils.createRealMatrix(
-              Array.tabulate(distSorted.getRowDimension, 1)
-              { (i, _) => sv(distSorted.getEntry(i,0)) }
+              Array.tabulate(distSorted.getRowDimension, 1) { (i, _) => sv(distSorted.getEntry(i,0)) }
             )
           )
 

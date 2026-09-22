@@ -25,6 +25,7 @@ import geotrellis.vector.*
 
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
+import geotrellis.util.identityComponent
 
 case class PerTileReproject(
   node: Node[RDD[(ProjectedExtent, Tile)]],

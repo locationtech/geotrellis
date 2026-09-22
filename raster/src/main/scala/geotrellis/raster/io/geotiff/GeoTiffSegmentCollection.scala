@@ -27,7 +27,7 @@ trait GeoTiffSegmentCollection {
 
   val bandType: BandType
 
-  val decompressGeoTiffSegment: (Int, Array[Byte]) => T
+  def decompressGeoTiffSegment: (Int, Array[Byte]) => T
 
   // Cached last segment
   private var _lastSegment: T = null

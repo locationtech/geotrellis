@@ -24,6 +24,11 @@ import geotrellis.spark.pipeline.ast.*
 import geotrellis.spark.pipeline.json.write
 
 import org.apache.spark.SparkContext
+import geotrellis.util.identityComponent
+import geotrellis.store.avro.codecs.Implicits.*
+import geotrellis.raster.Implicits.withMultibandMergeMethods
+import geotrellis.raster.prototype.Implicits.withMultibandTilePrototypeMethods
+import geotrellis.raster.crop.Implicits.withMultibandTileCropMethods
 
 case class Write(
   node: Node[LazyList[(Int, MultibandTileLayerRDD[SpatialKey])]],

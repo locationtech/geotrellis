@@ -19,6 +19,7 @@ package geotrellis.raster.merge
 import geotrellis.raster.*
 import geotrellis.raster.resample.{NearestNeighbor, ResampleMethod}
 import geotrellis.util.MethodExtensions
+import geotrellis.util.conversions.ConversionLift.*
 
 
 /**

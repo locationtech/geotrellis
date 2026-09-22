@@ -29,6 +29,7 @@ import geotrellis.proj4.*
 import spire.syntax.cfor.*
 import org.apache.spark.*
 import org.scalatest.funspec.AnyFunSpec
+import geotrellis.util.identityComponent
 
 class TileRDDReprojectSpec extends AnyFunSpec with TestEnvironment {
 

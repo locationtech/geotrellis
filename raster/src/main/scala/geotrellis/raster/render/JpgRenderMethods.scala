@@ -19,6 +19,7 @@ package geotrellis.raster.render
 import geotrellis.raster.Tile
 import geotrellis.raster.render.jpg.{JpgEncoder, Settings}
 import geotrellis.util.MethodExtensions
+import geotrellis.raster.summary.Implicits.withSinglebandSummaryMethods
 
 
 trait JpgRenderMethods extends MethodExtensions[Tile] {

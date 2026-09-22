@@ -31,6 +31,9 @@ import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
 import scala.collection.mutable.{ListBuffer, Set}
+import geotrellis.util.conversions.ConversionLift.*
+import geotrellis.spark.buffer.Implicits.withCollectNeighborsMethodsWrapper
+import geotrellis.util.identityComponent
 
 object EuclideanDistance {
 
@@ -52,10 +55,11 @@ object EuclideanDistance {
         if (poly isDefined) {
           result += ((poly.get, centerStitched.indexToCoord(here)))
           var e = getFlip(incoming)
-          do {
+          while ({
             queue += ((e, getDest(e)))
             e = rotCWSrc(e)
-          } while (e != getFlip(incoming))
+            e != getFlip(incoming)
+          }) ()
         }
       }
     }
@@ -73,7 +77,7 @@ object EuclideanDistance {
       var e = 0
       var bestdist = 1.0/0.0
       var best = -1
-      do {
+      while ({
         while (getDest(e) == -1 && e < maxEdgeIndex())
           e += 1
         val dist = re.extent.distance(Point(stitched.indexToCoord(getDest(e))))
@@ -82,7 +86,8 @@ object EuclideanDistance {
           bestdist = dist
         }
         e += 1
-      } while (bestdist > 0 && e < maxEdgeIndex())
+        bestdist > 0 && e < maxEdgeIndex()
+      }) ()
 
       best
     }
@@ -146,7 +151,7 @@ object EuclideanDistance {
           }}
         }, preservesPartitioning = true)
 
-    borders
+    withCollectNeighborsMethodsWrapper(borders)
       .collectNeighbors()
       .mapPartitions({ partition =>
         partition.map { case (key, neighbors) =>

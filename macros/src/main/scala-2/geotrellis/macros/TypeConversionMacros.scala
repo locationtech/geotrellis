@@ -42,7 +42,7 @@ object TypeConversionMacros {
 
   def b2f_impl(c: Context)(n: c.Expr[Byte]): c.Expr[Float] = {
     import c.universe.*
-    c.Expr(q"""{ val n = $n ; if(n == Byte.MinValue) { Float.NaN } else { $n.toFloat } }""")
+    c.Expr(q"""{ val n = $n ; if(n == Byte.MinValue) { Float.NaN } else { n.toFloat } }""")
   }
 
   def b2d_impl(c: Context)(n: c.Expr[Byte]): c.Expr[Double] = {

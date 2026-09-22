@@ -37,6 +37,7 @@ import org.scalatest.funspec.AnyFunSpec
 
 import java.util.concurrent.{Executors, ScheduledThreadPoolExecutor}
 import scala.concurrent.ExecutionContext
+import geotrellis.util.identityComponent
 
 class GDALRasterSourceRDDSpec extends AnyFunSpec with TestEnvironment with BeforeAndAfterAll {
   import geotrellis.GDALTestUtils.*

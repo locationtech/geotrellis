@@ -29,7 +29,7 @@ object IOUtils {
   /**
     * Implement non-blocking Exponential Backoff on a Task.
     */
-  implicit class IOBackoff[A, F[_]: ApplicativeError[_[_], Throwable]: Temporal](ioa: F[A]) {
+  implicit class IOBackoff[A, F[_]](ioa: F[A])(implicit ae: ApplicativeError[F, Throwable], temporal: Temporal[F]) {
     /**
       * @param  p  returns true for exceptions that trigger a backoff and retry
       * @return

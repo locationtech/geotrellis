@@ -16,7 +16,7 @@
 
 package geotrellis.layer
 
-import jp.ne.opt.chronoscala.Imports.*
+import _root_.io.github.chronoscala.Imports.*
 import java.time.ZonedDateTime
 
 /** This type class marks K as point that can be bounded in space.

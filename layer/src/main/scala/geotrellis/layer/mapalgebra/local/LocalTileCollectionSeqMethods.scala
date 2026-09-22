@@ -24,7 +24,7 @@ import geotrellis.util.MethodExtensions
 
 abstract class LocalTileCollectionSeqMethods[K] extends MethodExtensions[Iterable[Seq[(K, Tile)]]] {
   private def r(f: Iterable[Tile] => (Tile)): Seq[(K, Tile)] =
-    self match {
+    self.toSeq match {
       case Seq() => sys.error("raster seq operations can't be applied to empty seq!")
       case Seq(rdd) => rdd
       case _ => self.head.combineValues(self.tail)(f)

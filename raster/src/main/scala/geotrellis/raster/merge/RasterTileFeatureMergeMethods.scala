@@ -19,6 +19,7 @@ package geotrellis.raster.merge
 import geotrellis.raster.*
 import geotrellis.raster.resample.*
 import geotrellis.util.MethodExtensions
+import geotrellis.util.conversions.ConversionLift.*
 import cats.Semigroup
 
 

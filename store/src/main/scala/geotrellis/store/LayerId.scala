@@ -16,10 +16,10 @@
 
 package geotrellis.store
 
-import _root_.io.circe.generic.JsonCodec
+import _root_.io.circe.Codec
+import _root_.io.circe.generic.semiauto.deriveCodec
 
 /** Identifies a Layer by it's name and zoom level */
-@JsonCodec
 case class LayerId(name: String, zoom: Int) {
   override
   def toString: String =
@@ -27,5 +27,7 @@ case class LayerId(name: String, zoom: Int) {
 }
 
 object LayerId{
+  implicit val codecForLayerId: Codec.AsObject[LayerId] = deriveCodec[LayerId]
+
   implicit def fromTuple(tup: (String, Int)): LayerId = LayerId(tup._1, tup._2)
 }

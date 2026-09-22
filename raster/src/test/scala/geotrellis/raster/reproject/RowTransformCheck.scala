@@ -22,7 +22,7 @@ import geotrellis.vector.*
 
 import org.scalacheck.*
 import Prop.*
-import Gen.*
+import Gen.choose
 import Arbitrary.*
 
 
@@ -81,7 +81,9 @@ object RowTransformCheck_LatLngToWebMercator extends Properties("RowTransform") 
   val transform = Transform(LatLng, WebMercator)
 
   property("Stays within thresholds") = forAll { (testCase: TestCase, thresh: Threshold) =>
-    val TestCase(extent, srcX, srcY) = testCase
+    val extent = testCase.extent
+    val srcX = testCase.srcX
+    val srcY = testCase.srcY
     val threshold = thresh.v
     val destX = Array.ofDim[Double](srcX.size)
     val destY = destX.clone

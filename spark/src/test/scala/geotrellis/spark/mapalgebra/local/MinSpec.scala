@@ -22,6 +22,7 @@ import geotrellis.raster.Tile
 import geotrellis.spark.testkit.*
 
 import org.scalatest.funspec.AnyFunSpec
+import geotrellis.util.identityComponent
 
 class MinSpec extends AnyFunSpec with TestEnvironment with TestFiles {
 

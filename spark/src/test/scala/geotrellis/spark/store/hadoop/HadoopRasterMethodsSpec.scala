@@ -29,6 +29,8 @@ import org.scalatest.matchers.should.Matchers
 import org.scalatest.funspec.AnyFunSpec
 
 import java.io.*
+import geotrellis.util.identityComponent
+import geotrellis.raster.Implicits.withMultibandRenderMethods
 
 class HadoopRasterMethodsSpec extends AnyFunSpec with Matchers with BeforeAndAfterAll with RasterMatchers with TileBuilders with TestEnvironment {
 

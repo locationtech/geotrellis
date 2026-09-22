@@ -29,6 +29,7 @@ import org.scalatest.matchers.should.Matchers
 import org.scalatest.funspec.AnyFunSpec
 
 import scala.collection.mutable
+import geotrellis.util.identityComponent
 
 class IngestSpec extends AnyFunSpec with Matchers with TestEnvironment {
   describe("Ingest") {

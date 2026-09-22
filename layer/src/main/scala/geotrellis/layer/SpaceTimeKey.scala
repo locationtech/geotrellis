@@ -16,14 +16,14 @@
 
 package geotrellis.layer
 
-import _root_.io.circe.generic.JsonCodec
+import _root_.io.circe.Codec
+import _root_.io.circe.generic.semiauto.deriveCodec
 
 import geotrellis.util.*
 
-import jp.ne.opt.chronoscala.Imports.*
+import _root_.io.github.chronoscala.Imports.*
 import java.time.{ZoneOffset, ZonedDateTime}
 
-@JsonCodec
 case class SpaceTimeKey(col: Int, row: Int, instant: Long) {
   def spatialKey: SpatialKey = SpatialKey(col, row)
   def temporalKey: TemporalKey = TemporalKey(time)
@@ -31,6 +31,8 @@ case class SpaceTimeKey(col: Int, row: Int, instant: Long) {
 }
 
 object SpaceTimeKey {
+  implicit val codecForSpaceTimeKey: Codec.AsObject[SpaceTimeKey] = deriveCodec[SpaceTimeKey]
+
   def apply(spatialKey: SpatialKey, temporalKey: TemporalKey): SpaceTimeKey =
     SpaceTimeKey(spatialKey.col, spatialKey.row, temporalKey.time)
 

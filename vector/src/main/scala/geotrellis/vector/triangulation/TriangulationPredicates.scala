@@ -159,10 +159,11 @@ final class TriangulationPredicates(
   def isConvexBoundary(e0: Int): Boolean = {
     var e = e0
     var valid = true
-    do {
+    while ({
       valid = valid && !isLeftOf(e, getDest(getNext(e)))
       e = getNext(e)
-    } while (valid && e != e0)
+      valid && e != e0
+    }) ()
     valid
   }
 }

@@ -110,7 +110,7 @@ class S3RDDWriter(
             val request = PutObjectRequest.builder()
               .bucket(bucket)
               .key(key)
-              .contentLength(contentBytes.length)
+              .contentLength(contentBytes.length.toLong)
               .build()
             val requestBody = RequestBody.fromBytes(contentBytes)
 

@@ -18,6 +18,7 @@ package geotrellis.raster.crop
 
 import geotrellis.vector.*
 import geotrellis.raster.*
+import geotrellis.util.conversions.ConversionLift.*
 
 
 /**

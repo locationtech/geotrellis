@@ -25,6 +25,7 @@ import geotrellis.raster.testkit.*
 
 import org.scalatest.GivenWhenThen
 import org.scalatest.funspec.AnyFunSpec
+import geotrellis.util.identityComponent
 
 class GDALRasterSourceSpec extends AnyFunSpec with RasterMatchers with GivenWhenThen {
   import geotrellis.GDALTestUtils.*

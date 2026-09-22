@@ -18,6 +18,7 @@ package geotrellis.doc.examples.spark
 
 import geotrellis.layer.*
 import geotrellis.store.*
+import geotrellis.util.identityComponent
 
 object COGSparkExamples {
   def `Having an RDD[(ProjectedExtent, Tile)] ingest it as a Structured COG layer and query it` = {

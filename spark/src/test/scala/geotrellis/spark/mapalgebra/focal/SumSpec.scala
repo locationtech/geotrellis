@@ -23,6 +23,9 @@ import geotrellis.spark.*
 import geotrellis.spark.testkit.*
 
 import org.scalatest.funspec.AnyFunSpec
+import geotrellis.util.identityComponent
+import geotrellis.layer.Implicits.withFocalTileLayerCollectionMethods
+import geotrellis.layer.Implicits.withSpatialTileLayoutCollectionMethods
 
 class SumSpec extends AnyFunSpec with TestEnvironment {
 

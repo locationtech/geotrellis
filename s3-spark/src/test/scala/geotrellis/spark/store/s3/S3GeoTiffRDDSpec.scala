@@ -33,6 +33,8 @@ import java.nio.file.{Files, Paths}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.funspec.AnyFunSpec
+import geotrellis.util.identityComponent
+import geotrellis.layer.SpaceTimeKey.spatialComponent
 
 class S3GeoTiffRDDSpec
   extends AnyFunSpec

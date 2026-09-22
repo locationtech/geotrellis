@@ -19,6 +19,7 @@ package geotrellis.raster.reproject
 import geotrellis.proj4.*
 import geotrellis.raster.*
 import geotrellis.vector.*
+import geotrellis.util.conversions.ConversionLift.*
 
 abstract class TileFeatureReprojectMethods[
   T <: CellGrid[Int]: _ => TileReprojectMethods[T],

@@ -20,7 +20,7 @@ import geotrellis.layer.SpaceTimeKey
 import geotrellis.store.index.*
 import java.time.ZonedDateTime
 
-import jp.ne.opt.chronoscala.Imports.*
+import _root_.io.github.chronoscala.Imports.*
 
 trait SpaceTimeKeyIndexMethods {
   def keyIndexMethods: Map[String, KeyIndexMethod[SpaceTimeKey]] =

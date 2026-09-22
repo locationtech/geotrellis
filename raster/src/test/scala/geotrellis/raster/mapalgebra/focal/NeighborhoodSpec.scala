@@ -25,13 +25,13 @@ class NeighborhoodSpec extends AnyFunSpec with Matchers {
   describe("Circle") {
     it("should mask all values outside the radius of a 7x7 circle neighborhood") {
       val expectedMaskedValues = Set((0,0),(0,1),(1,0),(0,6),(1,6),(0,5),(6,0),(6,1),(0,5),(6,6),(6,5),(5,6),
-				     (2,6), (0,2), (6,4), (0,4), (4,6), (5,0), (2,0), (4,0), (6,2))
+                                     (2,6), (0,2), (6,4), (0,4), (4,6), (5,0), (2,0), (4,0), (6,2))
       val circle = Circle(3)
       val result = Set[(Int,Int)]()
       for(x <- 0 to 6) {
-	for(y <- 0 to 6) {
-	  if(circle.mask(x,y)) { result += ((x,y)) }
-	}
+        for(y <- 0 to 6) {
+          if(circle.mask(x,y)) { result += ((x,y)) }
+        }
       }
 
       result should equal (expectedMaskedValues)

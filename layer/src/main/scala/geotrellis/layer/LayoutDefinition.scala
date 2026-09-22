@@ -19,14 +19,14 @@ package geotrellis.layer
 import geotrellis.raster.*
 import geotrellis.vector.*
 import spire.math.Integral
-import _root_.io.circe.generic.JsonCodec
+import _root_.io.circe.Codec
+import _root_.io.circe.generic.semiauto.deriveCodec
 
 /**
  * Defines tiled raster layout
  * @param extent      extent covered by the layout tiles, could be greater than extent of data in the layer
  * @param tileLayout  tile layout (tile cols, tile rows, tile pixel size)
  */
-@JsonCodec
 case class LayoutDefinition(override val extent: Extent, tileLayout: TileLayout) extends GridExtent[Long](extent, tileLayout.cellSize(extent)) {
 
   /** Transformation between tile addressing and map coordinate addressing for for this layout */
@@ -70,6 +70,8 @@ case class LayoutDefinition(override val extent: Extent, tileLayout: TileLayout)
 }
 
 object LayoutDefinition {
+  implicit val codecForLayoutDefinition: Codec.AsObject[LayoutDefinition] = deriveCodec[LayoutDefinition]
+
   /**
    * Divides given RasterExtent into a TileLayout given a required tileSize.
    * Since padding may be required on the lower/right tiles to preserve the original resolution of the

@@ -25,6 +25,7 @@ import org.apache.spark.SparkConf
 import org.apache.zookeeper.client.FourLetterWordMain
 
 import org.scalatest.Suite
+import geotrellis.util.identityComponent
 
 trait HBaseTestEnvironment extends TestEnvironment { self: Suite =>
   override def setKryoRegistrator(conf: SparkConf) =

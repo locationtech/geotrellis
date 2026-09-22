@@ -24,6 +24,9 @@ import geotrellis.spark.store.*
 import geotrellis.spark.testkit.io.*
 import geotrellis.spark.testkit.testfiles.TestFiles
 import geotrellis.spark.testkit.TestEnvironment
+import org.apache.spark.rdd.RDD
+import geotrellis.util.identityComponent
+import geotrellis.store.avro.codecs.Implicits.*
 
 class AccumuloSpaceTimeSpec
   extends PersistenceSpec[SpaceTimeKey, Tile, TileLayerMetadata[SpaceTimeKey]]
@@ -40,7 +43,7 @@ class AccumuloSpaceTimeSpec
   lazy val deleter: AccumuloLayerDeleter = AccumuloLayerDeleter(instance)
   lazy val reindexer: AccumuloLayerReindexer = AccumuloLayerReindexer(instance, SocketWriteStrategy())
   lazy val tiles: AccumuloValueReader = AccumuloValueReader(instance)
-  lazy val sample: CoordinateSpaceTime.type = CoordinateSpaceTime
+  lazy val sample: RDD[(SpaceTimeKey, Tile)] with Metadata[TileLayerMetadata[SpaceTimeKey]] = CoordinateSpaceTime
   lazy val copier: AccumuloLayerCopier = AccumuloLayerCopier(instance, reader, writer)
   lazy val mover     = AccumuloLayerMover(copier, deleter)
 }

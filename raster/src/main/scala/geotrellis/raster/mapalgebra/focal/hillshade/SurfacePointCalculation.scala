@@ -86,7 +86,7 @@ class SurfacePoint() {
   }
 
   /** Cosine of the aspect, computed using partial derivatives */
-  def cosAspect = {
+  def cosAspect: Double = {
     if(`dz/dx` == 0) { if(`dz/dy` == 0) -1 else 0 } else {
       if(`dz/dy` == 0) {
         if(`dz/dx` < 0) 1 else -1
@@ -97,7 +97,7 @@ class SurfacePoint() {
   }
 
   /** Sine of the aspect, computed using partial derivatives */
-  def sinAspect = {
+  def sinAspect: Double = {
     if(`dz/dy` == 0) 0 else {
       if(`dz/dx` == 0) {
         if(`dz/dy` < 0) -1 else if(`dz/dy` > 0) 1 else 0

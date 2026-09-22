@@ -21,6 +21,7 @@ import geotrellis.layer.*
 import geotrellis.raster.{GridBounds, Tile, TileFeature}
 import geotrellis.store.*
 import geotrellis.spark.testkit.io.*
+import geotrellis.util.identityComponent
 
 trait AllOnesTestTileFeatureSpec { self: PersistenceSpec[SpatialKey, TileFeature[Tile, Tile], TileLayerMetadata[SpatialKey]] =>
 

@@ -19,8 +19,7 @@ package geotrellis.vector.conf
 import org.locationtech.jts.geom.PrecisionModel
 import org.locationtech.jts.precision.GeometryPrecisionReducer
 
-import pureconfig.ConfigSource
-import pureconfig.generic.auto.*
+import pureconfig.{ConfigReader, ConfigSource}
 
 case class Simplification(scale: Double = 1e12) {
   // 12 digits is maximum to avoid [[TopologyException]], see https://web.archive.org/web/20160226031453/http://tsusiatsoftware.net/jts/jts-faq/jts-faq.html#D9
@@ -39,6 +38,18 @@ case class JtsConfig(precision: Precision = Precision(), simplification: Simplif
 }
 
 object JtsConfig {
+  implicit val precisionReader: ConfigReader[Precision] =
+    ConfigReader.forProduct1[Precision, Option[String]]("type")(t => Precision(t.getOrElse("floating")))
+
+  implicit val simplificationReader: ConfigReader[Simplification] =
+    ConfigReader.forProduct1[Simplification, Option[Double]]("scale")(s => Simplification(s.getOrElse(1e12)))
+
+  implicit val jtsConfigReader: ConfigReader[JtsConfig] =
+    ConfigReader.forProduct2[JtsConfig, Option[Precision], Option[Simplification]]("precision", "simplification") {
+      (precision, simplification) =>
+        JtsConfig(precision.getOrElse(Precision()), simplification.getOrElse(Simplification()))
+    }
+
   lazy val conf: JtsConfig = ConfigSource.default.at("geotrellis.jts").loadOrThrow[JtsConfig]
   implicit def jtsConfigToClass(obj: JtsConfig.type): JtsConfig = conf
 }

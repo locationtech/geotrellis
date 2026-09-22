@@ -134,7 +134,7 @@ class SpatialIndex[T](val measure: Measure = Measure.Euclidean) extends Serializ
 
     pq.enqueue(rtreeNodeAsPQitem(rtree.getRoot))
 
-    do {
+    while ({
       val item = pq.dequeue()
 
       if (kNNqueue.size < k || item.d < kNNqueue.head.d) {
@@ -149,7 +149,8 @@ class SpatialIndex[T](val measure: Measure = Measure.Euclidean) extends Serializ
           }.foreach(pq.enqueue(_))
         }
       }
-    } while (pq.nonEmpty)
+      pq.nonEmpty
+    }) ()
 
     kNNqueue.toSeq.map{ _.x }
   }

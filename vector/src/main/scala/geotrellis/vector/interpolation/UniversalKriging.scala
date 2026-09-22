@@ -93,14 +93,12 @@ class UniversalKriging(points: Array[PointFeature[Double]],
 
     val unitCol = MatrixUtils.createColumnRealMatrix(Array.fill(n)(1))
     val attrMatrix =
-      MatrixUtils.createRealMatrix(Array.tabulate(n)
-      { i => Array(1.0) ++ attrFunc(points(i).geom.x, points(i).geom.y) })
+      MatrixUtils.createRealMatrix(Array.tabulate(n) { i => Array(1.0) ++ attrFunc(points(i).geom.x, points(i).geom.y) })
     val attrSize: Int = attrMatrix.getColumnDimension - 1
     val scale: RealMatrix =
       new LUDecomposition(
         MatrixUtils.createRealDiagonalMatrix(
-          Array.tabulate(attrSize + 1)
-          { i => absArray(attrMatrix.getColumn(i)).max }
+          Array.tabulate(attrSize + 1) { i => absArray(attrMatrix.getColumn(i)).max }
         )
       ).getSolver.getInverse
 
@@ -114,8 +112,7 @@ class UniversalKriging(points: Array[PointFeature[Double]],
     val betaOLS: RealMatrix = scale.multiply(unscaledBetaOLS)
     val errorOLS: Array[Double] = ptData.subtract(attrMatrix.multiply(betaOLS)).getColumn(0)
     val pointsFitting: Array[PointFeature[Double]] =
-      Array.tabulate(n)
-      { (row: Int) => PointFeature(points(row).geom, errorOLS(row)) }
+      Array.tabulate(n) { (row: Int) => PointFeature(points(row).geom, errorOLS(row)) }
 
     val res: Semivariogram = NonLinearSemivariogram(pointsFitting, 0, 0, model)
     val covariogramMatrix: RealMatrix =
@@ -166,8 +163,7 @@ class UniversalKriging(points: Array[PointFeature[Double]],
           .scalarMultiply(res.sill)
           .subtract(
             MatrixUtils.createRealMatrix(
-              Array.tabulate(sortedDist.getRowDimension, 1)
-              { (i, _) => res(sortedDist.getEntry(i,0)) }
+              Array.tabulate(sortedDist.getRowDimension, 1) { (i, _) => res(sortedDist.getEntry(i,0)) }
             )
           )
       cfor(0)(_ < sortedDist.getRowDimension, _ + 1) { (i: Int) =>

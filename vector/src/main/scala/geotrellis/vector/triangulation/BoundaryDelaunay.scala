@@ -32,13 +32,14 @@ object BoundaryDelaunay {
     triangles.getTriangles().map { case (idx, e0) => {
       val (a, b, c) = idx
       var e = e0
-      do {
+      while ({
         if (getFlip(getFlip(e)) != e) {
           println(s"In triangle ${(a,b,c)}: edge ${getSrc(e)} -> ${getDest(e)} has improper flips")
           valid = false
         }
         e = getNext(e)
-      } while (e != e0)
+        e != e0
+      }) ()
     }}
     valid
   }
@@ -116,12 +117,13 @@ object BoundaryDelaunay {
       triangles.get(getDest(tri), getDest(getNext(tri)), getDest(getNext(getNext(tri)))) match {
         case Some(base) => {
           var e = base
-          do {
+          while ({
             if (halfEdgeTable.getDest(e) == getDest(tri)) {
               return Some(e)
             }
             e = halfEdgeTable.getNext(e)
-          } while (e != base)
+            e != base
+          }) ()
 
           throw new IllegalStateException("Unhandled case")
         }
@@ -145,21 +147,23 @@ object BoundaryDelaunay {
       val correspondingEdge = collection.mutable.Map.empty[(Vertex, Vertex), ResultEdge]
       var e = dt.boundary()
 
-      do {
+      while ({
         val edge = halfEdgeTable.createHalfEdge(getDest(e))
         addPoint(getDest(e))
         correspondingEdge += (getSrc(e), getDest(e)) -> edge
         e = getNext(e)
-      } while (e != dt.boundary())
+        e != dt.boundary()
+      }) ()
 
-      do {
+      while ({
         val edge = correspondingEdge((getSrc(e), getDest(e)))
         val flip = correspondingEdge((getDest(e), getSrc(e)))
         halfEdgeTable.setFlip(edge, flip)
         halfEdgeTable.setFlip(flip, edge)
         halfEdgeTable.setNext(edge, correspondingEdge((getDest(e), getDest(getNext(e)))))
         e = getNext(e)
-      } while (e != dt.boundary())
+        e != dt.boundary()
+      }) ()
 
       correspondingEdge((getSrc(dt.boundary()), getDest(dt.boundary())))
     }
@@ -176,7 +180,7 @@ object BoundaryDelaunay {
       innerEdges += (getDest(dt.boundary()), getSrc(dt.boundary())) -> (getFlip(dt.boundary()), first)
       var e = getNext(dt.boundary())
 
-      do {
+      while ({
         val copy = copyConvertEdge(e)
         outerEdges += ((getSrc(e), getDest(e)))
         innerEdges += (getDest(e), getSrc(e)) -> (getFlip(e), copy)
@@ -184,7 +188,8 @@ object BoundaryDelaunay {
         halfEdgeTable.setNext(halfEdgeTable.getFlip(copy), halfEdgeTable.getFlip(last))
         last = copy
         e = getNext(e)
-      } while (e != dt.boundary())
+        e != dt.boundary()
+      }) ()
       halfEdgeTable.setNext(last, first)
       halfEdgeTable.setNext(halfEdgeTable.getFlip(first), halfEdgeTable.getFlip(last))
 
@@ -260,7 +265,7 @@ object BoundaryDelaunay {
 
         var continue = true
         var j = 0
-        do {
+        while ({
           bounds.get(halfEdgeTable.getSrc(pairedE) -> halfEdgeTable.getDest(pairedE)) match {
             case Some(next) =>
               // we've arrived at the edge.  Make sure we're joined up.
@@ -310,7 +315,8 @@ object BoundaryDelaunay {
           e = rotCWDest(e)
           pairedE = halfEdgeTable.rotCWDest(pairedE)
           j += 1
-        } while (continue)
+          continue
+        }) ()
       }}
 
     }
@@ -322,12 +328,13 @@ object BoundaryDelaunay {
       var e = dt.boundary()
       var ne = newBound
 
-      do {
+      while ({
         assert(getDest(e) == halfEdgeTable.getDest(ne) && getSrc(e) == halfEdgeTable.getSrc(ne))
         recursiveAddTris(getFlip(e), ne)
         e = getNext(e)
         ne = halfEdgeTable.getNext(ne)
-      } while (e != dt.boundary())
+        e != dt.boundary()
+      }) ()
 
       fillInnerLoop()
 

@@ -25,6 +25,7 @@ import geotrellis.spark.testkit.*
 import geotrellis.vector.Extent
 
 import org.scalatest.funspec.AnyFunSpec
+import geotrellis.util.identityComponent
 
 class CollectionStitchMethodsSpec extends AnyFunSpec
     with TileBuilders

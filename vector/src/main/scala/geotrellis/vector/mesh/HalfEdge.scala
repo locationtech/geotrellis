@@ -117,10 +117,11 @@ object HalfEdge {
     var e = base
     var pts: List[Point] = Nil
 
-    do {
+    while ({
       pts = pts :+ trans(e.vert)
       e = e.next
-    } while (e != base)
+      e != base
+    }) ()
 
     Polygon(LineString(pts).closed())
   }

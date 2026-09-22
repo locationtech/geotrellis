@@ -18,6 +18,7 @@ package geotrellis.geotools
 
 import geotrellis.util.MethodExtensions
 import geotrellis.vector.*
+import geotrellis.util.conversions.ConversionLift.*
 import org.geotools.api.feature.simple.SimpleFeature
 
 import scala.reflect.ClassTag

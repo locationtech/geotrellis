@@ -55,7 +55,7 @@ class TiffTagsInputFormat extends FileInputFormat[Path, TiffTags] {
       def close = {}
       def getCurrentKey = tup._1
       def getCurrentValue = { hasNext = false ; tup._2 }
-      def getProgress = 1
+      def getProgress: Float = 1f
       def nextKeyValue = hasNext
     }
 }

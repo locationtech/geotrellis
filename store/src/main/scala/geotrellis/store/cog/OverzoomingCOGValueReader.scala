@@ -22,6 +22,8 @@ import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.raster.resample.{ResampleMethod, TileResampleMethods}
 import geotrellis.store.*
 import geotrellis.util.*
+import geotrellis.util.conversions.ConversionLift.*
+import geotrellis.raster.Implicits.withSinglebandResampleMethods
 
 import scala.reflect.ClassTag
 import io.circe.*

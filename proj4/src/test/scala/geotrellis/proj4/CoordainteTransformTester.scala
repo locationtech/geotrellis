@@ -101,7 +101,7 @@ class CoordinateTransformTester(val verbose: Boolean = true) {
     if (verbose) {
       System.out.println(crsDisplay(srcCRS) + " => " + crsDisplay(tgtCRS) )
       System.out.println(
-      	p.toShortString()
+        p.toShortString()
           + " -> "
           + pout.toShortString()
           + " (expected: " + p2.toShortString()

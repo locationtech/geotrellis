@@ -49,20 +49,20 @@ class ProjectionGridRoundTripper(cs: CoordinateReferenceSystem) {
     val dy = (maxy - miny) / gridSize
     for (ix <- 0 to gridSize) {
       for (iy <- 0 to gridSize) {
-	p.x =
+        p.x =
           if(ix == gridSize )
-	    maxx
-	    else
+            maxx
+            else
               minx + ix * dx
 
-	p.y =
+        p.y =
           if(iy == gridSize)
-	    maxy
-	  else
+            maxy
+          else
             miny + iy * dy
 
-	if(!roundTrip(p, tolerance))
-	  return (false, extent)
+        if(!roundTrip(p, tolerance))
+          return (false, extent)
       }
     }
     return (true, extent)

@@ -23,6 +23,9 @@ import geotrellis.spark.store.*
 import geotrellis.spark.testkit.*
 import geotrellis.spark.testkit.io.*
 import geotrellis.spark.testkit.testfiles.TestTileFeatureFiles
+import geotrellis.util.identityComponent
+import geotrellis.store.avro.codecs.Implicits.*
+import org.apache.spark.rdd.RDD
 
 
 class FileTileFeatureSpaceTimeSpec
@@ -40,5 +43,5 @@ class FileTileFeatureSpaceTimeSpec
   lazy val mover  = FileLayerMover(outputLocalPath)
   lazy val reindexer = FileLayerReindexer(outputLocalPath)
   lazy val tiles: FileValueReader = FileValueReader(outputLocalPath)
-  lazy val sample: CoordinateSpaceTime.type =  CoordinateSpaceTime
+  lazy val sample: RDD[(SpaceTimeKey, TileFeature[Tile, Tile])] with Metadata[TileLayerMetadata[SpaceTimeKey]] = CoordinateSpaceTime
 }

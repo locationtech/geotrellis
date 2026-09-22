@@ -25,6 +25,7 @@ import geotrellis.spark.testkit.*
 import geotrellis.vector.*
 
 import org.scalatest.funspec.AnyFunSpec
+import geotrellis.util.identityComponent
 
 class RegridSpec extends AnyFunSpec with TestEnvironment with RasterMatchers {
 

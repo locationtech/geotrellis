@@ -31,6 +31,7 @@ import geotrellis.spark.testkit.*
 
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.funspec.AnyFunSpec
+import geotrellis.util.identityComponent
 
 class RDDKernelDensitySpec extends AnyFunSpec with Matchers with TestEnvironment with RasterMatchers {
   describe("Kernel Density Operation on RDD of features") {
@@ -68,8 +69,8 @@ class RDDKernelDensitySpec extends AnyFunSpec with Matchers with TestEnvironment
       val tileRDD = ptrdd.kernelDensity(kern, ld, LatLng, cellType)
 
       val tileList =
-        for { r <- 0 until ld.layoutRows
-            ; c <- 0 until ld.layoutCols
+        for { r <- Range(0, ld.layoutRows)
+            ; c <- Range(0, ld.layoutCols)
             } yield {
               val k = SpatialKey(c,r)
               tileRDD.lookup(k) match {
@@ -77,7 +78,7 @@ class RDDKernelDensitySpec extends AnyFunSpec with Matchers with TestEnvironment
                 case x => (k, x(0))
               }
             }
-      val stitched = TileLayoutStitcher.stitch(tileList)
+      val stitched = TileLayoutStitcher.stitch[Tile](tileList)
 
       // compare results
       assertEqual(stitched._1, full)
@@ -117,8 +118,8 @@ class RDDKernelDensitySpec extends AnyFunSpec with Matchers with TestEnvironment
       val tileRDD = ptrdd.kernelDensity(kern, ld, LatLng, cellType)
 
       val tileList =
-        for { r <- 0 until ld.layoutRows
-            ; c <- 0 until ld.layoutCols
+        for { r <- Range(0, ld.layoutRows)
+            ; c <- Range(0, ld.layoutCols)
             } yield {
               val k = SpatialKey(c,r)
               tileRDD.lookup(k) match {
@@ -126,7 +127,7 @@ class RDDKernelDensitySpec extends AnyFunSpec with Matchers with TestEnvironment
                 case x => (k, x(0))
               }
             }
-      val stitched = TileLayoutStitcher.stitch(tileList)
+      val stitched = TileLayoutStitcher.stitch[Tile](tileList)
 
       // compare results
       assertEqual(stitched._1, full)

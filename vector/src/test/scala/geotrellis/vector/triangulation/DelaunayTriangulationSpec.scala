@@ -55,7 +55,7 @@ class DelaunayTriangulationSpec extends AnyFunSpec with Matchers {
     it("should have a convex boundary") {
       val range = 0 until numpts
       val pts = (for (i <- range) yield randomPoint(Extent(0, 0, 1, 1))).toArray
-      implicit val trans = { (i: Int) => pts(i) }
+      implicit val trans: Int => Coordinate = { (i: Int) => pts(i) }
       val dt = DelaunayTriangulation(pts)
       import dt.halfEdgeTable.*
 
@@ -64,10 +64,11 @@ class DelaunayTriangulationSpec extends AnyFunSpec with Matchers {
       }
       var isConvex = true
       var e = dt.boundary()
-      do {
+      while ({
         isConvex = isConvex && boundingEdgeIsConvex(e)
         e = getNext(e)
-      } while (e != dt.boundary())
+        e != dt.boundary()
+      }) ()
 
       isConvex should be (true)
     }
@@ -78,7 +79,7 @@ class DelaunayTriangulationSpec extends AnyFunSpec with Matchers {
       val range = 0 until numpts
       val pts = (for (i <- range) yield randomPoint(Extent(0, 0, 1, 1))).toArray
       val dt = DelaunayTriangulation(pts)
-      implicit val trans = { (i: Int) => pts(i) }
+      implicit val trans: Int => Coordinate = { (i: Int) => pts(i) }
 
       (dt.triangleMap.getTriangles().forall{ case ((ai,bi,ci),_) =>
         val otherPts = (0 until numpts).filter{ (i: Int) => i != ai && i != bi && i != ci }
@@ -96,11 +97,12 @@ class DelaunayTriangulationSpec extends AnyFunSpec with Matchers {
 
       var e = dt.boundary()
       var valid = true
-      do {
+      while ({
         val diff = getDest(e) - getSrc(e)
         valid = valid && (diff * diff == 1)
         e = getNext(e)
-      } while (valid && e != dt.boundary())
+        valid && e != dt.boundary()
+      }) ()
 
       (dt.triangleMap.getTriangles().isEmpty && valid) should be (true)
     }
@@ -108,7 +110,7 @@ class DelaunayTriangulationSpec extends AnyFunSpec with Matchers {
     it("should have no overlapping triangles") {
       val pts = randomizedGrid(13, Extent(0,0,1,1)).toArray
       val dt = DelaunayTriangulation(pts, debug=false) // to kick travis
-      implicit val trans = { (i: Int) => pts(i) }
+      implicit val trans: Int => Coordinate = { (i: Int) => pts(i) }
       val tris = dt.triangleMap.getTriangles().keys.toArray
       val ntris = tris.size
 
@@ -135,23 +137,25 @@ class DelaunayTriangulationSpec extends AnyFunSpec with Matchers {
     it("should have sane triangle ordering near boundaries") {
       val pts = randomizedGrid(100, Extent(0,0,1,1)).toArray
       val dt = DelaunayTriangulation(pts, debug=false)
-      implicit val trans = { (i: Int) => pts(i) }
+      implicit val trans: Int => Coordinate = { (i: Int) => pts(i) }
       import dt.halfEdgeTable.*
       import dt.predicates.*
 
       var valid = true
       var e = dt.boundary()
-      do {
+      while ({
         var f = e
-        do {
+        while ({
           if (rotCWSrc(f) != e)
             valid = !isLeftOf(f, getDest(rotCWSrc(f)))
 
           f = rotCWSrc(f)
-        } while (valid && f != e)
+          valid && f != e
+        }) ()
 
         e = getNext(e)
-      } while (valid && e != dt.boundary())
+        valid && e != dt.boundary()
+      }) ()
 
       valid should be (true)
     }

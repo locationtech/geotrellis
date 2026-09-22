@@ -17,6 +17,7 @@
 package geotrellis.raster.split
 
 import geotrellis.raster.*
+import geotrellis.util.conversions.ConversionLift.*
 
 
 import Split.Options

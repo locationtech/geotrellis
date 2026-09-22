@@ -237,7 +237,7 @@ class CellTypeSpec extends AnyFunSpec with Matchers with Inspectors {
     object FloatDef extends CellDef[Float, Double] {
       val baseCode = "float32"
       def apply(noData: Double): FloatUserDefinedNoDataCellType = FloatUserDefinedNoDataCellType(toCellEncoding(noData))
-      val range = new TestRange(Float.MinValue.toDouble, 0, Float.MaxValue.toDouble) {
+      val range = new TestRange(Float.MinValue.toDouble, 0.0, Float.MaxValue.toDouble) {
       }
       def toCellEncoding(noData: Double) = noData.toFloat
     }
@@ -245,7 +245,7 @@ class CellTypeSpec extends AnyFunSpec with Matchers with Inspectors {
     object DoubleDef extends CellDef[Double, Double] {
       val baseCode = "float64"
       def apply(noData: Double): DoubleUserDefinedNoDataCellType = DoubleUserDefinedNoDataCellType(toCellEncoding(noData))
-      val range = new TestRange(Double.MinValue, 0, Double.MaxValue) {
+      val range = new TestRange(Double.MinValue, 0.0, Double.MaxValue) {
       }
       def toCellEncoding(noData: Double) = noData
     }

@@ -28,6 +28,7 @@ import org.apache.hadoop.fs.Path
 
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.funspec.AnyFunSpec
+import geotrellis.util.identityComponent
 
 class HadoopIngestSpec extends AnyFunSpec with Matchers with TestEnvironment with TestFiles {
   val layoutScheme = ZoomedLayoutScheme(LatLng, 512)

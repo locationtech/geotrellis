@@ -24,7 +24,7 @@ import java.net.URI
   * @define experimental <span class="badge badge-red" style="float: right;">EXPERIMENTAL</span>@experimental
   */
 @experimental abstract class InMemoryGeoTiffAttributeStore extends CollectionAttributeStore[GeoTiffMetadata] {
-  val metadataList: List[GeoTiffMetadata]
+  def metadataList: List[GeoTiffMetadata]
   lazy val getData: () => GeoTiffMetadataTree[GeoTiffMetadata] = () => GeoTiffMetadataTree.fromGeoTiffMetadataSeq(metadataList)
   lazy val data = getData()
   @experimental def query(layerName: Option[String] = None, extent: Option[ProjectedExtent] = None): Seq[GeoTiffMetadata] = {

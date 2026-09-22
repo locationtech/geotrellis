@@ -22,15 +22,14 @@ import geotrellis.spark.pipeline.json.reindex.*
 import geotrellis.spark.pipeline.json.update.*
 import geotrellis.spark.pipeline.json.transform.*
 import geotrellis.proj4.CRS
+import geotrellis.vector.Extent
 import geotrellis.layer.*
 import geotrellis.spark.pipeline.*
 import geotrellis.raster.*
 import geotrellis.raster.resample.*
 
-import _root_.io.circe.generic.extras.Configuration
 import _root_.io.circe.*
 import _root_.io.circe.syntax.*
-import _root_.io.circe.generic.extras.semiauto.*
 import cats.syntax.either.*
 import cats.syntax.apply.*
 import cats.syntax.bifoldable.*
@@ -44,7 +43,6 @@ import scala.util.Try
 object Implicits extends Implicits
 
 trait Implicits {
-  implicit val config: Configuration = Configuration.default.withDefaults.withSnakeCaseMemberNames
   val pipelineJsonPrinter: Printer = Printer.spaces2.copy(dropNullValues = true)
 
   implicit val uriEncoder: Encoder[URI] =
@@ -62,8 +60,10 @@ trait Implicits {
       Either.catchNonFatal(Try(CRS.fromName(str)) getOrElse CRS.fromString(str)).leftMap(_ => "CRS")
     }
 
-  implicit val layoutDefinitionEncoder: Encoder[LayoutDefinition] = deriveConfiguredEncoder
-  implicit val layoutDefinitionDecoder: Decoder[LayoutDefinition] = deriveConfiguredDecoder
+  implicit val layoutDefinitionEncoder: Encoder[LayoutDefinition] =
+    Encoder.forProduct2("extent", "tile_layout") { ld => (ld.extent, ld.tileLayout) }
+  implicit val layoutDefinitionDecoder: Decoder[LayoutDefinition] =
+    Decoder.forProduct2("extent", "tile_layout") { (e: Extent, tl: TileLayout) => LayoutDefinition(e, tl) }
 
   implicit val layoutSchemeEncoder: Encoder[LayoutScheme] =
     Encoder.instance {

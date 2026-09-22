@@ -32,6 +32,7 @@ import spire.syntax.cfor.*
 
 import org.scalatest.GivenWhenThen
 import org.scalatest.funspec.AnyFunSpec
+import geotrellis.util.identityComponent
 
 class GDALRasterSummarySpec extends AnyFunSpec with TestEnvironment with GivenWhenThen {
   import geotrellis.GDALTestUtils.*

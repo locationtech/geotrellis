@@ -17,6 +17,7 @@
 package geotrellis.raster.mapalgebra.focal
 
 import geotrellis.raster.testkit.*
+import geotrellis.raster.Implicits.withTileFocalMethods
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.funspec.AnyFunSpec
 

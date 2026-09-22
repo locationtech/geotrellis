@@ -22,6 +22,9 @@ import geotrellis.raster.Neighborhoods.{Square, Circle}
 import geotrellis.raster.*
 
 import org.scalatest.funspec.AnyFunSpec
+import geotrellis.util.identityComponent
+import geotrellis.layer.Implicits.withFocalTileLayerCollectionMethods
+import geotrellis.layer.Implicits.withSpatialTileLayoutCollectionMethods
 
 class MinSpec extends AnyFunSpec with TestEnvironment {
 

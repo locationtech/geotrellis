@@ -33,6 +33,7 @@ import java.time.{LocalDateTime, ZoneId}
 
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.funspec.AnyFunSpec
+import geotrellis.util.identityComponent
 
 class HadoopGeoTiffRDDSpec extends AnyFunSpec with Matchers with RasterMatchers with TestEnvironment with TestFiles {
   describe("HadoopGeoTiffRDD") {

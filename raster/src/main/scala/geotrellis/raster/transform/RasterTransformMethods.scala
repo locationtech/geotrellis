@@ -17,6 +17,7 @@
 package geotrellis.raster.transform
 
 import geotrellis.raster.{CellGrid, MultibandTile, Raster, Tile}
+import geotrellis.util.conversions.ConversionLift.*
 
 
 abstract class RasterTransformMethods[T <: CellGrid[Int]: _ => TransformMethods[T]] extends TransformMethods[Raster[T]] {

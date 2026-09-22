@@ -37,6 +37,7 @@ import org.apache.spark.HashPartitioner
 import org.apache.spark.rdd.RDD
 
 import scala.reflect.ClassTag
+import geotrellis.spark.pipeline.withGetCRS
 
 trait Transform[F, T] extends Node[T]
 

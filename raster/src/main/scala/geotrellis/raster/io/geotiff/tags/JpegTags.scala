@@ -16,11 +16,9 @@
 
 package geotrellis.raster.io.geotiff.tags
 
-import monocle.macros.Lenses
 import io.circe.*
 import io.circe.generic.semiauto.*
 
-@Lenses("_")
 case class JpegTags(
   jpegTables: Option[Array[Byte]] = None,
   jpegProc: Option[Int] = None,
