@@ -22,7 +22,7 @@ object Version {
   val accumulo    = "2.1.4"
   val cassandra   = "4.19.3"
   val hbase       = "2.6.6"
-  val hadoop      = "3.4.3"
+  val hadoop      = "3.5.0"
   val gdal        = "3.12.0"
   val gdalWarp    = "3.13.0"
 
@@ -76,7 +76,7 @@ object Dependencies {
   }
 
   def apacheSpark(module: String) = Def.setting {
-    val dep = for3Use2_13("org.apache.spark" %% s"spark-$module" % "4.0.3").value
+    val dep = for3Use2_13("org.apache.spark" %% s"spark-$module" % "4.2.0").value
     // Spark's 2.13 jars pull the _2.13 builds of these, while the pure Scala 3 modules
     // (proj4, store) bring the _3 builds. They are the same classes, so keep one copy.
     if (CrossVersion.partialVersion(scalaVersion.value).exists(_._1 == 3))
@@ -110,10 +110,10 @@ object Dependencies {
   val chronoscala         = "io.github.chronoscala"      %% "chronoscala"              % "2.0.10"
   val awsSdkS3            = "software.amazon.awssdk"      % "s3"                       % "2.46.15"
   val hadoopClient        = "org.apache.hadoop"           % "hadoop-client"            % Version.hadoop
-  val avro                = "org.apache.avro"             % "avro"                     % "1.11.5" // aligned with the Spark version // 1.12.0 causes test issues; 1.13.0-SNAPSHOT works
+  val avro                = "org.apache.avro"             % "avro"                     % "1.12.1" // aligned with the Spark version
   val parserCombinators   = "org.scala-lang.modules"     %% "scala-parser-combinators" % "2.4.0"
   val jsonSchemaValidator = "com.networknt"               % "json-schema-validator"    % "0.1.23"
-  val sl4jnop             = "org.slf4j"                   % "slf4j-nop"                % "1.7.25"
+  val sl4jnop             = "org.slf4j"                   % "slf4j-nop"                % "2.0.16"
   val logbackClassic      = "ch.qos.logback"              % "logback-classic"          % "1.2.3"
   val guava               = "com.google.guava"            % "guava"                    % "16.0.1"
   val zstdJni             = "com.github.luben"            % "zstd-jni"                 % "1.5.7-11"
@@ -159,7 +159,8 @@ object Dependencies {
 
   val scalapbRuntime      = "com.thesamet.scalapb"        %% "scalapb-runtime"         % scalapb.compiler.Version.scalapbVersion
   val scalapbLenses       = "com.thesamet.scalapb"        %% "lenses"                  % scalapb.compiler.Version.scalapbVersion
-  val protobufJava        = "com.google.protobuf"          % "protobuf-java"           % "4.35.1"
+  // Keep protobuf in sync with ScalaPB runtime to avoid a binary-incompatible split in vectortile.
+  val protobufJava        = "com.google.protobuf"          % "protobuf-java"           % "3.25.8"
 
   val squants             = "org.typelevel"               %% "squants"                 % "1.8.3"
   val scalactic           = "org.scalactic"               %% "scalactic"               % "3.2.20"

@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed
+- Upgrade to Spark 4.2.0 [#3634](https://github.com/locationtech/geotrellis/issues/3634)
 - Spark 4 Update; drops Scala 2.12 and JDK 11 support [#3582](https://github.com/locationtech/geotrellis/pull/3582)
 - GDAL 3.13 Update [#3606](https://github.com/locationtech/geotrellis/pull/3606)
 - Accumulo 2.1.4 Update [#3612](https://github.com/locationtech/geotrellis/pull/3612/)
