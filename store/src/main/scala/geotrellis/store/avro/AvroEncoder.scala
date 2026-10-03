@@ -27,6 +27,13 @@ import org.apache.commons.io.output.ByteArrayOutputStream
 object AvroEncoder {
   val deflater = new Deflater(Deflater.BEST_SPEED)
 
+  /** Avro 1.12 enables the fast reader by default. Its global reader cache is keyed weakly by the reader schema. */
+  private val genericData: GenericData = {
+    val data = new GenericData()
+    data.setFastReaderEnabled(false)
+    data
+  }
+
   def compress(bytes: Array[Byte]): Array[Byte] = {
     val deflater = new java.util.zip.Deflater
     val baos = new ByteArrayOutputStream
@@ -80,7 +87,7 @@ object AvroEncoder {
     val format = implicitly[AvroRecordCodec[T]]
     val schema = format.schema
 
-    val reader = new GenericDatumReader[GenericRecord](writerSchema, schema)
+    val reader = new GenericDatumReader[GenericRecord](writerSchema, schema, genericData)
     val decoder =
       if (uncompress)
         DecoderFactory.get().binaryDecoder(decompress(bytes), null)
@@ -112,7 +119,7 @@ object AvroEncoder {
     val format = implicitly[AvroRecordCodec[T]]
     val schema = format.schema
 
-    val reader = new GenericDatumReader[GenericRecord](schema)
+    val reader = new GenericDatumReader[GenericRecord](schema, schema, genericData)
     val decoder = DecoderFactory.get().jsonDecoder(schema, json)
     try {
       val rec = reader.read(null.asInstanceOf[GenericRecord], decoder)
