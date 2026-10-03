@@ -24,7 +24,7 @@ import org.apache.avro.{Schema, SchemaBuilder}
 
 trait CRSCodec {
   implicit lazy val crsCodec: AvroRecordCodec[CRS] = new AvroRecordCodec[CRS] {
-    override def schema: Schema = SchemaBuilder
+    @transient override lazy val schema: Schema = SchemaBuilder
       .record("CRS").namespace("geotrellis.spark")
       .fields()
       .name("epsg").`type`().optional().intType()

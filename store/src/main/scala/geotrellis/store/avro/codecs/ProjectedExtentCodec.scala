@@ -26,7 +26,7 @@ import org.apache.avro.generic.*
 
 trait ProjectedExtentCodec {
   implicit lazy val projectedExtentCodec: AvroRecordCodec[ProjectedExtent] = new AvroRecordCodec[ProjectedExtent] {
-    def schema: Schema = {
+    @transient lazy val schema: Schema = {
       val base = SchemaBuilder
         .record("ProjectedExtent").namespace("geotrellis.vector")
         .fields()

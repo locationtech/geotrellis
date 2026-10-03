@@ -26,7 +26,7 @@ import org.apache.avro.generic.*
 
 trait ExtentCodec {
   implicit lazy val extentCodec: AvroRecordCodec[Extent] = new AvroRecordCodec[Extent] {
-    def schema: Schema = SchemaBuilder
+    @transient lazy val schema: Schema = SchemaBuilder
       .record("Extent").namespace("geotrellis.spark")
       .fields()
       .name("xmin").`type`().doubleType().noDefault()

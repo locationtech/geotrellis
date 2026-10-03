@@ -28,7 +28,7 @@ trait TileFeatureCodec {
     T <: Tile: AvroRecordCodec,
     D: AvroRecordCodec
   ]: AvroRecordCodec[TileFeature[T, D]] = new AvroRecordCodec[TileFeature[T, D]] {
-    def schema = SchemaBuilder
+    @transient lazy val schema = SchemaBuilder
       .record("TileFeature").namespace("geotrellis.raster")
       .fields()
       .name("tile").`type`(implicitly[AvroRecordCodec[T]].schema).noDefault
@@ -51,7 +51,7 @@ trait TileFeatureCodec {
     T <: MultibandTile: AvroRecordCodec,
     D: AvroRecordCodec
   ]: AvroRecordCodec[TileFeature[T, D]] = new AvroRecordCodec[TileFeature[T, D]] {
-    def schema = SchemaBuilder
+    @transient lazy val schema = SchemaBuilder
       .record("TileFeature").namespace("geotrellis.raster")
       .fields()
       .name("tile").`type`(implicitly[AvroRecordCodec[T]].schema).noDefault
