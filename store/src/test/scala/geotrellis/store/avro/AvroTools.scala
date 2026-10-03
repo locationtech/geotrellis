@@ -127,9 +127,9 @@ object AvroTools {
       cellType match {
         case FloatConstantNoDataCellType => nodata shouldBe Some(Map("boolean" -> true).asJson)
         case FloatUserDefinedNoDataCellType(nd) =>
-          // nodata shouldBe Some(Map("float" -> nd)) // doesn't work: double number != float number
-          // nodata shouldBe Some(Map("float" -> nd.toDouble)) // doesn't work: (2.2f).toDouble ==> 2.200000047683716
-          nodata.toString shouldBe Some(Map("float" -> nd).asJson).toString
+          // Avro 1.12 JsonEncoder widens floats to double ((2.2f).toDouble ==> 2.200000047683716),
+          // while 1.11 writes them as is; compare by the float value to stay independent of that.
+          nodata.flatMap(_.hcursor.downField("float").as[Double].toOption).map(_.toFloat) shouldBe Some(nd)
         case FloatCellType => nodata shouldBe Some(Map("boolean" -> false).asJson)
         case _ => sys.error(s"Cell type ${cellType} was unexpected")
       }
