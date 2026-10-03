@@ -29,7 +29,7 @@ import scala.jdk.CollectionConverters.*
 import scala.util.Try
 
 trait TileCodecs {
-  implicit def shortArrayTileCodec: AvroRecordCodec[ShortArrayTile] = new AvroRecordCodec[ShortArrayTile] {
+  implicit lazy val shortArrayTileCodec: AvroRecordCodec[ShortArrayTile] = new AvroRecordCodec[ShortArrayTile] {
     def schema = SchemaBuilder
       .record("ShortArrayTile").namespace("geotrellis.raster")
       .fields()
@@ -68,7 +68,7 @@ trait TileCodecs {
     }
   }
 
-  implicit def uShortArrayTileCodec: AvroRecordCodec[UShortArrayTile] = new AvroRecordCodec[UShortArrayTile] {
+  implicit lazy val uShortArrayTileCodec: AvroRecordCodec[UShortArrayTile] = new AvroRecordCodec[UShortArrayTile] {
     def schema = SchemaBuilder
       .record("UShortArrayTile").namespace("geotrellis.raster")
       .fields()
@@ -106,7 +106,7 @@ trait TileCodecs {
     }
   }
 
-  implicit def intArrayTileCodec: AvroRecordCodec[IntArrayTile] = new AvroRecordCodec[IntArrayTile] {
+  implicit lazy val intArrayTileCodec: AvroRecordCodec[IntArrayTile] = new AvroRecordCodec[IntArrayTile] {
     def schema = SchemaBuilder
       .record("IntArrayTile").namespace("geotrellis.raster")
       .fields()
@@ -156,7 +156,7 @@ trait TileCodecs {
     * - OR -
     * 3. a floating point value (which is a UserDefinedNoDataValue's value)
     */
-  implicit def floatArrayTileCodec: AvroRecordCodec[FloatArrayTile] = new AvroRecordCodec[FloatArrayTile] {
+  implicit lazy val floatArrayTileCodec: AvroRecordCodec[FloatArrayTile] = new AvroRecordCodec[FloatArrayTile] {
     def schema = SchemaBuilder
       .record("FloatArrayTile").namespace("geotrellis.raster")
       .fields()
@@ -208,7 +208,7 @@ trait TileCodecs {
     * - OR -
     * 3. a floating point value (which is a UserDefinedNoDataValue's value)
     */
-  implicit def doubleArrayTileCodec: AvroRecordCodec[DoubleArrayTile] = new AvroRecordCodec[DoubleArrayTile] {
+  implicit lazy val doubleArrayTileCodec: AvroRecordCodec[DoubleArrayTile] = new AvroRecordCodec[DoubleArrayTile] {
     def schema = SchemaBuilder
       .record("DoubleArrayTile").namespace("geotrellis.raster")
       .fields()
@@ -246,7 +246,7 @@ trait TileCodecs {
     }
   }
 
-  implicit def byteArrayTileCodec: AvroRecordCodec[ByteArrayTile] = new AvroRecordCodec[ByteArrayTile] {
+  implicit lazy val byteArrayTileCodec: AvroRecordCodec[ByteArrayTile] = new AvroRecordCodec[ByteArrayTile] {
     def schema = SchemaBuilder
       .record("ByteArrayTile").namespace("geotrellis.raster")
       .fields()
@@ -281,7 +281,7 @@ trait TileCodecs {
     }
   }
 
-  implicit def uByteArrayTileCodec: AvroRecordCodec[UByteArrayTile] = new AvroRecordCodec[UByteArrayTile] {
+  implicit lazy val uByteArrayTileCodec: AvroRecordCodec[UByteArrayTile] = new AvroRecordCodec[UByteArrayTile] {
     def schema = SchemaBuilder
       .record("UByteArrayTile").namespace("geotrellis.raster")
       .fields()
@@ -316,7 +316,7 @@ trait TileCodecs {
     }
   }
 
-  implicit def bitArrayTileCodec: AvroRecordCodec[BitArrayTile] = new AvroRecordCodec[BitArrayTile] {
+  implicit lazy val bitArrayTileCodec: AvroRecordCodec[BitArrayTile] = new AvroRecordCodec[BitArrayTile] {
     def schema = SchemaBuilder
       .record("BitArrayTile").namespace("geotrellis.raster")
       .fields()
@@ -337,7 +337,7 @@ trait TileCodecs {
     }
   }
 
-  implicit def multibandTileCodec: AvroRecordCodec[MultibandTile] = new AvroRecordCodec[MultibandTile] {
+  implicit lazy val multibandTileCodec: AvroRecordCodec[MultibandTile] = new AvroRecordCodec[MultibandTile] {
     def schema = SchemaBuilder
       .record("ArrayMultibandTile").namespace("geotrellis.raster")
       .fields()
@@ -360,7 +360,7 @@ trait TileCodecs {
     }
   }
 
-  implicit def paddedTileCodec: AvroRecordCodec[PaddedTile] = new AvroRecordCodec[PaddedTile] {
+  implicit lazy val paddedTileCodec: AvroRecordCodec[PaddedTile] = new AvroRecordCodec[PaddedTile] {
     def schema = SchemaBuilder
       .record("PaddedTile").namespace("geotrellis.raster")
       .fields()

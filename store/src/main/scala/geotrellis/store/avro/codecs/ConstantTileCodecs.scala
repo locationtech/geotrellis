@@ -25,7 +25,7 @@ import org.apache.avro.generic.*
 import scala.util.Try
 
 trait ConstantTileCodecs {
-  implicit def bitConstantTileCodec: AvroRecordCodec[BitConstantTile] = new AvroRecordCodec[BitConstantTile] {
+  implicit lazy val bitConstantTileCodec: AvroRecordCodec[BitConstantTile] = new AvroRecordCodec[BitConstantTile] {
     def schema = SchemaBuilder
       .record("BitConstantTile").namespace("geotrellis.raster")
       .fields()
@@ -44,7 +44,7 @@ trait ConstantTileCodecs {
       BitConstantTile(rec[Boolean]("cell"), rec[Int]("cols"), rec[Int]("rows"))
   }
 
-  implicit def byteConstantTileCodec: AvroRecordCodec[ByteConstantTile] = new AvroRecordCodec[ByteConstantTile] {
+  implicit lazy val byteConstantTileCodec: AvroRecordCodec[ByteConstantTile] = new AvroRecordCodec[ByteConstantTile] {
     def schema = SchemaBuilder
       .record("ByteConstantTile").namespace("geotrellis.raster")
       .fields()
@@ -76,7 +76,7 @@ trait ConstantTileCodecs {
     }
   }
 
-  implicit def uByteConstantTileCodec: AvroRecordCodec[UByteConstantTile] = new AvroRecordCodec[UByteConstantTile] {
+  implicit lazy val uByteConstantTileCodec: AvroRecordCodec[UByteConstantTile] = new AvroRecordCodec[UByteConstantTile] {
     def schema = SchemaBuilder
       .record("UByteConstantTile").namespace("geotrellis.raster")
       .fields()
@@ -108,7 +108,7 @@ trait ConstantTileCodecs {
     }
   }
 
-  implicit def shortConstantTileCodec: AvroRecordCodec[ShortConstantTile] = new AvroRecordCodec[ShortConstantTile] {
+  implicit lazy val shortConstantTileCodec: AvroRecordCodec[ShortConstantTile] = new AvroRecordCodec[ShortConstantTile] {
     def schema = SchemaBuilder
       .record("ShortConstantTile").namespace("geotrellis.raster")
       .fields()
@@ -140,7 +140,7 @@ trait ConstantTileCodecs {
     }
   }
 
-  implicit def uShortConstantTileCodec: AvroRecordCodec[UShortConstantTile] = new AvroRecordCodec[UShortConstantTile] {
+  implicit lazy val uShortConstantTileCodec: AvroRecordCodec[UShortConstantTile] = new AvroRecordCodec[UShortConstantTile] {
     def schema = SchemaBuilder
       .record("UShortConstantTile").namespace("geotrellis.raster")
       .fields()
@@ -172,7 +172,7 @@ trait ConstantTileCodecs {
     }
   }
 
-  implicit def intConstantTileCodec: AvroRecordCodec[IntConstantTile] = new AvroRecordCodec[IntConstantTile] {
+  implicit lazy val intConstantTileCodec: AvroRecordCodec[IntConstantTile] = new AvroRecordCodec[IntConstantTile] {
     def schema = SchemaBuilder
       .record("IntConstantTile").namespace("geotrellis.raster")
       .fields()
@@ -218,7 +218,7 @@ trait ConstantTileCodecs {
     * - OR -
     * 3. a floating point value (which is a UserDefinedNoDataValue's value)
     */
-  implicit def floatConstantTileCodec: AvroRecordCodec[FloatConstantTile] = new AvroRecordCodec[FloatConstantTile] {
+  implicit lazy val floatConstantTileCodec: AvroRecordCodec[FloatConstantTile] = new AvroRecordCodec[FloatConstantTile] {
     def schema = SchemaBuilder
       .record("FloatConstantTile").namespace("geotrellis.raster")
       .fields()
@@ -266,7 +266,7 @@ trait ConstantTileCodecs {
     * - OR -
     * 3. a floating point value (which is a UserDefinedNoDataValue's value)
     */
-  implicit def doubleConstantTileCodec: AvroRecordCodec[DoubleConstantTile] = new AvroRecordCodec[DoubleConstantTile] {
+  implicit lazy val doubleConstantTileCodec: AvroRecordCodec[DoubleConstantTile] = new AvroRecordCodec[DoubleConstantTile] {
     def schema = SchemaBuilder
       .record("DoubleConstantTile").namespace("geotrellis.raster")
       .fields()
