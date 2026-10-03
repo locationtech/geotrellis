@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Scala3 syntax usage [#3631](https://github.com/locationtech/geotrellis/pull/3631)
+- Kind Projector underscore syntax adoption [#3632](https://github.com/locationtech/geotrellis/pull/3632)
+- Scala 3 support [#3633](https://github.com/locationtech/geotrellis/pull/3633)
+
 ### Changed
 - Spark 4 Update; drops Scala 2.12 and JDK 11 support [#3582](https://github.com/locationtech/geotrellis/pull/3582)
 - GDAL 3.13 Update [#3606](https://github.com/locationtech/geotrellis/pull/3606)
@@ -16,10 +21,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Drop JDK17 builds [#3629](https://github.com/locationtech/geotrellis/pull/3629)
 - Accumulo Deprecated APIs removal [#3630](https://github.com/locationtech/geotrellis/pull/3630)
 - GeoTools 35.1 update [#3611](https://github.com/locationtech/geotrellis/pull/3611)
-- Scala3 syntax usage [#3631](https://github.com/locationtech/geotrellis/pull/3631)
-- Kind Projector underscore syntax adoption [#3632](https://github.com/locationtech/geotrellis/pull/3632)
-- Scala 3 support [#3633](https://github.com/locationtech/geotrellis/pull/3632)
 - Upgrade to Spark 4.2.0 [#3634](https://github.com/locationtech/geotrellis/issues/3634)
+- Avro codecs caching [#3637](https://github.com/locationtech/geotrellis/pull/3637)
 
 ## [3.8.1] - 2026-06-22
 
@@ -41,7 +44,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - Bump GeoTools version up to 30.x [#3521](https://github.com/locationtech/geotrellis/pull/3521)
-- Dependecies update & fix "not found: type Serializable" compiler bug [#3535](https://github.com/locationtech/geotrellis/pull/3535)
+- Dependencies update & fix "not found: type Serializable" compiler bug [#3535](https://github.com/locationtech/geotrellis/pull/3535)
 - Update GDAL up to 3.9.x [#3540](https://github.com/locationtech/geotrellis/pull/3540)
 - Fix reprojection with downsampling for GeotiffRasterSource and tile RDDs. Reprojection outside the valid projection bounds may now throw a GeoAttrsError. [#3541](https://github.com/locationtech/geotrellis/issues/3541)
 - ConstantTile with NoData: support idempotent CellType conversions [#3553](https://github.com/locationtech/geotrellis/pull/3553)

@@ -21,7 +21,7 @@ import org.apache.avro.*
 import org.apache.avro.generic.GenericRecord
 
 class TupleCodec[A, B](implicit a: AvroRecordCodec[A], b: AvroRecordCodec[B]) extends AvroRecordCodec[(A, B)] {
-  def schema = SchemaBuilder.record("Tuple2").namespace("scala")
+  @transient lazy val schema = SchemaBuilder.record("Tuple2").namespace("scala")
     .fields()
     .name("_1").`type`(a.schema).noDefault()
     .name("_2").`type`(b.schema).noDefault()

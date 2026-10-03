@@ -27,7 +27,7 @@ import scala.reflect.ClassTag
  * @tparam T      superclass of listed formats
  */
 class AvroUnionCodec[T: ClassTag](formats: AvroRecordCodec[? <: T]*) extends AvroRecordCodec[T] {
-  def schema: Schema =
+  @transient lazy val schema: Schema =
     Schema.createUnion(formats.map(_.schema).asJava)
 
   override
