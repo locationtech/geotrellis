@@ -40,7 +40,7 @@ class S3ValueReader(
     val header = attributeStore.readHeader[S3LayerHeader](layerId)
     val keyIndex = attributeStore.readKeyIndex[K](layerId)
     val writerSchema = attributeStore.readSchema(layerId)
-    val codec = KeyValueRecordCodec[K, V]
+    implicit val codec: KeyValueRecordCodec[K, V] = KeyValueRecordCodec[K, V]
 
     def read(key: K): V = {
       val maxWidth = Index.digits(keyIndex.toIndex(keyIndex.keyBounds.maxKey))
@@ -61,7 +61,7 @@ class S3ValueReader(
 
       val bytes = IOUtils.toByteArray(is)
       is.close()
-      val recs = AvroEncoder.fromBinary(writerSchema, bytes)(codec)
+      val recs = AvroEncoder.fromBinary[Vector[(K, V)]](writerSchema, bytes)
 
       recs
         .find { row => row._1 == key }

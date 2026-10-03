@@ -37,7 +37,7 @@ class HBaseValueReader(
     val header = attributeStore.readHeader[HBaseLayerHeader](layerId)
     val keyIndex = attributeStore.readKeyIndex[K](layerId)
     val writerSchema = attributeStore.readSchema(layerId)
-    val codec = KeyValueRecordCodec[K, V]
+    implicit val codec: KeyValueRecordCodec[K, V] = KeyValueRecordCodec[K, V]
 
     def read(key: K): V = instance.withTableConnectionDo(header.tileTable) { table =>
       val get = new Get(HBaseKeyEncoder.encode(layerId, keyIndex.toIndex(key)))
@@ -45,7 +45,7 @@ class HBaseValueReader(
       val row = table.get(get)
       val tiles: Vector[(K, V)] =
         AvroEncoder
-          .fromBinary(writerSchema, row.getValue(hbaseTileColumnFamily, ""))(codec)
+          .fromBinary[Vector[(K, V)]](writerSchema, row.getValue(hbaseTileColumnFamily, ""))
           .filter(pair => pair._1 == key)
 
       if (tiles.isEmpty) {

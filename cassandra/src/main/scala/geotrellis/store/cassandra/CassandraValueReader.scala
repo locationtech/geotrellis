@@ -41,7 +41,7 @@ class CassandraValueReader(
     val header = attributeStore.readHeader[CassandraLayerHeader](layerId)
     val keyIndex = attributeStore.readKeyIndex[K](layerId)
     val writerSchema = attributeStore.readSchema(layerId)
-    val codec = KeyValueRecordCodec[K, V]
+    implicit val codec: KeyValueRecordCodec[K, V] = KeyValueRecordCodec[K, V]
 
     private lazy val statement = instance.withSession{ session =>
       session.prepare(
@@ -57,7 +57,7 @@ class CassandraValueReader(
     def read(key: K): V = instance.withSession { session =>
       val row = session.execute(statement.bind(keyIndex.toIndex(key).asJava)).all()
       val tiles = row.asScala.map { entry =>
-          AvroEncoder.fromBinary(writerSchema, entry.getByteBuffer("value").array())(codec)
+          AvroEncoder.fromBinary[Vector[(K, V)]](writerSchema, entry.getByteBuffer("value").array())
         }
         .flatMap { (pairs: Vector[(K, V)]) =>
           pairs.filter(pair => pair._1 == key)

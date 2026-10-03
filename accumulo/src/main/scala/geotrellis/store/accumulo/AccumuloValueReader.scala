@@ -42,7 +42,7 @@ class AccumuloValueReader(
     val header = attributeStore.readHeader[AccumuloLayerHeader](layerId)
     val keyIndex = attributeStore.readKeyIndex[K](layerId)
     val writerSchema = attributeStore.readSchema(layerId)
-    val codec = KeyValueRecordCodec[K, V]
+    implicit val codec: KeyValueRecordCodec[K, V] = KeyValueRecordCodec[K, V]
 
     def read(key: K): V = {
       val scanner = instance.client.createScanner(header.tileTable, new Authorizations())
@@ -50,7 +50,7 @@ class AccumuloValueReader(
       scanner.fetchColumnFamily(columnFamily(layerId))
 
       val tiles = scanner.iterator.asScala
-        .map { entry => AvroEncoder.fromBinary(writerSchema, entry.getValue.get)(codec) }
+        .map { entry => AvroEncoder.fromBinary[Vector[(K, V)]](writerSchema, entry.getValue.get) }
         .flatMap { (pairs: Vector[(K, V)]) => pairs.filter(pair => pair._1 == key) }.toVector
 
       if (tiles.isEmpty) {
