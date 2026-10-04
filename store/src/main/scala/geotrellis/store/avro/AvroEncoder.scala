@@ -30,26 +30,33 @@ import scala.util.Using
 
 object AvroEncoder {
   /**
-    * Avro compiles readers per schema instance, comparing schemas by reference.
-    * Avro 1.12's fast reader retains compiled readers indefinitely, so keep one
-    * canonical instance per distinct schema to avoid repeatedly compiling and
-    * retaining readers for equivalent schema instances.
+    * Avro's fast reader caches compiled readers by schema reference.
+    * Canonicalizing equivalent schemas avoids compiling and retaining duplicates.
     *
-    * Readers and writers are created per call and are never shared between threads.
-    * GenericDatumReader mode can be configured with -Dorg.apache.avro.fastread.
+    * Fast readers are configured once per JVM via -Dorg.apache.avro.fastread.
     */
   private val schemas = new ConcurrentHashMap[Schema, Schema]()
 
-  private def canonical(schema: Schema): Schema = {
+  /** Cache one reader per schema pair and one writer per schema. */
+  private val readers = new ConcurrentHashMap[(Schema, Schema), DatumReader[GenericRecord]]()
+  private val writers = new ConcurrentHashMap[Schema, DatumWriter[GenericRecord]]()
+
+  private def canonicalize(schema: Schema): Schema = {
     val prev = schemas.putIfAbsent(schema, schema)
     if (prev == null) schema else prev
   }
 
   private def datumReader(writerSchema: Schema, readerSchema: Schema): DatumReader[GenericRecord] =
-    new GenericDatumReader(canonical(writerSchema), canonical(readerSchema))
+    readers.computeIfAbsent(
+      (canonicalize(writerSchema), canonicalize(readerSchema)), { case (writer, reader) =>
+        val data = GenericData.get()
+        if (data.isFastReaderEnabled) data.getFastReaderBuilder.createDatumReader(writer, reader)
+        else new GenericDatumReader(writer, reader)
+      }
+    )
 
   private def datumWriter(schema: Schema): DatumWriter[GenericRecord] =
-    new GenericDatumWriter(canonical(schema))
+    writers.computeIfAbsent(canonicalize(schema), new GenericDatumWriter(_))
 
   def compress(bytes: Array[Byte]): Array[Byte] = {
     val baos = new ByteArrayOutputStream(bytes.length)
