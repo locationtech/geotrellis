@@ -17,17 +17,18 @@
 package geotrellis.store.avro
 
 import java.io.ByteArrayInputStream
+import java.nio.charset.StandardCharsets
 import java.util.concurrent.ConcurrentHashMap
-import java.util.zip.{InflaterInputStream, DeflaterOutputStream, Deflater}
+import java.util.zip.{InflaterInputStream, DeflaterOutputStream}
 import org.apache.avro.generic.*
 import org.apache.avro.io.*
 import org.apache.avro.*
 import org.apache.commons.io.IOUtils
 import org.apache.commons.io.output.ByteArrayOutputStream
 
-object AvroEncoder {
-  val deflater = new Deflater(Deflater.BEST_SPEED)
+import scala.util.Using
 
+object AvroEncoder {
   /**
     * Avro compiles readers per schema instance (identity), and the Avro 1.12 fast reader never releases them.
     * Keep one canonical instance per distinct schema and one reader / writer per canonical schema,
@@ -52,22 +53,15 @@ object AvroEncoder {
     writers.computeIfAbsent(canonical(schema), new GenericDatumWriter[GenericRecord](_))
 
   def compress(bytes: Array[Byte]): Array[Byte] = {
-    val deflater = new java.util.zip.Deflater
-    val baos = new ByteArrayOutputStream
-    val dos = new DeflaterOutputStream(baos, deflater)
-    dos.write(bytes)
-    baos.close()
-    dos.finish()
-    dos.close()
+    val baos = new ByteArrayOutputStream(bytes.length)
+    // close the stream-owned Deflater to free its native zlib memory
+    Using.resource(new DeflaterOutputStream(baos))(_.write(bytes))
     baos.toByteArray
   }
 
-  def decompress(bytes: Array[Byte]): Array[Byte] = {
-    val deflater = new java.util.zip.Inflater()
-    val bytesIn = new ByteArrayInputStream(bytes)
-    val in = new InflaterInputStream(bytesIn, deflater)
-    IOUtils.toByteArray(in)
-  }
+  def decompress(bytes: Array[Byte]): Array[Byte] =
+    // close the stream-owned Inflater to free its native zlib memory
+    Using.resource(new InflaterInputStream(new ByteArrayInputStream(bytes)))(IOUtils.toByteArray)
 
   def toBinary[T: AvroRecordCodec](thing: T): Array[Byte] =
     toBinary(thing, deflate = true)
@@ -87,15 +81,11 @@ object AvroEncoder {
       jos.toByteArray
   }
 
-  def fromBinary[T: AvroRecordCodec](bytes: Array[Byte]): T = {
-    val format = AvroRecordCodec[T]
-    fromBinary[T](format.schema, bytes)
-  }
+  def fromBinary[T: AvroRecordCodec](bytes: Array[Byte]): T =
+    fromBinary[T](AvroRecordCodec[T].schema, bytes)
 
-  def fromBinary[T: AvroRecordCodec](bytes: Array[Byte], uncompress: Boolean): T = {
-    val format = AvroRecordCodec[T]
-    fromBinary[T](format.schema, bytes, uncompress)
-  }
+  def fromBinary[T: AvroRecordCodec](bytes: Array[Byte], uncompress: Boolean): T =
+    fromBinary[T](AvroRecordCodec[T].schema, bytes, uncompress)
 
   def fromBinary[T: AvroRecordCodec](writerSchema: Schema, bytes: Array[Byte]): T =
     fromBinary(writerSchema, bytes, uncompress = true)
@@ -116,7 +106,7 @@ object AvroEncoder {
     } catch {
       case e: AvroTypeException =>
         throw new AvroTypeException(e.getMessage + ". " +
-          "This can be caused by using a type parameter which doesn't match the object being deserialized.")
+          "This can be caused by using a type parameter which doesn't match the object being deserialized.", e)
     }
   }
 
@@ -129,7 +119,7 @@ object AvroEncoder {
     val encoder = EncoderFactory.get().jsonEncoder(schema, jos)
     writer.write(format.encode(thing), encoder)
     encoder.flush()
-    jos.toByteArray.map(_.toChar).mkString
+    jos.toString(StandardCharsets.UTF_8)
   }
 
   def fromJson[T: AvroRecordCodec](json: String): T = {
@@ -144,7 +134,7 @@ object AvroEncoder {
     } catch {
       case e: AvroTypeException =>
         throw new AvroTypeException(e.getMessage + ". " +
-          "This can be caused by using a type parameter which doesn't match the object being deserialized.")
+          "This can be caused by using a type parameter which doesn't match the object being deserialized.", e)
     }
   }
 }
