@@ -20,7 +20,6 @@ import geotrellis.store.accumulo.AccumuloInstance
 import geotrellis.store.avro.*
 import geotrellis.store.avro.codecs.*
 import geotrellis.spark.store.LayerWriter
-import geotrellis.spark.util.KryoWrapper
 
 import org.apache.accumulo.core.data.{Key, Range, Value}
 import org.apache.accumulo.core.security.Authorizations
@@ -55,8 +54,6 @@ object AccumuloRDDWriter {
 
     instance.ensureTableExists(table)
 
-    val kwWriterSchema = KryoWrapper(writerSchema)
-
     val kvPairs: RDD[(Key, Value)] =
       raster
         // Call groupBy with numPartitions; if called without that argument or a partitioner,
@@ -73,7 +70,7 @@ object AccumuloRDDWriter {
               scanner.fetchColumnFamily(key.getColumnFamily)
               scanner.iterator().asScala.toVector.flatMap({ entry =>
                 val value = entry.getValue
-                AvroEncoder.fromBinary(kwWriterSchema.value.getOrElse(codec.schema), value.get)(codec)
+                AvroEncoder.fromBinary(writerSchema.getOrElse(codec.schema), value.get)(codec)
               })
             })
 

@@ -43,6 +43,8 @@ class XTreeMapSerializer extends MapSerializer {
 class KryoRegistrator extends SparkKryoRegistrator {
 
   override def registerClasses(kryo: Kryo): Unit = {
+    kryo.addDefaultSerializer(classOf[org.apache.avro.Schema], new AvroSchemaSerializer)
+
     // TreeMap serializaiton has a bug; we fix it here as we're stuck on low
     // Kryo versions due to Spark. Hack-tastic.
     kryo.register(classOf[TreeMap[?, ?]], (new XTreeMapSerializer).asInstanceOf[com.esotericsoftware.kryo.Serializer[TreeMap[?, ?]]])

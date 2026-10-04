@@ -98,8 +98,6 @@ object HadoopRDDWriter {
     val writerSchema = as.readSchema(id)
     val codec = KeyValueRecordCodec[K, V]
 
-    val kwWriterSchema = KryoWrapper(writerSchema)
-
     val conf = rdd.sparkContext.hadoopConfiguration
     val _conf = SerializableConfiguration(conf)
 
@@ -167,7 +165,7 @@ object HadoopRDDWriter {
         var k = new BigIntWritable()
         var v = new BytesWritable()
         while (reader.next(k, v)) {
-          val _kvs2: Vector[(K,V)] = AvroEncoder.fromBinary(kwWriterSchema.value, v.getBytes)(codec)
+          val _kvs2: Vector[(K,V)] = AvroEncoder.fromBinary(writerSchema, v.getBytes)(codec)
           ikvs2 ++= _kvs2.map({ case (k, v) => (keyIndex.toIndex(k),k,v) })
         }
         reader.close

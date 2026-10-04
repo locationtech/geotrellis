@@ -17,6 +17,7 @@
 package geotrellis.store.avro
 
 import java.io.ByteArrayInputStream
+import java.util.concurrent.ConcurrentHashMap
 import java.util.zip.{InflaterInputStream, DeflaterOutputStream, Deflater}
 import org.apache.avro.generic.*
 import org.apache.avro.io.*
@@ -27,12 +28,28 @@ import org.apache.commons.io.output.ByteArrayOutputStream
 object AvroEncoder {
   val deflater = new Deflater(Deflater.BEST_SPEED)
 
-  /** Avro 1.12 enables the fast reader by default. Its global reader cache is keyed weakly by the reader schema. */
-  private val genericData: GenericData = {
-    val data = new GenericData()
-    data.setFastReaderEnabled(false)
-    data
+  /**
+    * Avro compiles readers per schema instance (identity), and the Avro 1.12 fast reader never releases them.
+    * Keep one canonical instance per distinct schema and one reader / writer per canonical schema,
+    * so that work happens once per schema (the same approach as Spark's GenericAvroSerializer).
+    */
+  private val schemas = new ConcurrentHashMap[Schema, Schema]()
+  private val readers = new ConcurrentHashMap[(Schema, Schema), GenericDatumReader[GenericRecord]]()
+  private val writers = new ConcurrentHashMap[Schema, GenericDatumWriter[GenericRecord]]()
+
+  private def canonical(schema: Schema): Schema = {
+    val prev = schemas.putIfAbsent(schema, schema)
+    if (prev == null) schema else prev
   }
+
+  private def datumReader(writerSchema: Schema, readerSchema: Schema): GenericDatumReader[GenericRecord] =
+    readers.computeIfAbsent(
+      (canonical(writerSchema), canonical(readerSchema)),
+      { case (key, value) => new GenericDatumReader[GenericRecord](key, value) }
+    )
+
+  private def datumWriter(schema: Schema): GenericDatumWriter[GenericRecord] =
+    writers.computeIfAbsent(canonical(schema), new GenericDatumWriter[GenericRecord](_))
 
   def compress(bytes: Array[Byte]): Array[Byte] = {
     val deflater = new java.util.zip.Deflater
@@ -59,7 +76,7 @@ object AvroEncoder {
     val format = implicitly[AvroRecordCodec[T]]
     val schema: Schema = format.schema
 
-    val writer = new GenericDatumWriter[GenericRecord](schema)
+    val writer = datumWriter(schema)
     val jos = new ByteArrayOutputStream()
     val encoder = EncoderFactory.get().binaryEncoder(jos, null)
     writer.write(format.encode(thing), encoder)
@@ -87,7 +104,7 @@ object AvroEncoder {
     val format = implicitly[AvroRecordCodec[T]]
     val schema = format.schema
 
-    val reader = new GenericDatumReader[GenericRecord](writerSchema, schema, genericData)
+    val reader = datumReader(writerSchema, schema)
     val decoder =
       if (uncompress)
         DecoderFactory.get().binaryDecoder(decompress(bytes), null)
@@ -107,7 +124,7 @@ object AvroEncoder {
     val format = implicitly[AvroRecordCodec[T]]
     val schema = format.schema
 
-    val writer = new GenericDatumWriter[GenericRecord](schema)
+    val writer = datumWriter(schema)
     val jos = new ByteArrayOutputStream()
     val encoder = EncoderFactory.get().jsonEncoder(schema, jos)
     writer.write(format.encode(thing), encoder)
@@ -119,7 +136,7 @@ object AvroEncoder {
     val format = implicitly[AvroRecordCodec[T]]
     val schema = format.schema
 
-    val reader = new GenericDatumReader[GenericRecord](schema, schema, genericData)
+    val reader = datumReader(schema, schema)
     val decoder = DecoderFactory.get().jsonDecoder(schema, json)
     try {
       val rec = reader.read(null.asInstanceOf[GenericRecord], decoder)

@@ -21,7 +21,6 @@ import geotrellis.store.avro.*
 import geotrellis.store.avro.codecs.*
 import geotrellis.store.hadoop.*
 import geotrellis.store.hadoop.formats.FilterMapFileInputFormat
-import geotrellis.spark.util.KryoWrapper
 
 import org.log4s.*
 
@@ -47,7 +46,6 @@ object HadoopRDDReader {
     val inputConf = conf.withInputPath(dataPath)
 
     val codec = KeyValueRecordCodec[K, V]
-    val kwWriterSchema = KryoWrapper(writerSchema) //Avro Schema is not Serializable
 
     sc.newAPIHadoopRDD(
       inputConf,
@@ -56,7 +54,7 @@ object HadoopRDDReader {
       classOf[BytesWritable]  // value class
      )
       .flatMap { case (keyWritable, valueWritable) =>
-        AvroEncoder.fromBinary(kwWriterSchema.value.getOrElse(codec.schema), valueWritable.getBytes)(codec)
+        AvroEncoder.fromBinary(writerSchema.getOrElse(codec.schema), valueWritable.getBytes)(codec)
       }
   }
 
@@ -84,7 +82,6 @@ object HadoopRDDReader {
     inputConf.setSerialized(FilterMapFileInputFormat.FILTER_INFO_KEY, indexRanges)
 
     val codec = KeyValueRecordCodec[K, V]
-    val kwWriterSchema = KryoWrapper(writerSchema) //Avro Schema is not Serializable
 
     sc.newAPIHadoopRDD(
       inputConf,
@@ -93,7 +90,7 @@ object HadoopRDDReader {
       classOf[BytesWritable]
     )
       .flatMap { case (keyWritable, valueWritable) =>
-        val items = AvroEncoder.fromBinary(kwWriterSchema.value.getOrElse(codec.schema), valueWritable.getBytes)(codec)
+        val items = AvroEncoder.fromBinary(writerSchema.getOrElse(codec.schema), valueWritable.getBytes)(codec)
         if(indexFilterOnly)
           items
         else

@@ -19,7 +19,6 @@ package geotrellis.spark.store.file
 import geotrellis.spark.store.LayerWriter
 import geotrellis.store.avro.{AvroRecordCodec, AvroEncoder}
 import geotrellis.store.avro.codecs.KeyValueRecordCodec
-import geotrellis.spark.util.KryoWrapper
 import geotrellis.util.Filesystem
 
 import org.apache.spark.rdd.RDD
@@ -46,13 +45,12 @@ object FileRDDWriter {
 
     Filesystem.ensureDirectory(rootPath)
     val _recordCodec = KeyValueRecordCodec[K, V]
-    val kwWriterSchema = KryoWrapper(writerSchema)
 
     pathsToTiles.foreach { case (path, rows) =>
       val updated = LayerWriter.updateRecords(mergeFunc, rows.toVector, existing = {
         if (Filesystem.exists(path)) {
           val inBytes = Filesystem.slurp(path)
-          val schema = kwWriterSchema.value.getOrElse(_recordCodec.schema)
+          val schema = writerSchema.getOrElse(_recordCodec.schema)
           AvroEncoder.fromBinary(schema, inBytes)(_recordCodec)
         } else Vector.empty
       })

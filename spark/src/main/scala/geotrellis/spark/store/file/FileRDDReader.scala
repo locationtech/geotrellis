@@ -21,7 +21,6 @@ import geotrellis.store.avro.codecs.KeyValueRecordCodec
 import geotrellis.store.index.{IndexRanges, MergeQueue}
 import geotrellis.store.avro.{AvroEncoder, AvroRecordCodec}
 import geotrellis.store.util.{IORuntimeTransient, IOUtils}
-import geotrellis.spark.util.KryoWrapper
 import geotrellis.util.Filesystem
 
 import cats.effect.*
@@ -52,7 +51,6 @@ object FileRDDReader {
     val boundable = implicitly[Boundable[K]]
     val includeKey = (key: K) => KeyBounds.includeKey(queryKeyBounds, key)(boundable)
     val _recordCodec = KeyValueRecordCodec[K, V]
-    val kwWriterSchema = KryoWrapper(writerSchema) // Avro Schema is not Serializable
 
     sc.parallelize(bins, bins.size)
       .mapPartitions { (partition: Iterator[Seq[(BigInt, BigInt)]]) =>
@@ -63,7 +61,7 @@ object FileRDDReader {
             val path = keyPath(index)
             if (new File(path).exists) {
               val bytes: Array[Byte] = Filesystem.slurp(path)
-              val recs = AvroEncoder.fromBinary(kwWriterSchema.value.getOrElse(_recordCodec.schema), bytes)(_recordCodec)
+              val recs = AvroEncoder.fromBinary(writerSchema.getOrElse(_recordCodec.schema), bytes)(_recordCodec)
               if (filterIndexOnly) recs
               else recs.filter { row => includeKey(row._1) }
             } else Vector.empty

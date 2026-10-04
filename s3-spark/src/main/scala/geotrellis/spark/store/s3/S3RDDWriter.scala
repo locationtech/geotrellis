@@ -20,7 +20,6 @@ import geotrellis.spark.store.*
 import geotrellis.store.avro.*
 import geotrellis.store.avro.codecs.KeyValueRecordCodec
 import geotrellis.store.s3.*
-import geotrellis.spark.util.KryoWrapper
 import geotrellis.store.util.IORuntimeTransient
 
 import cats.effect.*
@@ -70,12 +69,11 @@ class S3RDDWriter(
       rdd.groupBy({ row => keyPath(row._1) }, numPartitions = rdd.partitions.length)
 
     val _recordCodec = KeyValueRecordCodec[K, V]
-    val kwWriterSchema = KryoWrapper(writerSchema)
 
     pathsToTiles.foreachPartition { (partition: Iterator[(String, Iterable[(K, V)])]) =>
       if(partition.nonEmpty) {
         val s3Client  = this.s3Client
-        val schema = kwWriterSchema.value.getOrElse(_recordCodec.schema)
+        val schema = writerSchema.getOrElse(_recordCodec.schema)
 
         implicit val ioRuntime: unsafe.IORuntime = runtime
 

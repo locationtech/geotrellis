@@ -22,7 +22,6 @@ import geotrellis.layer.{Boundable, KeyBounds}
 import geotrellis.store.avro.{AvroEncoder, AvroRecordCodec}
 import geotrellis.store.avro.codecs.KeyValueRecordCodec
 import geotrellis.store.index.MergeQueue
-import geotrellis.spark.util.KryoWrapper
 
 import org.apache.avro.Schema
 import org.apache.hadoop.hbase.HBaseConfiguration
@@ -53,7 +52,6 @@ object HBaseRDDReader {
 
     val includeKey = (key: K) => queryKeyBounds.includeKey(key)
     val _recordCodec = KeyValueRecordCodec[K, V]
-    val kwWriterSchema = KryoWrapper(writerSchema) // Avro Schema is not Serializable
 
     val ranges: Seq[(BigInt, BigInt)] = if (queryKeyBounds.length > 1)
       MergeQueue(queryKeyBounds.flatMap(decomposeBounds))
@@ -94,7 +92,7 @@ object HBaseRDDReader {
       classOf[Result]
     ).flatMap { case (_, row) =>
       val bytes = row.getValue(hbaseTileColumnFamily, "")
-      val recs = AvroEncoder.fromBinary(kwWriterSchema.value.getOrElse(_recordCodec.schema), bytes)(_recordCodec)
+      val recs = AvroEncoder.fromBinary(writerSchema.getOrElse(_recordCodec.schema), bytes)(_recordCodec)
       if (filterIndexOnly) recs
       else recs.filter { row => includeKey(row._1) }
     }

@@ -21,7 +21,6 @@ import geotrellis.store.hbase.*
 import geotrellis.spark.store.LayerWriter
 import geotrellis.store.avro.*
 import geotrellis.store.avro.codecs.*
-import geotrellis.spark.util.KryoWrapper
 import org.apache.avro.Schema
 import org.apache.hadoop.hbase.client.*
 import org.apache.hadoop.hbase.filter.*
@@ -62,7 +61,6 @@ object HBaseRDDWriter {
     }
 
     val _recordCodec = KeyValueRecordCodec[K, V]
-    val kwWriterSchema = KryoWrapper(writerSchema) // Avro Schema is not Serializable
 
     // Call groupBy with numPartitions; if called without that argument or a partitioner,
     // groupBy will reuse the partitioner on the parent RDD if it is set, which could be typed
@@ -87,7 +85,7 @@ object HBaseRDDWriter {
                 val scanner = tableConnection.getScanner(scan)
                 val results: Vector[(K,V)] = scanner.iterator.asScala.toVector.flatMap{ result =>
                   val bytes = result.getValue(hbaseTileColumnFamily, "")
-                  val schema = kwWriterSchema.value.getOrElse(_recordCodec.schema)
+                  val schema = writerSchema.getOrElse(_recordCodec.schema)
                   AvroEncoder.fromBinary(schema, bytes)(_recordCodec)
                 }
                 scanner.close()

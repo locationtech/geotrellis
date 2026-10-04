@@ -21,7 +21,6 @@ import geotrellis.store.avro.*
 import geotrellis.store.avro.codecs.*
 import geotrellis.store.cassandra.*
 import geotrellis.spark.store.*
-import geotrellis.spark.util.KryoWrapper
 import geotrellis.store.util.IORuntimeTransient
 
 import com.datastax.oss.driver.api.core.cql.AsyncResultSet
@@ -94,7 +93,6 @@ object CassandraRDDWriter {
         .asCql()
 
     val _recordCodec = KeyValueRecordCodec[K, V]
-    val kwWriterSchema = KryoWrapper(writerSchema)
 
     // Call groupBy with numPartitions; if called without that argument or a partitioner,
     // groupBy will reuse the partitioner on the parent RDD if it is set, which could be typed
@@ -120,7 +118,7 @@ object CassandraRDDWriter {
                     session.executeF[IO](readStatement.bind(key.asJava)).map { oldRow =>
                       if (oldRow.nonEmpty) {
                         val bytes = oldRow.one().getByteBuffer("value").array()
-                        val schema = kwWriterSchema.value.getOrElse(_recordCodec.schema)
+                        val schema = writerSchema.getOrElse(_recordCodec.schema)
                         AvroEncoder.fromBinary(schema, bytes)(_recordCodec)
                       } else Vector.empty
                     }
