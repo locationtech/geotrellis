@@ -32,7 +32,7 @@ object FileRDDWriter {
     rootPath: String,
     keyPath: K => String,
     writerSchema: Option[Schema],
-    mergeFunc: Option[(V,V) => V]
+    mergeFunc: Option[(V, V) => V]
   ): Unit = {
     implicit val codec: KeyValueRecordCodec[K, V] = KeyValueRecordCodec[K, V]
     val schema = codec.schema

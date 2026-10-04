@@ -40,7 +40,7 @@ object Implicits extends Implicits
 trait Implicits {
   implicit class HadoopSparkContextMethodsWrapper(val sc: SparkContext) extends HadoopSparkContextMethods
   implicit class withSaveBytesToHadoopMethods[K](rdd: RDD[(K, Array[Byte])]) extends SaveBytesToHadoopMethods[K](rdd)
-  implicit class withSaveToHadoopMethods[K,V](rdd: RDD[(K,V)]) extends SaveToHadoopMethods[K, V](rdd)
+  implicit class withSaveToHadoopMethods[K, V](rdd: RDD[(K, V)]) extends SaveToHadoopMethods[K, V](rdd)
 
   implicit class withJpgHadoopSparkWriteMethods(val self: Jpg) extends JpgHadoopSparkWriteMethods(self)
 

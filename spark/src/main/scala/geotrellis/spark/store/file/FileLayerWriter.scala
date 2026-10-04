@@ -38,7 +38,7 @@ import java.io.File
   *
   * @tparam K                Type of RDD Key (ex: SpatialKey)
   * @tparam V                Type of RDD Value (ex: Tile or MultibandTile )
-  * @tparam M                Type of Metadata associated with the RDD[(K,V)]
+  * @tparam M                Type of Metadata associated with the RDD[(K, V)]
   *
   * @param catalogPath  The root directory of this catalog.
   * @param keyPrefix         File prefix to write the raster to

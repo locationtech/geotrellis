@@ -76,7 +76,7 @@ class S3RDDWriter(
         val rows: fs2.Stream[IO, (String, Vector[(K, V)])] =
           fs2.Stream.fromIterator[IO](partition.map { case (key, value) => (key, value.toVector) }, chunkSize = 1)
 
-        def elaborateRow(row: (String, Vector[(K,V)])): fs2.Stream[IO, (String, Vector[(K,V)])] = {
+        def elaborateRow(row: (String, Vector[(K, V)])): fs2.Stream[IO, (String, Vector[(K, V)])] = {
           fs2.Stream eval IO.blocking {
             val (key, current) = row
             val updated = LayerWriter.updateRecords(mergeFunc, current, existing = {
@@ -97,7 +97,7 @@ class S3RDDWriter(
           }
         }
 
-        def rowToRequest(row: (String, Vector[(K,V)])): fs2.Stream[IO, (PutObjectRequest, RequestBody)] = {
+        def rowToRequest(row: (String, Vector[(K, V)])): fs2.Stream[IO, (PutObjectRequest, RequestBody)] = {
           fs2.Stream eval IO.blocking {
             val (key, kvs) = row
             val contentBytes = AvroEncoder.toBinary[Vector[(K, V)]](kvs)

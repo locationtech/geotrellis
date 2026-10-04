@@ -107,7 +107,7 @@ trait LayerWriter[ID] {
     * Additional care is needed in cases where [[KeyIndex]] may map multiple,
     * distinct, values of K to single index. This is likely with spatio-temproral layers.
     * In these cases overwrite will replace the whole record, possibly overwriting
-    * (K,V) pairs with K is not contained in update RDD.
+    * (K, V) pairs with K is not contained in update RDD.
     *
     * The method will throw if:
     *  - Specified layer does not exist

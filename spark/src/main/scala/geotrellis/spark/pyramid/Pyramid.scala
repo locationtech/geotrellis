@@ -152,7 +152,7 @@ object Pyramid {
     * @param options       the options for the pyramid process
     * @tparam K            RDD key type (ex: SpatialKey)
     * @tparam V            RDD value type (ex: Tile or MultibandTile)
-    * @tparam M            Metadata associated with the RDD[(K,V)]
+    * @tparam M            Metadata associated with the RDD[(K, V)]
     */
   def up[
     K: SpatialComponent: ClassTag,
@@ -266,7 +266,7 @@ object Pyramid {
     * @param options       the options for the pyramid process
     * @tparam K            RDD key type (ex: SpatialKey)
     * @tparam V            RDD value type (ex: Tile or MultibandTile)
-    * @tparam M            Metadata associated with the RDD[(K,V)]
+    * @tparam M            Metadata associated with the RDD[(K, V)]
     *
     * @see [up]
     */

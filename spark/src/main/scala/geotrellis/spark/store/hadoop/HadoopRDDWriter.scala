@@ -90,7 +90,7 @@ object HadoopRDDWriter {
     layerPath: Path,
     id: LayerId,
     as: AttributeStore,
-    mergeFunc: Option[(V,V) => V],
+    mergeFunc: Option[(V, V) => V],
     indexInterval: Int = DefaultIndexInterval
   ): Unit = {
     val header = as.readHeader[HadoopLayerHeader](id)
@@ -125,7 +125,7 @@ object HadoopRDDWriter {
     })
 
     // Write the portion of the update that does not overlap the existing layer
-    val nonOverlappers: RDD[(K,V)] =
+    val nonOverlappers: RDD[(K, V)] =
       rdd2
         .filter({ case (i, k, v) =>
           !(firstIndex <= i && i <= lastIndex) })
@@ -165,7 +165,7 @@ object HadoopRDDWriter {
         var k = new BigIntWritable()
         var v = new BytesWritable()
         while (reader.next(k, v)) {
-          val _kvs2: Vector[(K,V)] = AvroEncoder.fromBinary[Vector[(K, V)]](writerSchema, v.getBytes)
+          val _kvs2: Vector[(K, V)] = AvroEncoder.fromBinary[Vector[(K, V)]](writerSchema, v.getBytes)
           ikvs2 ++= _kvs2.map({ case (k, v) => (keyIndex.toIndex(k),k,v) })
         }
         reader.close

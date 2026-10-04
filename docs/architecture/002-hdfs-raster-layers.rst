@@ -39,7 +39,7 @@ The layer will be sorted and written to multiple Hadoop MapFiles.
 
 -  ``data`` file is a ``SequenceFile`` of ``LongWritable`` and
    ``BytesWritable`` key/value pairs where the key is the SFC index and
-   value bytes are Avro encoded ``Vector[(K,V)]`` where all ``K``\ s map
+   value bytes are Avro encoded ``Vector[(K, V)]`` where all ``K``\ s map
    to the given SFC index.
 -  ``index`` file is a ``SequenceFile`` which maps a ``LongWritable`` in
    seen in ``data`` file to its offset at some defined

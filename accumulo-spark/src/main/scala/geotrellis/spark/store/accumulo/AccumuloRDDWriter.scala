@@ -45,7 +45,7 @@ object AccumuloRDDWriter {
     writeStrategy: AccumuloWriteStrategy,
     table: String,
     writerSchema: Option[Schema],
-    mergeFunc: Option[(V,V) => V]
+    mergeFunc: Option[(V, V) => V]
   ): Unit = {
     implicit val sc = raster.sparkContext
 

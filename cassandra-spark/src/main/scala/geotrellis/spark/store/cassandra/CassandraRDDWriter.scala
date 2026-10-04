@@ -55,7 +55,7 @@ object CassandraRDDWriter {
     keyspace: String,
     table: String,
     writerSchema: Option[Schema],
-    mergeFunc: Option[(V,V) => V],
+    mergeFunc: Option[(V, V) => V],
     runtime: => unsafe.IORuntime = IORuntimeTransient.IORuntime
   ): Unit = {
     implicit val sc = raster.sparkContext
@@ -102,14 +102,14 @@ object CassandraRDDWriter {
             val readStatement = session.prepare(readQuery)
             val writeStatement = session.prepare(writeQuery)
 
-            val rows: fs2.Stream[IO, (BigInt, Vector[(K,V)])] =
+            val rows: fs2.Stream[IO, (BigInt, Vector[(K, V)])] =
               fs2.Stream.fromIterator[IO](
                 partition.map { case (key, value) => (key, value.toVector) }, chunkSize = 1
               )
 
             implicit val ioRuntime: unsafe.IORuntime = runtime
 
-            def elaborateRow(row: (BigInt, Vector[(K,V)])): fs2.Stream[IO, (BigInt, Vector[(K,V)])] = {
+            def elaborateRow(row: (BigInt, Vector[(K, V)])): fs2.Stream[IO, (BigInt, Vector[(K, V)])] = {
               fs2.Stream eval {
                 val (key, current) = row
                 val updated = LayerWriter.updateRecordsM(mergeFunc, current, existing = {
@@ -126,7 +126,7 @@ object CassandraRDDWriter {
               }
             }
 
-            def rowToBytes(row: (BigInt, Vector[(K,V)])): fs2.Stream[IO, (BigInt, ByteBuffer)] = {
+            def rowToBytes(row: (BigInt, Vector[(K, V)])): fs2.Stream[IO, (BigInt, ByteBuffer)] = {
               fs2.Stream eval IO {
                 val (key, kvs) = row
                 val bytes = ByteBuffer.wrap(AvroEncoder.toBinary[Vector[(K, V)]](kvs))

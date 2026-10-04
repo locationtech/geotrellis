@@ -26,7 +26,7 @@ import org.apache.hadoop.mapreduce.{InputSplit, TaskAttemptContext, RecordReader
 import org.apache.commons.io.IOUtils
 
 /** This is the base class for readers that will create key value pairs for object requests.
-  * Subclass must extend [readObjectRequest] method to map from S3 object requests to (K,V) */
+  * Subclass must extend [readObjectRequest] method to map from S3 object requests to (K, V) */
 abstract class BaseS3RecordReader[K, V](s3Client: S3Client) extends RecordReader[K, V] {
   @transient private[this] lazy val logger = getLogger
 
@@ -75,7 +75,7 @@ abstract class BaseS3RecordReader[K, V](s3Client: S3Client) extends RecordReader
 }
 
 /** This reader will fetch bytes of each key one at a time using [AmazonS3Client.getObject].
-  * Subclass must extend [read] method to map from S3 object bytes to (K,V) */
+  * Subclass must extend [read] method to map from S3 object bytes to (K, V) */
 abstract class S3RecordReader[K, V](s3Client: S3Client) extends BaseS3RecordReader[K, V](s3Client: S3Client) {
   def readObjectRequest(objectRequest: GetObjectRequest): (K, V) = {
     val response = s3Client.getObject(objectRequest)
@@ -89,7 +89,7 @@ abstract class S3RecordReader[K, V](s3Client: S3Client) extends BaseS3RecordRead
 }
 
 /** This reader will stream bytes of each key one at a time using [AmazonS3Client.getObject].
-  * Subclass must extend [read] method to map from S3RangeReader to (K,V) */
+  * Subclass must extend [read] method to map from S3RangeReader to (K, V) */
 abstract class StreamingS3RecordReader[K, V](s3Client: S3Client) extends BaseS3RecordReader[K, V](s3Client: S3Client) {
   def readObjectRequest(objectRequest: GetObjectRequest): (K, V) = {
     val byteReader =
