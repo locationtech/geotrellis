@@ -73,7 +73,7 @@ object AvroEncoder {
     toBinary(thing, deflate = true)
 
   def toBinary[T: AvroRecordCodec](thing: T, deflate: Boolean): Array[Byte] = {
-    val format = implicitly[AvroRecordCodec[T]]
+    val format = AvroRecordCodec[T]
     val schema: Schema = format.schema
 
     val writer = datumWriter(schema)
@@ -88,12 +88,12 @@ object AvroEncoder {
   }
 
   def fromBinary[T: AvroRecordCodec](bytes: Array[Byte]): T = {
-    val format = implicitly[AvroRecordCodec[T]]
+    val format = AvroRecordCodec[T]
     fromBinary[T](format.schema, bytes)
   }
 
   def fromBinary[T: AvroRecordCodec](bytes: Array[Byte], uncompress: Boolean): T = {
-    val format = implicitly[AvroRecordCodec[T]]
+    val format = AvroRecordCodec[T]
     fromBinary[T](format.schema, bytes, uncompress)
   }
 
@@ -101,7 +101,7 @@ object AvroEncoder {
     fromBinary(writerSchema, bytes, uncompress = true)
 
   def fromBinary[T: AvroRecordCodec](writerSchema: Schema, bytes: Array[Byte], uncompress: Boolean): T = {
-    val format = implicitly[AvroRecordCodec[T]]
+    val format = AvroRecordCodec[T]
     val schema = format.schema
 
     val reader = datumReader(writerSchema, schema)
@@ -121,7 +121,7 @@ object AvroEncoder {
   }
 
   def toJson[T: AvroRecordCodec](thing: T): String = {
-    val format = implicitly[AvroRecordCodec[T]]
+    val format = AvroRecordCodec[T]
     val schema = format.schema
 
     val writer = datumWriter(schema)
@@ -133,7 +133,7 @@ object AvroEncoder {
   }
 
   def fromJson[T: AvroRecordCodec](json: String): T = {
-    val format = implicitly[AvroRecordCodec[T]]
+    val format = AvroRecordCodec[T]
     val schema = format.schema
 
     val reader = datumReader(schema, schema)

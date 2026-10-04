@@ -31,18 +31,18 @@ trait TileFeatureCodec {
     @transient lazy val schema = SchemaBuilder
       .record("TileFeature").namespace("geotrellis.raster")
       .fields()
-      .name("tile").`type`(implicitly[AvroRecordCodec[T]].schema).noDefault
-      .name("data").`type`(implicitly[AvroRecordCodec[D]].schema).noDefault
+      .name("tile").`type`(AvroRecordCodec[T].schema).noDefault
+      .name("data").`type`(AvroRecordCodec[D].schema).noDefault
       .endRecord()
 
     def encode(tileFeature: TileFeature[T, D], rec: GenericRecord): Unit = {
-      rec.put("tile", implicitly[AvroRecordCodec[T]].encode(tileFeature.tile))
-      rec.put("data", implicitly[AvroRecordCodec[D]].encode(tileFeature.data))
+      rec.put("tile", AvroRecordCodec[T].encode(tileFeature.tile))
+      rec.put("data", AvroRecordCodec[D].encode(tileFeature.data))
     }
 
     def decode(rec: GenericRecord): TileFeature[T,D] = {
-      val tile: T = implicitly[AvroRecordCodec[T]].decode(rec.get("tile").asInstanceOf[GenericRecord])
-      val data: D = implicitly[AvroRecordCodec[D]].decode(rec.get("data").asInstanceOf[GenericRecord])
+      val tile: T = AvroRecordCodec[T].decode(rec.get("tile").asInstanceOf[GenericRecord])
+      val data: D = AvroRecordCodec[D].decode(rec.get("data").asInstanceOf[GenericRecord])
       TileFeature(tile, data)
     }
   }
@@ -54,18 +54,18 @@ trait TileFeatureCodec {
     @transient lazy val schema = SchemaBuilder
       .record("TileFeature").namespace("geotrellis.raster")
       .fields()
-      .name("tile").`type`(implicitly[AvroRecordCodec[T]].schema).noDefault
-      .name("data").`type`(implicitly[AvroRecordCodec[D]].schema).noDefault
+      .name("tile").`type`(AvroRecordCodec[T].schema).noDefault
+      .name("data").`type`(AvroRecordCodec[D].schema).noDefault
       .endRecord()
 
     def encode(tileFeature: TileFeature[T, D], rec: GenericRecord): Unit = {
-      rec.put("tile", implicitly[AvroRecordCodec[T]].encode(tileFeature.tile))
-      rec.put("data", implicitly[AvroRecordCodec[D]].encode(tileFeature.data))
+      rec.put("tile", AvroRecordCodec[T].encode(tileFeature.tile))
+      rec.put("data", AvroRecordCodec[D].encode(tileFeature.data))
     }
 
     def decode(rec: GenericRecord): TileFeature[T,D] = {
-      val tile: T = implicitly[AvroRecordCodec[T]].decode(rec.get("tile").asInstanceOf[GenericRecord])
-      val data: D = implicitly[AvroRecordCodec[D]].decode(rec.get("data").asInstanceOf[GenericRecord])
+      val tile: T = AvroRecordCodec[T].decode(rec.get("tile").asInstanceOf[GenericRecord])
+      val data: D = AvroRecordCodec[D].decode(rec.get("data").asInstanceOf[GenericRecord])
       TileFeature(tile, data)
     }
   }
