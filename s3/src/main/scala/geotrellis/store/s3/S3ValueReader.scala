@@ -64,8 +64,7 @@ class S3ValueReader(
       val recs = AvroEncoder.fromBinary[Vector[(K, V)]](writerSchema, bytes)
 
       recs
-        .find { row => row._1 == key }
-        .map { row => row._2 }
+        .collectFirst { case (k, v) if k == key => v }
         .getOrElse(throw new ValueNotFoundError(key, layerId))
     }
   }

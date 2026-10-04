@@ -51,15 +51,14 @@ class AccumuloValueReader(
 
       val tiles = scanner.iterator.asScala
         .map { entry => AvroEncoder.fromBinary[Vector[(K, V)]](writerSchema, entry.getValue.get) }
-        .flatMap { (pairs: Vector[(K, V)]) => pairs.filter(pair => pair._1 == key) }.toVector
+        .flatMap { _.filter { case (k, _) => k == key } }.toVector
 
-      if (tiles.isEmpty) {
+      if (tiles.isEmpty)
         throw new ValueNotFoundError(key, layerId)
-      } else if (tiles.size > 1) {
+      else if (tiles.size > 1)
         throw new LayerIOError(s"Multiple values found for $key for layer $layerId")
-      } else {
+      else
         tiles.head._2
-      }
     }
   }
 }

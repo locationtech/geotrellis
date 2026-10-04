@@ -46,15 +46,14 @@ class HBaseValueReader(
       val tiles: Vector[(K, V)] =
         AvroEncoder
           .fromBinary[Vector[(K, V)]](writerSchema, row.getValue(hbaseTileColumnFamily, ""))
-          .filter(pair => pair._1 == key)
+          .filter { case (k, _) => k == key }
 
-      if (tiles.isEmpty) {
+      if (tiles.isEmpty)
         throw new ValueNotFoundError(key, layerId)
-      } else if (tiles.size > 1) {
+      else if (tiles.size > 1)
         throw new LayerIOError(s"Multiple values (${tiles.size}) found for $key for layer $layerId")
-      } else {
+      else
         tiles.head._2
-      }
     }
   }
 }

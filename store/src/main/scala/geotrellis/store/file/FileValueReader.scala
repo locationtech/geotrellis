@@ -48,15 +48,14 @@ class FileValueReader(
     def read(key: K): V = {
       val path = keyPath(key)
 
-      if(!new File(path).exists)
+      if (!new File(path).exists)
         throw new ValueNotFoundError(key, layerId)
 
       val bytes = Filesystem.slurp(path)
       val recs = AvroEncoder.fromBinary[Vector[(K, V)]](writerSchema, bytes)
 
       recs
-        .find { case (recordKey, _) => recordKey == key }
-        .map { case (_, recordValue) => recordValue }
+        .collectFirst { case (k, v) if k == key => v }
         .getOrElse(throw new ValueNotFoundError(key, layerId))
     }
   }
