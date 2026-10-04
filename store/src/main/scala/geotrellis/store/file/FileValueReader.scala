@@ -40,7 +40,7 @@ class FileValueReader(
     val header = attributeStore.readHeader[FileLayerHeader](layerId)
     val keyIndex = attributeStore.readKeyIndex[K](layerId)
     val writerSchema = attributeStore.readSchema(layerId)
-    val codec = KeyValueRecordCodec[K, V]
+    implicit val codec: KeyValueRecordCodec[K, V] = KeyValueRecordCodec[K, V]
 
     val maxWidth = Index.digits(keyIndex.toIndex(keyIndex.keyBounds.maxKey))
     val keyPath = KeyPathGenerator(catalogPath, header.path, keyIndex, maxWidth)
@@ -48,15 +48,14 @@ class FileValueReader(
     def read(key: K): V = {
       val path = keyPath(key)
 
-      if(!new File(path).exists)
+      if (!new File(path).exists)
         throw new ValueNotFoundError(key, layerId)
 
       val bytes = Filesystem.slurp(path)
-      val recs = AvroEncoder.fromBinary(writerSchema, bytes)(codec)
+      val recs = AvroEncoder.fromBinary[Vector[(K, V)]](writerSchema, bytes)
 
       recs
-        .find { case (recordKey, _) => recordKey == key }
-        .map { case (_, recordValue) => recordValue }
+        .collectFirst { case (k, v) if k == key => v }
         .getOrElse(throw new ValueNotFoundError(key, layerId))
     }
   }

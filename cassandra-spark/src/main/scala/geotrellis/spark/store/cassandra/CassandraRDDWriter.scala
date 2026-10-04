@@ -21,7 +21,6 @@ import geotrellis.store.avro.*
 import geotrellis.store.avro.codecs.*
 import geotrellis.store.cassandra.*
 import geotrellis.spark.store.*
-import geotrellis.spark.util.KryoWrapper
 import geotrellis.store.util.IORuntimeTransient
 
 import com.datastax.oss.driver.api.core.cql.AsyncResultSet
@@ -56,12 +55,12 @@ object CassandraRDDWriter {
     keyspace: String,
     table: String,
     writerSchema: Option[Schema],
-    mergeFunc: Option[(V,V) => V],
+    mergeFunc: Option[(V, V) => V],
     runtime: => unsafe.IORuntime = IORuntimeTransient.IORuntime
   ): Unit = {
     implicit val sc = raster.sparkContext
 
-    val codec = KeyValueRecordCodec[K, V]
+    implicit val codec: KeyValueRecordCodec[K, V] = KeyValueRecordCodec[K, V]
 
     instance.withSessionDo { session =>
       instance.ensureKeyspaceExists(keyspace, session)
@@ -93,71 +92,68 @@ object CassandraRDDWriter {
         .value("value", QueryBuilder.bindMarker())
         .asCql()
 
-    val _recordCodec = KeyValueRecordCodec[K, V]
-    val kwWriterSchema = KryoWrapper(writerSchema)
-
     // Call groupBy with numPartitions; if called without that argument or a partitioner,
     // groupBy will reuse the partitioner on the parent RDD if it is set, which could be typed
     // on a key type that may no longer by valid for the key type of the resulting RDD.
-      raster.groupBy({ row => decomposeKey(row._1) }, numPartitions = raster.partitions.length)
-        .foreachPartition { (partition: Iterator[(BigInt, Iterable[(K, V)])]) =>
-          if(partition.nonEmpty) {
-            instance.withSession { session =>
-              val readStatement = session.prepare(readQuery)
-              val writeStatement = session.prepare(writeQuery)
+    raster.groupBy({ case (k, _) => decomposeKey(k) }, numPartitions = raster.partitions.length)
+      .foreachPartition { (partition: Iterator[(BigInt, Iterable[(K, V)])]) =>
+        if (partition.nonEmpty) {
+          instance.withSession { session =>
+            val readStatement = session.prepare(readQuery)
+            val writeStatement = session.prepare(writeQuery)
 
-              val rows: fs2.Stream[IO, (BigInt, Vector[(K,V)])] =
-                fs2.Stream.fromIterator[IO](
-                  partition.map { case (key, value) => (key, value.toVector) }, chunkSize = 1
-                )
+            val rows: fs2.Stream[IO, (BigInt, Vector[(K, V)])] =
+              fs2.Stream.fromIterator[IO](
+                partition.map { case (key, value) => (key, value.toVector) }, chunkSize = 1
+              )
 
-              implicit val ioRuntime: unsafe.IORuntime = runtime
+            implicit val ioRuntime: unsafe.IORuntime = runtime
 
-              def elaborateRow(row: (BigInt, Vector[(K,V)])): fs2.Stream[IO, (BigInt, Vector[(K,V)])] = {
-                fs2.Stream eval {
-                  val (key, current) = row
-                  val updated = LayerWriter.updateRecordsM(mergeFunc, current, existing = {
-                    session.executeF[IO](readStatement.bind(key.asJava)).map { oldRow =>
-                      if (oldRow.nonEmpty) {
-                        val bytes = oldRow.one().getByteBuffer("value").array()
-                        val schema = kwWriterSchema.value.getOrElse(_recordCodec.schema)
-                        AvroEncoder.fromBinary(schema, bytes)(_recordCodec)
-                      } else Vector.empty
-                    }
-                  })
+            def elaborateRow(row: (BigInt, Vector[(K, V)])): fs2.Stream[IO, (BigInt, Vector[(K, V)])] = {
+              fs2.Stream eval {
+                val (key, current) = row
+                val updated = LayerWriter.updateRecordsM(mergeFunc, current, existing = {
+                  session.executeF[IO](readStatement.bind(key.asJava)).map { oldRow =>
+                    if (oldRow.nonEmpty) {
+                      val bytes = oldRow.one().getByteBuffer("value").array()
+                      val schema = writerSchema.getOrElse(codec.schema)
+                      AvroEncoder.fromBinary[Vector[(K, V)]](schema, bytes)
+                    } else Vector.empty
+                  }
+                })
 
-                  updated.map(key -> _)
-                }
+                updated.map(key -> _)
               }
-
-              def rowToBytes(row: (BigInt, Vector[(K,V)])): fs2.Stream[IO, (BigInt, ByteBuffer)] = {
-                fs2.Stream eval IO {
-                  val (key, kvs) = row
-                  val bytes = ByteBuffer.wrap(AvroEncoder.toBinary(kvs)(codec))
-                  (key, bytes)
-                }
-              }
-
-              def retire(row: (BigInt, ByteBuffer)): fs2.Stream[IO, AsyncResultSet] = {
-                val (id, value) = row
-                fs2.Stream eval session.executeF[IO](writeStatement.bind(id.asJava, value))
-              }
-
-              val results = rows
-                .flatMap(elaborateRow)
-                .flatMap(rowToBytes)
-                .map(retire)
-                .parJoinUnbounded
-                .onComplete { fs2.Stream eval IO(session.closeAsync) }
-
-              results
-                .compile
-                .drain
-                .attempt
-                .unsafeRunSync()
-                .valueOr(throw _)
             }
+
+            def rowToBytes(row: (BigInt, Vector[(K, V)])): fs2.Stream[IO, (BigInt, ByteBuffer)] = {
+              fs2.Stream eval IO {
+                val (key, kvs) = row
+                val bytes = ByteBuffer.wrap(AvroEncoder.toBinary[Vector[(K, V)]](kvs))
+                (key, bytes)
+              }
+            }
+
+            def retire(row: (BigInt, ByteBuffer)): fs2.Stream[IO, AsyncResultSet] = {
+              val (id, value) = row
+              fs2.Stream eval session.executeF[IO](writeStatement.bind(id.asJava, value))
+            }
+
+            val results = rows
+              .flatMap(elaborateRow)
+              .flatMap(rowToBytes)
+              .map(retire)
+              .parJoinUnbounded
+              .onComplete { fs2.Stream eval IO(session.closeAsync) }
+
+            results
+              .compile
+              .drain
+              .attempt
+              .unsafeRunSync()
+              .valueOr(throw _)
           }
         }
+      }
   }
 }

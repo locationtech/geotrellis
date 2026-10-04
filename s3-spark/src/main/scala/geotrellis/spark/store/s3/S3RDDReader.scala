@@ -22,7 +22,6 @@ import geotrellis.store.avro.codecs.KeyValueRecordCodec
 import geotrellis.store.index.{IndexRanges, MergeQueue}
 import geotrellis.store.util.{IOUtils as GTIOUtils}
 import geotrellis.store.s3.S3ClientProducer
-import geotrellis.spark.util.KryoWrapper
 import geotrellis.store.util.IORuntimeTransient
 
 import software.amazon.awssdk.services.s3.model.{GetObjectRequest, S3Exception}
@@ -60,14 +59,13 @@ class S3RDDReader(
     val bins = IndexRanges.bin(ranges, numPartitions.getOrElse(sc.defaultParallelism))
 
     val includeKey = (key: K) => queryKeyBounds.includeKey(key)
-    val _recordCodec = KeyValueRecordCodec[K, V]
-    val kwWriterSchema = KryoWrapper(writerSchema) //Avro Schema is not Serializable
+    implicit val codec: KeyValueRecordCodec[K, V] = KeyValueRecordCodec[K, V]
 
     sc.parallelize(bins, bins.size)
       .mapPartitions { (partition: Iterator[Seq[(BigInt, BigInt)]]) =>
         implicit val ioRuntime: unsafe.IORuntime = runtime
         val s3Client = this.s3Client
-        val writerSchema = kwWriterSchema.value.getOrElse(_recordCodec.schema)
+        val schema = writerSchema.getOrElse(codec.schema)
         partition flatMap { seq =>
           GTIOUtils.parJoinEBO[K, V](seq.iterator)({ (index: BigInt) =>
             try {
@@ -78,9 +76,9 @@ class S3RDDReader(
               val is = s3Client.getObject(request)
               val bytes = IOUtils.toByteArray(is)
               is.close()
-              val recs = AvroEncoder.fromBinary(writerSchema, bytes)(_recordCodec)
+              val recs = AvroEncoder.fromBinary[Vector[(K, V)]](schema, bytes)
               if (filterIndexOnly) recs
-              else recs.filter { row => includeKey(row._1) }
+              else recs.filter { case (k, _) => includeKey(k) }
             } catch {
               case e: S3Exception if e.statusCode == 404 => Vector.empty
             }

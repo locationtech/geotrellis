@@ -23,7 +23,7 @@ import org.apache.avro.generic.GenericRecord
 import scala.jdk.CollectionConverters.*
 
 class KeyValueRecordCodec[K, V](implicit a: AvroRecordCodec[K], b: AvroRecordCodec[V]) extends AvroRecordCodec[Vector[(K, V)]] {
-  val pairCodec = new TupleCodec[K,V]
+  val pairCodec = new TupleCodec[K, V]
 
   @transient lazy val schema = SchemaBuilder
     .record("KeyValueRecord").namespace("geotrellis.spark.io")

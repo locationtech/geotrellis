@@ -42,7 +42,7 @@ class AccumuloValueReader(
     val header = attributeStore.readHeader[AccumuloLayerHeader](layerId)
     val keyIndex = attributeStore.readKeyIndex[K](layerId)
     val writerSchema = attributeStore.readSchema(layerId)
-    val codec = KeyValueRecordCodec[K, V]
+    implicit val codec: KeyValueRecordCodec[K, V] = KeyValueRecordCodec[K, V]
 
     def read(key: K): V = {
       val scanner = instance.client.createScanner(header.tileTable, new Authorizations())
@@ -50,16 +50,15 @@ class AccumuloValueReader(
       scanner.fetchColumnFamily(columnFamily(layerId))
 
       val tiles = scanner.iterator.asScala
-        .map { entry => AvroEncoder.fromBinary(writerSchema, entry.getValue.get)(codec) }
-        .flatMap { (pairs: Vector[(K, V)]) => pairs.filter(pair => pair._1 == key) }.toVector
+        .map { entry => AvroEncoder.fromBinary[Vector[(K, V)]](writerSchema, entry.getValue.get) }
+        .flatMap { _.filter { case (k, _) => k == key } }.toVector
 
-      if (tiles.isEmpty) {
+      if (tiles.isEmpty)
         throw new ValueNotFoundError(key, layerId)
-      } else if (tiles.size > 1) {
+      else if (tiles.size > 1)
         throw new LayerIOError(s"Multiple values found for $key for layer $layerId")
-      } else {
+      else
         tiles.head._2
-      }
     }
   }
 }

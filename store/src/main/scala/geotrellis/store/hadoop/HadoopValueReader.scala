@@ -50,7 +50,7 @@ class HadoopValueReader(
     val header = attributeStore.readHeader[HadoopLayerHeader](layerId)
     val keyIndex = attributeStore.readKeyIndex[K](layerId)
     val writerSchema = attributeStore.readSchema(layerId)
-    val codec = KeyValueRecordCodec[K, V]
+    implicit val codec: KeyValueRecordCodec[K, V] = KeyValueRecordCodec[K, V]
 
     val ranges: Vector[(Path, BigInt, BigInt)] =
       FilterMapFileInputFormat.layerRanges(new Path(header.path), conf)
@@ -58,21 +58,20 @@ class HadoopValueReader(
     def read(key: K): V = {
       val index: BigInt = keyIndex.toIndex(key)
       val valueWritable: BytesWritable =
-      ranges
-        .find(row => predicate(row, index))
-        .map { case (path, _, _) =>
-          readers.get((layerId, path), _ => new MapFile.Reader(path, conf))
-        }
-        .getOrElse(throw new ValueNotFoundError(key, layerId))
+        ranges
+          .find(row => predicate(row, index))
+          .map { case (path, _, _) =>
+            readers.get((layerId, path), _ => new MapFile.Reader(path, conf))
+          }
+          .getOrElse(throw new ValueNotFoundError(key, layerId))
           .get(new BigIntWritable(index.toByteArray), new BytesWritable())
           .asInstanceOf[BytesWritable]
 
       if (valueWritable == null) throw new ValueNotFoundError(key, layerId)
       AvroEncoder
-        .fromBinary(writerSchema, valueWritable.getBytes)(codec)
-        .find { row => row._1 == key }
+        .fromBinary[Vector[(K, V)]](writerSchema, valueWritable.getBytes)
+        .collectFirst { case (k, v) if k == key => v }
         .getOrElse(throw new ValueNotFoundError(key, layerId))
-        ._2
     }
   }
 }

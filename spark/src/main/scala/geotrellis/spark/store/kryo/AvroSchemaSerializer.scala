@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Azavea
+ * Copyright 2026 Azavea
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,9 +14,17 @@
  * limitations under the License.
  */
 
-package geotrellis.store
+package geotrellis.spark.store.kryo
 
-trait Writer[K, V] extends ((K, V) => Unit) {
-  def write(key: K, value: V): Unit
-  def apply(key: K, value: V): Unit = write(key, value)
+import org.apache.avro.Schema
+
+import com.esotericsoftware.kryo.{Kryo, Serializer}
+import com.esotericsoftware.kryo.io.{Input, Output}
+
+class AvroSchemaSerializer extends Serializer[Schema] {
+  override def write(kryo: Kryo, output: Output, schema: Schema): Unit =
+    output.writeString(schema.toString)
+
+  override def read(kryo: Kryo, input: Input, t: Class[Schema]): Schema =
+    new Schema.Parser().setValidateDefaults(false).parse(input.readString)
 }

@@ -41,7 +41,7 @@ class CassandraValueReader(
     val header = attributeStore.readHeader[CassandraLayerHeader](layerId)
     val keyIndex = attributeStore.readKeyIndex[K](layerId)
     val writerSchema = attributeStore.readSchema(layerId)
-    val codec = KeyValueRecordCodec[K, V]
+    implicit val codec: KeyValueRecordCodec[K, V] = KeyValueRecordCodec[K, V]
 
     private lazy val statement = instance.withSession{ session =>
       session.prepare(
@@ -57,20 +57,16 @@ class CassandraValueReader(
     def read(key: K): V = instance.withSession { session =>
       val row = session.execute(statement.bind(keyIndex.toIndex(key).asJava)).all()
       val tiles = row.asScala.map { entry =>
-          AvroEncoder.fromBinary(writerSchema, entry.getByteBuffer("value").array())(codec)
+          AvroEncoder.fromBinary[Vector[(K, V)]](writerSchema, entry.getByteBuffer("value").array())
         }
-        .flatMap { (pairs: Vector[(K, V)]) =>
-          pairs.filter(pair => pair._1 == key)
-        }
-        .toVector
+        .flatMap { _.filter { case (k, _) => k == key } }.toVector
 
-      if (tiles.isEmpty) {
+      if (tiles.isEmpty)
         throw new ValueNotFoundError(key, layerId)
-      } else if (tiles.size > 1) {
+      else if (tiles.size > 1)
         throw new LayerIOError(s"Multiple values (${tiles.size}) found for $key for layer $layerId")
-      } else {
+      else
         tiles.head._2
-      }
     }
   }
 }

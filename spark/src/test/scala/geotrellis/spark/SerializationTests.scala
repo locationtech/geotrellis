@@ -17,18 +17,27 @@
 package geotrellis.spark
 
 import geotrellis.proj4.*
+import geotrellis.layer.SpatialKey
 import geotrellis.raster.{DoubleCellType, IntCellType, Tile}
 import geotrellis.raster.testkit.{RasterMatchers, TileBuilders}
-import geotrellis.spark.util.KryoSerializer
+import geotrellis.spark.util.{KryoSerializer, KryoWrapper}
 import geotrellis.spark.testkit.*
+import geotrellis.store.avro.codecs.KeyValueRecordCodec
+import geotrellis.store.avro.codecs.Implicits.*
+
+import org.apache.avro.Schema
 
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.funsuite.AnyFunSuite
 
 import java.io.{ByteArrayInputStream, ByteArrayOutputStream, ObjectInputStream, ObjectOutputStream}
+import scala.util.Properties
 import geotrellis.util.identityComponent
 
 class SerializationTests extends AnyFunSuite with Matchers with RasterMatchers with TileBuilders {
+  private def assumeKryo(): Unit =
+    assume(Properties.envOrNone("GEOTRELLIS_USE_JAVA_SER").isEmpty, "requires Kryo serialization")
+
   test("Serializing CRS's") {
     val crs = CRS.fromString("+proj=longlat +datum=WGS84 +no_defs")
     assert(crs == LatLng)
@@ -100,5 +109,42 @@ class SerializationTests extends AnyFunSuite with Matchers with RasterMatchers w
     val after = KryoSerializer.deserialize[Tile](KryoSerializer.serialize(before)).convert(IntCellType).convert(DoubleCellType)
 
     assert(before.toArray() sameElements after.toArray())
+  }
+
+  test("Avro Schema kryo serialization") {
+    assumeKryo()
+    val schema = KeyValueRecordCodec[SpatialKey, Tile].schema
+    val after = KryoSerializer.deserialize[Schema](KryoSerializer.serialize(schema))
+    val afterOption = KryoSerializer.deserialize[Option[Schema]](KryoSerializer.serialize(Option(schema)))
+
+    after shouldBe schema
+    after.toString shouldBe schema.toString
+    afterOption shouldBe Some(schema)
+  }
+
+  test("Avro Schema KryoWrapper serialization") {
+    assumeKryo()
+    val schema = KeyValueRecordCodec[SpatialKey, Tile].schema
+
+    val byteArrayStream = new ByteArrayOutputStream
+    val out = new ObjectOutputStream(byteArrayStream)
+    out.writeObject(KryoWrapper(Option(schema)))
+    out.close()
+
+    val in = new ObjectInputStream(new ByteArrayInputStream(byteArrayStream.toByteArray))
+    val after = in.readObject().asInstanceOf[KryoWrapper[Option[Schema]]].value
+    in.close()
+
+    after shouldBe Some(schema)
+    after.map(_.toString) shouldBe Some(schema.toString)
+  }
+
+  test("Avro Schema kryo serialization keeps schemas with unvalidated defaults") {
+    assumeKryo()
+    val schema = new Schema.Parser().setValidateDefaults(false).parse(
+      """{"type":"record","name":"R","fields":[{"name":"f","type":"int","default":"oops"}]}""")
+    val after = KryoSerializer.deserialize[Schema](KryoSerializer.serialize(schema))
+
+    after.toString shouldBe schema.toString
   }
 }

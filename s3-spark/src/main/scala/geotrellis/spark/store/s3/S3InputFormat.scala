@@ -40,7 +40,7 @@ import scala.jdk.CollectionConverters.*
   *   - ProfileCredentialsProvider
   *   - InstanceProfileCredentialsProvider
   */
-abstract class S3InputFormat[K, V] extends InputFormat[K,V] {
+abstract class S3InputFormat[K, V] extends InputFormat[K, V] {
   import S3InputFormat.*
   @transient private[this] lazy val logger = getLogger
 

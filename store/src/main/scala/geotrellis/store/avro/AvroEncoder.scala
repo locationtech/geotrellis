@@ -17,109 +17,118 @@
 package geotrellis.store.avro
 
 import java.io.ByteArrayInputStream
-import java.util.zip.{InflaterInputStream, DeflaterOutputStream, Deflater}
+import java.nio.charset.StandardCharsets
+import java.util.concurrent.ConcurrentHashMap
+import java.util.zip.{InflaterInputStream, DeflaterOutputStream}
 import org.apache.avro.generic.*
 import org.apache.avro.io.*
 import org.apache.avro.*
 import org.apache.commons.io.IOUtils
 import org.apache.commons.io.output.ByteArrayOutputStream
 
-object AvroEncoder {
-  val deflater = new Deflater(Deflater.BEST_SPEED)
+import scala.util.Using
 
-  /** Avro 1.12 enables the fast reader by default. Its global reader cache is keyed weakly by the reader schema. */
-  private val genericData: GenericData = {
-    val data = new GenericData()
-    data.setFastReaderEnabled(false)
-    data
+object AvroEncoder {
+  /**
+    * Avro's fast reader caches compiled readers by schema reference.
+    * Canonicalizing equivalent schemas avoids compiling and retaining duplicates.
+    *
+    * Fast readers are configured once per JVM via -Dorg.apache.avro.fastread.
+    */
+  private val schemas = new ConcurrentHashMap[Schema, Schema]()
+
+  /** Cache one reader per schema pair and one writer per schema. */
+  private val readers = new ConcurrentHashMap[(Schema, Schema), DatumReader[GenericRecord]]()
+  private val writers = new ConcurrentHashMap[Schema, DatumWriter[GenericRecord]]()
+
+  private def canonicalize(schema: Schema): Schema = {
+    val prev = schemas.putIfAbsent(schema, schema)
+    if (prev == null) schema else prev
   }
 
+  private def datumReader(writerSchema: Schema, readerSchema: Schema): DatumReader[GenericRecord] =
+    readers.computeIfAbsent(
+      (canonicalize(writerSchema), canonicalize(readerSchema)), { case (writer, reader) =>
+        val data = GenericData.get()
+        if (data.isFastReaderEnabled) data.getFastReaderBuilder.createDatumReader(writer, reader)
+        else new GenericDatumReader(writer, reader)
+      }
+    )
+
+  private def datumWriter(schema: Schema): DatumWriter[GenericRecord] =
+    writers.computeIfAbsent(canonicalize(schema), new GenericDatumWriter(_))
+
   def compress(bytes: Array[Byte]): Array[Byte] = {
-    val deflater = new java.util.zip.Deflater
-    val baos = new ByteArrayOutputStream
-    val dos = new DeflaterOutputStream(baos, deflater)
-    dos.write(bytes)
-    baos.close()
-    dos.finish()
-    dos.close()
+    val baos = new ByteArrayOutputStream(bytes.length)
+    // close the stream-owned Deflater to free its native zlib memory
+    Using.resource(new DeflaterOutputStream(baos))(_.write(bytes))
     baos.toByteArray
   }
 
-  def decompress(bytes: Array[Byte]): Array[Byte] = {
-    val deflater = new java.util.zip.Inflater()
-    val bytesIn = new ByteArrayInputStream(bytes)
-    val in = new InflaterInputStream(bytesIn, deflater)
-    IOUtils.toByteArray(in)
-  }
+  def decompress(bytes: Array[Byte]): Array[Byte] =
+    // close the stream-owned Inflater to free its native zlib memory
+    Using.resource(new InflaterInputStream(new ByteArrayInputStream(bytes)))(IOUtils.toByteArray)
 
   def toBinary[T: AvroRecordCodec](thing: T): Array[Byte] =
     toBinary(thing, deflate = true)
 
   def toBinary[T: AvroRecordCodec](thing: T, deflate: Boolean): Array[Byte] = {
-    val format = implicitly[AvroRecordCodec[T]]
+    val format = AvroRecordCodec[T]
     val schema: Schema = format.schema
 
-    val writer = new GenericDatumWriter[GenericRecord](schema)
+    val writer = datumWriter(schema)
     val jos = new ByteArrayOutputStream()
     val encoder = EncoderFactory.get().binaryEncoder(jos, null)
     writer.write(format.encode(thing), encoder)
     encoder.flush()
-    if (deflate)
-      compress(jos.toByteArray)
-    else
-      jos.toByteArray
+    if (deflate) compress(jos.toByteArray)
+    else jos.toByteArray
   }
 
-  def fromBinary[T: AvroRecordCodec](bytes: Array[Byte]): T = {
-    val format = implicitly[AvroRecordCodec[T]]
-    fromBinary[T](format.schema, bytes)
-  }
+  def fromBinary[T: AvroRecordCodec](bytes: Array[Byte]): T =
+    fromBinary(AvroRecordCodec[T].schema, bytes)
 
-  def fromBinary[T: AvroRecordCodec](bytes: Array[Byte], uncompress: Boolean): T = {
-    val format = implicitly[AvroRecordCodec[T]]
-    fromBinary[T](format.schema, bytes, uncompress)
-  }
+  def fromBinary[T: AvroRecordCodec](bytes: Array[Byte], uncompress: Boolean): T =
+    fromBinary(AvroRecordCodec[T].schema, bytes, uncompress)
 
   def fromBinary[T: AvroRecordCodec](writerSchema: Schema, bytes: Array[Byte]): T =
     fromBinary(writerSchema, bytes, uncompress = true)
 
   def fromBinary[T: AvroRecordCodec](writerSchema: Schema, bytes: Array[Byte], uncompress: Boolean): T = {
-    val format = implicitly[AvroRecordCodec[T]]
+    val format = AvroRecordCodec[T]
     val schema = format.schema
 
-    val reader = new GenericDatumReader[GenericRecord](writerSchema, schema, genericData)
+    val reader = datumReader(writerSchema, schema)
     val decoder =
-      if (uncompress)
-        DecoderFactory.get().binaryDecoder(decompress(bytes), null)
-      else
-        DecoderFactory.get().binaryDecoder(bytes, null)
+      if (uncompress) DecoderFactory.get().binaryDecoder(decompress(bytes), null)
+      else DecoderFactory.get().binaryDecoder(bytes, null)
     try {
       val rec = reader.read(null.asInstanceOf[GenericRecord], decoder)
       format.decode(rec)
     } catch {
       case e: AvroTypeException =>
         throw new AvroTypeException(e.getMessage + ". " +
-          "This can be caused by using a type parameter which doesn't match the object being deserialized.")
+          "This can be caused by using a type parameter which doesn't match the object being deserialized.", e)
     }
   }
 
   def toJson[T: AvroRecordCodec](thing: T): String = {
-    val format = implicitly[AvroRecordCodec[T]]
+    val format = AvroRecordCodec[T]
     val schema = format.schema
 
-    val writer = new GenericDatumWriter[GenericRecord](schema)
+    val writer = datumWriter(schema)
     val jos = new ByteArrayOutputStream()
     val encoder = EncoderFactory.get().jsonEncoder(schema, jos)
     writer.write(format.encode(thing), encoder)
     encoder.flush()
-    jos.toByteArray.map(_.toChar).mkString
+    jos.toString(StandardCharsets.UTF_8)
   }
 
   def fromJson[T: AvroRecordCodec](json: String): T = {
-    val format = implicitly[AvroRecordCodec[T]]
+    val format = AvroRecordCodec[T]
     val schema = format.schema
 
-    val reader = new GenericDatumReader[GenericRecord](schema, schema, genericData)
+    val reader = datumReader(schema, schema)
     val decoder = DecoderFactory.get().jsonDecoder(schema, json)
     try {
       val rec = reader.read(null.asInstanceOf[GenericRecord], decoder)
@@ -127,7 +136,7 @@ object AvroEncoder {
     } catch {
       case e: AvroTypeException =>
         throw new AvroTypeException(e.getMessage + ". " +
-          "This can be caused by using a type parameter which doesn't match the object being deserialized.")
+          "This can be caused by using a type parameter which doesn't match the object being deserialized.", e)
     }
   }
 }
