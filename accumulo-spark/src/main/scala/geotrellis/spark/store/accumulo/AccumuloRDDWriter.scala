@@ -49,7 +49,7 @@ object AccumuloRDDWriter {
   ): Unit = {
     implicit val sc = raster.sparkContext
 
-    val codec  = KeyValueRecordCodec[K, V]
+    implicit val codec: KeyValueRecordCodec[K, V] = KeyValueRecordCodec[K, V]
     val schema = codec.schema
 
     instance.ensureTableExists(table)
@@ -59,22 +59,22 @@ object AccumuloRDDWriter {
         // Call groupBy with numPartitions; if called without that argument or a partitioner,
         // groupBy will reuse the partitioner on the parent RDD if it is set, which could be typed
         // on a key type that may no longer by valid for the key type of the resulting RDD.
-        .groupBy({ row => encodeKey(row._1) }, numPartitions = raster.partitions.length)
+        .groupBy({ case (k, _) => encodeKey(k) }, numPartitions = raster.partitions.length)
         .mapPartitions { it =>
           val scanner = instance.client.createScanner(table, Authorizations.EMPTY)
 
           it.map { case (key, _kvs1) =>
-            val current: Vector[(K,V)] = _kvs1.toVector
+            val current: Vector[(K, V)] = _kvs1.toVector
             val updated = LayerWriter.updateRecords(mergeFunc, current, existing = {
               scanner.setRange(new Range(key.getRow))
               scanner.fetchColumnFamily(key.getColumnFamily)
               scanner.iterator().asScala.toVector.flatMap({ entry =>
                 val value = entry.getValue
-                AvroEncoder.fromBinary(writerSchema.getOrElse(codec.schema), value.get)(codec)
+                AvroEncoder.fromBinary[Vector[(K, V)]](writerSchema.getOrElse(codec.schema), value.get)
               })
             })
 
-            (key, new Value(AvroEncoder.toBinary(updated)(codec)))
+            (key, new Value(AvroEncoder.toBinary[Vector[(K, V)]](updated)))
           } ++ { // closing hook for when the iterator reaches the end
             scanner.close()
             Iterator.empty

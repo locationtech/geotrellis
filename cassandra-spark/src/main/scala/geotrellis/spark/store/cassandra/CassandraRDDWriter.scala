@@ -60,7 +60,7 @@ object CassandraRDDWriter {
   ): Unit = {
     implicit val sc = raster.sparkContext
 
-    val codec = KeyValueRecordCodec[K, V]
+    implicit val codec: KeyValueRecordCodec[K, V] = KeyValueRecordCodec[K, V]
 
     instance.withSessionDo { session =>
       instance.ensureKeyspaceExists(keyspace, session)
@@ -92,14 +92,12 @@ object CassandraRDDWriter {
         .value("value", QueryBuilder.bindMarker())
         .asCql()
 
-    val _recordCodec = KeyValueRecordCodec[K, V]
-
     // Call groupBy with numPartitions; if called without that argument or a partitioner,
     // groupBy will reuse the partitioner on the parent RDD if it is set, which could be typed
     // on a key type that may no longer by valid for the key type of the resulting RDD.
-      raster.groupBy({ row => decomposeKey(row._1) }, numPartitions = raster.partitions.length)
+      raster.groupBy({ case (k, _) => decomposeKey(k) }, numPartitions = raster.partitions.length)
         .foreachPartition { (partition: Iterator[(BigInt, Iterable[(K, V)])]) =>
-          if(partition.nonEmpty) {
+          if (partition.nonEmpty) {
             instance.withSession { session =>
               val readStatement = session.prepare(readQuery)
               val writeStatement = session.prepare(writeQuery)
@@ -118,8 +116,8 @@ object CassandraRDDWriter {
                     session.executeF[IO](readStatement.bind(key.asJava)).map { oldRow =>
                       if (oldRow.nonEmpty) {
                         val bytes = oldRow.one().getByteBuffer("value").array()
-                        val schema = writerSchema.getOrElse(_recordCodec.schema)
-                        AvroEncoder.fromBinary(schema, bytes)(_recordCodec)
+                        val schema = writerSchema.getOrElse(codec.schema)
+                        AvroEncoder.fromBinary[Vector[(K, V)]](schema, bytes)
                       } else Vector.empty
                     }
                   })
@@ -131,7 +129,7 @@ object CassandraRDDWriter {
               def rowToBytes(row: (BigInt, Vector[(K,V)])): fs2.Stream[IO, (BigInt, ByteBuffer)] = {
                 fs2.Stream eval IO {
                   val (key, kvs) = row
-                  val bytes = ByteBuffer.wrap(AvroEncoder.toBinary(kvs)(codec))
+                  val bytes = ByteBuffer.wrap(AvroEncoder.toBinary[Vector[(K, V)]](kvs))
                   (key, bytes)
                 }
               }

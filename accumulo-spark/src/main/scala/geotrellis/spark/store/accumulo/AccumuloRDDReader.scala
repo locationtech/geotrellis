@@ -42,9 +42,9 @@ object AccumuloRDDReader {
     filterIndexOnly: Boolean,
     writerSchema: Option[Schema] = None
   )(implicit sc: SparkContext, instance: AccumuloInstance): RDD[(K, V)] = {
-    if(queryKeyBounds.isEmpty) return sc.emptyRDD[(K, V)]
+    if (queryKeyBounds.isEmpty) return sc.emptyRDD[(K, V)]
 
-    val codec = KeyValueRecordCodec[K, V]
+    implicit val codec: KeyValueRecordCodec[K, V] = KeyValueRecordCodec[K, V]
     val includeKey = (key: K) => queryKeyBounds.includeKey(key)
 
     val job = Job.getInstance(sc.hadoopConfiguration)
@@ -64,13 +64,13 @@ object AccumuloRDDReader {
       classOf[Key],
       classOf[Value])
     .map { case (_, value) =>
-      AvroEncoder.fromBinary(writerSchema.getOrElse(codec.schema), value.get)(codec)
+      AvroEncoder.fromBinary[Vector[(K, V)]](writerSchema.getOrElse(codec.schema), value.get)
     }
     .flatMap { (pairs: Vector[(K, V)]) =>
-      if(filterIndexOnly)
+      if (filterIndexOnly)
         pairs
       else
-        pairs.filter { pair => includeKey(pair._1) }
+        pairs.filter { case (k, _) => includeKey(k) }
     }
   }
 }

@@ -49,7 +49,7 @@ object HBaseRDDWriter {
   ): Unit = {
     implicit val sc = raster.sparkContext
 
-    val codec = KeyValueRecordCodec[K, V]
+    implicit val codec: KeyValueRecordCodec[K, V] = KeyValueRecordCodec[K, V]
 
     // create tile table if it does not exist
     instance.withAdminDo { admin =>
@@ -60,14 +60,12 @@ object HBaseRDDWriter {
       }
     }
 
-    val _recordCodec = KeyValueRecordCodec[K, V]
-
     // Call groupBy with numPartitions; if called without that argument or a partitioner,
     // groupBy will reuse the partitioner on the parent RDD if it is set, which could be typed
     // on a key type that may no longer by valid for the key type of the resulting RDD.
-    raster.groupBy({ row => decomposeKey(row._1) }, numPartitions = raster.partitions.length)
+    raster.groupBy({ case (k, _) => decomposeKey(k) }, numPartitions = raster.partitions.length)
       .foreachPartition { (partition: Iterator[(BigInt, Iterable[(K, V)])]) =>
-        if(partition.nonEmpty) {
+        if (partition.nonEmpty) {
           instance.withConnectionDo { connection =>
             val mutator = connection.getBufferedMutator(table)
             val tableConnection = connection.getTable(table)
@@ -83,16 +81,16 @@ object HBaseRDDWriter {
                   new RowFilter(CompareOperator.EQUAL, new BinaryComparator(HBaseKeyEncoder.encode(layerId, id))))
                 scan.setFilter(filter)
                 val scanner = tableConnection.getScanner(scan)
-                val results: Vector[(K,V)] = scanner.iterator.asScala.toVector.flatMap{ result =>
+                val results: Vector[(K, V)] = scanner.iterator.asScala.toVector.flatMap{ result =>
                   val bytes = result.getValue(hbaseTileColumnFamily, "")
-                  val schema = writerSchema.getOrElse(_recordCodec.schema)
-                  AvroEncoder.fromBinary(schema, bytes)(_recordCodec)
+                  val schema = writerSchema.getOrElse(codec.schema)
+                  AvroEncoder.fromBinary[Vector[(K, V)]](schema, bytes)
                 }
                 scanner.close()
                 results
               })
 
-              val bytes = AvroEncoder.toBinary(updated)(codec)
+              val bytes = AvroEncoder.toBinary[Vector[(K, V)]](updated)
               val put = new Put(HBaseKeyEncoder.encode(layerId, id))
               put.addColumn(hbaseTileColumnFamily, "", System.currentTimeMillis(), bytes)
               mutator.mutate(put)

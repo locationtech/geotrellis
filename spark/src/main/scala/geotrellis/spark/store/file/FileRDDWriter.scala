@@ -34,28 +34,27 @@ object FileRDDWriter {
     writerSchema: Option[Schema],
     mergeFunc: Option[(V,V) => V]
   ): Unit = {
-    val codec  = KeyValueRecordCodec[K, V]
+    implicit val codec: KeyValueRecordCodec[K, V] = KeyValueRecordCodec[K, V]
     val schema = codec.schema
 
     val pathsToTiles: RDD[(String, Iterable[(K, V)])] =
       // Call groupBy with numPartitions; if called without that argument or a partitioner,
       // groupBy will reuse the partitioner on the parent RDD if it is set, which could be typed
       // on a key type that may no longer by valid for the key type of the resulting RDD.
-      rdd.groupBy({ (row: (K, V)) => keyPath(row._1) }, numPartitions = rdd.partitions.length)
+      rdd.groupBy({ case (k, _) => keyPath(k) }, numPartitions = rdd.partitions.length)
 
     Filesystem.ensureDirectory(rootPath)
-    val _recordCodec = KeyValueRecordCodec[K, V]
 
     pathsToTiles.foreach { case (path, rows) =>
       val updated = LayerWriter.updateRecords(mergeFunc, rows.toVector, existing = {
         if (Filesystem.exists(path)) {
           val inBytes = Filesystem.slurp(path)
-          val schema = writerSchema.getOrElse(_recordCodec.schema)
-          AvroEncoder.fromBinary(schema, inBytes)(_recordCodec)
+          val schema = writerSchema.getOrElse(codec.schema)
+          AvroEncoder.fromBinary[Vector[(K, V)]](schema, inBytes)
         } else Vector.empty
       })
 
-      val outBytes: Array[Byte] = AvroEncoder.toBinary(updated)(codec)
+      val outBytes: Array[Byte] = AvroEncoder.toBinary[Vector[(K, V)]](updated)
       Filesystem.writeBytes(path, outBytes)
     }
   }

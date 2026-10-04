@@ -55,25 +55,21 @@ class S3RDDWriter(
     mergeFunc: Option[(V, V) => V],
     putObjectModifier: PutObjectRequest => PutObjectRequest = { p => p }
   ): Unit = {
-    val codec  = KeyValueRecordCodec[K, V]
+    implicit val codec: KeyValueRecordCodec[K, V] = KeyValueRecordCodec[K, V]
     val schema = codec.schema
 
     implicit val sc = rdd.sparkContext
-
-    val _codec = codec
 
     val pathsToTiles =
       // Call groupBy with numPartitions; if called without that argument or a partitioner,
       // groupBy will reuse the partitioner on the parent RDD if it is set, which could be typed
       // on a key type that may no longer by valid for the key type of the resulting RDD.
-      rdd.groupBy({ row => keyPath(row._1) }, numPartitions = rdd.partitions.length)
-
-    val _recordCodec = KeyValueRecordCodec[K, V]
+      rdd.groupBy({ case (k, _) => keyPath(k) }, numPartitions = rdd.partitions.length)
 
     pathsToTiles.foreachPartition { (partition: Iterator[(String, Iterable[(K, V)])]) =>
-      if(partition.nonEmpty) {
+      if (partition.nonEmpty) {
         val s3Client  = this.s3Client
-        val schema = writerSchema.getOrElse(_recordCodec.schema)
+        val schema = writerSchema.getOrElse(codec.schema)
 
         implicit val ioRuntime: unsafe.IORuntime = runtime
 
@@ -92,7 +88,7 @@ class S3RDDWriter(
 
                 val is = s3Client.getObject(request)
                 val bytes = IOUtils.toByteArray(is)
-                AvroEncoder.fromBinary(schema, bytes)(_recordCodec)
+                AvroEncoder.fromBinary[Vector[(K, V)]](schema, bytes)
               } catch {
                 case e: S3Exception if e.statusCode == 404 => Vector.empty
               }
@@ -104,7 +100,7 @@ class S3RDDWriter(
         def rowToRequest(row: (String, Vector[(K,V)])): fs2.Stream[IO, (PutObjectRequest, RequestBody)] = {
           fs2.Stream eval IO.blocking {
             val (key, kvs) = row
-            val contentBytes = AvroEncoder.toBinary(kvs)(_codec)
+            val contentBytes = AvroEncoder.toBinary[Vector[(K, V)]](kvs)
             val request = PutObjectRequest.builder()
               .bucket(bucket)
               .key(key)

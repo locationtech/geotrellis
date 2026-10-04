@@ -39,7 +39,7 @@ object FileRDDReader {
     numPartitions: Option[Int] = None,
     runtime: => unsafe.IORuntime = IORuntimeTransient.IORuntime
   )(implicit sc: SparkContext): RDD[(K, V)] = {
-    if(queryKeyBounds.isEmpty) return sc.emptyRDD[(K, V)]
+    if (queryKeyBounds.isEmpty) return sc.emptyRDD[(K, V)]
 
     val ranges = if (queryKeyBounds.length > 1)
       MergeQueue(queryKeyBounds.flatMap(decomposeBounds))
@@ -50,7 +50,7 @@ object FileRDDReader {
 
     val boundable = implicitly[Boundable[K]]
     val includeKey = (key: K) => KeyBounds.includeKey(queryKeyBounds, key)(boundable)
-    val _recordCodec = KeyValueRecordCodec[K, V]
+    implicit val codec: KeyValueRecordCodec[K, V] = KeyValueRecordCodec[K, V]
 
     sc.parallelize(bins, bins.size)
       .mapPartitions { (partition: Iterator[Seq[(BigInt, BigInt)]]) =>
@@ -61,9 +61,9 @@ object FileRDDReader {
             val path = keyPath(index)
             if (new File(path).exists) {
               val bytes: Array[Byte] = Filesystem.slurp(path)
-              val recs = AvroEncoder.fromBinary(writerSchema.getOrElse(_recordCodec.schema), bytes)(_recordCodec)
+              val recs = AvroEncoder.fromBinary[Vector[(K, V)]](writerSchema.getOrElse(codec.schema), bytes)
               if (filterIndexOnly) recs
-              else recs.filter { row => includeKey(row._1) }
+              else recs.filter { case (k, _) => includeKey(k) }
             } else Vector.empty
           }
         }

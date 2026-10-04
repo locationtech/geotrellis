@@ -96,7 +96,7 @@ object HadoopRDDWriter {
     val header = as.readHeader[HadoopLayerHeader](id)
     val keyIndex = as.readKeyIndex[K](id)
     val writerSchema = as.readSchema(id)
-    val codec = KeyValueRecordCodec[K, V]
+    implicit val codec: KeyValueRecordCodec[K, V] = KeyValueRecordCodec[K, V]
 
     val conf = rdd.sparkContext.hadoopConfiguration
     val _conf = SerializableConfiguration(conf)
@@ -165,7 +165,7 @@ object HadoopRDDWriter {
         var k = new BigIntWritable()
         var v = new BytesWritable()
         while (reader.next(k, v)) {
-          val _kvs2: Vector[(K,V)] = AvroEncoder.fromBinary(writerSchema, v.getBytes)(codec)
+          val _kvs2: Vector[(K,V)] = AvroEncoder.fromBinary[Vector[(K, V)]](writerSchema, v.getBytes)
           ikvs2 ++= _kvs2.map({ case (k, v) => (keyIndex.toIndex(k),k,v) })
         }
         reader.close
@@ -193,7 +193,7 @@ object HadoopRDDWriter {
         for ( (index, pairs) <- GroupConsecutiveIterator(kvs.iterator)(r => keyIndex.toIndex(r._1))) {
           writer.write(
             new BigIntWritable(index.toByteArray),
-            new BytesWritable(AvroEncoder.toBinary(pairs.toVector)(codec)))
+            new BytesWritable(AvroEncoder.toBinary[Vector[(K, V)]](pairs.toVector)))
         }
         writer.close() })
   }
@@ -209,10 +209,10 @@ object HadoopRDDWriter {
 
     val fs = path.getFileSystem(sc.hadoopConfiguration)
     if (existenceCheck) {
-      if(fs.exists(path)) throw new Exception(s"Directory already exists: $path")
+      if (fs.exists(path)) throw new Exception(s"Directory already exists: $path")
     }
 
-    val codec = KeyValueRecordCodec[K, V]
+    implicit val codec: KeyValueRecordCodec[K, V] = KeyValueRecordCodec[K, V]
     val blockSize = fs.getDefaultBlockSize(path)
     val layerPath = path.toString
 
@@ -224,7 +224,7 @@ object HadoopRDDWriter {
         for ( (index, pairs) <- GroupConsecutiveIterator(iter)(r => keyIndex.toIndex(r._1))) {
           writer.write(
             new BigIntWritable(index.toByteArray),
-            new BytesWritable(AvroEncoder.toBinary(pairs.toVector)(codec)))
+            new BytesWritable(AvroEncoder.toBinary[Vector[(K, V)]](pairs.toVector)))
         }
         writer.close()
         // TODO: collect statistics on written records and return those

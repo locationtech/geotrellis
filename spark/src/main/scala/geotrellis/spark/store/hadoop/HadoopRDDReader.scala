@@ -45,7 +45,7 @@ object HadoopRDDReader {
     val conf = sc.hadoopConfiguration
     val inputConf = conf.withInputPath(dataPath)
 
-    val codec = KeyValueRecordCodec[K, V]
+    implicit val codec: KeyValueRecordCodec[K, V] = KeyValueRecordCodec[K, V]
 
     sc.newAPIHadoopRDD(
       inputConf,
@@ -54,7 +54,7 @@ object HadoopRDDReader {
       classOf[BytesWritable]  // value class
      )
       .flatMap { case (keyWritable, valueWritable) =>
-        AvroEncoder.fromBinary(writerSchema.getOrElse(codec.schema), valueWritable.getBytes)(codec)
+        AvroEncoder.fromBinary[Vector[(K, V)]](writerSchema.getOrElse(codec.schema), valueWritable.getBytes)
       }
   }
 
@@ -68,7 +68,7 @@ object HadoopRDDReader {
     indexFilterOnly: Boolean,
     writerSchema: Option[Schema] = None)
   (implicit sc: SparkContext): RDD[(K, V)] = {
-    if(queryKeyBounds.isEmpty) return sc.emptyRDD[(K, V)]
+    if (queryKeyBounds.isEmpty) return sc.emptyRDD[(K, V)]
 
     val dataPath = path.suffix(HadoopCatalogConfig.SEQFILE_GLOB)
 
@@ -81,7 +81,7 @@ object HadoopRDDReader {
     val indexRanges = queryKeyBounds.flatMap(decomposeBounds).toArray
     inputConf.setSerialized(FilterMapFileInputFormat.FILTER_INFO_KEY, indexRanges)
 
-    val codec = KeyValueRecordCodec[K, V]
+    implicit val codec: KeyValueRecordCodec[K, V] = KeyValueRecordCodec[K, V]
 
     sc.newAPIHadoopRDD(
       inputConf,
@@ -90,11 +90,11 @@ object HadoopRDDReader {
       classOf[BytesWritable]
     )
       .flatMap { case (keyWritable, valueWritable) =>
-        val items = AvroEncoder.fromBinary(writerSchema.getOrElse(codec.schema), valueWritable.getBytes)(codec)
-        if(indexFilterOnly)
+        val items = AvroEncoder.fromBinary[Vector[(K, V)]](writerSchema.getOrElse(codec.schema), valueWritable.getBytes)
+        if (indexFilterOnly)
           items
         else
-          items.filter { row => includeKey(row._1) }
+          items.filter { case (k, _) => includeKey(k) }
       }
   }
 }

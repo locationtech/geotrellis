@@ -50,7 +50,7 @@ object CassandraRDDReader {
     if (queryKeyBounds.isEmpty) return sc.emptyRDD[(K, V)]
 
     val includeKey = (key: K) => queryKeyBounds.includeKey(key)
-    val _recordCodec = KeyValueRecordCodec[K, V]
+    implicit val codec: KeyValueRecordCodec[K, V] = KeyValueRecordCodec[K, V]
 
     val ranges = if (queryKeyBounds.length > 1)
       MergeQueue(queryKeyBounds.flatMap(decomposeBounds))
@@ -78,9 +78,9 @@ object CassandraRDDReader {
               session.executeF[IO](statement.bind(index.asJava)).map { row =>
                 if (row.nonEmpty) {
                   val bytes = row.one().getByteBuffer("value").array()
-                  val recs = AvroEncoder.fromBinary(writerSchema.getOrElse(_recordCodec.schema), bytes)(_recordCodec)
+                  val recs = AvroEncoder.fromBinary[Vector[(K, V)]](writerSchema.getOrElse(codec.schema), bytes)
                   if (filterIndexOnly) recs
-                  else recs.filter { row => includeKey(row._1) }
+                  else recs.filter { case (k, _) => includeKey(k) }
                 } else Vector.empty
               }
             }
