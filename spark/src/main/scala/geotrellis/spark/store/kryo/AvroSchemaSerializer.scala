@@ -21,11 +21,6 @@ import org.apache.avro.Schema
 import com.esotericsoftware.kryo.{Kryo, Serializer}
 import com.esotericsoftware.kryo.io.{Input, Output}
 
-/**
-  * Ships an Avro Schema as its JSON, the same way Avro's own Java serialization does.
-  * Kryo's default field serializer skips constructors, which leaves Schema properties
-  * half initialized: such a Schema reads data, but fails on equals / toString.
-  */
 class AvroSchemaSerializer extends Serializer[Schema] {
   override def write(kryo: Kryo, output: Output, schema: Schema): Unit =
     output.writeString(schema.toString)

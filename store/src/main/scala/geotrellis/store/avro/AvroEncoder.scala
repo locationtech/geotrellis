@@ -30,13 +30,15 @@ import scala.util.Using
 
 object AvroEncoder {
   /**
-    * Avro compiles readers per schema instance (identity), and the Avro 1.12 fast reader never releases them.
-    * Keep one canonical instance per distinct schema and one reader / writer per canonical schema,
-    * so that work happens once per schema (the same approach as Spark's GenericAvroSerializer).
+    * Avro compiles readers per schema instance, comparing schemas by reference.
+    * Avro 1.12's fast reader retains compiled readers indefinitely, so keep one
+    * canonical instance per distinct schema to avoid repeatedly compiling and
+    * retaining readers for equivalent schema instances.
+    *
+    * Readers and writers are created per call and are never shared between threads.
+    * GenericDatumReader mode can be configured with -Dorg.apache.avro.fastread.
     */
   private val schemas = new ConcurrentHashMap[Schema, Schema]()
-  private val readers = new ConcurrentHashMap[(Schema, Schema), DatumReader[GenericRecord]]()
-  private val writers = new ConcurrentHashMap[Schema, DatumWriter[GenericRecord]]()
 
   private def canonical(schema: Schema): Schema = {
     val prev = schemas.putIfAbsent(schema, schema)
@@ -44,16 +46,10 @@ object AvroEncoder {
   }
 
   private def datumReader(writerSchema: Schema, readerSchema: Schema): DatumReader[GenericRecord] =
-    readers.computeIfAbsent(
-      (canonical(writerSchema), canonical(readerSchema)), { case (writer, reader) =>
-        val data = GenericData.get()
-        if (data.isFastReaderEnabled) data.getFastReaderBuilder.createDatumReader[GenericRecord](writer, reader)
-        else new GenericDatumReader[GenericRecord](writer, reader)
-      }
-    )
+    new GenericDatumReader(canonical(writerSchema), canonical(readerSchema))
 
   private def datumWriter(schema: Schema): DatumWriter[GenericRecord] =
-    writers.computeIfAbsent(canonical(schema), new GenericDatumWriter[GenericRecord](_))
+    new GenericDatumWriter(canonical(schema))
 
   def compress(bytes: Array[Byte]): Array[Byte] = {
     val baos = new ByteArrayOutputStream(bytes.length)
@@ -83,10 +79,10 @@ object AvroEncoder {
   }
 
   def fromBinary[T: AvroRecordCodec](bytes: Array[Byte]): T =
-    fromBinary[T](AvroRecordCodec[T].schema, bytes)
+    fromBinary(AvroRecordCodec[T].schema, bytes)
 
   def fromBinary[T: AvroRecordCodec](bytes: Array[Byte], uncompress: Boolean): T =
-    fromBinary[T](AvroRecordCodec[T].schema, bytes, uncompress)
+    fromBinary(AvroRecordCodec[T].schema, bytes, uncompress)
 
   def fromBinary[T: AvroRecordCodec](writerSchema: Schema, bytes: Array[Byte]): T =
     fromBinary(writerSchema, bytes, uncompress = true)

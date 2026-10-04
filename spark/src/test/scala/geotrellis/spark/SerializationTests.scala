@@ -35,6 +35,9 @@ import scala.util.Properties
 import geotrellis.util.identityComponent
 
 class SerializationTests extends AnyFunSuite with Matchers with RasterMatchers with TileBuilders {
+  private def assumeKryo(): Unit =
+    assume(Properties.envOrNone("GEOTRELLIS_USE_JAVA_SER").isEmpty, "requires Kryo serialization")
+
   test("Serializing CRS's") {
     val crs = CRS.fromString("+proj=longlat +datum=WGS84 +no_defs")
     assert(crs == LatLng)
@@ -107,14 +110,6 @@ class SerializationTests extends AnyFunSuite with Matchers with RasterMatchers w
 
     assert(before.toArray() sameElements after.toArray())
   }
-
-  /**
-    * Avro Schemas travel through Kryo correctly only with the GeoTrellis KryoRegistrator, which installs
-    * the AvroSchemaSerializer. KryoSerializer takes the active SparkEnv conf, and the test environment sets
-    * that registrator only when running with Kryo, so these tests are skipped when GEOTRELLIS_USE_JAVA_SER is set.
-    */
-  private def assumeKryo(): Unit =
-    assume(Properties.envOrNone("GEOTRELLIS_USE_JAVA_SER").isEmpty, "requires Kryo serialization")
 
   test("Avro Schema kryo serialization") {
     assumeKryo()
