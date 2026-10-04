@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Scala3 syntax usage [#3631](https://github.com/locationtech/geotrellis/pull/3631)
 - Kind Projector underscore syntax adoption [#3632](https://github.com/locationtech/geotrellis/pull/3632)
 - Scala 3 support [#3633](https://github.com/locationtech/geotrellis/pull/3633)
+- Avro codecs caching [#3637](https://github.com/locationtech/geotrellis/pull/3637)
+- Avro fast readers support [#3638](https://github.com/locationtech/geotrellis/pull/3638)
 
 ### Changed
 - Spark 4 Update; drops Scala 2.12 and JDK 11 support [#3582](https://github.com/locationtech/geotrellis/pull/3582)
@@ -22,8 +24,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Accumulo Deprecated APIs removal [#3630](https://github.com/locationtech/geotrellis/pull/3630)
 - GeoTools 35.1 update [#3611](https://github.com/locationtech/geotrellis/pull/3611)
 - Upgrade to Spark 4.2.0 [#3634](https://github.com/locationtech/geotrellis/issues/3634)
-- Avro codecs caching [#3637](https://github.com/locationtech/geotrellis/pull/3637)
-- Avro fast readers support [#3638](https://github.com/locationtech/geotrellis/pull/3638)
 
 ## [3.8.1] - 2026-06-22
 
