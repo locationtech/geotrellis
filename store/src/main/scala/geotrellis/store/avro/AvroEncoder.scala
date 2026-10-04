@@ -35,21 +35,24 @@ object AvroEncoder {
     * so that work happens once per schema (the same approach as Spark's GenericAvroSerializer).
     */
   private val schemas = new ConcurrentHashMap[Schema, Schema]()
-  private val readers = new ConcurrentHashMap[(Schema, Schema), GenericDatumReader[GenericRecord]]()
-  private val writers = new ConcurrentHashMap[Schema, GenericDatumWriter[GenericRecord]]()
+  private val readers = new ConcurrentHashMap[(Schema, Schema), DatumReader[GenericRecord]]()
+  private val writers = new ConcurrentHashMap[Schema, DatumWriter[GenericRecord]]()
 
   private def canonical(schema: Schema): Schema = {
     val prev = schemas.putIfAbsent(schema, schema)
     if (prev == null) schema else prev
   }
 
-  private def datumReader(writerSchema: Schema, readerSchema: Schema): GenericDatumReader[GenericRecord] =
+  private def datumReader(writerSchema: Schema, readerSchema: Schema): DatumReader[GenericRecord] =
     readers.computeIfAbsent(
-      (canonical(writerSchema), canonical(readerSchema)),
-      { case (key, value) => new GenericDatumReader[GenericRecord](key, value) }
+      (canonical(writerSchema), canonical(readerSchema)), { case (writer, reader) =>
+        val data = GenericData.get()
+        if (data.isFastReaderEnabled) data.getFastReaderBuilder.createDatumReader[GenericRecord](writer, reader)
+        else new GenericDatumReader[GenericRecord](writer, reader)
+      }
     )
 
-  private def datumWriter(schema: Schema): GenericDatumWriter[GenericRecord] =
+  private def datumWriter(schema: Schema): DatumWriter[GenericRecord] =
     writers.computeIfAbsent(canonical(schema), new GenericDatumWriter[GenericRecord](_))
 
   def compress(bytes: Array[Byte]): Array[Byte] = {
@@ -75,10 +78,8 @@ object AvroEncoder {
     val encoder = EncoderFactory.get().binaryEncoder(jos, null)
     writer.write(format.encode(thing), encoder)
     encoder.flush()
-    if (deflate)
-      compress(jos.toByteArray)
-    else
-      jos.toByteArray
+    if (deflate) compress(jos.toByteArray)
+    else jos.toByteArray
   }
 
   def fromBinary[T: AvroRecordCodec](bytes: Array[Byte]): T =
@@ -96,10 +97,8 @@ object AvroEncoder {
 
     val reader = datumReader(writerSchema, schema)
     val decoder =
-      if (uncompress)
-        DecoderFactory.get().binaryDecoder(decompress(bytes), null)
-      else
-        DecoderFactory.get().binaryDecoder(bytes, null)
+      if (uncompress) DecoderFactory.get().binaryDecoder(decompress(bytes), null)
+      else DecoderFactory.get().binaryDecoder(bytes, null)
     try {
       val rec = reader.read(null.asInstanceOf[GenericRecord], decoder)
       format.decode(rec)
