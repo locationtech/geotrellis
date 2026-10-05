@@ -125,13 +125,13 @@ object Settings {
 
     publishTo := {
       val sonatype = "https://oss.sonatype.org/"
-      val locationtech = "https://repo.eclipse.org/content/repositories"
+      val locationtech = "https://repo.eclipse.org/repository"
 
       System.getProperty("release") match {
         case "locationtech" if isSnapshot.value =>
-          Some("LocationTech Snapshot Repository" at s"${locationtech}/geotrellis-snapshots")
+          Some("LocationTech Snapshot Repository" at s"${locationtech}/geotrellis-maven2-snapshots")
         case "locationtech" =>
-          Some("LocationTech Release Repository" at s"${locationtech}/geotrellis-releases")
+          Some("LocationTech Release Repository" at s"${locationtech}/geotrellis-maven2-releases")
         case "sonatype" =>
           Some("Sonatype Release Repository" at s"${sonatype}service/local/staging/deploy/maven2")
         case _ => publishTo.value
