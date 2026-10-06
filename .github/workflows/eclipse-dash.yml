@@ -1,0 +1,99 @@
+# Validates third-party dependencies against the Eclipse IP database (ClearlyDefined / IPLab)
+name: eclipse-dash
+
+on:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      review:
+        description: 'Open IPLab review requests for restricted dependencies'
+        type: boolean
+        default: false
+  schedule:
+    - cron: '20 21 * * 0'
+
+# added using https://github.com/step-security/secure-repo
+permissions:
+  contents: read
+
+env:
+  DASH_VERSION: 1.1.0
+  DASH_PROJECT: locationtech.geotrellis
+  DASH_TIMEOUT: 600 # seconds per request, ClearlyDefined is slow; the Dash default is 120
+
+jobs:
+  license-check:
+    name: license-check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: coursier/cache-action@v6
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: sbt/setup-sbt@v1
+
+      - name: Collect dependencies
+        # published artifacts compile dependencies only, Scala 2.13 variants
+        # to include Scala 3 sbt dependencyListGTFast "++3.3.7" dependencyListGTFast
+        run: |
+          rm -f target/dependencies-list.txt
+          sbt dependencyListGTFast
+          echo "Number of dependencies: $(wc -l < target/dependencies-list.txt)"
+
+      - name: Download Dash License Tool
+        run: |
+          curl -sSfL -o dash.jar \
+            "https://repo.eclipse.org/repository/dash-licenses-releases/org/eclipse/dash/org.eclipse.dash.licenses/${DASH_VERSION}/org.eclipse.dash.licenses-${DASH_VERSION}.jar"
+
+      - name: License check
+        env:
+          REVIEW: ${{ github.event_name == 'workflow_dispatch' && inputs.review }}
+          DASH_LICENSES_TOKEN: ${{ secrets.DASH_LICENSES_TOKEN }}
+          REPO_URL: ${{ github.server_url }}/${{ github.repository }}
+        run: |
+          mkdir -p target/dash
+          ARGS=(-summary target/dash/summary -batch 50 -timeout "${DASH_TIMEOUT}" -project "${DASH_PROJECT}")
+          if [[ "${REVIEW}" == "true" ]]; then
+            if [[ -z "${DASH_LICENSES_TOKEN}" ]]; then
+              echo "::error::review requested but the DASH_LICENSES_TOKEN secret is not set"
+              exit 1
+            fi
+            ARGS+=(-review -repo "${REPO_URL}" -token "${DASH_LICENSES_TOKEN}")
+          fi
+          # exit code 127 is a Dash internal error, i.e. a ClearlyDefined request timeout; retry those
+          for attempt in 1 2 3; do
+            code=0
+            java -jar dash.jar "${ARGS[@]}" target/dependencies-list.txt || code=$?
+            [[ "${code}" != 127 ]] && break
+            echo "::warning::Dash internal error (exit code 127), attempt ${attempt} of 3"
+            sleep $((attempt * 30))
+          done
+          exit "${code}"
+
+      - name: Show summary
+        if: success() || failure()
+        run: |
+          if [[ ! -s target/dash/summary ]]; then
+            result="Dash did not produce a summary, see the License check step log"
+          else
+            result="$(grep -v ', approved,' target/dash/summary || echo "All dependencies are approved")"
+          fi
+          echo "${result}"
+          {
+            echo '### Dash license check'
+            echo '```'
+            echo "${result}"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@v4
+        if: success() || failure()
+        with:
+          name: dash-summary
+          path: |
+            target/dash/summary
+            target/dependencies-list.txt
