@@ -1,0 +1,81 @@
+# Uploads software bill-of-materials (SBOMs) to the Eclipse SBOM registry https://sbom.eclipse.org.
+name: eclipse-sboms
+
+on:
+  push:
+    branches: ['master']
+    tags: [v*]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  CYCLONEDX_CLI_VERSION: v0.33.1
+
+jobs:
+  generate-sbom:
+    name: generate-sbom / ${{ matrix.product }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write # OIDC token for the upload to the Eclipse PIA
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - scala: "2.13.18"
+            product: geotrellis_2.13
+          # - scala: "3.3.7"
+            # product: geotrellis_3
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # sbt-dynver derives the version from git tags
+          persist-credentials: false
+      - uses: coursier/cache-action@v6
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: sbt/setup-sbt@v1
+
+      - name: Generate per-module SBOMs
+        env:
+          SCALA_VERSION: ${{ matrix.scala }}
+        run: sbt "++${SCALA_VERSION}" makeBomGT
+
+      - name: Read version
+        id: version
+        run: |
+          VERSION="$(sbt -Dsbt.supershell=false -no-colors --error 'print version' | tail -n1 | tr -d '[:space:]')"
+          echo "Product version is: $VERSION"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Merge SBOMs
+        env:
+          PRODUCT_VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          curl -sSfL -o cyclonedx "https://github.com/CycloneDX/cyclonedx-cli/releases/download/${CYCLONEDX_CLI_VERSION}/cyclonedx-linux-x64"
+          chmod +x cyclonedx
+          ls -1 target/sbom
+          ./cyclonedx merge \
+            --input-files target/sbom/*.bom.json \
+            --output-file target/bom.json \
+            --group org.locationtech.geotrellis \
+            --name geotrellis \
+            --version "${PRODUCT_VERSION}"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sbom-${{ matrix.product }}
+          path: |
+            target/bom.json
+            target/sbom/
+
+      - name: Upload SBOM
+        uses: eclipse-csi/workflows/upload-sbom@0c1c6cf5cb4dc624a86410274c71b27d6273385a # there are no tags, this is main as of 2026-10-06
+        with:
+          sbom-file: ./target/bom.json
+          product-name: ${{ matrix.product }}
+          product-version: ${{ steps.version.outputs.version }}

@@ -11,4 +11,5 @@ addSbtPlugin("com.thesamet"       % "sbt-protoc"      % "1.0.8")
 addSbtPlugin("ch.epfl.scala"      % "sbt-scalafix"    % "0.14.7")
 addSbtPlugin("org.scalameta"      % "sbt-mdoc"        % "2.9.0" )
 addSbtPlugin("com.github.sbt"     % "sbt-ci-release"  % "1.11.2")
+addSbtPlugin("com.github.sbt"     % "sbt-sbom"        % "0.6.0")
 libraryDependencies += "com.thesamet.scalapb" %% "compilerplugin" % "0.11.20"
