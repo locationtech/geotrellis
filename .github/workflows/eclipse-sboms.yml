@@ -59,9 +59,11 @@ jobs:
           curl -sSfL -o cyclonedx "https://github.com/CycloneDX/cyclonedx-cli/releases/download/${CYCLONEDX_CLI_VERSION}/cyclonedx-linux-x64"
           chmod +x cyclonedx
           ls -1 target/sbom
+          # merge defaults to the latest spec (1.7), which the Eclipse PIA rejects; keep it on 1.6 as sbt-sbom emits
           ./cyclonedx merge \
             --input-files target/sbom/*.bom.json \
             --output-file target/bom.json \
+            --output-version v1_6 \
             --group org.locationtech.geotrellis \
             --name geotrellis \
             --version "${PRODUCT_VERSION}"
