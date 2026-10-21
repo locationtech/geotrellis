@@ -115,7 +115,7 @@ object Settings {
     licenses := Seq(License("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0.html"))),
     homepage := Some(url("https://geotrellis.io")),
     scmInfo := Some(ScmInfo(url("https://github.com/locationtech/geotrellis"), "scm:git:git@github.com:locationtech/geotrellis.git")),
-    scalacOptions ++= scalacOptionsFor(scalaVersion.value),
+    scalacOptions ++= Def.uncached(scalacOptionsFor(scalaVersion.value)),
     publishMavenStyle := true,
     Test / publishArtifact := false,
     pomIncludeRepository := { _ => false },
@@ -371,7 +371,7 @@ object Settings {
 
   lazy val `doc-examples` = Seq(
     name := "geotrellis-doc-examples",
-    scalacOptions ++= scalacOptionsFor(scalaVersion.value),
+    scalacOptions ++= Def.uncached(scalacOptionsFor(scalaVersion.value)),
     // kind-projector is a Scala 2 compiler plugin; Scala 3 has -Ykind-projector built in
     libraryDependencies ++= (if (isScala3(scalaVersion.value)) Nil
                              else Seq(compilerPlugin("org.typelevel" % "kind-projector" % "0.13.4" cross CrossVersion.full))),

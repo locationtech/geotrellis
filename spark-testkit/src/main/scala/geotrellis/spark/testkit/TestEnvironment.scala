@@ -65,6 +65,11 @@ trait TestEnvironment extends BeforeAndAfterAll
     conf.set("spark.kryo.registrator", classOf[KryoRegistrator].getName)
 
   lazy val _ssc: SparkSession = {
+    // Spark ClosureCleaner reads class bytes via getResourceAsStream, which reuses the JVM wide cached JarFile;
+    // not forked tests of other modules share the JVM and close that JarFile with their class loader (ZipFile closed)
+    // the static per protocol setter is JDK 9+, the instance one sets the JVM wide default (no connection is opened)
+    new File(".").toURI.toURL.openConnection().setDefaultUseCaches(false)
+
     System.setProperty("spark.driver.port", "0")
     System.setProperty("spark.hostPort", "0")
     System.setProperty("spark.ui.enabled", "false")
