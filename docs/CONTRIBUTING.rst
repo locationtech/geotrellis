@@ -16,7 +16,7 @@ Building GeoTrellis
 1. Install SBT (the master branch is currently built with SBT 0.13.12).
 2. Check out this repository.
 3. Pick the branch corresponding to the version you are targeting
-4. Run ``sbt test`` to compile the suite and run all tests.
+4. Run ``sbt testFull`` to compile the suite and run all tests (``sbt test`` only reruns the tests affected by changes).
 
 Style Guide
 -----------

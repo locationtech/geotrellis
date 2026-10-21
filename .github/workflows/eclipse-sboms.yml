@@ -48,7 +48,8 @@ jobs:
       - name: Read version
         id: version
         run: |
-          VERSION="$(sbt -Dsbt.supershell=false -no-colors --error 'print version' | tail -n1 | tr -d '[:space:]')"
+          # --server: the sbt 2 thin client appends a [success] line, which breaks tail -n1
+          VERSION="$(sbt --server -Dsbt.supershell=false -no-colors --error 'print version' | tail -n1 | tr -d '[:space:]')"
           echo "Product version is: $VERSION"
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 

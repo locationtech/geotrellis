@@ -47,7 +47,8 @@ object GTBenchmarkPlugin extends AutoPlugin {
     val jmhWarmupIterations = settingKey[Option[Int]]("Number of warmup iterations to do").withRank(KeyRanks.Invisible)
     val jmhTimeUnit = settingKey[Option[String]]("Benchmark results time unit: {m|s|ms|us|ns}").withRank(KeyRanks.Invisible)
     val jmhExtraOptions = settingKey[Option[String]]("Additional arguments to jmh:run before the filename regex").withRank(KeyRanks.Invisible)
-    val bench = taskKey[Unit]("Execute JMH benchmarks")
+    // runs benchmarks for their side effects, never served from the sbt 2 cache
+    @transient val bench = taskKey[Unit]("Execute JMH benchmarks")
     val benchOnly = inputKey[Unit]("Execute JMH benchmarks on a single class")
   }
 
@@ -64,7 +65,7 @@ object GTBenchmarkPlugin extends AutoPlugin {
     jmhWarmupIterations := Some(math.max(jmhIterations.value.getOrElse(0)/2, 5)),
     jmhTimeUnit := Some("ms"),
     jmhExtraOptions := None,
-    cancelable in Global := true,
+    Global / cancelable := true,
     bench := Def.taskDyn { jmhRun(jmhFileRegex.value) }.value,
     benchOnly := Def.inputTaskDyn {
       val file = benchFilesParser.parsed.base
@@ -111,7 +112,7 @@ object GTBenchmarkPlugin extends AutoPlugin {
     val parsers = dirs.map(benchFileParser)
 
     val folded  = parsers
-      .foldRight[Parser[File]](failure("<no input files>"))(_ | _)
+      .foldRight[Parser[File]](sbt.complete.DefaultParsers.failure("<no input files>"))(_ | _)
 
     token(Space ~> folded)
   }

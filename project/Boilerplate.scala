@@ -403,7 +403,7 @@ object GenMacroSegmentCombiner extends Template {
       } mkString "; "
 
       val diffs        = (1 until arity) map { i => s"val diff$i = b$i - b0 "} mkString "; "
-      val diffsArgs    = ((((1 until arity) map { i => s"i + diff$i, segment" } mkString ", ") split ", ") init) mkString ", "
+      val diffsArgs    = ((((1 until arity) map { i => s"i + diff$i, segment" } mkString ", ") split ", ").init) mkString ", "
       val startVals    = (0 until arity) map { i => s"val start$i = bandSegmentCount * b$i" } mkString "; "
       val getSegmentsZip = (0 until arity) map { i =>
         if(i == 0) s"getSegments(start$i until start$i + bandSegmentCount)" else s"zip(getSegments(start$i until start$i + bandSegmentCount))"

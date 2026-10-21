@@ -15,12 +15,12 @@ object FastResolverCommands extends AutoPlugin {
     // Faster `dependencyUpdates`.
     addCommandAlias(
       "dependencyUpdatesFast",
-      "; set every externalResolvers := Settings.Repositories.allNoSnapshots; dependencyUpdates; reload"
+      "; set every externalResolvers := Def.uncached(Settings.Repositories.allNoSnapshots); dependencyUpdates; reload"
     ) ++ Seq(
       // Faster `dependencyListGT/toFile`; the target file is passed through, defaults to target/dependencies-list.txt.
       commands += Command.args("dependencyListGTFast", "<target-file>") { (state, args) =>
         val target = if (args.isEmpty) "target/dependencies-list.txt" else args.mkString(" ")
-        "set every externalResolvers := Settings.Repositories.allNoSnapshots" ::
+        "set every externalResolvers := Def.uncached(Settings.Repositories.allNoSnapshots)" ::
         s"dependencyListGT/toFile $target" ::
         "reload" ::
         state

@@ -112,7 +112,7 @@ object Settings {
 
   lazy val commonSettings = Seq(
     description := "geographic data processing library for high performance applications",
-    licenses := Seq("Apache-2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0.html")),
+    licenses := Seq(License("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0.html"))),
     homepage := Some(url("https://geotrellis.io")),
     scmInfo := Some(ScmInfo(url("https://github.com/locationtech/geotrellis"), "scm:git:git@github.com:locationtech/geotrellis.git")),
     scalacOptions ++= scalacOptionsFor(scalaVersion.value),
@@ -192,9 +192,9 @@ object Settings {
     // The Eclipse Foundation requires the license file to be present in every distribution
     // artifact; for JARs it belongs in META-INF.
     // See https://www.eclipse.org/projects/handbook/#legaldoc-distribution
-    Compile / packageBin / mappings += ((LocalRootProject / baseDirectory).value / "LICENSE") -> "META-INF/LICENSE",
+    Compile / packageBin / mappings += fileConverter.value.toVirtualFile(((LocalRootProject / baseDirectory).value / "LICENSE").toPath) -> "META-INF/LICENSE",
 
-    externalResolvers := Settings.Repositories.all,
+    externalResolvers := Def.uncached(Settings.Repositories.all),
     headerLicense := Some(HeaderLicense.ALv2(java.time.Year.now.getValue.toString, "Azavea")),
     headerMappings := Map(
       FileType.scala -> CommentStyle.cStyleBlockComment.copy(
@@ -386,7 +386,7 @@ object Settings {
       geotoolsMain,
       geotoolsReferencing,
       geotoolsMetadata
-    ).map(_ excludeAll(excludedDependencies: _*)),
+    ).map(_.excludeAll(excludedDependencies*)),
     libraryDependencies ++= Seq(
       unitApi,
       geotoolsGeoTiff % Test,
@@ -567,7 +567,7 @@ object Settings {
     libraryDependencies ++= Seq(
       geotoolsMain,
       geotoolsShapefile
-    ).map(_ excludeAll(excludedDependencies: _*)),
+    ).map(_.excludeAll(excludedDependencies*)),
     libraryDependencies ++= Seq(scalatest % Test) ++ worksWithDependencies,
     Test / fork := false
   ) ++ commonSettings
@@ -607,7 +607,7 @@ object Settings {
       apacheSpark("sql").value % Test,
       scalatest % Test
     ),
-    assembly / test := {},
+    assembly / test := sbt.protocol.testing.TestResult.Passed,
     assembly / assemblyShadeRules := {
       val shadePackage = "com.azavea.shaded.demo"
       Seq(

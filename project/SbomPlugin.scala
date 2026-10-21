@@ -16,7 +16,8 @@ object SbomPlugin extends AutoPlugin {
   override def trigger = allRequirements
 
   object Keys {
-    val makeBomGT = taskKey[Option[File]]("Generate CycloneDX SBOMs of published artifacts into target/sbom")
+    // the SBOM files are written as a side effect, sbt 2 cannot cache File outputs
+    @transient val makeBomGT = taskKey[Option[File]]("Generate CycloneDX SBOMs of published artifacts into target/sbom")
   }
 
   val autoImport = Keys
@@ -27,7 +28,8 @@ object SbomPlugin extends AutoPlugin {
 
   override def projectSettings = Seq(
     bomFormat := "json",
-    bomOutputPath := ((LocalRootProject / target).value / "sbom").getAbsolutePath,
+    // sbt 2 target is target/out/jvm/scala-<version>/<project>, keep the SBOMs in the repo root target/sbom
+    bomOutputPath := ((LocalRootProject / baseDirectory).value / "target" / "sbom").getAbsolutePath,
     makeBomGT := Def.taskIf {
       if ((publish / skip).value) None
       else Some(makeBom.value)

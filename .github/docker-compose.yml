@@ -33,7 +33,7 @@ services:
   test-jdk21:
     image: daunnc/osgeo-gdal-jdk21:3.13.3
     working_dir: /usr/local/src
-    command: sbt ++$SCALA_VERSION test
+    command: sbt ++$SCALA_VERSION testFull
     environment:
       - CI
       - SCALA_VERSION
@@ -49,7 +49,7 @@ services:
   test-scala3-jdk21:
     image: daunnc/osgeo-gdal-jdk21:3.13.3
     working_dir: /usr/local/src
-    command: sbt ++$SCALA_VERSION test
+    command: sbt ++$SCALA_VERSION testFull
     environment:
       - CI
       - SCALA_VERSION
