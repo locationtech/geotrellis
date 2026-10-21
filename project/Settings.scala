@@ -122,6 +122,8 @@ object Settings {
     autoAPIMappings := true,
     Global / cancelable := true,
     Test / parallelExecution := false,
+    // sbt 2 defaults to true, which puts resources into jars; tests read them as files via Resource.path
+    exportJars := false,
 
     publishTo := {
       val sonatype = "https://oss.sonatype.org/"
