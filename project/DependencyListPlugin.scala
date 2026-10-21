@@ -29,7 +29,7 @@ object DependencyListPlugin extends AutoPlugin {
 
   // sbt 1 DependencyTreeSettings.targetFileAndForceParser, which is private[sbt] in sbt 2
   private val targetFileAndForceParser: Parser[(File, Boolean)] =
-    token(Space ~> ((literal("-f") | literal("--force")) <~ Space).?.map(_.isDefined) ~ fileParser(new File("."))).map(_.swap)
+    (Space ~> fileParser(new File("."))) ~ (Space ~> (literal("-f") | literal("--force"))).?.map(_.isDefined)
 
   // sbt 1 dependencyList / asString: the flat list of the non evicted Compile modules
   private val dependencyListAsString = (Compile / dependencyTree).toTask(" list --quiet")

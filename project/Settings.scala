@@ -302,7 +302,10 @@ object Settings {
       import geotrellis.store.accumulo.*
       import geotrellis.spark.*
       import geotrellis.spark.store.accumulo.*
-      """
+      """,
+    // MiniAccumuloCluster starts ZooKeeper and Accumulo in child JVMs with the java.class.path of the test JVM;
+    // sbt 2 forks tests with a virtual classpath unless the layering strategy is Raw
+    Test / classLoaderLayeringStrategy := ClassLoaderLayeringStrategy.Raw
   ) ++ commonSettings ++ java17SparkSettings ++ forkInTests
 
   lazy val bench = Seq(

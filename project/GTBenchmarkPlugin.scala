@@ -57,7 +57,8 @@ object GTBenchmarkPlugin extends AutoPlugin {
 
   override def projectSettings = Seq(
     jmhOutputFormat := "json",
-    jmhOutputDir := target.value,
+    // sbt 2 target is target/out/jvm/scala-<version>/<project>, keep the results in <project>/target
+    jmhOutputDir := baseDirectory.value / "target",
     jmhFileRegex := ".*Bench.*".r,
     jmhThreads := None,
     jmhFork := Some(1),
@@ -80,7 +81,7 @@ object GTBenchmarkPlugin extends AutoPlugin {
     val dir = jmhOutputDir.value
     IO.createDirectory(dir)
 
-    val rff = target.value / s"jmh-results-$timestamp.$rf"
+    val rff = dir / s"jmh-results-$timestamp.$rf"
     val pat = filePattern.toString
 
     val t = jmhThreads.value.map("-t " + _).getOrElse("")
