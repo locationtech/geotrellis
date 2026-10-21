@@ -45,7 +45,7 @@ class GDALRasterSourceProviderSpec extends AnyFunSpec {
     }
 
     it("should produce a GDALRasterSource from a string") {
-      assert(RasterSource("file:///tmp/dumping-ground/random/file.zip").isInstanceOf[GDALRasterSource])
+      assert(RasterSource("gdal+file:///tmp/dumping-ground/random/file.zip").isInstanceOf[GDALRasterSource])
     }
   }
 }

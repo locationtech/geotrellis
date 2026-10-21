@@ -1,9 +1,9 @@
 import sbt.*
 import sbt.Keys.*
+import sbt.complete.DefaultParsers.*
+import sbt.complete.Parser
 import sbt.io.IO
-import sbt.plugins.DependencyTreeKeys.dependencyList
-import sbt.plugins.DependencyTreeSettings.targetFileAndForceParser
-import sbt.plugins.MiniDependencyTreeKeys.{asString, toFile}
+import sbt.plugins.DependencyTreePlugin.autoImport.dependencyTree
 import java.io.File
 
 /**
@@ -18,6 +18,8 @@ object DependencyListPlugin extends AutoPlugin {
     val dependencyListGT       = inputKey[Unit]("Execute dependencyList GeoTrellis command; usage example: dependencyListGT/toFile target/dependencies-list.txt")
     val dependencyListGTAppend = settingKey[Boolean]("dependencyList GeoTrellis command append mode: true by default").withRank(KeyRanks.Invisible)
     val dependencyListGTIgnore = settingKey[Set[String]]("dependencyList GeoTrellis command ignored dependencies: skips dependencies containing ignored strings in the output file").withRank(KeyRanks.Invisible)
+    // sbt 2 dropped the dependencyList / asString / toFile keys of the sbt 1 dependency tree plugin
+    val toFile                 = inputKey[File]("Writes the task output to a file; usage: <task>/toFile [-f] <target-file>")
   }
 
   val autoImport = Keys
@@ -25,13 +27,20 @@ object DependencyListPlugin extends AutoPlugin {
 
   override def projectSettings = renderingTaskSettings(dependencyListGT)
 
+  // sbt 1 DependencyTreeSettings.targetFileAndForceParser, which is private[sbt] in sbt 2
+  private val targetFileAndForceParser: Parser[(File, Boolean)] =
+    (Space ~> fileParser(new File("."))) ~ (Space ~> (literal("-f") | literal("--force"))).?.map(_.isDefined)
+
+  // sbt 1 dependencyList / asString: the flat list of the non evicted Compile modules
+  private val dependencyListAsString = (Compile / dependencyTree).toTask(" list --quiet")
+
   private def renderingTaskSettings(key: InputKey[Unit]) =
     Seq(
       dependencyListGTAppend := true,
       dependencyListGTIgnore := Set("locationtech"),
       key := {
         val s = streams.value
-        val str = (Compile / dependencyList / asString).value
+        val str = dependencyListAsString.value
         s.log.info(str)
       },
       key / toFile := {
@@ -47,7 +56,7 @@ object DependencyListPlugin extends AutoPlugin {
               .toSet
 
           val string =
-            (Compile / dependencyList / asString)
+            dependencyListAsString
               .value
               .split('\n')
               .filterNot(str => dependencyListGTIgnore.value.exists(str.contains))
@@ -69,18 +78,24 @@ object DependencyListPlugin extends AutoPlugin {
     streams: TaskStreams,
     append: Boolean
   ): File =
-    if (targetFile.exists && !force && !append) {
-      throw new RuntimeException(
-        s"Target file for $what already exists at ${targetFile.getAbsolutePath}. Use '-f' to override"
-      )
-    } else {
-      // in append mode each module contributes its own list; merge with the existing content and keep
-      // the file distinct (and sorted), which also makes re-runs idempotent
-      val existing = if (append && targetFile.exists) IO.readLines(targetFile, IO.utf8) else Nil
-      val merged = (existing ++ data.split('\n')).map(_.trim).filter(_.nonEmpty).distinct.sorted
-      IO.writeLines(targetFile, merged, IO.utf8, append = false)
+    // the modules write the same file from parallel tasks; sync the writers to avoid overwrites
+    DependencyListPlugin.synchronized {
+      if (targetFile.exists && !force && !append) {
+        throw new RuntimeException(
+          s"Target file for $what already exists at ${targetFile.getAbsolutePath}. Use '-f' to override"
+        )
+      } else {
+        // in append mode each module contributes its own list; merge with the existing content and keep
+        // the file distinct (and sorted), which also makes re-runs idempotent
+        val existing = if (append && targetFile.exists) IO.readLines(targetFile, IO.utf8) else Nil
+        val merged = (existing ++ data.split('\n')).map(_.trim).filter(_.nonEmpty).distinct.sorted
+        // write to a sibling file and move it over, so the target never holds a partial list
+        val tmp = new File(targetFile.getAbsolutePath + ".tmp")
+        IO.writeLines(tmp, merged, IO.utf8, append = false)
+        IO.move(tmp, targetFile)
 
-      streams.log.info(s"Wrote $what to '$targetFile'")
-      targetFile
+        streams.log.info(s"Wrote $what to '$targetFile'")
+        targetFile
+      }
     }
 }

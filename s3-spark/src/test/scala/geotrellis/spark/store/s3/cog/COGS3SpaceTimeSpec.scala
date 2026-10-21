@@ -42,6 +42,8 @@ class COGS3SpaceTimeSpec
   lazy val bucket = "mock-bucket"
   lazy val prefix = "catalog"
   val client = MockS3Client()
+  // the COG readers resolve the client in the Spark tasks via S3ClientProducer, do not rely on another spec to set it
+  S3ClientProducer.set(() => MockS3Client())
   S3TestUtils.cleanBucket(client, bucket)
   registerAfterAll { () =>
     S3TestUtils.cleanBucket(client, bucket)

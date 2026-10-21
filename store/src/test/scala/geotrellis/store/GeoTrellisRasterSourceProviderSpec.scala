@@ -46,7 +46,7 @@ class GeoTrellisRasterSourceProviderSpec extends AnyFunSpec {
 
     it("should produce a GeoTrellisRasterSource from a string") {
       val params = s"?layer=landsat&zoom=0"
-      val uriMultiband = s"file:///tmp/catalog$params"
+      val uriMultiband = s"gt+file:///tmp/catalog$params"
       assert(RasterSource(uriMultiband).isInstanceOf[GeoTrellisRasterSource])
     }
   }

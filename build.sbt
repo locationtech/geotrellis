@@ -1,9 +1,13 @@
 import sbt.Keys.*
+import com.github.sbt.git.SbtGit.GitKeys
 
 ThisBuild / versionScheme := Some("semver-spec")
 ThisBuild / scalaVersion := Settings.scala213
 ThisBuild / organization := "org.locationtech.geotrellis"
 ThisBuild / crossScalaVersions := Settings.crossScala2And3
+
+// sbt-git comes with sbt-ci-release and defines these in every project, the version is derived by sbt-dynver
+Global / excludeLintKeys ++= Set(GitKeys.gitDescribedVersion, GitKeys.gitUncommittedChanges)
 
 lazy val root = Project("geotrellis", file("."))
   .aggregate(

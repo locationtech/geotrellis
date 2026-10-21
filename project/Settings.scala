@@ -112,16 +112,18 @@ object Settings {
 
   lazy val commonSettings = Seq(
     description := "geographic data processing library for high performance applications",
-    licenses := Seq("Apache-2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0.html")),
+    licenses := Seq(License("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0.html"))),
     homepage := Some(url("https://geotrellis.io")),
     scmInfo := Some(ScmInfo(url("https://github.com/locationtech/geotrellis"), "scm:git:git@github.com:locationtech/geotrellis.git")),
-    scalacOptions ++= scalacOptionsFor(scalaVersion.value),
+    scalacOptions ++= Def.uncached(scalacOptionsFor(scalaVersion.value)),
     publishMavenStyle := true,
     Test / publishArtifact := false,
     pomIncludeRepository := { _ => false },
     autoAPIMappings := true,
     Global / cancelable := true,
     Test / parallelExecution := false,
+    // sbt 2 defaults to true, which puts resources into jars; tests read them as files via Resource.path
+    exportJars := false,
 
     publishTo := {
       val sonatype = "https://oss.sonatype.org/"
@@ -192,9 +194,9 @@ object Settings {
     // The Eclipse Foundation requires the license file to be present in every distribution
     // artifact; for JARs it belongs in META-INF.
     // See https://www.eclipse.org/projects/handbook/#legaldoc-distribution
-    Compile / packageBin / mappings += ((LocalRootProject / baseDirectory).value / "LICENSE") -> "META-INF/LICENSE",
+    Compile / packageBin / mappings += fileConverter.value.toVirtualFile(((LocalRootProject / baseDirectory).value / "LICENSE").toPath) -> "META-INF/LICENSE",
 
-    externalResolvers := Settings.Repositories.all,
+    externalResolvers := Def.uncached(Settings.Repositories.all),
     headerLicense := Some(HeaderLicense.ALv2(java.time.Year.now.getValue.toString, "Azavea")),
     headerMappings := Map(
       FileType.scala -> CommentStyle.cStyleBlockComment.copy(
@@ -300,7 +302,10 @@ object Settings {
       import geotrellis.store.accumulo.*
       import geotrellis.spark.*
       import geotrellis.spark.store.accumulo.*
-      """
+      """,
+    // MiniAccumuloCluster starts ZooKeeper and Accumulo in child JVMs with the java.class.path of the test JVM;
+    // sbt 2 forks tests with a virtual classpath unless the layering strategy is Raw
+    Test / classLoaderLayeringStrategy := ClassLoaderLayeringStrategy.Raw
   ) ++ commonSettings ++ java17SparkSettings ++ forkInTests
 
   lazy val bench = Seq(
@@ -366,7 +371,7 @@ object Settings {
 
   lazy val `doc-examples` = Seq(
     name := "geotrellis-doc-examples",
-    scalacOptions ++= scalacOptionsFor(scalaVersion.value),
+    scalacOptions ++= Def.uncached(scalacOptionsFor(scalaVersion.value)),
     // kind-projector is a Scala 2 compiler plugin; Scala 3 has -Ykind-projector built in
     libraryDependencies ++= (if (isScala3(scalaVersion.value)) Nil
                              else Seq(compilerPlugin("org.typelevel" % "kind-projector" % "0.13.4" cross CrossVersion.full))),
@@ -386,7 +391,7 @@ object Settings {
       geotoolsMain,
       geotoolsReferencing,
       geotoolsMetadata
-    ).map(_ excludeAll(excludedDependencies: _*)),
+    ).map(_.excludeAll(excludedDependencies*)),
     libraryDependencies ++= Seq(
       unitApi,
       geotoolsGeoTiff % Test,
@@ -567,7 +572,7 @@ object Settings {
     libraryDependencies ++= Seq(
       geotoolsMain,
       geotoolsShapefile
-    ).map(_ excludeAll(excludedDependencies: _*)),
+    ).map(_.excludeAll(excludedDependencies*)),
     libraryDependencies ++= Seq(scalatest % Test) ++ worksWithDependencies,
     Test / fork := false
   ) ++ commonSettings
@@ -607,7 +612,7 @@ object Settings {
       apacheSpark("sql").value % Test,
       scalatest % Test
     ),
-    assembly / test := {},
+    assembly / test := sbt.protocol.testing.TestResult.Passed,
     assembly / assemblyShadeRules := {
       val shadePackage = "com.azavea.shaded.demo"
       Seq(
