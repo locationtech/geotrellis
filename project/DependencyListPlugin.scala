@@ -78,18 +78,24 @@ object DependencyListPlugin extends AutoPlugin {
     streams: TaskStreams,
     append: Boolean
   ): File =
-    if (targetFile.exists && !force && !append) {
-      throw new RuntimeException(
-        s"Target file for $what already exists at ${targetFile.getAbsolutePath}. Use '-f' to override"
-      )
-    } else {
-      // in append mode each module contributes its own list; merge with the existing content and keep
-      // the file distinct (and sorted), which also makes re-runs idempotent
-      val existing = if (append && targetFile.exists) IO.readLines(targetFile, IO.utf8) else Nil
-      val merged = (existing ++ data.split('\n')).map(_.trim).filter(_.nonEmpty).distinct.sorted
-      IO.writeLines(targetFile, merged, IO.utf8, append = false)
+    // the modules write the same file from parallel tasks; sync the writers to avoid overwrites
+    DependencyListPlugin.synchronized {
+      if (targetFile.exists && !force && !append) {
+        throw new RuntimeException(
+          s"Target file for $what already exists at ${targetFile.getAbsolutePath}. Use '-f' to override"
+        )
+      } else {
+        // in append mode each module contributes its own list; merge with the existing content and keep
+        // the file distinct (and sorted), which also makes re-runs idempotent
+        val existing = if (append && targetFile.exists) IO.readLines(targetFile, IO.utf8) else Nil
+        val merged = (existing ++ data.split('\n')).map(_.trim).filter(_.nonEmpty).distinct.sorted
+        // write to a sibling file and move it over, so the target never holds a partial list
+        val tmp = new File(targetFile.getAbsolutePath + ".tmp")
+        IO.writeLines(tmp, merged, IO.utf8, append = false)
+        IO.move(tmp, targetFile)
 
-      streams.log.info(s"Wrote $what to '$targetFile'")
-      targetFile
+        streams.log.info(s"Wrote $what to '$targetFile'")
+        targetFile
+      }
     }
 }
