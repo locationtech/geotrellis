@@ -82,9 +82,13 @@ jobs:
           else
             result="$(grep -v ', approved,' target/dash/summary || echo "All dependencies are approved")"
           fi
+          total=0
+          [[ -f target/dependencies-list.txt ]] && total="$(wc -l < target/dependencies-list.txt | tr -d '[:space:]')"
+          echo "Total dependencies sent to Eclipse Dash: ${total}"
           echo "${result}"
           {
             echo '### Dash license check'
+            echo "Total dependencies sent to Eclipse Dash: ${total}"
             echo '```'
             echo "${result}"
             echo '```'
