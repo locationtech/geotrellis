@@ -738,7 +738,13 @@ object Settings {
     Test / fork := true,
     Test / parallelExecution := false,
     Test / testOptions += Tests.Argument("-oDF"),
-    // javaOptions ++= Seq("-Djava.library.path=/usr/lib:/usr/local/lib")
+    // javaOptions ++= Def.uncached(Seq("-Djava.library.path=/usr/lib:/usr/local/lib")),
+    // javaOptions ++= Def.uncached(Seq("-Djava.library.path=/usr/lib:/usr/local/lib:/Users/.../miniconda/envs/gdal-arm-env/lib")),
+    // Test / envVars ++= Def.uncached(Map(
+    //   "DYLD_FALLBACK_LIBRARY_PATH" -> "/Users/.../miniconda/envs/gdal-arm-env/lib",
+    //   "GDAL_DRIVER_PATH"           -> "/Users/.../miniconda/envs/gdal-arm-env/lib/gdalplugins",
+    //   "GDAL_DATA"                  -> "/Users/.../miniconda/envs/gdal-arm-env/share/gdal"
+    // ))
   ) ++ commonSettings
 
   lazy val `gdal-spark` = Seq(
@@ -753,6 +759,12 @@ object Settings {
     Test / fork := true,
     Test / parallelExecution := false,
     Test / testOptions += Tests.Argument("-oDF"),
-    // javaOptions ++= Seq("-Djava.library.path=/usr/lib:/usr/local/lib")
+    // javaOptions ++= Def.uncached(Seq("-Djava.library.path=/usr/lib:/usr/local/lib")),
+    // javaOptions ++= Def.uncached(Seq("-Djava.library.path=/usr/lib:/usr/local/lib:/Users/.../miniconda/envs/gdal-arm-env/lib")),
+    // Test / envVars ++= Def.uncached(Map(
+    //   "DYLD_FALLBACK_LIBRARY_PATH" -> "/Users/.../miniconda/envs/gdal-arm-env/lib",
+    //   "GDAL_DRIVER_PATH"           -> "/Users/.../miniconda/envs/gdal-arm-env/lib/gdalplugins",
+    //   "GDAL_DATA"                  -> "/Users/.../miniconda/envs/gdal-arm-env/share/gdal"
+    // ))
   ) ++ commonSettings ++ java17SparkSettings
 }

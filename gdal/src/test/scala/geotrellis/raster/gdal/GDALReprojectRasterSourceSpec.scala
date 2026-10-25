@@ -45,20 +45,12 @@ class GDALReprojectRasterSourceSpec extends AnyFunSpec with RasterMatchers with 
     val uri = Resource.path("vlm/aspect-tiled.tif")
 
     /**
-      * For some reason, the Pipeline described above is OS specific, and Bilinear interpolation behaves differently.
-      * To make tests pass there was generated one bilinear version under mac and anther inside a linux container.
       * This test may require tiffs regeneration since resample method slightly changes with different the GDAL version change.
-      *
-      * TODO: investigate the nature of this bug later
+      * The mac specific bilinear tiff was generated with an older GDAL; GDAL 3.13 on macOS matches the linux one.
       * */
 
     val expectedUri = Map[ResampleMethod, String](
-      Bilinear -> {
-        if(System.getProperty("os.name").toLowerCase().startsWith("mac"))
-          Resource.path("vlm/aspect-tiled-bilinear.tif")
-        else
-          Resource.path("vlm/aspect-tiled-bilinear-linux.tif")
-      },
+      Bilinear -> Resource.path("vlm/aspect-tiled-bilinear-linux.tif"),
       NearestNeighbor ->  Resource.path("vlm/aspect-tiled-near.tif")
     )
 
