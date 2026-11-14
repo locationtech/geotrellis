@@ -18,6 +18,7 @@ package geotrellis.raster.io.geotiff.compression
 
 import geotrellis.raster.io.geotiff.tags.codes.CompressionType.*
 
+import java.io.ByteArrayOutputStream
 import java.util.zip.{Inflater, Deflater}
 
 /** Compression level: 0 - 9lvl, default is -1, see [[Deflater]] docs for more information */
@@ -28,16 +29,7 @@ case class DeflateCompression(level: Int = Deflater.DEFAULT_COMPRESSION) extends
       def compress(segment: Array[Byte], segmentIndex: Int): Array[Byte] = {
         segmentSizes(segmentIndex) = segment.size
 
-        val deflater = new Deflater(level)
-        // take into account extra 10 leading bytes header, in case of 0 compression level it is important
-        val tmp = Array.ofDim[Byte](segment.length + 10)
-        deflater.setInput(segment, 0, segment.length)
-        deflater.finish()
-        val compressedSize = deflater.deflate(tmp)
-        deflater.end()
-        val result = Array.ofDim[Byte](compressedSize)
-        System.arraycopy(tmp, 0, result, 0, compressedSize)
-        result
+        DeflateCompression.compress(segment, level)
       }
 
       def createDecompressor(): Decompressor =
@@ -48,20 +40,30 @@ case class DeflateCompression(level: Int = Deflater.DEFAULT_COMPRESSION) extends
     new DeflateDecompressor(segmentSizes)
 }
 
-object DeflateCompression extends DeflateCompression(Deflater.DEFAULT_COMPRESSION)
+object DeflateCompression extends DeflateCompression(Deflater.DEFAULT_COMPRESSION) {
+  private[compression] def compress(segment: Array[Byte], level: Int): Array[Byte] = {
+    val deflater = new Deflater(level)
+    try {
+      deflater.setInput(segment)
+      deflater.finish()
+      val output = new ByteArrayOutputStream()
+      val buffer = new Array[Byte](8192)
+      while (!deflater.finished()) {
+        val size = deflater.deflate(buffer)
+        if (size == 0 && !deflater.finished())
+          throw new IllegalStateException("Deflater failed to finish the compressed stream")
+        output.write(buffer, 0, size)
+      }
+      output.toByteArray
+    } finally deflater.end()
+  }
+}
 
 class DeflateDecompressor(segmentSizes: Array[Int]) extends Decompressor {
   def code = ZLibCoded
 
-  def compress(segment: Array[Byte], level: Int = Deflater.DEFAULT_COMPRESSION): Array[Byte] = {
-    val deflater = new Deflater(level)
-    // take into account extra 10 leading bytes header, in case of 0 compression level it is important
-    val tmp = Array.ofDim[Byte](segment.length + 10)
-    deflater.setInput(segment, 0, segment.length)
-    val compressedDataLength = deflater.deflate(tmp)
-    deflater.end()
-    java.util.Arrays.copyOf(tmp, compressedDataLength)
-  }
+  def compress(segment: Array[Byte], level: Int = Deflater.DEFAULT_COMPRESSION): Array[Byte] =
+    DeflateCompression.compress(segment, level)
 
   def decompress(segment: Array[Byte], segmentIndex: Int): Array[Byte] = {
     val inflater = new Inflater()

@@ -16,11 +16,47 @@
 
 package geotrellis.raster.io.geotiff.compression
 
+import com.github.luben.zstd.{Zstd, ZstdException}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.funspec.AnyFunSpec
 
+import java.util.Random
+
 class ZStdCompressionSpec extends AnyFunSpec with Matchers {
   describe("ZStdCompression") {
+    (-1 to 9).foreach { level =>
+      it(s"produces complete Zstandard frames for incompressible and empty segments at level $level") {
+        val random = new Random(1234)
+        val inputs = Seq(96 * 96, 65536, 1, 0).map { size =>
+          val bytes = new Array[Byte](size)
+          random.nextBytes(bytes)
+          bytes
+        }
+        val compressor = ZStdCompression(level).createCompressor(inputs.size)
+        val decompressor = compressor.createDecompressor()
+
+        inputs.zipWithIndex.foreach { case (input, index) =>
+          withClue(s"segment size ${input.length}: ") {
+            val compressed = compressor.compress(input, index)
+            Zstd.findFrameCompressedSize(compressed) shouldBe compressed.length.toLong
+
+            val decoded = new Array[Byte](input.length)
+            val size = Zstd.decompress(decoded, compressed)
+            withClue(s"Zstandard decompression: ${Zstd.getErrorName(size)}: ") {
+              Zstd.isError(size) shouldBe false
+            }
+            size shouldBe input.length.toLong
+            decoded should equal(input)
+            decompressor.decompress(compressed, index) should equal(input)
+
+            intercept[ZstdException] {
+              Zstd.findFrameCompressedSize(compressed.dropRight(1))
+            }
+          }
+        }
+      }
+    }
+
     (-1 to 9).foreach { level =>
       it(s"should decompress and compress to the same things at the ${if(level == -1) "default compression level" else s"zoom level $level"}") {
         val segment =

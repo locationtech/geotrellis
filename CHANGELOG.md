@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - GeoTools 35.1 update [#3611](https://github.com/locationtech/geotrellis/pull/3611)
 - Upgrade to Spark 4.2.0 [#3634](https://github.com/locationtech/geotrellis/issues/3634)
 - SBT 2 Update [#3647](https://github.com/locationtech/geotrellis/pull/3647)
+- Fix truncated Deflate streams when compressing incompressible GeoTIFF tiles [#3650](https://github.com/locationtech/geotrellis/issues/3650)
 
 ## [3.8.1] - 2026-06-22
 
