@@ -97,8 +97,8 @@ object Dependencies {
   val scalacheck          = "org.scalacheck"             %% "scalacheck"               % "1.19.0"
   val scalaXml            = "org.scala-lang.modules"     %% "scala-xml"                % "2.4.0"
   val jts                 = "org.locationtech.jts"        % "jts-core"                 % "1.20.0"
-  val proj4j              = "org.locationtech.proj4j"     % "proj4j"                   % "1.4.3"
-  val proj4jEPSG          = "org.locationtech.proj4j"     % "proj4j-epsg"              % "1.4.3"
+  val proj4j              = "org.locationtech.proj4j"     % "proj4j"                   % "1.5.0"
+  val proj4jEPSG          = "org.locationtech.proj4j"     % "proj4j-epsg"              % "1.5.0"
   val openCSV             = "com.opencsv"                 % "opencsv"                  % "5.12.0"
   val spire               = "org.typelevel"              %% "spire"                    % Version.spire
   val spireMacro          = "org.typelevel"              %% "spire-macros"             % Version.spire
