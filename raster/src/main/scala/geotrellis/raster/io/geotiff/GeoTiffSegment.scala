@@ -29,6 +29,7 @@ trait GeoTiffSegment {
   def size: Int
   def getInt(i: Int): Int
   def getDouble(i: Int): Double
+  def getRawDouble(i: Int): Double = getDouble(i)
 
   /** represents all of the bytes in the segment */
   def bytes: Array[Byte]

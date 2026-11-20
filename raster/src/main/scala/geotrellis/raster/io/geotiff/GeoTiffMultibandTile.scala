@@ -549,7 +549,8 @@ abstract class GeoTiffMultibandTile(
         else
           getIntersectingSegments(window, bandIndices)
 
-      val bands = Array.fill(bandSubsetLength)(ArrayTile.empty(cellType, window.width, window.height))
+      val tileCellType = if (cellType.isFloatingPoint) cellType.withNoData(None) else cellType
+      val bands = Array.fill(bandSubsetLength)(ArrayTile.empty(tileCellType, window.width, window.height))
       val chip = Chip(window, bands, segments.length)
       for (segment <- segments.map(_._2)) {
         val tail = chipsBySegment.getOrElse(segment, Nil)
@@ -571,7 +572,7 @@ abstract class GeoTiffMultibandTile(
             cfor(overlap.rowMin)(_ <= overlap.rowMax, _ + 1) { row =>
               cfor(0)(_ < bandSubsetLength, _ + 1) { bandIndex =>
                 val i = segmentTransform.gridToIndex(col, row, bandIndices(bandIndex))
-                val v = segment.getDouble(i)
+                val v = segment.getRawDouble(i)
                 chip.bands(bandIndex).setDouble(col - gridBounds.colMin, row - gridBounds.rowMin, v)
               }
             }
@@ -610,7 +611,7 @@ abstract class GeoTiffMultibandTile(
           cfor(overlap.colMin)(_ <= overlap.colMax, _ + 1) { col =>
             cfor(overlap.rowMin)(_ <= overlap.rowMax, _ + 1) { row =>
               val i = segmentTransform.gridToIndex(col, row)
-              val v = segment.getDouble(i)
+              val v = segment.getRawDouble(i)
               chip.bands(subsetBandIndex).setDouble(col - gridBounds.colMin, row - gridBounds.rowMin, v)
             }
           }
@@ -652,7 +653,12 @@ abstract class GeoTiffMultibandTile(
       }
 
     chips.map { chip =>
-      chip.window -> ArrayMultibandTile(chip.bands)
+      val bands =
+        if (cellType.isFloatingPoint)
+          chip.bands.map(_.interpretAs(cellType).mutable)
+        else
+          chip.bands
+      chip.window -> ArrayMultibandTile(bands)
     }
   }
 
