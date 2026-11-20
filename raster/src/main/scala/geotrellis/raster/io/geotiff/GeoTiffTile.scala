@@ -689,7 +689,8 @@ abstract class GeoTiffTile(
    * @return A [[MutableArrayTile]] of the GeoTiffTile
    */
   def mutable: MutableArrayTile = {
-    val tile = ArrayTile.empty(cellType, cols, rows)
+    val tileCellType = if (cellType.isFloatingPoint) cellType.withNoData(None) else cellType
+    val tile = ArrayTile.empty(tileCellType, cols, rows)
 
     getSegments(0 until segmentCount).foreach { case (segmentId, segment) =>
       val segmentTransform = getSegmentTransform(segmentId)
@@ -699,7 +700,7 @@ abstract class GeoTiffTile(
           val col = segmentTransform.indexToCol(i)
           val row = segmentTransform.indexToRow(i)
           if(col < cols && row < rows) {
-            val v = segment.getDouble(i)
+            val v = segment.getRawDouble(i)
             tile.setDouble(col, row, v)
           }
         }
@@ -714,7 +715,7 @@ abstract class GeoTiffTile(
         }
     }
 
-    tile
+    if (cellType.isFloatingPoint) tile.interpretAs(cellType).mutable else tile
   }
 
 
@@ -746,7 +747,8 @@ abstract class GeoTiffTile(
 
     for (window <- windows) {
       val segments: Array[Int] = getIntersectingSegments(window)
-      val tile = ArrayTile.empty(cellType, window.width, window.height)
+      val tileCellType = if (cellType.isFloatingPoint) cellType.withNoData(None) else cellType
+      val tile = ArrayTile.empty(tileCellType, window.width, window.height)
       val chip = Chip(window, tile, segments.length)
       for (segment <- segments) {
         val tail = chipsBySegment.getOrElse(segment, Nil)
@@ -767,7 +769,7 @@ abstract class GeoTiffTile(
           cfor(overlap.colMin)(_ <= overlap.colMax, _ + 1) { col =>
             cfor(overlap.rowMin)(_ <= overlap.rowMax, _ + 1) { row =>
               val i = segmentTransform.gridToIndex(col, row)
-              val v = segment.getDouble(i)
+              val v = segment.getRawDouble(i)
               chip.tile.setDouble(col - gridBounds.colMin, row - gridBounds.rowMin, v)
             }
           }
@@ -792,7 +794,10 @@ abstract class GeoTiffTile(
     getSegments(intersectingSegments).flatMap { case (segmentId, segment) =>
       burnSegments(segmentId, segment)
     }.map { chip =>
-      chip.window -> chip.tile
+      val tile =
+        if (cellType.isFloatingPoint) chip.tile.interpretAs(cellType).mutable
+        else chip.tile
+      chip.window -> tile
     }
   }
 

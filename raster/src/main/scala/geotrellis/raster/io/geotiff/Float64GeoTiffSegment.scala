@@ -32,6 +32,7 @@ abstract class Float64GeoTiffSegment(val bytes: Array[Byte]) extends GeoTiffSegm
 
   def getInt(i: Int): Int
   def getDouble(i: Int): Double
+  override def getRawDouble(i: Int): Double = get(i)
 
   protected def intToDoubleOut(v: Int): Double
   protected def doubleToDoubleOut(v: Double): Double

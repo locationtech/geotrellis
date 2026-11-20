@@ -81,6 +81,51 @@ class GeoTiffTileSpec extends AnyFunSpec with RasterMatchers with TileBuilders w
   }
 
   describe("GeoTiffTile") {
+    it("should preserve raw floating point values with user-defined NoData when copied or cropped") {
+      val raw = Array(-9999f, Float.NaN, 1f, 2f, Float.NaN, -9999f)
+      val bytes = FloatArrayTile(raw, 3, 2, FloatCellType).toBytes()
+      val layout = GeoTiffSegmentLayout(3, 2, Striped(), BandInterleave, Float32BandType)
+      val tile = GeoTiffTile(
+        new ArraySegmentBytes(Array(bytes)),
+        NoCompressor,
+        layout,
+        NoCompression,
+        FloatUserDefinedNoDataCellType(-9999f)
+      )
+
+      java.util.Arrays.equals(
+        tile.mutable.interpretAs(FloatCellType).toBytes(),
+        FloatArrayTile(raw, 3, 2, FloatCellType).toBytes()
+      ) shouldBe true
+
+      java.util.Arrays.equals(
+        tile.crop(GridBounds(1, 0, 2, 1)).interpretAs(FloatCellType).toBytes(),
+        FloatArrayTile(Array(Float.NaN, 1f, Float.NaN, -9999f), 2, 2, FloatCellType).toBytes()
+      ) shouldBe true
+    }
+
+    it("should preserve raw floating point values in multiband crops with user-defined NoData") {
+      val raw = Array(-9999f, Float.NaN, 1f, 2f, Float.NaN, -9999f)
+      val bytes = FloatArrayTile(raw, 3, 2, FloatCellType).toBytes()
+      val layout = GeoTiffSegmentLayout(3, 2, Striped(), BandInterleave, Float32BandType)
+      val tile = GeoTiffMultibandTile(
+        new ArraySegmentBytes(Array(bytes, bytes)),
+        NoCompressor,
+        layout,
+        NoCompression,
+        2,
+        FloatUserDefinedNoDataCellType(-9999f)
+      )
+      val result = tile.toArrayTile()
+
+      (0 until result.bandCount).foreach { band =>
+        java.util.Arrays.equals(
+          result.band(band).interpretAs(FloatCellType).toBytes(),
+          FloatArrayTile(raw, 3, 2, FloatCellType).toBytes()
+        ) shouldBe true
+      }
+    }
+
     it("should convert from IntConstantNoDataCellType to DoubleConstantNoDataCellType") {
       val arrInt =
         Array(1, 2, 1, 1, 2,
