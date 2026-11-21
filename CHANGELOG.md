@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Read tiled GeoTIFFs with packed unsigned 2–7, 9–15, or 17–31 bit samples and overviews; write them using standard 8-, 16-, or 32-bit samples.
 - Scala3 syntax usage [#3631](https://github.com/locationtech/geotrellis/pull/3631)
 - Kind Projector underscore syntax adoption [#3632](https://github.com/locationtech/geotrellis/pull/3632)
 - Scala 3 support [#3633](https://github.com/locationtech/geotrellis/pull/3633)
