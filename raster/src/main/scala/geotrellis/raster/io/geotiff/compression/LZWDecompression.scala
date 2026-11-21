@@ -17,6 +17,7 @@
 package geotrellis.raster.io.geotiff.compression
 
 import geotrellis.raster.io.geotiff.tags.codes.CompressionType.*
+import geotrellis.raster.io.geotiff.reader.MalformedGeoTiffException
 
 
 
@@ -56,7 +57,9 @@ object TokenTable {
 }
 
 
-class LZWDecompressor(segmentSizes: Array[Int]) extends Decompressor {
+class LZWDecompressor(segmentSizes: Array[Int], strict: Boolean) extends Decompressor {
+  def this(segmentSizes: Array[Int]) = this(segmentSizes, false)
+
   def code = LZWCoded
 
   val tableLimit = 4096
@@ -128,6 +131,8 @@ class LZWDecompressor(segmentSizes: Array[Int]) extends Decompressor {
       oldCode = code
     }
 
+    if (strict && outputArrayIndex != size)
+      throw new MalformedGeoTiffException(s"Invalid LZW TIFF segment $segmentIndex length")
     outputArray
   }
 

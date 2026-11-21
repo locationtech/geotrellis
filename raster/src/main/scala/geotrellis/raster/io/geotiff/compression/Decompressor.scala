@@ -17,7 +17,6 @@
 package geotrellis.raster.io.geotiff.compression
 
 import geotrellis.raster.io.geotiff.tags.*
-import geotrellis.raster.io.geotiff.UInt16BandType
 import geotrellis.raster.io.geotiff.reader.{GeoTiffReaderLimitationException, MalformedGeoTiffException}
 import java.nio.ByteOrder
 import spire.syntax.cfor.*
@@ -107,15 +106,24 @@ object Decompressor {
       }
     }
 
-    if (tiffTags.bitsPerSample == 15) {
-      if (tiffTags.bandType != UInt16BandType ||
-          tiffTags.bandCount != 1 || tiffTags.hasStripStorage() || tiffTags.rowSize % 8 != 0 ||
+    val bits = tiffTags.bitsPerSample
+    val packed = bits != 1 && bits != tiffTags.bandType.bitsPerSample
+    if (packed) {
+      if (tiffTags.hasStripStorage() || (tiffTags.rowSize.toLong * bits) % 8 != 0 ||
           tiffTags.nonBasicTags.fillOrder != 1 ||
-          tiffTags.nonBasicTags.predictor.exists(_ != Predictor.PREDICTOR_NONE) ||
-          (tiffTags.compression != ZLibCoded && tiffTags.compression != PkZipCoded))
-        throw new GeoTiffReaderLimitationException("Unsupported 15-bit TIFF layout or compression")
+          tiffTags.nonBasicTags.predictor.exists(_ != Predictor.PREDICTOR_NONE))
+        throw new GeoTiffReaderLimitationException(s"Unsupported $bits-bit TIFF layout or predictor")
 
-      return new UInt15Decompressor(segmentSizes)
+      val base = tiffTags.compression match {
+        case Uncompressed => NoCompressor
+        case LZWCoded => new LZWDecompressor(segmentSizes, strict = true)
+        case ZLibCoded | PkZipCoded => new DeflateDecompressor(segmentSizes, strict = true)
+        case PackBitsCoded => new PackBitsDecompressor(segmentSizes, strict = true)
+        case ZStdCoded => ZStdCompression.createDecompressor
+        case compression =>
+          throw new GeoTiffReaderLimitationException(s"Unsupported compression $compression for $bits-bit TIFF")
+      }
+      return new PackedUnsignedDecompressor(base, segmentSizes, bits, tiffTags.bandType.bytesPerSample, byteOrder)
     }
 
     tiffTags.compression match {

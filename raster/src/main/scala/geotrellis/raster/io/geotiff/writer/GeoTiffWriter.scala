@@ -17,7 +17,7 @@
 package geotrellis.raster.io.geotiff.writer
 
 import geotrellis.raster.io.geotiff.*
-import geotrellis.raster.io.geotiff.compression.{DeflateCompression, UInt15Decompressor}
+import geotrellis.raster.io.geotiff.compression.{DeflateCompression, PackedUnsignedDecompressor}
 import spire.syntax.cfor.*
 
 import java.io.ByteArrayOutputStream
@@ -73,7 +73,7 @@ class GeoTiffWriter(source: GeoTiffData, dos: DataOutputStream) {
     lazy val imageData: GeoTiffImageData = {
       val original = source.imageData
       original.decompressor match {
-        case unpacker: UInt15Decompressor =>
+        case unpacker: PackedUnsignedDecompressor =>
           val compressor = DeflateCompression.createCompressor(original.segmentBytes.length)
           val segments = Array.ofDim[Array[Byte]](original.segmentBytes.length)
           original.segmentBytes.getSegments(segments.indices).foreach { case (i, bytes) =>
@@ -377,10 +377,10 @@ class GeoTiffWriter(source: GeoTiffData, dos: DataOutputStream) {
 
   def write(optimizedOrder: Boolean = false): Unit = {
     val sourceIFDs = source :: source.overviews
-    if (sourceIFDs.exists(_.imageData.decompressor.isInstanceOf[UInt15Decompressor])) {
+    if (sourceIFDs.exists(_.imageData.decompressor.isInstanceOf[PackedUnsignedDecompressor])) {
       val outputOrder = geoTiff.imageData.decompressor.byteOrder
       if (IFDs.exists(_.imageData.decompressor.byteOrder != outputOrder))
-        throw new IllegalArgumentException("Cannot write 15-bit TIFF with mixed output byte orders")
+        throw new IllegalArgumentException("Cannot write packed TIFF with mixed output byte orders")
     }
 
     // Write the header that determines the endian

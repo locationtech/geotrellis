@@ -17,6 +17,7 @@
 package geotrellis.raster.io.geotiff.compression
 
 import geotrellis.raster.io.geotiff.tags.codes.CompressionType.*
+import geotrellis.raster.io.geotiff.reader.MalformedGeoTiffException
 
 
 object PackBitsDecompressor {
@@ -24,7 +25,9 @@ object PackBitsDecompressor {
     new PackBitsDecompressor(segmentSizes)
 }
 
-class PackBitsDecompressor(segmentSizes: Array[Int]) extends Decompressor {
+class PackBitsDecompressor(segmentSizes: Array[Int], strict: Boolean) extends Decompressor {
+  def this(segmentSizes: Array[Int]) = this(segmentSizes, false)
+
   def code = PackBitsCoded
 
   def decompress(segment: Array[Byte], segmentIndex: Int): Array[Byte] = {
@@ -43,6 +46,8 @@ class PackBitsDecompressor(segmentSizes: Array[Int]) extends Decompressor {
       if (0 <= headerByte) {
         // next (headerByte + 1) values in segment are literal values
         val limit = total + headerByte + 1
+        if (strict && (limit > size || j + headerByte + 1 > len))
+          throw new MalformedGeoTiffException(s"Invalid PackBits TIFF segment $segmentIndex")
         while(total < limit) {
           rowArray(total) = segment(j)
           total += 1
@@ -50,6 +55,8 @@ class PackBitsDecompressor(segmentSizes: Array[Int]) extends Decompressor {
         }
       } else if (-128 < headerByte && headerByte < 0) {
         // The next byte of data repeated (1 - headerByte) times
+        if (strict && (j >= len || total + 1 - headerByte > size))
+          throw new MalformedGeoTiffException(s"Invalid PackBits TIFF segment $segmentIndex")
         val b = segment(j)
         j += 1
 
@@ -61,6 +68,8 @@ class PackBitsDecompressor(segmentSizes: Array[Int]) extends Decompressor {
       }
     }
 
+    if (strict && total != size)
+      throw new MalformedGeoTiffException(s"Invalid PackBits TIFF segment $segmentIndex length")
     rowArray
   }
 }

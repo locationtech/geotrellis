@@ -163,7 +163,10 @@ class UInt15GeoTiffReaderSpec extends AnyFunSpec with Matchers {
     }
 
     it("rejects a truncated compressed segment") {
-      val unpacker = new geotrellis.raster.io.geotiff.compression.UInt15Decompressor(Array(480))
+      val unpacker = new geotrellis.raster.io.geotiff.compression.PackedUnsignedDecompressor(
+        new geotrellis.raster.io.geotiff.compression.DeflateDecompressor(Array(480), strict = true),
+        Array(480), 15, 2, ByteOrder.LITTLE_ENDIAN
+      )
       intercept[MalformedGeoTiffException] {
         unpacker.decompress(Array[Byte](0x78, 0x9c.toByte), 0)
       }

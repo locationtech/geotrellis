@@ -17,9 +17,10 @@
 package geotrellis.raster.io.geotiff.compression
 
 import geotrellis.raster.io.geotiff.tags.codes.CompressionType.*
+import geotrellis.raster.io.geotiff.reader.MalformedGeoTiffException
 
 import java.io.ByteArrayOutputStream
-import java.util.zip.{Inflater, Deflater}
+import java.util.zip.{DataFormatException, Inflater, Deflater}
 
 /** Compression level: 0 - 9lvl, default is -1, see [[Deflater]] docs for more information */
 case class DeflateCompression(level: Int = Deflater.DEFAULT_COMPRESSION) extends Compression {
@@ -59,7 +60,9 @@ object DeflateCompression extends DeflateCompression(Deflater.DEFAULT_COMPRESSIO
   }
 }
 
-class DeflateDecompressor(segmentSizes: Array[Int]) extends Decompressor {
+class DeflateDecompressor(segmentSizes: Array[Int], strict: Boolean) extends Decompressor {
+  def this(segmentSizes: Array[Int]) = this(segmentSizes, false)
+
   def code = ZLibCoded
 
   def compress(segment: Array[Byte], level: Int = Deflater.DEFAULT_COMPRESSION): Array[Byte] =
@@ -67,13 +70,28 @@ class DeflateDecompressor(segmentSizes: Array[Int]) extends Decompressor {
 
   def decompress(segment: Array[Byte], segmentIndex: Int): Array[Byte] = {
     val inflater = new Inflater()
-    inflater.setInput(segment, 0, segment.length)
-
-    val resultSize = segmentSizes(segmentIndex)
-    val result = new Array[Byte](resultSize)
-    inflater.inflate(result)
-    inflater.reset()
-    inflater.end()
-    result
+    try {
+      inflater.setInput(segment, 0, segment.length)
+      val result = new Array[Byte](segmentSizes(segmentIndex))
+      if (!strict) inflater.inflate(result)
+      else {
+        var offset = 0
+        val extra = new Array[Byte](1)
+        while (!inflater.finished()) {
+          val count =
+            if (offset < result.length) inflater.inflate(result, offset, result.length - offset)
+            else inflater.inflate(extra)
+          if ((offset == result.length && count != 0) || (count == 0 && !inflater.finished()))
+            throw new MalformedGeoTiffException(s"Invalid compressed TIFF segment $segmentIndex")
+          offset += count
+        }
+        if (offset != result.length)
+          throw new MalformedGeoTiffException(s"Invalid compressed TIFF segment $segmentIndex length")
+      }
+      result
+    } catch {
+      case e: DataFormatException if strict =>
+        throw new MalformedGeoTiffException(s"Invalid compressed TIFF segment $segmentIndex: ${e.getMessage}")
+    } finally inflater.end()
   }
 }

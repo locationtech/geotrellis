@@ -38,11 +38,11 @@ object BandType {
   def apply(bitsPerSample: Int, sampleFormat: Int): BandType =
     (bitsPerSample, sampleFormat) match {
       case (1, _) => BitBandType
-      case (8, UnsignedInt) => UByteBandType
+      case (b, UnsignedInt) if b >= 2 && b <= 8 => UByteBandType
       case (8, SignedInt) => ByteBandType
-      case (15 | 16, UnsignedInt) => UInt16BandType
+      case (b, UnsignedInt) if b >= 9 && b <= 16 => UInt16BandType
       case (16, SignedInt) => Int16BandType
-      case (32, UnsignedInt) => UInt32BandType
+      case (b, UnsignedInt) if b >= 17 && b <= 32 => UInt32BandType
       case (32, SignedInt) => Int32BandType
       case (32, FloatingPoint) => Float32BandType
       case (64, FloatingPoint) => Float64BandType
