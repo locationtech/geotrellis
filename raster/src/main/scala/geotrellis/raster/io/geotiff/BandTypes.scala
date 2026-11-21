@@ -40,7 +40,7 @@ object BandType {
       case (1, _) => BitBandType
       case (8, UnsignedInt) => UByteBandType
       case (8, SignedInt) => ByteBandType
-      case (16, UnsignedInt) => UInt16BandType
+      case (15 | 16, UnsignedInt) => UInt16BandType
       case (16, SignedInt) => Int16BandType
       case (32, UnsignedInt) => UInt32BandType
       case (32, SignedInt) => Int32BandType

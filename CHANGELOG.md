@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Read single-band, tiled, DEFLATE-compressed GeoTIFFs with unsigned 15-bit samples and overviews as UInt16; write them as standard 16-bit GeoTIFFs.
 - Scala3 syntax usage [#3631](https://github.com/locationtech/geotrellis/pull/3631)
 - Kind Projector underscore syntax adoption [#3632](https://github.com/locationtech/geotrellis/pull/3632)
 - Scala 3 support [#3633](https://github.com/locationtech/geotrellis/pull/3633)

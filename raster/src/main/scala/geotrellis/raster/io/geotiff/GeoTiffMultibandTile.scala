@@ -151,11 +151,9 @@ object GeoTiffMultibandTile {
     cellType: CellType,
     bandType: Option[BandType] = None
   ): GeoTiffMultibandTile = {
-    val segmentCount = geoTiffTile.segmentCount
     val segmentBytes = geoTiffTile.segmentBytes
     val segmentLayout = geoTiffTile.segmentLayout
-    val compressor = compression.createCompressor(segmentCount)
-    val decompressor = compressor.createDecompressor()
+    val decompressor = geoTiffTile.decompressor
     val bandCount = geoTiffTile.bandCount
     val overviews = geoTiffTile.overviews.map(applyOverview(_, compression, cellType, bandType))
 

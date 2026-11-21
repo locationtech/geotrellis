@@ -17,6 +17,7 @@
 package geotrellis.raster.io.geotiff.compression
 
 import geotrellis.raster.io.geotiff.tags.*
+import geotrellis.raster.io.geotiff.UInt16BandType
 import geotrellis.raster.io.geotiff.reader.{GeoTiffReaderLimitationException, MalformedGeoTiffException}
 import java.nio.ByteOrder
 import spire.syntax.cfor.*
@@ -104,6 +105,17 @@ object Decompressor {
       cfor(0)(_ < segmentCount, _ + 1) { i =>
         segmentSizes(i) = tiffTags.imageSegmentByteSize(i).toInt * tiffTags.bandCount
       }
+    }
+
+    if (tiffTags.bitsPerSample == 15) {
+      if (tiffTags.bandType != UInt16BandType ||
+          tiffTags.bandCount != 1 || tiffTags.hasStripStorage() || tiffTags.rowSize % 8 != 0 ||
+          tiffTags.nonBasicTags.fillOrder != 1 ||
+          tiffTags.nonBasicTags.predictor.exists(_ != Predictor.PREDICTOR_NONE) ||
+          (tiffTags.compression != ZLibCoded && tiffTags.compression != PkZipCoded))
+        throw new GeoTiffReaderLimitationException("Unsupported 15-bit TIFF layout or compression")
+
+      return new UInt15Decompressor(segmentSizes)
     }
 
     tiffTags.compression match {

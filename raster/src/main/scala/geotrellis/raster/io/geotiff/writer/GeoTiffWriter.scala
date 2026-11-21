@@ -17,6 +17,7 @@
 package geotrellis.raster.io.geotiff.writer
 
 import geotrellis.raster.io.geotiff.*
+import geotrellis.raster.io.geotiff.compression.{DeflateCompression, UInt15Decompressor}
 import spire.syntax.cfor.*
 
 import java.io.ByteArrayOutputStream
@@ -60,7 +61,39 @@ object GeoTiffWriter {
   }
 }
 
-class GeoTiffWriter(geoTiff: GeoTiffData, dos: DataOutputStream) {
+class GeoTiffWriter(source: GeoTiffData, dos: DataOutputStream) {
+  private def normalize(source: GeoTiffData): GeoTiffData = new GeoTiffData {
+    val cellType = source.cellType
+    def extent = source.extent
+    def crs = source.crs
+    def tags = source.tags
+    def options = source.options
+    lazy val overviews: List[GeoTiffData] = source.overviews.map(normalize)
+
+    lazy val imageData: GeoTiffImageData = {
+      val original = source.imageData
+      original.decompressor match {
+        case unpacker: UInt15Decompressor =>
+          val compressor = DeflateCompression.createCompressor(original.segmentBytes.length)
+          val segments = Array.ofDim[Array[Byte]](original.segmentBytes.length)
+          original.segmentBytes.getSegments(segments.indices).foreach { case (i, bytes) =>
+            segments(i) = compressor.compress(unpacker.decompress(bytes, i), i)
+          }
+          new GeoTiffImageData {
+            def cols = original.cols
+            def rows = original.rows
+            def bandType = original.bandType
+            def bandCount = original.bandCount
+            def segmentLayout = original.segmentLayout
+            val segmentBytes: SegmentBytes = new ArraySegmentBytes(segments)
+            val decompressor = compressor.createDecompressor()
+          }
+        case _ => original
+      }
+    }
+  }
+
+  private val geoTiff = normalize(source)
   implicit val toBytes: ToBytes =
     if(geoTiff.imageData.decompressor.byteOrder == ByteOrder.BIG_ENDIAN) {
       BigEndianToBytes
@@ -343,6 +376,13 @@ class GeoTiffWriter(geoTiff: GeoTiffData, dos: DataOutputStream) {
   }
 
   def write(optimizedOrder: Boolean = false): Unit = {
+    val sourceIFDs = source :: source.overviews
+    if (sourceIFDs.exists(_.imageData.decompressor.isInstanceOf[UInt15Decompressor])) {
+      val outputOrder = geoTiff.imageData.decompressor.byteOrder
+      if (IFDs.exists(_.imageData.decompressor.byteOrder != outputOrder))
+        throw new IllegalArgumentException("Cannot write 15-bit TIFF with mixed output byte orders")
+    }
+
     // Write the header that determines the endian
     if (geoTiff.imageData.decompressor.byteOrder == ByteOrder.BIG_ENDIAN) {
       val m = 'M'.toByte
